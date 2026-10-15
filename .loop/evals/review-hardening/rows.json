@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {"id": "r1", "behavior": "kmctl init with a kept .okf/index.md that is not UTF-8 exits 0 and warns that the kept file is not UTF-8.", "fails_when": "init raises, exits nonzero, or gives no not-UTF-8 warning", "command": "uv run pytest tests/test_init.py::test_init_warns_on_non_utf8_kept_index -q"},
+    {"id": "r2", "behavior": "A handoff whose generated.at overflows the datetime range does not crash kmctl handoffs or kmctl review due.", "fails_when": "either command exits nonzero or prints a traceback", "command": "uv run pytest tests/test_handoffs.py::test_overflowing_timestamp_does_not_crash -q"},
+    {"id": "r3", "behavior": "Percent-encoded, ?query, angle-bracket and single-quote-titled targets resolve in both the index check and the link check.", "fails_when": "any of these forms pointing at an existing page is reported, in docs/ pages or in docs/README.md entries", "command": "uv run pytest tests/test_check.py::test_link_forms_resolve -q"},
+    {"id": "r4", "behavior": "Reference-style definitions are checked by the link check, and the index check's entry format is unchanged.", "fails_when": "a broken [ref]: path definition is not reported under check name link, or a reference-style list item counts as an index entry", "command": "uv run pytest tests/test_check.py::test_reference_style_links -q"},
+    {"id": "r5", "behavior": "The write-docs grader finds each run's type through eval_metadata.json's eval_id, for folder names evals.json does not hold, and reports a folder with no metadata or a mismatched prompt instead of grading it.", "fails_when": "the grader raises, grades a folder without metadata, or grades a run whose metadata prompt differs from the eval's prompt", "command": "uv run pytest tests/test_skills.py::test_write_docs_grader_joins_metadata -q"}
+  ]
+}
