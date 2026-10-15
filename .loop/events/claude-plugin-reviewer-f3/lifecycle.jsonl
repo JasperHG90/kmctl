@@ -1,1 +1,2 @@
 {"at": "2026-10-15T11:00:48+00:00", "by": "review close", "kind": "register", "schema_version": "1.0", "stage": "stub"}
+{"at": "2026-10-15T11:03:12+00:00", "kind": "drop", "reason": "claude-plugin review round 3: reviewer:f3 resolved", "schema_version": "1.0"}
