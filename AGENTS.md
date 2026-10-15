@@ -85,8 +85,7 @@ rather than a summary of it.
 | Loop state: tickets, plans, evals, verdicts | `.loop/` |
 
 Rules installed by aim (listed in `aim.toml`) are changed in their source
-repository, not here. The rules copied from loop-harness still name
-loop-harness in places; the ticket `adapt-copied-rules` fixes them.
+repository, not here.
 
 ## Gates
 

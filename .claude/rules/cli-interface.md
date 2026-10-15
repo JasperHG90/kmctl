@@ -1,12 +1,12 @@
 ---
-paths: ["src/kmctl/cli/**", "src/kmctl/commands/**", "tests/**/test_*cli*.py", "tests/**/test_*help*.py", "docs/reference/**"]
+paths: ["src/kmctl/**", "tests/**/test_*cli*.py", "tests/**/test_*help*.py", "docs/reference/**"]
 ---
 
 # The CLI interface
 
-`loopctl` is read by agents more than by people, and an agent that cannot
-tell from `--help` what a value should be will guess it. The design is
-`.okf/architecture/cli-and-plugin.md`.
+`kmctl` is read by agents more than by people, and an agent that cannot
+tell from `--help` what a value should be will guess it. Its audiences are
+named in `.claude/rules/interface-audience.md`.
 
 <constraint name="help-answers-before-anyone-guesses">
 WHY: a wrong guess at an input costs a refusal and a retry, or worse, a run
@@ -23,11 +23,11 @@ that succeeds on the wrong value.
 
 <constraint name="every-success-names-the-next-step">
 WHY: an agent that finishes a step and has to work out the next one from the
-docs is where loops wander and burn tokens.
+docs is where sessions wander and burn tokens.
 
-A state-changing verb ends with one `Next: loopctl ...` line taken from the
-shared `next_step` function, never a hand-written string. Adding a stage or a
-transition updates `next_step` in the same change (ST-10).
+A verb that writes files ends with one `Next: kmctl ...` line naming the
+step that usually follows, built by one shared function rather than a
+hand-written string in each verb.
 </constraint>
 
 <constraint name="a-refusal-names-the-fix">
@@ -35,15 +35,14 @@ WHY: "invalid input" sends the reader back to guessing.
 
 A refusal is one line on stderr naming what was refused, the value and where
 it came from, and the exact command that fixes it. It raises the one
-exception base, and the exit code follows the table in
-`.okf/architecture/cli-and-plugin.md` (ST-04). stdout carries only results.
+exception base and exits nonzero. stdout carries only results, and every
+verb that prints results takes `--json` for scripts and the CI action.
 </constraint>
 
 <constraint name="help-is-tested">
-WHY: help text drifts the moment nobody checks it, and v1's command
-reference fell 14 commands behind.
+WHY: help text drifts the moment nobody checks it.
 
-Changing a verb, option or help string keeps ST-09 green: each verb's help
-names what it produces, every input has an example, help renders at 80
-columns, and `--help` loads no command logic.
+Changing a verb, option or help string keeps the help tests green: each
+verb's help names what it produces, every input has an example, help renders
+at 80 columns, and `--help` loads no command logic.
 </constraint>
