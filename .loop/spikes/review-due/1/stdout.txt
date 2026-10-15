@@ -1,0 +1,21 @@
+other        .okf/decisions/0001-rebuild-from-the-manifesto.md -> loop-harness-plugin/MANIFESTO.md
+other        .okf/decisions/0001-rebuild-from-the-manifesto.md -> loop-harness-plugin/.loop/ledger.json
+url          .okf/decisions/0001-rebuild-from-the-manifesto.md -> https://github.com/sdsrss/loop_eng
+other        .okf/decisions/0007-reconcile-stops-at-verifying.md -> loop-harness-plugin/src/loop_harness/reconcile.py
+other        .okf/decisions/0007-reconcile-stops-at-verifying.md -> loop-harness-plugin/.loop/plans/reconcile-promotes-done-without-gates.md
+url          .okf/proposals/pokebattle-field-report.md -> https://github.com/JasperHG90/oc
+other        .okf/proposals/pokebattle-field-report.md -> .loop/verdicts/engine-damage/reviewer-r1.md
+repo-path    .okf/proposals/pokebattle-field-report.md -> src/loop_harness/commands/lifecycle.py
+repo-path    .okf/proposals/pokebattle-field-report.md -> src/loop_harness/verdicts/rules.py
+other        .okf/proposals/v1-surface-checklist.md -> loop-harness-plugin/BLUEPRINT.md
+other        .okf/proposals/v1-surface-checklist.md -> loop-harness-plugin/plugin/hooks/hooks.json
+
+concepts with sources: 4 of 94 .md files
+counts: {'other': 7, 'url': 2, 'repo-path': 2} total: 11
+UNCLASSIFIED other: .okf/decisions/0001-rebuild-from-the-manifesto.md -> loop-harness-plugin/MANIFESTO.md
+UNCLASSIFIED other: .okf/decisions/0001-rebuild-from-the-manifesto.md -> loop-harness-plugin/.loop/ledger.json
+UNCLASSIFIED other: .okf/decisions/0007-reconcile-stops-at-verifying.md -> loop-harness-plugin/src/loop_harness/reconcile.py
+UNCLASSIFIED other: .okf/decisions/0007-reconcile-stops-at-verifying.md -> loop-harness-plugin/.loop/plans/reconcile-promotes-done-without-gates.md
+UNCLASSIFIED other: .okf/proposals/pokebattle-field-report.md -> .loop/verdicts/engine-damage/reviewer-r1.md
+UNCLASSIFIED other: .okf/proposals/v1-surface-checklist.md -> loop-harness-plugin/BLUEPRINT.md
+UNCLASSIFIED other: .okf/proposals/v1-surface-checklist.md -> loop-harness-plugin/plugin/hooks/hooks.json
