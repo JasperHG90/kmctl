@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "Two new Consequences overstate the code. 0005 says the action fails only when kmctl check fails, but action/knowledge-ci.sh also exits 1 when kmctl review due crashes (its own header says so), and audit mode exits 1 when claude errors or gives no findings. 0006 says every concept an agent writes is due until a person verifies it, but review_due skips handoffs (review_due.py:161), so handoffs are never due as unverified.",
+      "anchor": ".okf/decisions/0005-audits-report-only.md:50",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "The 12-word cut leaves punctuation before the ellipsis ('handoff: ... so you,...') and gives the three review skills the same cut-off line ('The review instructions for .okf/X/ pages, used by the audit skill and...'), which never says to use them through /audit. Strip trailing punctuation before adding '...'.",
+      "anchor": "src/kmctl/briefing.py:85",
+      "category": "nit",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "src/kmctl/briefing.py has an unstaged ruff format change. The stamp ran on the working tree, which is formatted; the staged copy fails ruff format --check (checked on a copy). Stage it so what lands is what was stamped.",
+      "anchor": "src/kmctl/briefing.py:84",
+      "category": "nit",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "a035668cbe3399b12cab4f83157116331542c12c411a1193b880764e8c55fdc2",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "at": "2026-10-15T13:20:36+00:00"
+}
