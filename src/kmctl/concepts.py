@@ -13,6 +13,8 @@ from importlib.metadata import version
 from pathlib import Path
 from typing import Literal
 
+from kmctl.okf import BadFrontMatter, front_matter
+
 Kind = Literal["decision", "practice", "proposal", "prototype", "handoff"]
 
 SECTIONS: dict[str, str] = {
@@ -46,6 +48,7 @@ class NewConcept:
     id: str
     path: str
     created_section: bool
+    updated: bool = False
 
 
 def slug(title: str) -> str:
@@ -80,7 +83,9 @@ def _next_number(section: Path) -> int:
     return max(numbers, default=0) + 1
 
 
-def _front_matter(kind: str, title: str, description: str, now: datetime) -> str:
+def _front_matter(
+    kind: str, title: str, description: str, now: datetime, key: str | None = None
+) -> str:
     stamp = now.strftime("%Y-%m-%dT%H:%M:%SZ")
     lines = [
         "---",
@@ -98,6 +103,10 @@ def _front_matter(kind: str, title: str, description: str, now: datetime) -> str
         lines.append(
             f"stale_after: {(now + timedelta(days=HANDOFF_DAYS)).strftime('%Y-%m-%dT%H:%M:%SZ')}"
         )
+    if key is not None:
+        lines.append(
+            f"handoff_key: {json.dumps(key)}"
+        )  # the one extension field (ADR 0009)
     return "\n".join([*lines, "---", ""])
 
 
@@ -112,13 +121,42 @@ def append_log(log: Path, line: str, now: datetime) -> None:
     log.write_text(text + line + "\n", encoding="utf-8")
 
 
+def _by_key(section: Path, key: str) -> Path | None:
+    """The handoff in ``section`` whose ``handoff_key`` is ``key``, if one exists."""
+    for path in sorted(section.glob("*.md")):
+        if path.name == "index.md":
+            continue
+        try:
+            if front_matter(path).get("handoff_key") == key:
+                return path
+        except BadFrontMatter:
+            continue
+    return None
+
+
+def _replace_entry(index: Path, rel: str, entry: str) -> None:
+    """Replace the index line that links ``rel`` with ``entry``, or append it."""
+    lines = index.read_text(encoding="utf-8").splitlines()
+    for i, line in enumerate(lines):
+        if f"]({rel})" in line:
+            lines[i] = entry
+            index.write_text("\n".join(lines) + "\n", encoding="utf-8")
+            return
+    _append_entry(index, entry)
+
+
 def _append_entry(index: Path, entry: str) -> None:
     text = index.read_text(encoding="utf-8")
     index.write_text(text.rstrip("\n") + "\n" + entry + "\n", encoding="utf-8")
 
 
 def new_concept(
-    root: Path, kind: Kind, title: str, description: str, now: datetime | None = None
+    root: Path,
+    kind: Kind,
+    title: str,
+    description: str,
+    now: datetime | None = None,
+    key: str | None = None,
 ) -> NewConcept:
     """Write a new concept of ``kind`` under ``root``'s .okf/ and index and log it.
 
@@ -134,6 +172,10 @@ def new_concept(
         One sentence for the front matter and the index entry.
     now : datetime | None
         The time written into the concept; the current UTC time when omitted.
+    key : str | None
+        Handoffs only: the session key (``handoff_key``, ADR 0009). When a
+        handoff with this key exists, it is updated in place: same file and
+        index entry, new title, description, body skeleton and dates.
 
     Returns
     -------
@@ -144,8 +186,9 @@ def new_concept(
     Raises
     ------
     ConceptError
-        When .okf/index.md is missing, the title names no file, or the file
-        already exists. Nothing is written.
+        When .okf/index.md is missing, the description is empty, the title
+        names no file, the file already exists, ``key`` is given for a kind
+        other than handoff, or ``key`` is empty or blank. Nothing is written.
     """
     now = now or datetime.now(UTC)
     title = one_line(title)
@@ -159,8 +202,42 @@ def new_concept(
         raise ConceptError(
             "--description is empty; give one sentence about the concept"
         )
+    if key is not None and kind != "handoff":
+        raise ConceptError("--key is for handoffs only; leave it out")
+    if key is not None and not key.strip():
+        raise ConceptError(
+            "--key is empty; pass a session id, or leave --key out when there is none"
+        )
     name = SECTIONS[kind]
     section = okf / name
+    existing = _by_key(section, key) if key is not None and section.is_dir() else None
+    if existing is not None:
+        slug(title)  # the same title check a new handoff gets
+        rel = existing.relative_to(section).as_posix()
+        body = "\n\n".join(f"## {h}" for h in SKELETONS[kind])
+        existing.write_text(
+            _front_matter(kind, title, description, now, key)
+            + f"\n# {title}\n\n{body}\n",
+            encoding="utf-8",
+        )
+        _replace_entry(
+            section / "index.md", rel, f"- [{link_text(title)}]({rel}): {description}"
+        )
+        cid = existing.relative_to(okf).with_suffix("").as_posix()
+        line = f"- Updated `{cid}` with `kmctl new handoff --key`."
+        log = okf / "log.md"
+        lines = log.read_text(encoding="utf-8").rstrip("\n").splitlines()
+        headings = [h for h in lines if h.startswith("## ")]
+        today = f"## {now.date().isoformat()}"
+        # A repeat update on the same day adds no second identical line; a later day logs again.
+        if not (lines and lines[-1] == line and headings and headings[-1] == today):
+            append_log(log, line, now)
+        return NewConcept(
+            id=cid,
+            path=existing.relative_to(root).as_posix(),
+            created_section=False,
+            updated=True,
+        )
     base = slug(title)
     if kind == "decision":
         number = f"{_next_number(section):04d}" if section.is_dir() else "0001"
@@ -187,7 +264,7 @@ def new_concept(
     path.parent.mkdir(parents=True, exist_ok=True)
     body = "\n\n".join(f"## {h}" for h in SKELETONS[kind])
     path.write_text(
-        _front_matter(kind, title, description, now) + f"\n# {title}\n\n{body}\n",
+        _front_matter(kind, title, description, now, key) + f"\n# {title}\n\n{body}\n",
         encoding="utf-8",
     )
     _append_entry(section / "index.md", f"- [{link_text(title)}]({rel}): {description}")

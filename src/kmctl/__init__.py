@@ -258,7 +258,7 @@ _PATH_OPTION = typer.Option(
 
 
 def _register_concept_verb(kind: Kind, example: str) -> None:
-    """Add ``kmctl new KIND`` for one .okf/ section."""
+    """Add ``kmctl new KIND`` for one .okf/ section; handoffs also take ``--key``."""
 
     def command(
         title: Annotated[
@@ -284,16 +284,27 @@ def _register_concept_verb(kind: Kind, example: str) -> None:
                 help="Print one JSON object (id, path, created_section), for scripts.",
             ),
         ] = False,
+        key: Annotated[
+            str | None,
+            typer.Option(
+                "--key",
+                metavar="$CLAUDE_CODE_SESSION_ID",
+                help=(
+                    "Handoffs only: a session key. A handoff with the same key is updated "
+                    "in place instead of refused (ADR 0009)."
+                ),
+            ),
+        ] = None,
     ) -> None:
         try:
-            result = new_concept(path, kind, title, description)
+            result = new_concept(path, kind, title, description, key=key)
         except ConceptError as error:
             typer.echo(f"kmctl new {kind}: refused: {error}", err=True)
             raise typer.Exit(1) from error
         if as_json:
             typer.echo(json.dumps(asdict(result)))
             return
-        typer.echo(f"created {result.path}")
+        typer.echo(f"{'updated' if result.updated else 'created'} {result.path}")
         typer.echo(next_step(f"write the sections of {result.path}", "kmctl check"))
 
     command.__doc__ = f"Create a {kind} in .okf/ with its front matter, skeleton, index entry and log line."
