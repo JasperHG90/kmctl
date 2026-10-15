@@ -3,7 +3,7 @@
   "slug": "init-seeds-the-habit",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -82,8 +82,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "76e2bd430915bed384f82a94ba0612ebd12f237f4ec6f30bbf63c0efb9586446",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "63ab95bc786e20e2a37fa099dba501164157a04b684ae5dd00038f84a18ed6fa",
+    "started_at": "2026-10-15T16:03:36+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "63ab95bc786e20e2a37fa099dba501164157a04b684ae5dd00038f84a18ed6fa",
   "intent": {
     "epic": "knowledge",
     "depends_on": [],
@@ -98,5 +117,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T16:03:35+00:00"
+  "at": "2026-10-15T16:03:36+00:00"
 }
