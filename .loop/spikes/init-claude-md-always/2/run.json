@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "init-claude-md-always",
+  "n": 2,
+  "command": "python3 -I /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/smoke-scenarios/driver.py",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/smoke-scenarios/driver.py",
+      "copy": "files/driver.py"
+    }
+  ],
+  "where": "worktree",
+  "head": "f7e1b4b198bd12eac20f566762cb6e41db58f90d",
+  "fingerprint": "9c3bd80999fec8b0fabbf16591f60b00ff09988d2047aa12d28cf5ebcf0b06e2",
+  "started_at": "2026-10-15T17:19:07+00:00",
+  "finished_at": "2026-10-15T17:22:34+00:00",
+  "duration_seconds": 207.174,
+  "timeout_seconds": 10800.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "moved_from": null
+}
