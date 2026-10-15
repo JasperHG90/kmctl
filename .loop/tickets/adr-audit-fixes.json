@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "adr-audit-fixes",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
@@ -50,7 +50,7 @@
   "split": "j-20261015T124929+0000-1004acd8",
   "split_plan_hash": "f6e50c6f63ba30734c5b2d448650e60cd0b6af412e09eac6052d24dc7a89d259",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "49439dd4e6fe2c11f92a602170cc7f693a20a616",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -173,8 +173,14 @@
       "to": "verifying",
       "at": "2026-10-15T13:22:38+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-15T13:24:43+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T13:24:38+00:00"
+  "at": "2026-10-15T13:24:43+00:00"
 }
