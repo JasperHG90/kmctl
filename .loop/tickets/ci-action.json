@@ -20,10 +20,57 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "32ca05137d22a65fa97dd06317a81ef35c147bde5063479a33079376726f21f8",
+    "at": "2026-10-15T11:37:28+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "When kmctl check passes, the action's script exits 0 and writes both reports to the job summary.",
+      "fails_when": "the script exits nonzero, or the summary file lacks the check report or the review-due report",
+      "command": "uv run pytest tests/test_action.py::test_script_passes_and_writes_both_reports -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "When kmctl check fails, the script exits nonzero.",
+      "fails_when": "the script exits 0 on a fixture with a missing index entry",
+      "command": "uv run pytest tests/test_action.py::test_script_fails_when_check_fails -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "Concepts due for review do not fail the script.",
+      "fails_when": "the script exits nonzero on a fixture where check passes and a concept is due",
+      "command": "uv run pytest tests/test_action.py::test_script_passes_when_concepts_due -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "A shallow clone is deepened before review due reads history.",
+      "fails_when": "after the script runs on a clone made with git clone --depth 1 from a file:// URL, the repository is still shallow or the summary says the history reason was skipped",
+      "command": "uv run pytest tests/test_action.py::test_script_deepens_shallow_clone -q",
+      "judgment": false
+    },
+    {
+      "id": "r5",
+      "behavior": "If kmctl review due itself crashes, the script exits nonzero and says so in the summary.",
+      "fails_when": "a crashing review due leaves the script at exit 0 or the summary silent",
+      "command": "uv run pytest tests/test_action.py::test_script_fails_when_review_due_crashes -q",
+      "judgment": false
+    },
+    {
+      "id": "r6",
+      "behavior": "action.yml is a composite action that runs the script, and this repository has a workflow using it.",
+      "fails_when": "action.yml is not runs.using composite, does not run the script, or no workflow under .github/workflows/ uses the action",
+      "command": "uv run pytest tests/test_action.py::test_action_and_workflow_wiring -q",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -71,6 +118,6 @@
       "by": "advance"
     }
   ],
-  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T08:19:44+00:00"
+  "by": "process:loopctl/2.0.1.dev47+g2444f9291.d20261015",
+  "at": "2026-10-15T11:37:28+00:00"
 }
