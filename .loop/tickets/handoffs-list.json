@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "handoffs-list",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
@@ -80,8 +80,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "9cddcde2bc49ce00eca7d1221a1a899e6e62ff6d3e40283ea781cdbb21ce07b3",
   "intent": {
@@ -113,8 +113,14 @@
       "to": "verifying",
       "at": "2026-10-15T10:37:29+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-15T10:40:29+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T10:37:29+00:00"
+  "at": "2026-10-15T10:40:29+00:00"
 }
