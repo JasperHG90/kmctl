@@ -8,7 +8,23 @@
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "1bc340776be6c02b0c073647a81bf378f1cede6a163ffc94b584df1a70423eb0",
+    "tree": "d0d15baed44994181c41854f87fe7c59c1731117",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "cleared-unreviewed",
+        "by": "judgement",
+        "judgement": "j-20261015T125954+0000-a71c88ed",
+        "paths": [
+          "plugin/skills/audit/evals/results.md"
+        ]
+      }
+    ],
+    "at": "2026-10-15T12:59:54+00:00"
+  },
   "ask": null,
   "split": "j-20261015T122635+0000-3bcc613d",
   "split_plan_hash": "f634b3a027113a3ce1edc3432f3e8d4ab877441c3782b5ed4e529ba0e067a8d7",
@@ -140,5 +156,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T12:59:43+00:00"
+  "at": "2026-10-15T12:59:54+00:00"
 }
