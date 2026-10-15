@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "new-concept-freshness",
-  "stage": "building",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 0,
@@ -140,8 +140,14 @@
       "to": "building",
       "at": "2026-10-15T17:30:48+00:00",
       "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-10-15T17:49:05+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.1.1.dev61+g8318eb7a1.d20261015",
-  "at": "2026-10-15T17:48:52+00:00"
+  "at": "2026-10-15T17:49:05+00:00"
 }
