@@ -3,7 +3,7 @@
   "slug": "audit-agent-and-skills",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -35,8 +35,27 @@
   ],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "0762e304a687b54b55af1f10f3a6d36d33dd3aa4d6d04ce4ddfd1ad08a252782",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "ef8a694497bf30a7faca253e32bdb6e164aaf59e57ccd326809a020495e5640a",
+    "started_at": "2026-10-15T12:24:45+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "ef8a694497bf30a7faca253e32bdb6e164aaf59e57ccd326809a020495e5640a",
   "intent": {
     "epic": "plugin",
     "depends_on": [
@@ -54,5 +73,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev77+gbd4712cf8.d20261015",
-  "at": "2026-10-15T12:24:25+00:00"
+  "at": "2026-10-15T12:24:45+00:00"
 }

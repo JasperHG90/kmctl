@@ -1,2 +1,3 @@
 {"at": "2026-10-15T05:10:22+00:00", "kind": "register", "schema_version": "1.0", "stage": "planning"}
 {"at": "2026-10-15T12:22:48+00:00", "by": "human:jasperginn@gmail.com", "kind": "accept-risk", "reason": "measured on loop-harness during build", "risk": 1, "schema_version": "1.0"}
+{"at": "2026-10-15T12:24:45+00:00", "binds": "ef8a694497bf30a7faca253e32bdb6e164aaf59e57ccd326809a020495e5640a", "kind": "round-start", "n": 1, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
