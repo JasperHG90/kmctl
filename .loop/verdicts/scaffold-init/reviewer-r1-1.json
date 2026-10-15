@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "kmctl init --path takes any path without checking it. A missing directory (a typo such as ../othr-repo) is created silently with mkdir(parents=True) and the run exits 0 reporting four created files. A path that is a file ends in an uncaught NotADirectoryError traceback instead of a one-line error naming the path. Declare the option with exists=True, file_okay=False, dir_okay=True (or check it in init and raise typer.BadParameter), and add a test for both cases.",
+      "anchor": "src/kmctl/__init__.py:48",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "8b72a1c85436e57147f1d1e2243b476e28887431e5c78e2a2752316b6879f00c",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T08:35:11+00:00"
+}
