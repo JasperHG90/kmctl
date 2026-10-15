@@ -1,10 +1,41 @@
 {
   "schema_version": "1.0",
   "rows": [
-    {"id": "r1", "behavior": "kmctl schema with no name lists every document kind with what it is for; an unknown kind is refused with that list.", "fails_when": "the list lacks any of decision, practice, proposal, prototype, handoff, manifesto, index, section-index, log, architecture, tutorial, how-to, reference, explanation, docs-index; or an unknown kind exits 0 or does not list the kinds", "command": "uv run pytest tests/test_schema.py -k lists -q"},
-    {"id": "r2", "behavior": "kmctl schema KIND prints valid JSON Schema (draft 2020-12) whose properties are fields from ALLOWED_FIELDS only, with required, allowed values and descriptions, and the body's expected sections in x-kmctl-sections.", "fails_when": "for any kind the output is not valid draft 2020-12 JSON Schema, names a property not in ALLOWED_FIELDS, has a property without a description, or lacks x-kmctl-sections", "command": "uv run pytest tests/test_schema.py -k valid -q"},
-    {"id": "r3", "behavior": "Everything kmctl init, kmctl new (each kind, with and without --stale-after and --source) and kmctl new doc (each type) writes matches its kind's schema: front matter validates and the ## sections appear in the listed order.", "fails_when": "any file those verbs write fails its kind's schema, or its ## sections differ from x-kmctl-sections or come in another order", "command": "uv run pytest tests/test_schema.py -k matches_what_kmctl_writes -q"},
-    {"id": "r4", "behavior": "kmctl schema's help says what the schema is and where it comes from, and the briefing names kmctl schema within its word budget.", "fails_when": "kmctl schema --help does not say the schema is built from kmctl's code and is what kmctl check and the strict validator expect, the briefing does not name kmctl schema, or the briefing budget test fails", "command": "uv run pytest tests/test_schema.py -k documented tests/test_briefing.py -q"},
-    {"id": "r5", "behavior": "The other tests still pass.", "fails_when": "any test fails", "command": "uv run pytest -q"}
+    {
+      "id": "r1",
+      "behavior": "kmctl schema with no name lists every document kind with what it is for; an unknown kind is refused with that list.",
+      "fails_when": "the list lacks any of decision, practice, proposal, prototype, handoff, manifesto, index, section-index, log, architecture, tutorial, how-to, reference, explanation, docs-index; or an unknown kind exits 0 or does not list the kinds",
+      "command": "uv run pytest tests/test_schema.py -k lists -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "kmctl schema KIND prints valid JSON Schema (draft 2020-12) whose properties are fields from ALLOWED_FIELDS only, each with a description; kinds with no front matter allow no properties (the root index only okf_version); the body is described in x-kmctl-sections as a section list, a heading pattern, or none.",
+      "fails_when": "for any kind the output is not valid draft 2020-12 JSON Schema, names a property not in ALLOWED_FIELDS or without a description, a no-front-matter kind allows a property, or x-kmctl-sections is missing",
+      "command": "uv run pytest tests/test_schema.py -k valid -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "Everything kmctl init, kmctl new (each kind; with --stale-after for every kind and --source for every kind but handoff) and kmctl new doc (each type) writes matches its kind's schema, and this repository's own architecture page matches the architecture schema.",
+      "fails_when": "any file those verbs write, or .okf/architecture/overview.md, fails its kind's schema: front matter does not validate, or its ## sections differ from a fixed list, come in another order, or do not match a heading pattern",
+      "command": "uv run pytest tests/test_schema.py -k matches_what_kmctl_writes -q"
+    },
+    {
+      "id": "r4",
+      "behavior": "kmctl schema's help says the schema is built from kmctl's own table and is what kmctl writes, without claiming kmctl check or the validator enforce it; the briefing names kmctl schema within its word budget.",
+      "fails_when": "kmctl schema --help does not say the schema is built from kmctl's table and is what kmctl writes, or says kmctl check or the strict validator enforce it; the briefing does not name kmctl schema; or the briefing budget test fails",
+      "command": "uv run pytest tests/test_schema.py -k documented tests/test_briefing.py -q"
+    },
+    {
+      "id": "r6",
+      "behavior": "The per-kind table in src/kmctl/kinds.py is the one definition the writers and the schema read: skeletons, the manifesto's sections, status values and the architecture kind.",
+      "fails_when": "SKELETONS, the manifesto's section list, the status values or the architecture type and Depicts section are defined anywhere else in src/kmctl, or concepts.py, docs.py or scaffold.py does not import them from kinds.py",
+      "command": "uv run pytest tests/test_schema.py -k one_definition -q"
+    },
+    {
+      "id": "r5",
+      "behavior": "The other tests still pass.",
+      "fails_when": "any test fails",
+      "command": "uv run pytest -q"
+    }
   ]
 }
