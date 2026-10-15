@@ -1,0 +1,4 @@
+name: kmctl-read
+version: 0.1.0
+description: "Read-only file tools for the kmctl audit: read, search and list files inside one repository, nothing else."
+author: kmctl

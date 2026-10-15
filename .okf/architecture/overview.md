@@ -48,11 +48,13 @@ flowchart LR
         ci["action/knowledge-ci.sh<br/>mode: checks"]
         auditSh["action/knowledge-audit.sh<br/>mode: audit"]
         report["action/audit-report.py"]
+        readTools["action/hermes/kmctl-read<br/>kmctl_read_file, kmctl_search_files,<br/>kmctl_list_files"]
         issueSh["action/knowledge-audit-issue.sh<br/>own step, GH_TOKEN"]
     end
 
     repo[("docs/ and .okf/")]
     claude["claude CLI"]
+    hermes["hermes CLI<br/>any OpenAI-compatible endpoint"]
     summary["job summary and<br/>Knowledge audit issue"]
 
     hook -- "kmctl briefing" --> briefing
@@ -75,8 +77,10 @@ flowchart LR
 
     ci -- "kmctl check,<br/>kmctl review due" --> app
     auditSh -- "kmctl review due --json" --> reviewDue
-    auditSh -- "claude -p --plugin-dir plugin/<br/>--tools Read,Grep,Glob,Agent" --> claude
-    claude --> audit
+    auditSh -. "puts their text in the prompt" .-> audit & reviews & auditor
+    auditSh -- "hermes -z -t kmctl_read<br/>fresh HOME, under timeout" --> hermes
+    hermes --> readTools
+    readTools -. "reads only, inside the repository" .-> repo
     auditSh --> report --> summary
     report -- "body in RUNNER_TEMP" --> issueSh
     issueSh -- "gh issue create or edit" --> summary
@@ -133,10 +137,17 @@ action's own checkout.
   or `kmctl review due` crashes, never because a concept is due.
 - **audit** (opt-in) runs `action/knowledge-audit.sh`, only on
   `workflow_dispatch` or `schedule`. It filters `kmctl review due --json` to
-  architecture, decisions and practices, runs headless Claude Code with the
-  plugin and only Read, Grep, Glob and Agent, and turns the reply into the job
-  summary and an issue body with `action/audit-report.py` (I2). It never edits
-  or pushes, and it refuses to start when the model could read a GitHub token
+  architecture, decisions and practices, and runs Hermes Agent against any
+  OpenAI-compatible endpoint (ADR 0010). It writes Hermes' config into a
+  fresh HOME, installs kmctl's Hermes plugin there, and passes
+  `-t kmctl_read`, so the model's only tools are the plugin's
+  `kmctl_read_file`, `kmctl_search_files` and `kmctl_list_files`. They are
+  plain Python, start no program and refuse any path outside the repository.
+  The prompt carries the audit skill, the review skills the due list needs
+  and the kmctl-auditor instructions as text, and one session audits every
+  batch. `timeout` stops a stalled run. `action/audit-report.py` turns the
+  reply's last json block into the job summary and an issue body (I2). It
+  never edits or pushes, and it refuses to start when the model could read a GitHub token
   (`GH_TOKEN` or `GITHUB_TOKEN` set, or checkout's credentials in git config).
   A later step of its own, `action/knowledge-audit-issue.sh`, is the only one
   that gets `GH_TOKEN`; it posts the body to the one "Knowledge audit" issue.
@@ -157,4 +168,5 @@ action's own checkout.
   `plugin/skills/` (write-docs, handoff, continue, audit and the three review
   skills), `plugin/agents/kmctl-auditor.md`; `action.yml`,
   `action/knowledge-ci.sh`, `action/knowledge-audit.sh`,
-  `action/audit-report.py`, `action/knowledge-audit-issue.sh`.
+  `action/hermes/kmctl-read/`, `action/audit-report.py`,
+  `action/knowledge-audit-issue.sh`; `.github/workflows/knowledge-audit.yml`.

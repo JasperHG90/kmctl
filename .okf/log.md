@@ -51,3 +51,12 @@
 - Added the architecture section with `architecture/overview`: the CLI
   modules, the plugin and the action, with a diagram whose Depicts section
   names I1 to I4. Linked it from the root index.
+- Added `decisions/0010-the-ci-audit-runs-hermes-agent-against-any-openai-compatible-provider` with `kmctl new decision`.
+- Wrote `decisions/0010-the-ci-audit-runs-hermes-agent-against-any-openai-compatible-provider`:
+  the CI audit moves from Claude Code to Hermes Agent with kmctl's read-only
+  plugin, so it takes any OpenAI-compatible provider.
+- Appended a Correction to `decisions/0005-audits-report-only`: its last
+  Consequence named the Claude Code runner, which ADR 0010 replaces.
+- Updated `architecture/overview` for the Hermes audit: the diagram, the
+  action's text and Depicts now show hermes, `action/hermes/kmctl-read/` and
+  the shipped audit workflow.

@@ -55,3 +55,14 @@ The record had no Consequences section; this adds it.
   schedule only, and reports in the job summary and one "Knowledge audit"
   issue. It never edits or pushes. It fails when Claude Code errors or
   returns no findings, never because a concept drifted.
+
+## Correction, 2026-10-15
+
+The last Consequence above is out of date. The action's `mode: audit` now
+runs the auditor through Hermes Agent against any OpenAI-compatible
+provider, with only kmctl's three read tools (`kmctl_read_file`,
+`kmctl_search_files`, `kmctl_list_files`), which refuse any path outside the
+repository. It fails when Hermes errors, runs past its time limit or returns
+no findings, never because a concept drifted. Why is
+[ADR 0010](0010-the-ci-audit-runs-hermes-agent-against-any-openai-compatible-provider.md).
+The report-only rule and the two tiers stand.
