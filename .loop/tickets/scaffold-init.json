@@ -1,42 +1,14 @@
 {
   "schema_version": "1.0",
   "slug": "scaffold-init",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": {
-    "round": 1,
-    "fingerprint": "9796cc6d06fcd4f17eb6f0a2db85c0f18d80d7f66e833148897cced302ee4742",
-    "tree": "acab2d8253a24f21b3b627c931dd0c15277aa8bc",
-    "decisions": [
-      {
-        "finding": "reviewer:f1",
-        "outcome": "sent-back",
-        "by": "judgement",
-        "judgement": "j-20261015T083745+0000-46963ef7",
-        "paths": [
-          "src/kmctl/__init__.py",
-          "tests/test_init.py"
-        ]
-      },
-      {
-        "finding": "reviewer:f2",
-        "outcome": "sent-back",
-        "by": "judgement",
-        "judgement": "j-20261015T083746+0000-17b376c7",
-        "paths": [
-          "src/kmctl/__init__.py",
-          "src/kmctl/scaffold.py",
-          "tests/test_init.py"
-        ]
-      }
-    ],
-    "at": "2026-10-15T08:37:46+00:00"
-  },
+  "fix": null,
   "ask": null,
   "split": "j-20261015T080859+0000-8a7666c6",
   "split_plan_hash": "47ac36884645757185cec0670ed602bc3e51be7d50e3b44e5ba1b86390210c03",
@@ -128,8 +100,8 @@
     },
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "47ac36884645757185cec0670ed602bc3e51be7d50e3b44e5ba1b86390210c03",
   "intent": {
@@ -173,8 +145,14 @@
       "to": "verifying",
       "at": "2026-10-15T08:37:46+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-15T08:39:21+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T08:38:52+00:00"
+  "at": "2026-10-15T08:39:21+00:00"
 }
