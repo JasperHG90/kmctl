@@ -3,7 +3,7 @@
   "slug": "ci-action",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "7cf6ee6cf0f12a4e78d3492c2ece9fe66b60864109b9764582920511621b818d",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "3dc19233ed7b8afd67b6490e5ae929a66558cedeaf42e68479311310dbe23d84",
+    "started_at": "2026-10-15T08:08:29+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "3dc19233ed7b8afd67b6490e5ae929a66558cedeaf42e68479311310dbe23d84",
   "intent": {
     "epic": "ci",
     "depends_on": [
@@ -47,5 +66,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T08:08:01+00:00"
+  "at": "2026-10-15T08:08:29+00:00"
 }

@@ -1,7 +1,7 @@
 ---
 type: plan
 title: 'Plan: ci-action'
-description: "A reusable GitHub Action that runs kmctl check and review due on every PR, and an opt-in LLM audit that reports only (ADR 0005)."
+description: "A reusable GitHub Action that runs kmctl check and kmctl review due on every pull request, at no model cost (ADR 0005)."
 slug: ci-action
 epic: ci
 depends_on: [knowledge-check, review-due]
@@ -19,14 +19,9 @@ Relayed from: none
 
 ## Intent
 
-Adds `new:action.yml`, a composite action, with two modes:
+Adds `new:action.yml`, a composite action that installs kmctl, runs `kmctl check` and `kmctl review due --json`, writes both to the job summary, and fails only on `kmctl check`. This repository uses it on itself in a workflow under .github/workflows/.
 
-- `checks` (default): installs kmctl, runs `kmctl check` and `kmctl review due --json`, writes the result to the job summary, and fails only on `kmctl check`.
-- `audit` (opt-in, needs an Anthropic API key secret): runs the audit agent through Claude Code in CI and posts its findings as a comment or job summary. It never pushes (I2).
-
-This repository uses the action on itself in a workflow.
-
-Done when the workflow runs `checks` green on a pull request here.
+Done when the workflow runs green on a pull request here.
 
 ## Could invalidate this plan
 
