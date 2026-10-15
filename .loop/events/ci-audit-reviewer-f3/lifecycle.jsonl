@@ -1,1 +1,2 @@
 {"at": "2026-10-15T13:09:48+00:00", "by": "review close", "kind": "register", "schema_version": "1.0", "stage": "stub"}
+{"at": "2026-10-15T13:18:25+00:00", "kind": "drop", "reason": "folded into ci-audit-hardening, which fixes f3 and f4 together in the same two files", "schema_version": "1.0"}
