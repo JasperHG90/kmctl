@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "kmctl",
+  "description": "The kmctl plugin: knowledge management for repositories with docs/ and an OKF bundle.",
+  "owner": {
+    "name": "Jasper Ginn",
+    "url": "https://github.com/JasperHG90"
+  },
+  "allowCrossMarketplaceDependenciesOn": ["scaccogatto"],
+  "plugins": [
+    {
+      "name": "kmctl",
+      "source": "./plugin",
+      "description": "A session briefing from kmctl, with the okf plugin for OKF authoring.",
+      "license": "MIT",
+      "dependencies": [
+        { "name": "okf", "marketplace": "scaccogatto" }
+      ]
+    }
+  ]
+}
