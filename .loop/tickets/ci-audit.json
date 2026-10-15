@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "ci-audit",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 3,
   "review_rounds": 2,
@@ -40,7 +40,7 @@
   "split": "j-20261015T122637+0000-e079787d",
   "split_plan_hash": "0564401e500fdf3ac9871a47c91d2f3b33416856957442fb3bdefccd547139e6",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "aa311bd68158a8821c6a17c50b75d5a5151fc69f",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -204,8 +204,14 @@
       "to": "verifying",
       "at": "2026-10-15T13:14:00+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-15T13:15:55+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T13:15:45+00:00"
+  "at": "2026-10-15T13:15:55+00:00"
 }
