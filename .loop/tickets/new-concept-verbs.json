@@ -8,7 +8,23 @@
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 2,
+    "fingerprint": "1237b11cbd26c924e23c902fa274fb1d27e1891f3ae1104d1b37dfef0bc701d4",
+    "tree": "09b21393516feef03e90c8892d917e6a04743d08",
+    "decisions": [
+      {
+        "finding": "reviewer:f5",
+        "outcome": "cleared-unreviewed",
+        "by": "judgement",
+        "judgement": "j-20261015T105027+0000-1e65ed13",
+        "paths": [
+          "tests/test_new_concept.py"
+        ]
+      }
+    ],
+    "at": "2026-10-15T10:50:27+00:00"
+  },
   "ask": null,
   "split": "j-20261015T080901+0000-c84c2e22",
   "split_plan_hash": "c89fe6857d94fc7b8318b9390c55f1488e489edfd7f11fecd4307db3c6ece176",
@@ -145,5 +161,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T10:50:26+00:00"
+  "at": "2026-10-15T10:50:27+00:00"
 }
