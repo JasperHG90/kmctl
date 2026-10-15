@@ -1,10 +1,35 @@
 {
   "schema_version": "1.0",
   "rows": [
-    {"id": "r1", "behavior": "The okf add argument matches a scaccogatto settings entry: repo[#ref] for github, url[#ref] for git, url for url, path for directory, and scaccogatto/okf-skills when no entry exists.", "fails_when": "for any kind, with or without a ref, the argument kmctl passes to marketplace add is not the one listed, or with no entry it is not scaccogatto/okf-skills", "command": "uv run pytest tests/test_plugin_install.py -k okf_source -q"},
-    {"id": "r2", "behavior": "A managed settings entry (managed-settings.json or a json file in managed-settings.d) wins over the user settings entry.", "fails_when": "with entries in both, kmctl uses the user entry, or ignores a managed-settings.d file", "command": "uv run pytest tests/test_plugin_install.py::test_okf_source_managed_wins -q"},
-    {"id": "r3", "behavior": "An entry no add argument can match (a github path, headers, or an unknown kind) stops the install before claude runs, with a message naming the settings file.", "fails_when": "such an entry does not raise PluginError, the message does not name the file, or claude is called", "command": "uv run pytest tests/test_plugin_install.py::test_okf_source_unknown_kind -q"},
-    {"id": "r4", "behavior": "With user settings that declare scaccogatto from a git URL, kmctl plugin install succeeds at project scope with okf installed, without editing the settings.", "fails_when": "in an isolated CLAUDE_CONFIG_DIR, HOME and XDG_DATA_HOME whose user settings declare scaccogatto from https://github.com/scaccogatto/okf-skills.git, kmctl plugin install exits nonzero, okf is not installed, or the user settings file changed", "command": "uv run pytest tests/test_plugin_install.py::test_install_with_settings_declared_okf -q"},
-    {"id": "r5", "behavior": "The other plugin install tests still pass.", "fails_when": "any test in tests/test_plugin_install.py or tests/test_plugin.py fails", "command": "uv run pytest tests/test_plugin_install.py tests/test_plugin.py -q"}
+    {
+      "id": "r1",
+      "behavior": "The okf add argument matches a scaccogatto settings entry: repo[#ref] for github, url[#ref] for git, url for url, path for directory, and scaccogatto/okf-skills when no entry exists.",
+      "fails_when": "for any kind, with or without a ref, the argument kmctl passes to marketplace add is not the one listed, or with no entry it is not scaccogatto/okf-skills",
+      "command": "uv run pytest tests/test_plugin_install.py -k okf_source -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "kmctl picks the entry claude compares against: managed-settings.json, then managed-settings.d/*.json sorted by name with dot-files skipped, the last one winning, and any managed entry over the user entry.",
+      "fails_when": "with entries in managed-settings.json and a managed-settings.d file, kmctl uses the earlier one; with two managed-settings.d files it uses the one that sorts first; it reads a dot-file; or with a managed and a user entry it uses the user one",
+      "command": "uv run pytest tests/test_plugin_install.py::test_okf_source_managed_wins -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "An entry no add argument can match (a github path, a url's headers or headersHelper, or an unknown kind) stops the install before claude runs, with a message naming the settings file.",
+      "fails_when": "such an entry does not raise PluginError, the message does not name the file, or claude is called",
+      "command": "uv run pytest tests/test_plugin_install.py::test_okf_source_unknown_kind -q"
+    },
+    {
+      "id": "r4",
+      "behavior": "With user settings that declare scaccogatto from a git URL, kmctl plugin install succeeds at project scope with okf installed, without editing the settings.",
+      "fails_when": "in an isolated CLAUDE_CONFIG_DIR, HOME and XDG_DATA_HOME whose user settings declare scaccogatto from https://github.com/scaccogatto/okf-skills.git, kmctl plugin install exits nonzero, okf is not installed, or the user settings file changed",
+      "command": "uv run pytest tests/test_plugin_install.py::test_install_with_settings_declared_okf -q"
+    },
+    {
+      "id": "r5",
+      "behavior": "The other plugin install tests still pass.",
+      "fails_when": "any test in tests/test_plugin_install.py or tests/test_plugin.py fails",
+      "command": "uv run pytest tests/test_plugin_install.py tests/test_plugin.py -q"
+    }
   ]
 }

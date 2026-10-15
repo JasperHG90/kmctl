@@ -22,8 +22,8 @@
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
-    "hash": "db57a3644182dd839fd188bc59e9d6d9191e76fac10386cb38a1c7e58357891f",
-    "at": "2026-10-15T14:32:15+00:00"
+    "hash": "eba5e65606e4b3c2b0d456362a5c2f84530733ca58a5287923fd49ab4f1865a4",
+    "at": "2026-10-15T14:37:10+00:00"
   },
   "delegation": null,
   "budget_base": null,
@@ -37,14 +37,14 @@
     },
     {
       "id": "r2",
-      "behavior": "A managed settings entry (managed-settings.json or a json file in managed-settings.d) wins over the user settings entry.",
-      "fails_when": "with entries in both, kmctl uses the user entry, or ignores a managed-settings.d file",
+      "behavior": "kmctl picks the entry claude compares against: managed-settings.json, then managed-settings.d/*.json sorted by name with dot-files skipped, the last one winning, and any managed entry over the user entry.",
+      "fails_when": "with entries in managed-settings.json and a managed-settings.d file, kmctl uses the earlier one; with two managed-settings.d files it uses the one that sorts first; it reads a dot-file; or with a managed and a user entry it uses the user one",
       "command": "uv run pytest tests/test_plugin_install.py::test_okf_source_managed_wins -q",
       "judgment": false
     },
     {
       "id": "r3",
-      "behavior": "An entry no add argument can match (a github path, headers, or an unknown kind) stops the install before claude runs, with a message naming the settings file.",
+      "behavior": "An entry no add argument can match (a github path, a url's headers or headersHelper, or an unknown kind) stops the install before claude runs, with a message naming the settings file.",
       "fails_when": "such an entry does not raise PluginError, the message does not name the file, or claude is called",
       "command": "uv run pytest tests/test_plugin_install.py::test_okf_source_unknown_kind -q",
       "judgment": false
@@ -96,6 +96,24 @@
         }
       },
       "at": "2026-10-15T14:32:15+00:00"
+    },
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+      "reason": "plan round 2 review: claude lets the last managed entry win, sorted by file name; headersHelper also blocks a url add",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r2": [
+            "behavior",
+            "fails_when"
+          ],
+          "r3": [
+            "behavior"
+          ]
+        }
+      },
+      "at": "2026-10-15T14:37:10+00:00"
     }
   ],
   "accepted_risks": [],
