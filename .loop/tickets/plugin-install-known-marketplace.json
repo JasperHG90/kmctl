@@ -1,14 +1,49 @@
 {
   "schema_version": "1.0",
   "slug": "plugin-install-known-marketplace",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 4,
   "review_rounds": 1,
   "extra_plan_rounds": 1,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "3b402a99a9899a4f14d48e676fa53d46a1e6827c0be8a436e9b22f2547fa83b3",
+    "tree": "a58a7822878c422e52ff0a70ed1400f82ebaafd3",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "blocking",
+        "judgement": null,
+        "paths": [
+          "src/kmctl/plugin.py",
+          "tests/test_plugin_install.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f2",
+        "outcome": "sent-back",
+        "by": "judgement",
+        "judgement": "j-20261015T145327+0000-b35a6440",
+        "paths": [
+          "tests/test_plugin_install.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f3",
+        "outcome": "sent-back",
+        "by": "judgement",
+        "judgement": "j-20261015T145327+0000-b82adb95",
+        "paths": [
+          "tests/test_plugin_install.py"
+        ]
+      }
+    ],
+    "at": "2026-10-15T14:53:28+00:00"
+  },
   "ask": null,
   "split": "j-20261015T144139+0000-440793a0",
   "split_plan_hash": "349e36b60935cdc41ef0a9fbc68e8861e3224f65ea438f584e5025f7d582b7be",
@@ -210,8 +245,14 @@
       "to": "fixing",
       "at": "2026-10-15T14:51:00+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-15T14:53:28+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T14:53:24+00:00"
+  "at": "2026-10-15T14:53:28+00:00"
 }
