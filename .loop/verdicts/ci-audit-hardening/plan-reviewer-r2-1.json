@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "",
+      "anchor": null,
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "",
+      "anchor": null,
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "open",
+      "claim": "A caller whose checkout keeps the default persist-credentials: true still puts the token in .git/config (or, with checkout v6, in a credentials file under RUNNER_TEMP named by an includeIf in .git/config), where the audit step's Read tool can reach it. The plan only documents this in the mode help, while it refuses the job-level env case in code. The audit script should also refuse when git config holds checkout's credentials (http.*.extraheader or checkout's includeIf), so the guarantee holds for callers and not just the shipped workflow.",
+      "anchor": "action/knowledge-audit.sh:24",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p4",
+      "disposition": "open",
+      "claim": "The eval rows were written for the round 1 plan. r1 checks a stub gh inside knowledge-audit.sh receiving GH_TOKEN, but after the split that script makes no gh call. r2 runs against the audit script, but the lookup moves to knowledge-audit-issue.sh. r3 says 'as before', but test_audit_writes_summary_and_issue and test_audit_updates_the_open_issue assert gh calls from knowledge-audit.sh, so they must be rewritten. The rows need to cover the plan's done-when: no token in the audit step's env, no gh call and a body under RUNNER_TEMP, GH_TOKEN only on the issue step, refusal when GH_TOKEN or GITHUB_TOKEN is set, persist-credentials: false in the shipped workflow, and the failing lookup in the issue script.",
+      "anchor": ".loop/evals/ci-audit-hardening/rows.json",
+      "category": "test-mismatch",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "da7ea1a5521d7b7ad727ed33a95d4d1b4ffe6d5aec487c4cbaf737387246fb6d"
+  },
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "at": "2026-10-15T13:22:13+00:00"
+}
