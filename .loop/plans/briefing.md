@@ -31,4 +31,4 @@ Done when the briefing prints in this repository and in an empty one, and a test
 
 ## Could invalidate this plan
 
-- The rules may not fit the word budget together with routing and state. If they do not, the briefing has to name rules by title and print one on demand (`kmctl rules NAME`), which changes the shape of the command.
+- The rules may not fit the word budget together with routing and state. If they do not, the briefing has to name rules by title and print one on demand (`kmctl rules NAME`), which changes the shape of the command. Settled by spike:briefing/1: the two rule files' constraints come to 339 words without their WHY lines (506 with), so with routing and state the briefing is about 459 words, inside a 500-word budget. The briefing carries each constraint without its WHY line.
