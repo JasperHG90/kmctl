@@ -187,6 +187,8 @@ vendor's own API, or your own server. You give it four settings:
 
 The action installs Hermes Agent 0.19.0 and stops it after 30 minutes; set
 `KMCTL_AUDIT_TIMEOUT` (such as `45m`) in the step's `env` to change that.
+The audit runs Hermes once per batch of up to ten concepts, and the time limit
+covers all batches together, not each one.
 `timeout-minutes` on the step is a second limit, so a stuck run cannot hold
 the runner for GitHub's six-hour default. The config the action writes for
 Hermes names `AUDIT_API_KEY`, never the key itself.

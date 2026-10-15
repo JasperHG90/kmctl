@@ -47,6 +47,7 @@ flowchart LR
     subgraph action["action.yml (GitHub Action)"]
         ci["action/knowledge-ci.sh<br/>mode: checks"]
         auditSh["action/knowledge-audit.sh<br/>mode: audit"]
+        batchesPy["action/audit-batches.py"]
         report["action/audit-report.py"]
         readTools["action/hermes/kmctl-read<br/>kmctl_read_file, kmctl_search_files,<br/>kmctl_list_files"]
         issueSh["action/knowledge-audit-issue.sh<br/>own step, GH_TOKEN"]
@@ -78,7 +79,8 @@ flowchart LR
     ci -- "kmctl check,<br/>kmctl review due" --> app
     auditSh -- "kmctl review due --json" --> reviewDue
     auditSh -. "puts their text in the prompt" .-> audit & reviews & auditor
-    auditSh -- "hermes -z -t kmctl_read<br/>fresh HOME, under timeout" --> hermes
+    auditSh -- "splits the due list,<br/>merges each batch's findings" --> batchesPy
+    auditSh -- "hermes -z -t kmctl_read per batch<br/>fresh HOME, under timeout" --> hermes
     hermes --> readTools
     readTools -. "reads only, inside the repository" .-> repo
     auditSh --> report --> summary
@@ -143,10 +145,13 @@ action's own checkout.
   `-t kmctl_read`, so the model's only tools are the plugin's
   `kmctl_read_file`, `kmctl_search_files` and `kmctl_list_files`. They are
   plain Python, start no program and refuse any path outside the repository.
-  The prompt carries the audit skill, the review skills the due list needs
-  and the kmctl-auditor instructions as text, and one session audits every
-  batch. `timeout` stops a stalled run. `action/audit-report.py` turns the
-  reply's last json block into the job summary and an issue body (I2). It
+  `action/audit-batches.py` splits the due list by kind into batches of at
+  most ten, and Hermes runs once per batch. Each prompt carries the audit
+  skill, the kmctl-auditor instructions and that kind's review skill as text.
+  `timeout` gives each run the time left of one budget for the whole audit.
+  `action/audit-batches.py` merges each run's last json block, and
+  `action/audit-report.py` turns the merged list into the job summary and an
+  issue body (I2). It
   never edits or pushes, and it refuses to start when the model could read a GitHub token
   (`GH_TOKEN` or `GITHUB_TOKEN` set, or checkout's credentials in git config).
   A later step of its own, `action/knowledge-audit-issue.sh`, is the only one
@@ -168,5 +173,6 @@ action's own checkout.
   `plugin/skills/` (write-docs, handoff, continue, audit and the three review
   skills), `plugin/agents/kmctl-auditor.md`; `action.yml`,
   `action/knowledge-ci.sh`, `action/knowledge-audit.sh`,
-  `action/hermes/kmctl-read/`, `action/audit-report.py`,
+  `action/hermes/kmctl-read/`, `action/audit-batches.py`,
+  `action/audit-report.py`,
   `action/knowledge-audit-issue.sh`; `.github/workflows/knowledge-audit.yml`.

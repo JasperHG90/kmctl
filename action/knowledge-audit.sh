@@ -14,7 +14,8 @@
 #   KMCTL_AUDIT_BASE_URL     the endpoint's base URL; required for custom
 #   KMCTL_AUDIT_API_KEY_ENV  the name of the variable that holds the key;
 #                            empty for an endpoint that takes no key
-#   KMCTL_AUDIT_TIMEOUT      how long hermes may run, as timeout takes it;
+#   KMCTL_AUDIT_TIMEOUT      how long all hermes runs may take together, in
+#                            seconds or with s, m, h or d (90s, 30m, 2h);
 #                            default 30m
 # No GitHub token may be reachable: the model runs in this process tree.
 set -u
@@ -51,13 +52,26 @@ provider="${KMCTL_AUDIT_PROVIDER:-custom}"
 model="${KMCTL_AUDIT_MODEL:-}"
 base_url="${KMCTL_AUDIT_BASE_URL:-}"
 key_env="${KMCTL_AUDIT_API_KEY_ENV:-}"
-limit="${KMCTL_AUDIT_TIMEOUT:-30m}"
+limit_setting="${KMCTL_AUDIT_TIMEOUT:-30m}"
 if [ -z "$model" ]; then
   echo "kmctl audit: KMCTL_AUDIT_MODEL is empty; set the model to audit with (the action's model input)." >&2
   exit 1
 fi
 if [ "$provider" = custom ] && [ -z "$base_url" ]; then
   echo "kmctl audit: KMCTL_AUDIT_BASE_URL is empty; provider custom needs the endpoint's base URL (the action's base_url input)." >&2
+  exit 1
+fi
+# One budget for the whole audit, in seconds; each batch's run gets what is left.
+if [[ "$limit_setting" =~ ^([0-9]+)([smhd]?)$ ]]; then
+  case "${BASH_REMATCH[2]}" in
+    m) unit=60 ;;
+    h) unit=3600 ;;
+    d) unit=86400 ;;
+    *) unit=1 ;;
+  esac
+  budget=$((10#${BASH_REMATCH[1]} * unit))
+else
+  echo "kmctl audit: KMCTL_AUDIT_TIMEOUT must be a whole number of seconds, or one with s, m, h or d, such as 90s, 30m or 2h; got '$limit_setting'." >&2
   exit 1
 fi
 if [ -n "$key_env" ]; then
@@ -128,32 +142,57 @@ then
   exit 1
 fi
 
-# The audit skill names the review skills; send only those the due list needs.
+# Split the due list as the audit skill's step 2 does: by kind, at most ten
+# per batch. One Hermes run per batch keeps each prompt far below Linux's
+# 128 KiB limit on one argument, and gives each run only its kind's review skill.
 skills="${KMCTL_PLUGIN_DIR}/skills"
-reviews=""
-grep -q '"id": "architecture/' "$work/due.json" && reviews="$reviews architecture-review"
-grep -q '"id": "decisions/' "$work/due.json" && reviews="$reviews decision-log-review"
-grep -q '"id": "practices/' "$work/due.json" && reviews="$reviews practices-review"
-{
-  cat <<EOF
+mkdir "$work/batches"
+if ! python3 "$here/audit-batches.py" split "$work/due.json" "$work/batches" > "$work/batches.tsv"; then
+  echo "kmctl audit: could not split the due list into batches." >&2
+  exit 1
+fi
+mapfile -t batches < "$work/batches.tsv"
+
+# The names of the batches from the one at index $1 to the last.
+unfinished() {
+  local i names=""
+  for ((i = $1; i < ${#batches[@]}; i++)); do
+    names="${names:+$names, }$(cut -f3 <<< "${batches[$i]}")"
+  done
+  echo "$names"
+}
+
+# These would point Hermes at a config other than the one written above, or
+# load plugins from the audited repository's own .hermes/ folder.
+# HERMES_MANAGED_DIR holds a config and .env that Hermes applies last.
+unset HERMES_PROFILE HERMES_CONFIG HERMES_ENV HERMES_ENABLE_PROJECT_PLUGINS HERMES_MANAGED_DIR
+start=$SECONDS
+for ((i = 0; i < ${#batches[@]}; i++)); do
+  IFS=$'\t' read -r batch review name <<< "${batches[$i]}"
+  left=$((budget - (SECONDS - start)))
+  if [ "$left" -le 0 ]; then
+    echo "kmctl audit: the time limit ($limit_setting) for the whole audit ran out; unfinished: $(unfinished "$i"). No issue was written." >&2
+    exit 1
+  fi
+  limit="${left}s"
+  cat > "$work/prompt" <<EOF
 Audit the repository at $repo by following the audit skill below, and report
 only: you cannot change any file.
 
-You are the kmctl-auditor yourself: there are no agents to dispatch. Audit
-the batches one after another in this session, following the auditor
-instructions and the review skill for each batch. Your tools take the
-place of the ones the skill and the auditor name: kmctl_read_file for
-Read, kmctl_search_files for Grep (plain text, not a regex) and
-kmctl_list_files for Glob (files under a folder, optionally those whose path
-holds some text). They take paths relative to $repo, or absolute ones inside
-it, and refuse anything outside it.
+You are the kmctl-auditor yourself: there are no agents to dispatch. This run
+audits one batch, the $name, following the auditor instructions and the
+$review skill below. Your tools take the place of the ones the skill and the
+auditor name: kmctl_read_file for Read, kmctl_search_files for Grep (plain
+text, not a regex) and kmctl_list_files for Glob (files under a folder,
+optionally those whose path holds some text). They take paths relative to
+$repo, or absolute ones inside it, and refuse anything outside it.
 
-For the skill's step 1, use this due list, already filtered to architecture,
-decisions and practices, instead of running kmctl:
+For the skill's steps 1 and 2, use this batch, already filtered to one kind
+and at most ten concepts, instead of running kmctl:
 
-$(cat "$work/due.json")
+$(cat "$batch")
 
-End your reply with the combined findings as one fenced json block in the
+End your reply with this batch's findings as one fenced json block in the
 auditor's shape, and nothing after it.
 
 === The audit skill ===
@@ -163,38 +202,40 @@ $(cat "$skills/audit/SKILL.md")
 === The kmctl-auditor instructions ===
 
 $(cat "${KMCTL_PLUGIN_DIR}/agents/kmctl-auditor.md")
+
+=== The $review skill ===
+
+$(cat "$skills/$review/SKILL.md")
 EOF
-  for review in $reviews; do
-    printf '\n=== The %s skill ===\n\n' "$review"
-    cat "$skills/$review/SKILL.md"
-  done
-} > "$work/prompt"
 
-# These would point Hermes at a config other than the one written above, or
-# load plugins from the audited repository's own .hermes/ folder.
-unset HERMES_PROFILE HERMES_CONFIG HERMES_ENV HERMES_ENABLE_PROJECT_PLUGINS
-# -t kmctl_read offers the model only the plugin's three read tools; when the
-# plugin is not loaded, hermes stops before calling the model (spike:
-# audit-any-provider/1). HERMES_WRITE_SAFE_ROOT, an empty folder, is a second
-# fence for any write tool. timeout stops a run that stalls.
-HOME="$home" \
-  HERMES_HOME="$home/.hermes" \
-  HERMES_WRITE_SAFE_ROOT="$work/no-writes" \
-  KMCTL_READ_ROOT="$repo" \
-  timeout --kill-after=30s "$limit" hermes \
-  --provider "$provider" -m "$model" -t kmctl_read -z "$(cat "$work/prompt")" \
-  < /dev/null > "$work/hermes.out"
-hermes_status=$?
-if [ "$hermes_status" -eq 124 ] || [ "$hermes_status" -eq 137 ]; then
-  echo "kmctl audit: hermes ran past the time limit ($limit) and was stopped." >&2
-  exit 1
-fi
-if [ "$hermes_status" -ne 0 ]; then
-  echo "kmctl audit: hermes exited $hermes_status." >&2
-  exit 1
-fi
+  # -t kmctl_read offers the model only the plugin's three read tools; when the
+  # plugin is not loaded, hermes stops before calling the model (spike:
+  # audit-any-provider/1). HERMES_WRITE_SAFE_ROOT, an empty folder, is a second
+  # fence for any write tool. timeout stops a run at the time left.
+  HOME="$home" \
+    HERMES_HOME="$home/.hermes" \
+    HERMES_WRITE_SAFE_ROOT="$work/no-writes" \
+    KMCTL_READ_ROOT="$repo" \
+    timeout --kill-after=30s "$limit" hermes \
+    --provider "$provider" -m "$model" -t kmctl_read -z "$(cat "$work/prompt")" \
+    < /dev/null > "$work/hermes.out"
+  hermes_status=$?
+  if [ "$hermes_status" -eq 124 ] || [ "$hermes_status" -eq 137 ]; then
+    echo "kmctl audit: hermes ran past the time limit ($limit_setting) for the whole audit and was stopped; unfinished: $(unfinished "$i"). No issue was written." >&2
+    exit 1
+  fi
+  if [ "$hermes_status" -ne 0 ]; then
+    echo "kmctl audit: hermes exited $hermes_status on the $name." >&2
+    exit 1
+  fi
+  if ! python3 "$here/audit-batches.py" add "$work/hermes.out" "$work/findings.md"; then
+    echo "kmctl audit: the $name gave no usable findings; no issue was written." >&2
+    echo "kmctl audit: the $name gave no usable findings; no issue was written." >> "$summary"
+    exit 1
+  fi
+done
 
-if ! python3 "$here/audit-report.py" "$work/hermes.out" "$summary" "$work/body.md"; then
+if ! python3 "$here/audit-report.py" "$work/findings.md" "$summary" "$work/body.md"; then
   echo "kmctl audit: the run gave no findings; no issue was written." >> "$summary"
   exit 1
 fi
