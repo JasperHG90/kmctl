@@ -4,3 +4,4 @@
 {"at": "2026-10-15T12:22:49+00:00", "by": "human:jasperginn@gmail.com", "kind": "accept-risk", "reason": "spiked during build in CI", "risk": 1, "schema_version": "1.0"}
 {"at": "2026-10-15T12:24:46+00:00", "binds": "6513633c7726db7e5c21965587ab1f55b9f88b151272a97b7d9bfbb55144a2e7", "kind": "round-start", "n": 2, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
 {"at": "2026-10-15T12:26:32+00:00", "dispatched_at": "2026-10-15T12:24:46+00:00", "kind": "round-close", "n": 2, "outcome": "fail", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-10-15T12:25:55+00:00"}}
+{"at": "2026-10-15T12:26:57+00:00", "binds": "0564401e500fdf3ac9871a47c91d2f3b33416856957442fb3bdefccd547139e6", "kind": "round-start", "n": 3, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
