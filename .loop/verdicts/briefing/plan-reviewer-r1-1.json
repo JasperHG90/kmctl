@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The state part has no path to being built. The plan says it is omitted until review-due lands, but briefing does not depend on review-due (and review-due is priority 3, after briefing's 2), and the live handoffs it names come from `kmctl handoffs`, which handoff-and-continue-skills adds and briefing does not depend on either. No other plan wires state into the briefing later, so ADR 0002's state part may never ship, and the budget test written now covers a briefing without the part the spike sized at 40 words. The plan has to say which it is: depend on both tickets and build state here, or name the ticket that adds it and holds the budget then. If live handoffs are listed rather than counted, the state part also grows with the repository, so a fixed budget needs a count or a cap.",
+      "anchor": ".loop/plans/briefing.md:24",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "spike:briefing/1 settles the rules' size but not the routing block's. It assumed 80 words for routing, leaving 41 words of margin, and its README says routing and state were assumed sizes, not drafts. Routing has to cover the four Diataxis folders, five .okf sections, skills and rules, which skill to use for what, and in a repo without .okf/ how to start one. If routing comes to about 120 words the briefing goes over 500, and the fallback is the `kmctl rules NAME` shape change the risk names. Next step: a spike that drafts the routing block (both the with-.okf and the empty-repo variant) and counts it with the 339 words of rules.",
+      "anchor": ".loop/plans/briefing.md:31",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "eb447d40a2f552c684082e51b5a15935bbf76a3018c031accd8dec1757f54635"
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T08:19:49+00:00"
+}
