@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "Install results were ignored, so a network error never reached the failure report. Every install or update call now asserts its result with the output, and spike 1 shows that output carries git's 'Could not resolve host'.",
+      "anchor": "tests/test_plugin_install.py:85",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r5"
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "r5 required exit 0 from every install, but two calls must fail. r5 and the Done-when now ask each call to assert its expected exit code with the output, and name the two failing calls (lines 195 and 362) as keeping their nonzero exit.",
+      "anchor": "tests/test_plugin_install.py:195",
+      "category": "test-mismatch",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r5"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "c8f75a9a010d5e0a4cf98c4a0d7a93a4acc3e7c3994a757caeacfbd9f4639744"
+  },
+  "by": "process:loopctl/2.1.1.dev61+g8318eb7a1.d20261015",
+  "at": "2026-10-15T19:14:41+00:00"
+}
