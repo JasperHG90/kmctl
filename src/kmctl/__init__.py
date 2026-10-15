@@ -11,6 +11,7 @@ import typer
 from kmctl.briefing import as_dict, build_briefing, render
 from kmctl.checks import run_checks
 from kmctl.concepts import ConceptError, Kind, new_concept
+from kmctl.docs import DocType, new_doc
 from kmctl.handoffs import live_handoffs
 from kmctl.review_due import review_due
 from kmctl.scaffold import scaffold
@@ -21,6 +22,11 @@ app = typer.Typer(
     no_args_is_help=True,
     context_settings={"help_option_names": ["-h", "--help"]},
 )
+
+
+def next_step(*steps: str) -> str:
+    """The one ``Next:`` line a verb that writes files ends with; the last step is a kmctl verb."""
+    return "Next: " + ", then ".join(steps)
 
 
 def _print_version(value: bool) -> None:
@@ -82,7 +88,7 @@ def init(
     for warning in result.warnings:
         typer.echo(f"warning: {warning}", err=True)
     if result.created:
-        typer.echo("Next: write .okf/manifesto.md, then commit docs/ and .okf/")
+        typer.echo(next_step("write .okf/manifesto.md", "kmctl check"))
     else:
         typer.echo("Nothing to do: every file already exists.")
 
@@ -230,67 +236,136 @@ def due(
         typer.echo("nothing is due for review")
 
 
-@app.command(
+new_app = typer.Typer(
+    help=(
+        "Create a .okf/ concept or a docs/ page with its structure. Verbs: decision, "
+        "practice, proposal, prototype, handoff, doc. Needs a repository set up by kmctl init."
+    ),
+    no_args_is_help=True,
+)
+app.add_typer(new_app, name="new")
+
+_PATH_OPTION = typer.Option(
+    "--path",
+    metavar="../other-repo",
+    exists=True,
+    file_okay=False,
+    help="The repository to write in: an existing folder. Default: the current directory.",
+)
+
+
+def _register_concept_verb(kind: Kind, example: str) -> None:
+    """Add ``kmctl new KIND`` for one .okf/ section."""
+
+    def command(
+        title: Annotated[
+            str,
+            typer.Argument(
+                metavar=f"'{example}'",
+                help="The title; its kebab-case form names the file.",
+            ),
+        ],
+        description: Annotated[
+            str,
+            typer.Option(
+                "--description",
+                metavar="'One sentence.'",
+                help="One sentence for the front matter and the index entry.",
+            ),
+        ],
+        path: Annotated[Path, _PATH_OPTION] = Path("."),
+        as_json: Annotated[
+            bool,
+            typer.Option(
+                "--json",
+                help="Print one JSON object (id, path, created_section), for scripts.",
+            ),
+        ] = False,
+    ) -> None:
+        try:
+            result = new_concept(path, kind, title, description)
+        except ConceptError as error:
+            typer.echo(f"kmctl new {kind}: refused: {error}", err=True)
+            raise typer.Exit(1) from error
+        if as_json:
+            typer.echo(json.dumps(asdict(result)))
+            return
+        typer.echo(f"created {result.path}")
+        typer.echo(next_step(f"write the sections of {result.path}", "kmctl check"))
+
+    command.__doc__ = f"Create a {kind} in .okf/ with its front matter, skeleton, index entry and log line."
+    new_app.command(
+        kind,
+        epilog=(
+            "Examples:\n\n"
+            f"  kmctl new {kind} '{example}' --description 'One sentence.'\n\n"
+            f"  kmctl new {kind} '{example}' --description 'One sentence.' --json\n\n"
+            "Writes the structure; you write the prose. The first one creates its section."
+        ),
+    )(command)
+
+
+for _kind, _example in (
+    ("decision", "Use a queue"),
+    ("practice", "Measure first"),
+    ("proposal", "Split the parser"),
+    ("prototype", "Parser speed"),
+    ("handoff", "Parser work"),
+):
+    _register_concept_verb(_kind, _example)
+
+
+@new_app.command(
+    "doc",
     epilog=(
         "Examples:\n\n"
-        "  kmctl new decision 'Use a queue' --description 'Jobs go through a queue.'\n\n"
-        "  kmctl new handoff 'Queue work' --description 'Where the queue stands.' --json\n\n"
-        "Writes the front matter, a heading skeleton, the index entry and a log line; "
-        "you write the prose. The first concept of a kind creates its section."
+        "  kmctl new doc how-to 'Install it'\n\n"
+        "  kmctl new doc reference 'Config keys' --description 'Every key and its default.'\n\n"
+        "Writes the page skeleton and its docs/README.md entry; you write the prose."
     ),
 )
-def new(
-    kind: Annotated[
-        Kind,
+def new_doc_page(
+    doc_type: Annotated[
+        DocType,
         typer.Argument(
-            metavar="decision|practice|proposal|prototype|handoff",
-            help="Which .okf/ section the concept goes in.",
+            metavar="tutorial|how-to|reference|explanation",
+            help="The Diataxis type: a lesson, one task, facts, or why.",
         ),
     ],
     title: Annotated[
         str,
         typer.Argument(
-            metavar="'Use a queue'",
-            help="The title; its kebab-case form names the file.",
+            metavar="'Install it'",
+            help="The page title; its kebab-case form names the file.",
         ),
     ],
     description: Annotated[
         str,
         typer.Option(
             "--description",
-            metavar="'Jobs go through a queue.'",
-            help="One sentence for the front matter and the index entry.",
+            metavar="'One line.'",
+            help="An optional line for the index entry.",
         ),
-    ],
-    path: Annotated[
-        Path,
-        typer.Option(
-            "--path",
-            metavar="../other-repo",
-            exists=True,
-            file_okay=False,
-            help="The repository to write in: an existing folder. Default: the current directory.",
-        ),
-    ] = Path("."),
+    ] = "",
+    path: Annotated[Path, _PATH_OPTION] = Path("."),
     as_json: Annotated[
         bool,
         typer.Option(
-            "--json",
-            help="Print one JSON object (id, path, created_section), for scripts.",
+            "--json", help="Print one JSON object (path, created_folder), for scripts."
         ),
     ] = False,
 ) -> None:
-    """Create one .okf/ concept with its front matter, skeleton, index entry and log line."""
+    """Create a docs/ page in its Diataxis folder with a skeleton and its index entry."""
     try:
-        result = new_concept(path, kind, title, description)
+        result = new_doc(path, doc_type, title, description)
     except ConceptError as error:
-        typer.echo(f"kmctl new: refused: {error}", err=True)
+        typer.echo(f"kmctl new doc: refused: {error}", err=True)
         raise typer.Exit(1) from error
     if as_json:
         typer.echo(json.dumps(asdict(result)))
         return
     typer.echo(f"created {result.path}")
-    typer.echo(f"Next: write the sections of {result.path}")
+    typer.echo(next_step(f"write the sections of {result.path}", "kmctl check"))
 
 
 @app.command(
@@ -383,7 +458,7 @@ def decision_supersede(
         typer.echo(json.dumps(asdict(result)))
         return
     typer.echo(f"superseded {result.old} with {result.new}")
-    typer.echo("Next: kmctl check, then commit both records")
+    typer.echo(next_step("kmctl check"))
 
 
 def main() -> None:
