@@ -1,4 +1,4 @@
-"""Deterministic knowledge checks: every index agrees with its folder.
+"""Deterministic knowledge checks: indexes agree with their folders, prototypes have a README.md.
 
 The index format, which every kmctl verb that writes an index follows:
 
@@ -10,6 +10,8 @@ The index format, which every kmctl verb that writes an index follows:
   concept is each prototype's README.md. External links, anchors and links
   that leave the folder are not entries.
 - Hidden files and folders (a name starting with ".") are not pages.
+- Every folder directly under .okf/prototypes/ is a prototype and needs a
+  README.md (check name ``prototype``).
 - No concept counts are written or checked.
 """
 
@@ -219,6 +221,25 @@ def check_okf(root: Path) -> list[Finding]:
     return findings
 
 
+def check_prototypes(root: Path) -> list[Finding]:
+    """Check that every folder directly under .okf/prototypes/ has a README.md concept.
+
+    Folders below a prototype (its scripts or results) are not prototypes.
+    """
+    prototypes = root / ".okf" / "prototypes"
+    if not prototypes.is_dir():
+        return []
+    return [
+        Finding(
+            "prototype", _rel(root, folder), None, "prototype folder has no README.md"
+        )
+        for folder in sorted(prototypes.iterdir())
+        if folder.is_dir()
+        and not folder.name.startswith(".")
+        and not (folder / "README.md").is_file()
+    ]
+
+
 def run_checks(root: Path) -> list[Finding]:
     """Run every knowledge check on the repository at ``root``.
 
@@ -232,4 +253,4 @@ def run_checks(root: Path) -> list[Finding]:
     list[Finding]
         Every finding, errors and skipped parts alike, in check order.
     """
-    return check_docs(root) + check_okf(root)
+    return check_docs(root) + check_okf(root) + check_prototypes(root)
