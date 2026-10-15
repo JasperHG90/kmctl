@@ -8,7 +8,24 @@
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "89c702ee21e6742d73ddc914b90d07b5a545dca8f3698790ec15c23428f20dc6",
+    "tree": "d6cf2cd9e8b5e3dbfa70869c39fbf6626a3c34c3",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "cleared-unreviewed",
+        "by": "judgement",
+        "judgement": "j-20261015T105534+0000-d2e0be59",
+        "paths": [
+          "src/kmctl/__init__.py",
+          "src/kmctl/checks.py"
+        ]
+      }
+    ],
+    "at": "2026-10-15T10:55:34+00:00"
+  },
   "ask": null,
   "split": "j-20261015T081328+0000-9c69d325",
   "split_plan_hash": "b824a79a388a259d6bb91d4fd4383fda0211f877785f4123d0d429ec83d8fc7b",
@@ -118,5 +135,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T10:55:33+00:00"
+  "at": "2026-10-15T10:55:34+00:00"
 }
