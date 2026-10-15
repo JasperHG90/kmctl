@@ -20,10 +20,57 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "fe60ca38721afe1815e66302de6480d474ec12001bc576942189a510bf041c72",
+    "at": "2026-10-15T08:32:33+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "In an empty repository, kmctl init creates docs/README.md, .okf/index.md, .okf/log.md and .okf/manifesto.md, and prints each path it created.",
+      "fails_when": "any of the four files is missing after the run, or a created path is not printed",
+      "command": "uv run pytest tests/test_init.py::test_init_creates_docs_and_bundle -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "A second kmctl init changes nothing and reports nothing created.",
+      "fails_when": "any file's content or mtime differs after the second run, or the second run reports a created path",
+      "command": "uv run pytest tests/test_init.py::test_init_twice_changes_nothing -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "kmctl init never overwrites a file that already exists.",
+      "fails_when": "a pre-existing docs/README.md or .okf/manifesto.md has different content after the run",
+      "command": "uv run pytest tests/test_init.py::test_init_keeps_existing_files -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "The bundle kmctl init creates passes the pinned okf validator in strict mode.",
+      "fails_when": "tests/vendor/okf_validate.py --strict exits nonzero on the created .okf/",
+      "command": "uv run pytest tests/test_init.py::test_init_bundle_is_conformant -q",
+      "judgment": false
+    },
+    {
+      "id": "r5",
+      "behavior": "kmctl init creates no Diataxis folders and no .okf/ section folders.",
+      "fails_when": "any directory exists under docs/ or .okf/ after the run",
+      "command": "uv run pytest tests/test_init.py::test_init_creates_no_empty_folders -q",
+      "judgment": false
+    },
+    {
+      "id": "r6",
+      "behavior": "kmctl init --json prints one JSON object listing created and skipped paths.",
+      "fails_when": "stdout is not one JSON object with created and skipped lists",
+      "command": "uv run pytest tests/test_init.py::test_init_json_output -q",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -69,5 +116,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T08:12:19+00:00"
+  "at": "2026-10-15T08:32:33+00:00"
 }
