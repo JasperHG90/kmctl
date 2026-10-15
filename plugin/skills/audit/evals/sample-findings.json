@@ -1,0 +1,166 @@
+[
+  {
+    "concept": "architecture/cli-and-plugin",
+    "path": ".okf/architecture/cli-and-plugin.md",
+    "review": "architecture",
+    "verdict": "drifted",
+    "summary": "The page says scripts/release.py stamps, commits and tags a release; the script now says it never commits or tags (CI does, ADR 0021). Its runtime dependency list also leaves out httpx, tenacity, tomlkit, questionary and markdown-it-py.",
+    "evidence": [
+      ".okf/architecture/cli-and-plugin.md:287",
+      ".okf/architecture/cli-and-plugin.md:291",
+      "scripts/release.py:19",
+      "scripts/release.py:21",
+      ".okf/architecture/cli-and-plugin.md:280",
+      "pyproject.toml:7",
+      "pyproject.toml:19"
+    ]
+  },
+  {
+    "concept": "architecture/code-structure",
+    "path": ".okf/architecture/code-structure.md",
+    "review": "architecture",
+    "verdict": "drifted",
+    "summary": "The page puts round caps in checks/, but they live in verdicts/rules.py and commands/common.py. It also says the plugin payload holds no code and lists only skills/, agents/, hooks/ and min-cli-version, but the payload ships the generated opencode/loop-harness.js, which ST-05 allows by name.",
+    "evidence": [
+      ".okf/architecture/code-structure.md:37",
+      ".okf/architecture/code-structure.md:85",
+      "src/loop_harness/verdicts/rules.py:1",
+      "src/loop_harness/commands/common.py:748",
+      ".okf/architecture/code-structure.md:22",
+      ".okf/architecture/code-structure.md:91",
+      "tests/structure/test_payload.py:22",
+      "tests/structure/test_payload.py:24"
+    ]
+  },
+  {
+    "concept": "architecture/command-surface",
+    "path": ".okf/architecture/command-surface.md",
+    "review": "architecture",
+    "verdict": "drifted",
+    "summary": "Four claims are false: the verb groups leave out ask, judgements and delegate (and schema at the top level); state-guard is wired to Edit|MultiEdit|Write|NotebookEdit|Bash, not Edit|Write|Bash; init writes six gitignore lines including .loop/exports/, not five; and the ticket stage comment leaves out fixing.",
+    "evidence": [
+      ".okf/architecture/command-surface.md:485",
+      ".okf/architecture/command-surface.md:488",
+      "src/loop_harness/cli/__init__.py:75",
+      "src/loop_harness/cli/__init__.py:77",
+      ".okf/architecture/command-surface.md:675",
+      "src/loop_harness/hooks/table.py:69",
+      ".okf/architecture/command-surface.md:87",
+      "src/loop_harness/commands/setup.py:39",
+      ".okf/architecture/command-surface.md:229",
+      "src/loop_harness/stores/models.py:37"
+    ]
+  },
+  {
+    "concept": "architecture/evidence-binding",
+    "path": ".okf/architecture/evidence-binding.md",
+    "review": "architecture",
+    "verdict": "drifted",
+    "summary": "The diagram has the operator 'signs, or delegates per ticket'. Per-ticket eval delegation is gone: a standing grant (ADR 0029) can cover the whole repository, an epic or named tickets, and eval delegate was removed.",
+    "evidence": [
+      ".okf/architecture/evidence-binding.md:54",
+      ".okf/architecture/evidence-binding.md:75",
+      "src/loop_harness/stores/models.py:1185",
+      "src/loop_harness/stores/models.py:1199",
+      ".okf/architecture/command-surface.md:603",
+      ".okf/architecture/command-surface.md:624"
+    ]
+  },
+  {
+    "concept": "architecture/lifecycle",
+    "path": ".okf/architecture/lifecycle.md",
+    "review": "architecture",
+    "verdict": "holds",
+    "summary": "Every stage and edge in the diagram, including the five done-outside edges and the two reconcile edges, matches the transition table, and the eight stages match the Stage type.",
+    "evidence": [
+      ".okf/architecture/lifecycle.md:19",
+      ".okf/architecture/lifecycle.md:93",
+      "src/loop_harness/stages/transitions.py:11",
+      "src/loop_harness/stages/transitions.py:39",
+      "src/loop_harness/stores/models.py:37",
+      "src/loop_harness/verdicts/rules.py:146"
+    ]
+  },
+  {
+    "concept": "architecture/loop-state",
+    "path": ".okf/architecture/loop-state.md",
+    "review": "architecture",
+    "verdict": "holds",
+    "summary": "The ten versioned data objects, the 38 event kinds plus the retired delegation in KINDS, the TicketState fields, atomic writes and the rule files it names all match the code.",
+    "evidence": [
+      ".okf/architecture/loop-state.md:113",
+      "src/loop_harness/stores/models.py:617",
+      "src/loop_harness/stores/models.py:1650",
+      ".okf/architecture/loop-state.md:174",
+      "src/loop_harness/stores/event_models.py:584",
+      "src/loop_harness/stores/event_models.py:608",
+      "src/loop_harness/stores/event_models.py:622",
+      ".okf/architecture/loop-state.md:123",
+      "src/loop_harness/stores/models.py:704",
+      "src/loop_harness/stores/concepts.py:235"
+    ]
+  },
+  {
+    "concept": "architecture/release",
+    "path": ".okf/architecture/release.md",
+    "review": "architecture",
+    "verdict": "holds",
+    "summary": "The CI jobs and their order, the release.yml dry run and version pull request, and the release-tag.yml checks, build, tag and SHA256SUMS release all match the workflows and scripts.",
+    "evidence": [
+      ".okf/architecture/release.md:47",
+      ".github/workflows/tests.yml:27",
+      ".github/workflows/tests.yml:122",
+      ".okf/architecture/release.md:34",
+      ".github/workflows/release.yml:173",
+      ".github/workflows/release.yml:200",
+      ".github/workflows/release-tag.yml:61",
+      ".github/workflows/release-tag.yml:101",
+      ".github/workflows/release-tag.yml:109",
+      "scripts/check_wheel.py:32",
+      "tests/structure/test_workflows.py:33"
+    ]
+  },
+  {
+    "concept": "architecture/ticket-flow",
+    "path": ".okf/architecture/ticket-flow.md",
+    "review": "architecture",
+    "verdict": "drifted",
+    "summary": "The flow ends with 'done. Next: loopctl ticket next' after ticket done, but next_step names loopctl ticket land SLUG until the closing commit is on the integration branch, and implement-ticket lands the work as its own step. The landing step is missing.",
+    "evidence": [
+      ".okf/architecture/ticket-flow.md:76",
+      ".okf/architecture/ticket-flow.md:78",
+      "src/loop_harness/stages/next_step.py:143",
+      "src/loop_harness/stages/next_step.py:144",
+      "plugin/skills/implement-ticket/SKILL.md:65"
+    ]
+  },
+  {
+    "concept": "architecture/unknowns-triage",
+    "path": ".okf/architecture/unknowns-triage.md",
+    "review": "architecture",
+    "verdict": "holds",
+    "summary": "The routing matches manifesto section 1, and the blocks it names (plan-invalidated, finding open two rounds) are block codes the code has; plan-invalidated can be set by hand.",
+    "evidence": [
+      ".okf/architecture/unknowns-triage.md:21",
+      ".okf/manifesto.md:46",
+      "src/loop_harness/stores/models.py:105",
+      "src/loop_harness/stores/models.py:110",
+      "src/loop_harness/commands/lifecycle.py:56"
+    ]
+  },
+  {
+    "concept": "architecture/write-paths",
+    "path": ".okf/architecture/write-paths.md",
+    "review": "architecture",
+    "verdict": "drifted",
+    "summary": "The page says the state guard and commit gate match the Bash command string; checks/shell.py now parses Bash as commands, not text (RC-08), as command-surface also says. The state-guard box also names only Edit, Write and Bash, while the hook covers MultiEdit and NotebookEdit too.",
+    "evidence": [
+      ".okf/architecture/write-paths.md:115",
+      ".okf/architecture/write-paths.md:116",
+      "src/loop_harness/checks/shell.py:1",
+      ".okf/architecture/command-surface.md:683",
+      ".okf/architecture/write-paths.md:27",
+      "src/loop_harness/hooks/table.py:69"
+    ]
+  }
+]
