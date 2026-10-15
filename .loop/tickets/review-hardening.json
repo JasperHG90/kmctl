@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "review-hardening",
-  "stage": "planning",
+  "stage": "ready",
   "attempts": 0,
   "plan_rounds": 2,
   "review_rounds": 0,
@@ -60,8 +60,14 @@
       "to": "planning",
       "at": "2026-10-15T11:55:06+00:00",
       "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-10-15T11:58:01+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.0.1.dev77+gbd4712cf8.d20261015",
-  "at": "2026-10-15T11:58:00+00:00"
+  "at": "2026-10-15T11:58:01+00:00"
 }
