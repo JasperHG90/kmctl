@@ -1,51 +1,14 @@
 {
   "schema_version": "1.0",
   "slug": "init-seeds-the-habit",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": {
-    "round": 1,
-    "fingerprint": "9e8f157e084e4dbcf6885f54f161c61b5544b901c49d3a60a62b7a4dc88d26a3",
-    "tree": "0ff8a0f13cfeedaada96ce7ea13e3dbe15d3053b",
-    "decisions": [
-      {
-        "finding": "reviewer:f1",
-        "outcome": "sent-back",
-        "by": "judgement",
-        "judgement": "j-20261015T163132+0000-5c03d317",
-        "paths": [
-          "src/kmctl/scaffold.py",
-          "tests/test_init.py"
-        ]
-      },
-      {
-        "finding": "reviewer:f2",
-        "outcome": "sent-back",
-        "by": "judgement",
-        "judgement": "j-20261015T163133+0000-b2cc8bdd",
-        "paths": [
-          "src/kmctl/scaffold.py",
-          "tests/test_init.py"
-        ]
-      },
-      {
-        "finding": "reviewer:f3",
-        "outcome": "sent-back",
-        "by": "judgement",
-        "judgement": "j-20261015T163134+0000-c4cf9110",
-        "paths": [
-          "src/kmctl/scaffold.py",
-          "tests/test_init.py"
-        ]
-      }
-    ],
-    "at": "2026-10-15T16:31:34+00:00"
-  },
+  "fix": null,
   "ask": null,
   "split": "j-20261015T160612+0000-851090d9",
   "split_plan_hash": "8f5000db8e2f4df4cc206e411fd57899035b4299e45ff056019ee4c850756461",
@@ -174,8 +137,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "8f5000db8e2f4df4cc206e411fd57899035b4299e45ff056019ee4c850756461",
   "intent": {
@@ -219,8 +182,14 @@
       "to": "verifying",
       "at": "2026-10-15T16:31:34+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-15T16:34:24+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T16:31:35+00:00"
+  "at": "2026-10-15T16:34:24+00:00"
 }
