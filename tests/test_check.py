@@ -250,3 +250,66 @@ def test_prototype_check_fails_without_readme(tmp_path: Path) -> None:
     assert [f["file"] for f in _prototype_findings(tmp_path)] == [
         ".okf/prototypes/bare"
     ]
+
+
+def _link_findings(root: Path) -> list[tuple[str, int]]:
+    return [(f["file"], f["line"]) for f in _findings(root) if f["check"] == "link"]
+
+
+def test_link_check_docs_relative(tmp_path: Path) -> None:
+    _good_repo(tmp_path)
+    page = "# Install\n\nSee [self](install.md) and [readme](../README.md).\n"
+    _write(tmp_path, "docs/how-to/install.md", page + "Also [gone](missing.md).\n")
+
+    assert _link_findings(tmp_path) == [("docs/how-to/install.md", 4)]
+
+
+def test_link_check_docs_root_relative(tmp_path: Path) -> None:
+    _good_repo(tmp_path)
+    _write(tmp_path, "src/app.py", "x = 1\n")
+    page = "# Install\n\nCode: [app](/src/app.py).\nGone: [old](/src/old.py).\n"
+    _write(tmp_path, "docs/how-to/install.md", page)
+
+    assert _link_findings(tmp_path) == [("docs/how-to/install.md", 4)]
+
+
+def test_link_check_okf_links_leaving_bundle(tmp_path: Path) -> None:
+    _good_repo(tmp_path)
+    _write(tmp_path, "src/app.py", "x = 1\n")
+    body = "\n[app](../../src/app.py)\n[gone](../../src/gone.py)\n"
+    path = tmp_path / ".okf/decisions/0001-first.md"
+    path.write_text(path.read_text() + body)
+
+    findings = _link_findings(tmp_path)
+    lines = path.read_text().splitlines()
+    gone_line = lines.index("[gone](../../src/gone.py)") + 1
+
+    assert findings == [(".okf/decisions/0001-first.md", gone_line)]
+
+
+def test_link_check_ignores_in_bundle_okf_links(tmp_path: Path) -> None:
+    _good_repo(tmp_path)
+    path = tmp_path / ".okf/manifesto.md"
+    path.write_text(
+        path.read_text() + "\n[gone](decisions/0099-nope.md) and [root](/nope.md)\n"
+    )
+
+    assert _link_findings(tmp_path) == []
+
+
+def test_link_check_skips_urls_and_anchors(tmp_path: Path) -> None:
+    _good_repo(tmp_path)
+    page = "# Install\n\n[web](https://example.com/x) [mail](mailto:a@b.c) [top](#install)\n"
+    _write(
+        tmp_path, "docs/how-to/install.md", page + "```\n[fenced](nowhere.md)\n```\n"
+    )
+
+    assert _link_findings(tmp_path) == []
+
+
+def test_link_check_covers_other_links_on_index_lines(tmp_path: Path) -> None:
+    _good_repo(tmp_path)
+    readme = "# Docs\n\n- [Install](how-to/install.md): see [gone](../GONE.md) and [old](/src/old.py).\n"
+    _write(tmp_path, "docs/README.md", readme)
+
+    assert _link_findings(tmp_path) == [("docs/README.md", 3), ("docs/README.md", 3)]
