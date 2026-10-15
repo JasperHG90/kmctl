@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "Non-ASCII source paths now resolve; ls-files -z is split on NUL.",
+      "anchor": "src/kmctl/review_due.py:158",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "has_passed is now now >= stale_after, per OKF 5.5.",
+      "anchor": "src/kmctl/okf.py:61",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "A source naming a tracked folder now resolves and is dated by git log.",
+      "anchor": "src/kmctl/review_due.py:108",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "resolved",
+      "claim": "test_exit_and_json now asserts the fixture is due and checks the --json exit code.",
+      "anchor": "tests/test_review_due.py:181",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f5",
+      "disposition": "open",
+      "claim": "The review due help text still says a source that resolves to no tracked file becomes a notice. Since f3, a tracked folder also resolves, so the help should say 'no tracked file or folder'. Agents read this help to know which source forms work.",
+      "anchor": "src/kmctl/__init__.py:187",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "58eb8bdae5142b763aacc3b33cadfb8cb165cac96af6afc36139df6ce538ce05",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T10:49:29+00:00"
+}
