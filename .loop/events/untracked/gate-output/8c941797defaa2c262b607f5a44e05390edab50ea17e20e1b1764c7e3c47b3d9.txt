@@ -1,0 +1,79 @@
+warning: `VIRTUAL_ENV=/home/vscode/workspace/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+I001 [*] Import block is un-sorted or un-formatted
+  --> .loop/spikes/briefing/1/files/count_rules.py:7:1
+   |
+ 5 |   Words are counted as loopctl does: len(line.split()).
+ 6 |   """
+ 7 | / import re, subprocess, sys
+ 8 | | from pathlib import Path
+   | |________________________^
+ 9 |
+10 |   RULES = ["/home/vscode/kmctl/.claude/rules/docs-layout.md",
+   |
+help: Organize imports
+   |
+6  | """
+   - import re, subprocess, sys
+7  + import re
+8  + import subprocess
+9  + import sys
+10 | from pathlib import Path
+   |
+
+FURB167 [*] Use of regular expression alias `re.S`
+  --> .loop/spikes/briefing/1/files/count_rules.py:13:70
+   |
+11 |          "/home/vscode/kmctl/.claude/rules/okf-bundle.md"]
+12 | BUDGET, ROUTING, STATE = 500, 80, 40
+13 | pat = re.compile(r'<constraint name="([^"]+)">\n(.*?)</constraint>', re.S)
+   |                                                                      ^^^^
+14 |
+15 | def words(text): return sum(len(l.split()) for l in text.splitlines())
+   |
+help: Replace with `re.DOTALL`
+   |
+12 | BUDGET, ROUTING, STATE = 500, 80, 40
+   - pat = re.compile(r'<constraint name="([^"]+)">\n(.*?)</constraint>', re.S)
+13 + pat = re.compile(r'<constraint name="([^"]+)">\n(.*?)</constraint>', re.DOTALL)
+14 |
+   |
+
+FURB167 [*] Use of regular expression alias `re.S`
+  --> .loop/spikes/briefing/1/files/count_rules.py:21:51
+   |
+19 |     for name, body in pat.findall(Path(path).read_text()):
+20 |         # a WHY paragraph runs from "WHY:" to the first blank line
+21 |         why = re.match(r"WHY:.*?(\n\n|\Z)", body, re.S)
+   |                                                   ^^^^
+22 |         rest = body[why.end():] if why else body
+23 |         w, wo = words(name) + words(body), words(name) + words(rest)
+   |
+help: Replace with `re.DOTALL`
+   |
+20 |         # a WHY paragraph runs from "WHY:" to the first blank line
+   -         why = re.match(r"WHY:.*?(\n\n|\Z)", body, re.S)
+21 +         why = re.match(r"WHY:.*?(\n\n|\Z)", body, re.DOTALL)
+22 |         rest = body[why.end():] if why else body
+   |
+
+PLW1510 `subprocess.run` without explicit `check` argument
+  --> .loop/spikes/briefing/1/files/count_rules.py:30:6
+   |
+28 | print(f"whole rule files: {whole}")
+29 | print(f"briefing with_why={tot_with+ROUTING+STATE} without_why={tot_without+ROUTING+STATE} budget={BUDGET}")
+30 | lb = subprocess.run(["loopctl", "briefing"], cwd="/home/vscode/kmctl", capture_output=True, text=True)
+   |      ^^^^^^^^^^^^^^
+31 | print(f"loopctl briefing words in kmctl: {words(lb.stdout)} (exit {lb.returncode})")
+32 | fits = tot_without + ROUTING + STATE <= BUDGET
+   |
+help: Add explicit `check=False`
+   |
+29 | print(f"briefing with_why={tot_with+ROUTING+STATE} without_why={tot_without+ROUTING+STATE} budget={BUDGET}")
+   - lb = subprocess.run(["loopctl", "briefing"], cwd="/home/vscode/kmctl", capture_output=True, text=True)
+30 + lb = subprocess.run(["loopctl", "briefing"], check=False, cwd="/home/vscode/kmctl", capture_output=True, text=True)
+31 | print(f"loopctl briefing words in kmctl: {words(lb.stdout)} (exit {lb.returncode})")
+   |
+note: This suggestion may be incorrect or produce invalid syntax. It requires manual review and cannot be applied automatically
+
+Found 4 errors.
+[*] 3 fixable with `--fix`.
