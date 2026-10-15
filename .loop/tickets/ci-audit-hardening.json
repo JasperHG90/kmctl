@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "ci-audit-hardening",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 3,
   "review_rounds": 2,
@@ -30,7 +30,7 @@
   "split": "j-20261015T132307+0000-a8066de0",
   "split_plan_hash": "507f41fd6d61c12d25035b02d3ebb018ccc1add78c1d4299f1f275b0521bde7c",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "a7290b77bb2128c7ddabe38e9dae251a999ca0a7",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -198,8 +198,14 @@
       "to": "verifying",
       "at": "2026-10-15T13:31:23+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-15T13:33:05+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T13:33:00+00:00"
+  "at": "2026-10-15T13:33:05+00:00"
 }
