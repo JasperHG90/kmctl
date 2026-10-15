@@ -1,0 +1,21 @@
+warning: `VIRTUAL_ENV=/home/vscode/workspace/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+PLW1510 `subprocess.run` without explicit `check` argument
+  --> plugin/skills/write-docs/evals/grade.py:34:17
+   |
+32 |         listed = [p for p in in_type if f"({p.relative_to(docs).as_posix()})" in index]
+33 |         env = os.environ | ({"PATH": f"{BIN}:{os.environ['PATH']}"} if BIN else {})
+34 |         check = subprocess.run(["kmctl", "check"], cwd=repo, env=env, capture_output=True, text=True)
+   |                 ^^^^^^^^^^^^^^
+35 |         expectations = [
+36 |             {"text": f"A page is created under docs/{want}/", "passed": bool(in_type),
+   |
+help: Add explicit `check=False`
+   |
+33 |         env = os.environ | ({"PATH": f"{BIN}:{os.environ['PATH']}"} if BIN else {})
+   -         check = subprocess.run(["kmctl", "check"], cwd=repo, env=env, capture_output=True, text=True)
+34 +         check = subprocess.run(["kmctl", "check"], check=False, cwd=repo, env=env, capture_output=True, text=True)
+35 |         expectations = [
+   |
+note: This suggestion may be incorrect or produce invalid syntax. It requires manual review and cannot be applied automatically
+
+Found 1 error.

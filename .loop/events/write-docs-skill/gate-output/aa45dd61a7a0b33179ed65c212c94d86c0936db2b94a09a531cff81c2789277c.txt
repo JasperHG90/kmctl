@@ -1,0 +1,64 @@
+warning: `VIRTUAL_ENV=/home/vscode/workspace/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+unformatted: File would be reformatted
+  --> plugin/skills/write-docs/evals/grade.py:31:18
+   |
+30 |         stray = [p for p in pages if p.relative_to(docs).parts[0] not in TYPE_FOLDERS]
+   -         index = (docs / "README.md").read_text() if (docs / "README.md").exists() else ""
+31 +         index = (
+32 +             (docs / "README.md").read_text() if (docs / "README.md").exists() else ""
+33 +         )
+34 |         listed = [p for p in in_type if f"({p.relative_to(docs).as_posix()})" in index]
+35 |         env = os.environ | ({"PATH": f"{BIN}:{os.environ['PATH']}"} if BIN else {})
+   -         check = subprocess.run(["kmctl", "check"], cwd=repo, env=env, capture_output=True, text=True)
+36 +         check = subprocess.run(
+37 +             ["kmctl", "check"], cwd=repo, env=env, capture_output=True, text=True
+38 +         )
+39 |         expectations = [
+   -             {"text": f"A page is created under docs/{want}/", "passed": bool(in_type),
+   -              "evidence": ", ".join(str(p.relative_to(repo)) for p in pages) or "no pages"},
+   -             {"text": "The page is listed in docs/README.md", "passed": bool(listed),
+   -              "evidence": index.strip().splitlines()[-1] if index.strip() else "empty index"},
+   -             {"text": "kmctl check passes afterwards", "passed": check.returncode == 0,
+   -              "evidence": (check.stdout.strip().splitlines() or [""])[-1]},
+   -             {"text": "No page sits outside a Diataxis type folder", "passed": not stray,
+   -              "evidence": ", ".join(str(p.relative_to(repo)) for p in stray) or "none"},
+40 +             {
+41 +                 "text": f"A page is created under docs/{want}/",
+42 +                 "passed": bool(in_type),
+43 +                 "evidence": ", ".join(str(p.relative_to(repo)) for p in pages)
+44 +                 or "no pages",
+45 +             },
+46 +             {
+47 +                 "text": "The page is listed in docs/README.md",
+48 +                 "passed": bool(listed),
+49 +                 "evidence": index.strip().splitlines()[-1]
+50 +                 if index.strip()
+51 +                 else "empty index",
+52 +             },
+53 +             {
+54 +                 "text": "kmctl check passes afterwards",
+55 +                 "passed": check.returncode == 0,
+56 +                 "evidence": (check.stdout.strip().splitlines() or [""])[-1],
+57 +             },
+58 +             {
+59 +                 "text": "No page sits outside a Diataxis type folder",
+60 +                 "passed": not stray,
+61 +                 "evidence": ", ".join(str(p.relative_to(repo)) for p in stray)
+62 +                 or "none",
+63 +             },
+64 |         ]
+65 |         passed = sum(e["passed"] for e in expectations)
+66 |         grading = {
+67 |             "expectations": expectations,
+   -             "summary": {"passed": passed, "failed": len(expectations) - passed,
+   -                         "total": len(expectations), "pass_rate": passed / len(expectations)},
+68 +             "summary": {
+69 +                 "passed": passed,
+70 +                 "failed": len(expectations) - passed,
+71 +                 "total": len(expectations),
+72 +                 "pass_rate": passed / len(expectations),
+73 +             },
+74 |         }
+   |
+
+1 file would be reformatted, 35 files already formatted
