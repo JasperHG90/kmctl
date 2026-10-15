@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The plan does not say what an index entry is, but three other tickets write entries for this check to read: new-doc-verb adds to docs/README.md 'in the format kmctl check reads', new-concept-verbs adds to section indexes, and scaffold-init writes the empty docs/README.md. If the plan does not fix the contract (for example: a relative markdown link in the index whose target is a page in that folder or below; external links, anchors and links back out of the folder are not entries), the builder picks one and the writers may not match it, and kmctl check then fails on files kmctl wrote itself.",
+      "anchor": ".loop/plans/knowledge-check.md:20",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "'It does not repeat what the okf validator checks' contradicts the done criterion for .okf/. okf_validate.py 0.10.1 in --strict already fails on a cross-link whose target is missing, which includes an index entry with no file. Read literally, the clause drops the 'entry with no file' check for .okf/. But kmctl never runs the validator: it is a test-only copy, and ci-action runs only kmctl check, so dropping the check leaves CI blind to it. The plan should say what the clause excludes (front matter, reserved names) and that kmctl check covers both directions for docs/ and .okf/. It should also say how this differs from link-check, which checks the same relative links later.",
+      "anchor": ".loop/plans/knowledge-check.md:20",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "open",
+      "claim": "Scope leaves out the root index count. .claude/rules/okf-bundle.md (okf-indexes-track-their-directory and every-touched-concept-is-logged) requires the root index's counts to match, new-concept-verbs updates that count, and nothing else in kmctl checks it. Today the count is free prose ('9 concepts: the manifesto and 1 section.'), so checking it means pinning a parseable format that scaffold-init and new-concept-verbs also write. The plan should either take it in and say the format, or say it is out of scope and why.",
+      "anchor": ".okf/index.md:10",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "0a236d657a14e1f3855f6e81931d7535a0dfc2678549bc4246d198a8ab295102"
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T08:13:02+00:00"
+}
