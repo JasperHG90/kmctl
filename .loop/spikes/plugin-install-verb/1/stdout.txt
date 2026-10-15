@@ -1,0 +1,66 @@
+CLAUDE_CONFIG_DIR=/tmp/tmp.Ij6PpkOKwH/config
+== add local marketplace
+Adding marketplace…✔ Successfully added marketplace: spike-mkt (declared in user settings)
+exit 0
+== marketplaces
+Configured marketplaces:
+
+  ❯ anthropic-plugin-directory
+    Source: Built in (Anthropic Directory)
+
+  ❯ spike-mkt
+    Source: Folder (/tmp/tmp.Ij6PpkOKwH/mkt)
+
+== A: install tiny, scaccogatto NOT added
+Installing plugin "tiny@spike-mkt"...✘ Failed to install plugin "tiny@spike-mkt": Dependency "okf@scaccogatto" (required by tiny@spike-mkt) not found. Is the "scaccogatto" marketplace added?
+
+exit 1
+== list after A
+No plugins installed. Use `claude plugin install` to install a plugin.
+== marketplaces after A
+Configured marketplaces:
+
+  ❯ anthropic-plugin-directory
+    Source: Built in (Anthropic Directory)
+
+  ❯ spike-mkt
+    Source: Folder (/tmp/tmp.Ij6PpkOKwH/mkt)
+
+okf installed after A: 0
+== uninstall tiny (if present)
+✘ Failed to uninstall plugin "tiny@spike-mkt": Plugin "tiny@spike-mkt" not found in installed plugins
+exit 1
+== add scaccogatto
+Adding marketplace…SSH not configured, cloning via HTTPS: https://github.com/scaccogatto/okf-skills.git
+Refreshing marketplace cache (timeout: 120s)…
+Cloning repository (timeout: 120s): https://github.com/scaccogatto/okf-skills.git
+Clone complete, validating marketplace…
+Cleaning up old marketplace cache…
+✔ Successfully added marketplace: scaccogatto (declared in user settings)
+exit 0
+== list after marketplace add
+No plugins installed. Use `claude plugin install` to install a plugin.
+== B: install tiny, scaccogatto added
+Installing plugin "tiny@spike-mkt"...✔ Successfully installed plugin: tiny@spike-mkt (scope: user) (+ 1 dependency: okf)
+exit 0
+== list after B
+Installed plugins:
+
+  ❯ okf@scaccogatto
+    Version: 0.10.3
+    Scope: user
+    Status: ✔ enabled
+
+  ❯ tiny@spike-mkt
+    Version: 0.0.1
+    Read from: /tmp/tmp.Ij6PpkOKwH/mkt/tiny
+    Scope: user
+    Status: ✔ enabled
+
+== B2: reinstall (idempotence)
+Installing plugin "tiny@spike-mkt"...✔ Plugin "tiny@spike-mkt" is already installed (scope: user) — it loads in place from /tmp/tmp.Ij6PpkOKwH/mkt/tiny, so edits there take effect at the next session start or /reload-plugins
+exit 0
+== real config untouched check
+backups
+plugins
+settings.json
