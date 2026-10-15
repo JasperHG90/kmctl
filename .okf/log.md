@@ -48,3 +48,6 @@
 - Removed `decision_status` and `decided_on` from
   `decisions/0009-handoff-key-extension-field`, which no ADR allows (I4),
   after the first audit of this bundle.
+- Added the architecture section with `architecture/overview`: the CLI
+  modules, the plugin and the action, with a diagram whose Depicts section
+  names I1 to I4. Linked it from the root index.
