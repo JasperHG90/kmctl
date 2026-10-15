@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The explanation page is scoped as why audits only report, but the audit agent, its review skills and the opt-in LLM audit tier do not exist yet: plugin/ has no agents/, the tickets audit-agent-and-skills and ci-audit are still in planning, and the manifesto marks I2 as planned. A docs/ page about them breaks docs-describe-what-exists, the rule this ticket cites as its reason. Narrow the page to what is built (kmctl check, kmctl review due and the CI action report and never write; the hook is SessionStart only) or leave audits to the audit tickets.",
+      "anchor": ".loop/plans/kmctl-docs.md:24",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "The contract says every command on a page is run and its real output pasted, but the how-to's commands cannot be run that way as planned. kmctl plugin install calls the claude CLI, adds the scaccogatto/okf-skills marketplace over the network and writes the operator's Claude config and ~/.local/share/kmctl (src/kmctl/plugin.py), and the CI action only runs on GitHub. The plan needs to say how those steps are verified, for example a run with an isolated HOME and XDG_DATA_HOME, or a carve-out naming which output is quoted from tests or from --help. Whether a project-scope install can run in a scratch repository without touching the operator's config is a spike question.",
+      "anchor": ".loop/plans/kmctl-docs.md:24",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "08a411e936a494233dbcf5bb9006b6d0f5cc676419f04d29500bd08d91d0d6cd"
+  },
+  "by": "process:loopctl/2.0.1.dev77+gbd4712cf8.d20261015",
+  "at": "2026-10-15T12:26:40+00:00"
+}
