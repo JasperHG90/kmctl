@@ -53,8 +53,8 @@ def test_new_creates_each_kind(tmp_path: Path) -> None:
 
     expected = {
         "decision": (
-            ".okf/decisions/0001-first-decision.md",
-            "ADR 0001: First decision",
+            ".okf/decisions/0002-first-decision.md",
+            "ADR 0002: First decision",
         ),
         "practice": (".okf/practices/first-practice.md", "First practice"),
         "proposal": (".okf/proposals/first-proposal.md", "First proposal"),
@@ -73,12 +73,12 @@ def test_new_creates_each_kind(tmp_path: Path) -> None:
         assert {"title", "tags", "generated"} <= meta.keys()
         assert all(h in body for h in headings), kind
     assert (tmp_path / ".okf/prototypes/first-prototype/README.md").is_file()
-    assert (tmp_path / ".okf/decisions/0001-first-decision.md").is_file()
+    assert (tmp_path / ".okf/decisions/0002-first-decision.md").is_file()
 
 
 def test_new_numbers_and_dates(tmp_path: Path) -> None:
     _repo(tmp_path)
-    (tmp_path / ".okf/decisions").mkdir()
+    (tmp_path / ".okf/decisions").mkdir(exist_ok=True)
     (tmp_path / ".okf/decisions/0007-earlier.md").write_text(
         "---\ntype: decision\n---\n"
     )
@@ -107,13 +107,13 @@ def test_new_indexes_logs_and_validates(tmp_path: Path) -> None:
 
     log = (tmp_path / ".okf/log.md").read_text()
     assert (
-        "(0001-one-decision.md)" in (tmp_path / ".okf/decisions/index.md").read_text()
+        "(0002-one-decision.md)" in (tmp_path / ".okf/decisions/index.md").read_text()
     )
     assert (
         "(one-prototype/README.md)"
         in (tmp_path / ".okf/prototypes/index.md").read_text()
     )
-    assert "`decisions/0001-one-decision`" in log
+    assert "`decisions/0002-one-decision`" in log
     assert "`handoffs/one-handoff`" in log
     assert _invoke("check", "--path", str(tmp_path)).exit_code == 0
     check = okf_validate(tmp_path / ".okf")

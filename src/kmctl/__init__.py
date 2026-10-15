@@ -17,7 +17,7 @@ from kmctl.plugin import PluginError, PluginStatus, Scope
 from kmctl.plugin import install as install_plugin
 from kmctl.plugin import status as plugin_status
 from kmctl.review_due import review_due
-from kmctl.scaffold import scaffold
+from kmctl.scaffold import AGENT_FILES, scaffold
 from kmctl.supersede import supersede
 
 app = typer.Typer(
@@ -57,7 +57,17 @@ def _root(
         "Examples:\n\n"
         "  kmctl init\n\n"
         "  kmctl init --path ../other-repo --json\n\n"
-        "Run it again at any time: a file that already exists is never changed."
+        "It writes docs/README.md; .okf/index.md, log.md and manifesto.md; the "
+        "knowledge rules okf-bundle, docs-layout, diagrams-stay-current and "
+        "manifesto-invariants in .claude/rules/; a kmctl block (where knowledge "
+        "lives and the agent's duties) in each CLAUDE.md and AGENTS.md, or a new "
+        "CLAUDE.md; and the first decision, Keep project knowledge in an OKF "
+        "bundle, when no record has that title.\n\n"
+        "Run it again at any time: a file that already exists is kept, with two "
+        "exceptions. The kmctl block between <!-- kmctl:start --> and "
+        "<!-- kmctl:end --> is added or replaced, and no other text in the file "
+        "changes. Writing the first decision into a kept bundle adds its index "
+        "entry and log line."
     ),
 )
 def init(
@@ -75,23 +85,35 @@ def init(
         bool,
         typer.Option(
             "--json",
-            help="Print one JSON object with created, skipped and warnings lists, for scripts.",
+            help="Print one JSON object with created, skipped, updated and warnings lists, for scripts.",
         ),
     ] = False,
 ) -> None:
-    """Create docs/README.md and a starter .okf/ bundle, keeping any file that exists."""
+    """Create docs/, a starter .okf/ bundle, knowledge rules and a CLAUDE.md block, keeping existing files."""
     result = scaffold(path)
     if as_json:
         typer.echo(json.dumps(asdict(result)))
         return
     for rel in result.created:
         typer.echo(f"created {rel}")
+    for rel in result.updated:
+        why = (
+            "kmctl block" if Path(rel).name in AGENT_FILES else "first decision's entry"
+        )
+        typer.echo(f"updated {rel} ({why})")
     for rel in result.skipped:
         typer.echo(f"kept    {rel} (already there)")
     for warning in result.warnings:
         typer.echo(f"warning: {warning}", err=True)
-    if result.created:
-        typer.echo(next_step("write .okf/manifesto.md", "kmctl check"))
+    if result.created or result.updated:
+        typer.echo(
+            next_step(
+                "fill the purpose and invariants in .okf/manifesto.md (its values "
+                "are the operator's to write)",
+                "add a diagram page to .okf/architecture/ once there is code",
+                "record each choice as you make it with kmctl new decision",
+            )
+        )
     else:
         typer.echo("Nothing to do: every file already exists.")
 

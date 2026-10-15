@@ -11,7 +11,7 @@ for people. Warnings and refusals go to stderr.
 
 | Command | What it does |
 |---|---|
-| `kmctl init` | Create `docs/README.md` and a starter `.okf/` bundle, keeping any file that exists. |
+| `kmctl init` | Create `docs/`, a starter `.okf/` bundle, knowledge rules and a `CLAUDE.md` block, keeping existing files. |
 | `kmctl check` | Check indexes agree with their folders, prototypes have a `README.md`, and links resolve. |
 | `kmctl handoffs` | List the live handoffs in `.okf/handoffs/`, newest first. |
 | `kmctl briefing` | Print the session briefing: where knowledge lives, what is due, and the rules. |
@@ -46,14 +46,40 @@ With no command, `kmctl` prints its help.
 
 ### `kmctl init`
 
-Create `docs/README.md` and a starter `.okf/` bundle (`index.md`, `log.md`,
-`manifesto.md`). A file that already exists is never changed, so it is safe to
-run again.
+Set a repository up. It writes:
+
+- `docs/README.md`, the docs index;
+- a starter `.okf/` bundle: `index.md`, `log.md` and `manifesto.md`;
+- the knowledge rules `okf-bundle.md`, `docs-layout.md`,
+  `diagrams-stay-current.md` and `manifesto-invariants.md` in `.claude/rules/`,
+  each with `paths:` front matter;
+- a kmctl block between `<!-- kmctl:start -->` and `<!-- kmctl:end -->` in
+  each `CLAUDE.md` and `AGENTS.md` that exists, or a new `CLAUDE.md` when
+  neither does. The block lists where each kind of knowledge lives and gives
+  the agent three duties: record each choice with `kmctl new decision`, keep
+  `.okf/architecture/` matching the code, and run `kmctl check` before
+  finishing. A `CLAUDE.md` that is a symlink to `AGENTS.md` gets one block,
+  and stays a symlink;
+- the decision "Keep project knowledge in an OKF bundle", with its index
+  entry and log line, when no record in `.okf/decisions/` has that title. In
+  a fresh bundle it is `0001`.
+
+A file that already exists is kept, so it is safe to run again, with two
+exceptions. The kmctl block is added to an existing `CLAUDE.md` or
+`AGENTS.md`, or replaced when it is already there, and no other text in the
+file changes. Writing the first decision into a kept bundle adds its entry to
+the kept indexes and a line to the kept `log.md`. A second run changes
+nothing.
+
+Output lists each file as `created`, `updated` (its kmctl block, or the first decision's index entry and log line) or `kept`,
+and ends with the next steps: fill the purpose and invariants in the
+manifesto (its values are the operator's), add an architecture page once
+there is code, and record each choice with `kmctl new decision`.
 
 | Option | Meaning | Default |
 |---|---|---|
 | `--path DIR` | The repository to set up: an existing folder. | `.` |
-| `--json` | Print one JSON object with `created`, `skipped` and `warnings` lists. | off |
+| `--json` | Print one JSON object with `created`, `skipped`, `updated` and `warnings` lists. | off |
 
 ### `kmctl check`
 

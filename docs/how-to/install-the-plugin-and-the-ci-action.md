@@ -103,7 +103,7 @@ Access). There is no release tag yet, so the line pins `main`.
 `kmctl review due`, writes both to the job summary, and fails only when
 `kmctl check` fails. It needs no API key.
 
-Run locally on a repository with one decision, the script behind this step
+Run locally on the repository from the tutorial, with two decisions, the script behind this step
 writes this summary and exits 0:
 
 ````
@@ -116,7 +116,8 @@ all checks passed
 ## kmctl review due
 
 ```
-due     decisions/0001-store-data-in-sqlite  (unverified)
+due     decisions/0001-keep-project-knowledge-in-an-okf-bundle  (unverified)
+due     decisions/0002-store-data-in-sqlite  (unverified)
 due     manifesto  (unverified)
 ```
 ````

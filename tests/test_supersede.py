@@ -7,8 +7,8 @@ from typer.testing import CliRunner, Result
 from kmctl import app
 from kmctl.okf import front_matter
 
-OLD = ".okf/decisions/0001-use-a-queue.md"
-NEW = ".okf/decisions/0002-use-a-stream.md"
+OLD = ".okf/decisions/0002-use-a-queue.md"
+NEW = ".okf/decisions/0003-use-a-stream.md"
 
 
 def _invoke(*args: str) -> Result:
@@ -16,7 +16,7 @@ def _invoke(*args: str) -> Result:
 
 
 def _repo(root: Path) -> Path:
-    """A bundle with two decisions; the first carries a hand-added decision_status."""
+    """A bundle with init's decision 0001 and two more; 0002 carries a hand-added decision_status."""
     assert _invoke("init", "--path", str(root)).exit_code == 0
     for title in ("Use a queue", "Use a stream"):
         result = _invoke(
@@ -32,7 +32,7 @@ def _repo(root: Path) -> Path:
     return root
 
 
-def _supersede(root: Path, old: str = "0001", new: str = "0002") -> Result:
+def _supersede(root: Path, old: str = "0002", new: str = "0003") -> Result:
     return _invoke("decision", "supersede", old, "--by", new, "--path", str(root))
 
 
@@ -57,8 +57,8 @@ def test_supersede_links_both_ways(tmp_path: Path) -> None:
 
     old = (root / OLD).read_text()
     assert re.search(r"^## Correction, \d{4}-\d{2}-\d{2}$", old, re.MULTILINE)
-    assert "(0002-use-a-stream.md)" in old.split("## Correction, ", 1)[1]
-    assert "(0001-use-a-queue.md)" in (root / NEW).read_text()
+    assert "(0003-use-a-stream.md)" in old.split("## Correction, ", 1)[1]
+    assert "(0002-use-a-queue.md)" in (root / NEW).read_text()
 
 
 def test_supersede_updates_index(tmp_path: Path) -> None:
@@ -69,9 +69,9 @@ def test_supersede_updates_index(tmp_path: Path) -> None:
     [line] = [
         line
         for line in (root / ".okf/decisions/index.md").read_text().splitlines()
-        if "(0001-use-a-queue.md)" in line
+        if "(0002-use-a-queue.md)" in line
     ]
-    assert "(superseded by ADR 0002)" in line
+    assert "(superseded by ADR 0003)" in line
 
 
 def test_supersede_logs_and_validates(tmp_path: Path) -> None:
@@ -80,8 +80,8 @@ def test_supersede_logs_and_validates(tmp_path: Path) -> None:
     _supersede(root)
 
     last = (root / ".okf/log.md").read_text().strip().splitlines()[-1]
-    assert "`decisions/0001-use-a-queue`" in last
-    assert "`decisions/0002-use-a-stream`" in last
+    assert "`decisions/0002-use-a-queue`" in last
+    assert "`decisions/0003-use-a-stream`" in last
     check = okf_validate(root / ".okf")
     assert check.returncode == 0, check.stdout + check.stderr
     assert _invoke("check", "--path", str(root)).exit_code == 0
@@ -93,11 +93,11 @@ def test_supersede_refusals(tmp_path: Path) -> None:
     snapshot = {p: p.read_text() for p in (root / ".okf").rglob("*.md")}
 
     cases = [
-        ("0009", "0002"),
-        ("0002", "0009"),
-        ("0001", "0002"),
-        ("0002", "0002"),
-        ("\u00b2", "0002"),
+        ("0009", "0003"),
+        ("0003", "0009"),
+        ("0002", "0003"),
+        ("0003", "0003"),
+        ("\u00b2", "0003"),
     ]
     for old, new in cases:
         result = _supersede(root, old, new)
@@ -114,7 +114,7 @@ def test_supersede_refuses_without_index_entry(tmp_path: Path) -> None:
         "\n".join(
             line
             for line in index.read_text().splitlines()
-            if "0001-use-a-queue.md" not in line
+            if "0002-use-a-queue.md" not in line
         )
         + "\n"
     )
@@ -131,12 +131,12 @@ def test_supersede_note_goes_after_a_wrapped_entry(tmp_path: Path) -> None:
     index = root / ".okf/decisions/index.md"
     index.write_text(
         index.read_text().replace(
-            "(0001-use-a-queue.md): Use a queue.",
-            "(0001-use-a-queue.md): Use a\n  queue for jobs.",
+            "(0002-use-a-queue.md): Use a queue.",
+            "(0002-use-a-queue.md): Use a\n  queue for jobs.",
         )
     )
 
     _supersede(root)
 
     text = index.read_text()
-    assert "Use a\n  queue for jobs. (superseded by ADR 0002)\n" in text
+    assert "Use a\n  queue for jobs. (superseded by ADR 0003)\n" in text

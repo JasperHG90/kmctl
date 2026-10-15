@@ -21,3 +21,4 @@
 - [ADR 0010](0010-the-ci-audit-runs-hermes-agent-against-any-openai-compatible-provider.md):
   The CI audit runs Hermes Agent with read-only kmctl tools against any
   OpenAI-compatible provider, replacing Claude Code.
+- [ADR 0011: kmctl init writes knowledge rules and a CLAUDE.md block for Claude Code](0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md): kmctl init writes four knowledge rules to .claude/rules/, a kmctl block into CLAUDE.md and AGENTS.md, and a first decision; the briefing stays the cross-harness path.

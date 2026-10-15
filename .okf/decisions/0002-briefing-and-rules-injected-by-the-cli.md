@@ -52,3 +52,14 @@ The record had no Consequences section; this adds it.
   harness rule files.
 - The skills it names are read from the packaged plugin's `skills/` folder
   at run time, so a new skill shows up without editing the briefing.
+
+## Correction, 2026-10-15
+
+The first rejected alternative, native rule files per harness, is reversed
+for Claude Code only. `kmctl init` now writes four knowledge rules to
+`.claude/rules/` and a kmctl block into `CLAUDE.md` and `AGENTS.md`, because
+the briefing alone left agents recording few decisions and no architecture
+pages, and the two rules it lacks do not fit its word budget. Why is
+[ADR 0011](0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md).
+The briefing stays the one path that works across harnesses, and its rules
+are unchanged.

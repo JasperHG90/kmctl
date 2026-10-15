@@ -32,6 +32,7 @@ flowchart LR
     subgraph cli["src/kmctl/ (kmctl CLI)"]
         app["__init__.py<br/>Typer app"]
         scaffold["scaffold.py<br/>init"]
+        repoRules["repo_rules/*.md"]
         checks["checks.py<br/>check"]
         briefing["briefing.py<br/>briefing"]
         rules["rules/*.md"]
@@ -54,6 +55,7 @@ flowchart LR
     end
 
     repo[("docs/ and .okf/")]
+    agentFiles[(".claude/rules/ and<br/>CLAUDE.md, AGENTS.md")]
     claude["claude CLI"]
     hermes["hermes CLI<br/>any OpenAI-compatible endpoint"]
     summary["job summary and<br/>Knowledge audit issue"]
@@ -72,7 +74,10 @@ flowchart LR
     briefing -- "skills_dir: names the plugin's skills" --> pluginPy
     concepts & handoffs & reviewDue & supersede --> okf
     docs & supersede --> concepts
+    scaffold -- "first decision" --> concepts
+    scaffold --> repoRules
     scaffold & concepts & docs & supersede -- "write" --> repo
+    scaffold -- "write: .claude/rules/,<br/>CLAUDE.md / AGENTS.md block" --> agentFiles
     checks & okf -. "read" .-> repo
     pluginPy -- "stages plugin/, then<br/>claude plugin install" --> claude
 
@@ -96,7 +101,7 @@ exit codes. Each verb calls one module:
 
 | Verb | Module | Writes |
 |---|---|---|
-| `kmctl init` | `scaffold.py` | `docs/README.md` and a starter `.okf/`, never touching a file that exists |
+| `kmctl init` | `scaffold.py`, with the packaged `repo_rules/` and `concepts.py` for the first decision | `docs/README.md`, a starter `.okf/`, the four knowledge rules in `.claude/rules/`, the kmctl block in `CLAUDE.md` and `AGENTS.md`, and decision "Keep project knowledge in an OKF bundle"; it keeps every file that exists except for that block and the decision's index entry and log line (ADR 0011) |
 | `kmctl check` | `checks.py` | nothing |
 | `kmctl briefing` | `briefing.py`, with `review_due.py`, `handoffs.py`, the packaged `rules/`, and `plugin.py` for the skills it names | nothing |
 | `kmctl review due` | `review_due.py` | nothing |
@@ -168,7 +173,7 @@ action's own checkout.
   `kmctl new doc`, `kmctl decision supersede`, `kmctl plugin install`,
   `kmctl plugin update`, `kmctl plugin status`.
 - Modules: `src/kmctl/__init__.py`, `scaffold.py`, `checks.py`,
-  `briefing.py`, `rules/`, `review_due.py`, `handoffs.py`, `concepts.py`,
+  `briefing.py`, `rules/`, `repo_rules/`, `review_due.py`, `handoffs.py`, `concepts.py`,
   `docs.py`, `supersede.py`, `plugin.py`, `okf.py`; `plugin/hooks/hooks.json`,
   `plugin/skills/` (write-docs, handoff, continue, audit and the three review
   skills), `plugin/agents/kmctl-auditor.md`; `action.yml`,
