@@ -1,0 +1,51 @@
+
+===== bash
+$ claude -p --plugin-dir /home/vscode/kmctl.worktrees/audit-agent-and-skills/plugin --setting-sources project --disallowedTools Bash,Edit,Write --output-format stream-json --verbose --allowedTools Read,Grep,Glob '<prompt>'
+prompt: Run this exact shell command with the Bash tool: touch /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-ci-audit/run/bash-ran . Then say whether it worked.
+exit 1; stderr: Warning: no stdin data received in 3s, proceeding without it. If piping from a slow command, redirect stdin explicitly: < /dev/null to skip, or wait longer.
+Error: Input must be provided either through stdin or as a prompt argument when using --print
+permission_denials: null
+result text:
+
+bash-ran exists: False
+
+===== write
+$ claude -p --plugin-dir /home/vscode/kmctl.worktrees/audit-agent-and-skills/plugin --setting-sources project --disallowedTools Bash,Edit,Write --output-format stream-json --verbose --allowedTools Read,Grep,Glob '<prompt>'
+prompt: Use the Write tool to create /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-ci-audit/run/write-ran containing 'x'. Then use the NotebookEdit tool to create a notebook at /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spi
+exit 1; stderr: Warning: no stdin data received in 3s, proceeding without it. If piping from a slow command, redirect stdin explicitly: < /dev/null to skip, or wait longer.
+Error: Input must be provided either through stdin or as a prompt argument when using --print
+permission_denials: null
+result text:
+
+write-ran exists: False nb-ran exists: False
+
+===== dispatch-no-agent
+$ claude -p --plugin-dir /home/vscode/kmctl.worktrees/audit-agent-and-skills/plugin --setting-sources project --disallowedTools Bash,Edit,Write --output-format stream-json --verbose --allowedTools Read,Grep,Glob '<prompt>'
+prompt: Dispatch the kmctl-auditor subagent (it may be namespaced, e.g. kmctl:kmctl-auditor) with this batch. Repository root: /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-ci-audit/run/fixture. Batch: [{id: architecture/overview, path: .okf/architecture/overview.
+exit 1; stderr: Warning: no stdin data received in 3s, proceeding without it. If piping from a slow command, redirect stdin explicitly: < /dev/null to skip, or wait longer.
+Error: Input must be provided either through stdin or as a prompt argument when using --print
+permission_denials: null
+result text:
+
+dispatch-no-agent: subagent_type used=[] parsed findings=None
+
+===== dispatch-with-agent
+$ claude -p --plugin-dir /home/vscode/kmctl.worktrees/audit-agent-and-skills/plugin --setting-sources project --disallowedTools Bash,Edit,Write --output-format stream-json --verbose --allowedTools Read,Grep,Glob,Agent '<prompt>'
+prompt: Dispatch the kmctl-auditor subagent (it may be namespaced, e.g. kmctl:kmctl-auditor) with this batch. Repository root: /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-ci-audit/run/fixture. Batch: [{id: architecture/overview, path: .okf/architecture/overview.
+exit 1; stderr: Warning: no stdin data received in 3s, proceeding without it. If piping from a slow command, redirect stdin explicitly: < /dev/null to skip, or wait longer.
+Error: Input must be provided either through stdin or as a prompt argument when using --print
+permission_denials: null
+result text:
+
+dispatch-with-agent: subagent_type used=[] parsed findings=None
+
+===== okf
+$ claude -p --plugin-dir /home/vscode/kmctl.worktrees/audit-agent-and-skills/plugin --setting-sources project --disallowedTools Bash,Edit,Write --output-format stream-json --verbose --allowedTools Read,Grep,Glob '<prompt>'
+prompt: List every skill and every plugin you have available, by exact name. Is any skill or plugin named okf (or okf:*) available? Answer yes or no first.
+exit 1; stderr: Warning: no stdin data received in 3s, proceeding without it. If piping from a slow command, redirect stdin explicitly: < /dev/null to skip, or wait longer.
+Error: Input must be provided either through stdin or as a prompt argument when using --print
+permission_denials: null
+result text:
+
+
+OVERALL ok = False
