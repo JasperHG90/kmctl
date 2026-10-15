@@ -3,7 +3,7 @@
   "slug": "knowledge-check",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 1,
+  "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -30,9 +30,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 1,
-    "binds": "0a236d657a14e1f3855f6e81931d7535a0dfc2678549bc4246d198a8ab295102",
-    "started_at": "2026-10-15T08:08:28+00:00",
+    "n": 2,
+    "binds": "b79d7ea5fa648b5d08544f4111e292c275280631ebe2f1897bfb731bf3e11d56",
+    "started_at": "2026-10-15T08:18:09+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -45,10 +45,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "0a236d657a14e1f3855f6e81931d7535a0dfc2678549bc4246d198a8ab295102",
+  "plan_hash": "b79d7ea5fa648b5d08544f4111e292c275280631ebe2f1897bfb731bf3e11d56",
   "intent": {
     "epic": "cli",
     "depends_on": [],
@@ -63,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T08:17:50+00:00"
+  "at": "2026-10-15T08:18:09+00:00"
 }
