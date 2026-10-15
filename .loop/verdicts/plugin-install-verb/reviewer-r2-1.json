@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "status() now reads `version` from the matching claude list entry, and a staged-copy mismatch is a separate problem.",
+      "anchor": "src/kmctl/plugin.py:186",
+      "category": "contract",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "install() declares scaccogatto at the chosen scope on every run.",
+      "anchor": "src/kmctl/plugin.py:158",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "_entry() filters by scope and, for project scope, by projectPath equal to cwd; project wins over user.",
+      "anchor": "src/kmctl/plugin.py:109",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "resolved",
+      "claim": "r1 asserts scope and projectPath for both ids; r2 asserts the first exit code and compares every listed plugin's version and scope.",
+      "anchor": "tests/test_plugin_install.py:51",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f5",
+      "disposition": "resolved",
+      "claim": "_report takes PluginStatus and the older mypy errors are fixed; only the missing yaml stubs remain.",
+      "anchor": "src/kmctl/__init__.py:484",
+      "category": "nit",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f6",
+      "disposition": "open",
+      "claim": "After a kmctl upgrade without update, status lists two problems with different fixes: 'installed plugin 0.2.0 ... run kmctl plugin update' and 'staged plugin 0.2.0 ... run kmctl plugin install'. Following the second runs install, which now refuses with 'run kmctl plugin update'. The staged-copy hint should name update when the installed version is also behind (or be left out then).",
+      "anchor": "src/kmctl/plugin.py:200",
+      "category": "design",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f7",
+      "disposition": "open",
+      "claim": "No test covers the f1 fix: a plain install over an older installed version must exit 1 naming kmctl plugin update, and status must report the installed-version mismatch. r5's test only edits the staged copy, so it passes even if the installed-version check is removed.",
+      "anchor": "tests/test_plugin_install.py:113",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "59c7d2b3165d159139d3a7e2a721ff6f6496adff8ce0d41a3f66af9e49d44193",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev47+g2444f9291.d20261015",
+  "at": "2026-10-15T11:25:47+00:00"
+}
