@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "ci-action",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
@@ -13,7 +13,7 @@
   "split": "j-20261015T081334+0000-097e170e",
   "split_plan_hash": "3df45f8b252a685218bec1bce313c023f2c21765ad9f6055016b462c55978366",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "9126e3ed44c25a2b42f5c026ff2bc5116e91c0b4",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -130,8 +130,14 @@
       "to": "verifying",
       "at": "2026-10-15T11:40:05+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-15T11:43:30+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.1.dev77+gbd4712cf8.d20261015",
-  "at": "2026-10-15T11:43:29+00:00"
+  "at": "2026-10-15T11:43:30+00:00"
 }
