@@ -22,42 +22,72 @@
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
-    "hash": "14950489e7640d16cf04e2de0f4440b0cef2b6a31f76d0872bea8a24c3863724",
-    "at": "2026-10-15T17:49:30+00:00"
+    "hash": "3a06ddc868de223d957650046206dbd88535eb80a92f712f5614b1feb2a6b458",
+    "at": "2026-10-15T19:07:29+00:00"
   },
   "delegation": null,
   "budget_base": null,
   "signed_rows": [
     {
       "id": "r1",
-      "behavior": "A network-marked test that fails with a network error is run again up to two more times and reported as passed if a later run passes.",
-      "fails_when": "a network-marked test whose first two runs fail with 'Could not resolve host' and third passes is reported as failed, or runs more than three times",
-      "command": "uv run pytest tests/test_network_retry.py -k passes_on_retry -q",
+      "behavior": "The network tests are an integration tier: registered, strict markers on, left out of the default pytest run, and run by an integration gate in .loop/config.toml.",
+      "fails_when": "the default uv run pytest collects a test that adds the okf marketplace from GitHub, the marker is not registered or --strict-markers is off, or .loop/config.toml has no gate running uv run pytest -m integration",
+      "command": "uv run pytest tests/test_network_retry.py -k tier -q",
       "judgment": false
     },
     {
       "id": "r2",
-      "behavior": "A failure that is not a network error is reported at once, and three network failures are reported as a failure.",
-      "fails_when": "a network-marked test failing with another message is rerun, or one failing with a network error three times is reported as passed or skipped",
-      "command": "uv run pytest tests/test_network_retry.py -k not_rerun_or_fails -q",
+      "behavior": "In the integration tier a network error is retried up to two more times; any other failure is reported at once; three network failures still fail.",
+      "fails_when": "a test failing twice with 'Could not resolve host' then passing is reported as failed or runs more than three times, a test failing with another message is rerun, or one failing three times with a network error is reported as passed or skipped",
+      "command": "uv run pytest tests/test_network_retry.py -k retry -q",
       "judgment": false
     },
     {
       "id": "r3",
-      "behavior": "Every test in tests/test_plugin_install.py that adds the okf marketplace from GitHub carries the network marker.",
+      "behavior": "Every test in tests/test_plugin_install.py that adds the okf marketplace from GitHub carries the integration marker.",
       "fails_when": "such a test lacks the marker",
       "command": "uv run pytest tests/test_network_retry.py -k marked -q",
       "judgment": false
     },
     {
       "id": "r4",
-      "behavior": "The other tests still pass.",
-      "fails_when": "any test fails",
-      "command": "uv run pytest -q",
+      "behavior": "The default suite and the integration tier both pass.",
+      "fails_when": "uv run pytest or uv run pytest -m integration fails",
+      "command": "uv run pytest -q -m \"not integration or integration\"",
       "judgment": false
     }
   ],
-  "resigns": [],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+      "reason": "follow the python-testing rule: integration tier out of the default run, its own gate, retry on network errors only",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r1": [
+            "behavior",
+            "fails_when",
+            "command"
+          ],
+          "r2": [
+            "behavior",
+            "fails_when",
+            "command"
+          ],
+          "r3": [
+            "behavior"
+          ],
+          "r4": [
+            "behavior",
+            "fails_when",
+            "command"
+          ]
+        }
+      },
+      "at": "2026-10-15T19:07:29+00:00"
+    }
+  ],
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
@@ -77,5 +107,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev61+g8318eb7a1.d20261015",
-  "at": "2026-10-15T19:07:28+00:00"
+  "at": "2026-10-15T19:07:29+00:00"
 }
