@@ -1,4 +1,12 @@
 {
   "schema_version": "1.0",
-  "rows": []
+  "rows": [
+    {"id": "r1", "behavior": "action.yml has an optional mode input (checks by default, or audit) and an anthropic_api_key input; without mode the action runs only the checks, as before.", "fails_when": "action.yml has no mode input, its default is not checks, the audit step runs when mode is not audit, or the existing checks tests fail", "command": "uv run pytest tests/test_action.py tests/test_ci_audit.py::test_mode_input_defaults_to_checks -q"},
+    {"id": "r2", "behavior": "The audit path runs kmctl review due --json itself, hands the due list to claude -p, and writes the agent's findings to the job summary and to one issue titled Knowledge audit.", "fails_when": "with a stub claude that prints a findings block and a stub gh, the summary or the issue body does not hold each finding's concept and verdict, or gh is not asked to create or edit an issue titled Knowledge audit", "command": "uv run pytest tests/test_ci_audit.py::test_audit_writes_summary_and_issue -q"},
+    {"id": "r3", "behavior": "Audit mode refuses any event other than workflow_dispatch and schedule, before claude runs.", "fails_when": "with GITHUB_EVENT_NAME=pull_request (or push) the script exits 0, or the stub claude is called", "command": "uv run pytest tests/test_ci_audit.py::test_audit_refuses_other_events -q"},
+    {"id": "r4", "behavior": "claude runs with the action's own plugin and read-only tools: --plugin-dir pointing at the action's plugin/, --allowedTools Read,Grep,Glob and --disallowedTools Bash,Edit,Write.", "fails_when": "the stub claude's recorded arguments lack any of those flags or values", "command": "uv run pytest tests/test_ci_audit.py::test_claude_runs_read_only -q"},
+    {"id": "r5", "behavior": "A findings block that is missing or not valid JSON fails the step with a message, and opens no issue.", "fails_when": "with a stub claude that prints no findings block, the script exits 0 or gh is called", "command": "uv run pytest tests/test_ci_audit.py::test_audit_fails_without_findings -q"},
+    {"id": "r6", "behavior": "The shipped example audit workflow runs only on workflow_dispatch and schedule, sets permissions contents: read and issues: write, and passes the key from a secret.", "fails_when": ".github/workflows/knowledge-audit.yml has another trigger, other permissions, or no secrets reference for the key", "command": "uv run pytest tests/test_ci_audit.py::test_example_workflow -q"},
+    {"id": "r7", "behavior": "A spike shows that real claude -p with these flags and --plugin-dir loads the plugin and refuses a request to run Bash or to write a file.", "fails_when": "no spike for ci-audit records the flags, the plugin load, and both refusals", "judgment": true}
+  ]
 }
