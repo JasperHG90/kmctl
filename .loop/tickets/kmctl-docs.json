@@ -19,7 +19,9 @@
   "archived": false,
   "worktree": "/home/vscode/kmctl.worktrees/kmctl-docs",
   "branch": "loop/kmctl-docs",
-  "stamps": [],
+  "stamps": [
+    "a78f13dfb957ebab9a6fa33d605f2fa87152a9cc2790b1353025e4cebac6a0bc"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
     "hash": "2d93890a1dac0500b9544e8d6c23724261b8845caa9dd89a76bde380aba51a4c",
@@ -122,5 +124,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T13:18:51+00:00"
+  "at": "2026-10-15T13:26:52+00:00"
 }
