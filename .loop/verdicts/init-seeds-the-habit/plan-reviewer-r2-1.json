@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "The briefing now keeps its two packaged one-line rules unchanged; the four full rules ship as separate package data written only as files, so the 600-word budget is untouched. r6 checks the briefing text is unchanged.",
+      "anchor": "src/kmctl/briefing.py:21",
+      "category": "design",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r6"
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "The plan adds a new ADR, a dated Correction on ADR 0002, and changes the never-edit promise in the help and ScaffoldResult docstring to name the exception. AGENTS.md and the symlink case are covered (one block per real file). r8 and r2 check them.",
+      "anchor": ".okf/decisions/0002-briefing-and-rules-injected-by-the-cli.md",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r8"
+    },
+    {
+      "id": "p3",
+      "disposition": "resolved",
+      "claim": "The first decision is written only when no record has its title, so a second run or an existing bundle gets no duplicate. r3 tests a bundle with 0001 to 0003 already present.",
+      "anchor": "src/kmctl/concepts.py:244",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r3"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "8f5000db8e2f4df4cc206e411fd57899035b4299e45ff056019ee4c850756461"
+  },
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "at": "2026-10-15T16:07:12+00:00"
+}
