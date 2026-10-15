@@ -3,7 +3,7 @@
   "slug": "ci-audit-hardening",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 2,
+  "plan_rounds": 3,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -116,9 +116,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 2,
-    "binds": "da7ea1a5521d7b7ad727ed33a95d4d1b4ffe6d5aec487c4cbaf737387246fb6d",
-    "started_at": "2026-10-15T13:20:54+00:00",
+    "n": 3,
+    "binds": "507f41fd6d61c12d25035b02d3ebb018ccc1add78c1d4299f1f275b0521bde7c",
+    "started_at": "2026-10-15T13:23:22+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -131,10 +131,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "da7ea1a5521d7b7ad727ed33a95d4d1b4ffe6d5aec487c4cbaf737387246fb6d",
+  "plan_hash": "507f41fd6d61c12d25035b02d3ebb018ccc1add78c1d4299f1f275b0521bde7c",
   "intent": {
     "epic": "ci",
     "depends_on": [
@@ -151,5 +151,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T13:23:21+00:00"
+  "at": "2026-10-15T13:23:22+00:00"
 }
