@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "A title with a line break splits the index entry over two lines, so kmctl check fails straight after kmctl new doc (and kmctl new KIND, which has the same gap).",
+      "anchor": "src/kmctl/docs.py:73",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "The r1 test checks one skeleton heading per type, so dropping the other headings of a type still passes.",
+      "anchor": "tests/test_new_doc.py:7",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "The success line \"Next: write the sections of PATH\" is a hand-written string repeated in two verbs and names no kmctl step, against cli-interface.md every-success-names-the-next-step.",
+      "anchor": "src/kmctl/__init__.py:363",
+      "category": "design",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "b1adc436e2b4d7d64b86bab91351ce9256833c6a6392c7d4115f0035e2daa49a",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T11:07:19+00:00"
+}
