@@ -1,0 +1,1 @@
+{"at": "2026-10-15T16:04:51+00:00", "command": "uv run ruff check", "exit": 1, "fingerprint": "1922b8da6b8a1be99615b8a4b39e08969a86f9f6935da453b56808aa54349314", "kind": "red", "name": "lint", "note": null, "output": ".loop/events/audit-hermes-hardening/gate-output/ce381ef56986f8461c1e971528d2a2d8709bb0b7d81ed05f9c8de429395ff80b.txt", "schema_version": "1.0"}
