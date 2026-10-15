@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "ci-audit",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 3,
   "review_rounds": 1,
@@ -128,8 +128,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "0564401e500fdf3ac9871a47c91d2f3b33416856957442fb3bdefccd547139e6",
   "intent": {
@@ -164,8 +164,14 @@
       "to": "verifying",
       "at": "2026-10-15T13:06:21+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-15T13:09:48+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T13:06:22+00:00"
+  "at": "2026-10-15T13:09:48+00:00"
 }
