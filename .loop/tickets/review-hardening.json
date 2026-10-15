@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "review-hardening",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
@@ -87,8 +87,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "6c21f5ac926128be3dfbc57c1bb0e9df59d1016400ae0d6fcc40c070a9cfee8b",
   "intent": {
@@ -120,8 +120,14 @@
       "to": "verifying",
       "at": "2026-10-15T12:01:03+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-15T12:02:56+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.0.1.dev77+gbd4712cf8.d20261015",
-  "at": "2026-10-15T12:01:04+00:00"
+  "at": "2026-10-15T12:02:56+00:00"
 }
