@@ -19,9 +19,9 @@ Relayed from: none
 
 ## Intent
 
-Adds a prototype check to `kmctl check`: every folder under `.okf/prototypes/` has a `README.md` concept.
+Adds a prototype check to `kmctl check`: every folder directly under `.okf/prototypes/` has a `README.md` concept. Folders nested deeper (a prototype's `src/` or `results/`) are not prototypes and are not checked.
 
-Done when tests cover a passing and a failing fixture.
+Done when tests cover a passing fixture, a passing fixture whose prototype has a nested folder with no `README.md`, and a failing fixture.
 
 ## Could invalidate this plan
 
