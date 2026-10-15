@@ -22,8 +22,8 @@
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
-    "hash": "d82018173c96f03e0ccd3deca9ef86fd0ec815e5d0dc39d18bec04d27a11203e",
-    "at": "2026-10-15T16:03:35+00:00"
+    "hash": "103ecd8140bbeec515500a526dd82a0d6e92f9953a9fd75e352e397c0a5e2d18",
+    "at": "2026-10-15T16:06:19+00:00"
   },
   "delegation": null,
   "budget_base": null,
@@ -37,15 +37,15 @@
     },
     {
       "id": "r2",
-      "behavior": "kmctl init writes CLAUDE.md with a kmctl block (routing table and three duties) when there is none, appends the block to an existing CLAUDE.md, and replaces only the block when it is already there.",
-      "fails_when": "the block between <!-- kmctl:start --> and <!-- kmctl:end --> is missing the routing for docs/, the manifesto, decisions/ and architecture/ or any of the three duties; an existing CLAUDE.md loses or changes any text outside the block; or a second init adds a second block",
+      "behavior": "kmctl init adds a kmctl block (routing table and three duties) to each of CLAUDE.md and AGENTS.md that exists, once per real file, writes CLAUDE.md with the block when neither exists, and replaces only the block when it is already there.",
+      "fails_when": "the block between <!-- kmctl:start --> and <!-- kmctl:end --> is missing the routing for docs/, the manifesto, decisions/ and architecture/ or any of the three duties; an existing CLAUDE.md or AGENTS.md loses or changes any text outside the block; an existing AGENTS.md gets no block; a CLAUDE.md symlinked to AGENTS.md ends with two blocks; or a second init adds a second block",
       "command": "uv run pytest tests/test_init.py -k claude_md -q",
       "judgment": false
     },
     {
       "id": "r3",
-      "behavior": "kmctl init records decision 0001, Keep project knowledge in an OKF bundle, with Context, Decision naming the rejected alternatives, and Consequences, plus its index entry and log line; kmctl check and the strict okf validator pass right after init.",
-      "fails_when": "after init the decision is missing, lacks any of those sections or the rejected alternatives, has no index entry or log line, or kmctl check or okf_validate --strict fails",
+      "behavior": "kmctl init records the decision Keep project knowledge in an OKF bundle, with Context, Decision naming the rejected alternatives, and Consequences, plus its index entry and log line, only when no record with that title exists; kmctl check and the strict okf validator pass right after init.",
+      "fails_when": "after init in a fresh repo the decision is missing, lacks any of those sections or the rejected alternatives, has no index entry or log line, or kmctl check or okf_validate --strict fails; or in a bundle that already has decisions 0001 to 0003, init writes a second record with that title or overwrites one",
       "command": "uv run pytest tests/test_init.py -k first_decision -q",
       "judgment": false
     },
@@ -65,9 +65,16 @@
     },
     {
       "id": "r6",
-      "behavior": "The other init, briefing and check tests still pass, and the briefing stays within its word budget.",
-      "fails_when": "any test in tests/test_init.py, tests/test_briefing.py or tests/test_check.py fails",
+      "behavior": "The other init, briefing and check tests still pass, and the briefing's rules and word count are unchanged by the new rule files.",
+      "fails_when": "any test in tests/test_init.py, tests/test_briefing.py or tests/test_check.py fails, or kmctl briefing's text in a fresh repo after init differs from before apart from state counts",
       "command": "uv run pytest tests/test_init.py tests/test_briefing.py tests/test_check.py -q",
+      "judgment": false
+    },
+    {
+      "id": "r8",
+      "behavior": "This repository records why init writes rule files and the agent-file block: a new decision record, a dated Correction on ADR 0002 pointing to it, and init's help and ScaffoldResult docstring naming the exception to never editing a kept file.",
+      "fails_when": ".okf/decisions/ has no record naming .claude/rules/ and CLAUDE.md that links ADR 0002 and ADR 0003, ADR 0002 has no Correction pointing to it, or kmctl init --help or ScaffoldResult's docstring still says init never edits a kept file without the exception",
+      "command": "uv run pytest tests/test_init.py -k decision_record -q",
       "judgment": false
     },
     {
@@ -78,7 +85,33 @@
       "judgment": true
     }
   ],
-  "resigns": [],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+      "reason": "plan round 1 review: briefing unchanged (budget), AGENTS.md block, no duplicate first decision, an ADR for the reversal of ADR 0002",
+      "diff": {
+        "added": [
+          "r8"
+        ],
+        "removed": [],
+        "changed": {
+          "r2": [
+            "behavior",
+            "fails_when"
+          ],
+          "r3": [
+            "behavior",
+            "fails_when"
+          ],
+          "r6": [
+            "behavior",
+            "fails_when"
+          ]
+        }
+      },
+      "at": "2026-10-15T16:06:19+00:00"
+    }
+  ],
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
@@ -117,5 +150,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T16:06:18+00:00"
+  "at": "2026-10-15T16:06:19+00:00"
 }

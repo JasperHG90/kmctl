@@ -1,12 +1,53 @@
 {
   "schema_version": "1.0",
   "rows": [
-    {"id": "r1", "behavior": "kmctl init writes the four knowledge rules to .claude/rules/ in full with their paths: front matter, written for any repository, and keeps an existing file of the same name.", "fails_when": "after init in an empty repo any of okf-bundle, docs-layout, diagrams-stay-current or manifesto-invariants is missing from .claude/rules/, lacks its paths: front matter or a WHY paragraph, or mentions loopctl, tickets or .loop/; or an existing file of that name is changed", "command": "uv run pytest tests/test_init.py -k rule_files -q"},
-    {"id": "r2", "behavior": "kmctl init writes CLAUDE.md with a kmctl block (routing table and three duties) when there is none, appends the block to an existing CLAUDE.md, and replaces only the block when it is already there.", "fails_when": "the block between <!-- kmctl:start --> and <!-- kmctl:end --> is missing the routing for docs/, the manifesto, decisions/ and architecture/ or any of the three duties; an existing CLAUDE.md loses or changes any text outside the block; or a second init adds a second block", "command": "uv run pytest tests/test_init.py -k claude_md -q"},
-    {"id": "r3", "behavior": "kmctl init records decision 0001, Keep project knowledge in an OKF bundle, with Context, Decision naming the rejected alternatives, and Consequences, plus its index entry and log line; kmctl check and the strict okf validator pass right after init.", "fails_when": "after init the decision is missing, lacks any of those sections or the rejected alternatives, has no index entry or log line, or kmctl check or okf_validate --strict fails", "command": "uv run pytest tests/test_init.py -k first_decision -q"},
-    {"id": "r4", "behavior": "kmctl init prints the agent's next steps in order: fill the manifesto's purpose and invariants (values are the operator's), add an architecture page once there is code, record each choice with kmctl new decision.", "fails_when": "init's output lacks any of the three steps or gives them in another order", "command": "uv run pytest tests/test_init.py -k next_steps -q"},
-    {"id": "r5", "behavior": "Running kmctl init twice changes nothing the second time.", "fails_when": "a second init in the same repo changes, adds or removes any file", "command": "uv run pytest tests/test_init.py -k twice -q"},
-    {"id": "r6", "behavior": "The other init, briefing and check tests still pass, and the briefing stays within its word budget.", "fails_when": "any test in tests/test_init.py, tests/test_briefing.py or tests/test_check.py fails", "command": "uv run pytest tests/test_init.py tests/test_briefing.py tests/test_check.py -q"},
-    {"id": "r7", "behavior": "A spike reruns spike 1's task with the built kmctl init and the real SessionStart briefing and counts decisions and architecture pages against spike 1's arms.", "fails_when": "no init-seeds-the-habit spike after the build records both counts for the built init", "judgment": true}
+    {
+      "id": "r1",
+      "behavior": "kmctl init writes the four knowledge rules to .claude/rules/ in full with their paths: front matter, written for any repository, and keeps an existing file of the same name.",
+      "fails_when": "after init in an empty repo any of okf-bundle, docs-layout, diagrams-stay-current or manifesto-invariants is missing from .claude/rules/, lacks its paths: front matter or a WHY paragraph, or mentions loopctl, tickets or .loop/; or an existing file of that name is changed",
+      "command": "uv run pytest tests/test_init.py -k rule_files -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "kmctl init adds a kmctl block (routing table and three duties) to each of CLAUDE.md and AGENTS.md that exists, once per real file, writes CLAUDE.md with the block when neither exists, and replaces only the block when it is already there.",
+      "fails_when": "the block between <!-- kmctl:start --> and <!-- kmctl:end --> is missing the routing for docs/, the manifesto, decisions/ and architecture/ or any of the three duties; an existing CLAUDE.md or AGENTS.md loses or changes any text outside the block; an existing AGENTS.md gets no block; a CLAUDE.md symlinked to AGENTS.md ends with two blocks; or a second init adds a second block",
+      "command": "uv run pytest tests/test_init.py -k claude_md -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "kmctl init records the decision Keep project knowledge in an OKF bundle, with Context, Decision naming the rejected alternatives, and Consequences, plus its index entry and log line, only when no record with that title exists; kmctl check and the strict okf validator pass right after init.",
+      "fails_when": "after init in a fresh repo the decision is missing, lacks any of those sections or the rejected alternatives, has no index entry or log line, or kmctl check or okf_validate --strict fails; or in a bundle that already has decisions 0001 to 0003, init writes a second record with that title or overwrites one",
+      "command": "uv run pytest tests/test_init.py -k first_decision -q"
+    },
+    {
+      "id": "r4",
+      "behavior": "kmctl init prints the agent's next steps in order: fill the manifesto's purpose and invariants (values are the operator's), add an architecture page once there is code, record each choice with kmctl new decision.",
+      "fails_when": "init's output lacks any of the three steps or gives them in another order",
+      "command": "uv run pytest tests/test_init.py -k next_steps -q"
+    },
+    {
+      "id": "r5",
+      "behavior": "Running kmctl init twice changes nothing the second time.",
+      "fails_when": "a second init in the same repo changes, adds or removes any file",
+      "command": "uv run pytest tests/test_init.py -k twice -q"
+    },
+    {
+      "id": "r6",
+      "behavior": "The other init, briefing and check tests still pass, and the briefing's rules and word count are unchanged by the new rule files.",
+      "fails_when": "any test in tests/test_init.py, tests/test_briefing.py or tests/test_check.py fails, or kmctl briefing's text in a fresh repo after init differs from before apart from state counts",
+      "command": "uv run pytest tests/test_init.py tests/test_briefing.py tests/test_check.py -q"
+    },
+    {
+      "id": "r8",
+      "behavior": "This repository records why init writes rule files and the agent-file block: a new decision record, a dated Correction on ADR 0002 pointing to it, and init's help and ScaffoldResult docstring naming the exception to never editing a kept file.",
+      "fails_when": ".okf/decisions/ has no record naming .claude/rules/ and CLAUDE.md that links ADR 0002 and ADR 0003, ADR 0002 has no Correction pointing to it, or kmctl init --help or ScaffoldResult's docstring still says init never edits a kept file without the exception",
+      "command": "uv run pytest tests/test_init.py -k decision_record -q"
+    },
+    {
+      "id": "r7",
+      "behavior": "A spike reruns spike 1's task with the built kmctl init and the real SessionStart briefing and counts decisions and architecture pages against spike 1's arms.",
+      "fails_when": "no init-seeds-the-habit spike after the build records both counts for the built init",
+      "judgment": true
+    }
   ]
 }
