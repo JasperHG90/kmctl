@@ -1,0 +1,38 @@
+{
+  "skill_name": "continue",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/continue",
+      "expected_output": "Runs kmctl handoffs --json, offers the live handoffs (three newest plus more) as a multi-select, and stops for the choice without acting.",
+      "expectations": [
+        "Lists handoffs through kmctl handoffs --json, not by reading the folder",
+        "Offers at most three handoffs plus a more option, newest first",
+        "Takes no action and edits no file before the user chooses"
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "what was I working on? /continue",
+      "expected_output": "In a repository with no live handoffs, says there are none and suggests /handoff, then stops.",
+      "expectations": [
+        "Says there are no live handoffs",
+        "Suggests /handoff",
+        "Writes no file"
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "/continue the parser refactor and the CI action ones",
+      "expected_output": "Skips the pick list because the user named two handoffs, reads those two, gives one combined brief and asks what to do next without acting.",
+      "expectations": [
+        "Reads only the two named handoffs",
+        "One combined brief: what each is, where it stands, how they connect, next steps",
+        "Ends by asking what to do next and takes no action"
+      ],
+      "files": []
+    }
+  ]
+}

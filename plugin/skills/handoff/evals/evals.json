@@ -1,0 +1,29 @@
+{
+  "skill_name": "handoff",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "ok I'm done for today. we refactored the parser into a tokenizer and a tree builder (src/parser/tokens.py and src/parser/tree.py), the tokenizer tests pass but tree.py still fails on nested lists, and we decided to drop the regex approach because it couldn't handle escapes. /handoff",
+      "expected_output": "kmctl new handoff run with --key from CLAUDE_CODE_SESSION_ID when set; four sections filled with the real files, the decision and its reason, the failing case and next steps; kmctl check passes.",
+      "expectations": [
+        "The handoff is created with kmctl new handoff, not written by hand",
+        "--key is passed only when CLAUDE_CODE_SESSION_ID is set and not empty",
+        "Summary names the regex approach being dropped and why",
+        "Where it stands says the tokenizer tests pass and tree.py fails on nested lists",
+        "Key references name src/parser/tokens.py and src/parser/tree.py",
+        "kmctl check passes afterwards"
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "update the handoff, we fixed the nested lists bug in tree.py, only the error messages are left. /handoff",
+      "expected_output": "With an existing handoff for this session key, kmctl new handoff --key updates the same file rather than adding a second one.",
+      "expectations": [
+        "One handoff file remains in .okf/handoffs/ (plus index.md), updated in place",
+        "Where it stands says the nested lists bug is fixed and error messages are left"
+      ],
+      "files": []
+    }
+  ]
+}
