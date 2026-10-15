@@ -3,7 +3,7 @@
   "slug": "ci-audit",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 1,
+  "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -37,9 +37,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 1,
-    "binds": "d4609ca781b0ab8c8b2d24dafddc43e45134fe00dbb0d9235f42f5b47c1e866e",
-    "started_at": "2026-10-15T08:08:37+00:00",
+    "n": 2,
+    "binds": "6513633c7726db7e5c21965587ab1f55b9f88b151272a97b7d9bfbb55144a2e7",
+    "started_at": "2026-10-15T12:24:46+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -52,10 +52,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "d4609ca781b0ab8c8b2d24dafddc43e45134fe00dbb0d9235f42f5b47c1e866e",
+  "plan_hash": "6513633c7726db7e5c21965587ab1f55b9f88b151272a97b7d9bfbb55144a2e7",
   "intent": {
     "epic": "ci",
     "depends_on": [
@@ -73,5 +73,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev77+gbd4712cf8.d20261015",
-  "at": "2026-10-15T12:22:49+00:00"
+  "at": "2026-10-15T12:24:46+00:00"
 }
