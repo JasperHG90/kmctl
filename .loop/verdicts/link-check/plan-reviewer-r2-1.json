@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "`/` links now have a defined meaning: in docs/ they resolve from the repository root, as GitHub renders them; in .okf/ they resolve from the bundle root (OKF §6.1) and are left to the validator.",
+      "anchor": ".loop/plans/link-check.md:26",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "The plan leaves in-bundle .okf/ links to the okf validator, which only warns as §6.1 requires, and fails only on docs/ links and .okf/ links that leave the bundle. A test checks that a broken in-bundle link is not reported.",
+      "anchor": ".loop/plans/link-check.md:23",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "7f03dc8f5d28e418ea25b3383e424ae4c30e2f3142825ed9a5d974072a0a0fc0"
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T08:19:31+00:00"
+}
