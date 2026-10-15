@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "--path did not check that the target is an existing folder",
+      "anchor": "src/kmctl/__init__.py:54",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "a new manifesto beside a kept index.md or log.md went unmentioned",
+      "anchor": "src/kmctl/scaffold.py:85",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "the index warning fires whenever index.md is kept and the manifesto is new, without reading the index, so it says \"does not link\" even when the kept index already links manifesto.md",
+      "anchor": "src/kmctl/scaffold.py:86",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "open",
+      "claim": "the --json help text and the scaffold() Returns docstring still name only created and skipped paths, though the result now carries warnings too",
+      "anchor": "src/kmctl/__init__.py:63",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "9796cc6d06fcd4f17eb6f0a2db85c0f18d80d7f66e833148897cced302ee4742",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T08:38:51+00:00"
+}
