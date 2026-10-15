@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "fingerprint": "a47445b2347fd2d952c08e000b1dd9916771d3b02da94cfe79ea1cc936ca34c1",
+  "slug": "write-docs-skill",
+  "results": [
+    {
+      "name": "lint",
+      "kind": "gate",
+      "command": "uv run ruff check",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "format",
+      "kind": "gate",
+      "command": "uv run ruff format --check",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "tests",
+      "kind": "gate",
+      "command": "uv run pytest",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r1",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_skills.py::test_write_docs_skill_layout -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 1,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    }
+  ],
+  "green": true,
+  "at": "2026-10-15T11:24:17+00:00",
+  "commit": null,
+  "by": "process:loopctl/2.0.1.dev47+g2444f9291.d20261015"
+}
