@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {"id": "r1", "behavior": "Every front matter key in the repository's own .okf/ is in ALLOWED_FIELDS (I4), so decision_status and decided_on are gone.", "fails_when": "any page under .okf/ has a front matter key, nested keys as paths, that ALLOWED_FIELDS lacks", "command": "uv run pytest tests/test_adr_audit_fixes.py::test_bundle_keys_are_allowed -q"},
+    {"id": "r2", "behavior": "Every decision record has a Consequences heading, its own or inside an appended Correction section, and the log names every record touched.", "fails_when": "a file in .okf/decisions/ other than index.md has no Consequences heading, or .okf/log.md has no line naming one of the nine records", "command": "uv run pytest tests/test_adr_audit_fixes.py::test_records_have_consequences -q"},
+    {"id": "r3", "behavior": "The briefing names every skill folder the packaged plugin ships (ADR 0002), read at run time.", "fails_when": "kmctl briefing's output lacks the name of a folder under the plugin payload's skills/, including a skill folder the test adds to a copy", "command": "uv run pytest tests/test_briefing.py -k skills -q"},
+    {"id": "r4", "behavior": "The briefing stays inside the I3 word budget, and the bundle passes the okf validator in strict mode.", "fails_when": "the existing budget test fails, or okf_validate --strict reports a problem on .okf/", "command": "uv run pytest tests/test_briefing.py tests/test_adr_audit_fixes.py::test_bundle_valid -q"},
+    {"id": "r5", "behavior": "The supersede module's docstring no longer names decision_status, and supersede still writes only spec fields.", "fails_when": "src/kmctl/supersede.py mentions decision_status, or tests/test_supersede.py fails", "command": "uv run pytest tests/test_supersede.py tests/test_adr_audit_fixes.py::test_supersede_docstring -q"}
+  ]
+}
