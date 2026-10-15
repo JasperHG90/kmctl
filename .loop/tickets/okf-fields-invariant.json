@@ -3,7 +3,7 @@
   "slug": "okf-fields-invariant",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,7 +28,26 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "0b211c691a8544cd6db100027f646d30b6b06a194c2ef4e2f2582cb6481a67ef",
+    "started_at": "2026-10-15T12:25:36+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
   "plan_hash": "0b211c691a8544cd6db100027f646d30b6b06a194c2ef4e2f2582cb6481a67ef",
   "intent": {
     "epic": "cli",
@@ -44,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev77+gbd4712cf8.d20261015",
-  "at": "2026-10-15T12:25:35+00:00"
+  "at": "2026-10-15T12:25:36+00:00"
 }
