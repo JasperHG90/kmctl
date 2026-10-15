@@ -22,8 +22,8 @@
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
-    "hash": "f754b3a92bc40dc6f043c19997a61cf1cddb811b833c44c0c8b590272868acf5",
-    "at": "2026-10-15T17:19:20+00:00"
+    "hash": "785e5e7276148f13e1fcb56b2e4f30fd76379e540a1ec920bb8c820175e3eaac",
+    "at": "2026-10-15T17:21:56+00:00"
   },
   "delegation": null,
   "budget_base": null,
@@ -44,8 +44,8 @@
     },
     {
       "id": "r3",
-      "behavior": "kmctl new writes every --source path, in order, as the concept's sources, refuses a path that is not a tracked file or folder, naming it, and kmctl review due lists the concept as due after a commit that changes a source.",
-      "fails_when": "the sources list is missing a path, out of order, or in a shape review due does not read; an untracked or missing path is accepted or not named; or after verifying the concept and committing a change to its source, review due does not list it with the source-changed reason",
+      "behavior": "kmctl new writes every --source path, in order, as resource mappings, accepts an existing file git does not track yet, refuses a path that does not exist (naming it) and refuses --source on a handoff; kmctl review due lists the concept as due after a commit that changes a source.",
+      "fails_when": "the sources list is missing a path, out of order, or not resource mappings; an existing untracked file is refused; a missing path is accepted or not named; a handoff accepts --source; or after verifying the concept and committing a change to its source, review due does not list it with the source-changed reason",
       "command": "uv run pytest tests/test_new_concept.py -k source -q",
       "judgment": false
     },
@@ -71,7 +71,23 @@
       "judgment": false
     }
   ],
-  "resigns": [],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+      "reason": "plan round 1 review: sources must exist on disk (as review due resolves them), not be tracked; --source refused on handoffs",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r3": [
+            "behavior",
+            "fails_when"
+          ]
+        }
+      },
+      "at": "2026-10-15T17:21:56+00:00"
+    }
+  ],
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
@@ -112,5 +128,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T17:21:55+00:00"
+  "at": "2026-10-15T17:21:56+00:00"
 }
