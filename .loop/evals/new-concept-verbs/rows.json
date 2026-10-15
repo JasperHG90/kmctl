@@ -1,4 +1,10 @@
 {
   "schema_version": "1.0",
-  "rows": []
+  "rows": [
+    {"id": "r1", "behavior": "kmctl new KIND TITLE --description TEXT creates the concept for each of decision, practice, proposal, prototype and handoff, with its front matter and that kind's heading skeleton.", "fails_when": "for any kind the file is missing, misnamed, lacks type, title, description, tags or generated, or lacks the skeleton headings", "command": "uv run pytest tests/test_new_concept.py::test_new_creates_each_kind -q"},
+    {"id": "r2", "behavior": "Decisions get the next four-digit number and handoffs get a stale_after date.", "fails_when": "a new decision's number is not one more than the highest, or a handoff has no stale_after", "command": "uv run pytest tests/test_new_concept.py::test_new_numbers_and_dates -q"},
+    {"id": "r3", "behavior": "The first concept in a section creates the section folder, its index.md and the root index link.", "fails_when": "after the first concept, the section index or the root link is missing", "command": "uv run pytest tests/test_new_concept.py::test_new_creates_section -q"},
+    {"id": "r4", "behavior": "Each new concept is indexed and logged, kmctl check passes, and the bundle passes the pinned okf validator in strict mode.", "fails_when": "the section index has no entry, log.md has no line naming the id, kmctl check exits nonzero, or the strict validator exits nonzero", "command": "uv run pytest tests/test_new_concept.py::test_new_indexes_logs_and_validates -q"},
+    {"id": "r5", "behavior": "It refuses, writing nothing, when the file already exists, including two handoffs with the same title.", "fails_when": "any file changes or the command exits 0", "command": "uv run pytest tests/test_new_concept.py::test_new_refuses_existing -q"}
+  ]
 }

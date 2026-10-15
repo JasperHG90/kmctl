@@ -1,4 +1,9 @@
 {
   "schema_version": "1.0",
-  "rows": []
+  "rows": [
+    {"id": "r1", "behavior": "The plugin declares exactly one hook, a SessionStart hook that runs kmctl briefing.", "fails_when": "plugin/hooks/hooks.json has any event other than SessionStart, more than one hook, or a command that does not run kmctl briefing", "command": "uv run pytest tests/test_plugin.py::test_plugin_has_one_sessionstart_hook -q"},
+    {"id": "r2", "behavior": "Without kmctl on PATH, the hook exits 0 and prints how to install kmctl.", "fails_when": "the hook command, run with a PATH that has no kmctl, exits nonzero or prints no install hint", "command": "uv run pytest tests/test_plugin.py::test_hook_without_kmctl_exits_zero_with_hint -q"},
+    {"id": "r3", "behavior": "The marketplace entry declares okf from marketplace scaccogatto and allowlists scaccogatto.", "fails_when": "marketplace.json lacks the okf dependency with marketplace scaccogatto, or allowCrossMarketplaceDependenciesOn does not include scaccogatto", "command": "uv run pytest tests/test_plugin.py::test_marketplace_declares_okf_dependency -q"},
+    {"id": "r4", "behavior": "claude plugin validate accepts the plugin and the marketplace.", "fails_when": "claude plugin validate reports an error for plugin/ or the root marketplace", "command": "uv run pytest tests/test_plugin.py::test_claude_plugin_validate_passes -q"}
+  ]
 }

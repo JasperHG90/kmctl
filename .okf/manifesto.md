@@ -52,8 +52,10 @@ this formalizes so every repository can have it.
 - **A plugin**, for Claude Code first (ADR 0003). It depends on the `okf`
   plugin for OKF authoring and validation and adds: one SessionStart hook
   that relays `kmctl`'s briefing (ADR 0004), an audit agent with three review
-  skills (architecture, decision log, practices), and a skill for writing
-  Diataxis docs. Skills route; `kmctl` decides and writes.
+  skills (architecture, decision log, practices), a skill for writing
+  Diataxis docs, and `/handoff` and `/continue`, which write and read back
+  handoffs in `.okf/handoffs/` (ADR 0008). Skills route; `kmctl` decides
+  and writes.
 - **A reusable GitHub Action** (ADR 0005). On every pull request it runs the
   deterministic checks for free. The LLM audit is opt-in and reports only.
 
@@ -70,9 +72,10 @@ Each is `planned` until the test named for it passes, then `enforced`.
 - **I3. The briefing comes from the CLI and fits a budget.** The hook prints
   what `kmctl` prints, so upgrading the CLI updates the briefing, and its
   word count stays under a fixed budget. Status: planned.
-- **I4. kmctl reads OKF as it is.** It uses only fields the OKF v0.2 spec
-  defines (`stale_after`, `verified`, `sources`, `status`). Extension fields
-  are allowed by the spec but none are added yet (ADR 0006).
+- **I4. kmctl reads OKF as it is.** It uses the fields the OKF v0.2 spec
+  defines (`stale_after`, `verified`, `sources`, `status`) plus the extension
+  fields an ADR names. The only one is `handoff_key` (ADR 0009); a covers
+  field is out of scope (ADR 0006).
   Status: planned.
 
 ## Values
@@ -84,6 +87,7 @@ Each is `planned` until the test named for it passes, then `enforced`.
 - **Measure before gating.** No new hook or gate without a count showing it
   catches something.
 - **Plain language** in everything kmctl prints and every page it writes.
+- **Every skill is made with the skill-creator skill** (ADR 0007).
 
 ## Out of scope for now
 

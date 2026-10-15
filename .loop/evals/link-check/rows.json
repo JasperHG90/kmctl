@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {"id": "r1", "behavior": "In docs/, a relative link resolves from the page's folder: a good one passes and a broken one fails with its file and line.", "fails_when": "the good link is reported, or the broken one is not reported with file and line under check name link", "command": "uv run pytest tests/test_check.py::test_link_check_docs_relative -q"},
+    {"id": "r2", "behavior": "In docs/, a link starting with / resolves from the repository root.", "fails_when": "a / link to an existing repository file is reported, or one to a missing file is not", "command": "uv run pytest tests/test_check.py::test_link_check_docs_root_relative -q"},
+    {"id": "r3", "behavior": "In .okf/, a relative link that leaves the bundle is checked.", "fails_when": "a link like ../src/x.py to a missing file is not reported, or one to an existing file is", "command": "uv run pytest tests/test_check.py::test_link_check_okf_links_leaving_bundle -q"},
+    {"id": "r4", "behavior": "A broken link inside .okf/ is left to the okf validator and not reported.", "fails_when": "kmctl check reports a broken in-bundle .okf/ link", "command": "uv run pytest tests/test_check.py::test_link_check_ignores_in_bundle_okf_links -q"},
+    {"id": "r5", "behavior": "URLs and anchors are not checked.", "fails_when": "an http(s) link or a #anchor link is reported", "command": "uv run pytest tests/test_check.py::test_link_check_skips_urls_and_anchors -q"}
+  ]
+}

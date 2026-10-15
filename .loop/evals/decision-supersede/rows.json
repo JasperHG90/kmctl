@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {"id": "r1", "behavior": "kmctl decision supersede OLD --by NEW sets the old record's status to deprecated and leaves its body and decision_status as they were.", "fails_when": "status is not deprecated, decision_status changed, or any line of the old body before the appended section changed", "command": "uv run pytest tests/test_supersede.py::test_supersede_marks_old_record -q"},
+    {"id": "r2", "behavior": "The old record gets an appended dated Correction section linking the new record, and the new record links back.", "fails_when": "either link is missing or the section is not dated", "command": "uv run pytest tests/test_supersede.py::test_supersede_links_both_ways -q"},
+    {"id": "r3", "behavior": "The decisions index marks the old entry as superseded by the new ADR and keeps its link.", "fails_when": "the old entry lacks the superseded note or loses its link", "command": "uv run pytest tests/test_supersede.py::test_supersede_updates_index -q"},
+    {"id": "r4", "behavior": "A dated log line names both concept ids, and the bundle passes the pinned okf validator in strict mode.", "fails_when": "log.md has no new line naming both ids, or the strict validator exits nonzero", "command": "uv run pytest tests/test_supersede.py::test_supersede_logs_and_validates -q"},
+    {"id": "r5", "behavior": "It refuses, writing nothing, when either record does not exist or OLD is already deprecated.", "fails_when": "any file changes, or the command exits 0, in any of the three cases", "command": "uv run pytest tests/test_supersede.py::test_supersede_refusals -q"}
+  ]
+}

@@ -1,4 +1,12 @@
 {
   "schema_version": "1.0",
-  "rows": []
+  "rows": [
+    {"id": "r1", "behavior": "A concept whose stale_after has passed is due with that reason.", "fails_when": "the concept is not listed, or its reason is not stale_after", "command": "uv run pytest tests/test_review_due.py::test_due_stale_after -q"},
+    {"id": "r2", "behavior": "A concept with no verified entry is due with that reason.", "fails_when": "the concept is not listed, or its reason is not unverified", "command": "uv run pytest tests/test_review_due.py::test_due_unverified -q"},
+    {"id": "r3", "behavior": "A concept is due when a tracked source file changed in git after its last verified date, for bundle-root, concept-relative, repository-root and concept-id sources.", "fails_when": "any of the four forms, changed after verification, is not reported, or is reported when unchanged", "command": "uv run pytest tests/test_review_due.py::test_due_source_changed_each_form -q"},
+    {"id": "r4", "behavior": "URLs are skipped, and a source that resolves to no tracked file is listed as a source-not-resolved notice, not as a due reason.", "fails_when": "a URL is reported, or a free-text source makes the concept due", "command": "uv run pytest tests/test_review_due.py::test_sources_urls_and_unresolved -q"},
+    {"id": "r5", "behavior": "Handoffs are left out of the concept checks, and an expired handoff is listed once, under expired handoffs.", "fails_when": "a live handoff is due for lacking verified, or an expired one appears twice", "command": "uv run pytest tests/test_review_due.py::test_handoffs_excluded_and_listed_once -q"},
+    {"id": "r6", "behavior": "In a shallow clone the history reason is skipped and the output says so.", "fails_when": "a shallow clone reports a source-changed reason, or the output does not say the reason was skipped", "command": "uv run pytest tests/test_review_due.py::test_shallow_clone_skips_history -q"},
+    {"id": "r7", "behavior": "It exits 0 whether or not anything is due, and --json prints the same result as one object.", "fails_when": "the exit code is nonzero when concepts are due, or --json output is not one object with due, notices and expired handoffs", "command": "uv run pytest tests/test_review_due.py::test_exit_and_json -q"}
+  ]
 }

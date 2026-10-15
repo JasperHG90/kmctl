@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {"id": "r1", "behavior": "kmctl check passes when every folder directly under .okf/prototypes/ has a README.md.", "fails_when": "kmctl check exits nonzero or reports a prototype finding on that fixture", "command": "uv run pytest tests/test_check.py::test_prototype_check_passes -q"},
+    {"id": "r2", "behavior": "A prototype whose nested folder has no README.md still passes.", "fails_when": "kmctl check reports a prototype finding for a folder below a prototype", "command": "uv run pytest tests/test_check.py::test_prototype_check_ignores_nested_folders -q"},
+    {"id": "r3", "behavior": "kmctl check fails and names the folder when a prototype has no README.md.", "fails_when": "kmctl check exits 0, or the finding does not name the folder under check name prototype", "command": "uv run pytest tests/test_check.py::test_prototype_check_fails_without_readme -q"}
+  ]
+}

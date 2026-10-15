@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {"id": "r1", "behavior": "kmctl handoffs lists live handoffs newest first by generated.at, ties broken by file name.", "fails_when": "the order differs from generated.at descending, or a tie is not ordered by file name", "command": "uv run pytest tests/test_handoffs.py::test_handoffs_order -q"},
+    {"id": "r2", "behavior": "Handoffs past stale_after are left out; one with no stale_after is listed as live; index.md is never listed.", "fails_when": "an expired handoff is listed, a handoff without stale_after is left out, or index.md appears", "command": "uv run pytest tests/test_handoffs.py::test_handoffs_filtering -q"},
+    {"id": "r3", "behavior": "--json prints each entry with id, path, title, description and date, and [] when there is no handoffs folder.", "fails_when": "an entry lacks any of the five keys, or the empty case is not []", "command": "uv run pytest tests/test_handoffs.py::test_handoffs_json -q"},
+    {"id": "r4", "behavior": "Without .okf/handoffs/ the text output says there are none and exits 0.", "fails_when": "the command exits nonzero or prints nothing", "command": "uv run pytest tests/test_handoffs.py::test_handoffs_none -q"}
+  ]
+}

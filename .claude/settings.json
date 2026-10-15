@@ -1,0 +1,5 @@
+{
+  "enabledPlugins": {
+    "loop-harness@loopctl": true
+  }
+}

@@ -23,3 +23,8 @@ dev = [
     "pytest>=9.1.1",
     "ruff>=0.17.0",
 ]
+
+[tool.ruff]
+# Spike evidence (.loop/), aim-managed rules (.claude/) and the knowledge
+# bundle (.okf/) are not project code: their files are kept as written.
+extend-exclude = [".loop", ".claude", ".okf"]

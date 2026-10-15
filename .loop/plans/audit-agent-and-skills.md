@@ -29,6 +29,8 @@ The agent starts from `kmctl review due --json`, so it reads only what is due, p
 
 Done when the agent run on this repository reports findings, its tool list has no write tool, and a test fails if one is added.
 
+Every skill is made with the skill-creator skill (ADR 0007), and its test prompts are kept beside it.
+
 ## Could invalidate this plan
 
 - An audit may find little or a lot of false drift. Before tuning the skills, run the architecture review once on loop-harness, whose bundle is larger, and count real and false findings.

@@ -12,3 +12,9 @@
   checks on every PR and an opt-in LLM audit.
 - [ADR 0006](0006-staleness-from-okf-fields.md): Staleness comes from OKF's
   own fields; a covers field is out of scope.
+- [ADR 0007](0007-skills-are-made-with-skill-creator.md): Every skill is made
+  with the skill-creator skill.
+- [ADR 0008](0008-handoffs-are-okf-concepts.md): /handoff and /continue write
+  and read handoff concepts in .okf/handoffs/.
+- [ADR 0009](0009-handoff-key-extension-field.md): handoff_key is kmctl's
+  one OKF extension field; I4 allows fields an ADR names.

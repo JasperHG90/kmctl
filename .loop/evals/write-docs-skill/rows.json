@@ -1,4 +1,8 @@
 {
   "schema_version": "1.0",
-  "rows": []
+  "rows": [
+    {"id": "r1", "behavior": "The write-docs skill exists in the plugin with one reference file per Diataxis type.", "fails_when": "plugin/skills/write-docs/SKILL.md is missing or any of the four reference files is missing", "command": "uv run pytest tests/test_skills.py::test_write_docs_skill_layout -q"},
+    {"id": "r2", "behavior": "The skill creates pages only through kmctl new doc and writes only the prose.", "fails_when": "SKILL.md tells the agent to create a page file, folder or index entry itself instead of running kmctl new doc", "judgment": true},
+    {"id": "r3", "behavior": "The skill was made with skill-creator and its test prompts are kept beside it, covering one request of each Diataxis type.", "fails_when": "no test prompts are kept, fewer than four types are covered, or the skill-creator run's results show a request filed in the wrong folder", "judgment": true}
+  ]
 }
