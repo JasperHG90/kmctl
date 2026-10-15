@@ -1,0 +1,27 @@
+script exit 0
+stderr tail: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vscode/.local/share/uv/python/cpython-3.12.15-linux-aarch64-gnu/lib/python3.12/json/decoder.py", line 338, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/vscode/.local/share/uv/python/cpython-3.12.15-linux-aarch64-gnu/lib/python3.12/json/decoder.py", line 356, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+--- summary
+## Knowledge audit
+
+Report only: nothing was changed and no `verified` entry was written.
+
+1 drifted, 0 unsure, 0 holds.
+
+| Concept | Verdict | Summary | Evidence |
+|---|---|---|---|
+| `architecture/overview` | drifted | The page says greet(name) returns "Hello, NAME"; src/greet.py:2 returns f"Hi, {name}!" (different greeting and a trailing '!'). That greet(name) exists in src/greet.py is still true. | `.okf/architecture/overview.md:9`, `src/greet.py:1`, `src/greet.py:2` |
+--- gh calls
+issue list --state open --search "Knowledge audit" in:title --json number,title
+issue create --title Knowledge audit --body-file /tmp/tmp.ZmxMTLWOXD/body.md
+--- fixture git status
+
+OVERALL ok = True
