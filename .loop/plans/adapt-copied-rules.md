@@ -15,11 +15,22 @@ Relayed from: none
 
 ## Intent
 
-The rules in `.claude/rules/` were copied from loop-harness. The aim-managed ones (listed in `aim.toml`) are general and stay as they are. The others name `loopctl`, loop-harness ADRs, v1 and v2 history, the v2 build plan in `.okf/proposals/` and replay cases that kmctl does not have.
+The rules in `.claude/rules/` were copied from loop-harness. The aim-managed ones (listed in `aim.toml`) are general and stay as they are. The other 12 name loopctl's internals, loop-harness ADRs (0010 to 0039), v1 and v2 history, the v2 build plan and replay cases that kmctl does not have.
 
-For each non-aim rule: keep it and rewrite the parts that name loop-harness so they hold for kmctl, or delete it when nothing in it applies (for example `data-management.md`, `schema-versioning.md` and `measure-before-ticketing.md` may not fit yet). Update `AGENTS.md` to drop the note that points at this ticket.
+The loop workflow (tickets, `.loop/`, stamps, verdicts) is the loop-harness plugin's job, and its briefing already tells agents how to use it. So a rule here is about building kmctl, not about running the loop:
 
-Done when no file under `.claude/rules/` outside the aim-managed set mentions `loopctl`, `loop_harness`, `loop-harness`, `v1`, `v2` or a path that does not exist here, checked by a grep.
+- delete a rule whose subject is loopctl's own internals (likely `artifact-outputs.md`, `data-management.md`, `schema-versioning.md`, `manifesto-invariants.md`);
+- rewrite a rule that holds for kmctl (likely `cli-interface.md`, `cli-version-floor.md`, `skills-are-thin.md`, `docs-layout.md`, `okf-bundle.md`, `diagrams-stay-current.md`, `adversarial-reviews.md`, `measure-before-ticketing.md`) so every claim, path and ADR in it is true here. A kept rule may name `loopctl` only as the tool this repository's tickets run on.
+
+`paths:` globs may name folders that registered tickets will create: `plugin/`, `docs/`, `src/kmctl/` and `.github/workflows/`. Removing those globs would stop the rules loading once the files exist.
+
+Update `AGENTS.md` to drop the note that points at this ticket.
+
+Done when, for every non-aim file under `.claude/rules/`:
+
+- it does not mention `loop_harness`, `loop-harness`, v1 or v2;
+- every `ADR NNNN` it cites exists under `.okf/decisions/`;
+- every repository path in backticks exists, or sits under one of the four planned folders above.
 
 ## Could invalidate this plan
 
