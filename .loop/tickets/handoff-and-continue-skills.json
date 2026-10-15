@@ -3,7 +3,7 @@
   "slug": "handoff-and-continue-skills",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "ddd90992fa03e483cd00f2fd20c8d1fbc611c684ebfa50706b168d344ff14db2",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "2cafd77b0386fe7c5ab637d8f648f18d3484e76eb008cafc14fdad30cb95986a",
+    "started_at": "2026-10-15T08:18:08+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "2cafd77b0386fe7c5ab637d8f648f18d3484e76eb008cafc14fdad30cb95986a",
   "intent": {
     "epic": "plugin",
     "depends_on": [
@@ -47,5 +66,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T08:17:36+00:00"
+  "at": "2026-10-15T08:18:08+00:00"
 }
