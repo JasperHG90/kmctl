@@ -1,14 +1,39 @@
 {
   "schema_version": "1.0",
   "slug": "claude-plugin",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "1eadc2b60e278cdf456f1a41742eeb114ce1641c8d8668eb0a3e06a2c911b3f8",
+    "tree": "ea07824643f894d7d76e7fa3aa17b3f9f8c47224",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "judgement",
+        "judgement": "j-20261015T110115+0000-faa4ddf8",
+        "paths": [
+          "plugin/hooks/hooks.json"
+        ]
+      },
+      {
+        "finding": "reviewer:f2",
+        "outcome": "cleared-unreviewed",
+        "by": "judgement",
+        "judgement": "j-20261015T110116+0000-d2a0592d",
+        "paths": [
+          "tests/test_plugin.py"
+        ]
+      }
+    ],
+    "at": "2026-10-15T11:01:16+00:00"
+  },
   "ask": null,
   "split": "j-20261015T080800+0000-e136fd80",
   "split_plan_hash": "f8f4f2e0a8ca463192bf5c213a1205711bb0895564fcf31b25dc602786f5a35d",
@@ -122,8 +147,14 @@
       "to": "fixing",
       "at": "2026-10-15T11:00:48+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-15T11:01:16+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T11:01:02+00:00"
+  "at": "2026-10-15T11:01:16+00:00"
 }
