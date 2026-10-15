@@ -23,13 +23,13 @@
       "id": "r4",
       "behavior": "Front matter written with both options passes the strict okf validator and the I4 written-fields test.",
       "fails_when": "okf_validate --strict fails on a bundle with such concepts, or tests/test_okf_fields.py fails",
-      "command": "uv run pytest tests/test_new_concept.py -k freshness_valid tests/test_okf_fields.py -q"
+      "command": "uv run pytest tests/test_new_concept.py::test_new_freshness_valid tests/test_okf_fields.py -q"
     },
     {
       "id": "r5",
       "behavior": "The kmctl block's duties tell agents to name the code a concept describes with --source and to give anything time-bound a --stale-after; kmctl new --help and the reference describe both options.",
       "fails_when": "the block written by kmctl init lacks either option, or kmctl new decision --help or docs/reference/commands.md does not describe both",
-      "command": "uv run pytest tests/test_init.py -k block_names_freshness tests/test_new_concept.py -k freshness_documented -q"
+      "command": "uv run pytest tests/test_init.py::test_init_block_names_freshness tests/test_new_concept.py::test_new_freshness_documented -q"
     },
     {
       "id": "r6",

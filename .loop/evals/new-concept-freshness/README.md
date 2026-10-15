@@ -5,13 +5,13 @@ description: 'Definition of done for new-concept-freshness: 6 row(s).'
 tags:
 - eval
 generated:
-  by: process:loopctl/2.0.1.dev86+g9641fa018.d20261015
-  at: '2026-10-15T17:21:56+00:00'
+  by: process:loopctl/2.1.1.dev61+g8318eb7a1.d20261015
+  at: '2026-10-15T19:03:24+00:00'
 slug: new-concept-freshness
 signoff:
   signer: delegated:jasperginn@gmail.com/claude-opus-5-5
-  hash: 785e5e7276148f13e1fcb56b2e4f30fd76379e540a1ec920bb8c820175e3eaac
-  at: '2026-10-15T17:21:56+00:00'
+  hash: bc3cbfabdce2940c39f8204eb56b868213224139bcb7bed035aa54b89f842781
+  at: '2026-10-15T19:03:24+00:00'
 verified: null
 ---
 

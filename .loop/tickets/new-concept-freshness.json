@@ -25,8 +25,8 @@
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
-    "hash": "785e5e7276148f13e1fcb56b2e4f30fd76379e540a1ec920bb8c820175e3eaac",
-    "at": "2026-10-15T17:21:56+00:00"
+    "hash": "bc3cbfabdce2940c39f8204eb56b868213224139bcb7bed035aa54b89f842781",
+    "at": "2026-10-15T19:03:24+00:00"
   },
   "delegation": null,
   "budget_base": null,
@@ -56,14 +56,14 @@
       "id": "r4",
       "behavior": "Front matter written with both options passes the strict okf validator and the I4 written-fields test.",
       "fails_when": "okf_validate --strict fails on a bundle with such concepts, or tests/test_okf_fields.py fails",
-      "command": "uv run pytest tests/test_new_concept.py -k freshness_valid tests/test_okf_fields.py -q",
+      "command": "uv run pytest tests/test_new_concept.py::test_new_freshness_valid tests/test_okf_fields.py -q",
       "judgment": false
     },
     {
       "id": "r5",
       "behavior": "The kmctl block's duties tell agents to name the code a concept describes with --source and to give anything time-bound a --stale-after; kmctl new --help and the reference describe both options.",
       "fails_when": "the block written by kmctl init lacks either option, or kmctl new decision --help or docs/reference/commands.md does not describe both",
-      "command": "uv run pytest tests/test_init.py -k block_names_freshness tests/test_new_concept.py -k freshness_documented -q",
+      "command": "uv run pytest tests/test_init.py::test_init_block_names_freshness tests/test_new_concept.py::test_new_freshness_documented -q",
       "judgment": false
     },
     {
@@ -89,6 +89,23 @@
         }
       },
       "at": "2026-10-15T17:21:56+00:00"
+    },
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+      "reason": "review round 1 f2: r4 and r5 commands now run every test they name",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r4": [
+            "command"
+          ],
+          "r5": [
+            "command"
+          ]
+        }
+      },
+      "at": "2026-10-15T19:03:24+00:00"
     }
   ],
   "accepted_risks": [],
@@ -155,5 +172,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev61+g8318eb7a1.d20261015",
-  "at": "2026-10-15T19:02:53+00:00"
+  "at": "2026-10-15T19:03:24+00:00"
 }
