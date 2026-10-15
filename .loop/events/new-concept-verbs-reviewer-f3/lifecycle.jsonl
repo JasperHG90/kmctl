@@ -1,1 +1,2 @@
 {"at": "2026-10-15T10:48:37+00:00", "by": "review close", "kind": "register", "schema_version": "1.0", "stage": "stub"}
+{"at": "2026-10-15T10:51:12+00:00", "kind": "drop", "reason": "fixed inside new-concept-verbs round 2 (description whitespace collapses to one line, tested by test_new_description_newline_stays_on_one_line); landed in 08621799c178", "schema_version": "1.0"}
