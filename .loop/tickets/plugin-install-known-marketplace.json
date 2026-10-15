@@ -1,19 +1,13 @@
 {
   "schema_version": "1.0",
   "slug": "plugin-install-known-marketplace",
-  "stage": "blocked",
+  "stage": "ready",
   "attempts": 0,
   "plan_rounds": 4,
   "review_rounds": 0,
   "extra_plan_rounds": 1,
   "extra_review_rounds": 0,
-  "blocker": {
-    "code": "plan-cap",
-    "message": "the plan round cap (3) is reached with findings open",
-    "plan_hash": "e9016dcf72638d687d063c5024172648fc3477b7ce5298f455d6c65607841360",
-    "at": "2026-10-15T14:41:16+00:00",
-    "resign_eval": false
-  },
+  "blocker": null,
   "fix": null,
   "ask": null,
   "split": "j-20261015T144139+0000-440793a0",
@@ -189,8 +183,14 @@
       "to": "blocked",
       "at": "2026-10-15T14:41:16+00:00",
       "by": "review close"
+    },
+    {
+      "from": "blocked",
+      "to": "ready",
+      "at": "2026-10-15T14:45:31+00:00",
+      "by": "unblock"
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T14:45:30+00:00"
+  "at": "2026-10-15T14:45:31+00:00"
 }
