@@ -1,14 +1,49 @@
 {
   "schema_version": "1.0",
   "slug": "briefing",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 3,
   "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "3fa9589c04f88cf7758622eef053fcfbe626e1bd9b1c2628250cf6cfdc33eb24",
+    "tree": "747b066fd92e590577de6ac3af212d510d8adcf5",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "cleared-unreviewed",
+        "by": "fallback",
+        "judgement": "j-20261015T105451+0000-2c86ef7b",
+        "paths": [
+          "tests/test_briefing.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f2",
+        "outcome": "cleared-unreviewed",
+        "by": "fallback",
+        "judgement": "j-20261015T105452+0000-d4631e97",
+        "paths": [
+          "tests/test_briefing.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f3",
+        "outcome": "sent-back",
+        "by": "judgement",
+        "judgement": "j-20261015T105453+0000-fd2d8b90",
+        "paths": [
+          "src/kmctl/briefing.py",
+          "tests/test_briefing.py"
+        ]
+      }
+    ],
+    "at": "2026-10-15T10:54:53+00:00"
+  },
   "ask": null,
   "split": "j-20261015T082315+0000-2a0595b9",
   "split_plan_hash": "e153950619f4dcd41ed3a1ee279edeb7ef401854e2b08606a05d0a7b84a93a13",
@@ -136,8 +171,14 @@
       "to": "fixing",
       "at": "2026-10-15T10:54:32+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-15T10:54:53+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T10:54:43+00:00"
+  "at": "2026-10-15T10:54:53+00:00"
 }
