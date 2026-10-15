@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The prompt tells claude to \"Run the kmctl:audit skill\", but --tools Read,Grep,Glob,Agent removes the Skill tool, so the session cannot load that skill. The prompt never gives the skill's path, and spike 3 only worked because its prompt carried the review instructions itself. The shipped prompt has never run against real claude.",
+      "anchor": "action/knowledge-audit.sh:37",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "When nothing in scope is due (the usual steady state, or a due list holding only notes, the manifesto or handoffs), the audit skill says to stop without a findings block. audit-report.py then exits 1 and the scheduled job fails. claude is also called, and paid for, when the due list is empty. The test fixture's only due concept is a note, which a real audit would skip, so the stub hides this.",
+      "anchor": "action/knowledge-audit.sh:29",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "GH_TOKEN is set for the whole audit step, so the claude process and its tools inherit it although only gh needs it. The Read tool can read /proc/self/environ, and the summary text goes into an issue. Set GH_TOKEN only for the gh calls.",
+      "anchor": "action.yml:56",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "open",
+      "claim": "Without pipefail, a failed `gh issue list` (rate limit, network) feeds empty input to the python filter, `number` comes back empty, and the script opens a second \"Knowledge audit\" issue instead of failing.",
+      "anchor": "action/knowledge-audit.sh:71",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "86047631e7d55abe54e87ce5949097e961a71c61981624a90e8b495f6dec8aaa",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "at": "2026-10-15T13:09:26+00:00"
+}
