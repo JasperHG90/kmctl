@@ -3,7 +3,7 @@
   "slug": "repo-uses-apm",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -61,8 +61,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "cb661960e6e307555b40edb2a0ebfa26e344457b310367fb67e64d0f4a00ff2a",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "631b9c2dbe9f8b5190ab92a41931b230930859b746378aaeb085ec4b606a28eb",
+    "started_at": "2026-10-15T17:50:09+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "631b9c2dbe9f8b5190ab92a41931b230930859b746378aaeb085ec4b606a28eb",
   "intent": {
     "epic": "repo",
     "depends_on": [],
@@ -77,5 +96,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev61+g8318eb7a1.d20261015",
-  "at": "2026-10-15T17:50:08+00:00"
+  "at": "2026-10-15T17:50:09+00:00"
 }
