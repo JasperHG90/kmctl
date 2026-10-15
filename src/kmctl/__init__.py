@@ -9,6 +9,7 @@ from typing import Annotated
 import typer
 
 from kmctl.checks import run_checks
+from kmctl.concepts import ConceptError, Kind, new_concept
 from kmctl.handoffs import live_handoffs
 from kmctl.scaffold import scaffold
 
@@ -167,6 +168,69 @@ def handoffs(
         typer.echo(f"{h.date}  {h.title}  ({h.path})")
         if h.description:
             typer.echo(f"    {h.description}")
+
+
+@app.command(
+    epilog=(
+        "Examples:\n\n"
+        "  kmctl new decision 'Use a queue' --description 'Jobs go through a queue.'\n\n"
+        "  kmctl new handoff 'Queue work' --description 'Where the queue stands.' --json\n\n"
+        "Writes the front matter, a heading skeleton, the index entry and a log line; "
+        "you write the prose. The first concept of a kind creates its section."
+    ),
+)
+def new(
+    kind: Annotated[
+        Kind,
+        typer.Argument(
+            metavar="decision|practice|proposal|prototype|handoff",
+            help="Which .okf/ section the concept goes in.",
+        ),
+    ],
+    title: Annotated[
+        str,
+        typer.Argument(
+            metavar="'Use a queue'",
+            help="The title; its kebab-case form names the file.",
+        ),
+    ],
+    description: Annotated[
+        str,
+        typer.Option(
+            "--description",
+            metavar="'Jobs go through a queue.'",
+            help="One sentence for the front matter and the index entry.",
+        ),
+    ],
+    path: Annotated[
+        Path,
+        typer.Option(
+            "--path",
+            metavar="../other-repo",
+            exists=True,
+            file_okay=False,
+            help="The repository to write in: an existing folder. Default: the current directory.",
+        ),
+    ] = Path("."),
+    as_json: Annotated[
+        bool,
+        typer.Option(
+            "--json",
+            help="Print one JSON object (id, path, created_section), for scripts.",
+        ),
+    ] = False,
+) -> None:
+    """Create one .okf/ concept with its front matter, skeleton, index entry and log line."""
+    try:
+        result = new_concept(path, kind, title, description)
+    except ConceptError as error:
+        typer.echo(f"kmctl new: refused: {error}", err=True)
+        raise typer.Exit(1) from error
+    if as_json:
+        typer.echo(json.dumps(asdict(result)))
+        return
+    typer.echo(f"created {result.path}")
+    typer.echo(f"Next: write the sections of {result.path}")
 
 
 def main() -> None:
