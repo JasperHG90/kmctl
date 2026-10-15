@@ -21,8 +21,8 @@
     },
     {
       "id": "r5",
-      "behavior": "Every kmctl plugin install or update call in tests/test_plugin_install.py asserts its exit code with the command output.",
-      "fails_when": "any such call's result is not checked with exit_code == 0 and its output",
+      "behavior": "Every kmctl plugin install or update call in tests/test_plugin_install.py asserts its expected exit code with the command output, including the two calls meant to fail.",
+      "fails_when": "any such call's result is not checked against its expected exit code together with its output",
       "command": "uv run pytest tests/test_network_retry.py -k installs_asserted -q"
     },
     {

@@ -22,8 +22,8 @@
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
-    "hash": "54d564718295a3b6b6cb53faf5c1faa87b3632dbd392ebc4d33c99fdbbf16e45",
-    "at": "2026-10-15T19:10:50+00:00"
+    "hash": "f36947d2cca9548229f5a70040ad508ad8d647b3f31c60ec2a463b967cbc9e37",
+    "at": "2026-10-15T19:14:12+00:00"
   },
   "delegation": null,
   "budget_base": null,
@@ -51,8 +51,8 @@
     },
     {
       "id": "r5",
-      "behavior": "Every kmctl plugin install or update call in tests/test_plugin_install.py asserts its exit code with the command output.",
-      "fails_when": "any such call's result is not checked with exit_code == 0 and its output",
+      "behavior": "Every kmctl plugin install or update call in tests/test_plugin_install.py asserts its expected exit code with the command output, including the two calls meant to fail.",
+      "fails_when": "any such call's result is not checked against its expected exit code together with its output",
       "command": "uv run pytest tests/test_network_retry.py -k installs_asserted -q",
       "judgment": false
     },
@@ -109,6 +109,21 @@
         }
       },
       "at": "2026-10-15T19:10:50+00:00"
+    },
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+      "reason": "plan round 2 review: r5 asserts each call's expected exit, including the two meant to fail",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r5": [
+            "behavior",
+            "fails_when"
+          ]
+        }
+      },
+      "at": "2026-10-15T19:14:12+00:00"
     }
   ],
   "accepted_risks": [],
@@ -149,5 +164,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev61+g8318eb7a1.d20261015",
-  "at": "2026-10-15T19:14:11+00:00"
+  "at": "2026-10-15T19:14:12+00:00"
 }
