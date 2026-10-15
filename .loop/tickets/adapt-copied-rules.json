@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "adapt-copied-rules",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 3,
   "review_rounds": 2,
@@ -39,7 +39,7 @@
   "split": "j-20261015T060603+0000-8961a797",
   "split_plan_hash": "3154a76ecf8e3a339a58542782606cc9d7e06e5e6385d2cb0fb763f23c74c50b",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "c881717555c118de291269872b141d59d391008a",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -167,8 +167,14 @@
       "to": "verifying",
       "at": "2026-10-15T08:34:51+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-15T08:36:06+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T08:35:53+00:00"
+  "at": "2026-10-15T08:36:06+00:00"
 }
