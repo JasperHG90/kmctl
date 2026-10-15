@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "slug": "write-docs-skill",
-  "stage": "ready",
-  "attempts": 0,
+  "stage": "building",
+  "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
@@ -17,8 +17,8 @@
   "closed_outside": false,
   "dropped": false,
   "archived": false,
-  "worktree": null,
-  "branch": null,
+  "worktree": "/home/vscode/kmctl.worktrees/write-docs-skill",
+  "branch": "loop/write-docs-skill",
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
@@ -94,8 +94,14 @@
       "to": "ready",
       "at": "2026-10-15T08:10:27+00:00",
       "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-10-15T11:15:34+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.0.1.dev33+ge3aeaa855.d20261015",
-  "at": "2026-10-15T11:15:33+00:00"
+  "at": "2026-10-15T11:15:34+00:00"
 }
