@@ -1,0 +1,31 @@
+warning: `VIRTUAL_ENV=/home/vscode/workspace/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+unformatted: File would be reformatted
+   --> tests/test_rules.py:54:13
+   |
+53 |     first = token.split("/", 1)[0]
+   -     roots = {p.name for p in ROOT.iterdir()} | {p.split("/", 1)[0] for p in PLANNED} | {"**"}
+   -     has_extension = re.search(r"\.(py|md|json|jsonl|toml|ya?ml|sh|txt)$", token) is not None
+54 +     roots = (
+55 +         {p.name for p in ROOT.iterdir()}
+56 +         | {p.split("/", 1)[0] for p in PLANNED}
+57 +         | {"**"}
+58 +     )
+59 +     has_extension = (
+60 +         re.search(r"\.(py|md|json|jsonl|toml|ya?ml|sh|txt)$", token) is not None
+61 +     )
+62 |     return first in roots or (has_extension and not token.startswith("/"))
+--------------------------------------------------------------------------------
+91 |     missing = [
+   -         n for n in re.findall(r"ADR (\d{4})", rule.read_text()) if not list(decisions.glob(f"{n}-*.md"))
+92 +         n
+93 +         for n in re.findall(r"ADR (\d{4})", rule.read_text())
+94 +         if not list(decisions.glob(f"{n}-*.md"))
+95 |     ]
+   -     assert not missing, f"{rule.name} cites ADRs kmctl does not have: {sorted(set(missing))}"
+96 +     assert not missing, (
+97 +         f"{rule.name} cites ADRs kmctl does not have: {sorted(set(missing))}"
+98 +     )
+99 |
+   |
+
+1 file would be reformatted, 5 files already formatted

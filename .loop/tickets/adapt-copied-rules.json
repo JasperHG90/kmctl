@@ -19,7 +19,9 @@
   "archived": false,
   "worktree": "/home/vscode/kmctl.worktrees/adapt-copied-rules",
   "branch": "loop/adapt-copied-rules",
-  "stamps": [],
+  "stamps": [
+    "6c62a6a6cb330b5f6046987542985e73ce47fc6ea64bbdd3e5a998403fa91186"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
     "hash": "6aa684516d730eba27e437041ebbd1b449dd67732db0e0eaf43c4f8c7e2b08b2",
@@ -122,5 +124,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T08:29:41+00:00"
+  "at": "2026-10-15T08:31:58+00:00"
 }
