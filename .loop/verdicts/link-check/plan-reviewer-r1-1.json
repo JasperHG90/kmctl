@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The plan checks only relative links, but OKF's recommended link form is bundle-relative (`/decisions/x.md`, resolved against the `.okf/` root; SPEC §6.1, and the okf skill says to prefer it). The plan does not say what happens to these links. If it skips them, the check misses the form OKF authors are told to use. If it resolves them against the repo or filesystem root, it reports working links as broken. The plan must say how `/` links resolve in `.okf/` (the bundle root) and in `docs/`.",
+      "anchor": ".loop/plans/link-check.md:23",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "The okf validator already checks `.okf/` cross-links (okf_validate.py check_links). It reports broken ones as warnings because OKF SPEC §6.1 says consumers MUST tolerate broken links, which may stand for knowledge not yet written. The parent ticket knowledge-check promises that `kmctl check` does not repeat what the okf validator checks. This plan makes a broken `.okf/` link a hard failure without addressing either point. The manifesto does list link checking as kmctl's job, so the scope can stay. But the plan should state its position: fail rather than warn, and why repeating the validator's `.okf/` check is acceptable, or limit the check to what the validator does not cover (for example `docs/`, and links that leave the bundle).",
+      "anchor": ".loop/plans/link-check.md:23",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "0f0b5e12d4d151c70e8da1dec29a9be0ea033081c32bc2e1c7185e31ec3cb617"
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T08:12:38+00:00"
+}
