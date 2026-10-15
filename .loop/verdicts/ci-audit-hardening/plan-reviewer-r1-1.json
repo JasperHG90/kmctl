@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "Unsetting or renaming the token inside knowledge-audit.sh does not keep it from claude. A process's /proc/PID/environ shows the environment it was started with, and unset does not change it. If action.yml passes the token to the audit step under any name, the step's bash and the script's bash both still show it in /proc/PID/environ, and claude (same uid) can Read /proc/$PPID/environ. I checked this in the scratchpad: after `unset KMCTL_GH_TOKEN` and `env -u GH_TOKEN bash child.sh`, the child's env had no token but /proc/$PPID/environ still showed KMCTL_GH_TOKEN=secret-xyz. The planned test only checks the stub claude's own environment, so it would pass while f3 stays open. Fix: keep the token out of the claude step's process tree. One way is to split the composite action: the audit step runs without any GitHub token and writes body.md (plus a found/not-found flag) to $RUNNER_TEMP, and a later step with GH_TOKEN runs the gh lookup and the create or edit. The tests and r1 should then check that the step running claude gets no token under any name.",
+      "anchor": ".loop/plans/ci-audit-hardening.md:24",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "The same token is also on disk where Read can reach it. The example workflow uses actions/checkout@v4 with the default persist-credentials: true, which writes github.token into the checked-out repository's git config as an http extraheader, inside the folder claude audits. Clearing the environment alone does not meet the intent ('keeps the GitHub token away from the model'). The plan must deal with this, for example by setting persist-credentials: false in .github/workflows/knowledge-audit.yml and saying so in action.yml's mode description (with fetch-depth: 0 the unshallow fetch does not need it), or by recording it as an accepted, out-of-scope risk.",
+      "anchor": ".github/workflows/knowledge-audit.yml:19",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "932b9cb0ddea7f586dbf970813217a480a91985d8d8bc0bd67daf800790c5f6b"
+  },
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "at": "2026-10-15T13:19:56+00:00"
+}
