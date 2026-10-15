@@ -3,7 +3,7 @@
   "slug": "plugin-error-keeps-cause",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -61,7 +61,26 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "119150a1c2a3447f83c81cc8529742257ddab2c68de4a9f45beb78a6fc522ffe",
+    "started_at": "2026-10-15T19:23:14+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
   "plan_hash": "119150a1c2a3447f83c81cc8529742257ddab2c68de4a9f45beb78a6fc522ffe",
   "intent": {
     "epic": "plugin",
@@ -79,5 +98,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261015",
-  "at": "2026-10-15T19:23:13+00:00"
+  "at": "2026-10-15T19:23:14+00:00"
 }
