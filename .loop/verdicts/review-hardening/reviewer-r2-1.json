@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "_REF_DEF matched GitHub footnote definitions, so `[^1]: text` was reported as a broken link.",
+      "anchor": "src/kmctl/checks.py:35",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "cb38e942f6ee612a1dd99ed0d2b8c7e3dba1cd3d55d4aeee4cec94fc6b96528b",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev77+gbd4712cf8.d20261015",
+  "at": "2026-10-15T12:05:05+00:00"
+}
