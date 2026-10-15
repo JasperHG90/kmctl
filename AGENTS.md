@@ -90,4 +90,4 @@ repository, not here.
 ## Gates
 
 The gates are the `gates` list in `.loop/config.toml`; `loopctl gate stamp`
-runs them. `just lint` and `just test` run them by hand.
+runs them. `just lint`, `just test` and `just integration` run them by hand.

@@ -49,6 +49,12 @@ command = "uv run ruff format --check"
 name = "tests"
 command = "uv run pytest"
 
+# The integration tier the default pytest run leaves out: tests that reach
+# GitHub through the claude CLI.
+[[gates]]
+name = "integration"
+command = "uv run pytest -m integration"
+
 # The passes that must give a verdict before a ticket's commit, and the most
 # review rounds a ticket gets (ADR 0023).
 [review]

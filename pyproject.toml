@@ -43,3 +43,9 @@ extend-exclude = [".loop", ".claude", ".okf", "tests/vendor"]
 # Hermes names a plugin by its folder, kmctl-read; it loads the file by path,
 # and nothing imports it as a module by that name.
 "action/hermes/kmctl-read/__init__.py" = ["N999"]
+
+[tool.pytest.ini_options]
+addopts = ["--strict-markers", "-m", "not integration"]
+markers = [
+    "integration: reaches a real external system, such as GitHub through the claude CLI; off by default; the integration gate in .loop/config.toml runs it",
+]

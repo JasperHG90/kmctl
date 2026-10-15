@@ -1,7 +1,8 @@
 """kmctl plugin install, update and status against a real claude CLI with an isolated config.
 
 These need the claude CLI and network access to add the scaccogatto marketplace
-from GitHub, so they are skipped where claude is not on PATH.
+from GitHub, so they are skipped where claude is not on PATH and carry the
+integration marker, which the default pytest run leaves out.
 """
 
 import json
@@ -49,6 +50,7 @@ def _listed() -> dict[str, dict]:
 
 
 @needs_claude
+@pytest.mark.integration
 def test_install_pulls_okf(isolated: Path) -> None:
     result = _kmctl("plugin", "install", "--scope", "project")
 
@@ -62,6 +64,7 @@ def test_install_pulls_okf(isolated: Path) -> None:
 
 
 @needs_claude
+@pytest.mark.integration
 def test_install_twice_changes_nothing(isolated: Path, tmp_path: Path) -> None:
     first = _kmctl("plugin", "install", "--scope", "project")
     assert first.exit_code == 0, first.output
@@ -79,10 +82,12 @@ def test_install_twice_changes_nothing(isolated: Path, tmp_path: Path) -> None:
 
 
 @needs_claude
+@pytest.mark.integration
 def test_staged_version_matches_cli(isolated: Path, tmp_path: Path) -> None:
     from importlib.metadata import version
 
-    _kmctl("plugin", "install", "--scope", "project")
+    first = _kmctl("plugin", "install", "--scope", "project")
+    assert first.exit_code == 0, first.output
     manifest = tmp_path / "data/kmctl/marketplace/plugin/.claude-plugin/plugin.json"
 
     assert json.loads(manifest.read_text())["version"] == version("kmctl")
@@ -90,8 +95,10 @@ def test_staged_version_matches_cli(isolated: Path, tmp_path: Path) -> None:
 
 
 @needs_claude
+@pytest.mark.integration
 def test_update_after_bump(isolated: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    _kmctl("plugin", "install", "--scope", "project")
+    first = _kmctl("plugin", "install", "--scope", "project")
+    assert first.exit_code == 0, first.output
     markets = subprocess.run(
         ["claude", "plugin", "marketplace", "list", "--json"],
         capture_output=True,
@@ -119,10 +126,12 @@ def test_update_after_bump(isolated: Path, monkeypatch: pytest.MonkeyPatch) -> N
 
 
 @needs_claude
+@pytest.mark.integration
 def test_status_reports_mismatch_and_missing_path(
     isolated: Path, tmp_path: Path
 ) -> None:
-    _kmctl("plugin", "install", "--scope", "project")
+    first = _kmctl("plugin", "install", "--scope", "project")
+    assert first.exit_code == 0, first.output
     manifest = tmp_path / "data/kmctl/marketplace/plugin/.claude-plugin/plugin.json"
     data = json.loads(manifest.read_text())
     data["version"] = "0.0.1"
@@ -152,10 +161,12 @@ def test_wheel_carries_plugin(tmp_path: Path) -> None:
 
 
 @needs_claude
+@pytest.mark.integration
 def test_install_declares_okf_in_each_repository(
     isolated: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    _kmctl("plugin", "install", "--scope", "project")
+    first = _kmctl("plugin", "install", "--scope", "project")
+    assert first.exit_code == 0, first.output
     second = tmp_path / "second"
     second.mkdir()
     subprocess.run(["git", "init", "-q"], cwd=second, check=True)
@@ -169,10 +180,12 @@ def test_install_declares_okf_in_each_repository(
 
 
 @needs_claude
+@pytest.mark.integration
 def test_status_ignores_other_repositories(
     isolated: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    _kmctl("plugin", "install", "--scope", "project")
+    first = _kmctl("plugin", "install", "--scope", "project")
+    assert first.exit_code == 0, first.output
     other = tmp_path / "other"
     other.mkdir()
     subprocess.run(["git", "init", "-q"], cwd=other, check=True)
@@ -185,10 +198,12 @@ def test_status_ignores_other_repositories(
 
 
 @needs_claude
+@pytest.mark.integration
 def test_installed_version_check_after_upgrade(
     isolated: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    _kmctl("plugin", "install", "--scope", "project")
+    first = _kmctl("plugin", "install", "--scope", "project")
+    assert first.exit_code == 0, first.output
     monkeypatch.setattr("kmctl.plugin.cli_version", lambda: "99.0.0")
 
     status = _kmctl("plugin", "status").stdout
@@ -198,7 +213,7 @@ def test_installed_version_check_after_upgrade(
     assert "installed plugin" in status
     assert "kmctl plugin update" in status
     assert "kmctl plugin install" not in status
-    assert plain.exit_code == 1
+    assert plain.exit_code == 1, plain.output
     assert "run kmctl plugin update" in plain.stderr
     assert fixed.exit_code == 0, fixed.output
     assert "problem" not in _kmctl("plugin", "status").stdout
@@ -333,6 +348,7 @@ def _isolated_home(isolated: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
 
 
 @needs_claude
+@pytest.mark.integration
 def test_install_with_settings_declared_okf(
     isolated: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -350,6 +366,7 @@ def test_install_with_settings_declared_okf(
 
 
 @needs_claude
+@pytest.mark.integration
 def test_install_reports_refused_entry(
     isolated: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -361,7 +378,7 @@ def test_install_reports_refused_entry(
 
     result = _kmctl("plugin", "install", "--scope", "project")
 
-    assert result.exit_code != 0
+    assert result.exit_code != 0, result.output
     assert str(settings) in result.output
     assert "https://github.com/scaccogatto/okf-skills" in result.output
     assert settings.read_text() == before
