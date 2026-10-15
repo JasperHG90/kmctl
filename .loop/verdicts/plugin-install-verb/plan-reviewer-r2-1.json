@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "Project scope was untested. Spike plugin-install-verb/3 shows it pulls okf, that reruns keep the same settings content, and that a teammate must run the install once. The plan records all three.",
+      "anchor": ".loop/spikes/plugin-install-verb/3/README.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "The source of kmctl's marketplace was not decided. The plan now ships plugin/ and the marketplace as package data, stages them locally and never uses GitHub HEAD.",
+      "anchor": ".loop/plans/plugin-install-verb.md",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "open",
+      "claim": "The upgrade path is untested, and the plan departs from loopctl here. The plan names the staging folder by kmctl's version, so a newer kmctl moves the marketplace to a new path while Claude Code still has the kmctl marketplace registered at the old one. Nothing shows that `claude plugin marketplace add <new path>` under an existing name exits 0 and points the marketplace at the new path, or that `plugin install` then picks up the new version. Spike 3's rerun says 'already installed' and loads in place, which suggests it may not. loopctl does not do this: it stages to one fixed path (data_dir()/marketplace), falls back to `marketplace update` when add fails, and uninstalls before reinstalling on update (commands/plugin.py _install_claude). At project scope, a version-named path also rewrites the committed .claude/settings.json on every release. The plan should either use loopctl's fixed path or settle this with a spike. Spike question: with a directory marketplace already registered at path A (plugin version 0.0.1), does `marketplace add B` (same marketplace name, plugin 0.0.2) followed by `plugin install --scope user|project` exit 0, leave the marketplace at B, and make `plugin list --json` report 0.0.2? If not, what sequence does (marketplace remove/update, plugin uninstall, or plugin update)?",
+      "anchor": ".loop/plans/plugin-install-verb.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "76b5b594b4c04b7e33fcbd0461e991809d44b889d20b98239852103ddb79065c"
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T08:25:29+00:00"
+}
