@@ -19,9 +19,16 @@ Relayed from: none
 
 ## Intent
 
-Adds a link check to `kmctl check`: every relative markdown link in `docs/` and `.okf/` points at a file that exists (anchors are not checked). Each broken link is reported with its file and line.
+Adds a link check to `kmctl check` for the links the okf validator does not cover. The validator already checks links inside `.okf/` and only warns, because OKF §6.1 says tools must tolerate broken links there; kmctl leaves those to it.
 
-Done when tests cover a passing and a failing fixture.
+kmctl checks, and fails on:
+
+- every markdown link in `docs/`: a relative link resolves from the page's folder, and a link starting with `/` resolves from the repository root, as GitHub renders it;
+- every relative link in `.okf/` that leaves the bundle (for example `../src/...`), resolved from the page's folder. Links starting with `/` in `.okf/` resolve from the bundle root (OKF §6.1) and stay inside it, so they are the validator's.
+
+URLs and anchors are not checked. Each broken link is reported with its file and line.
+
+Done when tests cover, for `docs/`, a passing and a failing relative link and a passing and a failing `/` link, and for `.okf/`, a passing and a failing link that leaves the bundle, plus a broken in-bundle link that `kmctl check` does not report.
 
 ## Could invalidate this plan
 
