@@ -2,20 +2,57 @@ name: kmctl knowledge checks
 description: >-
   Run kmctl check and kmctl review due on a repository's docs/ and .okf/ bundle,
   write both to the job summary, and fail only when kmctl check fails.
-  Concepts that are due for review are reported, never failed.
+  Concepts that are due for review are reported, never failed. With
+  mode: audit, run the read-only audit agent through Claude Code instead and
+  report its findings in the job summary and one "Knowledge audit" issue.
 inputs:
   path:
     description: The repository folder to check, relative to the workspace.
     required: false
     default: "."
+  mode:
+    description: >-
+      checks (the default) runs kmctl check and kmctl review due. audit runs the
+      kmctl audit agent on the concepts that are due, through Claude Code with
+      read-only tools; it needs anthropic_api_key, runs only on workflow_dispatch
+      or schedule, and needs the calling workflow to grant issues: write.
+    required: false
+    default: checks
+  anthropic_api_key:
+    description: The Anthropic API key for audit mode, from a secret. Checks mode does not use it.
+    required: false
+    default: ""
 runs:
   using: composite
   steps:
+    - name: Check the mode
+      shell: bash
+      env:
+        MODE: ${{ inputs.mode }}
+      run: |
+        case "$MODE" in
+          checks | audit) ;;
+          *) echo "kmctl action: mode must be checks or audit, not '$MODE'." >&2; exit 1 ;;
+        esac
     - uses: astral-sh/setup-uv@v6
     - name: Install kmctl from this action's checkout
       shell: bash
       run: uv tool install "${{ github.action_path }}"
     - name: Check knowledge
+      if: inputs.mode == 'checks'
       shell: bash
       working-directory: ${{ inputs.path }}
       run: bash "${{ github.action_path }}/action/knowledge-ci.sh"
+    - name: Install Claude Code
+      if: inputs.mode == 'audit'
+      shell: bash
+      run: npm install -g @anthropic-ai/claude-code@2.1.300
+    - name: Audit knowledge
+      if: inputs.mode == 'audit'
+      shell: bash
+      working-directory: ${{ inputs.path }}
+      env:
+        ANTHROPIC_API_KEY: ${{ inputs.anthropic_api_key }}
+        GH_TOKEN: ${{ github.token }}
+        KMCTL_PLUGIN_DIR: ${{ github.action_path }}/plugin
+      run: bash "${{ github.action_path }}/action/knowledge-audit.sh"

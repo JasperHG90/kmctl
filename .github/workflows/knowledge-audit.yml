@@ -1,0 +1,25 @@
+name: knowledge audit
+
+# Audit mode sends the repository to a model with the API key, so it runs only
+# by hand or on a schedule, never on a pull request (ADR 0005).
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+# A composite action cannot set token permissions; the calling workflow does.
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./
+        with:
+          mode: audit
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
