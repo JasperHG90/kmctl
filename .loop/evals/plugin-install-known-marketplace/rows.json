@@ -26,6 +26,12 @@
       "command": "uv run pytest tests/test_plugin_install.py::test_install_with_settings_declared_okf -q"
     },
     {
+      "id": "r6",
+      "behavior": "When claude refuses the argument kmctl built from the entry (a git entry without .git), kmctl stops with a PluginError naming the settings file and the entry.",
+      "fails_when": "in an isolated CLAUDE_CONFIG_DIR, HOME and XDG_DATA_HOME whose user settings declare scaccogatto as git from https://github.com/scaccogatto/okf-skills (no .git), kmctl plugin install exits 0, or its message does not name the settings file and the entry, or the settings file changed",
+      "command": "uv run pytest tests/test_plugin_install.py::test_install_reports_refused_entry -q"
+    },
+    {
       "id": "r5",
       "behavior": "The other plugin install tests still pass.",
       "fails_when": "any test in tests/test_plugin_install.py or tests/test_plugin.py fails",

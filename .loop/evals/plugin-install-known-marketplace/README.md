@@ -1,17 +1,17 @@
 ---
 type: eval
 title: 'Eval: plugin-install-known-marketplace'
-description: 'Definition of done for plugin-install-known-marketplace: 5 row(s).'
+description: 'Definition of done for plugin-install-known-marketplace: 6 row(s).'
 tags:
 - eval
 generated:
   by: process:loopctl/2.0.1.dev86+g9641fa018.d20261015
-  at: '2026-10-15T14:37:10+00:00'
+  at: '2026-10-15T14:41:39+00:00'
 slug: plugin-install-known-marketplace
 signoff:
   signer: delegated:jasperginn@gmail.com/claude-opus-5-5
-  hash: eba5e65606e4b3c2b0d456362a5c2f84530733ca58a5287923fd49ab4f1865a4
-  at: '2026-10-15T14:37:10+00:00'
+  hash: 655581037815419950c37a9d3da4bfd0197b54ef4bf7e5f702e6bc3c147ba412
+  at: '2026-10-15T14:41:39+00:00'
 verified: null
 ---
 
@@ -25,5 +25,7 @@ Rows: rows.json; the fields each row takes: loopctl schema eval-rows.
   Fails when: such an entry does not raise PluginError, the message does not name the file, or claude is called
 - r4: With user settings that declare scaccogatto from a git URL, kmctl plugin install succeeds at project scope with okf installed, without editing the settings.
   Fails when: in an isolated CLAUDE_CONFIG_DIR, HOME and XDG_DATA_HOME whose user settings declare scaccogatto from https://github.com/scaccogatto/okf-skills.git, kmctl plugin install exits nonzero, okf is not installed, or the user settings file changed
+- r6: When claude refuses the argument kmctl built from the entry (a git entry without .git), kmctl stops with a PluginError naming the settings file and the entry.
+  Fails when: in an isolated CLAUDE_CONFIG_DIR, HOME and XDG_DATA_HOME whose user settings declare scaccogatto as git from https://github.com/scaccogatto/okf-skills (no .git), kmctl plugin install exits 0, or its message does not name the settings file and the entry, or the settings file changed
 - r5: The other plugin install tests still pass.
   Fails when: any test in tests/test_plugin_install.py or tests/test_plugin.py fails
