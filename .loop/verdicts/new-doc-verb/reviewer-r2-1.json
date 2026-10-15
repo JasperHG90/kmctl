@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "a line break in a title split the index entry",
+      "anchor": "src/kmctl/concepts.py:64",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "r1 checked one skeleton heading per type",
+      "anchor": "tests/test_new_doc.py:7",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "Next lines were hand-written strings that named no kmctl step",
+      "anchor": "src/kmctl/__init__.py:27",
+      "category": "design",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "c25c415f2d96bdcf4fff71e951d788d1e91771149ab89b645045b348c94c365b",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev32+g841b0ba75.d20261015",
+  "at": "2026-10-15T11:10:05+00:00"
+}
