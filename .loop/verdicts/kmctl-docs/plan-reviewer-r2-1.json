@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "The explanation page described audits that were not built. The plan now depends on audit-agent-and-skills and ci-audit, so the page is written after the audits exist. The dependency graph has no cycle (ci-audit depends on ci-action and audit-agent-and-skills; audit-agent-and-skills on claude-plugin and review-due).",
+      "anchor": ".loop/plans/kmctl-docs.md:7",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "Run-every-command could not cover plugin install or the CI action. The plan now names two exceptions: plugin install runs in a scratch repository with isolated CLAUDE_CONFIG_DIR, HOME and XDG_DATA_HOME, which tests/test_plugin_install.py already does successfully with a project-scope install, and GitHub-only steps are quoted from action.yml and the shipped workflow with the page saying so.",
+      "anchor": ".loop/plans/kmctl-docs.md:24",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "e5a42ec8021f7487f5b571378a515eafc1aa7b6b42710d0554036dfaaffa9211"
+  },
+  "by": "process:loopctl/2.0.1.dev77+gbd4712cf8.d20261015",
+  "at": "2026-10-15T12:28:11+00:00"
+}
