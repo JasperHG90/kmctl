@@ -65,13 +65,14 @@ Each is `planned` until the test named for it passes, then `enforced`.
 
 - **I1. One hook, and it never blocks.** The plugin's only hook is
   SessionStart, and it exits 0 even when `kmctl` is missing or fails.
-  Status: planned.
+  Status: enforced by `tests/test_plugin.py` (one SessionStart hook; exit 0
+  without `kmctl` and when it fails).
 - **I2. Audits never write knowledge.** The audit agent, its skills and the
   CI action report findings; they never edit `.okf/` or `docs/` and never
   write a `verified` stamp. Status: planned.
 - **I3. The briefing comes from the CLI and fits a budget.** The hook prints
   what `kmctl` prints, so upgrading the CLI updates the briefing, and its
-  word count stays under a fixed budget. Status: planned.
+  word count stays under a fixed budget. Status: enforced by `tests/test_briefing.py::test_briefing_word_budget`.
 - **I4. kmctl reads OKF as it is.** It uses the fields the OKF v0.2 spec
   defines (`stale_after`, `verified`, `sources`, `status`) plus the extension
   fields an ADR names. The only one is `handoff_key` (ADR 0009); a covers

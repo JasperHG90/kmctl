@@ -11,3 +11,5 @@
 - Added `decisions/0009-handoff-key-extension-field` and reworded I4 in
   `manifesto` to allow extension fields an ADR names, after the
   handoff-and-continue-skills plan review found the key broke I4.
+- Marked invariants I1 and I3 in `manifesto` enforced, naming the tests
+  that pin them: the plugin's hook tests and the briefing word budget.

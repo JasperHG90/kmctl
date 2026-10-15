@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "description": "kmctl: print the knowledge briefing (where knowledge lives, what is due, the rules). Never blocks.",
+            "command": "command -v kmctl >/dev/null 2>&1 || { echo '[kmctl] kmctl is not installed, so there is no knowledge briefing. Install it with: uv tool install git+https://github.com/JasperHG90/Knowledge-management'; exit 0; }; kmctl briefing || echo '[kmctl] kmctl briefing failed; run kmctl briefing in a terminal to see why, or upgrade with uv tool install --force git+https://github.com/JasperHG90/Knowledge-management.'; exit 0",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
