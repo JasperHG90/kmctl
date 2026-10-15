@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The retry rests on seeing 'a network error in claude's output' in the failure, but in most of the file's network tests that text never reaches pytest. Six tests call `_kmctl(\"plugin\", \"install\", ...)` and ignore the result (test_staged_version_matches_cli, test_update_after_bump, test_status_reports_mismatch_and_missing_path, test_install_declares_okf_in_each_repository's first install, test_status_ignores_other_repositories, test_installed_version_check_after_upgrade). CliRunner keeps the output in the Result and prints nothing, so when the marketplace add fails, the test fails later with a KeyError from `_listed()`, a missing manifest, or a status-text assert, and the report has no 'Could not resolve host'. A hook that matches the failure text would report these at once, so the DNS blip the ticket targets still turns the integration gate red. Also, `_require` keeps only the last line of claude's stderr (src/kmctl/plugin.py:186-188), so even where the output is printed, the network line may be cut. The plan has to say how the network error reaches the hook: for example, every install in these tests asserts `exit_code == 0, result.output` (or goes through a helper that does), or a fixture records claude's raw stderr for the hook to read. A spike can settle it: with github.com unreachable (for example GIT_CONFIG_PARAMETERS pointing url.insteadOf at an unresolvable host), run the integration tier and check whether each failure's longrepr holds a network phrase.",
+      "anchor": "tests/test_plugin_install.py:85",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r2"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "b6551cee7966f1c2dc4bd26dab928d745ac13713334f76084d90df2ef4da0959"
+  },
+  "by": "process:loopctl/2.1.1.dev61+g8318eb7a1.d20261015",
+  "at": "2026-10-15T19:08:57+00:00"
+}
