@@ -1,0 +1,50 @@
+{
+  "skill_name": "audit",
+  "evals": [
+    {
+      "id": 1,
+      "name": "kmctl-decisions",
+      "prompt": "/audit the decision log",
+      "repo": "/home/vscode/kmctl (a copy)",
+      "expected_output": "A report-only audit of .okf/decisions/ scoped from kmctl review due --json, with one verdict per record and a findings JSON block.",
+      "files": [],
+      "expectations": [
+        "The due list comes from kmctl review due --json and only decisions/ are kept",
+        "Nothing under .okf/ or docs/ is changed and no verified entry is written",
+        "The findings block matches the shape in sample-findings.json",
+        "It reports that ADR 0002 claims the briefing names skills, which it does not",
+        "It reports the decision_status and decided_on fields that no ADR allows",
+        "It reports the records with no Consequences section"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "loopharness-architecture",
+      "prompt": "/audit the architecture docs",
+      "repo": "/home/vscode/workspace (loop-harness, read only)",
+      "expected_output": "A report-only audit of the 10 .okf/architecture/ pages, each drifted claim cited with path:line on both sides, and a findings JSON block.",
+      "files": [],
+      "expectations": [
+        "The due list comes from kmctl review due --json and only architecture/ pages are kept",
+        "Nothing in the repository is changed",
+        "Every drifted claim cites the page line and the code line",
+        "An independent check of each drifted claim against the code finds it real",
+        "A list the page presents as complete is checked against the code (loop-state, command-surface)"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "loopharness-practices",
+      "prompt": "/audit the practices",
+      "repo": "/home/vscode/workspace (loop-harness, read only)",
+      "expected_output": "A report-only audit of the 8 .okf/practices/ pages; a page whose evidence is not in the checkout is unsure with what would settle it, never holds.",
+      "files": [],
+      "expectations": [
+        "The due list comes from kmctl review due --json and only practices/ pages are kept",
+        "Nothing in the repository is changed",
+        "A page whose sources are missing is marked unsure, with what would settle it",
+        "Each drifted or holds verdict cites path:line evidence"
+      ]
+    }
+  ]
+}
