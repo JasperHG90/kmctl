@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "review-hardening",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
@@ -30,7 +30,7 @@
   "split": "j-20261015T115511+0000-b70de480",
   "split_plan_hash": "6c21f5ac926128be3dfbc57c1bb0e9df59d1016400ae0d6fcc40c070a9cfee8b",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "fbe3821b7948d1758a02abf3e8dd1e6f1499f2d0",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -150,8 +150,14 @@
       "to": "verifying",
       "at": "2026-10-15T12:03:53+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-15T12:05:24+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.1.dev77+gbd4712cf8.d20261015",
-  "at": "2026-10-15T12:05:22+00:00"
+  "at": "2026-10-15T12:05:24+00:00"
 }
