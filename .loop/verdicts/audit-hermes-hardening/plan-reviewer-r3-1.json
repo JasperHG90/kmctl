@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "The plan now makes KMCTL_AUDIT_TIMEOUT one total budget: each batch's timeout gets the time left, and when it runs out the step fails naming the unfinished batches, inside the step's timeout-minutes of 40. It says which docs stay true and which line the how-to adds. Row r5 covers it.",
+      "anchor": "action/knowledge-audit.sh:189",
+      "category": "design",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r5"
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "The plan now groups batches by kind, gives each prompt only that kind's review skill, and r1 pins a 12/8/5 fixture expecting 4 runs (2, 1, 1 per kind).",
+      "anchor": "plugin/skills/audit/SKILL.md:27",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "c2c9f15a27e45c61d47c9a0efd10f8c53709d41eaf33d2e5b907e2f58e60e1ad"
+  },
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "at": "2026-10-15T15:58:58+00:00"
+}
