@@ -87,6 +87,7 @@ timeout_seconds = 5.0
 
 [judgements.review.again]
 mode = "act"
+sample_rate = 0.1
 [judgements.review.repeat]
 mode = "act"
 [judgements.review.hides-defect]
