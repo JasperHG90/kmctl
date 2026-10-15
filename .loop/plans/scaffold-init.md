@@ -19,7 +19,7 @@ Relayed from: none
 
 ## Intent
 
-`kmctl init` creates `docs/README.md` and an `.okf/` bundle (`index.md` with `okf_version`, `log.md`, a `manifesto.md` stub) and prints what it created. Diataxis folders and `.okf/` sections are created by the verbs that add their first page, not here, so no empty folders. It never overwrites a file, and running it twice changes nothing the second time.
+`kmctl init` creates, in the target repository, docs/README.md and an .okf/ bundle (`index.md` with `okf_version`, `log.md`, a `manifesto.md` stub) and prints what it created. Diataxis folders and `.okf/` sections are created by the verbs that add their first page, not here, so no empty folders. It never overwrites a file, and running it twice changes nothing the second time.
 
 Done when tests show a first run creates the files, a second run changes nothing, and the result passes the okf validator.
 
