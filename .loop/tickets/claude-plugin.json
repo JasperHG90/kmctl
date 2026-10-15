@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "claude-plugin",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 3,
@@ -38,7 +38,7 @@
   "split": "j-20261015T080800+0000-e136fd80",
   "split_plan_hash": "f8f4f2e0a8ca463192bf5c213a1205711bb0895564fcf31b25dc602786f5a35d",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "5cd8cc5ac0df09edc89dd120cc7b8b920bff7475",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -154,8 +154,14 @@
       "to": "verifying",
       "at": "2026-10-15T11:01:16+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-15T11:03:14+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T11:03:12+00:00"
+  "at": "2026-10-15T11:03:14+00:00"
 }
