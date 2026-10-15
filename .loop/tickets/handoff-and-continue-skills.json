@@ -20,10 +20,57 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "9432f32a534b24865a5dd6a59b31a90782009c3134aaadf2140295c8bc0b89e0",
+    "at": "2026-10-15T11:29:35+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "kmctl new handoff --key K, with an existing handoff of key K, replaces body and description, refreshes generated.at and stale_after, keeps file name and index entry, appends one log line, and prints the path.",
+      "fails_when": "a second file appears, the file name or index entry changes, the dates are not refreshed, log.md gains other than one line, or the path is not printed",
+      "command": "uv run pytest tests/test_handoff_key.py::test_existing_key_updates_in_place -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "An unknown key creates a new handoff carrying handoff_key.",
+      "fails_when": "no new handoff is created, or its front matter lacks handoff_key",
+      "command": "uv run pytest tests/test_handoff_key.py::test_unknown_key_creates_handoff -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "After either path the bundle passes the pinned okf validator in strict mode and kmctl check.",
+      "fails_when": "the strict validator or kmctl check exits nonzero",
+      "command": "uv run pytest tests/test_handoff_key.py::test_handoff_bundle_validates -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "The /handoff and /continue skills exist in the plugin, and /handoff passes --key only when CLAUDE_CODE_SESSION_ID is set.",
+      "fails_when": "either SKILL.md is missing, or /handoff passes an empty --key",
+      "command": "uv run pytest tests/test_skills.py::test_handoff_and_continue_skills_exist -q",
+      "judgment": false
+    },
+    {
+      "id": "r5",
+      "behavior": "/continue offers live handoffs as a multi-select of 3 plus more, summarizes the chosen ones, and acts on nothing before the user answers.",
+      "fails_when": "SKILL.md lists handoffs as plain text, offers more than 3 per question, loads a handoff the user did not pick, or takes an action before asking what next",
+      "command": null,
+      "judgment": true
+    },
+    {
+      "id": "r6",
+      "behavior": "Both skills were made with skill-creator and keep their test prompts beside them.",
+      "fails_when": "no test prompts are kept for either skill, or the skill-creator results show a failed prompt",
+      "command": null,
+      "judgment": true
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -71,6 +118,6 @@
       "by": "advance"
     }
   ],
-  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T08:23:12+00:00"
+  "by": "process:loopctl/2.0.1.dev47+g2444f9291.d20261015",
+  "at": "2026-10-15T11:29:35+00:00"
 }
