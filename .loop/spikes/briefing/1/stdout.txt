@@ -1,0 +1,13 @@
+docs-layout.md:docs-sorted-by-reader-intent: with_why=82 without_why=68
+docs-layout.md:audience-gates-the-folder: with_why=51 without_why=30
+docs-layout.md:prototypes-hold-their-scripts: with_why=101 without_why=73
+docs-layout.md:docs-describe-what-exists: with_why=49 without_why=23
+docs-layout.md:index-tracks-the-folder: with_why=40 without_why=23
+okf-bundle.md:every-touched-concept-is-logged: with_why=124 without_why=87
+okf-bundle.md:okf-changes-are-validated: with_why=26 without_why=15
+okf-bundle.md:okf-indexes-track-their-directory: with_why=33 without_why=20
+constraints total: with_why=506 without_why=339
+whole rule files: 1084
+briefing with_why=626 without_why=459 budget=500
+loopctl briefing words in kmctl: 281 (exit 0)
+fits without WHY: True | fits with WHY: False

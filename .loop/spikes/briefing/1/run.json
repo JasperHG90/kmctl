@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "briefing",
+  "n": 1,
+  "command": "python3 /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-briefing/count_rules.py",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-briefing/count_rules.py",
+      "copy": "files/count_rules.py"
+    }
+  ],
+  "where": "worktree",
+  "head": "0060f761fda85eff199878fdc2e49a79be8ebdc8",
+  "fingerprint": "078ea754520ceeeb503bca5cc609917c468c8e1aed8e2ee44dbcb7d967db60c8",
+  "started_at": "2026-10-15T08:12:25+00:00",
+  "finished_at": "2026-10-15T08:12:25+00:00",
+  "duration_seconds": 0.155,
+  "timeout_seconds": 60.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "moved_from": null
+}
