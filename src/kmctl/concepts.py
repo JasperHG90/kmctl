@@ -61,9 +61,14 @@ def slug(title: str) -> str:
     return words
 
 
-def _link_text(title: str) -> str:
-    """``title`` with square brackets turned into parentheses, so the entry parses as a link."""
-    return title.replace("[", "(").replace("]", ")")
+def one_line(text: str) -> str:
+    """``text`` with every run of whitespace, line breaks included, as one space."""
+    return " ".join(text.split())
+
+
+def link_text(title: str) -> str:
+    """``title`` on one line, with square brackets turned into parentheses, so an index entry parses."""
+    return one_line(title).replace("[", "(").replace("]", ")")
 
 
 def _next_number(section: Path) -> int:
@@ -143,6 +148,7 @@ def new_concept(
         already exists. Nothing is written.
     """
     now = now or datetime.now(UTC)
+    title = one_line(title)
     okf = root / ".okf"
     if not (okf / "index.md").is_file():
         raise ConceptError(f"{okf / 'index.md'} does not exist; run kmctl init first")
@@ -184,9 +190,7 @@ def new_concept(
         _front_matter(kind, title, description, now) + f"\n# {title}\n\n{body}\n",
         encoding="utf-8",
     )
-    _append_entry(
-        section / "index.md", f"- [{_link_text(title)}]({rel}): {description}"
-    )
+    _append_entry(section / "index.md", f"- [{link_text(title)}]({rel}): {description}")
     cid = path.relative_to(okf).with_suffix("").as_posix()
     if kind == "prototype":
         cid = path.parent.relative_to(okf).as_posix()

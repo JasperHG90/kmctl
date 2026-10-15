@@ -28,6 +28,7 @@ Knowledge in this repository:
   their scripts; handoffs/ notes on where work stopped.
 - Skills do repeatable tasks; the rules below are standing guidance.
 Verbs: kmctl new decision|practice|proposal|prototype|handoff to add a concept;
+kmctl new doc tutorial|how-to|reference|explanation for a docs/ page;
 kmctl check after editing an index; kmctl review due for what needs review;
 kmctl handoffs for live handoffs. Each takes --help and --json."""
 
