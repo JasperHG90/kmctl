@@ -19,3 +19,4 @@
 {"at": "2026-10-15T16:12:37+00:00", "binds": "28bf47f02158a3208359b7b399a8ff2a8385151dfb88a861960b79a840dade2c", "kind": "round-start", "n": 2, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "4955d9677d1da4bcfa917003ab0d7e6816054e18"}
 {"at": "2026-10-15T16:14:32+00:00", "dispatched_at": "2026-10-15T16:12:37+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-15T16:14:16+00:00"}}
 {"at": "2026-10-15T16:14:39+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "15adaf2cf9fb05263670aa789b2b25c4654a582b"}
+{"at": "2026-10-15T16:15:45+00:00", "branch": "loop/audit-hermes-hardening", "kind": "land", "schema_version": "1.0", "sha": "33c5abf261ac9ab0f478784f61ba844a7f1246ab"}
