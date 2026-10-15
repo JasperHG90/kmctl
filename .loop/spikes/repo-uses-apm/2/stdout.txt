@@ -1,0 +1,51 @@
+Agent Package Manager (APM) CLI version 0.33.0
+== source rules/ (first 3):
+adversarial-reviews.instructions.md
+async-python.instructions.md
+dependency-choice.instructions.md
+  [+] 
+  [+] 
+  [+] 
+  |-- 1 rule(s) integrated -> .claude/rules/
+  |-- 1 rule(s) integrated -> .claude/rules/
+  |-- Skill integrated -> .claude/skills/
+[*] Installed 3 APM dependencies in 2.1s.
+== files written (excluding .git, apm_modules):
+./apm.lock.yaml
+./apm.yml
+./.claude/rules/plain-language.md
+./.claude/rules/python-testing.md
+./.claude/skills/generate-art/README.md
+./.claude/skills/generate-art/scripts/generate_art.py
+./.claude/skills/generate-art/SKILL.md
+./.gitignore
+== AGENTS.md/CLAUDE.md after install:
+ls: cannot access 'AGENTS.md': No such file or directory
+ls: cannot access 'CLAUDE.md': No such file or directory
+== lock pins:
+      3   resolved_commit: f0813cd497dcc8575fabbea719f35f7aac96f81a
+      3   resolved_ref: f0813cd497dcc8575fabbea719f35f7aac96f81a
+== rule python-testing: front matter source vs installed
+2,4c2,3
+< name: python-testing
+< description: How to write, run, and locate tests in Python projects (pytest + uv). Read before adding or changing Python code.
+< applyTo: "**/*.py"
+---
+> paths:
+>   - "**/*.py"
+DIFFERS
+== rule plain-language: front matter source vs installed
+1,5d0
+< ---
+< name: plain-language
+< description: Speak and write plainly, in chat replies, code, comments, commits, PRs, and docs; name a technical concept only with a one-sentence explanation tied to the context.
+< ---
+< 
+DIFFERS
+== skill generate-art vs source:
+byte-identical
+== plain .md rule path (the form aim installs) accepted?
+[x] Failed to parse apm.yml: Invalid APM dependency 
+81a': Invalid virtual package path 'rules/python-testing.md'. Individual files 
+must end with one of: .prompt.md, .instructions.md, .agent.md. For subdirectory 
+== RESULT: risk holds: content not byte-identical or missing
