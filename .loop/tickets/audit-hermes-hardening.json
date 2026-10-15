@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "audit-hermes-hardening",
-  "stage": "planning",
+  "stage": "ready",
   "attempts": 0,
   "plan_rounds": 3,
   "review_rounds": 0,
@@ -120,6 +120,12 @@
       "to": "planning",
       "at": "2026-10-15T15:56:14+00:00",
       "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-10-15T15:59:12+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
