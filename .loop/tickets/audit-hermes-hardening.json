@@ -3,7 +3,7 @@
   "slug": "audit-hermes-hardening",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 1,
+  "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -88,9 +88,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 1,
-    "binds": "ef519d1cd7a450cd76d46e7b21aaeb774c9fb28fd2fe2d2f89a99b47801aa70d",
-    "started_at": "2026-10-15T15:56:27+00:00",
+    "n": 2,
+    "binds": "ccc61974625490f8dc7a83fd80ac6614dc5aa8b83934d9a5c705f76e9b5938ba",
+    "started_at": "2026-10-15T15:58:00+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -103,10 +103,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "ef519d1cd7a450cd76d46e7b21aaeb774c9fb28fd2fe2d2f89a99b47801aa70d",
+  "plan_hash": "ccc61974625490f8dc7a83fd80ac6614dc5aa8b83934d9a5c705f76e9b5938ba",
   "intent": {
     "epic": "ci",
     "depends_on": [
