@@ -101,7 +101,16 @@
   ],
   "resigns": [],
   "accepted_risks": [],
-  "waivers": [],
+  "waivers": [
+    {
+      "finding": "reviewer:f7",
+      "round": 3,
+      "reason": "non-blocking docstring line, fixed in the tree (new_concept Raises now names the empty description refusal); the reviewer marked it needing no second look",
+      "by": "agent:session",
+      "blocking": false,
+      "at": "2026-10-15T11:51:03+00:00"
+    }
+  ],
   "overrides": [],
   "round": {
     "kind": "review",
@@ -195,5 +204,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev77+gbd4712cf8.d20261015",
-  "at": "2026-10-15T11:50:50+00:00"
+  "at": "2026-10-15T11:51:03+00:00"
 }
