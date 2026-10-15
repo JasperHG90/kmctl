@@ -19,7 +19,9 @@
   "archived": false,
   "worktree": "/home/vscode/kmctl.worktrees/adr-audit-fixes",
   "branch": "loop/adr-audit-fixes",
-  "stamps": [],
+  "stamps": [
+    "d4b06008a596c358bb5ad7befceec11c350804c732d5363eed344901656de35b"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
     "hash": "378fa5e66c558260a45d57065bd0d0004db196df5dac1d4adc1806f528dc1551",
@@ -117,5 +119,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T13:01:22+00:00"
+  "at": "2026-10-15T13:05:41+00:00"
 }
