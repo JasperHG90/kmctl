@@ -34,3 +34,4 @@ Done when tests show init writes the four rule files with their front matter and
 ## Could invalidate this plan
 
 - Settled for this setup by spike:init-seeds-the-habit/1: on one FastAPI task with three runs per arm, seeding raised architecture pages from 0 of 3 runs to 3 of 3 and decisions from a mean of 3.0 to 4.3, with `kmctl check` passing in all six. The unseeded arm did not reproduce the operator's 1-of-6 failure, likely because the briefing went in the prompt text there, so the decision gain is the smaller result.
+- The built init with the real SessionStart hook (spike:init-seeds-the-habit/2, N=3): a mean of 4.67 decisions beyond init's own and an architecture page in 3 of 3 runs, matching or beating spike 1's seeded arm.
