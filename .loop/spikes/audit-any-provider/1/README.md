@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.0.1.dev86+g9641fa018.d20261015
-  at: '2026-10-15T14:31:39+00:00'
+  at: '2026-10-15T14:32:17+00:00'
 slug: audit-any-provider
 n: 1
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike audit-any-provider/1
@@ -24,7 +24,10 @@ python3 -I /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note audit-any-provider 1`.
+Hermes Agent 0.19.0 has no built-in read-only toolset: `-t file` offers `patch, read_file, search_files, write_file`, and the fake model's `write_file` overwrote the target. With no `-t`, 16 tools are offered, including terminal and execute_code, and `-z` auto-approves them (execute_code wrote the target).
+A read-only setup does work: a small user plugin (`~/.hermes/plugins/kmctl-read/`, enabled by `plugins: {enabled: [kmctl-read]}` in config.yaml) that registers toolset `kmctl_read` with only `kmctl_read_file` and `kmctl_search_files`. With `-t kmctl_read` those two were the only tools offered. Calls to write_file, patch, terminal and execute_code got "Tool 'X' does not exist", the target stayed unchanged, and the read returned the fixture. If the plugin is not enabled, `-t kmctl_read` exits 2 before calling the model, so it fails closed.
+`HERMES_WRITE_SAFE_ROOT=<empty dir>` with `-t file` also refused write_file and patch, but it still offers them, and Hermes calls it defense-in-depth.
+This settles risk 1 only if the plan ships the Hermes plugin. Bare `-t file` would break I2. Ran against a fake endpoint, not a real model.
 
 ## Files
 
