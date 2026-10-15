@@ -3,7 +3,7 @@
   "slug": "write-docs-skill",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "4ec81c9b7b6714b0687c0f201b4299969dcd380ce15dbaf7e705728492ee7d18",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "f302591c63f2b5de5615b5693438ad831ea59ed95bfde9068329f09329fed297",
+    "started_at": "2026-10-15T08:06:54+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "f302591c63f2b5de5615b5693438ad831ea59ed95bfde9068329f09329fed297",
   "intent": {
     "epic": "plugin",
     "depends_on": [

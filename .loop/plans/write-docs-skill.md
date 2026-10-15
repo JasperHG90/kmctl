@@ -19,11 +19,13 @@ Relayed from: none
 
 ## Intent
 
-Adds a `write-docs` skill to the plugin: it picks the Diataxis type from what the reader is trying to do (learn, do one task, look something up, understand why), and has one reference file per type with what belongs and what does not. It updates `docs/README.md` in the same change.
+Adds a `write-docs` skill to the plugin: it picks the Diataxis type from what the reader is trying to do (learn, do one task, look something up, understand why), and has one reference file per type with what belongs and what does not. It updates the `docs/` index page (`README.md`) in the same change.
 
 One skill rather than four, so there is one trigger to get right.
 
 Done when the skill, given four requests of different types, puts each page in the right folder.
+
+Every skill is made with the skill-creator skill (ADR 0007), and its test prompts are kept beside it.
 
 ## Could invalidate this plan
 
