@@ -5,6 +5,7 @@ from GitHub, so they are skipped where claude is not on PATH.
 """
 
 import json
+import os
 import shutil
 import subprocess
 import zipfile
@@ -201,3 +202,193 @@ def test_installed_version_check_after_upgrade(
     assert "run kmctl plugin update" in plain.stderr
     assert fixed.exit_code == 0, fixed.output
     assert "problem" not in _kmctl("plugin", "status").stdout
+
+
+def _settings(path: Path, source: dict) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps({"extraKnownMarketplaces": {"scaccogatto": {"source": source}}})
+    )
+    return path
+
+
+@pytest.fixture
+def settings_dirs(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> tuple[Path, Path]:
+    """An empty user config folder and managed settings folder that kmctl reads."""
+    user = tmp_path / "user-config"
+    managed = tmp_path / "managed"
+    user.mkdir()
+    managed.mkdir()
+    monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(user))
+    monkeypatch.setattr("kmctl.plugin._managed_dir", lambda: managed)
+    return user, managed
+
+
+@pytest.mark.parametrize(
+    ("source", "argument"),
+    [
+        ({"source": "github", "repo": "me/okf"}, "me/okf"),
+        ({"source": "github", "repo": "me/okf", "ref": "v1"}, "me/okf#v1"),
+        ({"source": "git", "url": "https://x.org/okf.git"}, "https://x.org/okf.git"),
+        (
+            {"source": "git", "url": "https://x.org/okf.git", "ref": "main"},
+            "https://x.org/okf.git#main",
+        ),
+        ({"source": "url", "url": "https://x.org/m.json"}, "https://x.org/m.json"),
+        ({"source": "directory", "path": "/opt/okf"}, "/opt/okf"),
+    ],
+)
+def test_okf_source_from_settings(
+    settings_dirs: tuple[Path, Path], source: dict, argument: str
+) -> None:
+    from kmctl.plugin import okf_source
+
+    user, _ = settings_dirs
+    file = _settings(user / "settings.json", source)
+
+    assert okf_source() == (argument, file)
+
+
+def test_okf_source_default_without_entry(settings_dirs: tuple[Path, Path]) -> None:
+    from kmctl.plugin import OKF_SOURCE, okf_source
+
+    assert okf_source() == (OKF_SOURCE, None)
+
+
+def test_okf_source_managed_wins(settings_dirs: tuple[Path, Path]) -> None:
+    from kmctl.plugin import okf_source
+
+    user, managed = settings_dirs
+    _settings(user / "settings.json", {"source": "github", "repo": "user/okf"})
+    _settings(
+        managed / "managed-settings.json", {"source": "github", "repo": "base/okf"}
+    )
+    assert okf_source()[0] == "base/okf", "a managed entry beats the user entry"
+
+    _settings(
+        managed / "managed-settings.d" / "10-a.json",
+        {"source": "github", "repo": "a/okf"},
+    )
+    last = _settings(
+        managed / "managed-settings.d" / "20-b.json",
+        {"source": "github", "repo": "b/okf"},
+    )
+
+    assert okf_source() == ("b/okf", last), "the last managed file wins"
+
+
+def test_okf_source_skips_dot_files(settings_dirs: tuple[Path, Path]) -> None:
+    from kmctl.plugin import okf_source
+
+    _, managed = settings_dirs
+    base = _settings(
+        managed / "managed-settings.json", {"source": "github", "repo": "base/okf"}
+    )
+    _settings(
+        managed / "managed-settings.d" / ".hidden.json",
+        {"source": "github", "repo": "hidden/okf"},
+    )
+
+    assert okf_source() == ("base/okf", base), "a dot-file is not read"
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        {"source": "github", "repo": "me/okf", "path": "sub"},
+        {"source": "url", "url": "https://x.org/m.json", "headers": {"A": "b"}},
+        {"source": "url", "url": "https://x.org/m.json", "headersHelper": "x"},
+        {"source": "npm", "package": "okf"},
+    ],
+)
+def test_okf_source_unknown_kind(
+    settings_dirs: tuple[Path, Path],
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    source: dict,
+) -> None:
+    from kmctl.plugin import PluginError, install
+
+    user, _ = settings_dirs
+    file = _settings(user / "settings.json", source)
+    calls: list[list[str]] = []
+    monkeypatch.setattr("kmctl.plugin._claude", lambda args, cwd: calls.append(args))
+    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path / "data"))
+
+    with pytest.raises(PluginError) as err:
+        install("project", tmp_path)
+
+    assert str(file) in str(err.value)
+    assert calls == [], "claude must not run"
+
+
+def _isolated_home(isolated: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    home = isolated.parent / "home"
+    home.mkdir()
+    monkeypatch.setenv("HOME", str(home))
+    monkeypatch.setattr(
+        "kmctl.plugin._managed_dir", lambda: isolated.parent / "no-managed"
+    )
+    return Path(os.environ["CLAUDE_CONFIG_DIR"]) / "settings.json"
+
+
+@needs_claude
+def test_install_with_settings_declared_okf(
+    isolated: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    settings = _settings(
+        _isolated_home(isolated, monkeypatch),
+        {"source": "git", "url": "https://github.com/scaccogatto/okf-skills.git"},
+    )
+    before = settings.read_text()
+
+    result = _kmctl("plugin", "install", "--scope", "project")
+
+    assert result.exit_code == 0, result.output
+    assert "okf@scaccogatto" in _listed()
+    assert settings.read_text() == before
+
+
+@needs_claude
+def test_install_reports_refused_entry(
+    isolated: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    settings = _settings(
+        _isolated_home(isolated, monkeypatch),
+        {"source": "git", "url": "https://github.com/scaccogatto/okf-skills"},
+    )
+    before = settings.read_text()
+
+    result = _kmctl("plugin", "install", "--scope", "project")
+
+    assert result.exit_code != 0
+    assert str(settings) in result.output
+    assert "https://github.com/scaccogatto/okf-skills" in result.output
+    assert settings.read_text() == before
+
+
+@pytest.mark.parametrize(
+    "entry",
+    [
+        {},
+        {"source": "github"},
+        {"source": {"source": "github"}},
+        {"source": {"repo": "x/y"}},
+    ],
+)
+def test_okf_source_ignores_broken_entry(
+    settings_dirs: tuple[Path, Path], entry: object
+) -> None:
+    from kmctl.plugin import OKF_SOURCE, okf_source
+
+    user, managed = settings_dirs
+    broken = {"extraKnownMarketplaces": {"scaccogatto": entry}}
+    (user / "settings.json").write_text(json.dumps(broken))
+    assert okf_source() == (OKF_SOURCE, None), "claude ignores it, so kmctl does too"
+
+    earlier = _settings(
+        managed / "managed-settings.json", {"source": "github", "repo": "base/okf"}
+    )
+    (managed / "managed-settings.d").mkdir()
+    (managed / "managed-settings.d" / "10.json").write_text(json.dumps(broken))
+    assert okf_source() == ("base/okf", earlier), "a broken later entry hides nothing"

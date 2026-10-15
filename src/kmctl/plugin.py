@@ -5,13 +5,15 @@ to one fixed staging folder, stamped with this CLI's version, registers that
 folder as the ``kmctl`` marketplace, and installs ``kmctl@kmctl``. The okf
 dependency lives in the scaccogatto marketplace, which ``claude plugin
 install`` does not add by itself (spike:plugin-install-verb/1), so it is added
-first. The command order follows loopctl's working installer.
+first, from the source the operator's settings already give it when they do.
+The command order follows loopctl's working installer.
 """
 
 import json
 import os
 import shutil
 import subprocess
+import sys
 from dataclasses import dataclass
 from importlib.metadata import version
 from importlib.resources import files
@@ -23,6 +25,16 @@ MARKETPLACE = "kmctl"
 PLUGIN_ID = "kmctl@kmctl"
 OKF_MARKETPLACE = "scaccogatto"
 OKF_SOURCE = "scaccogatto/okf-skills"
+#: The source fields each kind may have for kmctl to pass it to ``marketplace add``.
+_ADDABLE = {
+    "github": {"source", "repo", "ref"},
+    "git": {"source", "url", "ref"},
+    "url": {"source", "url"},
+    "directory": {"source", "path"},
+}
+_MISMATCH = "its source doesn't match its extraKnownMarketplaces entry"
+#: The field holding each kind's location.
+_LOCATION = {"github": "repo", "git": "url", "url": "url", "directory": "path"}
 
 
 class PluginError(Exception):
@@ -86,6 +98,79 @@ def stage() -> Path:
     data["version"] = cli_version()
     manifest.write_text(json.dumps(data, indent=2) + "\n")
     return dest
+
+
+def _managed_dir() -> Path:
+    """The folder claude reads managed settings from on this platform."""
+    if sys.platform == "darwin":
+        return Path("/Library/Application Support/ClaudeCode")
+    return Path("/etc/claude-code")
+
+
+def _settings_files() -> list[Path]:
+    """The settings files claude merges, lowest precedence first (claude 2.1.300)."""
+    config = os.environ.get("CLAUDE_CONFIG_DIR")
+    user = (Path(config) if config else Path.home() / ".claude") / "settings.json"
+    managed = _managed_dir()
+    drop_in = managed / "managed-settings.d"
+    extra = (
+        sorted(f for f in drop_in.glob("*.json") if not f.name.startswith("."))
+        if drop_in.is_dir()
+        else []
+    )
+    return [user, managed / "managed-settings.json", *extra]
+
+
+def _usable(entry: object) -> bool:
+    """Whether claude treats an entry as one: a ``source`` object with a kind and, for
+    a known kind, a string location. claude 2.1.300 ignores the rest, as kmctl does."""
+    if not isinstance(entry, dict) or not isinstance(entry.get("source"), dict):
+        return False
+    kind = entry["source"].get("source")
+    if not isinstance(kind, str):
+        return False
+    field = _LOCATION.get(kind)
+    return field is None or isinstance(entry["source"].get(field), str)
+
+
+def okf_source() -> tuple[str, Path | None]:
+    """The ``marketplace add`` argument for the okf marketplace, and the settings file it came from.
+
+    claude refuses to add a marketplace whose source differs from an
+    ``extraKnownMarketplaces`` entry of the same name, comparing the whole
+    entry, so the argument is built from the entry claude itself uses: the last
+    one in merge order. With no entry it is ``OKF_SOURCE``.
+
+    Raises
+    ------
+    PluginError
+        When the entry has a kind or a field no add argument can carry.
+    """
+    found: tuple[dict, Path] | None = None
+    for file in _settings_files():
+        try:
+            data = json.loads(file.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        known = data.get("extraKnownMarketplaces") if isinstance(data, dict) else None
+        entry = known.get(OKF_MARKETPLACE) if isinstance(known, dict) else None
+        if _usable(entry):
+            found = (entry, file)
+    if found is None:
+        return OKF_SOURCE, None
+    entry, file = found
+    source = entry["source"]
+    kind = source.get("source")
+    if kind not in _ADDABLE or not set(source) <= _ADDABLE[kind]:
+        raise PluginError(
+            f"{file} declares the {OKF_MARKETPLACE} marketplace as {json.dumps(source)}, "
+            "which claude plugin marketplace add cannot take as an argument; add that "
+            "marketplace by hand from the same source, or change the entry, then run "
+            "kmctl plugin install again"
+        )
+    value = source[_LOCATION[kind]]
+    ref = source.get("ref")
+    return (f"{value}#{ref}" if ref else str(value)), file
 
 
 def _claude(args: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
@@ -162,11 +247,24 @@ def install(scope: Scope, cwd: Path, reinstall: bool = False) -> PluginStatus:
         When claude is missing, a step fails, or the plugin is not listed at
         this CLI's version afterwards.
     """
+    okf, declared_in = okf_source()
     folder = stage()
     # Declare the okf marketplace at this scope every time: another scope having it
     # does not declare it here, and adding it again is a no-op (spike 3).
-    add_okf = ["plugin", "marketplace", "add", OKF_SOURCE, "--scope", scope]
-    _require(_claude(add_okf, cwd), add_okf)
+    add_okf = ["plugin", "marketplace", "add", okf, "--scope", scope]
+    added = _claude(add_okf, cwd)
+    if (
+        added.returncode != 0
+        and declared_in
+        and _MISMATCH in added.stdout + added.stderr
+    ):
+        raise PluginError(
+            f"{declared_in} declares the {OKF_MARKETPLACE} marketplace from {okf}, and "
+            "claude would not accept that source as an add argument; add that "
+            "marketplace by hand from the same source, or change the entry, then run "
+            "kmctl plugin install again"
+        )
+    _require(added, add_okf)
     add = ["plugin", "marketplace", "add", str(folder), "--scope", scope]
     if _claude(add, cwd).returncode != 0:
         refresh = ["plugin", "marketplace", "update", MARKETPLACE]
