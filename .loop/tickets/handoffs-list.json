@@ -1,14 +1,43 @@
 {
   "schema_version": "1.0",
   "slug": "handoffs-list",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "f164bc963fc5e87154d495afed1d24c267bc28b720ef855e9ce873cc499c7bb4",
+    "tree": "d3060d7cb24e96f6fe51ed6f9e4e5164807fb19a",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "blocking",
+        "judgement": null,
+        "paths": [
+          "src/kmctl/__init__.py",
+          "src/kmctl/handoffs.py",
+          "src/kmctl/okf.py",
+          "tests/test_handoffs.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f2",
+        "outcome": "sent-back",
+        "by": "judgement",
+        "judgement": "j-20261015T104056+0000-edfd6e5f",
+        "paths": [
+          "src/kmctl/okf.py",
+          "tests/test_handoffs.py"
+        ]
+      }
+    ],
+    "at": "2026-10-15T10:40:56+00:00"
+  },
   "ask": null,
   "split": "j-20261015T082301+0000-bff319a4",
   "split_plan_hash": "9cddcde2bc49ce00eca7d1221a1a899e6e62ff6d3e40283ea781cdbb21ce07b3",
@@ -120,8 +149,14 @@
       "to": "fixing",
       "at": "2026-10-15T10:40:29+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-15T10:40:56+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T10:40:55+00:00"
+  "at": "2026-10-15T10:40:56+00:00"
 }
