@@ -1,0 +1,5 @@
+CLAUDE_CODE_SESSION_ID=eee74b7b-f30f-4b17-b768-7eca3fbaa063
+env: OK, UUID session id visible to Bash subprocess
+| `${CLAUDE_SESSION_ID}` | The current session ID. Useful for logging, creating session-specific files, or correlating skill output with sessions. |
+docs: OK, skills substitution table lists ${CLAUDE_SESSION_ID}
+| `CLAUDE_CODE_SESSION_ID` | Set automatically to the current session ID in Bash and PowerShell tool subprocesses, [hook command](/docs/en/hooks) subprocesses, and stdio [MCP server](/docs/en/mcp) subprocesses. For Bash, PowerShell, and hooks this matches the `session_id` field in the hook JSON input and is updated on `/clear`. An MCP server subprocess retains the ID it was spawned with. On `--res
