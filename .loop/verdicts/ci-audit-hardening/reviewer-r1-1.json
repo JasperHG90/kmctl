@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The new issue step has no working-directory, so gh runs in GITHUB_WORKSPACE and resolves the repository from that folder's git remote, not from inputs.path. On main, gh ran inside the audit step, which has working-directory: inputs.path. A caller that checks out into a subfolder and passes path: sub now gets 'fatal: not a git repository' from gh issue list. Because the step fails, no issue is posted, so the regression is visible rather than silent, but audit mode is broken for that layout. gh does not fall back to GITHUB_REPOSITORY (checked: outside a git repo, gh issue list with GITHUB_REPOSITORY set fails with 'not a git repository').",
+      "anchor": "action.yml:60-66",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "319e73aa13182d23ec6a076c077e26cb6f64a9bb04f5d0b186a141a8f9732ba6",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "at": "2026-10-15T13:30:09+00:00"
+}
