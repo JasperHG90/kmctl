@@ -22,8 +22,8 @@
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
-    "hash": "8bce5ffd490dbc7b9b2e6556e008a98a3dbd1bc1bfd0ef2e106ff9aeb114fef3",
-    "at": "2026-10-15T14:38:53+00:00"
+    "hash": "7245d666b6e7a3b9f4cb930650b48e8fe4af340792672f97328319cf8c8a9b41",
+    "at": "2026-10-15T14:42:08+00:00"
   },
   "delegation": null,
   "budget_base": null,
@@ -44,8 +44,8 @@
     },
     {
       "id": "r3",
-      "behavior": "The kmctl-read plugin registers one toolset, kmctl_read, holding only kmctl_read_file and kmctl_search_files, and both refuse any path that resolves outside the repository root.",
-      "fails_when": "loading action/hermes/kmctl-read with a recording ctx registers any other tool or toolset, or either tool returns content or a count for a path outside the root, a symlink in the repo pointing out of it, the run's HOME, or /proc/self/environ (including output_mode count)",
+      "behavior": "The kmctl-read plugin registers one toolset, kmctl_read, holding only kmctl_read_file and kmctl_search_files, written in plain Python with no shell; both refuse any path that resolves outside the repository root, and a search pattern is only ever text to match.",
+      "fails_when": "loading action/hermes/kmctl-read with a recording ctx registers any other tool or toolset; either tool returns content or a count for a path outside the root, a symlink in the repo pointing out of it, the run's HOME, or /proc/self/environ; a pattern such as --pre=rm changes or creates any file; or the plugin source imports subprocess, os.system, pty or shlex",
       "command": "uv run pytest tests/test_hermes_plugin.py -q",
       "judgment": false
     },
@@ -103,6 +103,21 @@
         }
       },
       "at": "2026-10-15T14:38:53+00:00"
+    },
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+      "reason": "plan round 2 review: Hermes' search handler lets a pattern become an rg flag, so the plugin's tools are plain Python with no shell",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r3": [
+            "behavior",
+            "fails_when"
+          ]
+        }
+      },
+      "at": "2026-10-15T14:42:08+00:00"
     }
   ],
   "accepted_risks": [],
@@ -145,5 +160,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T14:42:07+00:00"
+  "at": "2026-10-15T14:42:08+00:00"
 }

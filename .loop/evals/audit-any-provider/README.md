@@ -6,12 +6,12 @@ tags:
 - eval
 generated:
   by: process:loopctl/2.0.1.dev86+g9641fa018.d20261015
-  at: '2026-10-15T14:38:53+00:00'
+  at: '2026-10-15T14:42:08+00:00'
 slug: audit-any-provider
 signoff:
   signer: delegated:jasperginn@gmail.com/claude-opus-5-5
-  hash: 8bce5ffd490dbc7b9b2e6556e008a98a3dbd1bc1bfd0ef2e106ff9aeb114fef3
-  at: '2026-10-15T14:38:53+00:00'
+  hash: 7245d666b6e7a3b9f4cb930650b48e8fe4af340792672f97328319cf8c8a9b41
+  at: '2026-10-15T14:42:08+00:00'
 verified: null
 ---
 
@@ -21,8 +21,8 @@ Rows: rows.json; the fields each row takes: loopctl schema eval-rows.
   Fails when: with a stub hermes, the recorded call lacks --provider P and -m MODEL from the environment, the config it saw lacks base_url or an api_key taken from the named env var, HOME is the runner's own, or the script contains anthropic, claude or openai outside comments
 - r2: Every audit run passes -t kmctl_read, installs the kmctl-read Hermes plugin into the run's HOME and enables it, and sets HERMES_WRITE_SAFE_ROOT to an empty folder.
   Fails when: the stub hermes's arguments lack -t kmctl_read, the plugin files or plugins.enabled are missing from the run's HOME, or HERMES_WRITE_SAFE_ROOT is unset or not an empty folder
-- r3: The kmctl-read plugin registers one toolset, kmctl_read, holding only kmctl_read_file and kmctl_search_files, and both refuse any path that resolves outside the repository root.
-  Fails when: loading action/hermes/kmctl-read with a recording ctx registers any other tool or toolset, or either tool returns content or a count for a path outside the root, a symlink in the repo pointing out of it, the run's HOME, or /proc/self/environ (including output_mode count)
+- r3: The kmctl-read plugin registers one toolset, kmctl_read, holding only kmctl_read_file and kmctl_search_files, written in plain Python with no shell; both refuse any path that resolves outside the repository root, and a search pattern is only ever text to match.
+  Fails when: loading action/hermes/kmctl-read with a recording ctx registers any other tool or toolset; either tool returns content or a count for a path outside the root, a symlink in the repo pointing out of it, the run's HOME, or /proc/self/environ; a pattern such as --pre=rm changes or creates any file; or the plugin source imports subprocess, os.system, pty or shlex
 - r4: The prompt carries the audit skill, the needed review skills and the kmctl-auditor instructions as text, the filtered due list, and the repository's absolute path; findings still reach the summary and the issue body.
   Fails when: the prompt hermes receives lacks any of those texts or the absolute path, or a findings block in the stub's plain stdout (with a footer after it) does not appear in the summary and the body under RUNNER_TEMP
 - r5: The shipped audit workflow names every command as its own step, uses no uses: ./ for the audit, and takes provider, model, base URL and key secret as visible settings; action.yml has the same steps with provider, model, base_url and api_key_env inputs and no anthropic_api_key.
