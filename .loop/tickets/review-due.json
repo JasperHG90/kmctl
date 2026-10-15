@@ -3,7 +3,7 @@
   "slug": "review-due",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "385da8b8d43cd2ba191ee647f26b95a4e884245bf2567f0eb91caed4cca79c1c",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "58d462deb4364edcf095ca6726afe1281ecbc60e7a27d4133c47cf0ecc40ddc6",
+    "started_at": "2026-10-15T08:18:11+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "58d462deb4364edcf095ca6726afe1281ecbc60e7a27d4133c47cf0ecc40ddc6",
   "intent": {
     "epic": "cli",
     "depends_on": [],
@@ -44,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T08:17:59+00:00"
+  "at": "2026-10-15T08:18:11+00:00"
 }
