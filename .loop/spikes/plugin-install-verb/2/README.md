@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.0.1.dev1+g4552fe226.d20261015
-  at: '2026-10-15T08:22:51+00:00'
+  at: '2026-10-15T08:23:02+00:00'
 slug: plugin-install-verb
 n: 2
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike plugin-install-verb/2
@@ -24,7 +24,10 @@ The command exited 1:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note plugin-install-verb 2`.
+With claude 2.1.300, an isolated CLAUDE_CONFIG_DIR and a scratch git repo, `marketplace add --scope project` for both marketplaces then `plugin install tiny@spike-mkt --scope project` exited 0 with `(+ 1 dependency: okf)`; `plugin list --json` showed okf@scaccogatto 0.10.3 and tiny both at scope project.
+`.claude/settings.json` got both marketplaces under `extraKnownMarketplaces` and both plugins under `enabledPlugins`; nothing was written to user settings.
+Exit 1 only because the check compared bytes: the second run reported "already on disk" / "already installed" but rewrote settings.json with `enabledPlugins` moved above `extraKnownMarketplaces` (same content). Superseded by spike 3, which compares content and adds a third run.
+A clone opened with a fresh config dir listed no marketplaces or plugins from the CLI; the trust prompt in an interactive session was not tested.
 
 ## Files
 
