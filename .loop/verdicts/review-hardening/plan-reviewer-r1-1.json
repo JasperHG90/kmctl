@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The grader fix keys run folders on a new evals.json `name`, but skill-creator does not name run folders from evals.json. Its SKILL.md has the running agent make up a descriptive name per test case (or use eval-<ID>), use that for the folder, and record the link in <eval-dir>/eval_metadata.json as eval_id plus eval_name. A fresh run will still have folder names that evals.json never holds, so the grader still fails with a missing key and the stated outcome ('a fresh skill-creator run is graded without editing the script') is not met. The join that holds is eval_metadata.json eval_id to evals.json id, with doc_type on the eval; the plan's test ('runs named only in evals.json') would pass while real runs still break.",
+      "anchor": "plugin/skills/write-docs/evals/grade.py:16",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "Applying reference-style links to the index check changes what an index entry is, and the plan does not say how. The format in the checks.py module docstring (which every kmctl verb that writes an index follows) says an entry is a list item whose first link is an inline relative link. A `[ref]: path` definition is not a list item, so 'checked like inline links' in the index check can only mean `- [x][ref]` now counts as an entry. That is a change to the documented index contract, and for .okf/ indexes it may disagree with the okf validator, which owns links inside the bundle. The plan should either say reference entries count (and update the format docstring), or limit reference-style handling to the link check.",
+      "anchor": "src/kmctl/checks.py:7",
+      "category": "design",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "701890a2b70989d5536ec42c3404c017c2a1dc53c8d90d9ea07f42a9627d3ad4"
+  },
+  "by": "process:loopctl/2.0.1.dev77+gbd4712cf8.d20261015",
+  "at": "2026-10-15T11:56:34+00:00"
+}
