@@ -7,11 +7,13 @@ on:
   schedule:
     - cron: "0 6 * * 1"
 
-# A composite action cannot set token permissions; the calling workflow does.
+# The issue step needs issues: write; nothing else writes.
 permissions:
   contents: read
   issues: write
 
+# Each step below is one command, the same ones action.yml's audit mode runs,
+# so a reader sees everything the audit does (ADR 0010).
 jobs:
   audit:
     runs-on: ubuntu-latest
@@ -21,7 +23,30 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: ./
-        with:
-          mode: audit
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+      - uses: astral-sh/setup-uv@v6
+      - name: Install kmctl from this checkout
+        run: uv tool install .
+      - name: Install Hermes Agent
+        run: uv tool install --python 3.12 hermes-agent==0.19.0
+      # The model and where it is served. Any OpenAI-compatible endpoint works
+      # with provider custom: change base_url and model to your own (Ollama,
+      # Bifrost, OpenRouter, a vendor's API), and put its key in the
+      # AUDIT_API_KEY secret. No GitHub token is set here: the model's process
+      # must not be able to read one.
+      - name: Audit knowledge
+        timeout-minutes: 40
+        env:
+          KMCTL_AUDIT_PROVIDER: custom
+          KMCTL_AUDIT_BASE_URL: https://openrouter.ai/api/v1
+          KMCTL_AUDIT_MODEL: qwen/qwen3-coder
+          KMCTL_AUDIT_API_KEY_ENV: AUDIT_API_KEY
+          AUDIT_API_KEY: ${{ secrets.AUDIT_API_KEY }}
+          KMCTL_AUDIT_TIMEOUT: 30m
+          KMCTL_PLUGIN_DIR: ${{ github.workspace }}/plugin
+        run: bash action/knowledge-audit.sh
+      # Only this step gets the token; it posts the body the audit wrote.
+      - name: Post the audit issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: bash action/knowledge-audit-issue.sh

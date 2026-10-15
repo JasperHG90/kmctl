@@ -15,7 +15,8 @@ How the commands below were run:
   shipped workflows, `.github/workflows/knowledge.yml` and
   `.github/workflows/knowledge-audit.yml`. Those steps run only on GitHub, so
   their output on GitHub is not shown. The job summary shown in step 4 comes
-  from running the script the action runs, `action/knowledge-ci.sh`, locally.
+  from running the script the action runs, `action/knowledge-ci.sh`, locally,
+  and the refusal in step 5 from running `action/knowledge-audit.sh` locally.
 
 ## Before you start
 
@@ -125,16 +126,28 @@ Concepts that are due are reported, never failed.
 ### 5. Optional: turn on the audit
 
 Audit mode sends your repository to a model, so it is off unless you add it.
-Per `action.yml`, it runs the kmctl audit agent through Claude Code with
-read-only tools on the architecture pages, decisions and practices that are
-due, and writes its findings to the job summary and to one open issue titled
-"Knowledge audit". It never edits files.
+Per `action.yml`, it runs the kmctl audit agent through
+[Hermes Agent](https://hermes-agent.nousresearch.com) on the architecture
+pages, decisions and practices that are due, and writes its findings to the
+job summary and to one open issue titled "Knowledge audit". The model gets
+three tools only: read a file, search files for text, and list files. They
+refuse any path outside the repository, and none of them can write. The
+audit never edits files.
 
-1. Add a repository secret named `ANTHROPIC_API_KEY` with your Anthropic API
-   key.
-2. Create `.github/workflows/knowledge-audit.yml`. This is the shipped
-   `.github/workflows/knowledge-audit.yml`, with `uses: ./` replaced as in
-   step 4:
+It works with any OpenAI-compatible endpoint: Ollama, Bifrost, OpenRouter, a
+vendor's own API, or your own server. You give it four settings:
+
+| Input | What it is |
+|---|---|
+| `provider` | `custom` (the default) for any OpenAI-compatible endpoint; a Hermes provider name also works |
+| `model` | the model name, as the endpoint's API names it |
+| `base_url` | the endpoint's base URL, usually ending in `/v1` |
+| `api_key_env` | the name of the variable that holds the key; leave it out for an endpoint that takes no key |
+
+1. Add a repository secret named `AUDIT_API_KEY` with your provider's API
+   key. Skip this for an endpoint that takes no key.
+2. Create `.github/workflows/knowledge-audit.yml`. Change `model` and
+   `base_url` to your provider's:
 
    ```yaml
    name: knowledge audit
@@ -161,10 +174,35 @@ due, and writes its findings to the job summary and to one open issue titled
              fetch-depth: 0
              persist-credentials: false
          - uses: JasperHG90/Knowledge-management@main
+           timeout-minutes: 40
+           env:
+             AUDIT_API_KEY: ${{ secrets.AUDIT_API_KEY }}
            with:
              mode: audit
-             anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+             provider: custom
+             base_url: https://openrouter.ai/api/v1
+             model: qwen/qwen3-coder
+             api_key_env: AUDIT_API_KEY
    ```
+
+The action installs Hermes Agent 0.19.0 and stops it after 30 minutes; set
+`KMCTL_AUDIT_TIMEOUT` (such as `45m`) in the step's `env` to change that.
+`timeout-minutes` on the step is a second limit, so a stuck run cannot hold
+the runner for GitHub's six-hour default. The config the action writes for
+Hermes names `AUDIT_API_KEY`, never the key itself.
+
+This repository's own `.github/workflows/knowledge-audit.yml` runs the same
+commands as separate steps instead of `uses:`: install kmctl, install Hermes
+Agent, run `action/knowledge-audit.sh`, then `action/knowledge-audit-issue.sh`.
+Read it to see exactly what the audit runs.
+
+**Ollama.** Set the model's context size to 64K tokens or more, with
+`PARAMETER num_ctx 65536` in a Modelfile or `OLLAMA_CONTEXT_LENGTH=65536` for
+the server. Ollama serves a smaller context than the model reports unless you
+set it, so a long prompt is cut without warning, and Hermes refuses an
+endpoint that reports less than 64K. A GitHub-hosted runner cannot reach
+Ollama on your own machine; use a self-hosted runner or a URL the runner can
+reach.
 
 Keep the `on:` and `permissions:` blocks as they are. Audit mode runs only on
 `workflow_dispatch` or `schedule`; on any other event the script stops. Run
@@ -175,9 +213,13 @@ kmctl audit: refused for event 'pull_request'; audit mode runs only on workflow_
 ```
 
 Keep `persist-credentials: false` on the checkout, and do not set `GH_TOKEN`
-or `GITHUB_TOKEN` for the job. The model's tools could read either, so the
-audit refuses to start when it finds one. The action hands the token only to
-its own later step, which posts the report.
+or `GITHUB_TOKEN` for the job. Either would sit in the model's process, so
+the audit refuses to start when it finds one. The action hands the token only
+to its own later step, which posts the report.
+
+The model reads your repository's files, so anything checked into it,
+secrets included, is in its view, and its findings quote what it read into
+the "Knowledge audit" issue in the same repository.
 
 `issues: write` lets that step open or update the "Knowledge audit" issue.
 

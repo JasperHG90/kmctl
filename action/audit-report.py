@@ -1,9 +1,10 @@
-"""Turn claude -p's JSON output into the audit's job summary and issue body.
+"""Turn the audit agent's reply into the audit's job summary and issue body.
 
-Usage: audit-report.py CLAUDE_OUTPUT SUMMARY_OUT BODY_OUT. Reads the last fenced
-json block in the result text, checks it is the auditor's findings list, and
-writes a Markdown table to both files. Exits 1, writing nothing, when there is
-no findings block or it has the wrong shape.
+Usage: audit-report.py REPLY SUMMARY_OUT BODY_OUT. REPLY is what hermes -z
+printed: plain text, possibly with a footer after the findings. Reads the last
+fenced json block in it, checks it is the auditor's findings list, and writes a
+Markdown table to both files. Exits 1, writing nothing, when there is no
+findings block or it has the wrong shape.
 """
 
 import json
@@ -16,9 +17,18 @@ VERDICTS = ("drifted", "unsure", "holds")
 KEYS = {"concept", "path", "review", "verdict", "summary", "evidence"}
 
 
-def _findings(output: str) -> list[dict]:
-    result = json.loads(output).get("result") or ""
-    blocks = re.findall(r"```json\s*\n(.*?)```", result, re.DOTALL)
+def _findings(reply: str) -> list[dict]:
+    """Return the findings list from the last fenced json block in ``reply``.
+
+    Raises
+    ------
+    ValueError
+        If there is no block, it is not JSON, or a finding lacks a key or has
+        an unknown review or verdict.
+    TypeError
+        If the block or a finding's evidence is not a list.
+    """
+    blocks = re.findall(r"```json\s*\n(.*?)```", reply, re.DOTALL)
     if not blocks:
         raise ValueError("the audit printed no findings block")
     findings = json.loads(blocks[-1])
@@ -35,10 +45,12 @@ def _findings(output: str) -> list[dict]:
 
 
 def _cell(text: object) -> str:
+    """Return ``text`` safe for one Markdown table cell."""
     return str(text).replace("|", "\\|").replace("\n", " ")
 
 
 def _report(findings: list[dict]) -> str:
+    """Return the Markdown report: counts, then a table with drifted first."""
     counts = {v: sum(f["verdict"] == v for f in findings) for v in VERDICTS}
     lines = [
         "## Knowledge audit",
@@ -59,6 +71,7 @@ def _report(findings: list[dict]) -> str:
 
 
 def main() -> int:
+    """Write the report to the summary and the body; return 1 without usable findings."""
     output, summary_out, body_out = (Path(a) for a in sys.argv[1:4])
     try:
         findings = _findings(output.read_text())

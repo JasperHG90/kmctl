@@ -18,3 +18,6 @@
   and read handoff concepts in .okf/handoffs/.
 - [ADR 0009](0009-handoff-key-extension-field.md): handoff_key is kmctl's
   one OKF extension field; I4 allows fields an ADR names.
+- [ADR 0010](0010-the-ci-audit-runs-hermes-agent-against-any-openai-compatible-provider.md):
+  The CI audit runs Hermes Agent with read-only kmctl tools against any
+  OpenAI-compatible provider, replacing Claude Code.

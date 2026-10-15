@@ -38,3 +38,8 @@ dev = [
 # bundle (.okf/) are not project code, and tests/vendor/ is a pinned copy:
 # their files are kept as written.
 extend-exclude = [".loop", ".claude", ".okf", "tests/vendor"]
+
+[tool.ruff.lint.per-file-ignores]
+# Hermes names a plugin by its folder, kmctl-read; it loads the file by path,
+# and nothing imports it as a module by that name.
+"action/hermes/kmctl-read/__init__.py" = ["N999"]

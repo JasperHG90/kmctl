@@ -3,8 +3,9 @@ description: >-
   Run kmctl check and kmctl review due on a repository's docs/ and .okf/ bundle,
   write both to the job summary, and fail when kmctl check fails or kmctl review due crashes.
   Concepts that are due for review are reported, never failed. With
-  mode: audit, run the read-only audit agent through Claude Code instead and
-  report its findings in the job summary and one "Knowledge audit" issue.
+  mode: audit, run the read-only audit agent through Hermes Agent against any
+  OpenAI-compatible model endpoint instead, and report its findings in the job
+  summary and one "Knowledge audit" issue.
 inputs:
   path:
     description: The repository folder to check, relative to the workspace.
@@ -13,16 +14,42 @@ inputs:
   mode:
     description: >-
       checks (the default) runs kmctl check and kmctl review due. audit runs the
-      kmctl audit agent on the concepts that are due, through Claude Code with
-      read-only tools; it needs anthropic_api_key, runs only on workflow_dispatch
-      or schedule, and needs the calling workflow to grant issues: write. Check
+      kmctl audit agent on the concepts that are due, through Hermes Agent with
+      only three read tools that cannot leave the repository; it needs model
+      (and base_url for provider custom), runs only on workflow_dispatch or
+      schedule, and needs the calling workflow to grant issues: write. Check
       out with persist-credentials: false and fetch-depth: 0, and set no GH_TOKEN
       or GITHUB_TOKEN for the job: the audit refuses to start when the model
-      could read a GitHub token. Only the later issue step gets the token.
+      could read a GitHub token. Only the later issue step gets the token. The
+      audit stops Hermes after 30 minutes (set KMCTL_AUDIT_TIMEOUT, such as 45m,
+      in the env of the step that uses this action to change it); also set
+      timeout-minutes on that step, since a composite action cannot set it on
+      its own steps.
     required: false
     default: checks
-  anthropic_api_key:
-    description: The Anthropic API key for audit mode, from a secret. Checks mode does not use it.
+  provider:
+    description: >-
+      Audit mode: the Hermes provider. custom (the default) talks to any
+      OpenAI-compatible endpoint at base_url, such as Ollama, Bifrost, OpenRouter
+      or a vendor's own API; Hermes' own provider names also work.
+    required: false
+    default: custom
+  model:
+    description: Audit mode, required. The model name the endpoint serves, as its API names it.
+    required: false
+    default: ""
+  base_url:
+    description: >-
+      Audit mode: the endpoint's base URL, ending in /v1 for most servers (for
+      example http://localhost:11434/v1 for Ollama). Required for provider custom.
+    required: false
+    default: ""
+  api_key_env:
+    description: >-
+      Audit mode: the name of the environment variable that holds the API key,
+      such as AUDIT_API_KEY. Set that variable from a secret in the env of the
+      step that uses this action. Leave empty for an endpoint that takes no key.
+      The key stays in the environment; the Hermes config names only the variable.
     required: false
     default: ""
 runs:
@@ -46,16 +73,19 @@ runs:
       shell: bash
       working-directory: ${{ inputs.path }}
       run: bash "${{ github.action_path }}/action/knowledge-ci.sh"
-    - name: Install Claude Code
+    - name: Install Hermes Agent
       if: inputs.mode == 'audit'
       shell: bash
-      run: npm install -g @anthropic-ai/claude-code@2.1.300
+      run: uv tool install --python 3.12 hermes-agent==0.19.0
     - name: Audit knowledge
       if: inputs.mode == 'audit'
       shell: bash
       working-directory: ${{ inputs.path }}
       env:
-        ANTHROPIC_API_KEY: ${{ inputs.anthropic_api_key }}
+        KMCTL_AUDIT_PROVIDER: ${{ inputs.provider }}
+        KMCTL_AUDIT_MODEL: ${{ inputs.model }}
+        KMCTL_AUDIT_BASE_URL: ${{ inputs.base_url }}
+        KMCTL_AUDIT_API_KEY_ENV: ${{ inputs.api_key_env }}
         KMCTL_PLUGIN_DIR: ${{ github.action_path }}/plugin
       run: bash "${{ github.action_path }}/action/knowledge-audit.sh"
     - name: Post the audit issue
