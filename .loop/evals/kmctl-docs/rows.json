@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {"id": "r1", "behavior": "README.md says what kmctl is, gives the install line and the plugin install step, and links every docs page.", "fails_when": "README.md lacks `uv tool install git+https://github.com/JasperHG90/Knowledge-management` or `kmctl plugin install`, or a page under docs/ is not linked from it", "command": "uv run pytest tests/test_docs.py::test_readme_install_and_links -q"},
+    {"id": "r2", "behavior": "docs/ holds at least one page in each Diataxis folder (tutorials, how-to, reference, explanation), and kmctl check passes on the repository.", "fails_when": "any of the four folders has no page besides its index, or kmctl check run on the repository root exits nonzero", "command": "uv run pytest tests/test_docs.py::test_docs_pages_by_type -q"},
+    {"id": "r3", "behavior": "The reference page names every kmctl command and subcommand that --help lists.", "fails_when": "a command or subcommand from kmctl's Typer app is missing from the reference page", "command": "uv run pytest tests/test_docs.py::test_reference_covers_commands -q"},
+    {"id": "r4", "behavior": ".okf/architecture/overview.md has a Depicts section naming every invariant in the manifesto, and every id it names resolves.", "fails_when": "an invariant id from .okf/manifesto.md is missing from the Depicts section, or the section names an I-id the manifesto lacks", "command": "uv run pytest tests/test_docs.py::test_architecture_depicts_invariants -q"},
+    {"id": "r5", "behavior": "The .okf bundle with the new architecture section passes the okf validator in strict mode, and the root index links the section.", "fails_when": "okf_validate --strict reports a problem, or .okf/index.md does not link architecture/", "command": "uv run pytest tests/test_docs.py::test_bundle_valid_with_architecture -q"},
+    {"id": "r6", "behavior": "The pages were written with the write-docs skill, each command on them was run and its real output pasted, kmctl plugin install ran only with isolated CLAUDE_CONFIG_DIR, HOME and XDG_DATA_HOME, and GitHub-only steps say they come from action.yml and the shipped workflow.", "fails_when": "a page shows output no run produced, guesses a command or URL, or the plugin install step touched the operator's config", "judgment": true}
+  ]
+}
