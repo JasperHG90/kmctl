@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The done criterion \"the result passes the okf validator\" rests on a validator kmctl's tests cannot reach as the plan stands. The validator is okf_validate.py from the okf plugin (scaccogatto/okf-skills); here it exists only in ~/.claude/plugins/cache/scaccogatto/okf/0.10.1/skills/validate/scripts/, and it is not a kmctl dependency (pyproject lists only typer). It is a PEP 723 script needing pyyaml, so `uv run` fetches pyyaml at run time. The tests gate (`uv run pytest`) and CI have no defined way to run it. The obvious workarounds change the contract: vendoring the script goes against ADR 0003 (\"Copy the okf skills into kmctl. Two copies drift.\"); skipping the check when the plugin is missing makes the criterion silently optional; a check re-implemented in kmctl is not \"the okf validator\". The plan must say how the test gets the validator (for example fetched from a pinned okf-skills ref, or the okf GitHub Action in CI) and whether it runs in strict mode. Spike question: can a pytest test under `uv run pytest` in this repo's gate environment run okf_validate.py from a pinned source, with no plugin installed under ~/.claude, and pass a scaffolded bundle?",
+      "anchor": ".loop/plans/scaffold-init.md:23",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "dd3612fdc9c0e74f0a40f99a2db10416763920dc64f2f39fcf3274f4e31e9ddb"
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T08:08:11+00:00"
+}
