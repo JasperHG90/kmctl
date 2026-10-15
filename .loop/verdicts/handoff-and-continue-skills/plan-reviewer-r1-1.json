@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The plan stores the session id in the handoff's front matter as its key. That is an extension field, and manifesto invariant I4 (backed by ADR 0006) says kmctl uses only OKF v0.2 fields and adds no extension fields yet. The plan does not name the field or say how it squares with I4. As written, building it breaks an accepted invariant without a decision. The spec and the pinned okf_validate.py 0.10.1 accept unknown keys (its comment cites spec section 11), so validation is fine; the conflict is with kmctl's own contract. To revise, either record an ADR that amends I4 for this one field (and name the field), or keep the key out of a new field.",
+      "anchor": ".okf/manifesto.md:75",
+      "category": "design",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "The update path is what makes a second /handoff in one session replace the same handoff, and the Done-when line never tests it. It covers only the ordering and expiry of `kmctl handoffs` and the skill prompts. The plan never says that `kmctl new handoff --key` with an existing key replaces the body and description, keeps the file name and index entry (no second index entry, even if the title changes), logs one update line, and creates a new handoff for an unknown key. The eval has no rows. A build could pass Done-when while still adding a duplicate handoff, which defeats the reason for the spike. Add these to the Done-when line and the eval.",
+      "anchor": ".loop/plans/handoff-and-continue-skills.md:27",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "2cafd77b0386fe7c5ab637d8f648f18d3484e76eb008cafc14fdad30cb95986a"
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T08:19:59+00:00"
+}
