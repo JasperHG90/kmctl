@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "init-seeds-the-habit",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 3,
@@ -32,7 +32,7 @@
   "split": "j-20261015T160612+0000-851090d9",
   "split_plan_hash": "8f5000db8e2f4df4cc206e411fd57899035b4299e45ff056019ee4c850756461",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "2afaaec6c7dafba671c7565960ee4cd99136b64d",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -214,8 +214,14 @@
       "to": "verifying",
       "at": "2026-10-15T16:35:47+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-15T16:37:48+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T16:37:43+00:00"
+  "at": "2026-10-15T16:37:48+00:00"
 }
