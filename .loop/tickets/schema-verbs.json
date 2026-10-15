@@ -19,7 +19,9 @@
   "archived": false,
   "worktree": "/home/vscode/kmctl.worktrees/schema-verbs",
   "branch": "loop/schema-verbs",
-  "stamps": [],
+  "stamps": [
+    "c2daf8a25565d46975276f4ee63a6375e3c3ac754a27945ce45631f55909a2b7"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
     "hash": "9fd4edce753810f1d1afe05c702ac828a25b0f2806d6a9fa6aec115e509278f0",
@@ -167,5 +169,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev61+g8318eb7a1.d20261015",
-  "at": "2026-10-15T19:10:25+00:00"
+  "at": "2026-10-15T19:20:41+00:00"
 }
