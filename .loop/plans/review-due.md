@@ -27,11 +27,11 @@ Relayed from: none
 
 Each `sources[].resource` is resolved the way OKF §6.2 says, then checked against `git ls-files`: an absolute URL is skipped; a path starting with `/` resolves from the bundle root; another path resolves from the concept's own folder, and, when that does not exist, from the repository root, because real bundles use repository-root paths (spike:review-due/1). A source that names another concept resolves to that concept's file. An entry that resolves to no tracked file, such as a free-text scope descriptor (§5.1), is not a due reason: it is listed separately as a notice, "source not resolved", so it never keeps a concept due for good.
 
-It also lists handoffs past their `stale_after`.
+Handoffs in `.okf/handoffs/` are left out of the three concept checks: they are short-lived notes, never verified, so each would otherwise be due from the moment it is written. Instead it lists handoffs past their `stale_after`, using the same "passed" function as handoffs-list. `index.md` and `log.md` are never concepts.
 
 In a shallow clone, the history reason is skipped and the output says so; kmctl never guesses from partial history. Text by default, `--json` for scripts and the CI action, exit 0 whether or not anything is due. The logic is a function the briefing and the CI action call, not only a command body.
 
-Done when tests cover each due reason and each source form (URL, bundle-root, concept-relative, repository-root, concept id, free text) on a fixture bundle in a temporary git repository, and the shallow-clone skip.
+Done when tests cover each due reason and each source form (URL, bundle-root, concept-relative, repository-root, concept id, free text) on a fixture bundle in a temporary git repository, the shallow-clone skip, and a handoff that is neither listed as due for lacking `verified` nor listed twice once expired.
 
 ## Could invalidate this plan
 
