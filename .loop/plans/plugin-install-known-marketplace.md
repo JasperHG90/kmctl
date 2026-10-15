@@ -22,11 +22,20 @@ Relayed from: operator, 2026-10-15, running `kmctl plugin install` on their mach
 
 `install()` in `src/kmctl/plugin.py` always runs `claude plugin marketplace add scaccogatto/okf-skills --scope SCOPE`. When the user's settings (settings.json in claude's config folder: the one CLAUDE_CONFIG_DIR names, else .claude in the home folder) or the managed settings already declare a marketplace named `scaccogatto` under `extraKnownMarketplaces` with another source (a git URL, another repo, a local folder), claude refuses the add and kmctl stops. Skipping the add is not enough: the install then fails with `Dependency "okf@scaccogatto" ... not found`.
 
-kmctl reads the `scaccogatto` entry from those settings files when there is one and passes that entry's own source to `marketplace add` (`repo` for github, `url` for git and url, `path` for directory); with no entry it adds `scaccogatto/okf-skills` as now. It never edits the operator's settings. When the entry's source kind is one it cannot pass, it stops with a message naming the settings file and the entry.
+kmctl reads the `scaccogatto` entry when there is one and passes the argument claude accepts for it to `marketplace add`; with no entry it adds `scaccogatto/okf-skills` as now. It never edits the operator's settings. claude compares the add argument with the whole entry (round 1 plan review), so the argument carries every field the entry has:
+
+- github: `repo`, plus `#ref` when the entry has a `ref`;
+- git: `url`, plus `#ref` when the entry has a `ref`;
+- url: `url`;
+- directory: `path`.
+
+An entry with any other field (a github `path`, `headers` and so on) or any other kind has no add argument that matches it. kmctl then stops before calling claude, with a message naming the settings file, the entry, and that the operator can add the marketplace by hand or change the entry.
+
+kmctl reads the files claude reads, in this order, and uses the first `scaccogatto` entry it finds: the managed settings (managed-settings.json and the json files in managed-settings.d, in the etc/claude-code folder on Linux and in Library/Application Support/ClaudeCode on macOS, both at the file system root), then the user settings. MDM and server-managed policies are not files kmctl can read; an entry there gives claude's own error, which kmctl passes on as today. The kmctl marketplace cannot clash this way: claude skips the check for a folder add (round 1 plan review).
 
 Measured with an isolated `CLAUDE_CONFIG_DIR` and `HOME` whose user settings declare `scaccogatto` from `https://github.com/scaccogatto/okf-skills.git`: the current add fails 1 of 1 times with the operator's message, skipping it fails the install on the missing dependency, and adding from the entry's URL then `claude plugin install kmctl@kmctl --scope project` succeeds with okf as a dependency (1 of 1). The repro is spike:plugin-install-known-marketplace/1.
 
-Done when a test with a stub claude shows the add uses the settings entry's source for each source kind (github, git, url, directory) and `scaccogatto/okf-skills` when no entry exists, a test shows an entry of an unknown kind gives a PluginError naming the file, and the existing plugin install tests pass.
+Done when tests show the add argument for each kind with and without a `ref`, the managed file winning over the user file, and `scaccogatto/okf-skills` with no entry; an entry with a github `path` or an unknown kind gives a PluginError naming the file before claude runs; a real install in an isolated config whose user settings declare scaccogatto from a git URL succeeds; and the existing plugin install tests pass.
 
 ## Could invalidate this plan
 

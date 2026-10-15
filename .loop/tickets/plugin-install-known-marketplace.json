@@ -3,7 +3,7 @@
   "slug": "plugin-install-known-marketplace",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 1,
+  "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -103,9 +103,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 1,
-    "binds": "d6122b5f16afe117abee3ab775279f1fd56b3741e652da4e3b1ec8b4d2c0a6fa",
-    "started_at": "2026-10-15T14:28:54+00:00",
+    "n": 2,
+    "binds": "3057fbacab278a52245c2b128499a2abbb1213b47954784e7b7b25ff82b7e1da",
+    "started_at": "2026-10-15T14:32:16+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -118,10 +118,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "d6122b5f16afe117abee3ab775279f1fd56b3741e652da4e3b1ec8b4d2c0a6fa",
+  "plan_hash": "3057fbacab278a52245c2b128499a2abbb1213b47954784e7b7b25ff82b7e1da",
   "intent": {
     "epic": "plugin",
     "depends_on": [],
@@ -136,5 +136,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T14:32:15+00:00"
+  "at": "2026-10-15T14:32:16+00:00"
 }
