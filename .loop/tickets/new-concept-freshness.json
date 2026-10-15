@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "new-concept-freshness",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
@@ -37,7 +37,7 @@
   "split": "j-20261015T172155+0000-bd739b22",
   "split_plan_hash": "8f211003eb3ebef34ec09ee1bcc3ed99230f60d8de0b033b33db12feee5a8ba4",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "3b78e777abba864bb1df0020142bee10d8b94d76",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -200,8 +200,14 @@
       "to": "verifying",
       "at": "2026-10-15T19:05:47+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-15T19:09:04+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.1.1.dev61+g8318eb7a1.d20261015",
-  "at": "2026-10-15T19:08:58+00:00"
+  "at": "2026-10-15T19:09:04+00:00"
 }
