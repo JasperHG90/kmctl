@@ -3,7 +3,7 @@
   "slug": "prototype-check",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,7 +28,26 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "97806dc7c56d290ac0b2c5072154be5259fe5064c8a928cd2126302bdde8a9d1",
+    "started_at": "2026-10-15T08:08:33+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
   "plan_hash": "97806dc7c56d290ac0b2c5072154be5259fe5064c8a928cd2126302bdde8a9d1",
   "intent": {
     "epic": "cli",
