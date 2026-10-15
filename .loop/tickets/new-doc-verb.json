@@ -19,7 +19,9 @@
   "archived": false,
   "worktree": "/home/vscode/kmctl.worktrees/new-doc-verb",
   "branch": "loop/new-doc-verb",
-  "stamps": [],
+  "stamps": [
+    "e1ba0bd243ee8736569ed6e1150bf5c58f63416039104d9835928d001b1903fc"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
     "hash": "0251f9b8f86d9ad22a3663defcba6f72850b2701bf01da1f72e9ec4100db7cd9",
@@ -111,5 +113,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T11:01:32+00:00"
+  "at": "2026-10-15T11:05:05+00:00"
 }
