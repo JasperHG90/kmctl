@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev61+g8318eb7a1.d20261015
-  at: '2026-10-15T17:48:38+00:00'
+  at: '2026-10-15T17:49:00+00:00'
 slug: repo-uses-apm
 n: 2
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike repo-uses-apm/2
@@ -24,7 +24,10 @@ The command exited 1:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note repo-uses-apm 2`.
+APM 0.33.0 (pip `apm-cli`) installed jasperhg90/skills at f0813cd (the commit that renamed `rules/*.md` to `*.instructions.md` with `applyTo`; it has no apm.yml, and APM takes single files and SKILL.md folders anyway). With `targets: [claude]`, `rules/X.instructions.md` landed as `.claude/rules/X.md` and the skill landed as `.claude/skills/generate-art/`, byte for byte. Exit 1: APM rewrites rule front matter, so it is not byte for byte. `applyTo: "**/*.py"` became a `paths:` YAML list and `name`/`description` were dropped. A rule with no `applyTo` lost its whole front matter block.
+A plain `rules/X.md` path (what aim installs today, with `paths:`) is refused: "Individual files must end with .prompt.md, .instructions.md, .agent.md". Older pins such as f10a341 have no `.instructions.md` files, so the pin must be f0813cd or later. Pins resolve to a full SHA in `apm.lock.yaml`, which also records per-file sha256 hashes.
+Install wrote no AGENTS.md or CLAUDE.md; it added `apm_modules/` to .gitignore. `apm compile` (target claude) writes nothing because Claude reads .claude/rules/. `apm compile -t agents` builds AGENTS.md (plus .github/copilot-instructions.md) from the instruction bodies, but never overwrites a hand-written AGENTS.md.
+Settles risk 1 partly. Install and placement work, and Claude-usable `paths:` scoping survives. The risk is real only if byte-for-byte front matter (`name`/`description`) matters to the plan. Tested 2 rules and 1 skill.
 
 ## Files
 
