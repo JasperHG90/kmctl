@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The contract 'every folder under .okf/prototypes/ has a README.md' does not say whether it means only the direct child folders or every folder at any depth. Read literally it is recursive, so any prototype holding code in a subfolder (src/, data/) would fail kmctl check, and the planned fixtures (one flat passing, one flat failing) would not catch it. State that only direct children of .okf/prototypes/ are prototypes, and add a passing fixture with a nested folder that has no README.md.",
+      "anchor": ".loop/plans/prototype-check.md:22",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "97806dc7c56d290ac0b2c5072154be5259fe5064c8a928cd2126302bdde8a9d1"
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T08:12:37+00:00"
+}
