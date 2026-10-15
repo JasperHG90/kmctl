@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "0005 and 0006 Consequences overstated when the action fails and that every unverified concept is due",
+      "anchor": ".okf/decisions/0005-audits-report-only.md",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "cut-off skill summaries in the briefing read poorly",
+      "anchor": "src/kmctl/briefing.py",
+      "category": "nit",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "formatted briefing.py was not staged",
+      "anchor": "src/kmctl/briefing.py",
+      "category": "nit",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "03aa1cd83749d2384702c931a508e2ff594e1a9450381991a5140e7613a578d5",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "at": "2026-10-15T13:24:20+00:00"
+}
