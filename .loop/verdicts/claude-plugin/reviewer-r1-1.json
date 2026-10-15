@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The missing-kmctl hint tells the user to run `kmctl plugin install`, a verb this release does not have (it lands in plugin-install-verb). This breaks the rule skills-name-only-shipped-verbs in .claude/rules/cli-version-floor.md, and a user who follows the hint gets \"No such command\".",
+      "anchor": "plugin/hooks/hooks.json:9",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "test_plugin_has_one_sessionstart_hook reads only plugin/hooks/hooks.json. A hooks field added to plugin/.claude-plugin/plugin.json, or a second hooks file it points at, would add a hook and the test would still pass.",
+      "anchor": "tests/test_plugin.py:32",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "The hook sets no timeout, so a hung `kmctl briefing` holds session start for Claude Code's default hook timeout. A short `timeout` on the hook entry would keep I1's \"never blocks\" true in that case too.",
+      "anchor": "plugin/hooks/hooks.json:6",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "d60c1b0b90972adda3075cb1c37d4e2543859d77c9d1e61a6a425de34d67fc83",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T11:00:00+00:00"
+}
