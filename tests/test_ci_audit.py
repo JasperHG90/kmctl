@@ -4,6 +4,7 @@ import json
 import os
 import re
 import subprocess
+import sys
 import time
 from collections.abc import Callable
 from pathlib import Path
@@ -408,7 +409,11 @@ def test_hermes_config_defaults_and_refusals(tmp_path: Path) -> None:
 
 
 def test_hermes_config_script_names_no_vendor() -> None:
-    for script in (SCRIPT, ROOT / "action" / "audit-report.py"):
+    for script in (
+        SCRIPT,
+        ROOT / "action" / "audit-report.py",
+        ROOT / "action" / "audit-batches.py",
+    ):
         code = _code_lines(script).lower()
         for vendor in ("anthropic", "claude", "openai"):
             assert vendor not in code, (script.name, vendor)
@@ -558,3 +563,204 @@ def test_decision_record() -> None:
     assert "Claude Code" in text, "it names the runner it replaces"
     check = okf_validate(ROOT / ".okf")
     assert check.returncode == 0, check.stdout + check.stderr
+
+
+KINDS = {
+    "architecture": "architecture",
+    "decisions": "decision",
+    "practices": "practice",
+}
+REVIEW_SKILLS = {
+    "architecture": "architecture-review",
+    "decisions": "decision-log-review",
+    "practices": "practices-review",
+}
+
+
+def _with_due(**counts: int) -> Callable[[Path], None]:
+    """A repo_setup that adds ``counts[kind]`` due concepts of each kind to the bundle."""
+
+    def setup(repo: Path) -> None:
+        okf = repo / ".okf"
+        index = (okf / "index.md").read_text()
+        for kind, count in counts.items():
+            (okf / kind).mkdir(exist_ok=True)
+            for n in range(1, count + 1):
+                name = f"{n:04d}-c{n}"
+                (okf / kind / f"{name}.md").write_text(
+                    f'---\ntype: {KINDS[kind]}\ntitle: "C{n}"\ndescription: "C{n}."\n---\n'
+                )
+                index += f"- [C{n}]({kind}/{name}.md): c{n}.\n"
+        (okf / "index.md").write_text(index)
+        subprocess.run(["git", "add", "-A"], cwd=repo, check=True)
+        subprocess.run(
+            ["git", "-c", "user.name=t", "-c", "user.email=t@example.com"]
+            + ["commit", "-qm", "due"],
+            cwd=repo,
+            check=True,
+        )
+
+    return setup
+
+
+def _batch_stub(
+    tmp_path: Path, sleep: float = 0, no_block_on: int | None = None
+) -> Path:
+    """A bin folder whose hermes records each call and answers holds for every concept in its batch.
+
+    Call N's prompt goes to calls/N.prompt and its environment to calls/N.env.
+    It sleeps ``sleep`` seconds first, and call ``no_block_on`` prints no findings block.
+    """
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    bin_dir = _kmctl_bin(tmp_path)
+    calls = tmp_path / "calls"
+    calls.mkdir()
+    (bin_dir / "hermes").write_text(
+        f"#!{sys.executable}\n"
+        "import json, os, re, sys, time\n"
+        f"calls = {str(calls)!r}\n"
+        "n = len([p for p in os.listdir(calls) if p.endswith('.prompt')]) + 1\n"
+        "prompt = sys.argv[sys.argv.index('-z') + 1]\n"
+        "open(f'{calls}/{n}.prompt', 'w').write(prompt)\n"
+        "open(f'{calls}/{n}.env', 'w').write(json.dumps(dict(os.environ)))\n"
+        f"time.sleep({sleep})\n"
+        f"if n == {no_block_on!r}:\n"
+        "    print('I could not finish.')\n"
+        "    sys.exit(0)\n"
+        'ids = re.findall(r\'"id": "((?:architecture|decisions|practices)/[^"]+)"\', prompt)\n'
+        f"reviews = {KINDS!r}\n"
+        "found = [{'concept': i, 'path': f'.okf/{i}.md', 'review': reviews[i.split('/')[0]],\n"
+        "          'verdict': 'holds', 'summary': f'{i} holds.', 'evidence': []} for i in ids]\n"
+        "print('Done.\\n\\n```json\\n' + json.dumps(found) + '\\n```')\n"
+    )
+    (bin_dir / "hermes").chmod(0o755)
+    return bin_dir
+
+
+def _calls(tmp_path: Path) -> list[tuple[str, dict[str, str]]]:
+    """Each stub hermes call's prompt and environment, in call order."""
+    calls = tmp_path / "calls"
+    count = len(list(calls.glob("*.prompt")))
+    return [
+        (
+            (calls / f"{n}.prompt").read_text(),
+            json.loads((calls / f"{n}.env").read_text()),
+        )
+        for n in range(1, count + 1)
+    ]
+
+
+def test_audit_batches_by_kind(tmp_path: Path) -> None:
+    proc, summary = _audit(
+        tmp_path,
+        _batch_stub(tmp_path),
+        in_scope=False,
+        repo_setup=_with_due(architecture=12, decisions=8, practices=5),
+    )
+    body = (tmp_path / "runner-temp" / BODY).read_text()
+    calls = _calls(tmp_path)
+
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    per_kind = {kind: 0 for kind in KINDS}
+    seen: list[str] = []
+    for prompt, _ in calls:
+        ids = re.findall(
+            r'"id": "((?:architecture|decisions|practices)/[^"]+)"', prompt
+        )
+        kinds = {i.split("/")[0] for i in ids}
+        assert len(kinds) == 1, kinds
+        kind = kinds.pop()
+        per_kind[kind] += 1
+        assert 1 <= len(ids) <= 10, ids
+        assert len(prompt.encode()) < 64 * 1024
+        for other, skill in REVIEW_SKILLS.items():
+            text = (SKILLS / skill / "SKILL.md").read_text().strip()
+            assert (text in prompt) == (other == kind), (kind, skill)
+        assert (SKILLS / "audit" / "SKILL.md").read_text().strip() in prompt
+        assert AUDITOR.read_text().strip() in prompt
+        assert str((tmp_path / "r").resolve()) in prompt
+        seen += ids
+    assert per_kind == {"architecture": 2, "decisions": 1, "practices": 1}
+    assert len(seen) == len(set(seen)) == 25
+    assert "25 holds" in summary
+    for concept in seen:
+        assert f"`{concept}`" in summary and f"`{concept}`" in body
+
+
+def test_audit_batch_without_findings(tmp_path: Path) -> None:
+    proc, summary = _audit(
+        tmp_path,
+        _batch_stub(tmp_path, no_block_on=2),
+        in_scope=False,
+        repo_setup=_with_due(architecture=1, decisions=1, practices=1),
+    )
+
+    assert proc.returncode != 0
+    assert "decisions batch 1 of 1" in proc.stderr
+    assert "decisions batch 1 of 1" in summary
+    assert "findings" in proc.stderr
+    assert len(_calls(tmp_path)) == 2, "the audit stops at the failing batch"
+    assert not (tmp_path / "runner-temp" / BODY).exists()
+
+
+def test_audit_clears_managed_dir(tmp_path: Path) -> None:
+    proc, _ = _audit(
+        tmp_path,
+        _batch_stub(tmp_path),
+        HERMES_MANAGED_DIR=str(tmp_path / "managed"),
+    )
+
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    for _, env in _calls(tmp_path):
+        assert "HERMES_MANAGED_DIR" not in env
+
+
+def test_audit_total_budget(tmp_path: Path) -> None:
+    start = time.monotonic()
+    proc, _ = _audit(
+        tmp_path,
+        _batch_stub(tmp_path, sleep=2),
+        in_scope=False,
+        repo_setup=_with_due(architecture=1, decisions=1, practices=1),
+        KMCTL_AUDIT_TIMEOUT="3s",
+    )
+
+    assert time.monotonic() - start < 15
+    assert proc.returncode != 0
+    assert "time limit" in proc.stderr
+    assert "architecture batch 1 of 1" not in proc.stderr, "that batch finished"
+    for batch in ("decisions batch 1 of 1", "practices batch 1 of 1"):
+        assert batch in proc.stderr, proc.stderr
+    assert len(_calls(tmp_path)) <= 2, "no batch starts after the budget is spent"
+    assert not (tmp_path / "runner-temp" / BODY).exists()
+
+
+def test_merged_block_survives_backticks(tmp_path: Path) -> None:
+    finding = {
+        "concept": "architecture/a",
+        "path": ".okf/architecture/a.md",
+        "review": "architecture",
+        "verdict": "drifted",
+        "summary": "The page shows \u0060\u0060\u0060 fences and `code`.",
+        "evidence": [".okf/architecture/a.md:1"],
+    }
+    reply = tmp_path / "reply.txt"
+    merged = tmp_path / "merged.md"
+    script = ROOT / "action" / "audit-batches.py"
+    for _ in range(2):
+        # The model escapes backticks inside its own block, as the reviewer found.
+        escaped = json.dumps([finding]).replace("`", "\\u0060")
+        reply.write_text("```json\n" + escaped + "\n```\n")
+        proc = subprocess.run(
+            [sys.executable, str(script), "add", str(reply), str(merged)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert proc.returncode == 0, proc.stderr
+
+    blocks = merged.read_text().split("```")
+    assert len(blocks) == 3, "one fence pair, not cut early"
+    assert (
+        json.loads(blocks[1].removeprefix("json"))[1]["summary"] == finding["summary"]
+    )
