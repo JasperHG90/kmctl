@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "Each entry now carries concept id and path, and --json prints [] when there are no handoffs, so /continue can load a pick and parse the empty case.",
+      "anchor": ".loop/plans/handoffs-list.md:20",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "9cddcde2bc49ce00eca7d1221a1a899e6e62ff6d3e40283ea781cdbb21ce07b3"
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T08:23:50+00:00"
+}
