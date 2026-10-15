@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "The skill no longer writes docs structure itself: it creates pages with `kmctl new doc TYPE TITLE` from the new ticket new-doc-verb (folder, skeleton, index entry) and writes only the prose, as the manifesto's 'skills route; kmctl writes' requires.",
+      "anchor": ".loop/plans/write-docs-skill.md:20",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "depends_on now names claude-plugin, new-doc-verb and knowledge-check; new-doc-verb depends on scaffold-init, so docs/README.md and its index format are fixed before this skill is built, and the done test runs in a repo set up with `kmctl init`.",
+      "anchor": ".loop/plans/write-docs-skill.md:8",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "b8c15e49af3f00ec735f25d47eb6a801604c80160883e87a287bfb31b7ab1eb1"
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T08:10:15+00:00"
+}
