@@ -3,7 +3,7 @@
   "slug": "new-concept-verbs",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 1,
+  "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -30,9 +30,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 1,
-    "binds": "bbb63fa275b85aa2ed76a1472588da3e4a2aa6aef29eb40bac26af81b054b179",
-    "started_at": "2026-10-15T08:08:29+00:00",
+    "n": 2,
+    "binds": "a3b6a84649f7a8bd1601eab07b761f32e3acfad09c0bd05b762a7f64256ad21b",
+    "started_at": "2026-10-15T08:09:07+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -48,7 +48,7 @@
     "closed": false,
     "outcome": null
   },
-  "plan_hash": "bbb63fa275b85aa2ed76a1472588da3e4a2aa6aef29eb40bac26af81b054b179",
+  "plan_hash": "a3b6a84649f7a8bd1601eab07b761f32e3acfad09c0bd05b762a7f64256ad21b",
   "intent": {
     "epic": "cli",
     "depends_on": [
@@ -65,5 +65,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T08:09:06+00:00"
+  "at": "2026-10-15T08:09:07+00:00"
 }
