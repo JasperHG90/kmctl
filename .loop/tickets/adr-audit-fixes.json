@@ -3,7 +3,7 @@
   "slug": "adr-audit-fixes",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "5dedcb174f0f38cd135c81676bfcd7249b1921cbfb21432d74bacc3142a9b462",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "0754d29bf7eef05617a8334fac082f228aeed52809cf710d6ff91dad62040483",
+    "started_at": "2026-10-15T12:47:32+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "0754d29bf7eef05617a8334fac082f228aeed52809cf710d6ff91dad62040483",
   "intent": {
     "epic": "docs",
     "depends_on": [
@@ -46,5 +65,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T12:47:26+00:00"
+  "at": "2026-10-15T12:47:32+00:00"
 }
