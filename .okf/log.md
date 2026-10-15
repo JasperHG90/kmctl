@@ -60,3 +60,14 @@
 - Updated `architecture/overview` for the Hermes audit: the diagram, the
   action's text and Depicts now show hermes, `action/hermes/kmctl-read/` and
   the shipped audit workflow.
+- Added `decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code` with `kmctl new decision`.
+- Wrote `decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code`:
+  `kmctl init` now writes four knowledge rules to `.claude/rules/`, a kmctl
+  block into `CLAUDE.md` and `AGENTS.md`, and a first decision.
+- Appended a Correction to `decisions/0002-briefing-and-rules-injected-by-the-cli`:
+  ADR 0011 reverses its rejected native rule files for Claude Code only.
+- Updated `manifesto`: the CLI's bookkeeping now includes seeding the
+  knowledge rules, a `CLAUDE.md` block and a first decision (ADR 0011).
+- Updated `architecture/overview` for ADR 0011: the diagram and the CLI table
+  show init writing `.claude/rules/` from `repo_rules/`, the agent-file block,
+  and the first decision through `concepts.py`; Depicts names `repo_rules/`.

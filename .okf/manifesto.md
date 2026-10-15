@@ -45,7 +45,8 @@ this formalizes so every repository can have it.
 
 - **`kmctl`, a standalone CLI** (ADR 0001). It serves the briefing and the
   rules that are injected into context, installs the plugin, and does the
-  bookkeeping a script can do: scaffold `docs/` and `.okf/`, create a new
+  bookkeeping a script can do: scaffold `docs/` and `.okf/` and seed the
+  knowledge rules, a `CLAUDE.md` block and a first decision (ADR 0011), create a new
   decision or practice with the next number and its index entry, supersede a
   decision, list what is due for review, check indexes and links, and list
   live and expired handoffs.

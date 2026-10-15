@@ -47,6 +47,11 @@ manage knowledge is read only by an agent that already knows to look for it.
 Native rule files work only in some harnesses, each with its own format. Every
 harness that can run a command at session start can print the briefing
 ([ADR 0002](../../.okf/decisions/0002-briefing-and-rules-injected-by-the-cli.md)).
+For Claude Code, `kmctl init` also writes the knowledge rules to
+`.claude/rules/` and a kmctl block into `CLAUDE.md`, because the briefing alone
+left agents writing no architecture pages and has no room for the two rules
+it lacks
+([ADR 0011](../../.okf/decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md)).
 
 **Why there is only one hook.** Three more hooks were considered and rejected
 ([ADR 0004](../../.okf/decisions/0004-sessionstart-is-the-only-hook.md)):

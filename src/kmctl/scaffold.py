@@ -1,24 +1,110 @@
-"""Set a repository up with docs/ and an OKF bundle, never touching a file that exists."""
+"""Set a repository up with docs/, an OKF bundle, knowledge rules and an agent-file block.
 
-from dataclasses import dataclass, field
+It never touches a file that exists, with two exceptions: the kmctl block in
+CLAUDE.md and AGENTS.md, and the first decision's index entry and log line
+(ADR 0011).
+"""
+
+import re
+from dataclasses import dataclass
+from dataclasses import field as dataclass_field
 from datetime import UTC, datetime
 from importlib.metadata import version
+from importlib.resources import files
 from pathlib import Path
 
+from kmctl.concepts import new_concept
+from kmctl.okf import BadFrontMatter, field, front_matter
+
 OKF_VERSION = "0.2"
+
+#: The knowledge rules init writes to .claude/rules/, from the packaged repo_rules/.
+#: They are not the briefing's rules (kmctl/rules/), which stay unchanged (I3).
+RULE_FILES = (
+    "okf-bundle.md",
+    "docs-layout.md",
+    "diagrams-stay-current.md",
+    "manifesto-invariants.md",
+)
+
+AGENT_FILES = ("CLAUDE.md", "AGENTS.md")
+BLOCK_START, BLOCK_END = "<!-- kmctl:start -->", "<!-- kmctl:end -->"
+
+BLOCK = f"""{BLOCK_START}
+## Project knowledge (kmctl)
+
+| What you need | Where it lives |
+|---|---|
+| How to use the project | `docs/`, one folder per Diataxis type, each page listed in `docs/README.md` |
+| What the project is for, its invariants and values | `.okf/manifesto.md` |
+| Why a choice was made | `.okf/decisions/`, one record per choice with the alternative it rejected |
+| The design as diagrams | `.okf/architecture/`, each page with a Depicts section naming the files it covers |
+| Lessons, designs not built, spikes, handoffs | `.okf/practices/`, `.okf/proposals/`, `.okf/prototypes/`, `.okf/handoffs/` |
+
+Start at `.okf/index.md`. The rules for writing knowledge are in `.claude/rules/`.
+
+Your duties while you work:
+
+1. Record each choice as a decision when you make it: `kmctl new decision 'Title' --description 'One sentence.'`, then write its Context, Decision (with the alternative you rejected) and Consequences.
+2. Keep `.okf/architecture/` matching the code: add or update a page when the design changes.
+3. Run `kmctl check` before you finish.
+{BLOCK_END}
+"""
+
+FIRST_DECISION = "Keep project knowledge in an OKF bundle"
+FIRST_DESCRIPTION = (
+    "Project knowledge lives in an OKF bundle in .okf/, next to the code, "
+    "not in a wiki or README notes."
+)
+FIRST_BODY = """## Context
+
+This repository needs a place for knowledge that people and agents working on
+it can find and trust: what the project is for, why each choice was made, and
+how the design fits together. Knowledge kept in someone's head or in chat is
+lost when they move on, and an agent starting a session cannot read it.
+
+## Decision
+
+Keep project knowledge in an OKF bundle in `.okf/`, set up and checked by
+kmctl, next to the code it describes. Each choice gets a decision record when
+it is made, the design gets diagrams in `.okf/architecture/`, and `docs/`
+holds pages for people who use the project.
+
+Rejected:
+
+- A wiki. It lives apart from the code, so it drifts, and an agent cannot read
+  it in a session.
+- README-only notes. One file mixes what users and maintainers need and loses
+  the why of each choice.
+- Nothing. Every new session and every new person finds the same reasons
+  again, or acts without them.
+
+## Consequences
+
+- Each change that makes a choice also writes a decision record, and a change
+  to the design updates its architecture page.
+- `kmctl check` keeps the indexes and links in step, so a reader can trust
+  them.
+- A record costs a few minutes per choice and saves rereading the code to
+  find out why.
+"""
 
 
 @dataclass
 class ScaffoldResult:
     """What ``scaffold`` wrote, what it left alone, and what the user must finish by hand.
 
-    Paths are relative to the root. A warning names a kept file that does not
-    point at a file ``scaffold`` created, because ``scaffold`` never edits a kept file.
+    Paths are relative to the root. ``scaffold`` never edits a kept file, with
+    two exceptions, both listed in ``updated``: it adds or replaces the kmctl
+    block in CLAUDE.md and AGENTS.md, and when it writes the first decision
+    into a kept bundle it adds its index entry and log line. A warning names a
+    kept file that does not point at a file ``scaffold`` created.
     """
 
-    created: list[str] = field(default_factory=list)
-    skipped: list[str] = field(default_factory=list)
-    warnings: list[str] = field(default_factory=list)
+    created: list[str] = dataclass_field(default_factory=list)
+    skipped: list[str] = dataclass_field(default_factory=list)
+    updated: list[str] = dataclass_field(default_factory=list)
+    warnings: list[str] = dataclass_field(default_factory=list)
 
 
 def _files(now: datetime) -> dict[str, str]:
@@ -66,8 +152,140 @@ def _text(path: Path) -> str | None:
         return None
 
 
+def _write_rules(root: Path, result: ScaffoldResult) -> None:
+    for name in RULE_FILES:
+        rel = f".claude/rules/{name}"
+        path = root / rel
+        if path.exists():
+            result.skipped.append(rel)
+            continue
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            files("kmctl").joinpath("repo_rules", name).read_text(encoding="utf-8"),
+            encoding="utf-8",
+        )
+        result.created.append(rel)
+
+
+def _with_block(text: str) -> str | None:
+    """``text`` with the kmctl block replaced or appended, or None when its markers are broken."""
+    start, end = text.find(BLOCK_START), text.find(BLOCK_END)
+    if start == -1 and end == -1:
+        return text.rstrip("\n") + "\n\n" + BLOCK if text.strip() else BLOCK
+    if start == -1 or end < start or text.count(BLOCK_START) > 1:
+        return None
+    return text[:start] + BLOCK.rstrip("\n") + text[end + len(BLOCK_END) :]
+
+
+def _write_block(root: Path, result: ScaffoldResult) -> None:
+    """Add the kmctl block to each CLAUDE.md and AGENTS.md once per real file, or write CLAUDE.md.
+
+    A symlink is written through in place, so CLAUDE.md -> AGENTS.md stays a
+    link and its target gets one block.
+    """
+    seen: set[Path] = set()
+    for rel in AGENT_FILES:
+        path = root / rel
+        if not path.is_file():
+            continue
+        real = path.resolve()
+        if real in seen:
+            continue
+        seen.add(real)
+        text = _text(real)
+        new = _with_block(text) if text is not None else None
+        if new is None:
+            why = "is not UTF-8 text" if text is None else _marker_problem(text)
+            result.warnings.append(
+                f"the kept {rel} {why}, so kmctl left it without its block; "
+                "fix it by hand, then run kmctl init again"
+            )
+            result.skipped.append(rel)
+        elif new == text:
+            result.skipped.append(rel)
+        else:
+            real.write_text(new, encoding="utf-8")
+            result.updated.append(rel)
+    if not seen:
+        (root / "CLAUDE.md").write_text(BLOCK, encoding="utf-8")
+        result.created.append("CLAUDE.md")
+
+
+def _marker_problem(text: str) -> str:
+    """Say what is wrong with a file's kmctl markers, for the warning."""
+    starts, ends = text.count(BLOCK_START), text.count(BLOCK_END)
+    if starts > 1 or ends > 1:
+        return f"has {starts} {BLOCK_START} and {ends} {BLOCK_END} markers, not one of each"
+    if starts == 0:
+        return f"has {BLOCK_END} with no {BLOCK_START} before it"
+    return f"has {BLOCK_START} without a {BLOCK_END} after it"
+
+
+def _has_first_decision(decisions: Path) -> bool:
+    for path in decisions.glob("*.md"):
+        if path.name == "index.md":
+            continue
+        try:
+            title = str(field(front_matter(path), "title", ""))
+        except BadFrontMatter:
+            continue
+        if re.sub(r"^ADR \d+:\s*", "", title).strip() == FIRST_DECISION:
+            return True
+    return False
+
+
+def _write_first_decision(root: Path, now: datetime, result: ScaffoldResult) -> None:
+    """Record the first decision through ``kmctl new decision``'s writer, then fill its sections."""
+    okf = root / ".okf"
+    decisions = okf / "decisions"
+    if decisions.is_dir() and _has_first_decision(decisions):
+        return
+    unreadable = [
+        p.relative_to(root).as_posix()
+        for p in (okf / "index.md", okf / "log.md", decisions / "index.md")
+        if p.is_file() and _text(p) is None
+    ]
+    if unreadable:
+        result.warnings.append(
+            f"kmctl did not record the decision {FIRST_DECISION!r} because "
+            f"the kept {', '.join(unreadable)} is not UTF-8 text; fix it, then "
+            "run kmctl init again"
+        )
+        return
+    shared = (".okf/index.md", ".okf/log.md", ".okf/decisions/index.md")
+    before = {rel: _text(root / rel) for rel in shared if (root / rel).is_file()}
+    made = new_concept(root, "decision", FIRST_DECISION, FIRST_DESCRIPTION, now)
+    path = root / made.path
+    log = root / ".okf" / "log.md"
+    cid = Path(made.path).relative_to(".okf").with_suffix("").as_posix()
+    log.write_text(
+        log.read_text(encoding="utf-8").replace(
+            f"- Added `{cid}` with `kmctl new decision`.",
+            f"- Added `{cid}` with `kmctl init`.",
+        ),
+        encoding="utf-8",
+    )
+    for rel, text in before.items():
+        if _text(root / rel) != text and rel not in result.created:
+            if rel in result.skipped:
+                result.skipped.remove(rel)
+            result.updated.append(rel)
+    head = path.read_text(encoding="utf-8").split("\n## Context", 1)[0]
+    path.write_text(head.rstrip("\n") + "\n\n" + FIRST_BODY, encoding="utf-8")
+    if made.created_section:
+        result.created.append(".okf/decisions/index.md")
+    result.created.append(made.path)
+
+
 def scaffold(root: Path, now: datetime | None = None) -> ScaffoldResult:
-    """Write docs/README.md and a starter .okf/ bundle under ``root``.
+    """Set ``root`` up: docs/, a starter .okf/ bundle, knowledge rules, the agent-file block, a first decision.
+
+    It writes docs/README.md and .okf/index.md, log.md and manifesto.md; the
+    four knowledge rules in .claude/rules/; the kmctl block in each CLAUDE.md
+    and AGENTS.md (or a new CLAUDE.md); and the decision "Keep project
+    knowledge in an OKF bundle" when no record has that title. A file that
+    exists is kept, except for the kmctl block and the first decision's index
+    entry and log line.
 
     Parameters
     ----------
@@ -79,11 +297,13 @@ def scaffold(root: Path, now: datetime | None = None) -> ScaffoldResult:
     Returns
     -------
     ScaffoldResult
-        The files created, the files that already existed and were kept, and a
-        warning for each kept index or log that does not name a new manifesto.
+        The files created, the files that already existed and were kept, the
+        kept files it changed (an agent file's kmctl block, or the first decision's index entry and log line), and a warning for
+        each kept file kmctl could not finish.
     """
     result = ScaffoldResult()
-    for rel, text in _files(now or datetime.now(UTC)).items():
+    now = now or datetime.now(UTC)
+    for rel, text in _files(now).items():
         path = root / rel
         if path.exists():
             result.skipped.append(rel)
@@ -118,4 +338,7 @@ def scaffold(root: Path, now: datetime | None = None) -> ScaffoldResult:
                 "the kept .okf/log.md has no line for the new manifesto: append "
                 "a dated line naming `manifesto`"
             )
+    _write_rules(root, result)
+    _write_block(root, result)
+    _write_first_decision(root, now, result)
     return result

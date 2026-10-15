@@ -89,6 +89,17 @@ def test_briefing_json(tmp_path: Path) -> None:
 
 def test_briefing_state_line_reads_right_for_one(tmp_path: Path) -> None:
     assert _invoke("init", "--path", str(tmp_path)).exit_code == 0
+    # Verify init's first decision, so the manifesto is the one concept due.
+    decision = (
+        tmp_path / ".okf/decisions/0001-keep-project-knowledge-in-an-okf-bundle.md"
+    )
+    decision.write_text(
+        decision.read_text().replace(
+            "status: stable\n",
+            "status: stable\nverified:\n  - by: human:test\n    at: 2026-10-15T00:00:00Z\n",
+            1,
+        )
+    )
     _invoke(
         "new",
         "handoff",
@@ -138,3 +149,31 @@ def test_briefing_skills_are_read_at_run_time(
 
     assert "- extra-skill: Do one extra thing." in out
     assert [n for n in _skill_names(copy) if f"- {n}:" not in out] == []
+
+
+def test_briefing_unchanged_by_the_seeded_files(tmp_path: Path) -> None:
+    """The rule files, agent-file block and first decision init writes leave the briefing's text alone."""
+    seeded, plain = tmp_path / "seeded", tmp_path / "plain"
+    seeded.mkdir()
+    assert _invoke("init", "--path", str(seeded)).exit_code == 0
+    for rel in ("docs/README.md", ".okf/index.md", ".okf/log.md", ".okf/manifesto.md"):
+        (plain / rel).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy(seeded / rel, plain / rel)
+    assert (seeded / ".claude" / "rules").is_dir()
+
+    with_seed = json.loads(_briefing(seeded, "--json").stdout)
+    without = json.loads(_briefing(plain, "--json").stdout)
+
+    for key in ("routing", "rules", "skills"):
+        assert with_seed[key] == without[key], key
+    assert [r["name"] for r in with_seed["rules"]] == [
+        "audience-picks-the-folder",
+        "docs-sorted-by-reader-intent",
+        "docs-describe-what-exists",
+        "prototypes-hold-their-scripts",
+        "start-at-the-index",
+        "kmctl-writes-the-structure",
+        "every-touched-concept-is-logged",
+        "decisions-are-never-rewritten",
+        "trust-is-recorded",
+    ]
