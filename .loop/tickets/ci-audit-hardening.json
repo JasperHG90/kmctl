@@ -20,7 +20,8 @@
   "worktree": "/home/vscode/kmctl.worktrees/ci-audit-hardening",
   "branch": "loop/ci-audit-hardening",
   "stamps": [
-    "319e73aa13182d23ec6a076c077e26cb6f64a9bb04f5d0b186a141a8f9732ba6"
+    "319e73aa13182d23ec6a076c077e26cb6f64a9bb04f5d0b186a141a8f9732ba6",
+    "8f6df42ad781a3272518f3984b1ca53ab68567bff501a201682b22ea1a6a2c1b"
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
@@ -177,5 +178,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T13:30:28+00:00"
+  "at": "2026-10-15T13:31:15+00:00"
 }
