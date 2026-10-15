@@ -20,10 +20,43 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "0db444128d81f03a694708024599b37a7b78e061481b484f856b815b5486819d",
+    "at": "2026-10-15T19:23:13+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "A failed claude plugin command's PluginError names every git fatal: or error: line from claude's stderr, in order, plus claude's last line, joined with '; '.",
+      "fails_when": "with a stub claude printing HTTPS's 'fatal: unable to access ...: Could not resolve host: github.com' then SSH's access-rights lines, the message lacks 'Could not resolve host' or the SSH line, or puts them out of order",
+      "command": "uv run pytest tests/test_plugin_error.py -k cause -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "With no git fatal: or error: lines, the message keeps claude's last line as now; a long stderr is cut to the cap; the message still names the command and ends with the fix line.",
+      "fails_when": "a single-line failure's message differs from today's, a long stderr makes a message over the cap, or the command or the 'run it by hand' fix is missing",
+      "command": "uv run pytest tests/test_plugin_error.py -k last_line_and_cap -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "The integration tier's retry fires on the SSH-fallback path.",
+      "fails_when": "an integration-marked test whose install fails twice with the SSH-fallback stderr and then passes is reported as failed",
+      "command": "uv run pytest tests/test_plugin_error.py -k ssh_fallback_retried -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "The other tests still pass.",
+      "fails_when": "uv run pytest or uv run pytest -m integration fails",
+      "command": "uv run pytest -q -m \"not integration or integration\"",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
