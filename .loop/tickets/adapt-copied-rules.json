@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "adapt-copied-rules",
-  "stage": "planning",
+  "stage": "ready",
   "attempts": 0,
   "plan_rounds": 3,
   "review_rounds": 0,
@@ -60,8 +60,14 @@
       "to": "planning",
       "at": "2026-10-15T05:09:28+00:00",
       "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-10-15T06:07:48+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T06:07:47+00:00"
+  "at": "2026-10-15T06:07:48+00:00"
 }
