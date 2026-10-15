@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "An empty or blank --key matched other handoffs. new_concept now refuses it before writing (src/kmctl/concepts.py:208), test_empty_key_is_refused covers \"\" and \"   \", and the /handoff code block uses ${CLAUDE_CODE_SESSION_ID:+--key \"$CLAUDE_CODE_SESSION_ID\"}.",
+      "anchor": "src/kmctl/concepts.py:208",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "The log dedup ignored the date. It now skips only when the last line is the same line and the last heading is today's (src/kmctl/concepts.py:229-233); test_update_on_a_later_day_logs_again covers the cross-day case.",
+      "anchor": "src/kmctl/concepts.py:233",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "The continue evals did not cover the pick or step 3. The fallback now offers three plus more, a third prompt names two handoffs, and results.md reports the iteration 1 failure and both iteration 2 runs; the workspaces match.",
+      "anchor": "plugin/skills/continue/evals/results.md:24",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "resolved",
+      "claim": "The update path skipped the title check. It now calls slug(title) before writing (src/kmctl/concepts.py:215); test_update_checks_the_title covers it.",
+      "anchor": "src/kmctl/concepts.py:215",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f5",
+      "disposition": "open",
+      "claim": "The new_concept Raises section lists the refusals but not the new empty or blank --key one added for f1.",
+      "anchor": "src/kmctl/concepts.py:188",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f6",
+      "disposition": "open",
+      "claim": "continue/evals/results.md opens with \"The two prompts in evals.json\", but evals.json now has three, and the iteration 2 run of the third prompt has no workspace description in that intro (it says the runs used one fixture with four handoffs and one with none).",
+      "anchor": "plugin/skills/continue/evals/results.md:3",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "c654f7fe6023f0d9429f87d538fd9b35df0c4a21cac483984936b79dfd98915a",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev77+gbd4712cf8.d20261015",
+  "at": "2026-10-15T11:46:13+00:00"
+}
