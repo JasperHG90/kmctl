@@ -1,4 +1,41 @@
 {
   "schema_version": "1.0",
-  "rows": []
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "No rule outside the aim-managed set mentions loop_harness, loop-harness, v1 or v2.",
+      "fails_when": "any non-aim file under .claude/rules/ contains loop_harness, loop-harness, or v1 or v2 as a word",
+      "command": "uv run pytest tests/test_rules.py::test_no_loop_harness_history -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "Every ADR a non-aim rule cites exists under .okf/decisions/.",
+      "fails_when": "a non-aim rule cites ADR NNNN and no .okf/decisions/NNNN-*.md file exists",
+      "command": "uv run pytest tests/test_rules.py::test_cited_adrs_exist -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "Every repository path a non-aim rule cites in backticks exists, or is a planned location or sits under one.",
+      "fails_when": "a backticked path in a non-aim rule (text or paths: glob) neither exists nor starts with one of the planned locations the plan lists",
+      "command": "uv run pytest tests/test_rules.py::test_cited_paths_exist_or_are_planned -q"
+    },
+    {
+      "id": "r4",
+      "behavior": "AGENTS.md no longer points at the adapt-copied-rules ticket.",
+      "fails_when": "AGENTS.md contains adapt-copied-rules",
+      "command": "uv run pytest tests/test_rules.py::test_agents_md_drops_ticket_note -q"
+    },
+    {
+      "id": "r5",
+      "behavior": "The aim-managed rules listed in aim.toml are unchanged.",
+      "fails_when": "any rule file aim.toml lists differs from its content before this ticket",
+      "judgment": true
+    },
+    {
+      "id": "r6",
+      "behavior": "Each kept rule is true for kmctl: rules about loopctl's internals are deleted, and a kept rule names loopctl only as the tool this repository's tickets run on.",
+      "fails_when": "a kept rule states something false about kmctl, or describes loopctl's internals or the loop workflow",
+      "judgment": true
+    }
+  ]
 }

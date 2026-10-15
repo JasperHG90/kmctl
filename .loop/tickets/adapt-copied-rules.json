@@ -20,10 +20,57 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "6aa684516d730eba27e437041ebbd1b449dd67732db0e0eaf43c4f8c7e2b08b2",
+    "at": "2026-10-15T08:28:28+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "No rule outside the aim-managed set mentions loop_harness, loop-harness, v1 or v2.",
+      "fails_when": "any non-aim file under .claude/rules/ contains loop_harness, loop-harness, or v1 or v2 as a word",
+      "command": "uv run pytest tests/test_rules.py::test_no_loop_harness_history -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "Every ADR a non-aim rule cites exists under .okf/decisions/.",
+      "fails_when": "a non-aim rule cites ADR NNNN and no .okf/decisions/NNNN-*.md file exists",
+      "command": "uv run pytest tests/test_rules.py::test_cited_adrs_exist -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "Every repository path a non-aim rule cites in backticks exists, or is a planned location or sits under one.",
+      "fails_when": "a backticked path in a non-aim rule (text or paths: glob) neither exists nor starts with one of the planned locations the plan lists",
+      "command": "uv run pytest tests/test_rules.py::test_cited_paths_exist_or_are_planned -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "AGENTS.md no longer points at the adapt-copied-rules ticket.",
+      "fails_when": "AGENTS.md contains adapt-copied-rules",
+      "command": "uv run pytest tests/test_rules.py::test_agents_md_drops_ticket_note -q",
+      "judgment": false
+    },
+    {
+      "id": "r5",
+      "behavior": "The aim-managed rules listed in aim.toml are unchanged.",
+      "fails_when": "any rule file aim.toml lists differs from its content before this ticket",
+      "command": null,
+      "judgment": true
+    },
+    {
+      "id": "r6",
+      "behavior": "Each kept rule is true for kmctl: rules about loopctl's internals are deleted, and a kept rule names loopctl only as the tool this repository's tickets run on.",
+      "fails_when": "a kept rule states something false about kmctl, or describes loopctl's internals or the loop workflow",
+      "command": null,
+      "judgment": true
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -69,5 +116,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T06:07:48+00:00"
+  "at": "2026-10-15T08:28:28+00:00"
 }
