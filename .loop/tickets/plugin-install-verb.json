@@ -3,7 +3,7 @@
   "slug": "plugin-install-verb",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 1,
+  "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -30,9 +30,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 1,
-    "binds": "a64f2f39a0143ecd404d2641da5e1ef9d288f2291291993170acada13f8d4e4a",
-    "started_at": "2026-10-15T08:18:11+00:00",
+    "n": 2,
+    "binds": "76b5b594b4c04b7e33fcbd0461e991809d44b889d20b98239852103ddb79065c",
+    "started_at": "2026-10-15T08:24:09+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -45,10 +45,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "a64f2f39a0143ecd404d2641da5e1ef9d288f2291291993170acada13f8d4e4a",
+  "plan_hash": "76b5b594b4c04b7e33fcbd0461e991809d44b889d20b98239852103ddb79065c",
   "intent": {
     "epic": "plugin",
     "depends_on": [
@@ -65,5 +65,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T08:24:08+00:00"
+  "at": "2026-10-15T08:24:09+00:00"
 }
