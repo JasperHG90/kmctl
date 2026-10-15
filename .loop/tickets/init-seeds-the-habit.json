@@ -1,14 +1,33 @@
 {
   "schema_version": "1.0",
   "slug": "init-seeds-the-habit",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 2,
+    "fingerprint": "8a077780e53f3af367d61dbd7f1403d2a06b110d13cd53190a69a15f7386e372",
+    "tree": "3277bcdc6cad802f37e4c9dc9c6830b144099428",
+    "decisions": [
+      {
+        "finding": "reviewer:f4",
+        "outcome": "sent-back",
+        "by": "blocking",
+        "judgement": null,
+        "paths": [
+          "docs/reference/commands.md",
+          "src/kmctl/__init__.py",
+          "src/kmctl/scaffold.py",
+          "tests/test_init.py"
+        ]
+      }
+    ],
+    "at": "2026-10-15T16:35:47+00:00"
+  },
   "ask": null,
   "split": "j-20261015T160612+0000-851090d9",
   "split_plan_hash": "8f5000db8e2f4df4cc206e411fd57899035b4299e45ff056019ee4c850756461",
@@ -189,8 +208,14 @@
       "to": "fixing",
       "at": "2026-10-15T16:34:24+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-15T16:35:47+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T16:35:39+00:00"
+  "at": "2026-10-15T16:35:47+00:00"
 }
