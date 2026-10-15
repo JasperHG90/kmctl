@@ -3,3 +3,4 @@
 {"at": "2026-10-15T08:09:07+00:00", "kind": "round-abandoned", "n": 1, "round_kind": "plan", "schema_version": "1.0"}
 {"at": "2026-10-15T08:09:07+00:00", "binds": "a3b6a84649f7a8bd1601eab07b761f32e3acfad09c0bd05b762a7f64256ad21b", "kind": "round-start", "n": 2, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
 {"at": "2026-10-15T08:17:32+00:00", "dispatched_at": "2026-10-15T08:09:07+00:00", "kind": "round-close", "n": 2, "outcome": "fail", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-10-15T08:12:50+00:00"}}
+{"at": "2026-10-15T08:18:10+00:00", "binds": "c89fe6857d94fc7b8318b9390c55f1488e489edfd7f11fecd4307db3c6ece176", "kind": "round-start", "n": 3, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
