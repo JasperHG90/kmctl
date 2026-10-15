@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {"id": "r1", "behavior": "kmctl init writes CLAUDE.md with the kmctl block whenever it is missing, and adds the block to AGENTS.md when that exists.", "fails_when": "in a repository with only AGENTS.md, after init CLAUDE.md is missing or lacks the block, or AGENTS.md lacks the block or loses any of its text", "command": "uv run pytest tests/test_init.py -k agents_only -q"},
+    {"id": "r2", "behavior": "A CLAUDE.md or AGENTS.md symlink that is dangling or points outside the repository is left alone with a warning naming the link and its target.", "fails_when": "init creates or changes the target of a dangling link or of a link outside the repository, or gives no warning naming the link", "command": "uv run pytest tests/test_init.py -k unsafe_link -q"},
+    {"id": "r3", "behavior": "The other init tests still pass.", "fails_when": "any test in tests/test_init.py fails", "command": "uv run pytest tests/test_init.py -q"}
+  ]
+}
