@@ -1,0 +1,184 @@
+== upstream main now: f0813cd497dcc8575fabbea719f35f7aac96f81a
+== pin: f0813cd497dcc8575fabbea719f35f7aac96f81a
+Agent Package Manager (APM) CLI version 0.33.0
+== apm install exit: 0
+  |-- 1 rule(s) integrated -> .claude/rules/
+  |-- 1 rule(s) integrated -> .claude/rules/
+  |-- 1 rule(s) integrated -> .claude/rules/
+  |-- 1 rule(s) integrated -> .claude/rules/
+  |-- 1 rule(s) integrated -> .claude/rules/
+  |-- 1 rule(s) integrated -> .claude/rules/
+  |-- 1 rule(s) integrated -> .claude/rules/
+  |-- 1 rule(s) integrated -> .claude/rules/
+  |-- 1 rule(s) integrated -> .claude/rules/
+  |-- 1 rule(s) integrated -> .claude/rules/
+  |-- 1 rule(s) integrated -> .claude/rules/
+  |-- 1 rule(s) integrated -> .claude/rules/
+  |-- 1 rule(s) integrated -> .claude/rules/
+  |-- Skill integrated -> .claude/skills/
+  |-- Skill integrated -> .claude/skills/
+  |-- Skill integrated -> .claude/skills/
+[*] Installed 16 APM dependencies in 3.1s.
+== files written (excluding .git, apm_modules):
+./apm.lock.yaml
+./apm.yml
+./.claude/rules/async-python.md
+./.claude/rules/dependency-choice.md
+./.claude/rules/httpx-for-http.md
+./.claude/rules/interface-audience.md
+./.claude/rules/plain-language.md
+./.claude/rules/pre-existing-issues.md
+./.claude/rules/prek-code-quality.md
+./.claude/rules/prompts-may-code-must.md
+./.claude/rules/pydantic-boundaries.md
+./.claude/rules/python-docstrings.md
+./.claude/rules/python-testing.md
+./.claude/rules/python-type-hints.md
+./.claude/rules/uv-installer.md
+./.claude/skills/agent-creator/agents/grader.md
+./.claude/skills/agent-creator/README.md
+./.claude/skills/agent-creator/references/agent-design-guide.md
+./.claude/skills/agent-creator/references/agent-template.md
+./.claude/skills/agent-creator/SKILL.md
+./.claude/skills/generate-art/README.md
+./.claude/skills/generate-art/scripts/generate_art.py
+./.claude/skills/generate-art/SKILL.md
+./.claude/skills/rule-creator/README.md
+./.claude/skills/rule-creator/SKILL.md
+./.gitignore
+== lock pins:
+     16   resolved_commit: f0813cd497dcc8575fabbea719f35f7aac96f81a
+== rules
+[async-python] (a) ok  (b) ok upstream applyTo=['**/*.py'] installed fm={'paths': ['**/*.py']}  (c) ok
+    vs kmctl today: paths same: ['**/*.py'] -> ['**/*.py']; other keys dropped: ['description', 'name']; body same
+[dependency-choice] (a) ok  (b) ok upstream applyTo=['**/*.py', '**/pyproject.toml'] installed fm={'paths': ['**/*.py', '**/pyproject.toml']}  (c) ok
+    vs kmctl today: paths same: ['**/*.py', '**/pyproject.toml'] -> ['**/*.py', '**/pyproject.toml']; other keys dropped: ['description', 'name']; body same
+[httpx-for-http] (a) ok  (b) ok upstream applyTo=['**/*.py'] installed fm={'paths': ['**/*.py']}  (c) ok
+    vs kmctl today: paths same: ['**/*.py'] -> ['**/*.py']; other keys dropped: ['description', 'name']; body same
+[interface-audience] (a) ok  (b) ok upstream applyTo=None installed fm=None  (c) ok
+    vs kmctl today: paths same: None -> None; other keys dropped: ['description', 'name']; body same
+[plain-language] (a) ok  (b) ok upstream applyTo=None installed fm=None  (c) ok
+    vs kmctl today: paths same: None -> None; other keys dropped: ['description', 'name']; body same
+[pre-existing-issues] (a) ok  (b) ok upstream applyTo=None installed fm=None  (c) ok
+    vs kmctl today: paths same: None -> None; other keys dropped: ['description', 'title']; body CHANGES
+      --- kmctl/.claude/rules/pre-existing-issues.md
+      +++ apm/.claude/rules/pre-existing-issues.md
+      @@ -2,2 +2,2 @@
+       Pre-existing issues (e.g. test failures, type hinting, missing docstrings etc.) should never be skipped. They must be addressed by the agent that notices or runs into them.
+      -</constraint>%   
+      +</constraint>
+[prompts-may-code-must] (a) ok  (b) ok upstream applyTo=['**/skills/**', '**/agents/**', '**/.claude/**', '**/SKILL.md', '**/AGENTS.md', '**/CLAUDE.md'] installed fm={'paths': ['**/skills/**', '**/agents/**', '**/.claude/**', '**/SKILL.md', '**/AGENTS.md', '**/CLAUDE.md']}  (c) ok
+    vs kmctl today: paths same: ['**/skills/**', '**/agents/**', '**/.claude/**', '**/SKILL.md', '**/AGENTS.md', '**/CLAUDE.md'] -> ['**/skills/**', '**/agents/**', '**/.claude/**', '**/SKILL.md', '**/AGENTS.md', '**/CLAUDE.md']; other keys dropped: ['description', 'name']; body same
+[pydantic-boundaries] (a) ok  (b) ok upstream applyTo=['**/*.py'] installed fm={'paths': ['**/*.py']}  (c) ok
+    vs kmctl today: paths same: ['**/*.py'] -> ['**/*.py']; other keys dropped: ['description', 'name']; body same
+[python-docstrings] (a) ok  (b) ok upstream applyTo=['**/*.py'] installed fm={'paths': ['**/*.py']}  (c) ok
+    vs kmctl today: paths same: ['**/*.py'] -> ['**/*.py']; other keys dropped: ['description', 'name']; body same
+[python-testing] (a) ok  (b) ok upstream applyTo=['**/*.py'] installed fm={'paths': ['**/*.py']}  (c) ok
+    vs kmctl today: paths same: ['**/*.py'] -> ['**/*.py']; other keys dropped: ['description', 'name']; body CHANGES
+      --- kmctl/.claude/rules/python-testing.md
+      +++ apm/.claude/rules/python-testing.md
+      @@ -15,63 +15,13 @@
+       |------|---------|
+      -| Full default suite | `uv run pytest` |
+      +| Full suite | `uv run pytest` |
+       | One directory | `uv run pytest tests/<area> -q` |
+       | One test | `uv run pytest tests/<area>/test_x.py::test_name` |
+      -
+      -## Test tiers: don't wait on slow tests every round
+      -
+      -Rerunning the whole suite after each edit spends most of the wait on tests
+      -the edit cannot have broken. Split tests into tiers by cost with markers,
+      -and run each tier at the stage that needs it.
+      +| Marked tests (off by default) | `uv run pytest -m integration` |
+       
+       <constraint name="mark-and-exclude-slow-tests">
+      -A test that is expensive to run carries a marker that says what it costs,
+      -and `addopts` in pyproject.toml leaves it out of the default run, so the
+      -default `uv run pytest` stays fast and offline:
+      -
+      -- `slow`: a local test that takes over about a second.
+      -- `integration`: real external systems (network, databases, real tools).
+      -- `llm`: paid or credentialed model APIs.
+      -
+      -A topic marker (`api`, `db`) does not say whether a test is cheap to run,
+      -so do not use one to pick tiers. Register every marker under `markers =`
+      -and turn on `--strict-markers`, so a typo cannot slip a slow test back
+      -into the default run.
+      -</constraint>
+      -
+      -<constraint name="measure-before-marking">
+      -Find slow tests with `uv run pytest --durations=25` and mark the ones over
+      -the threshold. Do not mark a test `slow` on a guess, and remove the marker
+      -when a test gets fast again.
+      -</constraint>
+      -
+      -Use the project's task-runner recipe for a stage when it has one.
+      -
+      -| Stage | Run |
+      -|-------|-----|
+      -| Each edit round | The tests nearest the change: `uv run pytest tests/<area> -x` |
+      -| Fixing a failure | Only what failed last time: `uv run pytest --lf -x` |
+      -| Before calling work done | The full default suite once, then each tier your change touches: `uv run pytest -m slow`, `-m integration` |
+      -
+      -<constraint name="run-your-own-test">
+      -A marker deselects a test even when you name it by path, so the test for
+      -your change can silently not run. If it carries a tier marker, run it with
+      -that marker: `uv run pytest tests/<area>/test_x.py::test_name -m slow`. A
+      -`deselected` count in the summary means some tests did not run.
+      -</constraint>
+      -
+      -Things that trip people up:
+      -
+      -- A `-m` on the command line replaces the `-m` in `addopts`; it does not
+      -  add to it. `uv run pytest -m slow` runs only the slow tests. `-m ""`
+      -  clears the filter and runs every tier; to run some tiers, write the
+      -  whole expression, for example `-m "not llm"`.
+      -- `--lf` with no cache, or after a run that passed, runs the full default
+      -  selection.
+      -- If `addopts` has `-n auto` (pytest-xdist), add `-n0` when running a few
+      -  tests: starting the workers costs more than the tests.
+      -
+      -<constraint name="every-tier-runs-somewhere">
+      -A tier left out of the default run must still run before merge, usually in
+      -CI. Say where it runs in the marker's description in pyproject.toml (for
+      -example "off by default, CI runs it"). A tier that runs nowhere rots unseen.
+      +Tests that hit real external systems (network, databases, paid or
+      +credentialed model APIs) must carry a marker (for example `integration`,
+      +`llm`) and be excluded from the default run via `addopts` in
+      +pyproject.toml. The default `uv run pytest` stays fast and offline. Run the
+      +marked tests on purpose with `-m`.
+       </constraint>
+[python-type-hints] (a) ok  (b) ok upstream applyTo=['**/*.py'] installed fm={'paths': ['**/*.py']}  (c) ok
+    vs kmctl today: paths same: ['**/*.py'] -> ['**/*.py']; other keys dropped: ['description', 'name']; body same
+[uv-installer] (a) ok  (b) ok upstream applyTo=None installed fm=None  (c) ok
+    vs kmctl today: paths same: None -> None; other keys dropped: ['description', 'title']; body same
+[prek-code-quality] (a) ok  (b) ok upstream applyTo=None installed fm=None  (c) ok
+    vs kmctl today: paths same: None -> None; other keys dropped: ['description', 'name']; body same
+== skills
+[agent-creator] (d) ok byte-identical
+    vs kmctl today: same
+[rule-creator] (d) ok byte-identical
+    vs kmctl today: CHANGES
+diff -r /home/vscode/kmctl/.claude/skills/rule-creator/README.md .claude/skills/rule-creator/README.md
+32c32
+< | `rules/` (this repo) | A shared, version-controlled library of rules | Default — shareable and reviewable; copy into `.claude/rules/` when adopted |
+---
+> | `rules/` (this repo) | A shared, version-controlled library of rules | Default — shareable and reviewable; install into `.claude/rules/` with apm when adopted |
+46c46
+< paths: ["**/*.py"]             # optional — scopes the rule to matching files
+---
+> applyTo: "**/*.py"             # optional — scopes the rule to matching files
+52,53c52,55
+< - **`paths`** is an optional glob array that path-aware harnesses use to keep a
+<   rule out of context on unrelated edits. Omit it for genuinely global rules.
+---
+> - **`applyTo`** is an optional glob, comma-separated for several, that keeps a
+>   rule out of context on unrelated edits. apm writes it as `paths` in
+>   `.claude/rules/`. A rule written straight into `.claude/rules/` uses
+>   `paths: [...]` itself. Omit the scope for genuinely global rules.
+67,69c69,71
+< proposes between: `rules/uv-installer.md` (a single directive) and
+< `rules/python-testing.md` (a hard core marked with `<constraint>` blocks amid
+[generate-art] (d) ok byte-identical
+    vs kmctl today: same
+== RESULT: risk does not hold
