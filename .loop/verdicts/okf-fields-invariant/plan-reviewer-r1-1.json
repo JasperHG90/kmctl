@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "I4 says kmctl reads and uses only spec fields plus handoff_key, but the planned test checks only the keys kmctl writes. Marking I4 enforced on that test would claim more than it pins: a reader of a non-spec key (review-due, handoffs-list, supersede, the handoff_key lookup) could be added and the test would never fire. The plan has to choose: reword I4 to the write claim the test pins, or say how the read side is pinned too.",
+      "anchor": ".okf/manifesto.md:76",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "0b211c691a8544cd6db100027f646d30b6b06a194c2ef4e2f2582cb6481a67ef"
+  },
+  "by": "process:loopctl/2.0.1.dev77+gbd4712cf8.d20261015",
+  "at": "2026-10-15T12:26:39+00:00"
+}
