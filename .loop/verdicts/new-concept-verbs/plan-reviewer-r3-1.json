@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "First-page section creation and the root index link were missing from scope. The plan now creates the section folder, its index.md and the root link on first use, and the done-when tests it.",
+      "anchor": ".loop/plans/new-concept-verbs.md",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "The root index count had no defined format. The plan now follows knowledge-check's index format, which writes and checks no counts.",
+      "anchor": ".loop/plans/new-concept-verbs.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "resolved",
+      "claim": "Description, body and existing-file behaviour were undefined. The plan now takes --description, writes a heading skeleton, logs to .okf/log.md, and refuses on an existing file, leaving update (--key) to handoff-and-continue-skills, whose plan already claims it.",
+      "anchor": ".loop/plans/new-concept-verbs.md",
+      "category": "contract",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "c89fe6857d94fc7b8318b9390c55f1488e489edfd7f11fecd4307db3c6ece176"
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T08:19:37+00:00"
+}
