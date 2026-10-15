@@ -10,22 +10,20 @@ believed, so a stale one is worse than none.
 <constraint name="a-design-change-updates-its-diagram">
 WHY: a diagram nobody updates in the same change is wrong by the next one.
 
-Each diagram lists what it depicts in its front matter (`depicts:`, with
-invariant ids from `.okf/manifesto.md` and structure check ids from
-`.okf/proposals/v2-build-plan.md`). A change to anything a diagram depicts
-updates that diagram in the same change: a stage or transition, an
-invariant, a store, a write path, a hook entry, a CLI verb in a flow, or a
-module boundary. A new invariant or write path that no diagram depicts gets
-added to one.
+Each diagram ends with a `## Depicts` section listing what it shows:
+invariant ids such as `I1` from `.okf/manifesto.md`, verbs and modules. It is
+a body section, not front matter, so it adds no OKF extension field
+(ADR 0009). A
+change to anything a diagram depicts updates that diagram in the same
+change: an invariant, a CLI verb in a flow, the hook, or a module boundary.
+A new invariant that no diagram depicts gets added to one.
 </constraint>
 
 <constraint name="diagrams-are-checked">
-WHY: v2's lesson is that a rule nobody checks is a wish.
+WHY: a rule nobody checks is a wish.
 
-Until M1, whoever changes a diagram runs the id check by hand: every
-`depicts:` id resolves, and every invariant appears in at least one list.
-From M1, ST-08 runs it as a gate. From M3, ST-08 also checks that the
-lifecycle diagram's stages and edges equal the code's stage enum and
-transition table. Any review of a design change compares the changed
-diagrams with the manifesto.
+Until a test does it, whoever changes a diagram checks by hand that every
+id in its Depicts section resolves and every invariant appears in at least one diagram.
+Any review of a design change compares the changed diagrams with the
+manifesto.
 </constraint>
