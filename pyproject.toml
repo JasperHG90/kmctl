@@ -1,0 +1,25 @@
+[project]
+name = "kmctl"
+version = "0.1.0"
+description = "Keep a repository's docs/ and OKF knowledge bundle current, across agent harnesses."
+readme = "README.md"
+authors = [
+    { name = "Jasper Ginn", email = "jasperginn@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "typer>=0.27.3",
+]
+
+[project.scripts]
+kmctl = "kmctl:main"
+
+[build-system]
+requires = ["uv_build>=0.13.0,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "ruff>=0.17.0",
+]

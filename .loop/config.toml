@@ -1,0 +1,99 @@
+# MAJOR.MINOR of this file's shape (ADR 0039). A key this loopctl does not
+# know refuses at every version, naming the upgrade.
+schema_version = "1.0"
+
+# false lets review.passes be empty: tickets then commit with no review.
+require_review = true
+
+# Globs the tree fingerprint skips; changing them never stales a stamp.
+fingerprint_ignore = []
+
+# Globs the state guard protects like loop state; another tool owns them.
+guard_paths = []
+
+# The branch finished tickets merge into.
+integration_branch = "main"
+
+# Where ticket worktrees go; {repo} is the repo's folder name. loopctl init
+# gitignores one inside the repo.
+worktree_dir = "../{repo}.worktrees"
+
+# Minutes the edit freeze holds after a review round starts.
+freeze_ttl_minutes = 30.0
+
+# Seconds one gate command or spike may run before it fails. loopctl reads it
+# from the primary checkout's .loop/config.toml, never from a worktree's copy.
+gate_timeout_seconds = 1800.0
+
+# Commit the state loopctl writes, as loop: commits on the integration branch.
+state_commits = true
+
+# Desktop notifications when a ticket blocks or finishes.
+notify = true
+
+# The title of those notifications.
+notify_title = "loop harness"
+
+# The commands loopctl gate stamp runs; each passes when it exits 0. With
+# inputs (globs), a stamp reuses a green result while those files are
+# unchanged (ADR 0017).
+[[gates]]
+name = "lint"
+command = "uv run ruff check"
+
+[[gates]]
+name = "format"
+command = "uv run ruff format --check"
+
+[[gates]]
+name = "tests"
+command = "uv run pytest"
+
+# The passes that must give a verdict before a ticket's commit, and the most
+# review rounds a ticket gets (ADR 0023).
+[review]
+passes = ["reviewer"]
+cap = 3
+strictness = "normal"
+interface_paths = [
+    ".claude/**",
+    "**/agents/**",
+    "**/skills/**",
+    "**/AGENTS.md",
+    "**/CLAUDE.md",
+]
+test_paths = ["tests/**", "**/test_*.py", "**/*_test.py"]
+clear_cheap_fixes = false
+narrow_rounds = false
+
+# Plan review, for every loop ticket: its passes review a plan before it is
+# ready (ADR 0025).
+[planning]
+passes = ["plan-reviewer"]
+cap = 3
+
+# Building-stage helpers: doc_writer runs the doc-writer before each stamp.
+[implementation]
+doc_writer = false
+
+# Per-ticket limits (ADR 0015), off while unset. Set, for example, tokens =
+# 500000 or minutes = 120.
+[budget]
+
+[judgements]
+url = "https://jevtypesafeai.com/api/v1/decide"
+api_key_env = "TYPESAFE_API_KEY"
+timeout_seconds = 5.0
+
+[judgements.review.again]
+mode = "act"
+[judgements.review.repeat]
+mode = "act"
+[judgements.review.hides-defect]
+mode = "act"
+[judgements.review.reviewers]
+mode = "act"
+[judgements.ask.route]
+mode = "act"
+[judgements.plan.split]
+mode = "act"

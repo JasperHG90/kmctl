@@ -1,0 +1,16 @@
+.DS_Store
+.venv/
+__pycache__/
+.ruff_cache/
+.pytest_cache/
+
+# loopctl: derived and local loop state
+.loop/index.md
+.loop/**/index.md
+.loop/log.md
+.loop/.lock
+.loop/.deferred
+.loop/exports/
+.worktrees
+
+.claude/settings.local.json
