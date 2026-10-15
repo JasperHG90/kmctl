@@ -103,17 +103,17 @@
       "name": "r6",
       "kind": "eval-row",
       "command": "uv run pytest -q",
-      "exit": 1,
-      "passed": false,
-      "tests_passed": 316,
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 317,
       "note": null,
       "input_fingerprint": null,
       "cached": false,
       "cached_from": null
     }
   ],
-  "green": false,
-  "at": "2026-10-15T17:41:46+00:00",
+  "green": true,
+  "at": "2026-10-15T17:45:30+00:00",
   "commit": null,
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015"
 }
