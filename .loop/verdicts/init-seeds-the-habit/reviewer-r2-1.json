@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "the first decision's log line named `kmctl new decision`",
+      "anchor": "src/kmctl/scaffold.py:259",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "kept log.md and decisions index that init appended to were reported as skipped",
+      "anchor": "src/kmctl/scaffold.py:268",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "the broken-marker warning described only one of three cases",
+      "anchor": "src/kmctl/scaffold.py:214",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "open",
+      "claim": "the human output now prints \"updated .okf/log.md (kmctl block)\" and \"updated .okf/decisions/index.md (kmctl block)\", which is false; the reference page and two docstrings still say updated means the agent-file block, and no test covers the human line",
+      "anchor": "src/kmctl/__init__.py:100",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "9e8f157e084e4dbcf6885f54f161c61b5544b901c49d3a60a62b7a4dc88d26a3",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "at": "2026-10-15T16:33:52+00:00"
+}
