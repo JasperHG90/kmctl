@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "audit-agent-and-skills",
-  "stage": "fixing",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
@@ -29,7 +29,7 @@
   "split": "j-20261015T122635+0000-3bcc613d",
   "split_plan_hash": "f634b3a027113a3ce1edc3432f3e8d4ab877441c3782b5ed4e529ba0e067a8d7",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "63e2bdac37ae30af00bac08fca8304f4bde10429",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -153,8 +153,14 @@
       "to": "fixing",
       "at": "2026-10-15T12:58:50+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "done",
+      "at": "2026-10-15T13:00:09+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T12:59:54+00:00"
+  "at": "2026-10-15T13:00:09+00:00"
 }
