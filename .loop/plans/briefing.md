@@ -4,8 +4,8 @@ title: 'Plan: briefing'
 description: "kmctl briefing prints one context block that combines where knowledge lives, what is due for review and the rules for writing knowledge, under a word budget (ADR 0002, I3)."
 slug: briefing
 epic: cli
-depends_on: [adapt-copied-rules]
-priority: 2
+depends_on: [adapt-copied-rules, review-due, handoffs-list]
+priority: 3
 tags:
 - plan
 generated:
@@ -22,10 +22,10 @@ Relayed from: none
 `kmctl briefing` prints the block the SessionStart hook injects (ADR 0002). It has three parts:
 
 - routing: where each kind of knowledge lives (`docs/` by Diataxis, `.okf/` and its sections, skills, rules) and which skill to use for what;
-- state: how many concepts are due for review and the live handoffs, once `review-due` lands (until then the part is omitted);
+- state: counts only, from the review-due function and the `kmctl handoffs` list (tickets `review-due` and `handoffs-list`): how many concepts are due, how many live handoffs, and the newest handoff's title. Counts keep the part the same size however big the repository grows;
 - rules: the knowledge-management rules, shipped as package data in `new:src/kmctl/rules/` and generalized from `.claude/rules/docs-layout.md` and `.claude/rules/okf-bundle.md`.
 
-It reads and never writes, works in a repository with no `.okf/` (it then says how to start one), and stays under a word budget a test checks (I3). `--json` prints the same as one object.
+It reads and never writes, works in a repository with no `.okf/` (it then says how to start one), and stays under a 600-word budget a test checks (I3). spike:briefing/1 put the rules at 339 words without their WHY lines; routing covering the Diataxis folders, the `.okf/` sections, skills and rules, plus the empty-repository text, is budgeted at 200 words, and state at 40, which leaves about 20 words spare. The test fails the build if the real text goes over. `--json` prints the same as one object.
 
 Done when the briefing prints in this repository and in an empty one, and a test fails when it exceeds the budget.
 
