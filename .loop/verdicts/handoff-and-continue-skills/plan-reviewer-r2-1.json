@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "ADR 0009 names handoff_key as kmctl's one extension field, and manifesto I4 now allows extension fields an ADR names. The plan names the field and cites the ADR. The conflict with I4 is settled.",
+      "anchor": ".okf/decisions/0009-handoff-key-extension-field.md",
+      "category": "design",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "Done-when now tests the update path: an existing key replaces body and description, keeps the file name and index entry, writes one log line; an unknown key creates a new handoff; strict okf validation afterwards.",
+      "anchor": ".loop/plans/handoff-and-continue-skills.md",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "8cff989db4ecfb2c253edb2609b664f89bdca79f4ff5a1ff9ccfecb83fc91cdd"
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T08:22:52+00:00"
+}
