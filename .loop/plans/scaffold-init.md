@@ -23,6 +23,8 @@ Relayed from: none
 
 Done when tests show a first run creates the files, a second run changes nothing, and the result passes the okf validator.
 
+The okf validator in tests is a pinned, test-only copy of `okf_validate.py` from okf-skills 0.10.1 (MIT), kept with its licence under tests/vendor/ and run in strict mode with pyyaml as a dev dependency. The first ticket that needs it adds it. It checks conformance only; the plugin still gets OKF authoring from the okf dependency (ADR 0003).
+
 ## Could invalidate this plan
 
 - none
