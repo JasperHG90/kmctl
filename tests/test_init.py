@@ -133,3 +133,16 @@ def test_init_no_warning_when_kept_index_already_links_manifesto(
 
     assert result.exit_code == 0, result.output
     assert "warning" not in result.stderr
+
+
+def test_init_warns_on_non_utf8_kept_index(tmp_path: Path) -> None:
+    (tmp_path / ".okf").mkdir()
+    (tmp_path / ".okf" / "index.md").write_bytes(
+        b'---\nokf_version: "0.2"\n---\n\xe9\n'
+    )
+
+    result = _init(tmp_path)
+
+    assert result.exit_code == 0, result.output
+    assert result.exception is None
+    assert "not UTF-8" in result.stderr

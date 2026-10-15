@@ -13,7 +13,8 @@
         "No page sits outside a Diataxis type folder",
         "The page's content fits its Diataxis type (judged by reading)",
         "No install command or URL is guessed: each comes from the repository or is a marked TODO (judged)"
-      ]
+      ],
+      "doc_type": "tutorial"
     },
     {
       "id": 2,
@@ -26,7 +27,8 @@
         "kmctl check passes afterwards",
         "No page sits outside a Diataxis type folder",
         "The page's content fits its Diataxis type (judged by reading)"
-      ]
+      ],
+      "doc_type": "how-to"
     },
     {
       "id": 3,
@@ -39,7 +41,8 @@
         "kmctl check passes afterwards",
         "No page sits outside a Diataxis type folder",
         "The page's content fits its Diataxis type (judged by reading)"
-      ]
+      ],
+      "doc_type": "reference"
     },
     {
       "id": 4,
@@ -52,7 +55,8 @@
         "kmctl check passes afterwards",
         "No page sits outside a Diataxis type folder",
         "The page's content fits its Diataxis type (judged by reading)"
-      ]
+      ],
+      "doc_type": "explanation"
     }
   ]
 }

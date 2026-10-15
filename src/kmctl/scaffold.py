@@ -58,6 +58,14 @@ def _files(now: datetime) -> dict[str, str]:
     }
 
 
+def _text(path: Path) -> str | None:
+    """The UTF-8 text of ``path``, or None when it is not UTF-8."""
+    try:
+        return path.read_text(encoding="utf-8")
+    except UnicodeDecodeError:
+        return None
+
+
 def scaffold(root: Path, now: datetime | None = None) -> ScaffoldResult:
     """Write docs/README.md and a starter .okf/ bundle under ``root``.
 
@@ -84,17 +92,28 @@ def scaffold(root: Path, now: datetime | None = None) -> ScaffoldResult:
         path.write_text(text)
         result.created.append(rel)
     if ".okf/manifesto.md" in result.created:
-        index = root / ".okf" / "index.md"
+        index_text = _text(root / ".okf" / "index.md")
+        log_text = _text(root / ".okf" / "log.md")
+        for rel, text in ((".okf/index.md", index_text), (".okf/log.md", log_text)):
+            if rel in result.skipped and text is None:
+                result.warnings.append(
+                    f"the kept {rel} is not UTF-8 text, so kmctl cannot tell whether it "
+                    "names the new manifesto; check it by hand"
+                )
         if (
             ".okf/index.md" in result.skipped
-            and "manifesto.md" not in index.read_text()
+            and index_text is not None
+            and "manifesto.md" not in index_text
         ):
             result.warnings.append(
                 "the kept .okf/index.md does not link the new manifesto: add "
                 "'- [Manifesto](manifesto.md): <one line>' to it"
             )
-        log = root / ".okf" / "log.md"
-        if ".okf/log.md" in result.skipped and "`manifesto`" not in log.read_text():
+        if (
+            ".okf/log.md" in result.skipped
+            and log_text is not None
+            and "`manifesto`" not in log_text
+        ):
             result.warnings.append(
                 "the kept .okf/log.md has no line for the new manifesto: append "
                 "a dated line naming `manifesto`"

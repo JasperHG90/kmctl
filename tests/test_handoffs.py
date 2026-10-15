@@ -116,3 +116,15 @@ def test_has_passed_at_the_exact_instant() -> None:
 
     assert has_passed("2026-10-15T12:00:00Z", now)
     assert not has_passed("2026-10-15T12:00:01Z", now)
+
+
+def test_overflowing_timestamp_does_not_crash(tmp_path: Path) -> None:
+    _handoff(tmp_path, "edge", "0001-01-01T00:00:00+01:00")
+
+    listed = _list(tmp_path, "--json")
+    due = CliRunner().invoke(app, ["review", "due", "--path", str(tmp_path), "--json"])
+
+    assert listed.exit_code == 0, listed.output
+    assert listed.exception is None
+    assert due.exit_code == 0, due.output
+    assert due.exception is None

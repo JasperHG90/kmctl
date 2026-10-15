@@ -9,6 +9,9 @@ The index format, which every kmctl verb that writes an index follows:
   a relative link to a page in that folder or below. In .okf/prototypes/ the
   concept is each prototype's README.md. External links, anchors and links
   that leave the folder are not entries.
+- A target is read without <angle brackets>, #anchor or ?query, and
+  percent-decoded, as GitHub renders it. Reference-style definitions
+  (``[ref]: path``) are links, but never index entries.
 - Hidden files and folders (a name starting with ".") are not pages.
 - Every folder directly under .okf/prototypes/ is a prototype and needs a
   README.md (check name ``prototype``).
@@ -21,11 +24,15 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
+from urllib.parse import unquote
 
 RESERVED = {"index.md", "log.md"}
-_ENTRY = re.compile(r"^\s*[-*+]\s+.*?\[[^\]]*\]\(([^)\s]+)")
+_TARGET = r"(<[^>\n]*>|[^)\s]+)(?:\s+(?:\"[^\"]*\"|'[^']*'))?"
+_ENTRY = re.compile(r"^\s*[-*+]\s+.*?\[[^\]]*\]\(" + _TARGET + r"\)")
 _FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
-_LINK = re.compile(r"!?\[[^\]]*\]\(<?([^)\s>]+)>?(?:\s+\"[^\"]*\")?\)")
+_LINK = re.compile(r"!?\[[^\]]*\]\(" + _TARGET + r"\)")
+# A footnote definition ([^1]: text) is not a link.
+_REF_DEF = re.compile(r"^ {0,3}\[(?!\^)[^\]]+\]:\s*(<[^>\n]*>|\S+)")
 _CODE_SPAN = re.compile(r"`[^`]*`")
 
 
@@ -99,6 +106,13 @@ def _prose_lines(text: str) -> list[tuple[int, str]]:
     return lines
 
 
+def _target(raw: str) -> str:
+    """A link target as a file path: brackets, anchor and query dropped, percent-decoded."""
+    target = raw[1:-1] if raw.startswith("<") and raw.endswith(">") else raw
+    target = target.split("#", 1)[0].split("?", 1)[0]
+    return unquote(target)
+
+
 def _entries(index: Path) -> list[tuple[int, str]]:
     """The (line, target) of each entry in ``index``, by the format in the module docstring.
 
@@ -113,7 +127,7 @@ def _entries(index: Path) -> list[tuple[int, str]]:
         match = _ENTRY.match(text)
         if not match:
             continue
-        target = match.group(1).split("#", 1)[0]
+        target = _target(match.group(1))
         if not target or target.startswith(("/", "mailto:")) or "://" in target:
             continue
         if not (index.parent / target).resolve().is_relative_to(folder):
@@ -269,8 +283,11 @@ def _links(page: Path, skip_entries: bool = False) -> list[tuple[int, str]]:
     )
     for number, text in _prose_lines(_read(page)):
         skip = entries.get(number)
-        for raw in _LINK.findall(_CODE_SPAN.sub("", text)):
-            target = raw.split("#", 1)[0]
+        prose = _CODE_SPAN.sub("", text)
+        definition = _REF_DEF.match(prose)
+        raws = _LINK.findall(prose) + ([definition.group(1)] if definition else [])
+        for raw in raws:
+            target = _target(raw)
             if skip is not None and target == skip:
                 skip = None  # only the entry's own link belongs to the index check
                 continue
