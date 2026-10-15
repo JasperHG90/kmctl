@@ -22,8 +22,8 @@
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
-    "hash": "aed586c799e10bec022709695a28d9815768e713279ea680de8eb279fe237cc0",
-    "at": "2026-10-15T17:50:08+00:00"
+    "hash": "d5be1b0791f4bc48d26c0e0ed613e697762e6ee0896426d0d55902526df95f84",
+    "at": "2026-10-15T19:08:34+00:00"
   },
   "delegation": null,
   "budget_base": null,
@@ -31,7 +31,7 @@
     {
       "id": "r1",
       "behavior": "apm.yml lists the 13 rules and 3 skills aim managed, pinned to one jasperhg90/skills commit at or after f0813cd, with targets [claude], and apm.lock.yaml pins the full commit and each file's hash.",
-      "fails_when": "apm.yml lacks any of the 13 rules or 3 skills, an entry is unpinned or pinned before f0813cd, targets is not [claude], or apm.lock.yaml is missing or lacks a resolved commit or file hashes",
+      "fails_when": "apm.yml lacks any of the 13 rules or 3 skills, an entry is unpinned or pinned to a commit that does not include the merge of JasperHG90/skills PR 139, targets is not [claude], or apm.lock.yaml is missing or lacks a resolved commit or file hashes",
       "command": "uv run pytest tests/test_repo_apm.py -k manifest -q",
       "judgment": false
     },
@@ -50,6 +50,20 @@
       "judgment": false
     },
     {
+      "id": "r5",
+      "behavior": "The installed python-testing rule keeps this repository's additions, through upstream PR 139: the Test tiers section and the measure-before-marking, run-your-own-test and every-tier-runs-somewhere constraints.",
+      "fails_when": ".claude/rules/python-testing.md lacks the Test tiers heading or any of those three constraint names",
+      "command": "uv run pytest tests/test_repo_apm.py -k python_testing_kept -q",
+      "judgment": false
+    },
+    {
+      "id": "r6",
+      "behavior": "tests/test_rules.py reads the upstream-managed rules from apm.yml, and its docstring and pyproject.toml's ruff comment no longer name aim.",
+      "fails_when": "tests/test_rules.py reads aim.toml or fails, or it or pyproject.toml names aim",
+      "command": "uv run pytest tests/test_rules.py tests/test_repo_apm.py -k managed_from_apm -q",
+      "judgment": false
+    },
+    {
       "id": "r4",
       "behavior": "The other tests still pass.",
       "fails_when": "any test fails",
@@ -57,7 +71,25 @@
       "judgment": false
     }
   ],
-  "resigns": [],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+      "reason": "plan round 2 review: a row enforces the PR 139 text, and test_rules.py reads apm.yml",
+      "diff": {
+        "added": [
+          "r5",
+          "r6"
+        ],
+        "removed": [],
+        "changed": {
+          "r1": [
+            "fails_when"
+          ]
+        }
+      },
+      "at": "2026-10-15T19:08:34+00:00"
+    }
+  ],
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
@@ -96,5 +128,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev61+g8318eb7a1.d20261015",
-  "at": "2026-10-15T19:08:33+00:00"
+  "at": "2026-10-15T19:08:34+00:00"
 }

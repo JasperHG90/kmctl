@@ -4,7 +4,7 @@
     {
       "id": "r1",
       "behavior": "apm.yml lists the 13 rules and 3 skills aim managed, pinned to one jasperhg90/skills commit at or after f0813cd, with targets [claude], and apm.lock.yaml pins the full commit and each file's hash.",
-      "fails_when": "apm.yml lacks any of the 13 rules or 3 skills, an entry is unpinned or pinned before f0813cd, targets is not [claude], or apm.lock.yaml is missing or lacks a resolved commit or file hashes",
+      "fails_when": "apm.yml lacks any of the 13 rules or 3 skills, an entry is unpinned or pinned to a commit that does not include the merge of JasperHG90/skills PR 139, targets is not [claude], or apm.lock.yaml is missing or lacks a resolved commit or file hashes",
       "command": "uv run pytest tests/test_repo_apm.py -k manifest -q"
     },
     {
@@ -18,6 +18,18 @@
       "behavior": "aim is gone: no aim.toml or aim.lock.toml, no aim: markers or aim header in AGENTS.md, and no file names aim; the guidelines text in AGENTS.md is otherwise unchanged.",
       "fails_when": "aim.toml or aim.lock.toml exists, AGENTS.md has an aim: marker or the aim header line, a tracked file outside .loop/ names agent-integrations-manager or aim as the manager, or the guidelines text changed beyond the markers and header",
       "command": "uv run pytest tests/test_repo_apm.py -k no_aim -q"
+    },
+    {
+      "id": "r5",
+      "behavior": "The installed python-testing rule keeps this repository's additions, through upstream PR 139: the Test tiers section and the measure-before-marking, run-your-own-test and every-tier-runs-somewhere constraints.",
+      "fails_when": ".claude/rules/python-testing.md lacks the Test tiers heading or any of those three constraint names",
+      "command": "uv run pytest tests/test_repo_apm.py -k python_testing_kept -q"
+    },
+    {
+      "id": "r6",
+      "behavior": "tests/test_rules.py reads the upstream-managed rules from apm.yml, and its docstring and pyproject.toml's ruff comment no longer name aim.",
+      "fails_when": "tests/test_rules.py reads aim.toml or fails, or it or pyproject.toml names aim",
+      "command": "uv run pytest tests/test_rules.py tests/test_repo_apm.py -k managed_from_apm -q"
     },
     {
       "id": "r4",
