@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The duration count is parsed outside the try, with a Unicode \\d. A count of more than 4300 digits (for example '9'*5000 + 'd') makes int() raise ValueError, and kmctl new prints a traceback instead of a refusal. A non-ASCII digit such as '٣d' is accepted as 3 days.",
+      "anchor": "src/kmctl/concepts.py:51",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "The commands for rows r4 and r5 select fewer tests than they claim. In r4, -k freshness_valid deselects every test in tests/test_okf_fields.py. In r5, the second -k replaces the first, so test_init_block_names_freshness never runs. Each command runs one test. The r6 full suite does run the missing tests, so the behaviour is still gated, but the per-row stamps for r4 and r5 would stay green if the I4 test or the block broke.",
+      "anchor": ".loop/evals/new-concept-freshness/rows.json",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "ece49c8e2de27fdca9301262e175b53502eaab1f9cf54cd6dfad1923e07f878f",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev61+g8318eb7a1.d20261015",
+  "at": "2026-10-15T17:54:27+00:00"
+}
