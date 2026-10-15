@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "One handoff with bad front matter (YAML that does not parse, or generated that is not a mapping) crashes kmctl handoffs with a traceback, so /continue gets no list at all. The CLI rule says a refusal is one line on stderr naming the file and the fix, and no test covers this path.",
+      "anchor": "src/kmctl/handoffs.py:47",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "as_datetime keeps a non-UTC offset instead of converting it, so its docstring (\"an aware UTC datetime\") is false, and _date_text labels the local time with Z. generated.at 2026-10-03T09:00:00+02:00 prints as 2026-10-03T09:00:00Z, two hours off.",
+      "anchor": "src/kmctl/okf.py:25",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "b06faa8700ab6dfa9b0bee720e82cdefdd6a360443eee06564f0c9f1ddc25132",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T10:38:39+00:00"
+}
