@@ -1,0 +1,155 @@
+CLAUDE_CONFIG_DIR=/tmp/tmp.lwi8rG3tBQ/config
+##### (a) first run, everything at project scope
+== claude plugin marketplace add /tmp/tmp.lwi8rG3tBQ/mkt --scope project
+Adding marketplace…✔ Successfully added marketplace: spike-mkt (declared in project settings)
+exit 0
+== claude plugin marketplace add scaccogatto/okf-skills --scope project
+Adding marketplace…SSH not configured, cloning via HTTPS: https://github.com/scaccogatto/okf-skills.git
+Refreshing marketplace cache (timeout: 120s)…
+Cloning repository (timeout: 120s): https://github.com/scaccogatto/okf-skills.git
+Clone complete, validating marketplace…
+Cleaning up old marketplace cache…
+✔ Successfully added marketplace: scaccogatto (declared in project settings)
+exit 0
+== claude plugin install tiny@spike-mkt --scope project
+Installing plugin "tiny@spike-mkt"...✔ Successfully installed plugin: tiny@spike-mkt (scope: project) (+ 1 dependency: okf)
+exit 0
+== claude plugin list --json
+[
+  {
+    "id": "okf@scaccogatto",
+    "version": "0.10.3",
+    "scope": "project",
+    "enabled": true,
+    "installPath": "/tmp/tmp.lwi8rG3tBQ/config/plugins/cache/scaccogatto/okf/0.10.3",
+    "installedAt": "2026-10-15T08:23:22.925Z",
+    "lastUpdated": "2026-10-15T08:23:22.925Z",
+    "projectPath": "/tmp/tmp.lwi8rG3tBQ/proj",
+    "mcpServers": {
+      "bundle": {
+        "command": "uv",
+        "args": [
+          "run",
+          "${CLAUDE_PLUGIN_ROOT}/servers/okf_mcp.py"
+        ]
+      }
+    },
+    "projectEnabled": true
+  },
+  {
+    "id": "tiny@spike-mkt",
+    "version": "0.0.1",
+    "scope": "project",
+    "enabled": true,
+    "installPath": "/tmp/tmp.lwi8rG3tBQ/config/plugins/cache/spike-mkt/tiny/0.0.1",
+    "readFromFolder": "/tmp/tmp.lwi8rG3tBQ/mkt/tiny",
+    "folderVersion": "0.0.1",
+    "installedAt": "2026-10-15T08:23:22.847Z",
+    "lastUpdated": "2026-10-15T08:23:22.847Z",
+    "projectPath": "/tmp/tmp.lwi8rG3tBQ/proj",
+    "projectEnabled": true
+  }
+]
+exit 0
+== claude plugin marketplace list --json
+[
+  {
+    "name": "scaccogatto",
+    "source": "github",
+    "repo": "scaccogatto/okf-skills",
+    "installLocation": "/tmp/tmp.lwi8rG3tBQ/config/plugins/marketplaces/scaccogatto"
+  },
+  {
+    "name": "spike-mkt",
+    "source": "directory",
+    "path": "/tmp/tmp.lwi8rG3tBQ/mkt",
+    "installLocation": "/tmp/tmp.lwi8rG3tBQ/mkt"
+  }
+]
+exit 0
+okf installed at project scope: 1
+##### (b) second and third run, same commands
+== claude plugin marketplace add /tmp/tmp.lwi8rG3tBQ/mkt --scope project
+Adding marketplace…✔ Marketplace 'spike-mkt' already on disk — declared in project settings
+exit 0
+== claude plugin marketplace add scaccogatto/okf-skills --scope project
+Adding marketplace…✔ Marketplace 'scaccogatto' already on disk — declared in project settings
+exit 0
+== claude plugin install tiny@spike-mkt --scope project
+Installing plugin "tiny@spike-mkt"...✔ Plugin "tiny@spike-mkt" is already installed (scope: project) — it loads in place from /tmp/tmp.lwi8rG3tBQ/mkt/tiny, so edits there take effect at the next session start or /reload-plugins
+exit 0
+== claude plugin marketplace add /tmp/tmp.lwi8rG3tBQ/mkt --scope project
+Adding marketplace…✔ Marketplace 'spike-mkt' already on disk — declared in project settings
+exit 0
+== claude plugin marketplace add scaccogatto/okf-skills --scope project
+Adding marketplace…✔ Marketplace 'scaccogatto' already on disk — declared in project settings
+exit 0
+== claude plugin install tiny@spike-mkt --scope project
+Installing plugin "tiny@spike-mkt"...✔ Plugin "tiny@spike-mkt" is already installed (scope: project) — it loads in place from /tmp/tmp.lwi8rG3tBQ/mkt/tiny, so edits there take effect at the next session start or /reload-plugins
+exit 0
+-- run 1 vs run 2, whole snapshot, bytes
+--- /tmp/tmp.lwi8rG3tBQ/snap1	2026-10-15 10:23:24.530459724 +0200
++++ /tmp/tmp.lwi8rG3tBQ/snap2	2026-10-15 10:23:25.975462151 +0200
+@@ -1,4 +1,8 @@
+ {
++  "enabledPlugins": {
++    "okf@scaccogatto": true,
++    "tiny@spike-mkt": true
++  },
+   "extraKnownMarketplaces": {
+     "spike-mkt": {
+       "source": {
+@@ -12,10 +16,6 @@
+         "repo": "scaccogatto/okf-skills"
+       }
+     }
+-  },
+-  "enabledPlugins": {
+-    "okf@scaccogatto": true,
+-    "tiny@spike-mkt": true
+   }
+ }
+ ---
+-- run 2 vs run 3, whole snapshot, bytes
+settings content equal across runs 1-3: True
+settings.json bytes stable from run 2 to 3: yes
+snapshot bytes equal run 1 to 2: no
+second run changed nothing (content): 1
+##### (c) what the project's settings files hold
+-- .claude/settings.json
+{
+  "enabledPlugins": {
+    "okf@scaccogatto": true,
+    "tiny@spike-mkt": true
+  },
+  "extraKnownMarketplaces": {
+    "spike-mkt": {
+      "source": {
+        "source": "directory",
+        "path": "/tmp/tmp.lwi8rG3tBQ/mkt"
+      }
+    },
+    "scaccogatto": {
+      "source": {
+        "source": "github",
+        "repo": "scaccogatto/okf-skills"
+      }
+    }
+  }
+}
+-- .claude/settings.local.json
+cat: .claude/settings.local.json: No such file or directory
+-- user settings.json
+cat: /tmp/tmp.lwi8rG3tBQ/config/settings.json: No such file or directory
+-- git status
+?? .claude/
+marketplaces: ['scaccogatto', 'spike-mkt'] enabled: ['okf@scaccogatto', 'tiny@spike-mkt']
+settings.json declares both marketplaces and both plugins: 1
+##### teammate: clone with a fresh config dir
+== claude plugin marketplace list --json
+[]
+exit 0
+== claude plugin list --json
+[]
+exit 0
+##### done
