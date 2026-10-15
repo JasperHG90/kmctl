@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "diagrams-stay-current requires a `depicts:` front-matter field on every diagram, but OKF v0.2 does not define it and no ADR names it; ADR 0009 says any extension field other than handoff_key needs its own ADR, and okf-bundle.md restates that kmctl uses only spec fields plus ADR-named ones.",
+      "anchor": ".claude/rules/diagrams-stay-current.md:13",
+      "category": "design",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "measure-before-ticketing says a measurement spike is `loopctl plan spike` with its scripts kept in the spike (under .loop/), while docs-layout says a spike goes to .okf/ and that every script producing a number lives in .okf/prototypes/<name>/. The two kept rules give different homes for the same measurement.",
+      "anchor": ".claude/rules/measure-before-ticketing.md:29",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "0d6ad503e10271cc0097f4b31d672eff651bf1d0d8fd76da19c8c98ada819b69",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T08:34:08+00:00"
+}
