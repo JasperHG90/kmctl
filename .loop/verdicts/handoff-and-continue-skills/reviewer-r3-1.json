@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "empty --key was accepted",
+      "anchor": "src/kmctl/concepts.py:209",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "log dedup ignored the day",
+      "anchor": "src/kmctl/concepts.py:235",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "continue evals missed the fallback and step 3",
+      "anchor": "plugin/skills/continue/evals/results.md",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "resolved",
+      "claim": "update path skipped the title check",
+      "anchor": "src/kmctl/concepts.py:216",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f5",
+      "disposition": "resolved",
+      "claim": "Raises section did not list the empty-key refusal",
+      "anchor": "src/kmctl/concepts.py:189",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f6",
+      "disposition": "resolved",
+      "claim": "results.md intro miscounted prompts and fixtures",
+      "anchor": "plugin/skills/continue/evals/results.md:3",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f7",
+      "disposition": "open",
+      "claim": "the new_concept Raises section still leaves out the empty --description refusal, which predates this ticket but sits in the paragraph f5 edited",
+      "anchor": "src/kmctl/concepts.py:189",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": "reviewer:f5",
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "c5de4be465540d38e045345cdbbc803e0bd53704a1a5ba0dbcdbe200cc96b4c8",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev77+gbd4712cf8.d20261015",
+  "at": "2026-10-15T11:48:53+00:00"
+}
