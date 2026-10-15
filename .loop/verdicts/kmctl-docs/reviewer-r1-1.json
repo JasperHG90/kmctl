@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The install line and the action's `uses: JasperHG90/Knowledge-management@main` both point at a private repository, and no page says so. A reader without access gets \"Repository not found\" from uv, and a workflow in another owner's repository cannot use a private action at all.",
+      "anchor": "README.md:13",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "I2 is moved to enforced in a change that adds no test for it, against manifesto-invariants.md (the move happens in the same change that adds its test, and the test drives kmctl or the plugin from outside). test_auditor_tools_are_read_only only reads the agent's front matter, and no test pins the \"its skills\" half (the /audit skill in an interactive session runs in the main agent, which has write tools). Out of the plan's scope as well.",
+      "anchor": ".okf/manifesto.md:70",
+      "category": "docs",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "The briefing now also lists the plugin's skills, and the pages miss it. `kmctl briefing --json` prints routing, state, rules and skills, but the reference lists three fields. The architecture page's table, diagram and Depicts leave out that briefing.py reads plugin.skills_dir().",
+      "anchor": "docs/reference/commands.md:90",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "ba854778f9ada0614cc2f35e8629f3428ed4ce7d698bf26ea672b4dc4368dea3",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "at": "2026-10-15T13:39:34+00:00"
+}
