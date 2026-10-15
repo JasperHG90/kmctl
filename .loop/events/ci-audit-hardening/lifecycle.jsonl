@@ -19,3 +19,4 @@
 {"at": "2026-10-15T13:31:23+00:00", "binds": "8f6df42ad781a3272518f3984b1ca53ab68567bff501a201682b22ea1a6a2c1b", "kind": "round-start", "n": 2, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "dfcbe47515daa14eff131b6bbbbd1102d9c0c97b"}
 {"at": "2026-10-15T13:33:00+00:00", "dispatched_at": "2026-10-15T13:31:23+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-15T13:32:42+00:00"}}
 {"at": "2026-10-15T13:33:05+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "a7290b77bb2128c7ddabe38e9dae251a999ca0a7"}
+{"at": "2026-10-15T13:33:52+00:00", "branch": "loop/ci-audit-hardening", "kind": "land", "schema_version": "1.0", "sha": "f6de9213adaaa9eb066e6acd70d482aabc09934a"}
