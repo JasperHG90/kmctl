@@ -20,10 +20,43 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "0251f9b8f86d9ad22a3663defcba6f72850b2701bf01da1f72e9ec4100db7cd9",
+    "at": "2026-10-15T11:01:31+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "kmctl new doc TYPE TITLE creates the page in docs/TYPE/ with its title and that type's skeleton, for each of the four Diataxis types.",
+      "fails_when": "for any type the page is missing, is in the wrong folder, or lacks the title or skeleton headings",
+      "command": "uv run pytest tests/test_new_doc.py::test_new_doc_creates_page_per_type -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "The new page is added to docs/README.md and kmctl check passes afterwards.",
+      "fails_when": "docs/README.md has no entry linking the page, or kmctl check exits nonzero",
+      "command": "uv run pytest tests/test_new_doc.py::test_new_doc_indexes_page -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "It refuses when docs/README.md is missing and names kmctl init.",
+      "fails_when": "it writes anything, exits 0, or the message does not name kmctl init",
+      "command": "uv run pytest tests/test_new_doc.py::test_new_doc_refuses_without_index -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "It never overwrites an existing page.",
+      "fails_when": "an existing page's content changes, or the command exits 0",
+      "command": "uv run pytest tests/test_new_doc.py::test_new_doc_refuses_existing_page -q",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -72,5 +105,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T08:12:40+00:00"
+  "at": "2026-10-15T11:01:31+00:00"
 }
