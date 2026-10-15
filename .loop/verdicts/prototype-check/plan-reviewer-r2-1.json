@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "Round 1: 'every folder under .okf/prototypes/' read as recursive. The plan now checks only folders directly under .okf/prototypes/, says nested folders (src/, results/) are not prototypes, and adds a fixture with a nested folder that has no README.md.",
+      "anchor": ".loop/plans/prototype-check.md",
+      "category": "contract",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "b824a79a388a259d6bb91d4fd4383fda0211f877785f4123d0d429ec83d8fc7b"
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T08:19:17+00:00"
+}
