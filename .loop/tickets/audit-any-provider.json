@@ -3,7 +3,7 @@
   "slug": "audit-any-provider",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -89,8 +89,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "3ea10ea2fa91e105124082d82bde09e7d8565f6711da167fcad155bd3bad16fc",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "a1439a83ad0cfcf5cdcb77177d7cf5e85b780d0592baad3455d62dcbab28dd95",
+    "started_at": "2026-10-15T14:33:46+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "a1439a83ad0cfcf5cdcb77177d7cf5e85b780d0592baad3455d62dcbab28dd95",
   "intent": {
     "epic": "ci",
     "depends_on": [
@@ -107,5 +126,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T14:33:45+00:00"
+  "at": "2026-10-15T14:33:46+00:00"
 }
