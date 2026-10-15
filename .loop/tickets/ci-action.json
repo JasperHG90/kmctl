@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "ci-action",
-  "stage": "building",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 0,
@@ -124,8 +124,14 @@
       "to": "building",
       "at": "2026-10-15T11:37:29+00:00",
       "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-10-15T11:40:05+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.0.1.dev77+gbd4712cf8.d20261015",
-  "at": "2026-10-15T11:39:47+00:00"
+  "at": "2026-10-15T11:40:05+00:00"
 }
