@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The briefing is to name the `audit` skill, but main has no audit skill. plugin/skills/ on main holds only continue, handoff and write-docs. `audit` (plus architecture-review, decision-log-review and practices-review) lives in the audit-agent-and-skills ticket, which is still in building and is not in this plan's depends_on. If this ticket lands first, the briefing sends every session to a skill that does not exist (ADR 0002 routing becomes wrong in a new way). The 'four kmctl skills' count and the test 'fails when a kmctl skill is not named' also have no fixed meaning: a hard-coded list of four goes stale, and a list read from plugin/skills/ has three skills today and seven after audit-agent-and-skills lands. The Intent also cites plugin/skills/audit/evals/, which is not on main. Fix: add audit-agent-and-skills to depends_on (or drop `audit` from the list), and say which skills the briefing names and where the test gets that list.",
+      "anchor": ".loop/plans/adr-audit-fixes.md:22",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "0754d29bf7eef05617a8334fac082f228aeed52809cf710d6ff91dad62040483"
+  },
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "at": "2026-10-15T12:49:00+00:00"
+}
