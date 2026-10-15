@@ -10,7 +10,7 @@
     {
       "id": "r2",
       "behavior": "In the integration tier a network error is retried up to two more times; any other failure is reported at once; three network failures still fail.",
-      "fails_when": "a test failing twice with 'Could not resolve host' then passing is reported as failed or runs more than three times, a test failing with another message is rerun, or one failing three times with a network error is reported as passed or skipped",
+      "fails_when": "a test failing twice with 'Could not resolve host' then passing is reported as failed or runs more than three times, a test failing with another message is rerun, or one failing three times with a network error is reported as passed or skipped; or a test whose install fails with a network error is not retried because the failure surfaces later as another error",
       "command": "uv run pytest tests/test_network_retry.py -k retry -q"
     },
     {
@@ -18,6 +18,12 @@
       "behavior": "Every test in tests/test_plugin_install.py that adds the okf marketplace from GitHub carries the integration marker.",
       "fails_when": "such a test lacks the marker",
       "command": "uv run pytest tests/test_network_retry.py -k marked -q"
+    },
+    {
+      "id": "r5",
+      "behavior": "Every kmctl plugin install or update call in tests/test_plugin_install.py asserts its exit code with the command output.",
+      "fails_when": "any such call's result is not checked with exit_code == 0 and its output",
+      "command": "uv run pytest tests/test_network_retry.py -k installs_asserted -q"
     },
     {
       "id": "r4",

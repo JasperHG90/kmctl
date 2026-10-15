@@ -22,8 +22,8 @@
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
-    "hash": "3a06ddc868de223d957650046206dbd88535eb80a92f712f5614b1feb2a6b458",
-    "at": "2026-10-15T19:07:29+00:00"
+    "hash": "54d564718295a3b6b6cb53faf5c1faa87b3632dbd392ebc4d33c99fdbbf16e45",
+    "at": "2026-10-15T19:10:50+00:00"
   },
   "delegation": null,
   "budget_base": null,
@@ -38,7 +38,7 @@
     {
       "id": "r2",
       "behavior": "In the integration tier a network error is retried up to two more times; any other failure is reported at once; three network failures still fail.",
-      "fails_when": "a test failing twice with 'Could not resolve host' then passing is reported as failed or runs more than three times, a test failing with another message is rerun, or one failing three times with a network error is reported as passed or skipped",
+      "fails_when": "a test failing twice with 'Could not resolve host' then passing is reported as failed or runs more than three times, a test failing with another message is rerun, or one failing three times with a network error is reported as passed or skipped; or a test whose install fails with a network error is not retried because the failure surfaces later as another error",
       "command": "uv run pytest tests/test_network_retry.py -k retry -q",
       "judgment": false
     },
@@ -47,6 +47,13 @@
       "behavior": "Every test in tests/test_plugin_install.py that adds the okf marketplace from GitHub carries the integration marker.",
       "fails_when": "such a test lacks the marker",
       "command": "uv run pytest tests/test_network_retry.py -k marked -q",
+      "judgment": false
+    },
+    {
+      "id": "r5",
+      "behavior": "Every kmctl plugin install or update call in tests/test_plugin_install.py asserts its exit code with the command output.",
+      "fails_when": "any such call's result is not checked with exit_code == 0 and its output",
+      "command": "uv run pytest tests/test_network_retry.py -k installs_asserted -q",
       "judgment": false
     },
     {
@@ -86,6 +93,22 @@
         }
       },
       "at": "2026-10-15T19:07:29+00:00"
+    },
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+      "reason": "plan round 1 review: every install asserts its output so the network error reaches the retry hook",
+      "diff": {
+        "added": [
+          "r5"
+        ],
+        "removed": [],
+        "changed": {
+          "r2": [
+            "fails_when"
+          ]
+        }
+      },
+      "at": "2026-10-15T19:10:50+00:00"
     }
   ],
   "accepted_risks": [],
