@@ -20,10 +20,43 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "c735195ea90d7a99487460cb8d36ac2bc3d6a8668ef942cd605c2c18b611db7c",
+    "at": "2026-10-15T10:57:15+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "The plugin declares exactly one hook, a SessionStart hook that runs kmctl briefing.",
+      "fails_when": "plugin/hooks/hooks.json has any event other than SessionStart, more than one hook, or a command that does not run kmctl briefing",
+      "command": "uv run pytest tests/test_plugin.py::test_plugin_has_one_sessionstart_hook -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "Without kmctl on PATH, the hook exits 0 and prints how to install kmctl.",
+      "fails_when": "the hook command, run with a PATH that has no kmctl, exits nonzero or prints no install hint",
+      "command": "uv run pytest tests/test_plugin.py::test_hook_without_kmctl_exits_zero_with_hint -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "The marketplace entry declares okf from marketplace scaccogatto and allowlists scaccogatto.",
+      "fails_when": "marketplace.json lacks the okf dependency with marketplace scaccogatto, or allowCrossMarketplaceDependenciesOn does not include scaccogatto",
+      "command": "uv run pytest tests/test_plugin.py::test_marketplace_declares_okf_dependency -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "claude plugin validate accepts the plugin and the marketplace.",
+      "fails_when": "claude plugin validate reports an error for plugin/ or the root marketplace",
+      "command": "uv run pytest tests/test_plugin.py::test_claude_plugin_validate_passes -q",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -71,5 +104,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T08:12:47+00:00"
+  "at": "2026-10-15T10:57:15+00:00"
 }
