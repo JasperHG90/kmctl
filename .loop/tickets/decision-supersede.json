@@ -20,7 +20,8 @@
   "worktree": "/home/vscode/kmctl.worktrees/decision-supersede",
   "branch": "loop/decision-supersede",
   "stamps": [
-    "3e7413269acc681a5ad93709355a14c66d9e4ffe4a90e83726625233d2c7c6b5"
+    "3e7413269acc681a5ad93709355a14c66d9e4ffe4a90e83726625233d2c7c6b5",
+    "9f365c768718d01f98073c308c372b3bc82c24fe947200994b1e42e89167c923"
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
@@ -131,5 +132,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T10:56:03+00:00"
+  "at": "2026-10-15T10:56:48+00:00"
 }
