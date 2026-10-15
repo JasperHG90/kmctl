@@ -7,8 +7,6 @@ generated:
   at: 2026-10-15
 tags: [adr, decision, okf, handoffs]
 status: stable
-decision_status: Accepted
-decided_on: 2026-10-15
 ---
 
 # ADR 0009: handoff_key is kmctl's one OKF extension field

@@ -1,6 +1,6 @@
 ---
 name: decision-log-review
-description: The review instructions for .okf/decisions/ records, used by the audit skill and its kmctl-auditor agent - does each decision still hold, or has a later decision or the code overtaken it? Use through /audit; read directly when someone asks how decision records are judged.
+description: Review instructions for .okf/decisions/ records, used through /audit and its kmctl-auditor agent - does each decision still hold, or has a later decision or the code overtaken it? Use through /audit; read directly when someone asks how decision records are judged.
 ---
 
 # Decision-log review: does the decision still hold?

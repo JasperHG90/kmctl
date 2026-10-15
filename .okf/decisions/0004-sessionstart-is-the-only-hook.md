@@ -7,8 +7,6 @@ generated:
   at: 2026-10-15
 tags: [adr, decision]
 status: stable
-decision_status: Accepted
-decided_on: 2026-10-15
 ---
 
 # ADR 0004: SessionStart is the only hook
@@ -34,3 +32,14 @@ Rejected by the operator:
 - Stop reminder.
 - Commit gate. A refactor changes code without making a page wrong, so it
   would refuse often for nothing.
+
+## Correction, 2026-10-15
+
+The record had no Consequences section; this adds it.
+
+### Consequences
+
+- The plugin has one hook, and it exits 0 even when `kmctl` is missing or
+  fails (I1, `tests/test_plugin.py`).
+- Nothing reminds the agent after a code edit; stale knowledge surfaces only
+  at session start, in `kmctl review due`, and in CI.

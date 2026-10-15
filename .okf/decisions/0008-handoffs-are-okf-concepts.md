@@ -7,8 +7,6 @@ generated:
   at: 2026-10-15
 tags: [adr, decision]
 status: stable
-decision_status: Accepted
-decided_on: 2026-10-15
 ---
 
 # ADR 0008: /handoff and /continue use OKF handoff concepts
@@ -45,3 +43,19 @@ Rejected:
   run, and the handoff would not travel with the repository.
 - Keep them outside the bundle (for example in a scratch folder). They would
   not be versioned or audited with the rest of the knowledge.
+
+## Correction, 2026-10-15
+
+The record had no Consequences section; this adds it.
+
+### Consequences
+
+- `kmctl new handoff` writes the front matter, a `stale_after` 14 days
+  out and the index entry; `kmctl handoffs` lists the live ones, newest
+  first, for /continue.
+- Handoffs are committed with the repository, so they travel with it and
+  any reader of the bundle sees them.
+- Expired handoffs stay in the bundle and show in `kmctl review due` until
+  someone removes them.
+- Matching a second /handoff in one session to the first needed a key,
+  which ADR 0009 adds.

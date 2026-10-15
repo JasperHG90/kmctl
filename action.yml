@@ -1,7 +1,7 @@
 name: kmctl knowledge checks
 description: >-
   Run kmctl check and kmctl review due on a repository's docs/ and .okf/ bundle,
-  write both to the job summary, and fail only when kmctl check fails.
+  write both to the job summary, and fail when kmctl check fails or kmctl review due crashes.
   Concepts that are due for review are reported, never failed. With
   mode: audit, run the read-only audit agent through Claude Code instead and
   report its findings in the job summary and one "Knowledge audit" issue.

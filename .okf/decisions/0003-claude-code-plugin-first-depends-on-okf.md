@@ -7,8 +7,6 @@ generated:
   at: 2026-10-15
 tags: [adr, decision]
 status: stable
-decision_status: Accepted
-decided_on: 2026-10-15
 ---
 
 # ADR 0003: The Claude Code plugin comes first and depends on the okf plugin
@@ -41,3 +39,17 @@ Rejected:
 - Copy the okf skills into kmctl. Two copies drift.
 - All harnesses at once. Each has its own hook and plugin format; one that
   works first shows what the others need.
+
+## Correction, 2026-10-15
+
+The record had no Consequences section; this adds it.
+
+### Consequences
+
+- `kmctl plugin install` adds the scaccogatto marketplace before
+  installing, because `claude plugin install` does not add a dependency's
+  marketplace by itself.
+- With no version range, any okf release installs; a breaking okf change
+  reaches kmctl users without warning.
+- Only Claude Code is supported so far; other harnesses get the briefing
+  only if they run `kmctl briefing` themselves.
