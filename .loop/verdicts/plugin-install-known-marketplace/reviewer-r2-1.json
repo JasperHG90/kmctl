@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "a malformed scaccogatto entry was treated as live when claude ignores it",
+      "anchor": "src/kmctl/plugin.py:124",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "the dot-file check in the r2 test could not fail",
+      "anchor": "tests/test_plugin_install.py:280",
+      "category": "test-mismatch",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "use a plain import os in _isolated_home",
+      "anchor": "tests/test_plugin_install.py:8",
+      "category": "nit",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "3b402a99a9899a4f14d48e676fa53d46a1e6827c0be8a436e9b22f2547fa83b3",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "at": "2026-10-15T14:56:26+00:00"
+}
