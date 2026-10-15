@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "a huge duration count crashed int() and non-ASCII digits were accepted",
+      "anchor": "src/kmctl/concepts.py:51",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "the r4 and r5 commands did not run the tests they name",
+      "anchor": ".loop/evals/new-concept-freshness/rows.json",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "0b433448b538bd9e184e94abf4fb9eaa3691f622e20ae24aff5659cc3e8fee5d",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev61+g8318eb7a1.d20261015",
+  "at": "2026-10-15T19:08:40+00:00"
+}
