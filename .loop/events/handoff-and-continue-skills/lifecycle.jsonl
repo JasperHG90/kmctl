@@ -28,3 +28,4 @@
 {"at": "2026-10-15T11:51:38+00:00", "by": "delegated:jasperginn@gmail.com/claude-opus-5-5", "edge": "blocked->ready", "grant": "g1", "kind": "override", "reason": "the only open finding (f7, a docstring line) is fixed in the tree and waived as non-blocking; every functional finding passed review", "schema_version": "1.0", "step": "ticket-override"}
 {"at": "2026-10-15T11:51:38+00:00", "kind": "unblock", "schema_version": "1.0"}
 {"at": "2026-10-15T11:51:43+00:00", "by": "advance", "from": "ready", "kind": "transition", "schema_version": "1.0", "to": "building"}
+{"at": "2026-10-15T11:52:26+00:00", "by": "advance", "from": "building", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
