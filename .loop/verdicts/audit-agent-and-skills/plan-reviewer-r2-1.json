@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "Bash vs no write tool. The agent's tools are now exactly Read, Grep and Glob, and the audit skill runs `kmctl review due --json` in the user's session and passes the due list in. The test that the tool list is exactly those three now proves I2 for the agent.",
+      "anchor": ".loop/plans/audit-agent-and-skills.md:28",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "Findings shape undefined. The plan now defines it: one fenced json block, a list of {concept, path, review, verdict, summary, evidence}, with a test against an agent-produced sample. ci-audit names this shape as the one it parses.",
+      "anchor": ".loop/plans/audit-agent-and-skills.md:30",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "resolved",
+      "claim": "No bundle with architecture or practices pages. The plan names loop-harness at /home/vscode/workspace. It exists, its .okf/ has 10 architecture and 8 practices pages, and `kmctl review due --json` run there lists all of them as due (unverified).",
+      "anchor": ".loop/plans/audit-agent-and-skills.md:32",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "f634b3a027113a3ce1edc3432f3e8d4ab877441c3782b5ed4e529ba0e067a8d7"
+  },
+  "by": "process:loopctl/2.0.1.dev77+gbd4712cf8.d20261015",
+  "at": "2026-10-15T12:27:51+00:00"
+}
