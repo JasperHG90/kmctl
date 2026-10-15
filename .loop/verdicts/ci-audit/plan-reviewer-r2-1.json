@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "Headless claude -p on a runner loading the plugin, resolving okf and printing parseable findings is now the plan's listed risk, settled by an operator acceptance (spike during build). Loading via --plugin-dir from the action checkout removes the plugin-install-verb dependency.",
+      "anchor": ".loop/plans/ci-audit.md:30",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "Trigger and permissions are now chosen: workflow_dispatch and schedule only, issue instead of PR comment, caller workflow sets contents: read, issues: write, and the docs say a composite action cannot.",
+      "anchor": ".loop/plans/ci-audit.md:24",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "open",
+      "claim": "The I2 guarantee rests on a false premise. The plan allows 'Bash limited to kmctl' and says therefore no write tool is available, but kmctl itself writes knowledge: `kmctl init`, `kmctl new <kind>`, `kmctl new doc` and `kmctl decision supersede` (src/kmctl/__init__.py:63, 311, 342, 437) all create or edit files under .okf/ or docs/, and `kmctl plugin install` writes config. `git log --output=FILE` also writes a file. So the agent can edit knowledge through an allowed tool, and the done criterion 'a write attempt by the agent is refused' only holds if the test happens to try Edit/Write. Narrow the allowlist to the read verbs the agent needs (for example `kmctl review due`, `kmctl check`, `kmctl handoffs`, `kmctl briefing`, plain `git log`) and make the refusal test cover a kmctl write verb too. This also needs to agree with the tool list the audit-agent-and-skills ticket gives the agent.",
+      "anchor": ".loop/plans/ci-audit.md:22",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "6513633c7726db7e5c21965587ab1f55b9f88b151272a97b7d9bfbb55144a2e7"
+  },
+  "by": "process:loopctl/2.0.1.dev77+gbd4712cf8.d20261015",
+  "at": "2026-10-15T12:25:55+00:00"
+}
