@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The plan says the briefing keeps its one-line form of the same rules so other harnesses still get them, but the briefing reads constraint bodies from src/kmctl/rules/ and is at 526 of 600 words (I3). Today each packaged constraint costs about 30 words in the briefing; diagrams-stay-current and manifesto-invariants have four constraints, so adding them costs about 120 words (about 646, over budget). If the full files with WHY and paths: replace the packaged ones, load_rules reads their longer bodies (this repo's docs-layout constraints alone come to about 242 words). The plan must say whether the two new rules join the briefing and what keeps it under 600, and whether the full and one-line forms are separate packaged files.",
+      "anchor": "src/kmctl/briefing.py:21",
+      "category": "design",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r6"
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "Writing .claude/rules/ reverses an alternative ADR 0002 rejected ('Native rule files per harness'), and its Consequences say the rules 'ship inside the package, not as harness rule files'. Init also stops being 'never edits a kept file' (ScaffoldResult docstring, the init help 'keeping any file that exists'): it now appends to CLAUDE.md and to kept .okf index and log files. The plan records no decision for either change, although this repo's okf-bundle rule wants the record in the same change and a reversal written in both records. A new ADR, with a correction on 0002, should record that init writes Claude Code files (rules and CLAUDE.md), that this is Claude-only under ADR 0003, and what happens with AGENTS.md: in this repo CLAUDE.md is a symlink to AGENTS.md, and a repo with only AGENTS.md would get a new CLAUDE.md holding just the block.",
+      "anchor": ".okf/decisions/0002-briefing-and-rules-injected-by-the-cli.md",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "open",
+      "claim": "The plan says init records decision 0001 through new decision's writer and that a second init changes nothing, but it does not say what happens in a repo that already has a bundle. new_concept numbers with _next_number, so in a repo with decisions it writes 00NN rather than 0001. On a second run it computes the next number and writes a duplicate, because only the same path blocks a write. It also appends to a kept decisions/index.md, .okf/index.md and log.md. The plan must say when init writes the decision (only when decisions/ is empty? never when a record with this title exists?) and how it detects the earlier one. Otherwise r3 and r5 pass on a fresh repo while init on an existing bundle (this repo included) adds a duplicate ADR.",
+      "anchor": "src/kmctl/concepts.py:244",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r5"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "63ab95bc786e20e2a37fa099dba501164157a04b684ae5dd00038f84a18ed6fa"
+  },
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "at": "2026-10-15T16:05:29+00:00"
+}
