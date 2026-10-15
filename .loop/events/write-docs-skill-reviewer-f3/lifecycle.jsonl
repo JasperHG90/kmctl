@@ -1,1 +1,2 @@
 {"at": "2026-10-15T11:29:06+00:00", "by": "review close", "kind": "register", "schema_version": "1.0", "stage": "stub"}
+{"at": "2026-10-15T11:55:09+00:00", "kind": "drop", "reason": "folded into review-hardening", "schema_version": "1.0"}
