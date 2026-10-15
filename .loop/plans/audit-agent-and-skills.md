@@ -19,17 +19,21 @@ Relayed from: none
 
 ## Intent
 
-Adds an audit agent and three skills to the plugin:
+Adds to the plugin an `audit` skill, a `kmctl-auditor` agent, and three review skills the agent follows:
 
 - `architecture-review`: does each `.okf/architecture/` page still match the code;
 - `decision-log-review`: does each decision still hold, or has a later decision or the code overtaken it;
 - `practices-review`: does each practice still have the count or code site it cites.
 
-The agent starts from `kmctl review due --json`, so it reads only what is due, plus anything the user names. It returns findings as data and has no write tools (I2).
+**Reports only (I2), by the tool list alone.** The agent's `tools` are `Read, Grep, Glob`: no Bash, no Edit, no Write. Bash limited to kmctl would not do, because `kmctl new`, `kmctl init` and `kmctl decision supersede` write knowledge. So the `audit` skill, which runs in the user's session, runs `kmctl review due --json` itself and passes the due concepts (and anything the user names) to the agent in its prompt. The agent reads, judges, and returns findings; the skill shows them. Nothing in the audit writes a file.
 
-Done when the agent run on this repository reports findings, its tool list has no write tool, and a test fails if one is added.
+**Findings shape**, which ci-audit parses: the agent ends with one fenced `json` block, a list of objects with `concept` (concept id), `path`, `review` (`architecture`, `decision` or `practice`), `verdict` (`holds`, `drifted` or `unsure`), `summary` (one sentence) and `evidence` (a list of `path:line` strings). An empty list means nothing was due.
 
-Every skill is made with the skill-creator skill (ADR 0007), and its test prompts are kept beside it.
+**Where it is tried.** This repository's bundle has decisions and a manifesto only, so the architecture and practices reviews are tried on loop-harness, checked out at /home/vscode/workspace, whose bundle has both. That run also counts real and false drift, the risk the operator accepted.
+
+Done when a test checks the agent's tools are exactly Read, Grep and Glob and fails if any other is added, a test checks the findings shape against a sample the agent produced, and the skill-creator runs (on this repository and on /home/vscode/workspace) report findings in that shape.
+
+Every skill and the agent are made with the skill-creator skill (ADR 0007), and their test prompts and results are kept beside them.
 
 ## Could invalidate this plan
 
