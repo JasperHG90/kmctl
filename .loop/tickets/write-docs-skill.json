@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "write-docs-skill",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
@@ -41,7 +41,7 @@
   "split": "j-20261015T080818+0000-64a1cc38",
   "split_plan_hash": "b8c15e49af3f00ec735f25d47eb6a801604c80160883e87a287bfb31b7ab1eb1",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "525fb5c20c28bfb627fc49cff026e14e7f9f152a",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -150,8 +150,14 @@
       "to": "verifying",
       "at": "2026-10-15T11:26:39+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-15T11:29:08+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.1.dev47+g2444f9291.d20261015",
-  "at": "2026-10-15T11:29:06+00:00"
+  "at": "2026-10-15T11:29:08+00:00"
 }
