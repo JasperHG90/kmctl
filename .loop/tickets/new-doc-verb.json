@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "new-doc-verb",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 2,
@@ -50,7 +50,7 @@
   "split": "j-20261015T080827+0000-10712cd2",
   "split_plan_hash": "0fa2dd1da5b5c9475f23d62e2254da2271232ab243b921432c67e28836047a83",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "eddec2e1769d4d54ae3a98cb34752f1df454cab5",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -167,8 +167,14 @@
       "to": "verifying",
       "at": "2026-10-15T11:08:52+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-15T11:12:03+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.1.dev33+ge3aeaa855.d20261015",
-  "at": "2026-10-15T11:12:01+00:00"
+  "at": "2026-10-15T11:12:03+00:00"
 }
