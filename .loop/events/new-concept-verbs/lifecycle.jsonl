@@ -7,3 +7,4 @@
 {"at": "2026-10-15T08:20:09+00:00", "dispatched_at": "2026-10-15T08:18:10+00:00", "kind": "round-close", "n": 3, "outcome": "pass", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-10-15T08:19:37+00:00"}}
 {"at": "2026-10-15T08:20:09+00:00", "by": "advance", "from": "planning", "kind": "transition", "schema_version": "1.0", "to": "ready"}
 {"at": "2026-10-15T10:45:38+00:00", "grant": "g1", "hash": "ef5709c130925754000b2a671f80d47aef95cb721d100947c909b9dacbfdcb99", "kind": "signoff", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5", "step": "eval-sign"}
+{"at": "2026-10-15T10:45:42+00:00", "by": "advance", "from": "ready", "kind": "transition", "schema_version": "1.0", "to": "building"}
