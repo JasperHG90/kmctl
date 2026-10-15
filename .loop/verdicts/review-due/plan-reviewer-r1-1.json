@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The plan runs the git check only on sources entries that `git ls-files` lists as written, so it treats every entry as a repo-root path. OKF section 6.2 defines path-valued resources as a bundle-relative path starting with `/` (from the bundle root) or a path relative to the concept. Under the plan's rule, a spec-form entry such as `/decisions/0006-x.md` or `../manifesto.md` never matches `git ls-files`. It gets reported as 'source not found', and changes to that file are never noticed. Sources that point at another concept, which section 5.1 names as the lineage case, fail the same way. The spike does not settle this: its sample had 0 spec-form paths and 0 concept sources, and its README says so. Its own finding is that the real bundle uses non-spec repo-root paths. That breaks I4 ('reads OKF as it is'). The fix is to resolve the entry as section 6.2 says (bundle root for `/`, the concept's directory otherwise), then check the resolved repository path against `git ls-files`. Whether to also accept bare repo-root paths, which real bundles use, is a contract choice the plan must state.",
+      "anchor": ".loop/plans/review-due.md:29",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "The plan gives 'source not found' as a reason a concept is due. Section 5.1 lets a resource be a scope descriptor (free text such as 'all queries in BigQuery project X'), and that is valid OKF, not a broken source. Treated as a due reason, such a concept stays due for good: a new verified entry cannot clear it, so review due and the CI action report it on every run. The plan has to say whether an unresolvable entry is a due reason or a separate notice that verifying can clear or that does not count as due. Otherwise it changes what 'due' means beyond ADR 0006's three reasons.",
+      "anchor": ".loop/plans/review-due.md:29",
+      "category": "design",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "58d462deb4364edcf095ca6726afe1281ecbc60e7a27d4133c47cf0ecc40ddc6"
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T08:19:46+00:00"
+}
