@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "knowledge-check",
-  "stage": "planning",
+  "stage": "ready",
   "attempts": 0,
   "plan_rounds": 2,
   "review_rounds": 0,
@@ -60,6 +60,12 @@
       "to": "planning",
       "at": "2026-10-15T05:10:21+00:00",
       "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-10-15T08:20:29+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
