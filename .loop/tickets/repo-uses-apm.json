@@ -3,7 +3,7 @@
   "slug": "repo-uses-apm",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 2,
+  "plan_rounds": 3,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -95,9 +95,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 2,
-    "binds": "db8286e0ba261002f0c5660f4b72673bd4cdf67e316a93ae0c68a0a19e33cc39",
-    "started_at": "2026-10-15T19:07:03+00:00",
+    "n": 3,
+    "binds": "2e5a528ae0ff0bb4ce82766e0227fbb02fb97a82299263629827b9281b39c684",
+    "started_at": "2026-10-15T19:08:34+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -110,10 +110,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "db8286e0ba261002f0c5660f4b72673bd4cdf67e316a93ae0c68a0a19e33cc39",
+  "plan_hash": "2e5a528ae0ff0bb4ce82766e0227fbb02fb97a82299263629827b9281b39c684",
   "intent": {
     "epic": "repo",
     "depends_on": [],
