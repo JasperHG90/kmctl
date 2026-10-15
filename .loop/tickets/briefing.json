@@ -20,10 +20,57 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "46fbe74e43c95f67c7ff01be2c7e6c3e3812b41d02befaa270b99ca1a219c3ec",
+    "at": "2026-10-15T10:50:14+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "kmctl briefing prints routing, state and the knowledge rules in a repository with docs/ and .okf/.",
+      "fails_when": "any of the three parts is missing from the output",
+      "command": "uv run pytest tests/test_briefing.py::test_briefing_has_three_parts -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "State shows counts only: concepts due, live handoffs, and the newest handoff's title.",
+      "fails_when": "the state part lists concept names, or a count disagrees with review due or kmctl handoffs on the fixture",
+      "command": "uv run pytest tests/test_briefing.py::test_briefing_state_counts -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "The briefing stays within 600 words.",
+      "fails_when": "len(output.split()) exceeds 600 on the fixture with due concepts and handoffs",
+      "command": "uv run pytest tests/test_briefing.py::test_briefing_word_budget -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "In a repository with no .okf/ the briefing says how to start one and exits 0.",
+      "fails_when": "it exits nonzero, or does not name kmctl init",
+      "command": "uv run pytest tests/test_briefing.py::test_briefing_empty_repository -q",
+      "judgment": false
+    },
+    {
+      "id": "r5",
+      "behavior": "The briefing reads and never writes.",
+      "fails_when": "any file in the fixture repository changes after a run",
+      "command": "uv run pytest tests/test_briefing.py::test_briefing_writes_nothing -q",
+      "judgment": false
+    },
+    {
+      "id": "r6",
+      "behavior": "--json prints the same content as one object.",
+      "fails_when": "stdout is not one JSON object with routing, state and rules",
+      "command": "uv run pytest tests/test_briefing.py::test_briefing_json -q",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -71,5 +118,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T08:24:12+00:00"
+  "at": "2026-10-15T10:50:14+00:00"
 }
