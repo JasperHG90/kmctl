@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "kmctl accepts an empty or blank --key, stores handoff_key \"\" and then matches every other empty-keyed handoff, so a second session with no id overwrites the first session's handoff. The /handoff SKILL.md code block passes --key \"$CLAUDE_CODE_SESSION_ID\" unconditionally, so running it as written with the variable unset leads to exactly this.",
+      "anchor": "src/kmctl/concepts.py:205",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "The repeat-update dedup compares against the last line of log.md regardless of date, so an update on a later day whose previous log line is the same update logs nothing, with no heading for that day. It also departs from row r1 and the plan, which say every keyed update appends one log line.",
+      "anchor": "src/kmctl/concepts.py:224",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "The continue skill-creator runs never exercised the AskUserQuestion multi-select or step 3 (load and summarize the chosen handoffs). The one pick run used the fallback and listed four handoffs with no more option, which fails evals.json expectation 2 for that prompt, and results.md does not report that expectation. Row r6 asks that the results show no failed prompt.",
+      "anchor": "plugin/skills/continue/evals/results.md:1",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "open",
+      "claim": "The update path skips the title check that create applies, so kmctl new handoff '!!!' --key K rewrites an existing handoff with title \"!!!\" and heading \"# !!!\", while the same title is refused on create.",
+      "anchor": "src/kmctl/concepts.py:210",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "52958cc1e10bdba5a8ff2534c2ad37f2baca18bcab7d37aec2a1baa4f31a95fd",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev47+g2444f9291.d20261015",
+  "at": "2026-10-15T11:39:34+00:00"
+}
