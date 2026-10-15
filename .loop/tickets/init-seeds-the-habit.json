@@ -157,8 +157,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "pass"
   },
   "plan_hash": "8f5000db8e2f4df4cc206e411fd57899035b4299e45ff056019ee4c850756461",
   "intent": {
@@ -217,5 +217,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T16:35:48+00:00"
+  "at": "2026-10-15T16:37:43+00:00"
 }
