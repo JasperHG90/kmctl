@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "an entry whose source is missing, not a dict, or lacks its repo/url/path field is treated as live, but claude 2.1.300 ignores it; kmctl then refuses an install claude would allow, or runs `marketplace add None`",
+      "anchor": "src/kmctl/plugin.py:146",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "the dot-file case in test_okf_source_managed_wins cannot fail, because .99-hidden.json sorts before 10-a.json and would lose even if kmctl read it",
+      "anchor": "tests/test_plugin_install.py:276",
+      "category": "test-mismatch",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "_isolated_home reads os through __import__(\"os\") instead of a normal import",
+      "anchor": "tests/test_plugin_install.py:322",
+      "category": "nit",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "a37e3f6c63663dc7bf9c30dd48c3ee6ea5190d5fa01847f832fc09f07268f0fe",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "at": "2026-10-15T14:50:39+00:00"
+}
