@@ -1,0 +1,19 @@
+warning: `VIRTUAL_ENV=/home/vscode/workspace/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+B008 Do not perform function call `typer.Option` in argument defaults; instead, perform the call within the function, or read the default from a module-level singleton variable
+  --> src/kmctl/__init__.py:48:18
+   |
+46 |   )
+47 |   def init(
+48 |       path: Path = typer.Option(
+   |  __________________^
+49 | |         Path("."),
+50 | |         "--path",
+51 | |         metavar="../other-repo",
+52 | |         help="The repository to set up. Default: the current directory.",
+53 | |     ),
+   | |_____^
+54 |       as_json: bool = typer.Option(
+55 |           False,
+   |
+
+Found 1 error.
