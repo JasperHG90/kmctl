@@ -1,0 +1,33 @@
+---
+type: verdict
+title: 'Verdict: init-claude-md-always reviewer round 2'
+description: 'reviewer verdict for round 2 of init-claude-md-always: pass.'
+tags:
+- verdict
+- review
+generated:
+  by: claude-opus/5.5
+  at: '2026-10-15T17:24:06+00:00'
+slug: init-claude-md-always
+pass: reviewer
+round: 2
+body_schema: verdict/1
+---
+
+## Summary
+
+f1 is fixed. `_write_block` now treats an AGENTS.md that exists but is not a regular file, and is not an unsafe link, as absent and warns about it. CLAUDE.md gets the block, and a CLAUDE.md that imports `@AGENTS.md` beside such a folder gets the block too instead of being skipped. The other cases behave as they did in round 1.
+
+## Checked
+
+- `loopctl gate stamp` from the worktree: lint, format, tests and eval rows r1, r2, r4, r3 all pass; "stamp green: e9910e762177c08a9678c64d990206929d74d50c50032fdcc6d6bd16ae7b9c64".
+- Read the scaffold.py diff (the `odd_agents` branch and the updated docstring) and tests/test_init.py::test_init_agents_only_folder_is_not_a_file. That test checks that a lone AGENTS.md folder gives a CLAUDE.md with one block and the warning, and that an importing CLAUDE.md beside the folder then gets the block, so it would fail on the round 1 code.
+- Ran `kmctl init --path` in scratch repos. AGENTS.md folder alone: CLAUDE.md created with one block, warning. Folder beside an importing CLAUDE.md: block added, warning; a second run changes nothing (`diff -r` against a snapshot). AGENTS.md as a link to a folder inside the repo: treated the same way. Round 1 cases, run again: AGENTS.md only (CLAUDE.md is `@AGENTS.md`, one block, second run changes nothing), CLAUDE.md -> AGENTS.md (link kept, one block), dangling CLAUDE.md alone and beside AGENTS.md, CLAUDE.md pointing outside, AGENTS.md pointing outside with no CLAUDE.md (no CLAUDE.md written, warning), an importing CLAUDE.md beside a real AGENTS.md (kept, AGENTS.md gets the block), and an empty repo (CLAUDE.md with the block). All match round 1.
+
+## Findings
+
+- f1: resolved in src/kmctl/scaffold.py `_write_block` (the `odd_agents` check), and covered by test_init_agents_only_folder_is_not_a_file.
+
+## Notes
+
+One contrived case: CLAUDE.md is a symlink to an AGENTS.md that is a folder. Init warns that "the kmctl block goes in CLAUDE.md instead", but CLAUDE.md resolves to the folder, so nothing is written. The warning is slightly wrong, but the user still learns that AGENTS.md is not a file, so I do not raise it as a finding.
