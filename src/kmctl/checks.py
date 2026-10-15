@@ -1,4 +1,4 @@
-"""Deterministic knowledge checks: indexes agree with their folders, prototypes have a README.md.
+"""Deterministic knowledge checks: indexes, prototype READMEs, and links that must resolve.
 
 The index format, which every kmctl verb that writes an index follows:
 
@@ -12,6 +12,8 @@ The index format, which every kmctl verb that writes an index follows:
 - Hidden files and folders (a name starting with ".") are not pages.
 - Every folder directly under .okf/prototypes/ is a prototype and needs a
   README.md (check name ``prototype``).
+- Every link in docs/, and every .okf/ link that leaves the bundle, must
+  resolve (check name ``link``); links inside .okf/ are the okf validator's.
 - No concept counts are written or checked.
 """
 
@@ -23,6 +25,8 @@ from typing import Literal
 RESERVED = {"index.md", "log.md"}
 _ENTRY = re.compile(r"^\s*[-*+]\s+.*?\[[^\]]*\]\(([^)\s]+)")
 _FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
+_LINK = re.compile(r"!?\[[^\]]*\]\(<?([^)\s>]+)>?(?:\s+\"[^\"]*\")?\)")
+_CODE_SPAN = re.compile(r"`[^`]*`")
 
 
 @dataclass(frozen=True)
@@ -69,6 +73,32 @@ def _read(path: Path) -> str:
         raise _Unreadable(str(path)) from error
 
 
+def _prose_lines(text: str) -> list[tuple[int, str]]:
+    """The (line number, text) of each line outside a code fence.
+
+    A fence opens on 0-3 spaces then 3+ backticks or tildes, and closes only on
+    a line of the same character at least as long, with nothing after it.
+    """
+    lines = []
+    fence = ""  # the opening fence while inside a code block, else ""
+    for number, line in enumerate(text.splitlines(), start=1):
+        opener = _FENCE.match(line)
+        if opener:
+            mark = opener.group(1)
+            if not fence:
+                fence = mark
+            elif (
+                mark[0] == fence[0]
+                and len(mark) >= len(fence)
+                and not line.strip()[len(mark) :]
+            ):
+                fence = ""
+            continue
+        if not fence:
+            lines.append((number, line))
+    return lines
+
+
 def _entries(index: Path) -> list[tuple[int, str]]:
     """The (line, target) of each entry in ``index``, by the format in the module docstring.
 
@@ -78,22 +108,9 @@ def _entries(index: Path) -> list[tuple[int, str]]:
         When ``index`` is not UTF-8 text.
     """
     found = []
-    fence = ""  # the opening fence while inside a code block, else ""
     folder = index.parent.resolve()
-    for number, text in enumerate(_read(index).splitlines(), start=1):
-        opener = _FENCE.match(text)
-        if opener:
-            mark = opener.group(1)
-            if not fence:
-                fence = mark
-            elif (
-                mark[0] == fence[0]
-                and len(mark) >= len(fence)
-                and not text.strip()[len(mark) :]
-            ):
-                fence = ""
-            continue
-        match = None if fence else _ENTRY.match(text)
+    for number, text in _prose_lines(_read(index)):
+        match = _ENTRY.match(text)
         if not match:
             continue
         target = match.group(1).split("#", 1)[0]
@@ -240,6 +257,67 @@ def check_prototypes(root: Path) -> list[Finding]:
     ]
 
 
+def _links(page: Path, skip_entries: bool = False) -> list[tuple[int, str]]:
+    """The (line, target) of each markdown link outside code, with URLs and bare anchors left out.
+
+    With ``skip_entries``, the one link per index entry that the index check
+    already reports (see ``_entries``) is left out; every other link is kept.
+    """
+    found = []
+    entries = (
+        {number: target for number, target in _entries(page)} if skip_entries else {}
+    )
+    for number, text in _prose_lines(_read(page)):
+        skip = entries.get(number)
+        for raw in _LINK.findall(_CODE_SPAN.sub("", text)):
+            target = raw.split("#", 1)[0]
+            if skip is not None and target == skip:
+                skip = None  # only the entry's own link belongs to the index check
+                continue
+            if target and "://" not in target and not target.startswith("mailto:"):
+                found.append((number, target))
+    return found
+
+
+def check_links(root: Path) -> list[Finding]:
+    """Check the links the okf validator does not: every link in docs/, and .okf/ links that leave it.
+
+    In docs/ a relative link resolves from the page's folder and a ``/`` link
+    from the repository root, as GitHub renders them. In .okf/ a ``/`` link
+    resolves from the bundle root (OKF section 6.1) and stays in it, so only
+    relative links that leave the bundle are checked here.
+    """
+    findings = []
+    for folder in (root / "docs", root / ".okf"):
+        if not folder.is_dir():
+            continue
+        bundle = folder.name == ".okf"
+        for page in sorted(p for p in folder.rglob("*.md") if _visible(folder, p)):
+            try:
+                links = _links(page, skip_entries=page == folder / "README.md")
+            except _Unreadable:
+                continue  # the index check reports unreadable files
+            for line, target in links:
+                if target.startswith("/"):
+                    if bundle:
+                        continue
+                    resolved = (root / target.lstrip("/")).resolve()
+                else:
+                    resolved = (page.parent / target).resolve()
+                    if bundle and resolved.is_relative_to(folder.resolve()):
+                        continue
+                if not resolved.exists():
+                    findings.append(
+                        Finding(
+                            "link",
+                            _rel(root, page),
+                            line,
+                            f"link to {target} does not exist",
+                        )
+                    )
+    return findings
+
+
 def run_checks(root: Path) -> list[Finding]:
     """Run every knowledge check on the repository at ``root``.
 
@@ -253,4 +331,6 @@ def run_checks(root: Path) -> list[Finding]:
     list[Finding]
         Every finding, errors and skipped parts alike, in check order.
     """
-    return check_docs(root) + check_okf(root) + check_prototypes(root)
+    return (
+        check_docs(root) + check_okf(root) + check_prototypes(root) + check_links(root)
+    )

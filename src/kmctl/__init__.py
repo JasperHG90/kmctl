@@ -115,7 +115,7 @@ def check(
         ),
     ] = False,
 ) -> None:
-    """Check that docs/ and .okf/ indexes agree with their folders and prototypes have a README.md."""
+    """Check indexes agree with their folders, prototypes have a README.md, and links resolve."""
     findings = run_checks(path)
     errors = [f for f in findings if f.level == "error"]
     if as_json:
