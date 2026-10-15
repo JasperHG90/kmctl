@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "slug": "prototype-check",
-  "stage": "ready",
-  "attempts": 0,
+  "stage": "building",
+  "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
@@ -17,8 +17,8 @@
   "closed_outside": false,
   "dropped": false,
   "archived": false,
-  "worktree": null,
-  "branch": null,
+  "worktree": "/home/vscode/kmctl.worktrees/prototype-check",
+  "branch": "loop/prototype-check",
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
@@ -94,8 +94,14 @@
       "to": "ready",
       "at": "2026-10-15T08:19:31+00:00",
       "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-10-15T10:53:56+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T10:53:55+00:00"
+  "at": "2026-10-15T10:53:56+00:00"
 }
