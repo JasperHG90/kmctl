@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "has_agents uses os.path.lexists, so an AGENTS.md that exists but is not a regular file (a directory) makes init write a CLAUDE.md holding only @AGENTS.md, with no block anywhere and no warning; before this change that repository got a CLAUDE.md with the block. A CLAUDE.md that imports @AGENTS.md beside such an AGENTS.md is likewise skipped in silence. Gate the import case on AGENTS.md being a file (or warn when it is not).",
+      "anchor": "src/kmctl/scaffold.py:219",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "c2cb028f6de178e7916a451c63e1e730c913f93a9de53c789e769f7a8ad006aa",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "at": "2026-10-15T17:19:13+00:00"
+}
