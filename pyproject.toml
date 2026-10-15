@@ -21,10 +21,12 @@ build-backend = "uv_build"
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",
+    "pyyaml>=6.0.3",
     "ruff>=0.17.0",
 ]
 
 [tool.ruff]
 # Spike evidence (.loop/), aim-managed rules (.claude/) and the knowledge
-# bundle (.okf/) are not project code: their files are kept as written.
-extend-exclude = [".loop", ".claude", ".okf"]
+# bundle (.okf/) are not project code, and tests/vendor/ is a pinned copy:
+# their files are kept as written.
+extend-exclude = [".loop", ".claude", ".okf", "tests/vendor"]
