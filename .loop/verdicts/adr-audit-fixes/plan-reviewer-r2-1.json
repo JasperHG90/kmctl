@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "The audit skill was not on main and its ticket was not a dependency; the briefing test had no fixed list. The revised plan lists audit-agent-and-skills in depends_on and reads skill names from the packaged plugin's skills/ folder at run time, so the test checks every folder there.",
+      "anchor": ".loop/plans/adr-audit-fixes.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "f6e50c6f63ba30734c5b2d448650e60cd0b6af412e09eac6052d24dc7a89d259"
+  },
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "at": "2026-10-15T12:50:26+00:00"
+}
