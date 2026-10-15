@@ -5,11 +5,11 @@ description: does APM 0.33 install a jasperhg90/skills rule to .claude/rules/ wi
 tags:
 - spike
 generated:
-  by: process:loopctl/2.0.1.dev86+g9641fa018.d20261015
-  at: '2026-10-15T17:47:51+00:00'
+  by: process:loopctl/2.1.1.dev61+g8318eb7a1.d20261015
+  at: '2026-10-15T17:49:01+00:00'
 slug: repo-uses-apm
 n: 1
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike repo-uses-apm/1
@@ -24,7 +24,7 @@ The command exited 0:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note repo-uses-apm 1`.
+Not valid: script bug. `diff | head && echo byte-identical` took its exit code from `head`, so the run printed "byte-identical" under a real diff and exited 0 by mistake. Its stdout matches spike:repo-uses-apm/2, which has the fixed check and the outcome. Do not cite this one.
 
 ## Files
 
