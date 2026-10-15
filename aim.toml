@@ -105,3 +105,10 @@ repo_alias = "4290899e4697f267"
 source_path = "skills/tools/rule-creator"
 target_dir = ".claude/skills/rule-creator"
 risk_acknowledged = false
+
+[[skill]]
+qualified_name = "4290899e4697f267/generate-art"
+repo_alias = "4290899e4697f267"
+source_path = "skills/tools/generate-art"
+target_dir = ".claude/skills/generate-art"
+risk_acknowledged = false
