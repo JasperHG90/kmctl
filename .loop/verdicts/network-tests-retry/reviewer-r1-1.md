@@ -1,0 +1,39 @@
+---
+type: verdict
+title: 'Verdict: network-tests-retry reviewer round 1'
+description: 'reviewer verdict for round 1 of network-tests-retry: fix.'
+tags:
+- verdict
+- review
+generated:
+  by: claude-opus/5.5
+  at: '2026-10-15T19:29:23+00:00'
+slug: network-tests-retry
+pass: reviewer
+round: 1
+body_schema: verdict/1
+---
+
+## Summary
+
+The change does what the plan asks. The network tests carry an `integration` marker, the default run leaves them out, the marker is registered with `--strict-markers` on, a new `integration` gate runs them, every install or update call asserts its exit code with its output, and the retry in `tests/conftest.py` reruns only on git's network strings, at most three runs. The one gap is a doc line: AGENTS.md's claim that `just test` runs the gates by hand is no longer true. A plain fix will do (add a `just integration` recipe running `uv run pytest -m integration` and name it in AGENTS.md), so the label is fix.
+
+## Checked
+
+- `loopctl gate stamp` from the worktree: green, tree a34610d85cac858ec7901e99ec880f391be6459ca0e3c271f220a4f7e6a0edb3; lint, format and tests gates passed, rows r1, r2, r3, r5 and r4 passed. The integration gate did not run in the stamp because loopctl reads gates from the primary checkout's config. Row r4 (`-m "not integration or integration"`) runs both tiers, so the stamp still covers the integration tests.
+- By hand: `uv run pytest -q -m integration` gave 10 passed, 323 deselected; `uv run pytest -q` gave 323 passed, 10 deselected.
+- Read the full diff and the changed files: `pyproject.toml`, `.loop/config.toml`, `tests/conftest.py`, `tests/test_plugin_install.py`, `tests/test_network_retry.py`.
+- Retry hook: `runtestprotocol(..., log=False)` resets `item._request` and funcargs after each run, so function fixtures (`tmp_path`, `isolated`) are rebuilt on a rerun. Only the last run's reports are logged, with one logstart/logfinish. Unmarked tests return None and fall through to pytest's own protocol.
+- Mutation checks on a copy of the tree in the scratch folder: making the hook retry on any failure fails `test_retry_not_for_another_failure`; setting RUNS to 4 fails `test_retry_three_network_failures_still_fail`. The r2 tests catch a broken retry.
+- r1: checks addopts, the registered marker and its description, the gate entry in config, collection with the default addopts, and that an unregistered marker fails collection with the real pyproject. r3: an AST walk finds the 10 tests that call install or update, and all are collected under `-m integration`. r5: every install or update call is assigned and has an `assert NAME.exit_code ... , NAME.output`; no call in the file is used inline, so the AST check covers them all.
+- No other test file reaches GitHub (`tests/test_plugin.py` only runs `claude plugin validate` locally), and no CI workflow runs pytest, so the gate is where the tier runs, as every-tier-runs-somewhere asks.
+
+## Findings
+
+- f1 (docs, not blocking): AGENTS.md:93 says `just lint` and `just test` run the gates by hand. With the integration gate added, `just test` runs only the default tier, so following AGENTS.md skips a gate. Add an `integration` recipe to the justfile and name it in that line, or reword the line. This change made the claim false, so it belongs here.
+
+## Notes
+
+- Builder note 2 (SSH fallback in a full GitHub outage): the ticket should land without it. A retry 5 seconds apart cannot save a full outage anyway, and the measured failures were short DNS drops, which the spike showed carry git's line. Keeping more of claude's stderr in `_require` is a user-facing fix in its own right and fits a separate ticket.
+- Builder note 3: `-k retry` selects all 15 tests in `test_network_retry.py` because the module name contains "retry". The row still runs its four retry tests and passes or fails on them, so this is not a defect in the contract.
+- The asserts in `test_install_reports_refused_entry` expect a nonzero exit, so a network error there passes the exit check and fails on the next assert. Its message may not carry the network string, so that test may not retry. kmctl refuses that entry before it clones, so this should not happen in practice.
