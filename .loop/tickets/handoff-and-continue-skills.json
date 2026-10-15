@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "handoff-and-continue-skills",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 2,
   "plan_rounds": 2,
   "review_rounds": 4,
@@ -29,7 +29,7 @@
   "split": "j-20261015T082128+0000-825f846a",
   "split_plan_hash": "8cff989db4ecfb2c253edb2609b664f89bdca79f4ff5a1ff9ccfecb83fc91cdd",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "db250bef49764a29a4b95c9a2b2344d7c99e1acc",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -220,8 +220,14 @@
       "to": "verifying",
       "at": "2026-10-15T11:52:26+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-15T11:54:01+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.1.dev77+gbd4712cf8.d20261015",
-  "at": "2026-10-15T11:54:00+00:00"
+  "at": "2026-10-15T11:54:01+00:00"
 }
