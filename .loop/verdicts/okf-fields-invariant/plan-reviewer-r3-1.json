@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "I4's read side was not pinned. Resolved in round 2: a read test checks against the same allowed-key list.",
+      "anchor": ".okf/manifesto.md:76",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "The ast read scan had no rule for telling front matter apart from other dicts. Resolved: every read goes through okf.field(meta, path), which raises on keys not in the list. The scan finds field() calls by name and checks their keys, and it bans .get, subscript and `in` on front_matter(...) results. sources[].resource is now in the list. plugin.py and checks.py dicts are out of the scan because they never come from front_matter.",
+      "anchor": "src/kmctl/review_due.py:129",
+      "category": "design",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "ab3a5177e653cb7a0a004be6dba76ef0432772f1eded802517d438a8e48ee6c6"
+  },
+  "by": "process:loopctl/2.0.1.dev77+gbd4712cf8.d20261015",
+  "at": "2026-10-15T12:30:55+00:00"
+}
