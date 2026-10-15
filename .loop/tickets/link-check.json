@@ -1,14 +1,50 @@
 {
   "schema_version": "1.0",
   "slug": "link-check",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "dc9d53b7415c86f6dca517a847224805b176f0fa6aaa2a33188b0059e998e6a3",
+    "tree": "d8fd6363a9f5de0851ffec98b3b48cea2e2f564b",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "blocking",
+        "judgement": null,
+        "paths": [
+          "src/kmctl/checks.py",
+          "tests/test_check.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f2",
+        "outcome": "sent-back",
+        "by": "judgement",
+        "judgement": "j-20261015T110426+0000-adbe4624",
+        "paths": [
+          "src/kmctl/__init__.py",
+          "src/kmctl/checks.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f3",
+        "outcome": "cleared-unreviewed",
+        "by": "judgement",
+        "judgement": "j-20261015T110427+0000-607ea65b",
+        "paths": [
+          "tests/test_check.py"
+        ]
+      }
+    ],
+    "at": "2026-10-15T11:04:27+00:00"
+  },
   "ask": null,
   "split": "j-20261015T081330+0000-01a2314e",
   "split_plan_hash": "7f03dc8f5d28e418ea25b3383e424ae4c30e2f3142825ed9a5d974072a0a0fc0",
@@ -130,8 +166,14 @@
       "to": "fixing",
       "at": "2026-10-15T11:03:01+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-15T11:04:27+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T11:04:15+00:00"
+  "at": "2026-10-15T11:04:27+00:00"
 }
