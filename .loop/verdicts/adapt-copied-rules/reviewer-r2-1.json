@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "diagrams-stay-current.md required a depicts front matter field that no ADR names",
+      "anchor": ".claude/rules/diagrams-stay-current.md:13",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "measure-before-ticketing.md and docs-layout.md gave different homes for spikes",
+      "anchor": ".claude/rules/measure-before-ticketing.md:33",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "4779b49f61eadc61fbe2693e1bec7d717d314bfdd0e5fb766f38f4341daaf3bb",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T08:35:37+00:00"
+}
