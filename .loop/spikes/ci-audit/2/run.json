@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "ci-audit",
+  "n": 2,
+  "command": "python3 -I /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-ci-audit/spike.py",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-ci-audit/spike.py",
+      "copy": "files/spike.py"
+    }
+  ],
+  "where": "worktree",
+  "head": "64f2eb12e0e4e298db106a786b46b2e6b771c3d8",
+  "fingerprint": "1e42a7f6c3a2b25267f16d8e0775ee1376bd4e7b451bc8f38d2b555527781330",
+  "started_at": "2026-10-15T12:56:37+00:00",
+  "finished_at": "2026-10-15T12:58:18+00:00",
+  "duration_seconds": 100.753,
+  "timeout_seconds": 1500.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "moved_from": null
+}
