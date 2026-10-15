@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "knowledge-check",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 3,
@@ -39,7 +39,7 @@
   "split": "j-20261015T081750+0000-ba83af48",
   "split_plan_hash": "b79d7ea5fa648b5d08544f4111e292c275280631ebe2f1897bfb731bf3e11d56",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "ae25e5e59f0d64fc7eba6ac0b9546b04aaab1bdc",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -179,8 +179,14 @@
       "to": "verifying",
       "at": "2026-10-15T10:42:02+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-15T10:43:34+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T10:43:27+00:00"
+  "at": "2026-10-15T10:43:34+00:00"
 }
