@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "init-seeds-the-habit",
+  "n": 2,
+  "command": "python3 -I /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-seed-r7/driver.py",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-seed-r7/driver.py",
+      "copy": "files/driver.py"
+    }
+  ],
+  "where": "worktree",
+  "head": "b80e07eaf6f4e0276bcf8c746b94ba845264c347",
+  "fingerprint": "0bd88e8f25ff62064c8a0f25a201c5a0439a35f6a74152095b422c1793e9d468",
+  "started_at": "2026-10-15T16:20:59+00:00",
+  "finished_at": "2026-10-15T16:24:14+00:00",
+  "duration_seconds": 194.895,
+  "timeout_seconds": 7200.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "moved_from": null
+}
