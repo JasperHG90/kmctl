@@ -20,10 +20,57 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "de2b17761814c08f96d83b4982691e2a856dc71c8a0be03270149d105e8779b0",
+    "at": "2026-10-15T08:41:22+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "kmctl check passes on a repository whose docs/README.md and .okf/ indexes list every page, concept and section in the defined entry format.",
+      "fails_when": "kmctl check exits nonzero or reports a finding on the passing fixture",
+      "command": "uv run pytest tests/test_check.py::test_index_check_passes -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "A page or concept with no entry in its index fails, naming the file.",
+      "fails_when": "kmctl check exits 0, or the finding does not name the unlisted file under check name index",
+      "command": "uv run pytest tests/test_check.py::test_index_check_missing_entry -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "An index entry whose file does not exist fails, naming the index and line.",
+      "fails_when": "kmctl check exits 0, or the finding lacks the index file and line",
+      "command": "uv run pytest tests/test_check.py::test_index_check_entry_without_file -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "An .okf/ section not linked from the root index fails.",
+      "fails_when": "kmctl check exits 0 when a section folder has no root index link",
+      "command": "uv run pytest tests/test_check.py::test_index_check_unlinked_section -q",
+      "judgment": false
+    },
+    {
+      "id": "r5",
+      "behavior": "A repository with no docs/ folder passes and reports docs as skipped.",
+      "fails_when": "kmctl check exits nonzero, or does not report docs as skipped",
+      "command": "uv run pytest tests/test_check.py::test_index_check_skips_missing_docs -q",
+      "judgment": false
+    },
+    {
+      "id": "r6",
+      "behavior": "kmctl check --json prints a list of findings, each with check, file, line and message.",
+      "fails_when": "stdout is not a JSON list, or a finding lacks any of the four keys",
+      "command": "uv run pytest tests/test_check.py::test_check_json_findings -q",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -69,5 +116,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T08:20:29+00:00"
+  "at": "2026-10-15T08:41:22+00:00"
 }
