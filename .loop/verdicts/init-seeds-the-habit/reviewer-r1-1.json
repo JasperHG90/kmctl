@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The first decision's log line in every new repository says it was added `with kmctl new decision`, but kmctl init wrote it, so the log misstates the actor.",
+      "anchor": "src/kmctl/scaffold.py:254",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "When init writes the first decision into a kept bundle it appends to the kept .okf/log.md and .okf/decisions/index.md (and .okf/index.md when the section is new), yet prints `kept .okf/log.md (already there)` and lists neither file under `updated` in --json, so the output says a changed file was left alone.",
+      "anchor": "src/kmctl/scaffold.py:238",
+      "category": "design",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "The broken-marker warning always says the file has kmctl:start without a kmctl:end after it, which is wrong for a file with only an end marker or with two start markers.",
+      "anchor": "src/kmctl/scaffold.py:198",
+      "category": "nit",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "a452a395575921ee8ce2793af824b42c623a9315f685fe7cd8bc272365f6febb",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "at": "2026-10-15T16:29:22+00:00"
+}
