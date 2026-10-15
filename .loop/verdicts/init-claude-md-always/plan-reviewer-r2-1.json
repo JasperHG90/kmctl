@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "\"Missing\" now means no directory entry (lexists false), so a dangling CLAUDE.md link is never replaced and no CLAUDE.md is written beside it; r2 tests it.",
+      "anchor": ".loop/plans/init-claude-md-always.md",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r2"
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "Spike 1 shows Claude Code 2.1.300 loads AGENTS.md only with no CLAUDE.md, and a CLAUDE.md of @AGENTS.md loads it once; the plan writes that import file.",
+      "anchor": ".loop/spikes/init-claude-md-always/1/README.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    },
+    {
+      "id": "p3",
+      "disposition": "resolved",
+      "claim": "ADR 0011 Correction, help, docstrings, reference and test_init_claude_md_replaces_only_the_block are named; r4 covers the text changes.",
+      "anchor": ".loop/plans/init-claude-md-always.md",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r4"
+    },
+    {
+      "id": "p4",
+      "disposition": "open",
+      "claim": "A second init run breaks the new import file. After run 1, CLAUDE.md is a real file holding only @AGENTS.md. On run 2, _write_block sees two real files and appends the block to CLAUDE.md, so Claude Code loads the block twice (once by import, once from CLAUDE.md) and init is no longer a no-op on rerun. The plan must say a CLAUDE.md that imports @AGENTS.md gets no block (the same applies to an operator CLAUDE.md that already imports it), and r1 should run init twice and check nothing changes.",
+      "anchor": "/home/vscode/kmctl.worktrees/init-seeds-the-habit/src/kmctl/scaffold.py:187",
+      "category": "design",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    },
+    {
+      "id": "p5",
+      "disposition": "open",
+      "claim": "The contract does not say what happens when AGENTS.md is a dangling or outside link and there is no CLAUDE.md. CLAUDE.md is \"missing\" under the new rule, but the block cannot go into AGENTS.md. Writing CLAUDE.md with the block hides the linked AGENTS.md from Claude Code (the harm spike 1 found); writing @AGENTS.md loads no block; writing nothing leaves no block anywhere. Pick one and add it to r2.",
+      "anchor": ".loop/plans/init-claude-md-always.md",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r2"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "d721fa23cf0ff57cf8774bb92149de1ce2a7e40d4d7c7790054d5c69d40a696c"
+  },
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "at": "2026-10-15T16:37:53+00:00"
+}
