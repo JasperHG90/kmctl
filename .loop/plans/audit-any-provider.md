@@ -36,3 +36,4 @@ Done when the tests run the audit script with a stub `hermes` and show the provi
 
 - Settled: Hermes can offer only file read and search, through a kmctl Hermes plugin, and refuses every other tool (spike:audit-any-provider/1).
 - Settled: `hermes -z` runs unattended with a fresh `HOME` and a script-written config, and prints a parseable findings block (spike:audit-any-provider/2).
+- The built script, run with real Hermes 0.19.0 against a fake endpoint, offered only the three kmctl tools, refused every write, terminal and /proc read, and the finding reached the summary and the issue (spike:audit-any-provider/3).

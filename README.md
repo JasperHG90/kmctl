@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/logo.png" alt="kmctl logo: an owl with glasses holding a folder, next to the word kmctl" width="480">
+</p>
+
 # kmctl
 
 kmctl keeps a repository's knowledge current: `docs/` for people who use the
