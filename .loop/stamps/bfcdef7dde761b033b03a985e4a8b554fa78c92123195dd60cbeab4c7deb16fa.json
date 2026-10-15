@@ -1,0 +1,119 @@
+{
+  "schema_version": "1.0",
+  "fingerprint": "bfcdef7dde761b033b03a985e4a8b554fa78c92123195dd60cbeab4c7deb16fa",
+  "slug": "plugin-install-verb",
+  "results": [
+    {
+      "name": "lint",
+      "kind": "gate",
+      "command": "uv run ruff check",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "format",
+      "kind": "gate",
+      "command": "uv run ruff format --check",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "tests",
+      "kind": "gate",
+      "command": "uv run pytest",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r1",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_plugin_install.py::test_install_pulls_okf -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 1,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r2",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_plugin_install.py::test_install_twice_changes_nothing -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 1,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r3",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_plugin_install.py::test_staged_version_matches_cli -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 1,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r4",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_plugin_install.py::test_update_after_bump -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 1,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r5",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_plugin_install.py::test_status_reports_mismatch_and_missing_path -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 1,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r6",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_plugin_install.py::test_wheel_carries_plugin -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 1,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    }
+  ],
+  "green": true,
+  "at": "2026-10-15T11:28:54+00:00",
+  "commit": null,
+  "by": "process:loopctl/2.0.1.dev47+g2444f9291.d20261015"
+}
