@@ -1,14 +1,58 @@
 {
   "schema_version": "1.0",
   "slug": "okf-fields-invariant",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 3,
   "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "2ff70752b38472b45360e3dbc9ed1ce41ea40fb72def408c2b9b837636f2b374",
+    "tree": "c301b355e2675b9fc4ca041aaf2242636473767a",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "judgement",
+        "judgement": "j-20261015T124348+0000-b04a2ed1",
+        "paths": [
+          "src/kmctl/okf.py",
+          "tests/test_okf_fields.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f2",
+        "outcome": "sent-back",
+        "by": "judgement",
+        "judgement": "j-20261015T124349+0000-c2957372",
+        "paths": [
+          "tests/test_okf_fields.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f3",
+        "outcome": "sent-back",
+        "by": "judgement",
+        "judgement": "j-20261015T124350+0000-bc45a43d",
+        "paths": [
+          "src/kmctl/okf.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f4",
+        "outcome": "cleared-unreviewed",
+        "by": "fallback",
+        "judgement": "j-20261015T124350+0000-17228b98",
+        "paths": [
+          "tests/test_okf_fields.py"
+        ]
+      }
+    ],
+    "at": "2026-10-15T12:43:51+00:00"
+  },
   "ask": null,
   "split": "j-20261015T122519+0000-f1b0c4a1",
   "split_plan_hash": "ab3a5177e653cb7a0a004be6dba76ef0432772f1eded802517d438a8e48ee6c6",
@@ -127,8 +171,14 @@
       "to": "fixing",
       "at": "2026-10-15T12:40:04+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-15T12:43:51+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T12:42:42+00:00"
+  "at": "2026-10-15T12:43:51+00:00"
 }
