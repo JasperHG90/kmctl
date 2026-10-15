@@ -1,0 +1,112 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "entries inside code fences were counted",
+      "anchor": "src/kmctl/checks.py:79",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "links that leave the folder were counted as entries",
+      "anchor": "src/kmctl/checks.py:100",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "hidden pages were treated inconsistently",
+      "anchor": "src/kmctl/checks.py:111",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "resolved",
+      "claim": "a non-UTF-8 index raised a traceback",
+      "anchor": "src/kmctl/checks.py:56",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f5",
+      "disposition": "resolved",
+      "claim": "missing docstrings and types",
+      "anchor": "src/kmctl/checks.py:26",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f6",
+      "disposition": "resolved",
+      "claim": "verbs had no help tests",
+      "anchor": "tests/test_help.py:1",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f7",
+      "disposition": "resolved",
+      "claim": "nested fences flip the fence state",
+      "anchor": "src/kmctl/checks.py:79",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f8",
+      "disposition": "resolved",
+      "claim": "an unreadable root index also reports every section as unlinked",
+      "anchor": "src/kmctl/checks.py:195",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f9",
+      "disposition": "resolved",
+      "claim": "_read has no docstring",
+      "anchor": "src/kmctl/checks.py:56",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "870ac8f2637f3f48f417b93fe7b298a7d84382abfa80139155944b7d7921035b",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T10:42:56+00:00"
+}
