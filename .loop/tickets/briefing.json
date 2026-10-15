@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "briefing",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 3,
   "review_rounds": 1,
@@ -94,8 +94,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "e153950619f4dcd41ed3a1ee279edeb7ef401854e2b08606a05d0a7b84a93a13",
   "intent": {
@@ -129,8 +129,14 @@
       "to": "verifying",
       "at": "2026-10-15T10:52:24+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-15T10:54:32+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T10:52:25+00:00"
+  "at": "2026-10-15T10:54:32+00:00"
 }
