@@ -50,8 +50,9 @@ Start at `.okf/index.md`. The rules for writing knowledge are in `.claude/rules/
 Your duties while you work:
 
 1. Record each choice as a decision when you make it: `kmctl new decision 'Title' --description 'One sentence.'`, then write its Context, Decision (with the alternative you rejected) and Consequences.
-2. Keep `.okf/architecture/` matching the code: add or update a page when the design changes.
-3. Run `kmctl check` before you finish.
+2. When a concept describes code, name that code with `--source PATH` (repeat it for more) so `kmctl review due` lists the concept once the code changes; give anything time-bound a `--stale-after` (`30d`, `6m`, or a date like `2027-01-15`).
+3. Keep `.okf/architecture/` matching the code: add or update a page when the design changes.
+4. Run `kmctl check` before you finish.
 {BLOCK_END}
 """
 

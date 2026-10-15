@@ -106,3 +106,11 @@ Code 2.1.300 reads `AGENTS.md` only when there is no `CLAUDE.md`, or when
   inside the repository is written through once, as before. When `AGENTS.md`
   is such a link and there is no `CLAUDE.md`, init writes no `CLAUDE.md` and
   the warning says to fix the link.
+
+## Correction, 2026-10-15
+
+The kmctl block now holds four duties, not three: a new one tells agents to
+name the code a concept describes with `kmctl new --source` and to give
+anything time-bound a `--stale-after`, so `kmctl review due` can flag the
+concept when that code changes or the date passes (ticket new-concept-freshness).
+

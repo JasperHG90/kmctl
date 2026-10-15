@@ -287,7 +287,7 @@ _PATH_OPTION = typer.Option(
 
 
 def _register_concept_verb(kind: Kind, example: str) -> None:
-    """Add ``kmctl new KIND`` for one .okf/ section; handoffs also take ``--key``."""
+    """Add ``kmctl new KIND`` for one .okf/ section; handoffs also take ``--key``, other kinds ``--source``."""
 
     def command(
         title: Annotated[
@@ -324,9 +324,45 @@ def _register_concept_verb(kind: Kind, example: str) -> None:
                 ),
             ),
         ] = None,
+        stale_after: Annotated[
+            str | None,
+            typer.Option(
+                "--stale-after",
+                metavar="30d|2027-01-15",
+                help=(
+                    "When kmctl review due lists the concept as due: a duration from "
+                    "now (30d days, 12w weeks, 6m calendar months, 1y calendar years) "
+                    "or a date (2027-01-15 is its midnight UTC, or 2027-01-15T08:00:00Z). "
+                    "It must be in the future. Default: 14d for a handoff, none for "
+                    "the rest."
+                ),
+            ),
+        ] = None,
+        sources: Annotated[
+            list[str] | None,
+            typer.Option(
+                "--source",
+                metavar="src/app.py",
+                help=(
+                    "Not for handoffs: a file or folder the concept describes; repeat "
+                    "for more. It must exist: a path from the repository root, from "
+                    "the concept's folder, or from .okf/ with a leading /. kmctl review "
+                    "due lists the concept once a commit changes it after the last "
+                    "verify."
+                ),
+            ),
+        ] = None,
     ) -> None:
         try:
-            result = new_concept(path, kind, title, description, key=key)
+            result = new_concept(
+                path,
+                kind,
+                title,
+                description,
+                key=key,
+                stale_after=stale_after,
+                sources=sources,
+            )
         except ConceptError as error:
             typer.echo(f"kmctl new {kind}: refused: {error}", err=True)
             raise typer.Exit(1) from error
@@ -343,6 +379,8 @@ def _register_concept_verb(kind: Kind, example: str) -> None:
             "Examples:\n\n"
             f"  kmctl new {kind} '{example}' --description 'One sentence.'\n\n"
             f"  kmctl new {kind} '{example}' --description 'One sentence.' --json\n\n"
+            f"  kmctl new {kind} '{example}' --description 'One sentence.' "
+            f"{'--stale-after 3d' if kind == 'handoff' else '--source src/app.py --stale-after 6m'}\n\n"
             "Writes the structure; you write the prose. The first one creates its section."
         ),
     )(command)
