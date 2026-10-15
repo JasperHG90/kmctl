@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The index marker is appended to the line that holds the link, so on a wrapped index entry it lands in the middle of the description. This repository's own decisions index wraps every entry, so the first real use corrupts it.",
+      "anchor": "src/kmctl/supersede.py:110",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "test_supersede_links_both_ways checks only for \"## Correction, \" and never checks that a date follows, so an undated section passes r2's fails_when.",
+      "anchor": "tests/test_supersede.py:58",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "test_supersede_refusals checks only for a nonzero exit, so an uncaught exception (exit 1 with a traceback) passes as a refusal. It should assert the one-line \"refused:\" message on stderr, and it does not cover the same-id or missing-index-entry refusals.",
+      "anchor": "tests/test_supersede.py:94",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "open",
+      "claim": "_number uses str.isdigit, which accepts Unicode digits such as \"²\"; int() then raises ValueError and the CLI prints a traceback instead of a refusal.",
+      "anchor": "src/kmctl/supersede.py:27",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f5",
+      "disposition": "open",
+      "claim": "The cli-interface rule is not fully met. The decision group's help does not name its prerequisites (a bundle from kmctl init, records from kmctl new decision). The already-deprecated and self-supersede refusals name no next command. The missing-index-entry refusal points to kmctl check, which reports the problem but does not fix it.",
+      "anchor": "src/kmctl/__init__.py:295",
+      "category": "design",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "3e7413269acc681a5ad93709355a14c66d9e4ffe4a90e83726625233d2c7c6b5",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T10:55:14+00:00"
+}
