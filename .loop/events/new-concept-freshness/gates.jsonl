@@ -1,0 +1,1 @@
+{"at": "2026-10-15T17:41:46+00:00", "command": "uv run pytest -q", "exit": 1, "fingerprint": "718a43acf1f41caaf35adec662e1bd0b35e1ed7f6a7ff2a02fcb5d9e0a554e54", "kind": "red", "name": "r6", "note": null, "output": ".loop/events/new-concept-freshness/gate-output/34d2fb93fcb080694f5b9b1d720beca373f2f678f44e4153af5801a4874da143.txt", "schema_version": "1.0"}
