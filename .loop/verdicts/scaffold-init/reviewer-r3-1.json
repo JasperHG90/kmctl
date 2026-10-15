@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "init accepted a missing or file --path",
+      "anchor": "src/kmctl/__init__.py:54",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "a kept index or log was left without telling the user",
+      "anchor": "src/kmctl/scaffold.py:85",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "the index warning fired without reading the kept index",
+      "anchor": "src/kmctl/scaffold.py:85",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "resolved",
+      "claim": "the --json help and scaffold() docstring did not mention warnings",
+      "anchor": "src/kmctl/__init__.py:63",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f5",
+      "disposition": "open",
+      "claim": "a kept index.md or log.md that is not valid UTF-8 makes init crash with a UnicodeDecodeError traceback after it has written the other files",
+      "anchor": "src/kmctl/scaffold.py:87",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "752deb6ac4459c61035e2dfae2d5ba3c244930f1d94eb7099db279fdd859e24f",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T08:40:33+00:00"
+}
