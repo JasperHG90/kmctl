@@ -1,14 +1,59 @@
 {
   "schema_version": "1.0",
   "slug": "decision-supersede",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "9f365c768718d01f98073c308c372b3bc82c24fe947200994b1e42e89167c923",
+    "tree": "13eacd69b64c8f72fbe9281a7c4161fbf5ca18aa",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "blocking",
+        "judgement": null,
+        "paths": [
+          "src/kmctl/supersede.py",
+          "tests/test_supersede.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f2",
+        "outcome": "sent-back",
+        "by": "judgement",
+        "judgement": "j-20261015T105655+0000-27408f3a",
+        "paths": [
+          "tests/test_supersede.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f3",
+        "outcome": "cleared-unreviewed",
+        "by": "fallback",
+        "judgement": "j-20261015T105655+0000-2c985a75",
+        "paths": [
+          "tests/test_supersede.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f5",
+        "outcome": "sent-back",
+        "by": "judgement",
+        "judgement": "j-20261015T105656+0000-c4dd7ca2",
+        "paths": [
+          "src/kmctl/__init__.py",
+          "src/kmctl/supersede.py"
+        ]
+      }
+    ],
+    "at": "2026-10-15T10:56:56+00:00"
+  },
   "ask": null,
   "split": "j-20261015T081331+0000-1b38bb18",
   "split_plan_hash": "0d50c0d5b2da986c2bf68795c546035cfe92ed7bae9f7fc0291b7c70df3b37c1",
@@ -129,8 +174,14 @@
       "to": "fixing",
       "at": "2026-10-15T10:56:03+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-15T10:56:56+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T10:56:48+00:00"
+  "at": "2026-10-15T10:56:56+00:00"
 }
