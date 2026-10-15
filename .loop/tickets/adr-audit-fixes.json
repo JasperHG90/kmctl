@@ -21,7 +21,8 @@
   "branch": "loop/adr-audit-fixes",
   "stamps": [
     "d4b06008a596c358bb5ad7befceec11c350804c732d5363eed344901656de35b",
-    "a035668cbe3399b12cab4f83157116331542c12c411a1193b880764e8c55fdc2"
+    "a035668cbe3399b12cab4f83157116331542c12c411a1193b880764e8c55fdc2",
+    "03aa1cd83749d2384702c931a508e2ff594e1a9450381991a5140e7613a578d5"
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
@@ -132,5 +133,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T13:21:09+00:00"
+  "at": "2026-10-15T13:22:19+00:00"
 }
