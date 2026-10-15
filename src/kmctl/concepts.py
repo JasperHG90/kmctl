@@ -1,7 +1,7 @@
 """Create one OKF concept with its front matter, heading skeleton, index entry and log line.
 
 The agent writes the prose; this writes the structure, following the index
-format in ``kmctl.checks`` and only the fields the OKF spec defines (I4).
+format in ``kmctl.checks`` and only allowed OKF fields plus `handoff_key` (I4, ADR 0009).
 """
 
 import json
@@ -13,7 +13,7 @@ from importlib.metadata import version
 from pathlib import Path
 from typing import Literal
 
-from kmctl.okf import BadFrontMatter, front_matter
+from kmctl.okf import BadFrontMatter, field, front_matter
 
 Kind = Literal["decision", "practice", "proposal", "prototype", "handoff"]
 
@@ -127,7 +127,7 @@ def _by_key(section: Path, key: str) -> Path | None:
         if path.name == "index.md":
             continue
         try:
-            if front_matter(path).get("handoff_key") == key:
+            if field(front_matter(path), "handoff_key") == key:
                 return path
         except BadFrontMatter:
             continue

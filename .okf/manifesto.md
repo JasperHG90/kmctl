@@ -77,7 +77,8 @@ Each is `planned` until the test named for it passes, then `enforced`.
   defines (`stale_after`, `verified`, `sources`, `status`) plus the extension
   fields an ADR names. The only one is `handoff_key` (ADR 0009); a covers
   field is out of scope (ADR 0006).
-  Status: planned.
+  Status: enforced by `tests/test_okf_fields.py` (written keys, and reads through
+  `okf.field`).
 
 ## Values
 

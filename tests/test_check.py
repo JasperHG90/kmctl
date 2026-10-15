@@ -356,3 +356,11 @@ def test_reference_style_links(tmp_path: Path) -> None:
     assert ("index", "docs/how-to/other.md") in {
         (f["check"], f["file"]) for f in findings
     }
+
+
+def test_angle_bracket_with_inner_brackets_is_not_a_link(tmp_path: Path) -> None:
+    _good_repo(tmp_path)
+    page = "# Install\n\n[x](<a>b.md>)\n\n[r]: <a>b.md>\n"
+    _write(tmp_path, "docs/how-to/install.md", page)
+
+    assert [f for f in _findings(tmp_path) if f["check"] == "link"] == []

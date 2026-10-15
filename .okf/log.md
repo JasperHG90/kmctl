@@ -13,3 +13,4 @@
   handoff-and-continue-skills plan review found the key broke I4.
 - Marked invariants I1 and I3 in `manifesto` enforced, naming the tests
   that pin them: the plugin's hook tests and the briefing word budget.
+- Marked invariant I4 in `manifesto` enforced by tests/test_okf_fields.py.

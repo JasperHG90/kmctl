@@ -6,12 +6,13 @@ after its last verified date. Handoffs are short-lived notes, never verified,
 so they are left out of those checks and listed only once expired.
 """
 
+import dataclasses
 import subprocess
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
-from kmctl.okf import BadFrontMatter, as_datetime, front_matter, has_passed
+from kmctl.okf import BadFrontMatter, as_datetime, field, front_matter, has_passed
 
 RESERVED = {"index.md", "log.md"}
 
@@ -52,9 +53,9 @@ class ReviewDue:
     (a shallow clone, or no git repository), or is None when it was.
     """
 
-    due: list[Due] = field(default_factory=list)
-    notices: list[Notice] = field(default_factory=list)
-    expired_handoffs: list[ExpiredHandoff] = field(default_factory=list)
+    due: list[Due] = dataclasses.field(default_factory=list)
+    notices: list[Notice] = dataclasses.field(default_factory=list)
+    expired_handoffs: list[ExpiredHandoff] = dataclasses.field(default_factory=list)
     history_skipped: str | None = None
 
 
@@ -112,24 +113,14 @@ def _resolve(
     return None
 
 
-def _last_verified(meta: dict) -> datetime | None:
-    verified = meta.get("verified")
-    entries = verified if isinstance(verified, list) else [verified] if verified else []
-    parsed = [as_datetime(e.get("at")) for e in entries if isinstance(e, dict)]
-    dates = [d for d in parsed if d is not None]
-    return max(dates) if dates else None
+def _last_verified(dates: list[object]) -> datetime | None:
+    parsed = [as_datetime(d) for d in dates]
+    found = [d for d in parsed if d is not None]
+    return max(found) if found else None
 
 
-def _sources(meta: dict) -> list[str]:
-    sources = meta.get("sources")
-    if not isinstance(sources, list):
-        return []
-    out = []
-    for entry in sources:
-        resource = entry.get("resource") if isinstance(entry, dict) else entry
-        if isinstance(resource, str) and resource.strip():
-            out.append(resource.strip())
-    return out
+def _sources(resources: list[object]) -> list[str]:
+    return [r.strip() for r in resources if isinstance(r, str) and r.strip()]
 
 
 def review_due(root: Path, now: datetime | None = None) -> ReviewDue:
@@ -168,18 +159,18 @@ def review_due(root: Path, now: datetime | None = None) -> ReviewDue:
             )
             continue
         if cid.startswith("handoffs/"):
-            if has_passed(meta.get("stale_after"), now):
+            if has_passed(field(meta, "stale_after"), now):
                 result.expired_handoffs.append(
-                    ExpiredHandoff(cid, rel, str(meta.get("title", cid)))
+                    ExpiredHandoff(cid, rel, str(field(meta, "title", cid)))
                 )
             continue
         reasons = []
-        if has_passed(meta.get("stale_after"), now):
+        if has_passed(field(meta, "stale_after"), now):
             reasons.append("stale_after passed")
-        verified_at = _last_verified(meta)
+        verified_at = _last_verified(field(meta, "verified[].at"))
         if verified_at is None:
             reasons.append("unverified")
-        for resource in _sources(meta):
+        for resource in _sources(field(meta, "sources[].resource")):
             if "://" in resource:
                 continue
             if result.history_skipped is not None:
