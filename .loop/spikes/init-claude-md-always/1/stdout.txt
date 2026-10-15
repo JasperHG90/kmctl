@@ -1,0 +1,68 @@
+=== case 1 run 1 files=['AGENTS.md'] exit=0
+counts (PELICAN, OTTER) = (1, 0)
+answer: My project instructions contain only one codeword: |  | - **PELICAN-7731** appears once, in AGENTS.md (`Codeword: PELICAN-7731`). | - **OTTER-2208** doesn't appear anywhere in my instructions. |  | COUNTS PELICAN-7731=1 OTTER-2208=0
+debug lines naming repo memory files or the builtin agents-md plugin:
+    2026-10-15T16:35:13.818Z [DEBUG] plugin.register: cc-plugin-agents-md (builtin, cc-plugin-agents-md@builtin), judged by core alone: admitted
+    2026-10-15T16:35:14.330Z [DEBUG] hooks module cc-plugin-agents-md@builtin session.start settled in 4.1ms (native link, next() included)
+    2026-10-15T16:35:14.809Z [DEBUG] [cc-plugin-agents-md] $.ui.log (to debug): no CLAUDE.md found; AGENTS.md loaded: /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-agentsmd/agentsmd-nrmsli7r/case1-run1/AGENTS.md
+    2026-10-15T16:35:14.810Z [DEBUG] hooks module cc-plugin-agents-md@builtin prompt.context settled in 17.5ms (native link, next() included)
+
+=== case 1 run 2 files=['AGENTS.md'] exit=0
+counts (PELICAN, OTTER) = (1, 0)
+answer: My project instructions (the AGENTS.md content) contain one codeword: |  | - **PELICAN-7731**: appears 1 time, in the line "Codeword: PELICAN-7731". |  | OTTER-2208 does not appear anywhere in my instructions, so its count is 0. |  | COUNTS PELICAN-7731=1 OTTER-2208=0
+debug lines naming repo memory files or the builtin agents-md plugin:
+    2026-10-15T16:35:19.153Z [DEBUG] plugin.register: cc-plugin-agents-md (builtin, cc-plugin-agents-md@builtin), judged by core alone: admitted
+    2026-10-15T16:35:19.223Z [DEBUG] [cc-plugin-agents-md] $.ui.log (to debug): no CLAUDE.md found; AGENTS.md loaded: /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-agentsmd/agentsmd-nrmsli7r/case1-run2/AGENTS.md
+    2026-10-15T16:35:19.225Z [DEBUG] hooks module cc-plugin-agents-md@builtin prompt.context settled in 66.0ms (native link, next() included)
+    2026-10-15T16:35:19.641Z [DEBUG] hooks module cc-plugin-agents-md@builtin session.start settled in 2.9ms (native link, next() included)
+
+=== case 2 run 1 files=['CLAUDE.md'] exit=0
+counts (PELICAN, OTTER) = (0, 1)
+answer: Your project instructions (`CLAUDE.md` in the working directory) contain one codeword: |  | - **OTTER-2208** appears 1 time, in the line "Codeword: OTTER-2208". |  | **PELICAN-7731** doesn't appear anywhere in my instructions. Your global `~/.claude/CLAUDE.md` has no codewords either. |  | COUNTS PELICAN-7731=0 OTTER-2208=1
+debug lines naming repo memory files or the builtin agents-md plugin:
+    2026-10-15T16:35:24.200Z [DEBUG] plugin.register: cc-plugin-agents-md (builtin, cc-plugin-agents-md@builtin), judged by core alone: admitted
+    2026-10-15T16:35:24.208Z [DEBUG] hooks module cc-plugin-agents-md@builtin prompt.context settled in 2.1ms (native link, next() included)
+    2026-10-15T16:35:24.703Z [DEBUG] hooks module cc-plugin-agents-md@builtin session.start settled in 3.0ms (native link, next() included)
+
+=== case 2 run 2 files=['CLAUDE.md'] exit=0
+counts (PELICAN, OTTER) = (0, 1)
+answer: My project instructions (the CLAUDE.md for this project) contain one codeword: |  | - **OTTER-2208**: appears 1 time. |  | **PELICAN-7731** doesn't appear anywhere in my instructions. |  | COUNTS PELICAN-7731=0 OTTER-2208=1
+debug lines naming repo memory files or the builtin agents-md plugin:
+    2026-10-15T16:35:30.121Z [DEBUG] plugin.register: cc-plugin-agents-md (builtin, cc-plugin-agents-md@builtin), judged by core alone: admitted
+    2026-10-15T16:35:30.132Z [DEBUG] hooks module cc-plugin-agents-md@builtin prompt.context settled in 2.4ms (native link, next() included)
+    2026-10-15T16:35:30.539Z [DEBUG] hooks module cc-plugin-agents-md@builtin session.start settled in 2.5ms (native link, next() included)
+
+=== case 3 run 1 files=['AGENTS.md', 'CLAUDE.md'] exit=0
+counts (PELICAN, OTTER) = (0, 1)
+answer: My project instructions (the project's CLAUDE.md) contain one codeword: |  | - **OTTER-2208**: appears 1 time. |  | PELICAN-7731 doesn't appear anywhere in my instructions. It may be in the untracked `AGENTS.md`, but that file isn't part of what I was given and I didn't read it. |  | COUNTS PELICAN-7731=0 OTTER-2208=1
+debug lines naming repo memory files or the builtin agents-md plugin:
+    2026-10-15T16:35:34.911Z [DEBUG] plugin.register: cc-plugin-agents-md (builtin, cc-plugin-agents-md@builtin), judged by core alone: admitted
+    2026-10-15T16:35:34.920Z [DEBUG] hooks module cc-plugin-agents-md@builtin prompt.context settled in 1.7ms (native link, next() included)
+    2026-10-15T16:35:35.330Z [DEBUG] hooks module cc-plugin-agents-md@builtin session.start settled in 2.7ms (native link, next() included)
+
+=== case 3 run 2 files=['AGENTS.md', 'CLAUDE.md'] exit=0
+counts (PELICAN, OTTER) = (0, 1)
+answer: My project instructions (the project `CLAUDE.md`) contain one codeword: |  | - **OTTER-2208**: appears once. |  | **PELICAN-7731** isn't in any instructions I was given. It may be in the untracked `AGENTS.md`, but that file wasn't loaded into my context, and you asked me not to read any files. |  | COUNTS PELICAN-7731=0 OTTER-2208=1
+debug lines naming repo memory files or the builtin agents-md plugin:
+    2026-10-15T16:35:41.800Z [DEBUG] plugin.register: cc-plugin-agents-md (builtin, cc-plugin-agents-md@builtin), judged by core alone: admitted
+    2026-10-15T16:35:41.807Z [DEBUG] hooks module cc-plugin-agents-md@builtin prompt.context settled in 1.8ms (native link, next() included)
+    2026-10-15T16:35:42.234Z [DEBUG] hooks module cc-plugin-agents-md@builtin session.start settled in 2.5ms (native link, next() included)
+
+=== case 4 run 1 files=['AGENTS.md', 'CLAUDE.md'] exit=0
+counts (PELICAN, OTTER) = (1, 0)
+answer: Based only on the project instructions I was given: |  | - **PELICAN-7731** appears 1 time, in `AGENTS.md` (`Codeword: PELICAN-7731`). `CLAUDE.md` only contains `@AGENTS.md`, which pulls that file in, and its contents appeared once. | - **OTTER-2208** doesn't appear in my instructions at all. It's only in your question. |  | COUNTS PELICAN-7731=1 OTTER-2208=0
+debug lines naming repo memory files or the builtin agents-md plugin:
+    2026-10-15T16:35:46.804Z [DEBUG] plugin.register: cc-plugin-agents-md (builtin, cc-plugin-agents-md@builtin), judged by core alone: admitted
+    2026-10-15T16:35:46.817Z [DEBUG] hooks module cc-plugin-agents-md@builtin prompt.context settled in 2.5ms (native link, next() included)
+    2026-10-15T16:35:47.345Z [DEBUG] hooks module cc-plugin-agents-md@builtin session.start settled in 3.2ms (native link, next() included)
+
+=== case 4 run 2 files=['AGENTS.md', 'CLAUDE.md'] exit=0
+counts (PELICAN, OTTER) = (1, 0)
+answer: Going only by the project instructions I was given: |  | - **PELICAN-7731** appears **1** time, in AGENTS.md (`Codeword: PELICAN-7731`). CLAUDE.md contains only `@AGENTS.md`, which pulls in that same file, so I counted it once. | - **OTTER-2208** appears **0** times. It is not in my project instructions. |  | There are no other codewords. |  | COUNTS PELICAN-7731=1 OTTER-2208=0
+debug lines naming repo memory files or the builtin agents-md plugin:
+    2026-10-15T16:35:52.758Z [DEBUG] plugin.register: cc-plugin-agents-md (builtin, cc-plugin-agents-md@builtin), judged by core alone: admitted
+    2026-10-15T16:35:52.779Z [DEBUG] hooks module cc-plugin-agents-md@builtin prompt.context settled in 2.3ms (native link, next() included)
+    2026-10-15T16:35:53.230Z [DEBUG] hooks module cc-plugin-agents-md@builtin session.start settled in 2.9ms (native link, next() included)
+
+SUMMARY (PELICAN, OTTER) per run: {"case1": [[1, 0], [1, 0]], "case2": [[0, 1], [0, 1]], "case3": [[0, 1], [0, 1]], "case4": [[1, 0], [1, 0]]}
+scratch: /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-agentsmd/agentsmd-nrmsli7r
