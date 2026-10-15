@@ -113,7 +113,7 @@ def check(
         ),
     ] = False,
 ) -> None:
-    """Check that docs/ and .okf/ indexes agree with their folders."""
+    """Check that docs/ and .okf/ indexes agree with their folders and prototypes have a README.md."""
     findings = run_checks(path)
     errors = [f for f in findings if f.level == "error"]
     if as_json:
