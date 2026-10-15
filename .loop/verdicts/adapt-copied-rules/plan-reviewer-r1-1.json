@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The done check bans any path that does not exist here, but kept rules scope themselves with paths: globs for directories planned tickets will create (plugin/**, docs/**, src/kmctl/cli/**, src/kmctl/hooks/**, .github/workflows/**). Read literally, the check forces those globs out, so the rules for the plugin, docs and CLI would not load when claude-plugin, write-docs-skill and ci-action create those files. The plan must say whether a glob for a planned directory counts, and the grep must not flag it.",
+      "anchor": ".loop/plans/adapt-copied-rules.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "The done check bans the word loopctl, but this repo runs its own tickets through loopctl (.loop/config.toml, AGENTS.md's Gates section, the plugin hooks). A kept rule that tells agents to write .loop/ only through loopctl would be true here and still fail the grep. The plan must decide: either rules about the loop workflow are out of scope (left to the loop-harness plugin, and the rules that describe loopctl internals, such as artifact-outputs.md and data-management.md, get deleted), or the check allows loopctl where a rule means the tool this repo uses.",
+      "anchor": ".loop/plans/adapt-copied-rules.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "65079bcfc921d6e20f5bdc5eeaacb28a689f900598962f93e180156ed137bd50"
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T06:03:44+00:00"
+}
