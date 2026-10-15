@@ -25,7 +25,14 @@
   "budget_base": null,
   "signed_rows": [],
   "resigns": [],
-  "accepted_risks": [],
+  "accepted_risks": [
+    {
+      "risk_hash": "94f803b3fe59c3e447707f1c80108e66c5e677b37b5084fb062cbcb8cba62170",
+      "reason": "measured on loop-harness during build",
+      "by": "human:jasperginn@gmail.com",
+      "at": "2026-10-15T12:22:48+00:00"
+    }
+  ],
   "waivers": [],
   "overrides": [],
   "round": null,
@@ -46,6 +53,6 @@
       "by": "register"
     }
   ],
-  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T06:02:40+00:00"
+  "by": "process:loopctl/2.0.1.dev77+gbd4712cf8.d20261015",
+  "at": "2026-10-15T12:22:48+00:00"
 }
