@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The plan does not cover the first page in a section. scaffold-init leaves .okf/ sections uncreated and says the verbs that add their first page create them. So this ticket must create the section folder and its index.md, and add the section's link to the root index, which carries one link per section. The plan only names adding an entry to an existing section index and bumping the count. On a fresh `kmctl init` bundle every kind hits this path first.",
+      "anchor": ".loop/plans/new-concept-verbs.md:22",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "The plan assumes a root index count that a script can find and update. No such format exists. The root index's count is hand-written prose (`.okf/index.md`: '9 concepts: the manifesto and 1 section.', plus '8 records' on the Decisions link), and scaffold-init does not define a count line either. kmctl has to run on bundles it did not scaffold, kmctl's own among them. The plan has to fix the format kmctl writes and reads, say whether it updates the per-section count in the link text too, and say what happens when the count cannot be found: refuse, warn or skip. Without that, the 'root index count' half of the contract has no defined meaning.",
+      "anchor": ".okf/index.md:9",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "open",
+      "claim": "The command takes only TITLE. But the front matter needs a `description`, and each section index entry is built from that description. The plan does not say where the description comes from, or how the prose reaches the file. It also does not say what happens when the target file already exists. The downstream ticket handoff-and-continue-skills relies on `kmctl new handoff` to save the agent's summary and to update the same handoff on a second run in a session. Under this plan's 'agent writes the prose' split, with no update path, that ticket cannot work. Settle the inputs (a --description option, body on stdin or not) and the existing-file behaviour (refuse or update) here, or move the handoff update into the other ticket.",
+      "anchor": ".loop/plans/handoff-and-continue-skills.md",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "a3b6a84649f7a8bd1601eab07b761f32e3acfad09c0bd05b762a7f64256ad21b"
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T08:12:50+00:00"
+}
