@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "Round 1: reads outside the repository and a count search on /proc/PID/environ leaks the key. The plugin's own tools resolve every path against the repository root and refuse anything outside it; r3 tests outside paths, a symlink out of the repo, the run's HOME and /proc/self/environ.",
+      "anchor": ".loop/plans/audit-any-provider.md",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r3"
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "Round 2: Hermes' search passed the pattern to rg without --, so --pre=rm ran commands. The plugin no longer calls Hermes' handler or any program; search uses Python re, r3 forbids subprocess, os.system, pty and shlex in the plugin and checks a --pre=rm pattern changes no file.",
+      "anchor": ".loop/plans/audit-any-provider.md",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r3"
+    },
+    {
+      "id": "p3",
+      "disposition": "open",
+      "claim": "Nothing bounds how long the run takes, and the pure-Python search can hang it. A pattern such as (a+)+$ against a line of 40 a's and a b makes Python re backtrack for hours. CPython's re holds the GIL the whole time, so a timeout inside the plugin does not help: a ThreadPoolExecutor future.result(timeout=2) never returned (the probe was killed by an outer timeout at 30 s), Hermes' own future timeouts are stopped the same way, and signal.alarm only works on the main thread, while Hermes runs concurrent tool calls on worker threads (run_agent.py _execute_tool_calls_concurrent). A pattern-length limit does not help either, as the bad pattern is 7 characters. The workflow and action.yml set no timeout-minutes, so a hung audit holds a runner for GitHub's 6-hour default. Fix it outside the process: wrap hermes in `timeout` in knowledge-audit.sh and/or set timeout-minutes on the audit step. Matching literal text instead of a regex also works. Add a row condition that checks for the bound.",
+      "anchor": ".loop/plans/audit-any-provider.md",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r2"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "2a7ca1b3d07c90644b31afb299b80201876238c0cb87dfd7e6e8b8e126bf2a1c"
+  },
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "at": "2026-10-15T14:44:38+00:00"
+}
