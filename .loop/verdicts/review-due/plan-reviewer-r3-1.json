@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "Sources are resolved per OKF section 6.2 with a repository-root fallback backed by spike:review-due/1, and concept ids resolve to the concept file.",
+      "anchor": ".loop/plans/review-due.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "An unresolved source is a separate 'source not resolved' notice, not a due reason.",
+      "anchor": ".loop/plans/review-due.md",
+      "category": "design",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "resolved",
+      "claim": "The plan now leaves .okf/handoffs/ out of the three concept checks, lists only expired handoffs with the 'passed' function shared with handoffs-list, never treats index.md or log.md as concepts, and the done-when adds a test that a handoff is neither due for lacking verified nor listed twice.",
+      "anchor": ".loop/plans/review-due.md",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "abbfa146062e4f707de13ab43b7483f0e679e9929a71a183739d518d9ea6b4aa"
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T08:23:54+00:00"
+}
