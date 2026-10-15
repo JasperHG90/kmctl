@@ -2,8 +2,8 @@
 
 A record is never rewritten: the old one gets ``status: deprecated`` and an
 appended dated Correction section, and its body above that stays as it was
-(``.claude/rules/okf-bundle.md``). Only spec fields are written (I4), so a
-hand-added ``decision_status`` is left alone.
+(``.claude/rules/okf-bundle.md``). Only spec fields are written (I4); any
+other key a person added to the front matter is left alone.
 """
 
 import re

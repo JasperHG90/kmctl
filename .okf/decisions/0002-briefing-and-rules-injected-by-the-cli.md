@@ -7,8 +7,6 @@ generated:
   at: 2026-10-15
 tags: [adr, decision]
 status: stable
-decision_status: Accepted
-decided_on: 2026-10-15
 ---
 
 # ADR 0002: The CLI injects the briefing and the rules into context
@@ -39,3 +37,18 @@ Rejected:
 - Native rule files per harness. Only some harnesses have them, and each
   needs its own format.
 - A docs page. An agent reads it only if it already knows to look.
+
+## Correction, 2026-10-15
+
+The record had no Consequences section; this adds it.
+
+### Consequences
+
+- `kmctl briefing` is the one source; the SessionStart hook only prints
+  it, so upgrading the CLI updates the briefing in every repository.
+- It must fit a word budget (I3, 600 words, tested), so every new line in it
+  costs space.
+- The rules it carries ship inside the package (`src/kmctl/rules/`), not as
+  harness rule files.
+- The skills it names are read from the packaged plugin's `skills/` folder
+  at run time, so a new skill shows up without editing the briefing.

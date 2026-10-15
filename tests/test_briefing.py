@@ -1,9 +1,11 @@
 import json
+import shutil
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner, Result
 
-from kmctl import app
+from kmctl import app, plugin
 from kmctl.briefing import WORD_BUDGET
 
 
@@ -101,3 +103,38 @@ def test_briefing_state_line_reads_right_for_one(tmp_path: Path) -> None:
 
     assert "1 concept due for review" in out
     assert "1 live handoff," in out
+
+
+def _skill_names(plugin_dir: Path) -> list[str]:
+    return sorted(p.name for p in (plugin_dir / "skills").iterdir() if p.is_dir())
+
+
+def test_briefing_names_every_skill(tmp_path: Path) -> None:
+    root = tmp_path / "repo"
+    root.mkdir()
+    out = _briefing(_repo(root)).stdout
+    names = _skill_names(plugin._payload()[0])
+
+    assert names
+    assert [n for n in names if f"- {n}:" not in out] == []
+
+
+def test_briefing_skills_are_read_at_run_time(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    plugin_dir, marketplace = plugin._payload()
+    copy = tmp_path / "payload"
+    shutil.copytree(plugin_dir, copy)
+    extra = copy / "skills" / "extra-skill"
+    extra.mkdir()
+    (extra / "SKILL.md").write_text(
+        "---\nname: extra-skill\ndescription: Do one extra thing. Use when asked.\n---\n"
+    )
+    monkeypatch.setattr(plugin, "_payload", lambda: (copy, marketplace))
+    root = tmp_path / "repo"
+    root.mkdir()
+
+    out = _briefing(_repo(root)).stdout
+
+    assert "- extra-skill: Do one extra thing." in out
+    assert [n for n in _skill_names(copy) if f"- {n}:" not in out] == []

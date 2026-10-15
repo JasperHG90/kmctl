@@ -7,8 +7,6 @@ generated:
   at: 2026-10-15
 tags: [adr, decision]
 status: stable
-decision_status: Accepted
-decided_on: 2026-10-15
 ---
 
 # ADR 0001: A standalone kmctl CLI that installs its own plugin
@@ -34,3 +32,16 @@ Rejected:
 - Build it into loopctl. Repositories that do not run the loop could not use it.
 - A plugin with no CLI. The briefing, the bookkeeping verbs and the CI checks
   need code that runs the same in every harness and in CI.
+
+## Correction, 2026-10-15
+
+The record had no Consequences section; this adds it.
+
+### Consequences
+
+- One release carries both halves: the plugin is package data, and
+  `kmctl plugin install` stages it stamped with the CLI's version, so
+  `kmctl plugin status` can report a plugin and CLI that do not match.
+- Installing the plugin needs the `claude` CLI on PATH, and the hook needs
+  `kmctl` on PATH; without it the hook prints how to install it.
+- Skills stay short and call kmctl verbs, so logic lives in tested code.

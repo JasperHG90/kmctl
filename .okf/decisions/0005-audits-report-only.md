@@ -7,8 +7,6 @@ generated:
   at: 2026-10-15
 tags: [adr, decision]
 status: stable
-decision_status: Accepted
-decided_on: 2026-10-15
 ---
 
 # ADR 0005: Audits report only, and CI runs them in two tiers
@@ -38,3 +36,22 @@ Rejected:
 
 - The audit writes verified stamps when a concept passes. The operator chose
   report only.
+
+## Correction, 2026-10-15
+
+The record had no Consequences section; this adds it.
+
+### Consequences
+
+- The audit skill, its three review skills and the kmctl-auditor agent
+  write no knowledge; a person or an agent they ask acts on the findings.
+- Nothing is ever marked verified by an audit, so a concept stays due until
+  a person checks it.
+- The GitHub Action runs `kmctl check` and `kmctl review due` and fails
+  when `kmctl check` fails or `kmctl review due` crashes; due concepts are
+  reported, never failed.
+- The action's opt-in `mode: audit` runs the auditor through headless
+  Claude Code with only Read, Grep, Glob and Agent, on workflow_dispatch or
+  schedule only, and reports in the job summary and one "Knowledge audit"
+  issue. It never edits or pushes. It fails when Claude Code errors or
+  returns no findings, never because a concept drifted.

@@ -1,4 +1,4 @@
-"""The session briefing: where knowledge lives, what is due, and the rules for writing it (ADR 0002).
+"""The session briefing: where knowledge lives, which skill to use, what is due, and the rules (ADR 0002).
 
 The plugin's SessionStart hook relays it, so it is read at the start of every
 session in every harness. It reads state and writes nothing, and stays within
@@ -11,7 +11,10 @@ from importlib.metadata import version
 from importlib.resources import files
 from pathlib import Path
 
+import yaml
+
 from kmctl.handoffs import live_handoffs
+from kmctl.plugin import skills_dir
 from kmctl.review_due import review_due
 
 WORD_BUDGET = 600
@@ -34,6 +37,9 @@ kmctl handoffs for live handoffs. Each takes --help and --json."""
 
 EMPTY = "No .okf/ bundle here. Run kmctl init to start docs/ and .okf/."
 
+_FIRST_SENTENCE = re.compile(r"\.\s| - ")
+#: Words kept from a skill's description, so new skills cannot break WORD_BUDGET.
+_SUMMARY_WORDS = 12
 _CONSTRAINT = re.compile(r'<constraint name="([^"]+)">\n(.*?)</constraint>', re.DOTALL)
 
 
@@ -48,11 +54,51 @@ class State:
 
 @dataclass(frozen=True)
 class Briefing:
-    """The three parts of the briefing."""
+    """The parts of the briefing."""
 
     routing: str
     state: State | None
     rules: list[tuple[str, str]]
+    skills: list[tuple[str, str]]
+
+
+def _skill_summary(skill_md: Path) -> str:
+    """The first sentence of a SKILL.md description, cut at 12 words, or a pointer to the file.
+
+    SKILL.md front matter is Claude Code's skill format, not an OKF concept, so
+    it is parsed here rather than read through ``okf.front_matter`` (I4 covers OKF).
+    """
+    text = skill_md.read_text(encoding="utf-8") if skill_md.is_file() else ""
+    end = text.find("\n---", 4)
+    try:
+        data = (
+            yaml.safe_load(text[4:end])
+            if text.startswith("---\n") and end != -1
+            else None
+        )
+    except yaml.YAMLError:
+        data = None
+    description = data.get("description") if isinstance(data, dict) else None
+    if not isinstance(description, str) or not description.strip():
+        return "see its SKILL.md."
+    words = (
+        _FIRST_SENTENCE.split(description.strip(), maxsplit=1)[0].rstrip(".").split()
+    )
+    if len(words) > _SUMMARY_WORDS:
+        return " ".join(words[:_SUMMARY_WORDS]).rstrip(",;:") + "..."
+    return " ".join(words) + "."
+
+
+def load_skills() -> list[tuple[str, str]]:
+    """Each skill folder the packaged plugin ships, as (name, when to use it), read at run time."""
+    folder = skills_dir()
+    if not folder.is_dir():
+        return []
+    return [
+        (p.name, _skill_summary(p / "SKILL.md"))
+        for p in sorted(folder.iterdir())
+        if p.is_dir()
+    ]
 
 
 def load_rules() -> list[tuple[str, str]]:
@@ -79,22 +125,28 @@ def build_briefing(root: Path) -> Briefing:
     Returns
     -------
     Briefing
-        Routing, state (None when there is no .okf/) and the rules.
+        Routing, state (None when there is no .okf/), the rules and the
+        plugin's skills (empty when there is no .okf/).
     """
     if not (root / ".okf").is_dir():
-        return Briefing(routing=EMPTY, state=None, rules=load_rules())
+        return Briefing(routing=EMPTY, state=None, rules=load_rules(), skills=[])
     handoffs = live_handoffs(root)
     state = State(
         due=len(review_due(root).due),
         live_handoffs=len(handoffs),
         newest_handoff=handoffs[0].title if handoffs else None,
     )
-    return Briefing(routing=ROUTING, state=state, rules=load_rules())
+    return Briefing(
+        routing=ROUTING, state=state, rules=load_rules(), skills=load_skills()
+    )
 
 
 def render(briefing: Briefing) -> str:
     """The briefing as text for the session start."""
     lines = [f"kmctl briefing (kmctl {version('kmctl')})", briefing.routing]
+    if briefing.skills:
+        lines.append("Skills in the kmctl plugin:")
+        lines += [f"- {name}: {summary}" for name, summary in briefing.skills]
     if briefing.state is not None:
         s = briefing.state
         concepts = "concept" if s.due == 1 else "concepts"
@@ -115,4 +167,5 @@ def as_dict(briefing: Briefing) -> dict:
     """The briefing as one JSON-ready object."""
     data = asdict(briefing)
     data["rules"] = [{"name": n, "text": t} for n, t in briefing.rules]
+    data["skills"] = [{"name": n, "summary": s} for n, s in briefing.skills]
     return data

@@ -405,7 +405,8 @@ def briefing(
     as_json: Annotated[
         bool,
         typer.Option(
-            "--json", help="Print one JSON object (routing, state, rules), for scripts."
+            "--json",
+            help="Print one JSON object (routing, state, rules, skills), for scripts.",
         ),
     ] = False,
 ) -> None:

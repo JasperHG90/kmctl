@@ -1,6 +1,6 @@
 ---
 name: practices-review
-description: The review instructions for .okf/practices/ pages, used by the audit skill and its kmctl-auditor agent - does each practice still have the count or code site it cites as evidence? Use through /audit; read directly when someone asks how practices are judged.
+description: Review instructions for .okf/practices/ pages, used through /audit and its kmctl-auditor agent - does each practice still have the count or code site it cites as evidence? Use through /audit; read directly when someone asks how practices are judged.
 ---
 
 # Practices review: is the evidence still there?

@@ -7,8 +7,6 @@ generated:
   at: 2026-10-15
 tags: [adr, decision]
 status: stable
-decision_status: Accepted
-decided_on: 2026-10-15
 ---
 
 # ADR 0006: Staleness comes from OKF's own fields; a covers field is out of scope
@@ -34,3 +32,19 @@ Rejected for now:
 
 - A covers extension field. It needs every concept tagged, and the operator
   wants to keep this simple. Revisit if the spec's fields prove too blunt.
+
+## Correction, 2026-10-15
+
+The record had no Consequences section; this adds it.
+
+### Consequences
+
+- `kmctl review due` needs no extra field, so it works on any OKF v0.2
+  bundle as it is.
+- A concept with no `verified` entry is always due, so every concept an
+  agent writes is due until a person verifies it. Handoffs are the
+  exception: they are due only once their `stale_after` has passed.
+- The source-changed reason needs full git history; in a shallow clone or
+  outside git it is skipped with a note.
+- A code change to a file not listed in a concept's `sources` flags
+  nothing.

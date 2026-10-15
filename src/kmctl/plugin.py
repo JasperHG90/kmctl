@@ -65,6 +65,11 @@ def _payload() -> tuple[Path, Path]:
     return repo / "plugin", repo / ".claude-plugin" / "marketplace.json"
 
 
+def skills_dir() -> Path:
+    """The skills/ folder of the plugin this release ships."""
+    return _payload()[0] / "skills"
+
+
 def stage() -> Path:
     """Copy this release's plugin into the staging folder, stamped with this CLI's version."""
     plugin_src, marketplace_src = _payload()

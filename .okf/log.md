@@ -14,3 +14,37 @@
 - Marked invariants I1 and I3 in `manifesto` enforced, naming the tests
   that pin them: the plugin's hook tests and the briefing word budget.
 - Marked invariant I4 in `manifesto` enforced by tests/test_okf_fields.py.
+- Removed `decision_status` and `decided_on` from
+  `decisions/0001-standalone-cli-installs-its-plugin`, which no ADR allows
+  (I4) and appended a Correction with the Consequences it lacked, after the
+  first audit of this bundle.
+- Removed `decision_status` and `decided_on` from
+  `decisions/0002-briefing-and-rules-injected-by-the-cli`, which no ADR allows
+  (I4) and appended a Correction with the Consequences it lacked, after the
+  first audit of this bundle.
+- Removed `decision_status` and `decided_on` from
+  `decisions/0003-claude-code-plugin-first-depends-on-okf`, which no ADR
+  allows (I4) and appended a Correction with the Consequences it lacked, after
+  the first audit of this bundle.
+- Removed `decision_status` and `decided_on` from
+  `decisions/0004-sessionstart-is-the-only-hook`, which no ADR allows (I4) and
+  appended a Correction with the Consequences it lacked, after the first audit
+  of this bundle.
+- Removed `decision_status` and `decided_on` from
+  `decisions/0005-audits-report-only`, which no ADR allows (I4) and appended a
+  Correction with the Consequences it lacked, after the first audit of this
+  bundle.
+- Removed `decision_status` and `decided_on` from
+  `decisions/0006-staleness-from-okf-fields`, which no ADR allows (I4) and
+  appended a Correction with the Consequences it lacked, after the first audit
+  of this bundle.
+- Removed `decision_status` and `decided_on` from
+  `decisions/0007-skills-are-made-with-skill-creator`, which no ADR allows
+  (I4), after the first audit of this bundle.
+- Removed `decision_status` and `decided_on` from
+  `decisions/0008-handoffs-are-okf-concepts`, which no ADR allows (I4) and
+  appended a Correction with the Consequences it lacked, after the first audit
+  of this bundle.
+- Removed `decision_status` and `decided_on` from
+  `decisions/0009-handoff-key-extension-field`, which no ADR allows (I4),
+  after the first audit of this bundle.
