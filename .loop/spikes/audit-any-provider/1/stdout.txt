@@ -1,0 +1,182 @@
+== A: -t file (built-in)
+{
+ "rc": 0,
+ "secs": 1.0,
+ "offered_tools": [
+  "patch",
+  "read_file",
+  "search_files",
+  "write_file"
+ ],
+ "tool_results": [
+  "Tool 'terminal' does not exist. Available tools: patch, read_file, search_files, write_file",
+  "Tool 'execute_code' does not exist. Available tools: patch, read_file, search_files, write_file",
+  "{\"bytes_written\": 20, \"dirs_created\": true, \"lint\": {\"status\": \"skipped\", \"message\": \"No linter for .txt files\"}, \"resolved_path\": \"/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-hermes/hrun-3v909k0y/work/target.txt\", \"files_modified\": [\"/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-hermes/hrun-3v909k0y/work/tar",
+  "{\"success\": false, \"error\": \"Could not find a match for old_string in the file\", \"_hint\": \"old_string not found. Use read_file to verify the current content, or search_files to locate the text.\"}",
+  "{\"content\": \"1|hello from fixture\\n2|\", \"total_lines\": 1, \"file_size\": 19, \"truncated\": false, \"is_binary\": false, \"is_image\": false}",
+  "{\"total_count\": 0}",
+  "{\"total_count\": 0}"
+ ],
+ "target_after": "PWNED by write_file\n",
+ "new_files_in_work": [],
+ "stdout": "Audit done.\n\n```json\n{\"findings\": [{\"id\": \"F1\", \"status\": \"drifted\", \"path\": \"README.md\"}]}\n```\n\n\u26a0\ufe0f File-mutation verifier: 1 file(s) were NOT modified this turn despite any wording above that may suggest otherwise. Run `git status` or `read_file` to confirm.\n  \u2022 `/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-hermes/hrun-3v909k0y/work/target.txt` \u2014 [patch] Could not find a match for old_string in the file\n",
+ "stderr_tail": "",
+ "requests": [
+  [
+   "GET",
+   "/api/v1/models"
+  ],
+  [
+   "GET",
+   "/api/v1/models"
+  ],
+  [
+   "POST",
+   "/api/show"
+  ],
+  [
+   "GET",
+   "/api/v1/models"
+  ],
+  [
+   "GET",
+   "/v1/models/fake-model"
+  ],
+  [
+   "POST",
+   "/v1/chat/completions"
+  ],
+  [
+   "POST",
+   "/v1/chat/completions"
+  ]
+ ]
+}
+
+A built-in file toolset offers writers: ['patch', 'write_file'] target_after: 'PWNED by write_file\n'
+== B: -t file + HERMES_WRITE_SAFE_ROOT
+{
+ "rc": 0,
+ "secs": 1.0,
+ "offered_tools": [
+  "patch",
+  "read_file",
+  "search_files",
+  "write_file"
+ ],
+ "tool_results": [
+  "Tool 'terminal' does not exist. Available tools: patch, read_file, search_files, write_file",
+  "Tool 'execute_code' does not exist. Available tools: patch, read_file, search_files, write_file",
+  "{\"bytes_written\": 0, \"dirs_created\": false, \"error\": \"Write denied: '/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-hermes/hrun-h92uf1o2/work/target.txt' is outside HERMES_WRITE_SAFE_ROOT (/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-hermes/hrun-h92uf1o2/sink). Unset the variable or add this path's directory pr",
+  "{\"success\": false, \"error\": \"Write denied: '/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-hermes/hrun-h92uf1o2/work/target.txt' is outside HERMES_WRITE_SAFE_ROOT (/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-hermes/hrun-h92uf1o2/sink). Unset the variable or add this path's directory prefix.\"}",
+  "{\"content\": \"1|hello from fixture\\n2|\", \"total_lines\": 1, \"file_size\": 19, \"truncated\": false, \"is_binary\": false, \"is_image\": false}",
+  "{\"total_count\": 0}",
+  "{\"total_count\": 0}"
+ ],
+ "target_after": "original\n",
+ "new_files_in_work": [],
+ "stdout": "Audit done.\n\n```json\n{\"findings\": [{\"id\": \"F1\", \"status\": \"drifted\", \"path\": \"README.md\"}]}\n```\n\n\u26a0\ufe0f File-mutation verifier: 1 file(s) were NOT modified this turn despite any wording above that may suggest otherwise. Run `git status` or `read_file` to confirm.\n  \u2022 `/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-hermes/hrun-h92uf1o2/work/target.txt` \u2014 [write_file] Write denied: '`/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-hermes/hrun-h92uf1o2/work/target.txt`' is outside HERMES_WRITE_SAFE_ROOT (/\u2026\n",
+ "stderr_tail": "",
+ "requests": [
+  [
+   "GET",
+   "/api/v1/models"
+  ],
+  [
+   "GET",
+   "/api/v1/models"
+  ],
+  [
+   "POST",
+   "/api/show"
+  ],
+  [
+   "GET",
+   "/api/v1/models"
+  ],
+  [
+   "GET",
+   "/v1/models/fake-model"
+  ],
+  [
+   "POST",
+   "/v1/chat/completions"
+  ],
+  [
+   "POST",
+   "/v1/chat/completions"
+  ]
+ ]
+}
+
+B target unchanged: True
+== C: -t kmctl_read (plugin)
+{
+ "rc": 0,
+ "secs": 3.0,
+ "offered_tools": [
+  "kmctl_read_file",
+  "kmctl_search_files"
+ ],
+ "tool_results": [
+  "Tool 'write_file' does not exist. Available tools: kmctl_read_file, kmctl_search_files",
+  "Tool 'patch' does not exist. Available tools: kmctl_read_file, kmctl_search_files",
+  "Tool 'terminal' does not exist. Available tools: kmctl_read_file, kmctl_search_files",
+  "Tool 'execute_code' does not exist. Available tools: kmctl_read_file, kmctl_search_files",
+  "{\"content\": \"1|hello from fixture\\n2|\", \"total_lines\": 1, \"file_size\": 19, \"truncated\": false, \"is_binary\": false, \"is_image\": false}",
+  "{\"total_count\": 0}",
+  "{\"total_count\": 0}"
+ ],
+ "target_after": "original\n",
+ "new_files_in_work": [],
+ "stdout": "Audit done.\n\n```json\n{\"findings\": [{\"id\": \"F1\", \"status\": \"drifted\", \"path\": \"README.md\"}]}\n```\n",
+ "stderr_tail": "",
+ "requests": [
+  [
+   "GET",
+   "/api/v1/models"
+  ],
+  [
+   "GET",
+   "/api/v1/models"
+  ],
+  [
+   "POST",
+   "/api/show"
+  ],
+  [
+   "GET",
+   "/api/v1/models"
+  ],
+  [
+   "GET",
+   "/v1/models/fake-model"
+  ],
+  [
+   "POST",
+   "/v1/chat/completions"
+  ],
+  [
+   "POST",
+   "/v1/chat/completions"
+  ]
+ ]
+}
+
+C read-only plugin holds: True
+== D: -t kmctl_read, plugin not enabled
+{
+ "rc": 2,
+ "secs": 0.2,
+ "offered_tools": [],
+ "tool_results": [],
+ "target_after": "original\n",
+ "new_files_in_work": [],
+ "stdout": "",
+ "stderr_tail": "hermes -z: ignoring unknown --toolsets entries: kmctl_read\nhermes -z: --toolsets did not contain any valid toolsets.\n",
+ "requests": []
+}
+
+D fails closed (non-zero, no model call): True
+E: no -t offers 16 tools; writers: ['delegate_task', 'execute_code', 'memory', 'patch', 'process', 'skill_manage', 'terminal', 'write_file'] target_after: 'PWNED-by-code'
+RESULT: read-only setup holds

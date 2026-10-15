@@ -1,0 +1,4 @@
+name: kmctl-read
+version: 0.0.1
+description: "Read-only file tools for kmctl audits: read and search, no writes."
+author: kmctl spike
