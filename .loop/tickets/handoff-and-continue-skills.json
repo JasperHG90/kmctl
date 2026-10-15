@@ -1,14 +1,36 @@
 {
   "schema_version": "1.0",
   "slug": "handoff-and-continue-skills",
-  "stage": "fixing",
+  "stage": "blocked",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 3,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
-  "blocker": null,
-  "fix": null,
+  "blocker": {
+    "code": "review-cap",
+    "message": "the review round cap (3) is reached with 1 finding(s) to review again",
+    "plan_hash": "8cff989db4ecfb2c253edb2609b664f89bdca79f4ff5a1ff9ccfecb83fc91cdd",
+    "at": "2026-10-15T11:50:50+00:00",
+    "resign_eval": false
+  },
+  "fix": {
+    "round": 3,
+    "fingerprint": "aad07b039d15d52de38020ce69d891b208a18986433c69d7dcb34bda571b60e6",
+    "tree": "732bf3677f41a8e5bad4941b949991a18a7912f0",
+    "decisions": [
+      {
+        "finding": "reviewer:f7",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": null,
+        "paths": [
+          "src/kmctl/concepts.py"
+        ]
+      }
+    ],
+    "at": "2026-10-15T11:50:50+00:00"
+  },
   "ask": null,
   "split": "j-20261015T082128+0000-825f846a",
   "split_plan_hash": "8cff989db4ecfb2c253edb2609b664f89bdca79f4ff5a1ff9ccfecb83fc91cdd",
@@ -164,8 +186,14 @@
       "to": "fixing",
       "at": "2026-10-15T11:49:11+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "blocked",
+      "at": "2026-10-15T11:50:50+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.0.1.dev77+gbd4712cf8.d20261015",
-  "at": "2026-10-15T11:50:49+00:00"
+  "at": "2026-10-15T11:50:50+00:00"
 }
