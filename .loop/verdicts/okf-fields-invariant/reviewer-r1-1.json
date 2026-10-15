@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "field() turns any truthy non-list value at a [] path into a list of one, so `sources: src/a.py` (a bare string) or a single sources mapping now yields a resource. The old _sources returned [] for any non-list sources, so review_due now checks git history for concepts it used to skip. The plan says field keeps today's forms; the single-mapping case was only meant for verified.",
+      "anchor": "src/kmctl/okf.py:86",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "test_manifesto_marks_i4_enforced checks the log with r'I4.*enforced|`manifesto`' on the last dated section, and the I1/I3 line in that section already contains `manifesto`, so the test passes with the I4 log line deleted. r5's fails_when names a missing log line.",
+      "anchor": "tests/test_okf_fields.py:172",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "ALLOWED_FIELDS cites the wrong spec sections for two keys: the pinned validator puts `verified` under section 5.2 (5.3 is trust tiers) and root-index `okf_version` under section 12, not 8 (section 8 says a non-root index carries no front matter).",
+      "anchor": "src/kmctl/okf.py:43",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "open",
+      "claim": "The reads scan only recognises a bare-name front_matter(...) call, so `okf.front_matter(p).get('title')` or an alias such as `fm = front_matter` reads front matter without the test noticing. Nothing in src does this today.",
+      "anchor": "tests/test_okf_fields.py:86",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "a4bd70518c50e7e87a52be9bd52a79919bbdd5018efe6ae5c908d79287b17815",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "at": "2026-10-15T12:39:25+00:00"
+}
