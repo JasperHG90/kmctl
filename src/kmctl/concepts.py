@@ -96,7 +96,7 @@ def _front_matter(kind: str, title: str, description: str, now: datetime) -> str
     return "\n".join([*lines, "---", ""])
 
 
-def _append_log(log: Path, line: str, now: datetime) -> None:
+def append_log(log: Path, line: str, now: datetime) -> None:
     text = log.read_text(encoding="utf-8") if log.exists() else "# Log\n"
     heading = f"## {now.date().isoformat()}"
     headings = [h for h in text.splitlines() if h.startswith("## ")]
@@ -190,7 +190,7 @@ def new_concept(
     cid = path.relative_to(okf).with_suffix("").as_posix()
     if kind == "prototype":
         cid = path.parent.relative_to(okf).as_posix()
-    _append_log(okf / "log.md", f"- Added `{cid}` with `kmctl new {kind}`.", now)
+    append_log(okf / "log.md", f"- Added `{cid}` with `kmctl new {kind}`.", now)
     return NewConcept(
         id=cid, path=path.relative_to(root).as_posix(), created_section=created_section
     )

@@ -13,6 +13,7 @@ from kmctl.concepts import ConceptError, Kind, new_concept
 from kmctl.handoffs import live_handoffs
 from kmctl.review_due import review_due
 from kmctl.scaffold import scaffold
+from kmctl.supersede import supersede
 
 app = typer.Typer(
     help="kmctl: keep a repository's docs/ and .okf/ knowledge current.",
@@ -289,6 +290,68 @@ def new(
         return
     typer.echo(f"created {result.path}")
     typer.echo(f"Next: write the sections of {result.path}")
+
+
+decision_app = typer.Typer(
+    help=(
+        "Change decision records in .okf/decisions/. Verbs: supersede. "
+        "Needs a bundle from kmctl init and both records from kmctl new decision."
+    ),
+    no_args_is_help=True,
+)
+app.add_typer(decision_app, name="decision")
+
+
+@decision_app.command(
+    "supersede",
+    epilog=(
+        "Examples:\n\n"
+        "  kmctl decision supersede 3 --by 7\n\n"
+        "  kmctl decision supersede 0003 --by 0007 --json\n\n"
+        "The old record keeps its body: it gets status deprecated and an appended "
+        "Correction section. Write the new record first with kmctl new decision."
+    ),
+)
+def decision_supersede(
+    old: Annotated[
+        str,
+        typer.Argument(metavar="3", help="The number of the decision being replaced."),
+    ],
+    by: Annotated[
+        str,
+        typer.Option(
+            "--by", metavar="7", help="The number of the decision that replaces it."
+        ),
+    ],
+    path: Annotated[
+        Path,
+        typer.Option(
+            "--path",
+            metavar="../other-repo",
+            exists=True,
+            file_okay=False,
+            help="The repository to write in: an existing folder. Default: the current directory.",
+        ),
+    ] = Path("."),
+    as_json: Annotated[
+        bool,
+        typer.Option(
+            "--json",
+            help="Print one JSON object (old, new) with both concept ids, for scripts.",
+        ),
+    ] = False,
+) -> None:
+    """Mark one decision superseded by another and link the two records both ways."""
+    try:
+        result = supersede(path, old, by)
+    except ConceptError as error:
+        typer.echo(f"kmctl decision supersede: refused: {error}", err=True)
+        raise typer.Exit(1) from error
+    if as_json:
+        typer.echo(json.dumps(asdict(result)))
+        return
+    typer.echo(f"superseded {result.old} with {result.new}")
+    typer.echo("Next: kmctl check, then commit both records")
 
 
 def main() -> None:
