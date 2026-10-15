@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "I4's read side was not pinned. The plan now adds a read test against the same allowed-key list, so the claim and the tests match.",
+      "anchor": ".okf/manifesto.md:76",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "The read test depends on telling front matter mappings apart from other dicts, and the plan gives no rule for that. Today kmctl reads front matter in three shapes: a direct call (front_matter(path).get('status'), supersede.py:101, concepts.py:130), a variable or parameter named meta (handoffs.py:52, review_due.py:115 and :123, where meta is a plain dict parameter), and values taken out of it under other names (generated.get('at') handoffs.py:60, e.get('at') review_due.py:118, entry.get('resource') review_due.py:129). Other modules call .get on dicts that are not front matter (plugin.py:118-198 p.get('id'), m.get('name'); checks.py:285). Scanning every .get gives false failures. Scanning only front_matter(...) results misses the parameters and the nested reads, so 'fails when an unknown key is read' would hold only for the one shape the test happens to cover. The allowed list also leaves out sources[].resource, which review_due.py:129 reads. The plan has to state the rule: for example, all front matter reads go through one accessor in okf.py that the scan can find by name, or the scan follows a stated naming convention that a test also enforces. A spike can settle it: write the scan against current src/kmctl/ and check that it finds exactly stale_after, generated.at, title, description, verified[].at, sources[].resource, status and handoff_key, and nothing from plugin.py or checks.py.",
+      "anchor": "src/kmctl/review_due.py:129",
+      "category": "design",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "6948c12a5c5b2e97cb706db6c4e18855814cb5a2ceb451dff1aa57fc0edbec98"
+  },
+  "by": "process:loopctl/2.0.1.dev77+gbd4712cf8.d20261015",
+  "at": "2026-10-15T12:28:29+00:00"
+}
