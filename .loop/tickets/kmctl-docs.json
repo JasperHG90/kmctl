@@ -3,7 +3,7 @@
   "slug": "kmctl-docs",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "c5ca582a6509dab6a76dde37c2925b7009749335b2010058600a278fd259896e",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "08a411e936a494233dbcf5bb9006b6d0f5cc676419f04d29500bd08d91d0d6cd",
+    "started_at": "2026-10-15T12:25:45+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "08a411e936a494233dbcf5bb9006b6d0f5cc676419f04d29500bd08d91d0d6cd",
   "intent": {
     "epic": "docs",
     "depends_on": [],
