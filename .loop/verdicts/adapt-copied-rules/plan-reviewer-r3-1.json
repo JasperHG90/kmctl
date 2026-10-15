@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "Planned folders (plugin/, docs/, src/kmctl/, .github/workflows/) stay allowed in paths globs and rule text.",
+      "anchor": ".loop/plans/adapt-copied-rules.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "A kept rule may name loopctl as this repository's ticket tool; the loop workflow belongs to the plugin.",
+      "anchor": ".loop/plans/adapt-copied-rules.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "resolved",
+      "claim": "The plan now lists the manifesto's .okf/ sections (architecture/, practices/, proposals/, prototypes/, handoffs/) and the root action.yml as planned locations, and says a citation of a specific page that does not exist yet (such as cli-and-plugin.md) is dropped.",
+      "anchor": ".loop/plans/adapt-copied-rules.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "3154a76ecf8e3a339a58542782606cc9d7e06e5e6385d2cb0fb763f23c74c50b"
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T06:07:33+00:00"
+}
