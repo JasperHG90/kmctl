@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.0.1.dev1+g4552fe226.d20261015
-  at: '2026-10-15T08:12:58+00:00'
+  at: '2026-10-15T08:13:08+00:00'
 slug: plugin-install-verb
 n: 1
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike plugin-install-verb/1
@@ -24,7 +24,10 @@ The command exited 1:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note plugin-install-verb 1`.
+The risk is real. With claude 2.1.300 and an isolated CLAUDE_CONFIG_DIR, installing a throwaway plugin that depends on `okf@scaccogatto` (allowlisted in `allowCrossMarketplaceDependenciesOn`, declared in the marketplace entry) failed with exit 1 while the scaccogatto marketplace was not added: `Dependency "okf@scaccogatto" (required by tiny@spike-mkt) not found. Is the "scaccogatto" marketplace added?`. It installed nothing and did not add the marketplace itself.
+After `claude plugin marketplace add scaccogatto/okf-skills`, the same install exited 0 with `(+ 1 dependency: okf)` and installed okf 0.10.3 at user scope. Running the install again exited 0 with "already installed".
+So `kmctl plugin install` has to add the scaccogatto marketplace (`claude plugin marketplace add scaccogatto/okf-skills`) before it installs the plugin. Settles risk 1 as real.
+Limits: tested at user scope only, with a local folder marketplace standing in for kmctl's, and with okf's marketplace taken from GitHub HEAD.
 
 ## Files
 
