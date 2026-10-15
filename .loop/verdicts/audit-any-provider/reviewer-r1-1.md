@@ -1,0 +1,43 @@
+---
+type: verdict
+title: 'Verdict: audit-any-provider reviewer round 1'
+description: 'reviewer verdict for round 1 of audit-any-provider: fix.'
+tags:
+- verdict
+- review
+generated:
+  by: claude-opus/5.5
+  at: '2026-10-15T15:17:56+00:00'
+slug: audit-any-provider
+pass: reviewer
+round: 1
+body_schema: verdict/1
+---
+
+## Summary
+
+The change does what the plan says. The plugin holds against every path escape I tried, the script keeps every guard, the docs agree with the code, and the gates are green on my own run. Three findings remain, none blocking: search and read can number the same line differently (f1), the prompt in argv has a size ceiling the old stdin path did not have (f2), and one more Hermes config variable belongs in the unset list (f3).
+
+## Checked
+
+- Gates: `loopctl gate stamp` from the worktree: lint, format and tests pass, and r1 to r7 pass. Result: `stamp green: ce97ede2cbe85dcf1072f462ccfc1dc5238633ba71a9de378909a6fd92e65d69`.
+- Plugin probes (a recording ctx on action/hermes/kmctl-read/__init__.py, outside the repo). Each of these is refused with "outside the repository": `..`, an absolute path outside, a file symlink out, a folder symlink out, a symlink to /proc/self and then `environ`, /proc/self/environ, ~/.bashrc, `/` and `..` for listing. A NUL byte and a lone surrogate in a path come back as errors, not exceptions. A FIFO and a folder are "not a file". No KMCTL_READ_ROOT, an empty one or a relative one refuses everything. A binary file reads as replacement text within the cap. A 5 MB one-line file returns about 100 KB with a cut note. A search over 700 matching files stops at 200 matches, and a listing stops at 500 files, each with a note. `--pre=rm` and `(a+)+$` are matched as plain text in 0.02 s. The walk does not follow a symlinked folder and skips a file symlink that points out. Every result is a str. TOCTOU between the check and open needs a writer, and the model has none, so it is not reachable.
+- Eval rows: I read each test the rows run. r1 checks the flags, the config's base_url, the `${VAR}` key, that the literal key is absent, that HOME is not the runner's, and that no vendor is named. r2 checks `-t kmctl_read` once, that the installed plugin equals the source, plugins.enabled, an empty safe root outside the repo, timeout in the code, and that a sleeping stub is stopped by a 2 s limit, plus the workflow's timeout-minutes and the mode help. r3's tests cover every clause of its fails_when, including the HOME config, /proc/PID/environ, regex timing and the import ban. r4 checks every text, the absolute path and that the footer is cut. r5 has no `uses: ./`, has both installs and both scripts, and has the four inputs with no anthropic_api_key. r7 checks Hermes, provider, the 0005 link, Claude Code and okf_validate.
+- r8 (judgment): I re-ran spike 3's script against the current worktree with the real Hermes 0.19.0 in the scratch install. Both requests that carried tools offered exactly the three kmctl tools. write_file, patch, terminal and execute_code got "does not exist". The fixture stayed unchanged with git status clean. The /proc/self/environ read and search were refused without the key, and the finding reached the summary and the issue body. RESULT: holds. The row holds.
+- Script: the event guard, the token and extraheader guards, the model, URL and key-name checks, the unshallow fetch, the scope filter, the fresh HOME under mktemp (outside the repository root), and the config holding `${KEY_ENV}` and never the key are all there. The unset list, timeout with --kill-after, and the 124/137 message are there too. I checked that Hermes' own .env loading uses its install folder and HERMES_HOME, not the audited repository's working folder.
+- action.yml and the workflow run the same commands: `uv tool install` kmctl, `uv tool install --python 3.12 hermes-agent==0.19.0`, the audit script with the four settings, and the issue step, which alone holds GH_TOKEN.
+- Docs: ADR 0010 (context, decision, rejected options, consequences), ADR 0005's dated Correction, the overview diagram, prose and Depicts, both indexes, the log, and the how-to's table, example, timeout text and Ollama num_ctx note. They agree with the code. Nothing in the repo still tells users to set ANTHROPIC_API_KEY.
+
+## Findings
+
+- f1 (bug, not blocking): demonstrated with `printf 'a\x0cb\nc\rd\ntarget\n'`. Search returns `x.txt:5: target` and read returns `3|target`. The fix is to split the decoded text on "\n" only (and strip a trailing "\r"), matching read_file. Separately, read_file counts a line longer than 100 KB as two numbered chunks, which shifts later numbers too. Its docstring says the line is split, but not that the numbering shifts.
+- f2 (hardening, not blocking): `-z` in Hermes 0.19.0 takes no stdin or file form that I could find. A length check before the call, with a clear message, would turn the E2BIG into an error that says why. This is far off for real bundles: this repo's due list is 1.7 KB for 12 concepts.
+- f3 (hardening, not blocking): add HERMES_MANAGED_DIR to the `unset` line. /etc/hermes is also read when present; that is the runner's own setup, and a note in the comment would cover it.
+
+## Notes
+
+- Dropping ripgrep differs from the plan's text ("The runner installs ripgrep"), but it is right. No kmctl tool runs a program, and nothing else in the run calls rg.
+- The narrow N999 per-file ignore is justified: Hermes names a plugin by its hyphenated folder, and nothing imports it.
+- Placeholder settings: I would keep `https://openrouter.ai/api/v1` with `qwen/qwen3-coder`. OpenRouter is itself a router to many vendors, so it is no tie to one, and a working value shows the shape better than `https://YOUR-ENDPOINT/v1`. One risk: someone who sets AUDIT_API_KEY to another vendor's key before changing base_url sends that key to OpenRouter. A one-line warning in the workflow comment ("the key is sent to base_url") would cover it.
+- READ_BYTES of 100 KB is about 25K tokens, a large share of the 64K context the how-to recommends for Ollama. Worth watching on small models; no change asked.
+- `ignore_case` takes any truthy value, so the string "false" turns folding on. Models send JSON booleans, so this is harmless.

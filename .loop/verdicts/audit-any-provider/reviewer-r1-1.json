@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "kmctl_search_files numbers lines with str.splitlines(), which also breaks on \\r, \\x0b, \\x0c, \\x1c-\\x1e, \\x85 and U+2028, while kmctl_read_file numbers lines by \\n. In a file holding a form feed or a lone \\r, search reports a different line number than read for the same line, and the auditor cites path:line from search as evidence.",
+      "anchor": "action/hermes/kmctl-read/__init__.py:196",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "The whole prompt (skills, auditor text and the due list) goes to hermes as one argv string after -z. Linux caps one argument at 128 KiB (MAX_ARG_STRLEN), so a due list of roughly 800 or more concepts makes exec fail with E2BIG; the run then fails with \"hermes exited 126\" instead of a message that says why. The old script sent the prompt on stdin, so this ceiling is new.",
+      "anchor": "action/knowledge-audit.sh:185",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "The script unsets HERMES_PROFILE, HERMES_CONFIG, HERMES_ENV and HERMES_ENABLE_PROJECT_PLUGINS, but Hermes 0.19.0 also reads HERMES_MANAGED_DIR (hermes_cli/managed_scope.py), a managed config and .env applied last with override, which beats the config the script writes. It belongs in the same unset list.",
+      "anchor": "action/knowledge-audit.sh:175",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "ce97ede2cbe85dcf1072f462ccfc1dc5238633ba71a9de378909a6fd92e65d69",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "at": "2026-10-15T15:17:56+00:00"
+}
