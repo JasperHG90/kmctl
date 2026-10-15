@@ -1,19 +1,13 @@
 {
   "schema_version": "1.0",
   "slug": "handoff-and-continue-skills",
-  "stage": "blocked",
+  "stage": "ready",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 3,
   "extra_plan_rounds": 0,
-  "extra_review_rounds": 0,
-  "blocker": {
-    "code": "review-cap",
-    "message": "the review round cap (3) is reached with 1 finding(s) to review again",
-    "plan_hash": "8cff989db4ecfb2c253edb2609b664f89bdca79f4ff5a1ff9ccfecb83fc91cdd",
-    "at": "2026-10-15T11:50:50+00:00",
-    "resign_eval": false
-  },
+  "extra_review_rounds": 1,
+  "blocker": null,
   "fix": {
     "round": 3,
     "fingerprint": "aad07b039d15d52de38020ce69d891b208a18986433c69d7dcb34bda571b60e6",
@@ -111,7 +105,14 @@
       "at": "2026-10-15T11:51:03+00:00"
     }
   ],
-  "overrides": [],
+  "overrides": [
+    {
+      "edge": "blocked->ready",
+      "reason": "the only open finding (f7, a docstring line) is fixed in the tree and waived as non-blocking; every functional finding passed review",
+      "by": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+      "at": "2026-10-15T11:51:38+00:00"
+    }
+  ],
   "round": {
     "kind": "review",
     "n": 3,
@@ -201,8 +202,14 @@
       "to": "blocked",
       "at": "2026-10-15T11:50:50+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "blocked",
+      "to": "ready",
+      "at": "2026-10-15T11:51:38+00:00",
+      "by": "unblock"
     }
   ],
   "by": "process:loopctl/2.0.1.dev77+gbd4712cf8.d20261015",
-  "at": "2026-10-15T11:51:03+00:00"
+  "at": "2026-10-15T11:51:38+00:00"
 }
