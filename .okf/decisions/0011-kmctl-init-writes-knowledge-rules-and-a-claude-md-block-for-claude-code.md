@@ -83,3 +83,26 @@ Rejected:
   overwrites it, so an upgrade does not reach it.
 - Every new bundle starts with decision 0001, so a user's first
   `kmctl new decision` is numbered 0002.
+
+## Correction, 2026-10-15
+
+The Decision said that with neither `CLAUDE.md` nor `AGENTS.md` init writes
+`CLAUDE.md`. That left a repository with only `AGENTS.md` without a
+`CLAUDE.md`, and the operator asked for one whenever it is missing. Claude
+Code 2.1.300 reads `AGENTS.md` only when there is no `CLAUDE.md`, or when
+`CLAUDE.md` imports it with `@AGENTS.md`, which loads it once (loop spike
+`init-claude-md-always/1`). So:
+
+- With `AGENTS.md` and no `CLAUDE.md`, init adds the block to `AGENTS.md`
+  and writes a `CLAUDE.md` holding only `@AGENTS.md`. With neither, it
+  writes `CLAUDE.md` with the block, as before.
+- A `CLAUDE.md` with an `@AGENTS.md` line, beside an `AGENTS.md`, never gets
+  the block, since it already loads `AGENTS.md`'s; a second init changes
+  nothing.
+- A file counts as missing only when no directory entry exists. A
+  `CLAUDE.md` or `AGENTS.md` symlink that is dangling or resolves outside the
+  resolved repository root is left alone, with a warning naming the link and
+  its target, so init never creates or edits a file through it. A symlink
+  inside the repository is written through once, as before. When `AGENTS.md`
+  is such a link and there is no `CLAUDE.md`, init writes no `CLAUDE.md` and
+  the warning says to fix the link.

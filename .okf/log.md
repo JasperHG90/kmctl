@@ -71,3 +71,7 @@
 - Updated `architecture/overview` for ADR 0011: the diagram and the CLI table
   show init writing `.claude/rules/` from `repo_rules/`, the agent-file block,
   and the first decision through `concepts.py`; Depicts names `repo_rules/`.
+- Appended a Correction to `decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code`:
+  beside an `AGENTS.md`, init writes a `CLAUDE.md` holding only `@AGENTS.md`,
+  and it leaves a dangling or outside-the-repository `CLAUDE.md` or
+  `AGENTS.md` symlink alone with a warning.
