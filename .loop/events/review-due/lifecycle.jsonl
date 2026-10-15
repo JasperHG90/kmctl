@@ -12,3 +12,13 @@
 {"at": "2026-10-15T10:45:18+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "building"}
 {"at": "2026-10-15T10:45:22+00:00", "by": "advance", "from": "building", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
 {"at": "2026-10-15T10:45:23+00:00", "binds": "b56bf3ba7c3835047d8efb9cc959b5736d49f430622911a52900d75e2c187ba6", "kind": "round-start", "n": 1, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "b648ccbd896450cf983078aece6b6ff98217cc44"}
+{"at": "2026-10-15T10:47:46+00:00", "by": "review close", "from": "verifying", "kind": "transition", "schema_version": "1.0", "to": "fixing"}
+{"at": "2026-10-15T10:47:46+00:00", "dispatched_at": "2026-10-15T10:45:23+00:00", "kind": "round-close", "n": 1, "outcome": "fail", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-15T10:47:30+00:00"}}
+{"at": "2026-10-15T10:48:13+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "fixing"}
+{"at": "2026-10-15T10:48:16+00:00", "by": "review fixed", "from": "fixing", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
+{"at": "2026-10-15T10:48:21+00:00", "binds": "58eb8bdae5142b763aacc3b33cadfb8cb165cac96af6afc36139df6ce538ce05", "kind": "round-start", "n": 2, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "c711f8153ba390c0e0e1c3117f69711c0e17c098"}
+{"at": "2026-10-15T10:49:42+00:00", "by": "review close", "from": "verifying", "kind": "transition", "schema_version": "1.0", "to": "fixing"}
+{"at": "2026-10-15T10:49:42+00:00", "dispatched_at": "2026-10-15T10:48:21+00:00", "kind": "round-close", "n": 2, "outcome": "fail", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-15T10:49:29+00:00"}}
+{"at": "2026-10-15T10:49:51+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "fixing"}
+{"at": "2026-10-15T10:50:00+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "894abe62fbe3b3f14a7460315775c504b41b8316"}
+{"at": "2026-10-15T10:50:05+00:00", "branch": "loop/review-due", "kind": "land", "schema_version": "1.0", "sha": "d595cff4b31a32d3ea39ed1c037430bd9d966f84"}

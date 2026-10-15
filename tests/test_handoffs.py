@@ -105,3 +105,14 @@ def test_handoffs_skip_non_utf8_file_with_a_warning(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.output
     assert [h["id"] for h in json.loads(result.stdout)] == ["handoffs/good"]
     assert "latin.md" in result.stderr
+
+
+def test_has_passed_at_the_exact_instant() -> None:
+    from datetime import UTC, datetime
+
+    from kmctl.okf import has_passed
+
+    now = datetime(2026, 10, 15, 12, 0, tzinfo=UTC)
+
+    assert has_passed("2026-10-15T12:00:00Z", now)
+    assert not has_passed("2026-10-15T12:00:01Z", now)

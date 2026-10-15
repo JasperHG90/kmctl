@@ -11,6 +11,7 @@ import typer
 from kmctl.checks import run_checks
 from kmctl.concepts import ConceptError, Kind, new_concept
 from kmctl.handoffs import live_handoffs
+from kmctl.review_due import review_due
 from kmctl.scaffold import scaffold
 
 app = typer.Typer(
@@ -168,6 +169,63 @@ def handoffs(
         typer.echo(f"{h.date}  {h.title}  ({h.path})")
         if h.description:
             typer.echo(f"    {h.description}")
+
+
+review_app = typer.Typer(
+    help="Find knowledge that is due for review. Verbs: due.",
+    no_args_is_help=True,
+)
+app.add_typer(review_app, name="review")
+
+
+@review_app.command(
+    "due",
+    epilog=(
+        "Examples:\n\n"
+        "  kmctl review due\n\n"
+        "  kmctl review due --path ../other-repo --json\n\n"
+        "Always exits 0: being due is a report, not a failure. A source that "
+        "resolves to no tracked file or folder is listed as a notice, not a reason."
+    ),
+)
+def due(
+    path: Annotated[
+        Path,
+        typer.Option(
+            "--path",
+            metavar="../other-repo",
+            exists=True,
+            file_okay=False,
+            help="The repository to read: an existing folder. Default: the current directory.",
+        ),
+    ] = Path("."),
+    as_json: Annotated[
+        bool,
+        typer.Option(
+            "--json",
+            help="Print one JSON object (due, notices, expired_handoffs, history_skipped), for scripts.",
+        ),
+    ] = False,
+) -> None:
+    """List concepts in .okf/ due for review, with the reason for each."""
+    result = review_due(path)
+    if as_json:
+        typer.echo(json.dumps(asdict(result)))
+        return
+    if result.history_skipped:
+        typer.echo(f"note: {result.history_skipped}")
+    for d in result.due:
+        typer.echo(f"due     {d.id}  ({'; '.join(d.reasons)})")
+    for h in result.expired_handoffs:
+        typer.echo(f"expired {h.id}  {h.title}")
+    for n in result.notices:
+        typer.echo(
+            f"notice  {n.id}  {n.message}: {n.resource}"
+            if n.resource
+            else f"notice  {n.id}  {n.message}"
+        )
+    if not (result.due or result.expired_handoffs):
+        typer.echo("nothing is due for review")
 
 
 @app.command(

@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "A tracked source whose path has non-ASCII characters never resolves, so its change is missed and it is reported as 'source not resolved'. `git ls-files` quotes such paths by default (core.quotePath), e.g. \"src/caf\\303\\251.py\", and the set lookup never matches. Use `git ls-files -z` and split on NUL, with a test.",
+      "anchor": "src/kmctl/review_due.py:151",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "has_passed treats stale_after as passed only when it is strictly before now, but OKF 5.5 says a concept is stale when now >= stale_after. At the exact instant a concept is not reported due.",
+      "anchor": "src/kmctl/okf.py:61",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "A directory source such as 'src/pkg' is never a tracked file, so it becomes a 'source not resolved' notice even though `git log -- src/pkg` would give its last change. This matches the plan's wording but makes a common source form unusable.",
+      "anchor": "src/kmctl/review_due.py:104",
+      "category": "design",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "open",
+      "claim": "test_exit_and_json never asserts that the fixture is actually due, so r7's 'nonzero when concepts are due' could pass on a fixture with nothing due. It also does not check the --json exit code.",
+      "anchor": "tests/test_review_due.py:181",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r7"
+    }
+  ],
+  "binds": {
+    "fingerprint": "b56bf3ba7c3835047d8efb9cc959b5736d49f430622911a52900d75e2c187ba6",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T10:47:30+00:00"
+}
