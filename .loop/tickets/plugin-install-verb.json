@@ -3,7 +3,7 @@
   "slug": "plugin-install-verb",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "b2df9113d0a40c41bb49b69f9dc5730b53f7108100a1bc535265052ac901f4d1",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "a64f2f39a0143ecd404d2641da5e1ef9d288f2291291993170acada13f8d4e4a",
+    "started_at": "2026-10-15T08:18:11+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "a64f2f39a0143ecd404d2641da5e1ef9d288f2291291993170acada13f8d4e4a",
   "intent": {
     "epic": "plugin",
     "depends_on": [
@@ -46,5 +65,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T08:18:01+00:00"
+  "at": "2026-10-15T08:18:11+00:00"
 }
