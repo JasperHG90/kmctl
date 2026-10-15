@@ -3,7 +3,7 @@
   "slug": "review-hardening",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 1,
+  "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -30,9 +30,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 1,
-    "binds": "701890a2b70989d5536ec42c3404c017c2a1dc53c8d90d9ea07f42a9627d3ad4",
-    "started_at": "2026-10-15T11:55:23+00:00",
+    "n": 2,
+    "binds": "6c21f5ac926128be3dfbc57c1bb0e9df59d1016400ae0d6fcc40c070a9cfee8b",
+    "started_at": "2026-10-15T11:57:00+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -45,10 +45,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "701890a2b70989d5536ec42c3404c017c2a1dc53c8d90d9ea07f42a9627d3ad4",
+  "plan_hash": "6c21f5ac926128be3dfbc57c1bb0e9df59d1016400ae0d6fcc40c070a9cfee8b",
   "intent": {
     "epic": "cli",
     "depends_on": [],
@@ -63,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev77+gbd4712cf8.d20261015",
-  "at": "2026-10-15T11:56:59+00:00"
+  "at": "2026-10-15T11:57:00+00:00"
 }
