@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "docs/README.md list-item lines were skipped whole, hiding broken out-of-folder, / and second links",
+      "anchor": "src/kmctl/checks.py:260",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "kmctl check help and the checks module docstring did not name the link check",
+      "anchor": "src/kmctl/__init__.py:118",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "the r3 test did not assert the exact finding line",
+      "anchor": "tests/test_check.py:276",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "dc9d53b7415c86f6dca517a847224805b176f0fa6aaa2a33188b0059e998e6a3",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T11:05:46+00:00"
+}
