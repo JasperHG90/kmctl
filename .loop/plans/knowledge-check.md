@@ -1,7 +1,7 @@
 ---
 type: plan
 title: 'Plan: knowledge-check'
-description: "kmctl check runs the deterministic knowledge checks: indexes match their folders, links resolve, prototypes hold their scripts."
+description: "kmctl check fails when an index disagrees with its folder in docs/ or an .okf/ section."
 slug: knowledge-check
 epic: cli
 depends_on: []
@@ -19,15 +19,9 @@ Relayed from: none
 
 ## Intent
 
-`kmctl check` reports, with a non-zero exit when any fails:
+`kmctl check` reports, with a non-zero exit when any fails, that every page under `docs/` and every concept in an `.okf/` section is listed in its index, and every index entry exists. `--json` for the CI action. It does not repeat what the okf validator checks. Later checks (links, prototypes) add to this command.
 
-- every page under `docs/` and every concept in an `.okf/` section is listed in its index, and every index entry exists;
-- every relative markdown link in `docs/` and `.okf/` resolves;
-- every prototype folder has a `README.md`.
-
-`--json` for the CI action. It does not repeat what the okf validator checks.
-
-Done when tests cover a passing and a failing fixture for each check.
+Done when tests cover a passing and a failing fixture for a missing entry and for an entry with no file.
 
 ## Could invalidate this plan
 
