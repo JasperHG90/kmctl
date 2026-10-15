@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "slug": "review-hardening",
+  "stage": "planning",
+  "attempts": 0,
+  "plan_rounds": 0,
+  "review_rounds": 0,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": null,
+  "ask": null,
+  "split": null,
+  "split_plan_hash": null,
+  "split_hold": false,
+  "commit_sha": null,
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": null,
+  "branch": null,
+  "stamps": [],
+  "signoff": null,
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [],
+  "resigns": [],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [],
+  "round": null,
+  "plan_hash": "701890a2b70989d5536ec42c3404c017c2a1dc53c8d90d9ea07f42a9627d3ad4",
+  "intent": {
+    "epic": "cli",
+    "depends_on": [],
+    "priority": 12
+  },
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-10-15T11:55:06+00:00",
+      "by": "register"
+    }
+  ],
+  "by": "process:loopctl/2.0.1.dev77+gbd4712cf8.d20261015",
+  "at": "2026-10-15T11:55:06+00:00"
+}
