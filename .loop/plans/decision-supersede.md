@@ -19,9 +19,15 @@ Relayed from: none
 
 ## Intent
 
-`kmctl decision supersede OLD --by NEW` sets the old record's `decision_status` to `Superseded by ADR NEW` and `status: deprecated`, appends a dated correction section to it that links the new record, adds a link back in the new record, and updates the decisions index. It never rewrites the old record's body (`.claude/rules/okf-bundle.md`).
+`kmctl decision supersede OLD --by NEW` does, in one change:
 
-Done when tests show both records and the index after a supersede, and a refusal when either record does not exist.
+- sets the old record's `status` to `deprecated`. kmctl writes only fields the OKF v0.2 spec defines (I4), so it does not touch `decision_status`, which some repositories add by hand;
+- appends a dated `## Correction, YYYY-MM-DD` section to the old record saying "Superseded by ADR NEW", linking the new record. It never rewrites the old record's body (`.claude/rules/okf-bundle.md`);
+- appends a line to the new record linking back to the old one;
+- marks the old entry in the decisions index with "(superseded by ADR NEW)";
+- appends a dated line to `.okf/log.md` naming both concept ids, so the change passes the rule that every touched concept is logged.
+
+Done when tests show both records, the index and the log after a supersede, the bundle passes the pinned okf validator in strict mode, and it refuses when either record does not exist or OLD is already deprecated.
 
 ## Could invalidate this plan
 
