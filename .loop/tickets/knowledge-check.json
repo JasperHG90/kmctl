@@ -1,14 +1,70 @@
 {
   "schema_version": "1.0",
   "slug": "knowledge-check",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "4d13ec08deff784f6c8690323c9ce91a815180e69cd24aca5e96f35f0dbb469b",
+    "tree": "ee6cf96da9a282213649eb77b9ae5d1cd339e5e6",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "blocking",
+        "judgement": null,
+        "paths": [
+          "src/kmctl/checks.py",
+          "tests/test_check.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f2",
+        "outcome": "sent-back",
+        "by": "judgement",
+        "judgement": "j-20261015T104007+0000-734b8733",
+        "paths": [
+          "src/kmctl/checks.py",
+          "tests/test_check.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f3",
+        "outcome": "sent-back",
+        "by": "judgement",
+        "judgement": "j-20261015T104008+0000-1537d84e",
+        "paths": [
+          "src/kmctl/checks.py",
+          "tests/test_check.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f5",
+        "outcome": "sent-back",
+        "by": "judgement",
+        "judgement": "j-20261015T104009+0000-fe70610b",
+        "paths": [
+          "src/kmctl/checks.py",
+          "tests/test_check.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f6",
+        "outcome": "cleared-unreviewed",
+        "by": "judgement",
+        "judgement": "j-20261015T104010+0000-0138c0a9",
+        "paths": [
+          "tests/test_help.py"
+        ]
+      }
+    ],
+    "at": "2026-10-15T10:40:10+00:00"
+  },
   "ask": null,
   "split": "j-20261015T081750+0000-ba83af48",
   "split_plan_hash": "b79d7ea5fa648b5d08544f4111e292c275280631ebe2f1897bfb731bf3e11d56",
@@ -134,8 +190,14 @@
       "to": "fixing",
       "at": "2026-10-15T10:38:18+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-15T10:40:10+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T10:39:50+00:00"
+  "at": "2026-10-15T10:40:10+00:00"
 }
