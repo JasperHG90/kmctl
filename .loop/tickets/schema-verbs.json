@@ -3,7 +3,7 @@
   "slug": "schema-verbs",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 2,
+  "plan_rounds": 3,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -103,9 +103,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 2,
-    "binds": "9a425d48033a9da5288452b87aec30d4833d2769fdbb7187c1db1f7bf911ce81",
-    "started_at": "2026-10-15T17:25:37+00:00",
+    "n": 3,
+    "binds": "1ded8de3328cc33d3b3b3830fbd48422056c1ff77b3052428b1b3fc4243666a4",
+    "started_at": "2026-10-15T17:27:36+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -118,10 +118,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "9a425d48033a9da5288452b87aec30d4833d2769fdbb7187c1db1f7bf911ce81",
+  "plan_hash": "1ded8de3328cc33d3b3b3830fbd48422056c1ff77b3052428b1b3fc4243666a4",
   "intent": {
     "epic": "knowledge",
     "depends_on": [
@@ -138,5 +138,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T17:27:35+00:00"
+  "at": "2026-10-15T17:27:36+00:00"
 }
