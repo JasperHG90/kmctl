@@ -3,7 +3,7 @@
   "slug": "init-claude-md-always",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -54,7 +54,26 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "f1a341778e4b7618c87319b5d84a0375bdbe1a85f29aa073e4c424941a8a2d73",
+    "started_at": "2026-10-15T16:32:23+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
   "plan_hash": "f1a341778e4b7618c87319b5d84a0375bdbe1a85f29aa073e4c424941a8a2d73",
   "intent": {
     "epic": "knowledge",
@@ -72,5 +91,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T16:32:13+00:00"
+  "at": "2026-10-15T16:32:23+00:00"
 }
