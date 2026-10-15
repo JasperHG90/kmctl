@@ -16,9 +16,11 @@ jobs:
   audit:
     runs-on: ubuntu-latest
     steps:
+      # No token left in git config for the model to read; full history for review due.
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
       - uses: ./
         with:
           mode: audit
