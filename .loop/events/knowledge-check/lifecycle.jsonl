@@ -1,2 +1,3 @@
 {"at": "2026-10-15T05:10:21+00:00", "kind": "register", "schema_version": "1.0", "stage": "planning"}
 {"at": "2026-10-15T08:08:28+00:00", "binds": "0a236d657a14e1f3855f6e81931d7535a0dfc2678549bc4246d198a8ab295102", "kind": "round-start", "n": 1, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
+{"at": "2026-10-15T08:17:33+00:00", "dispatched_at": "2026-10-15T08:08:28+00:00", "kind": "round-close", "n": 1, "outcome": "fail", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-10-15T08:13:02+00:00"}}
