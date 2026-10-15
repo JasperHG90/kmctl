@@ -19,7 +19,9 @@
   "archived": false,
   "worktree": "/home/vscode/kmctl.worktrees/handoffs-list",
   "branch": "loop/handoffs-list",
-  "stamps": [],
+  "stamps": [
+    "b06faa8700ab6dfa9b0bee720e82cdefdd6a360443eee06564f0c9f1ddc25132"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
     "hash": "1c3c9d2a638ca8725df99117fab6e8d189ae5274f58cde6a438350f78c766068",
@@ -108,5 +110,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T10:36:39+00:00"
+  "at": "2026-10-15T10:37:24+00:00"
 }
