@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {"id": "r1", "behavior": "The audit runs Hermes once per batch of at most ten due concepts, each prompt well under the argument limit, and merges every batch's findings (f2).", "fails_when": "with a stub hermes and 25 in-scope due concepts, hermes is not called 3 times, a call carries more than ten concepts or a prompt of 64 KiB or more, or the summary and body do not hold all 25 findings", "command": "uv run pytest tests/test_ci_audit.py -k batches -q"},
+    {"id": "r2", "behavior": "A batch whose run gives no usable findings fails the step, naming the batch, and posts no body.", "fails_when": "with a stub hermes that answers the second of three batches with no findings block, the script exits 0, the message does not name the batch, or a body is written under RUNNER_TEMP", "command": "uv run pytest tests/test_ci_audit.py -k batch_without_findings -q"},
+    {"id": "r3", "behavior": "HERMES_MANAGED_DIR set in the caller's environment does not reach hermes (f3).", "fails_when": "the stub hermes's recorded environment holds HERMES_MANAGED_DIR", "command": "uv run pytest tests/test_ci_audit.py -k managed_dir -q"},
+    {"id": "r4", "behavior": "The other audit and plugin tests still pass.", "fails_when": "any test in tests/test_ci_audit.py, tests/test_hermes_plugin.py or tests/test_action.py fails", "command": "uv run pytest tests/test_ci_audit.py tests/test_hermes_plugin.py tests/test_action.py -q"}
+  ]
+}
