@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
-from kmctl.okf import BadFrontMatter, as_datetime, front_matter, has_passed
+from kmctl.okf import BadFrontMatter, as_datetime, field, front_matter, has_passed
 
 _OLDEST = datetime.min.replace(tzinfo=UTC)
 
@@ -54,22 +54,23 @@ def live_handoffs(
             if warnings is not None:
                 warnings.append(f"skipped {error}; fix its front matter")
             continue
-        if has_passed(meta.get("stale_after"), now):
+        if has_passed(field(meta, "stale_after"), now):
             continue
-        generated = meta.get("generated")
-        at = generated.get("at") if isinstance(generated, dict) else None
-        found.append((as_datetime(at) or _OLDEST, path, meta, at))
+        at = field(meta, "generated.at")
+        title = str(field(meta, "title", path.stem))
+        description = str(field(meta, "description", ""))
+        found.append((as_datetime(at) or _OLDEST, path, title, description, at))
     found.sort(key=lambda item: item[1].name)
     found.sort(key=lambda item: item[0], reverse=True)
     return [
         Handoff(
             id=path.relative_to(root / ".okf").with_suffix("").as_posix(),
             path=path.relative_to(root).as_posix(),
-            title=str(meta.get("title", path.stem)),
-            description=str(meta.get("description", "")),
+            title=title,
+            description=description,
             date=_date_text(at),
         )
-        for _, path, meta, at in found
+        for _, path, title, description, at in found
     ]
 
 

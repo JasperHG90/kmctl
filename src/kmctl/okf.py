@@ -37,6 +37,74 @@ def front_matter(path: Path) -> dict[str, Any]:
     return data if isinstance(data, dict) else {}
 
 
+#: The front matter keys kmctl writes or reads (invariant I4), with where each comes
+#: from. Nested keys are paths: ``a.b`` for a mapping, ``a[].b`` for a list of them.
+ALLOWED_FIELDS: dict[str, str] = {
+    "okf_version": "OKF v0.2 sections 8 and 12, bundle root index",
+    "type": "OKF v0.2 section 4.1, required",
+    "title": "OKF v0.2 section 4.1",
+    "description": "OKF v0.2 section 4.1",
+    "tags": "OKF v0.2 section 4.1",
+    "generated": "OKF v0.2 section 5.2",
+    "generated.by": "OKF v0.2 section 5.2",
+    "generated.at": "OKF v0.2 section 5.2",
+    "verified": "OKF v0.2 section 5.2",
+    "verified[].by": "OKF v0.2 section 5.2",
+    "verified[].at": "OKF v0.2 section 5.2",
+    "sources": "OKF v0.2 section 5.1",
+    "sources[].id": "OKF v0.2 section 5.1",
+    "sources[].resource": "OKF v0.2 section 5.1",
+    "status": "OKF v0.2 section 5.4",
+    "stale_after": "OKF v0.2 section 5.5",
+    "handoff_key": "kmctl extension, ADR 0009",
+}
+
+#: List fields whose items may be plain strings (the resource itself) instead of mappings.
+_STRING_ITEMS = {"sources"}
+#: List fields that may also be written as one mapping instead of a list of them.
+_SINGLE_MAPPING = {"verified"}
+
+
+def field(meta: dict[str, Any], path: str, default: Any = None) -> Any:
+    """Read one front matter key by its allowed path; the only way kmctl reads front matter.
+
+    ``a`` reads a key, ``a.b`` a key of a mapping, and ``a[].b`` returns a list with
+    ``b`` of each item; ``verified`` may also be one mapping, and in ``sources``
+    a plain string item is its own resource. Any other non-list reads as ``[]``. Missing values give ``default`` (or
+    ``[]`` for a list path).
+
+    Raises
+    ------
+    KeyError
+        When ``path`` is not in ``ALLOWED_FIELDS`` (invariant I4).
+    """
+    if path not in ALLOWED_FIELDS:
+        raise KeyError(
+            f"{path!r} is not an allowed OKF field; add it to ALLOWED_FIELDS with an ADR"
+        )
+    if "[]." in path:
+        head, sub = path.split("[].", 1)
+        value = meta.get(head)
+        if isinstance(value, list):
+            items = value
+        elif isinstance(value, dict) and head in _SINGLE_MAPPING:
+            items = [value]
+        else:
+            items = []  # a malformed value reads as nothing, as before
+        out = []
+        for item in items:
+            if isinstance(item, dict) and item.get(sub) is not None:
+                out.append(item[sub])
+            elif isinstance(item, str) and head in _STRING_ITEMS:
+                out.append(item)
+        return out
+    if "." in path:
+        head, sub = path.split(".", 1)
+        value = meta.get(head)
+        return value.get(sub, default) if isinstance(value, dict) else default
+    return meta.get(path, default)
+
+
 def as_datetime(value: object) -> datetime | None:
     """A front matter date or datetime as an aware UTC datetime; a bare date is its midnight."""
     if isinstance(value, datetime):

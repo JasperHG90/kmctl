@@ -27,12 +27,12 @@ from typing import Literal
 from urllib.parse import unquote
 
 RESERVED = {"index.md", "log.md"}
-_TARGET = r"(<[^>\n]*>|[^)\s]+)(?:\s+(?:\"[^\"]*\"|'[^']*'))?"
+_TARGET = r"(<[^<>\n]*>|[^<)\s][^)\s]*)(?:\s+(?:\"[^\"]*\"|'[^']*'))?"
 _ENTRY = re.compile(r"^\s*[-*+]\s+.*?\[[^\]]*\]\(" + _TARGET + r"\)")
 _FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
 _LINK = re.compile(r"!?\[[^\]]*\]\(" + _TARGET + r"\)")
 # A footnote definition ([^1]: text) is not a link.
-_REF_DEF = re.compile(r"^ {0,3}\[(?!\^)[^\]]+\]:\s*(<[^>\n]*>|\S+)")
+_REF_DEF = re.compile(r"^ {0,3}\[(?!\^)[^\]]+\]:\s*(<[^<>\n]*>(?=\s|$)|[^<\s]\S*)")
 _CODE_SPAN = re.compile(r"`[^`]*`")
 
 

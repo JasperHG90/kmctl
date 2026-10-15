@@ -12,7 +12,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from kmctl.concepts import ConceptError, append_log
-from kmctl.okf import BadFrontMatter, front_matter
+from kmctl.okf import BadFrontMatter, field, front_matter
 
 
 @dataclass(frozen=True)
@@ -98,7 +98,7 @@ def supersede(
         )
     old_path, new_path = _record(decisions, old_n), _record(decisions, new_n)
     try:
-        if front_matter(old_path).get("status") == "deprecated":
+        if field(front_matter(old_path), "status") == "deprecated":
             raise ConceptError(
                 f"decision {old_n} is already deprecated; supersede the record that replaced it"
             )
