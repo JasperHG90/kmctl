@@ -4,7 +4,7 @@
   "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 2,
-  "review_rounds": 0,
+  "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
@@ -64,24 +64,24 @@
   "waivers": [],
   "overrides": [],
   "round": {
-    "kind": "plan",
-    "n": 2,
-    "binds": "9cddcde2bc49ce00eca7d1221a1a899e6e62ff6d3e40283ea781cdbb21ce07b3",
-    "started_at": "2026-10-15T08:23:02+00:00",
+    "kind": "review",
+    "n": 1,
+    "binds": "b06faa8700ab6dfa9b0bee720e82cdefdd6a360443eee06564f0c9f1ddc25132",
+    "started_at": "2026-10-15T10:37:29+00:00",
     "passes": [
-      "plan-reviewer"
+      "reviewer"
     ],
-    "tree": null,
-    "plan_hash": null,
-    "eval_hash": null,
+    "tree": "368dbcafc0cb6ff48ae9759b5e25e23c1402f13d",
+    "plan_hash": "9cddcde2bc49ce00eca7d1221a1a899e6e62ff6d3e40283ea781cdbb21ce07b3",
+    "eval_hash": "1c3c9d2a638ca8725df99117fab6e8d189ae5274f58cde6a438350f78c766068",
     "scope": "full",
     "sent_back": [],
     "since": null,
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "pass"
+    "closed": false,
+    "outcome": null
   },
   "plan_hash": "9cddcde2bc49ce00eca7d1221a1a899e6e62ff6d3e40283ea781cdbb21ce07b3",
   "intent": {
