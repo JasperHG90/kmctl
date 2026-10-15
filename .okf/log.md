@@ -75,3 +75,7 @@
   beside an `AGENTS.md`, init writes a `CLAUDE.md` holding only `@AGENTS.md`,
   and it leaves a dangling or outside-the-repository `CLAUDE.md` or
   `AGENTS.md` symlink alone with a warning.
+- Updated `architecture/overview`: the CLI table shows `kmctl new` writing
+  `stale_after` from `--stale-after` and `sources` from `--source`, each source
+  found through `okf.py` the way `review_due.py` finds it.
+- Corrected `decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code`: the kmctl block now has four duties, adding `--source` and `--stale-after`.

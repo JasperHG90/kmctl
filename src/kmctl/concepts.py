@@ -4,6 +4,7 @@ The agent writes the prose; this writes the structure, following the index
 format in ``kmctl.checks`` and only allowed OKF fields plus `handoff_key` (I4, ADR 0009).
 """
 
+import calendar
 import json
 import re
 import unicodedata
@@ -13,7 +14,13 @@ from importlib.metadata import version
 from pathlib import Path
 from typing import Literal
 
-from kmctl.okf import BadFrontMatter, field, front_matter
+from kmctl.okf import (
+    BadFrontMatter,
+    as_datetime,
+    field,
+    front_matter,
+    source_candidates,
+)
 
 Kind = Literal["decision", "practice", "proposal", "prototype", "handoff"]
 
@@ -35,6 +42,13 @@ SKELETONS: dict[str, list[str]] = {
 
 #: How long a new handoff stays live before kmctl review due lists it as expired.
 HANDOFF_DAYS = 14
+
+#: The kinds that take ``--source``; kmctl review due never reads a handoff's sources.
+SOURCE_KINDS = ("decision", "practice", "proposal", "prototype")
+
+_STAMP = "%Y-%m-%dT%H:%M:%SZ"
+#: ASCII digits only, and at most six, so a huge count is refused rather than crashing int().
+_DURATION = re.compile(r"([0-9]{1,6})([dwmy])")
 
 
 class ConceptError(Exception):
@@ -74,6 +88,94 @@ def link_text(title: str) -> str:
     return one_line(title).replace("[", "(").replace("]", ")")
 
 
+def _add_months(when: datetime, months: int) -> datetime:
+    """``when`` moved ``months`` calendar months on, its day clamped to the new month's last day."""
+    year, month = divmod(when.month - 1 + months, 12)
+    year += when.year
+    day = min(when.day, calendar.monthrange(year, month + 1)[1])
+    return when.replace(year=year, month=month + 1, day=day)
+
+
+def stale_after_time(value: str, now: datetime) -> datetime:
+    """The UTC time ``--stale-after`` names, which must be after ``now``.
+
+    Parameters
+    ----------
+    value : str
+        A duration from ``now`` (``30d`` days, ``12w`` weeks, ``6m`` calendar
+        months, ``1y`` calendar years), a date (``2027-01-15``, read as its
+        midnight UTC) or a timestamp (``2027-01-15T08:00:00Z``; one without an
+        offset is UTC).
+    now : datetime
+        The time the concept is written.
+
+    Returns
+    -------
+    datetime
+        The time, in UTC.
+
+    Raises
+    ------
+    ConceptError
+        When ``value`` is none of those forms, or is not after ``now``. A zero
+        duration and today's date are both refused.
+    """
+    if match := _DURATION.fullmatch(value):
+        count, unit = int(match.group(1)), match.group(2)
+        try:
+            if unit == "d":
+                when = now + timedelta(days=count)
+            elif unit == "w":
+                when = now + timedelta(weeks=count)
+            else:
+                when = _add_months(now, count * (12 if unit == "y" else 1))
+        except (OverflowError, ValueError) as error:
+            raise ConceptError(
+                f"--stale-after {value!r} is too far in the future"
+            ) from error
+    else:
+        parsed = as_datetime(value) if re.match(r"\d{4}-\d{2}-\d{2}", value) else None
+        if parsed is None:
+            raise ConceptError(
+                f"--stale-after {value!r} is not a duration (30d, 12w, 6m, 1y) "
+                "or a date (2027-01-15, or 2027-01-15T08:00:00Z)"
+            )
+        when = parsed
+    if when <= now:
+        raise ConceptError(
+            f"--stale-after {value!r} is not in the future; give a later date or a duration"
+        )
+    return when.astimezone(UTC)
+
+
+def _check_sources(
+    root: Path, okf: Path, concept: Path, sources: list[str]
+) -> list[str]:
+    """``sources`` stripped, each one checked to exist on disk inside ``root``.
+
+    The lookup is the one kmctl review due uses, so the two never disagree;
+    git is not needed, so a file not yet added is accepted.
+
+    Raises
+    ------
+    ConceptError
+        When a source is blank, or names no file or folder in the repository.
+    """
+    checked = []
+    for resource in sources:
+        clean = resource.strip()
+        if not clean or not any(
+            (root / rel).exists()
+            for rel in source_candidates(root, okf, concept, clean)
+        ):
+            raise ConceptError(
+                f"--source {resource!r} names no file or folder in the repository; "
+                "give a path from the repository root, or one starting with / from .okf/"
+            )
+        checked.append(clean)
+    return checked
+
+
 def _next_number(section: Path) -> int:
     numbers = [
         int(m.group(1))
@@ -84,9 +186,20 @@ def _next_number(section: Path) -> int:
 
 
 def _front_matter(
-    kind: str, title: str, description: str, now: datetime, key: str | None = None
+    kind: str,
+    title: str,
+    description: str,
+    now: datetime,
+    key: str | None = None,
+    stale_after: datetime | None = None,
+    sources: list[str] | None = None,
 ) -> str:
-    stamp = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+    """The front matter block for a new or updated concept.
+
+    A handoff without ``stale_after`` gets one ``HANDOFF_DAYS`` from ``now``;
+    ``sources`` are written as ``resource`` mappings, in order.
+    """
+    stamp = now.strftime(_STAMP)
     lines = [
         "---",
         f"type: {kind}",
@@ -99,10 +212,13 @@ def _front_matter(
     ]
     if kind == "decision":
         lines.append("status: stable")
-    if kind == "handoff":
-        lines.append(
-            f"stale_after: {(now + timedelta(days=HANDOFF_DAYS)).strftime('%Y-%m-%dT%H:%M:%SZ')}"
-        )
+    if stale_after is None and kind == "handoff":
+        stale_after = now + timedelta(days=HANDOFF_DAYS)
+    if stale_after is not None:
+        lines.append(f"stale_after: {stale_after.strftime(_STAMP)}")
+    if sources:
+        lines.append("sources:")
+        lines += [f"  - resource: {json.dumps(s)}" for s in sources]
     if key is not None:
         lines.append(
             f"handoff_key: {json.dumps(key)}"
@@ -157,6 +273,8 @@ def new_concept(
     description: str,
     now: datetime | None = None,
     key: str | None = None,
+    stale_after: str | None = None,
+    sources: list[str] | None = None,
 ) -> NewConcept:
     """Write a new concept of ``kind`` under ``root``'s .okf/ and index and log it.
 
@@ -176,6 +294,14 @@ def new_concept(
         Handoffs only: the session key (``handoff_key``, ADR 0009). When a
         handoff with this key exists, it is updated in place: same file and
         index entry, new title, description, body skeleton and dates.
+    stale_after : str | None
+        When kmctl review due lists the concept as due (expired, for a
+        handoff): a duration or a date, read by ``stale_after_time``. A
+        handoff gets ``HANDOFF_DAYS`` when omitted; other kinds get none.
+    sources : list[str] | None
+        Not for handoffs: the files or folders the concept describes, written
+        in order as its ``sources``. Each must exist, found the way kmctl
+        review due finds sources, so a change to one makes the concept due.
 
     Returns
     -------
@@ -188,7 +314,9 @@ def new_concept(
     ConceptError
         When .okf/index.md is missing, the description is empty, the title
         names no file, the file already exists, ``key`` is given for a kind
-        other than handoff, or ``key`` is empty or blank. Nothing is written.
+        other than handoff, ``key`` is empty or blank, ``stale_after`` is
+        unreadable or not in the future, ``sources`` is given for a handoff,
+        or a source names nothing. Nothing is written.
     """
     now = now or datetime.now(UTC)
     title = one_line(title)
@@ -208,6 +336,12 @@ def new_concept(
         raise ConceptError(
             "--key is empty; pass a session id, or leave --key out when there is none"
         )
+    if sources and kind not in SOURCE_KINDS:
+        raise ConceptError(
+            "--source is not for handoffs: kmctl review due never reads a handoff's "
+            "sources; leave it out"
+        )
+    when = stale_after_time(stale_after, now) if stale_after is not None else None
     name = SECTIONS[kind]
     section = okf / name
     existing = _by_key(section, key) if key is not None and section.is_dir() else None
@@ -216,7 +350,7 @@ def new_concept(
         rel = existing.relative_to(section).as_posix()
         body = "\n\n".join(f"## {h}" for h in SKELETONS[kind])
         existing.write_text(
-            _front_matter(kind, title, description, now, key)
+            _front_matter(kind, title, description, now, key, when)
             + f"\n# {title}\n\n{body}\n",
             encoding="utf-8",
         )
@@ -252,6 +386,7 @@ def new_concept(
         raise ConceptError(
             f"{path.relative_to(root)} already exists; pick another title"
         )
+    written_sources = _check_sources(root, okf, path, sources or [])
 
     created_section = not (section / "index.md").is_file()
     if created_section:
@@ -264,7 +399,8 @@ def new_concept(
     path.parent.mkdir(parents=True, exist_ok=True)
     body = "\n\n".join(f"## {h}" for h in SKELETONS[kind])
     path.write_text(
-        _front_matter(kind, title, description, now, key) + f"\n# {title}\n\n{body}\n",
+        _front_matter(kind, title, description, now, key, when, written_sources)
+        + f"\n# {title}\n\n{body}\n",
         encoding="utf-8",
     )
     _append_entry(section / "index.md", f"- [{link_text(title)}]({rel}): {description}")

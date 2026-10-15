@@ -1,4 +1,4 @@
-"""Read OKF concepts: front matter, and the one rule for when a stale_after date has passed."""
+"""Read OKF concepts: front matter, the one rule for when a stale_after date has passed, and where a source points."""
 
 from datetime import UTC, date, datetime
 from pathlib import Path
@@ -130,3 +130,28 @@ def has_passed(stale_after: object, now: datetime) -> bool:
     """
     when = as_datetime(stale_after)
     return when is not None and now >= when
+
+
+def source_candidates(root: Path, okf: Path, concept: Path, resource: str) -> list[str]:
+    """The repository-relative paths a source may name, in OKF §6.2 lookup order.
+
+    A leading ``/`` makes ``resource`` bundle-relative. Otherwise it is tried
+    from the concept's folder, then the bundle root (a concept id), then the
+    repository root. Each place is tried as given and with ``.md`` added. Paths
+    outside ``root``, and ``root`` itself, are left out. Callers pick the first
+    candidate that exists in the sense they need: on disk, or tracked by git.
+    """
+    if resource.startswith("/"):
+        places = [okf / resource.lstrip("/")]
+    else:
+        places = [concept.parent / resource, okf / resource, root / resource]
+    found = []
+    for place in places:
+        for path in (place, place.with_name(place.name + ".md")):
+            try:
+                rel = path.resolve().relative_to(root.resolve()).as_posix()
+            except ValueError:
+                continue
+            if rel != ".":
+                found.append(rel)
+    return found

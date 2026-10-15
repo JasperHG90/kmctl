@@ -106,7 +106,7 @@ exit codes. Each verb calls one module:
 | `kmctl briefing` | `briefing.py`, with `review_due.py`, `handoffs.py`, the packaged `rules/`, and `plugin.py` for the skills it names | nothing |
 | `kmctl review due` | `review_due.py` | nothing |
 | `kmctl handoffs` | `handoffs.py` | nothing |
-| `kmctl new decision`, `practice`, `proposal`, `prototype`, `handoff` | `concepts.py` | the concept, its section index entry and a log line |
+| `kmctl new decision`, `practice`, `proposal`, `prototype`, `handoff` | `concepts.py`, with `okf.py` to find each `--source` the way `review_due.py` does | the concept, its section index entry and a log line; `--stale-after` and `--source` write its `stale_after` and `sources` |
 | `kmctl new doc` | `docs.py` | the page and its `docs/README.md` entry |
 | `kmctl decision supersede` | `supersede.py` | both decision records and a log line |
 | `kmctl plugin install`, `update`, `status` | `plugin.py` | the staged plugin in `$XDG_DATA_HOME/kmctl/marketplace`, then `claude plugin` installs it |

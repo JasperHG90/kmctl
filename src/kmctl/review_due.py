@@ -12,7 +12,14 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
-from kmctl.okf import BadFrontMatter, as_datetime, field, front_matter, has_passed
+from kmctl.okf import (
+    BadFrontMatter,
+    as_datetime,
+    field,
+    front_matter,
+    has_passed,
+    source_candidates,
+)
 
 RESERVED = {"index.md", "log.md"}
 
@@ -95,21 +102,9 @@ def _resolve(
     A folder counts when git tracks a file under it; ``git log -- folder``
     then gives its last change.
     """
-    if resource.startswith("/"):
-        candidates = [okf / resource.lstrip("/")]
-    else:
-        # concept-relative path, then a concept id (bundle root), then repository root
-        candidates = [concept.parent / resource, okf / resource, root / resource]
-    for candidate in candidates:
-        for path in (candidate, candidate.with_name(candidate.name + ".md")):
-            try:
-                rel = path.resolve().relative_to(root.resolve()).as_posix()
-            except ValueError:
-                continue
-            if rel in tracked or (
-                rel and any(t.startswith(rel + "/") for t in tracked)
-            ):
-                return rel
+    for rel in source_candidates(root, okf, concept, resource):
+        if rel in tracked or any(t.startswith(rel + "/") for t in tracked):
+            return rel
     return None
 
 

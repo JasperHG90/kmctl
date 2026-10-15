@@ -665,3 +665,12 @@ def test_init_agents_only_folder_is_not_a_file(tmp_path: Path) -> None:
         "an import of a folder loads nothing"
     )
     assert "AGENTS.md is not a file" in again.stderr
+
+
+def test_init_block_names_freshness(tmp_path: Path) -> None:
+    _init(tmp_path)
+
+    block = _block((tmp_path / "CLAUDE.md").read_text())
+
+    assert "--source" in block
+    assert "--stale-after" in block

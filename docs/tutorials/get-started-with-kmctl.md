@@ -115,6 +115,11 @@ sections:
 ## Consequences
 ```
 
+When a record describes code, name that code with `--source`, for example
+`--source src/db.py`, and `kmctl review due` lists the record once a commit
+changes the file. Give anything that goes out of date on a known day a
+`--stale-after`, such as `6m` or `2027-01-15`.
+
 ### 5. Write the decision
 
 Open `.okf/decisions/0002-store-data-in-sqlite.md` and fill in the three

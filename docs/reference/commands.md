@@ -55,9 +55,11 @@ Set a repository up. It writes:
   each with `paths:` front matter;
 - a kmctl block between `<!-- kmctl:start -->` and `<!-- kmctl:end -->` in
   each `CLAUDE.md` and `AGENTS.md` that exists. The block lists where each
-  kind of knowledge lives and gives the agent three duties: record each
-  choice with `kmctl new decision`, keep `.okf/architecture/` matching the
-  code, and run `kmctl check` before finishing. A `CLAUDE.md` that is a
+  kind of knowledge lives and gives the agent four duties: record each
+  choice with `kmctl new decision`, name the code a concept describes with
+  `--source` and give anything time-bound a `--stale-after`, keep
+  `.okf/architecture/` matching the code, and run `kmctl check` before
+  finishing. A `CLAUDE.md` that is a
   symlink to `AGENTS.md` gets one block, and stays a symlink;
 - a new `CLAUDE.md` when there is none. Beside an `AGENTS.md` it holds only
   `@AGENTS.md`, because Claude Code reads `AGENTS.md` only when there is no
@@ -157,6 +159,8 @@ concept of a kind creates its section and links it from `.okf/index.md`.
 | `--path DIR` | The repository to write in: an existing folder. | `.` |
 | `--json` | Print one JSON object (`id`, `path`, `created_section`). | off |
 | `--key KEY` | Handoffs only: a session key, for example `$CLAUDE_CODE_SESSION_ID`. A handoff with the same key is updated in place instead of refused (ADR 0009). | none |
+| `--stale-after WHEN` | When `kmctl review due` lists the concept as due, written as `stale_after`. A duration from now: `30d` days, `12w` weeks, `6m` calendar months, `1y` calendar years (a month end past the new month's last day moves back to it). Or a date: `2027-01-15`, read as its midnight UTC, or a timestamp such as `2027-01-15T08:00:00Z`. It must be in the future, so `0d` and today's date are refused. | `14d` for a handoff, none for the rest |
+| `--source PATH` | Not for handoffs: a file or folder the concept describes, written to `sources` as `- resource: PATH`. Repeat it for more; they are written in the order given. It must exist on disk, found the way `kmctl review due` finds sources: from the concept's folder, then `.okf/`, then the repository root, with a leading `/` meaning `.okf/` and `.md` added when needed. Git is not needed, so a file you have not added yet is fine. Once someone verifies the concept, `kmctl review due` lists it when a commit changes a source. | none |
 
 Exit code: 1 when kmctl refuses, with the reason on stderr.
 
