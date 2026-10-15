@@ -3,7 +3,7 @@
   "slug": "network-tests-retry",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -91,8 +91,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "b63f1920567e6a5616c0b4bf1c433df82c86d29d1937229ff1e17c6347e8eb55",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "b6551cee7966f1c2dc4bd26dab928d745ac13713334f76084d90df2ef4da0959",
+    "started_at": "2026-10-15T19:07:30+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "b6551cee7966f1c2dc4bd26dab928d745ac13713334f76084d90df2ef4da0959",
   "intent": {
     "epic": "repo",
     "depends_on": [],
@@ -107,5 +126,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev61+g8318eb7a1.d20261015",
-  "at": "2026-10-15T19:07:29+00:00"
+  "at": "2026-10-15T19:07:30+00:00"
 }
