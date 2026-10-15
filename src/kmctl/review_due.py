@@ -115,8 +115,8 @@ def _resolve(
 def _last_verified(meta: dict) -> datetime | None:
     verified = meta.get("verified")
     entries = verified if isinstance(verified, list) else [verified] if verified else []
-    dates = [as_datetime(e.get("at")) for e in entries if isinstance(e, dict)]
-    dates = [d for d in dates if d is not None]
+    parsed = [as_datetime(e.get("at")) for e in entries if isinstance(e, dict)]
+    dates = [d for d in parsed if d is not None]
     return max(dates) if dates else None
 
 

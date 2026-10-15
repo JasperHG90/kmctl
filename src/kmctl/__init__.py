@@ -13,6 +13,9 @@ from kmctl.checks import run_checks
 from kmctl.concepts import ConceptError, Kind, new_concept
 from kmctl.docs import DocType, new_doc
 from kmctl.handoffs import live_handoffs
+from kmctl.plugin import PluginError, PluginStatus, Scope
+from kmctl.plugin import install as install_plugin
+from kmctl.plugin import status as plugin_status
 from kmctl.review_due import review_due
 from kmctl.scaffold import scaffold
 from kmctl.supersede import supersede
@@ -305,13 +308,14 @@ def _register_concept_verb(kind: Kind, example: str) -> None:
     )(command)
 
 
-for _kind, _example in (
+_CONCEPT_VERBS: tuple[tuple[Kind, str], ...] = (
     ("decision", "Use a queue"),
     ("practice", "Measure first"),
     ("proposal", "Split the parser"),
     ("prototype", "Parser speed"),
     ("handoff", "Parser work"),
-):
+)
+for _kind, _example in _CONCEPT_VERBS:
     _register_concept_verb(_kind, _example)
 
 
@@ -459,6 +463,118 @@ def decision_supersede(
         return
     typer.echo(f"superseded {result.old} with {result.new}")
     typer.echo(next_step("kmctl check"))
+
+
+plugin_app = typer.Typer(
+    help=(
+        "Install the Claude Code plugin that ships with this kmctl. Verbs: install, update, "
+        "status. Needs the claude CLI on PATH."
+    ),
+    no_args_is_help=True,
+)
+app.add_typer(plugin_app, name="plugin")
+
+_SCOPE_OPTION = typer.Option(
+    "--scope",
+    metavar="project",
+    help="project (this repository, the default) or user (every repository).",
+)
+
+
+def _report(result: PluginStatus, as_json: bool) -> None:
+    if as_json:
+        typer.echo(json.dumps(asdict(result)))
+        return
+    typer.echo(
+        f"kmctl {result.cli_version}; plugin {result.plugin_version or 'not installed'}"
+    )
+    for problem in result.problems:
+        typer.echo(f"problem: {problem}")
+
+
+def _install(scope: Scope, as_json: bool, reinstall: bool) -> None:
+    try:
+        result = install_plugin(scope, Path.cwd(), reinstall=reinstall)
+    except PluginError as error:
+        verb = "update" if reinstall else "install"
+        typer.echo(f"kmctl plugin {verb}: refused: {error}", err=True)
+        raise typer.Exit(1) from error
+    _report(result, as_json)
+    if not as_json:
+        typer.echo(
+            next_step(
+                "start a new Claude Code session or run /reload-plugins",
+                "kmctl plugin status",
+            )
+        )
+
+
+@plugin_app.command(
+    "install",
+    epilog=(
+        "Examples:\n\n"
+        "  kmctl plugin install\n\n"
+        "  kmctl plugin install --scope user --json\n\n"
+        "Adds the scaccogatto marketplace for the okf dependency when it is missing. "
+        "Running it again at the same version changes nothing."
+    ),
+)
+def plugin_install(
+    scope: Annotated[Scope, _SCOPE_OPTION] = "project",
+    as_json: Annotated[
+        bool,
+        typer.Option(
+            "--json", help="Print the resulting status as one JSON object, for scripts."
+        ),
+    ] = False,
+) -> None:
+    """Install the kmctl plugin and its okf dependency through the claude CLI."""
+    _install(scope, as_json, reinstall=False)
+
+
+@plugin_app.command(
+    "update",
+    epilog=(
+        "Examples:\n\n"
+        "  kmctl plugin update\n\n"
+        "  kmctl plugin update --scope user\n\n"
+        "Run it after upgrading kmctl: it restages the plugin and reinstalls it."
+    ),
+)
+def plugin_update(
+    scope: Annotated[Scope, _SCOPE_OPTION] = "project",
+    as_json: Annotated[
+        bool,
+        typer.Option(
+            "--json", help="Print the resulting status as one JSON object, for scripts."
+        ),
+    ] = False,
+) -> None:
+    """Reinstall the plugin from this kmctl release, replacing an older one."""
+    _install(scope, as_json, reinstall=True)
+
+
+@plugin_app.command(
+    "status",
+    epilog=(
+        "Examples:\n\n"
+        "  kmctl plugin status\n\n"
+        "  kmctl plugin status --json\n\n"
+        "Exits 0 either way; each problem names the command that fixes it."
+    ),
+)
+def plugin_status_cmd(
+    as_json: Annotated[
+        bool, typer.Option("--json", help="Print one JSON object, for scripts.")
+    ] = False,
+) -> None:
+    """Report the installed plugin's version against this kmctl, and what to fix."""
+    try:
+        result = plugin_status(Path.cwd())
+    except PluginError as error:
+        typer.echo(f"kmctl plugin status: refused: {error}", err=True)
+        raise typer.Exit(1) from error
+    _report(result, as_json)
 
 
 def main() -> None:
