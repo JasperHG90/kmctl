@@ -19,7 +19,9 @@
   "archived": false,
   "worktree": "/home/vscode/kmctl.worktrees/link-check",
   "branch": "loop/link-check",
-  "stamps": [],
+  "stamps": [
+    "97af93f3e312e801e7f1a796e93aac756639a2f05bd4dfadf5f96970b1ecf0f4"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
     "hash": "fdefa0be765d4dbdeb5baf737236c950d864ad153602595293b0a2a3d08d2e9e",
@@ -117,5 +119,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T10:59:06+00:00"
+  "at": "2026-10-15T11:00:37+00:00"
 }
