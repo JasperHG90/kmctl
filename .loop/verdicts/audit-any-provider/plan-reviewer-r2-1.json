@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "Round 1: the plugin's tools read outside the repository and a count search on /proc/PID/environ leaks the key. The plan now resolves every path, follows symlinks, refuses anything outside the audited root, and r3 tests /proc/self/environ in count mode and a symlink out of the repo.",
+      "anchor": ".loop/plans/audit-any-provider.md",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r3"
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "The path guard does not cover the search pattern. Hermes' search builds `rg --line-number --no-heading --with-filename '<pattern>' '<path>'` with no `-e` or `--`, so a pattern that starts with a dash is read as an rg flag. Through the real 0.19.0 handler, pattern `--pre=rm` with the repo as path deleted every file in the working folder, and `--pre=/bin/sh` ran a shell script from the repo (it wrote a file outside it). That is command execution in the step that holds the API key: it breaks read-only (I2), and it gets around the path guard, since a script can read /proc/self/environ. The grep fallback has the same flaw. The plugin must refuse patterns that start with '-' (or run its own search with `-e`/`--`), and should pass the resolved absolute path on to the handler so a path cannot start with '-' either. r3 should check that a dash-leading pattern is refused and causes no side effect.",
+      "anchor": "hermes-agent 0.19.0 tools/file_operations.py:_search_with_rg",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r3"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "3712a311ef5d20505b4d58e817789d000c3734ab413259b67cdc424baa6c1ec8"
+  },
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "at": "2026-10-15T14:41:27+00:00"
+}
