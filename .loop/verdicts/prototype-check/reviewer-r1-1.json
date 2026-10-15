@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The kmctl check help still says it only checks that docs/ and .okf/ indexes agree with their folders. It does not mention the new prototype README.md check, and that help is the text an agent reads before it runs the command. The first line of the checks.py module docstring has the same gap.",
+      "anchor": "src/kmctl/__init__.py:116",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "e42789ab1dd5a7d7e6254e44bee2dbd05060f12a5458de0faf11406e39b49146",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T10:55:13+00:00"
+}

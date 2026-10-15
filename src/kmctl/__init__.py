@@ -8,6 +8,7 @@ from typing import Annotated
 
 import typer
 
+from kmctl.briefing import as_dict, build_briefing, render
 from kmctl.checks import run_checks
 from kmctl.concepts import ConceptError, Kind, new_concept
 from kmctl.handoffs import live_handoffs
@@ -114,7 +115,7 @@ def check(
         ),
     ] = False,
 ) -> None:
-    """Check that docs/ and .okf/ indexes agree with their folders."""
+    """Check that docs/ and .okf/ indexes agree with their folders and prototypes have a README.md."""
     findings = run_checks(path)
     errors = [f for f in findings if f.level == "error"]
     if as_json:
@@ -290,6 +291,37 @@ def new(
         return
     typer.echo(f"created {result.path}")
     typer.echo(f"Next: write the sections of {result.path}")
+
+
+@app.command(
+    epilog=(
+        "Examples:\n\n"
+        "  kmctl briefing\n\n"
+        "  kmctl briefing --path ../other-repo --json\n\n"
+        "The plugin's SessionStart hook prints this. It reads and never writes."
+    ),
+)
+def briefing(
+    path: Annotated[
+        Path,
+        typer.Option(
+            "--path",
+            metavar="../other-repo",
+            exists=True,
+            file_okay=False,
+            help="The repository to brief on: an existing folder. Default: the current directory.",
+        ),
+    ] = Path("."),
+    as_json: Annotated[
+        bool,
+        typer.Option(
+            "--json", help="Print one JSON object (routing, state, rules), for scripts."
+        ),
+    ] = False,
+) -> None:
+    """Print the session briefing: where knowledge lives, what is due, and the rules."""
+    result = build_briefing(path)
+    typer.echo(json.dumps(as_dict(result)) if as_json else render(result))
 
 
 decision_app = typer.Typer(

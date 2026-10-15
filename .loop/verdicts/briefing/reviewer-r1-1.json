@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "test_briefing_has_three_parts checks routing with 'docs/' and '.okf/', but the rules part (audience-picks-the-folder) contains both strings, so the test passes when routing is missing. Assert a string only routing prints, such as 'Knowledge in this repository' or 'Verbs:'. Do not use 'Start at .okf/index.md', because the start-at-the-index rule prints it too.",
+      "anchor": "tests/test_briefing.py:37",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "WORD_BUDGET is defined, and the module docstring says the briefing stays within it, but no code reads it. test_briefing_word_budget hardcodes 600, so changing the constant changes nothing. The test should import and assert against WORD_BUDGET.",
+      "anchor": "src/kmctl/briefing.py:17",
+      "category": "nit",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "The state line prints '1 concepts due for review' when the count is 1.",
+      "anchor": "src/kmctl/briefing.py:99",
+      "category": "nit",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "ea737929a3d3be5cc32f8e767f63ee7c23455b6a9d40c5abcb82023aec89d1f3",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T10:54:06+00:00"
+}

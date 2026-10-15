@@ -200,3 +200,53 @@ def test_check_non_utf8_root_index_is_one_finding(tmp_path: Path) -> None:
     findings = _findings(tmp_path)
 
     assert [f["file"] for f in findings] == [".okf/index.md"]
+
+
+def _with_prototypes(root: Path) -> None:
+    """Add a linked prototypes section to the good repository."""
+    index = (root / ".okf/index.md").read_text()
+    _write(
+        root, ".okf/index.md", index + "- [Prototypes](prototypes/index.md): spikes.\n"
+    )
+    _write(
+        root,
+        ".okf/prototypes/index.md",
+        "# Prototypes\n\n- [Speed](speed/README.md): a spike.\n",
+    )
+    _write(root, ".okf/prototypes/speed/README.md", CONCEPT.format(title="Speed"))
+
+
+def _prototype_findings(root: Path) -> list[dict]:
+    return [f for f in _findings(root) if f["check"] == "prototype"]
+
+
+def test_prototype_check_passes(tmp_path: Path) -> None:
+    _good_repo(tmp_path)
+    _with_prototypes(tmp_path)
+
+    result = _check(tmp_path)
+
+    assert result.exit_code == 0, result.output
+    assert _prototype_findings(tmp_path) == []
+
+
+def test_prototype_check_ignores_nested_folders(tmp_path: Path) -> None:
+    _good_repo(tmp_path)
+    _with_prototypes(tmp_path)
+    _write(tmp_path, ".okf/prototypes/speed/results/run.json", "{}\n")
+    _write(tmp_path, ".okf/prototypes/speed/src/count.py", "print(1)\n")
+
+    assert _prototype_findings(tmp_path) == []
+
+
+def test_prototype_check_fails_without_readme(tmp_path: Path) -> None:
+    _good_repo(tmp_path)
+    _with_prototypes(tmp_path)
+    _write(tmp_path, ".okf/prototypes/bare/count.py", "print(1)\n")
+
+    result = _check(tmp_path)
+
+    assert result.exit_code == 1
+    assert [f["file"] for f in _prototype_findings(tmp_path)] == [
+        ".okf/prototypes/bare"
+    ]

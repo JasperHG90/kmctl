@@ -1,26 +1,62 @@
 {
   "schema_version": "1.0",
   "slug": "briefing",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 3,
-  "review_rounds": 1,
+  "review_rounds": 2,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "3fa9589c04f88cf7758622eef053fcfbe626e1bd9b1c2628250cf6cfdc33eb24",
+    "tree": "747b066fd92e590577de6ac3af212d510d8adcf5",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "cleared-unreviewed",
+        "by": "fallback",
+        "judgement": "j-20261015T105451+0000-2c86ef7b",
+        "paths": [
+          "tests/test_briefing.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f2",
+        "outcome": "cleared-unreviewed",
+        "by": "fallback",
+        "judgement": "j-20261015T105452+0000-d4631e97",
+        "paths": [
+          "tests/test_briefing.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f3",
+        "outcome": "sent-back",
+        "by": "judgement",
+        "judgement": "j-20261015T105453+0000-fd2d8b90",
+        "paths": [
+          "src/kmctl/briefing.py",
+          "tests/test_briefing.py"
+        ]
+      }
+    ],
+    "at": "2026-10-15T10:54:53+00:00"
+  },
   "ask": null,
   "split": "j-20261015T082315+0000-2a0595b9",
   "split_plan_hash": "e153950619f4dcd41ed3a1ee279edeb7ef401854e2b08606a05d0a7b84a93a13",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "0009f4a39cbc8f739b05d95ae61eb5cf16d0cbad",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
   "worktree": "/home/vscode/kmctl.worktrees/briefing",
   "branch": "loop/briefing",
   "stamps": [
-    "ea737929a3d3be5cc32f8e767f63ee7c23455b6a9d40c5abcb82023aec89d1f3"
+    "ea737929a3d3be5cc32f8e767f63ee7c23455b6a9d40c5abcb82023aec89d1f3",
+    "3fa9589c04f88cf7758622eef053fcfbe626e1bd9b1c2628250cf6cfdc33eb24"
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
@@ -79,13 +115,13 @@
   "overrides": [],
   "round": {
     "kind": "review",
-    "n": 1,
-    "binds": "ea737929a3d3be5cc32f8e767f63ee7c23455b6a9d40c5abcb82023aec89d1f3",
-    "started_at": "2026-10-15T10:52:25+00:00",
+    "n": 2,
+    "binds": "3fa9589c04f88cf7758622eef053fcfbe626e1bd9b1c2628250cf6cfdc33eb24",
+    "started_at": "2026-10-15T10:54:57+00:00",
     "passes": [
       "reviewer"
     ],
-    "tree": "a62923883cac96c8999423fbfe9870b76d67c811",
+    "tree": "747b066fd92e590577de6ac3af212d510d8adcf5",
     "plan_hash": "e153950619f4dcd41ed3a1ee279edeb7ef401854e2b08606a05d0a7b84a93a13",
     "eval_hash": "46fbe74e43c95f67c7ff01be2c7e6c3e3812b41d02befaa270b99ca1a219c3ec",
     "scope": "full",
@@ -94,8 +130,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "pass"
   },
   "plan_hash": "e153950619f4dcd41ed3a1ee279edeb7ef401854e2b08606a05d0a7b84a93a13",
   "intent": {
@@ -129,8 +165,26 @@
       "to": "verifying",
       "at": "2026-10-15T10:52:24+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-15T10:54:32+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-15T10:54:53+00:00",
+      "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-15T10:56:16+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T10:52:25+00:00"
+  "at": "2026-10-15T10:56:16+00:00"
 }
