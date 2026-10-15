@@ -28,8 +28,8 @@
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
-    "hash": "7245d666b6e7a3b9f4cb930650b48e8fe4af340792672f97328319cf8c8a9b41",
-    "at": "2026-10-15T14:42:08+00:00"
+    "hash": "ae5ff87bc83d52d62b2c363f8ed50190eb83f6e87a6841dbb8b72de43f1f4533",
+    "at": "2026-10-15T14:45:06+00:00"
   },
   "delegation": null,
   "budget_base": null,
@@ -43,15 +43,15 @@
     },
     {
       "id": "r2",
-      "behavior": "Every audit run passes -t kmctl_read, installs the kmctl-read Hermes plugin into the run's HOME and enables it, and sets HERMES_WRITE_SAFE_ROOT to an empty folder.",
-      "fails_when": "the stub hermes's arguments lack -t kmctl_read, the plugin files or plugins.enabled are missing from the run's HOME, or HERMES_WRITE_SAFE_ROOT is unset or not an empty folder",
+      "behavior": "Every audit run passes -t kmctl_read, installs the kmctl-read Hermes plugin into the run's HOME and enables it, sets HERMES_WRITE_SAFE_ROOT to an empty folder, and runs hermes under a time limit, with timeout-minutes on the audit step.",
+      "fails_when": "the stub hermes's arguments lack -t kmctl_read, the plugin files or plugins.enabled are missing from the run's HOME, HERMES_WRITE_SAFE_ROOT is unset or not an empty folder, hermes is not run under timeout, a stub hermes that sleeps past the limit is not stopped, or the audit step in action.yml and the shipped workflow has no timeout-minutes",
       "command": "uv run pytest tests/test_ci_audit.py -k read_only -q",
       "judgment": false
     },
     {
       "id": "r3",
       "behavior": "The kmctl-read plugin registers one toolset, kmctl_read, holding only kmctl_read_file and kmctl_search_files, written in plain Python with no shell; both refuse any path that resolves outside the repository root, and a search pattern is only ever text to match.",
-      "fails_when": "loading action/hermes/kmctl-read with a recording ctx registers any other tool or toolset; either tool returns content or a count for a path outside the root, a symlink in the repo pointing out of it, the run's HOME, or /proc/self/environ; a pattern such as --pre=rm changes or creates any file; or the plugin source imports subprocess, os.system, pty or shlex",
+      "fails_when": "loading action/hermes/kmctl-read with a recording ctx registers any other tool or toolset; either tool returns content or a count for a path outside the root, a symlink in the repo pointing out of it, the run's HOME, or /proc/self/environ; a pattern such as --pre=rm changes or creates any file; or the plugin source imports subprocess, os.system, pty or shlex; a pattern such as (a+)+$ on a line of 40 a's and a b takes more than a second; or a file symlink inside the repo pointing out of it is read by search",
       "command": "uv run pytest tests/test_hermes_plugin.py -q",
       "judgment": false
     },
@@ -124,6 +124,24 @@
         }
       },
       "at": "2026-10-15T14:42:08+00:00"
+    },
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+      "reason": "plan round 3 review: regex search can hang past any in-process timeout, so search is plain text and hermes runs under a time limit",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r2": [
+            "behavior",
+            "fails_when"
+          ],
+          "r3": [
+            "fails_when"
+          ]
+        }
+      },
+      "at": "2026-10-15T14:45:06+00:00"
     }
   ],
   "accepted_risks": [],
@@ -172,5 +190,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T14:45:05+00:00"
+  "at": "2026-10-15T14:45:06+00:00"
 }
