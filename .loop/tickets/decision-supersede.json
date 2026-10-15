@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "decision-supersede",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
@@ -58,7 +58,7 @@
   "split": "j-20261015T081331+0000-1b38bb18",
   "split_plan_hash": "0d50c0d5b2da986c2bf68795c546035cfe92ed7bae9f7fc0291b7c70df3b37c1",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "6f395ed25b166abe00e22afc1ac08640bfad72bf",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -180,8 +180,14 @@
       "to": "verifying",
       "at": "2026-10-15T10:56:56+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-15T10:58:10+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T10:58:08+00:00"
+  "at": "2026-10-15T10:58:10+00:00"
 }
