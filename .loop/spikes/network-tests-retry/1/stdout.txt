@@ -1,0 +1,81 @@
+===== claude marketplace add exit=1 STDOUT =====
+Adding marketplace…
+
+===== claude marketplace add STDERR =====
+✘ Failed to add marketplace: Failed to clone marketplace repository: Network error or timeout while cloning repository. Please check your internet connection and try again.
+
+Original error: Cloning into '/tmp/spike-ntr-k3hgrulm/raw/claude-config/plugins/marketplaces/scaccogatto-okf-skills..clone'...
+fatal: unable to access 'https://unresolvable.invalid/scaccogatto/okf-skills.git/': Could not resolve host: unresolvable.invalid
+
+===== what _require keeps (last line) =====
+fatal: unable to access 'https://unresolvable.invalid/scaccogatto/okf-skills.git/': Could not resolve host: unresolvable.invalid
+
+===== kmctl plugin install exit=1 OUTPUT =====
+kmctl plugin install: refused: claude plugin marketplace add scaccogatto/okf-skills --scope project failed: fatal: unable to access 'https://unresolvable.invalid/scaccogatto/okf-skills.git/': Could not resolve host: unresolvable.invalid; run it by hand to see why, then kmctl plugin install again
+
+===== pytest test_install_pulls_okf exit=1 =====
+============================= test session starts ==============================
+platform linux -- Python 3.12.15, pytest-9.1.1, pluggy-1.6.0
+rootdir: /tmp/loopctl-spike-bqdx93f4/tree
+configfile: pyproject.toml
+collected 1 item
+
+tests/test_plugin_install.py F
+
+=================================== FAILURES ===================================
+____________________________ test_install_pulls_okf ____________________________
+
+isolated = PosixPath('/tmp/pytest-of-vscode/pytest-2413/test_install_pulls_okf0/proj')
+
+    @needs_claude
+    def test_install_pulls_okf(isolated: Path) -> None:
+        result = _kmctl("plugin", "install", "--scope", "project")
+    
+>       assert result.exit_code == 0, result.output
+E       AssertionError: kmctl plugin install: refused: claude plugin marketplace add scaccogatto/okf-skills --scope project failed: fatal: unable to access 'https://unresolvable.invalid/scaccogatto/okf-skills.git/': Could not resolve host: unresolvable.invalid; run it by hand to see why, then kmctl plugin install again
+E         
+E       assert 1 == 0
+E        +  where 1 = <Result SystemExit(1)>.exit_code
+
+/tmp/loopctl-spike-bqdx93f4/tree/tests/test_plugin_install.py:55: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_plugin_install.py::test_install_pulls_okf - AssertionError:...
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+============================== 1 failed in 1.27s ===============================
+
+===== pytest test_update_after_bump exit=1 =====
+============================= test session starts ==============================
+platform linux -- Python 3.12.15, pytest-9.1.1, pluggy-1.6.0
+rootdir: /tmp/loopctl-spike-bqdx93f4/tree
+configfile: pyproject.toml
+collected 1 item
+
+tests/test_plugin_install.py F
+
+=================================== FAILURES ===================================
+____________________________ test_update_after_bump ____________________________
+
+isolated = PosixPath('/tmp/pytest-of-vscode/pytest-2414/test_update_after_bump0/proj')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0xffffb2df72c0>
+
+    @needs_claude
+    def test_update_after_bump(isolated: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        result = _kmctl("plugin", "install", "--scope", "project")
+>       assert result.exit_code == 0, result.output
+E       AssertionError: kmctl plugin install: refused: claude plugin marketplace add scaccogatto/okf-skills --scope project failed: fatal: unable to access 'https://unresolvable.invalid/scaccogatto/okf-skills.git/': Could not resolve host: unresolvable.invalid; run it by hand to see why, then kmctl plugin install again
+E         
+E       assert 1 == 0
+E        +  where 1 = <Result SystemExit(1)>.exit_code
+
+/tmp/loopctl-spike-bqdx93f4/tree/tests/test_plugin_install.py:95: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_plugin_install.py::test_update_after_bump - AssertionError:...
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+============================== 1 failed in 1.82s ===============================
+
+===== VERDICT =====
+raw claude stderr: ['could not resolve host', 'resolve', 'connection']; raw stdout: []
+kmctl message (exit 1): ['could not resolve host', 'resolve']
+pytest test_install_pulls_okf (exit 1) failure report: ['could not resolve host', 'resolve']
+pytest test_update_after_bump (exit 1) failure report: ['could not resolve host', 'resolve']
+PASS: network error reaches both

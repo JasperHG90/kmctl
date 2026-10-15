@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "network-tests-retry",
+  "n": 1,
+  "command": "/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-ntr/spike.py",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-ntr/spike.py",
+      "copy": "files/spike.py"
+    }
+  ],
+  "where": "worktree",
+  "head": "9eab7e640bdceed08cacb9c215f65b807ae2ebed",
+  "fingerprint": "30afdcf1285dc246c92480e07e470e2bf55235001ae7020ed1c58bb64801d442",
+  "started_at": "2026-10-15T19:11:59+00:00",
+  "finished_at": "2026-10-15T19:12:05+00:00",
+  "duration_seconds": 6.837,
+  "timeout_seconds": 900.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.1.1.dev61+g8318eb7a1.d20261015",
+  "moved_from": null
+}
