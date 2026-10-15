@@ -1,0 +1,1 @@
+{"criteria":{"inline":"a small, clear change done now with the gates green","loop":"needs a plan, a definition of done and review"},"instructions":"An operator asked for this change. Should it go through the ticket loop (a plan, an eval, review rounds), or is it small and clear enough to do inline?","type":"choice"}
