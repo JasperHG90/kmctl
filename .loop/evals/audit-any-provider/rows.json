@@ -15,8 +15,8 @@
     },
     {
       "id": "r3",
-      "behavior": "The kmctl-read plugin registers one toolset, kmctl_read, holding only kmctl_read_file and kmctl_search_files, written in plain Python with no shell; both refuse any path that resolves outside the repository root, and a search pattern is only ever text to match.",
-      "fails_when": "loading action/hermes/kmctl-read with a recording ctx registers any other tool or toolset; either tool returns content or a count for a path outside the root, a symlink in the repo pointing out of it, the run's HOME, or /proc/self/environ; a pattern such as --pre=rm changes or creates any file; or the plugin source imports subprocess, os.system, pty or shlex; a pattern such as (a+)+$ on a line of 40 a's and a b takes more than a second; or a file symlink inside the repo pointing out of it is read by search",
+      "behavior": "The kmctl-read plugin registers one toolset, kmctl_read, holding only kmctl_read_file, kmctl_search_files and kmctl_list_files, written in plain Python with no shell; listing finds files by name inside the root; all three refuse any path that resolves outside the repository root, and a search pattern is only ever text to match.",
+      "fails_when": "loading action/hermes/kmctl-read with a recording ctx registers any other tool or toolset; kmctl_list_files does not return a file inside the root whose path holds the given text, or returns any file for a folder outside the root; any of the three tools returns content or a count for a path outside the root, a symlink in the repo pointing out of it, the run's HOME, or /proc/self/environ; a pattern such as --pre=rm changes or creates any file; or the plugin source imports subprocess, os.system, pty or shlex; a pattern such as (a+)+$ on a line of 40 a's and a b takes more than a second; or a file symlink inside the repo pointing out of it is read by search",
       "command": "uv run pytest tests/test_hermes_plugin.py -q"
     },
     {
@@ -45,7 +45,7 @@
     },
     {
       "id": "r8",
-      "behavior": "A spike runs the real knowledge-audit.sh with real Hermes 0.19.0 against a fake OpenAI-compatible endpoint: only kmctl_read_file and kmctl_search_files are offered, a requested write is refused, and the findings reach the summary.",
+      "behavior": "A spike runs the real knowledge-audit.sh with real Hermes 0.19.0 against a fake OpenAI-compatible endpoint: only kmctl_read_file, kmctl_search_files and kmctl_list_files are offered, a requested write is refused, and the findings reach the summary.",
       "fails_when": "no audit-any-provider spike after the build records those three facts",
       "judgment": true
     }
