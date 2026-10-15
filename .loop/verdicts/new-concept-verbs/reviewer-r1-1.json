@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "A title holding square brackets writes an index entry that kmctl check cannot parse, so kmctl check fails right after kmctl new.",
+      "anchor": "src/kmctl/concepts.py:175",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "slug drops every non-ASCII letter instead of folding it, so 'Café état' becomes caf-tat.md.",
+      "anchor": "src/kmctl/concepts.py:52",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "A --description holding a newline is written as is into the section index, splitting the entry across lines.",
+      "anchor": "src/kmctl/concepts.py:140",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "open",
+      "claim": "test_new_creates_each_kind checks the file name only for decision and prototype and never checks the title value, so a misnamed practice, proposal or handoff passes row r1.",
+      "anchor": "tests/test_new_concept.py:51",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "fbab73995779886681743723774a2e82fa3630a5d450c18866c4c3b0077e9a21",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T10:48:20+00:00"
+}
