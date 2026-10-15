@@ -11,3 +11,4 @@
 {"at": "2026-10-15T12:56:36+00:00", "kind": "spike-note", "n": 1, "replaced": false, "schema_version": "1.0"}
 {"at": "2026-10-15T12:58:57+00:00", "kind": "spike-note", "n": 2, "replaced": false, "schema_version": "1.0"}
 {"at": "2026-10-15T12:59:37+00:00", "kind": "spike-note", "n": 3, "replaced": false, "schema_version": "1.0"}
+{"at": "2026-10-15T13:01:16+00:00", "diff": {"added": [], "changed": {"r4": ["behavior", "fails_when"], "r7": ["behavior", "fails_when"]}, "removed": []}, "grant": "g1", "hash": "16f63949ef2299e97015c7f7b77700684aaba7e589ca24c47cc49acdbb0a92fa", "kind": "signoff", "reason": "spike:ci-audit/2 and /3 showed --allowedTools does not narrow the tool set; r4 and r7 now name --tools, NotebookEdit, --strict-mcp-config and the prompt on stdin", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5", "step": "eval-sign"}

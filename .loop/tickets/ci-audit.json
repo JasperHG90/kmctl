@@ -22,8 +22,8 @@
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
-    "hash": "ba43b3226ba2dda61656c71564e6c17f1f44f7dad4669401b1161fb2b6cca9c6",
-    "at": "2026-10-15T12:45:11+00:00"
+    "hash": "16f63949ef2299e97015c7f7b77700684aaba7e589ca24c47cc49acdbb0a92fa",
+    "at": "2026-10-15T13:01:16+00:00"
   },
   "delegation": null,
   "budget_base": null,
@@ -51,8 +51,8 @@
     },
     {
       "id": "r4",
-      "behavior": "claude runs with the action's own plugin and read-only tools: --plugin-dir pointing at the action's plugin/, --allowedTools Read,Grep,Glob and --disallowedTools Bash,Edit,Write.",
-      "fails_when": "the stub claude's recorded arguments lack any of those flags or values",
+      "behavior": "claude runs with the action's own plugin and read-only tools: --plugin-dir pointing at the action's plugin/, --tools and --allowedTools Read,Grep,Glob,Agent, --disallowedTools Bash,Edit,Write,NotebookEdit, --strict-mcp-config and --setting-sources project, with the prompt on stdin.",
+      "fails_when": "the stub claude's recorded arguments lack any of those flags or values, or the prompt is passed as an argument instead of on stdin",
       "command": "uv run pytest tests/test_ci_audit.py::test_claude_runs_read_only -q",
       "judgment": false
     },
@@ -72,13 +72,33 @@
     },
     {
       "id": "r7",
-      "behavior": "A spike shows that real claude -p with these flags and --plugin-dir loads the plugin and refuses a request to run Bash or to write a file.",
-      "fails_when": "no spike for ci-audit records the flags, the plugin load, and both refusals",
+      "behavior": "Spikes show that real claude -p with these flags and --plugin-dir loads the plugin, dispatches kmctl:kmctl-auditor, and offers no Bash, Write or NotebookEdit.",
+      "fails_when": "no spike for ci-audit records the flags, the plugin load, the dispatch and that those tools were not offered",
       "command": null,
       "judgment": true
     }
   ],
-  "resigns": [],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+      "reason": "spike:ci-audit/2 and /3 showed --allowedTools does not narrow the tool set; r4 and r7 now name --tools, NotebookEdit, --strict-mcp-config and the prompt on stdin",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r4": [
+            "behavior",
+            "fails_when"
+          ],
+          "r7": [
+            "behavior",
+            "fails_when"
+          ]
+        }
+      },
+      "at": "2026-10-15T13:01:16+00:00"
+    }
+  ],
   "accepted_risks": [
     {
       "risk_hash": "916482bb87fb51a5009cb4bff8cf1ebaa56124c1409bdea2f890fddef11cca4f",
@@ -133,5 +153,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T12:45:11+00:00"
+  "at": "2026-10-15T13:01:16+00:00"
 }
