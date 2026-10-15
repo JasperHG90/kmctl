@@ -1,0 +1,18 @@
+$ claude plugin marketplace add scaccogatto/okf-skills --scope project
+  exit 1: Adding marketplace…
+✘ Failed to add marketplace: Cannot add marketplace "scaccogatto": its source doesn't match its extraKnownMarketplaces entry in user or managed settings; add it from the source that entry lists, or change the entry.
+
+$ claude plugin marketplace add https://github.com/scaccogatto/okf-skills.git --scope project
+  exit 0: Adding marketplace…Refreshing marketplace cache (timeout: 120s)…
+Cloning repository (timeout: 120s): https://github.com/scaccogatto/okf-skills.git
+Clone complete, validating marketplace…
+Cleaning up old marketplace cache…
+✔ Successfully added marketplace: scaccogatto (declared in project settings)
+
+$ claude plugin marketplace add /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/mkt-repro/run/home/data/kmctl/marketplace --scope project
+  exit 0: Adding marketplace…✔ Successfully added marketplace: kmctl (declared in project settings)
+
+$ claude plugin install kmctl@kmctl --scope project
+  exit 0: Installing plugin "kmctl@kmctl"...✔ Successfully installed plugin: kmctl@kmctl (scope: project) (+ 1 dependency: okf)
+
+OVERALL ok = True
