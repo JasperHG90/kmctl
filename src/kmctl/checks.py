@@ -1,0 +1,235 @@
+"""Deterministic knowledge checks: every index agrees with its folder.
+
+The index format, which every kmctl verb that writes an index follows:
+
+- docs/README.md indexes every page under docs/; each .okf/ section's
+  index.md indexes the concepts in that section; .okf/index.md indexes the
+  sections and any concept at the bundle root.
+- An entry is a markdown list item, outside a code fence, whose first link is
+  a relative link to a page in that folder or below. In .okf/prototypes/ the
+  concept is each prototype's README.md. External links, anchors and links
+  that leave the folder are not entries.
+- Hidden files and folders (a name starting with ".") are not pages.
+- No concept counts are written or checked.
+"""
+
+import re
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Literal
+
+RESERVED = {"index.md", "log.md"}
+_ENTRY = re.compile(r"^\s*[-*+]\s+.*?\[[^\]]*\]\(([^)\s]+)")
+_FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
+
+
+@dataclass(frozen=True)
+class Finding:
+    """One result of a check, as the CLI and the CI action report it.
+
+    Attributes
+    ----------
+    check : str
+        The check that produced it, such as ``index``.
+    file : str
+        The file or folder it is about, relative to the repository root.
+    line : int | None
+        The line in ``file``, when the finding is about one line.
+    message : str
+        What is wrong, in one line.
+    level : Literal["error", "skipped"]
+        ``error`` for a failure; ``skipped`` for a part of the repository a
+        check had nothing to look at.
+    """
+
+    check: str
+    file: str
+    line: int | None
+    message: str
+    level: Literal["error", "skipped"] = "error"
+
+
+class _Unreadable(Exception):
+    """An index that is not UTF-8 text."""
+
+
+def _read(path: Path) -> str:
+    """The UTF-8 text of ``path``.
+
+    Raises
+    ------
+    _Unreadable
+        When ``path`` is not UTF-8 text.
+    """
+    try:
+        return path.read_text(encoding="utf-8")
+    except UnicodeDecodeError as error:
+        raise _Unreadable(str(path)) from error
+
+
+def _entries(index: Path) -> list[tuple[int, str]]:
+    """The (line, target) of each entry in ``index``, by the format in the module docstring.
+
+    Raises
+    ------
+    _Unreadable
+        When ``index`` is not UTF-8 text.
+    """
+    found = []
+    fence = ""  # the opening fence while inside a code block, else ""
+    folder = index.parent.resolve()
+    for number, text in enumerate(_read(index).splitlines(), start=1):
+        opener = _FENCE.match(text)
+        if opener:
+            mark = opener.group(1)
+            if not fence:
+                fence = mark
+            elif (
+                mark[0] == fence[0]
+                and len(mark) >= len(fence)
+                and not text.strip()[len(mark) :]
+            ):
+                fence = ""
+            continue
+        match = None if fence else _ENTRY.match(text)
+        if not match:
+            continue
+        target = match.group(1).split("#", 1)[0]
+        if not target or target.startswith(("/", "mailto:")) or "://" in target:
+            continue
+        if not (index.parent / target).resolve().is_relative_to(folder):
+            continue
+        found.append((number, target))
+    return found
+
+
+def _rel(root: Path, path: Path) -> str:
+    """``path`` relative to ``root``, with forward slashes, as findings name files."""
+    return path.relative_to(root).as_posix()
+
+
+def _visible(folder: Path, path: Path) -> bool:
+    """True when no part of ``path`` below ``folder`` is hidden."""
+    return not any(part.startswith(".") for part in path.relative_to(folder).parts)
+
+
+def _check_index(root: Path, index: Path, members: list[Path]) -> list[Finding]:
+    """Findings for one index: members it does not list, and entries with no file."""
+    try:
+        entries = _entries(index)
+    except _Unreadable:
+        return [Finding("index", _rel(root, index), None, "index is not UTF-8 text")]
+    findings = []
+    listed = set()
+    for line, target in entries:
+        path = (index.parent / target).resolve()
+        listed.add(path)
+        if not path.exists():
+            findings.append(
+                Finding(
+                    "index",
+                    _rel(root, index),
+                    line,
+                    f"entry links {target}, which does not exist",
+                )
+            )
+    for member in members:
+        if member.resolve() not in listed:
+            findings.append(
+                Finding(
+                    "index",
+                    _rel(root, member),
+                    None,
+                    f"not listed in {_rel(root, index)}",
+                )
+            )
+    return findings
+
+
+def _section_concepts(section: Path) -> list[Path]:
+    """The concepts a section's index must list: every visible page, or each prototype's README.md."""
+    if section.name == "prototypes":
+        return sorted(
+            p / "README.md"
+            for p in section.iterdir()
+            if not p.name.startswith(".") and (p / "README.md").is_file()
+        )
+    return sorted(
+        p
+        for p in section.rglob("*.md")
+        if p.name not in RESERVED and _visible(section, p)
+    )
+
+
+def check_docs(root: Path) -> list[Finding]:
+    """Check that docs/README.md lists every visible page under docs/ and nothing missing."""
+    docs = root / "docs"
+    if not docs.is_dir():
+        return [
+            Finding("index", "docs/", None, "skipped docs/: no docs/ folder", "skipped")
+        ]
+    index = docs / "README.md"
+    if not index.is_file():
+        return [
+            Finding("index", "docs/README.md", None, "docs/ has no README.md index")
+        ]
+    pages = [p for p in docs.rglob("*.md") if p != index and _visible(docs, p)]
+    return _check_index(root, index, sorted(pages))
+
+
+def check_okf(root: Path) -> list[Finding]:
+    """Check the root index lists every section and root concept, and each section its concepts."""
+    okf = root / ".okf"
+    if not okf.is_dir():
+        return [
+            Finding("index", ".okf/", None, "skipped .okf/: no .okf/ folder", "skipped")
+        ]
+    root_index = okf / "index.md"
+    if not root_index.is_file():
+        return [Finding("index", ".okf/index.md", None, ".okf/ has no index.md")]
+    sections = sorted(
+        p for p in okf.iterdir() if p.is_dir() and not p.name.startswith(".")
+    )
+    root_concepts = sorted(p for p in okf.glob("*.md") if p.name not in RESERVED)
+    findings = _check_index(root, root_index, root_concepts)
+    try:
+        linked: set[Path] | None = {
+            (okf / t).resolve() for _, t in _entries(root_index)
+        }
+    except _Unreadable:
+        linked = None  # already reported once; do not report every section as unlinked
+    for section in sections:
+        targets = {section.resolve(), (section / "index.md").resolve()}
+        if linked is not None and not targets & linked:
+            findings.append(
+                Finding(
+                    "index",
+                    _rel(root, section),
+                    None,
+                    "section is not linked from .okf/index.md",
+                )
+            )
+        index = section / "index.md"
+        if not index.is_file():
+            findings.append(
+                Finding("index", _rel(root, section), None, "section has no index.md")
+            )
+            continue
+        findings += _check_index(root, index, _section_concepts(section))
+    return findings
+
+
+def run_checks(root: Path) -> list[Finding]:
+    """Run every knowledge check on the repository at ``root``.
+
+    Parameters
+    ----------
+    root : Path
+        The repository root, holding docs/ and .okf/.
+
+    Returns
+    -------
+    list[Finding]
+        Every finding, errors and skipped parts alike, in check order.
+    """
+    return check_docs(root) + check_okf(root)

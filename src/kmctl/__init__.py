@@ -8,6 +8,7 @@ from typing import Annotated
 
 import typer
 
+from kmctl.checks import run_checks
 from kmctl.handoffs import live_handoffs
 from kmctl.scaffold import scaffold
 
@@ -80,6 +81,48 @@ def init(
         typer.echo("Next: write .okf/manifesto.md, then commit docs/ and .okf/")
     else:
         typer.echo("Nothing to do: every file already exists.")
+
+
+@app.command(
+    epilog=(
+        "Examples:\n\n"
+        "  kmctl check\n\n"
+        "  kmctl check --path ../other-repo --json\n\n"
+        "Exit 0 when nothing fails, 1 when a check fails. A missing docs/ or .okf/ "
+        "is reported as skipped, not failed."
+    ),
+)
+def check(
+    path: Annotated[
+        Path,
+        typer.Option(
+            "--path",
+            metavar="../other-repo",
+            exists=True,
+            file_okay=False,
+            help="The repository to check: an existing folder. Default: the current directory.",
+        ),
+    ] = Path("."),
+    as_json: Annotated[
+        bool,
+        typer.Option(
+            "--json",
+            help="Print a JSON list of findings (check, file, line, message, level), for scripts.",
+        ),
+    ] = False,
+) -> None:
+    """Check that docs/ and .okf/ indexes agree with their folders."""
+    findings = run_checks(path)
+    errors = [f for f in findings if f.level == "error"]
+    if as_json:
+        typer.echo(json.dumps([asdict(f) for f in findings]))
+    else:
+        for f in findings:
+            where = f.file if f.line is None else f"{f.file}:{f.line}"
+            typer.echo(f"{f.level}  {f.check}  {where}  {f.message}")
+        typer.echo(f"{len(errors)} failed" if errors else "all checks passed")
+    if errors:
+        raise typer.Exit(1)
 
 
 @app.command(
