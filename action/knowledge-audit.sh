@@ -1,16 +1,19 @@
 #!/usr/bin/env bash
 # The kmctl GitHub Action's audit mode, in one script the tests run locally
 # (ADR 0005, I2). Runs headless Claude Code with only read tools on the concepts
-# kmctl review due lists, writes the findings to $GITHUB_STEP_SUMMARY and to one
-# open issue titled "Knowledge audit". It reports; it never edits or pushes.
+# kmctl review due lists, writes the findings to $GITHUB_STEP_SUMMARY and the
+# issue body to $RUNNER_TEMP/kmctl-audit-body.md. It reports; it never edits or
+# pushes. knowledge-audit-issue.sh, a later step, posts the body.
 #
-# Needs: kmctl, claude and gh on PATH; ANTHROPIC_API_KEY and GH_TOKEN for the
-# real run; KMCTL_PLUGIN_DIR, the plugin folder from the action's checkout.
+# Needs: kmctl and claude on PATH; ANTHROPIC_API_KEY for the real run;
+# KMCTL_PLUGIN_DIR, the plugin folder from the action's checkout. No GitHub
+# token may be reachable: the model's Read tool could open it.
 set -u
 
 summary="${GITHUB_STEP_SUMMARY:-/dev/stdout}"
 here="$(cd "$(dirname "$0")" && pwd)"
-title="Knowledge audit"
+body="${RUNNER_TEMP:-${TMPDIR:-/tmp}}/kmctl-audit-body.md"
+rm -f "$body"
 
 # The key reaches a model, so code from a pull request or fork must never run here.
 case "${GITHUB_EVENT_NAME:-}" in
@@ -20,6 +23,20 @@ case "${GITHUB_EVENT_NAME:-}" in
     exit 1
     ;;
 esac
+
+# A token anywhere in this process's environment stays readable in
+# /proc/PID/environ, and checkout's persisted credentials sit in git config
+# (directly, or in a file it includes). Refuse rather than hand either to a model.
+for name in GH_TOKEN GITHUB_TOKEN; do
+  if [ -n "${!name:-}" ]; then
+    echo "kmctl audit: refused: $name is set, and the model could read the token. Set it only for the issue step, not for the job." >&2
+    exit 1
+  fi
+done
+if git config --get-regexp '^http\..*\.extraheader$' > /dev/null 2>&1; then
+  echo "kmctl audit: refused: git config holds checkout's token (an extraheader), and the model could read it. Check out with persist-credentials: false." >&2
+  exit 1
+fi
 
 # review due reads git history, and actions/checkout fetches one commit by default.
 if [ "$(git rev-parse --is-shallow-repository 2>/dev/null)" = "true" ]; then
@@ -93,11 +110,4 @@ if ! python3 "$here/audit-report.py" "$work/claude.json" "$summary" "$work/body.
   echo "kmctl audit: the run gave no findings; no issue was written." >> "$summary"
   exit 1
 fi
-
-number="$(gh issue list --state open --search "\"$title\" in:title" --json number,title \
-  | python3 -c "import json,sys; print(next((str(i['number']) for i in json.load(sys.stdin) if i['title'] == '$title'), ''))")"
-if [ -n "$number" ]; then
-  gh issue edit "$number" --body-file "$work/body.md"
-else
-  gh issue create --title "$title" --body-file "$work/body.md"
-fi
+mv "$work/body.md" "$body"
