@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "knowledge-check",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
@@ -94,8 +94,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "b79d7ea5fa648b5d08544f4111e292c275280631ebe2f1897bfb731bf3e11d56",
   "intent": {
@@ -127,8 +127,14 @@
       "to": "verifying",
       "at": "2026-10-15T08:42:27+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-15T10:38:18+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T08:42:28+00:00"
+  "at": "2026-10-15T10:38:18+00:00"
 }
