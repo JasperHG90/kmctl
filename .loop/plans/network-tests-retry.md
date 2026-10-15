@@ -23,7 +23,8 @@ Relayed from: init-claude-md-always's review (round 1 note: "a network failure c
 
 - The tests in that file that reach the network carry an `integration` marker. `pyproject.toml` registers it under `markers` with a description saying where it runs, turns on `--strict-markers`, and leaves it out of the default run with `-m "not integration"` in `addopts`.
 - `.loop/config.toml` gains a gate, `integration`, that runs `uv run pytest -m integration`, so every stamp still runs them. This is a gate added, not one weakened: the existing `tests` gate keeps running everything else.
-- In that tier, a test that fails with a network error in claude's output (could not resolve host, connection refused or reset, timed out, temporary failure in name resolution) runs again up to two more times, a few seconds apart, from `tests/conftest.py` with no new dependency. Any other failure is reported at once, and three network failures still fail.
+- Every `kmctl plugin install` or `update` call in those tests asserts `result.exit_code == 0, result.output`, so a failed install stops the test there with kmctl's message instead of failing later on a missing manifest or a status assert. Six tests ignore that result today (`test_staged_version_matches_cli`, `test_update_after_bump`, `test_status_reports_mismatch_and_missing_path`, `test_status_ignores_other_repositories`, `test_installed_version_check_after_upgrade`, and the first install in `test_install_declares_okf_in_each_repository`), so a network error never reaches the failure report (round 1 plan review). kmctl's `PluginError` keeps the last line of claude's stderr, which for a failed clone is git's line naming the host; a spike confirms it by making github.com unreachable.
+- In that tier, a test that fails with a network error in claude's output (git's wording, as kmctl passes it on: `Could not resolve host`, `Failed to connect`, `Connection refused`, `Connection timed out`, `Operation timed out`, `Temporary failure in name resolution`) runs again up to two more times, a few seconds apart, from `tests/conftest.py` with no new dependency. Any other failure is reported at once, and three network failures still fail.
 
 Measured in this session: 2 red stamps came from a network error in this file (init-claude-md-always's first full run, 6 failures; new-concept-freshness's first stamp, 1), both green on a rerun with nothing changed; and 0 of the file's network tests carry a marker today.
 
@@ -31,4 +32,4 @@ Done when the default `uv run pytest` collects none of the network tests and the
 
 ## Could invalidate this plan
 
-- none
+- Settled by spike:network-tests-retry/1: with github.com unresolvable for git, kmctl's message and the pytest report of an asserted install both carry git's `Could not resolve host`; claude's own "Network error or timeout" line is dropped by `_require`, so the retry matches git's wording.
