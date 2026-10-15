@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The plan depends on JasperHG90/skills PR 139 being merged (still OPEN, no merge commit, head 2c1b41c), but that dependency appears only in Intent prose: it is not listed under 'Could invalidate this plan', and nothing in the plan or the evals stops a build that starts early. Row r1 accepts any pin 'at or after f0813cd', and r2 compares bodies with the pinned upstream. So a build pinned to f0813cd (upstream main today) passes every row and silently drops the roughly 50 local python-testing lines, which is the loss the operator chose to avoid. The PR could also be changed in review or never merge, and the plan has no fallback. Fix: list the merge as a precondition or risk, with what happens if it changes or stalls, and make r1 (or a new row) fail unless the pinned commit contains PR 139's text, for example the installed python-testing rule has the Test tiers section and the three constraints.",
+      "anchor": ".loop/plans/repo-uses-apm.md:24",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "tests/test_rules.py reads aim.toml (line 33, _aim_managed) to split upstream rules from this repo's own rules. Removing aim.toml as planned makes every parametrized test there error at collection. If the filter is simply emptied, the 13 upstream rules get checked for kmctl paths and ADRs, and they fail. The plan does not name this file. It must be rewired to read apm.yml, mapping '<name>.instructions.md' to the installed '<name>.md'. Its docstring (line 1) and the pyproject.toml ruff comment (line 37, 'aim-managed rules') also name aim, so r3's 'no file names aim' requires editing them too. Fix: add tests/test_rules.py and pyproject.toml to the plan's scope and say how the managed set is derived from apm.yml.",
+      "anchor": "tests/test_rules.py:33",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r4"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "db8286e0ba261002f0c5660f4b72673bd4cdf67e316a93ae0c68a0a19e33cc39"
+  },
+  "by": "process:loopctl/2.1.1.dev61+g8318eb7a1.d20261015",
+  "at": "2026-10-15T19:08:05+00:00"
+}
