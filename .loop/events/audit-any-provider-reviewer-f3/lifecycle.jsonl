@@ -1,1 +1,2 @@
 {"at": "2026-10-15T15:18:19+00:00", "by": "review close", "kind": "register", "schema_version": "1.0", "stage": "stub"}
+{"at": "2026-10-15T15:56:18+00:00", "kind": "drop", "reason": "folded into audit-hermes-hardening, which fixes f2 and f3 together in knowledge-audit.sh", "schema_version": "1.0"}
