@@ -26,3 +26,4 @@
 {"at": "2026-10-15T14:53:28+00:00", "binds": "3b402a99a9899a4f14d48e676fa53d46a1e6827c0be8a436e9b22f2547fa83b3", "kind": "round-start", "n": 2, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "a58a7822878c422e52ff0a70ed1400f82ebaafd3"}
 {"at": "2026-10-15T14:56:44+00:00", "dispatched_at": "2026-10-15T14:53:28+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-15T14:56:26+00:00"}}
 {"at": "2026-10-15T14:56:52+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "d0bd814aeeb2edb2c6142acdc3535f3c414bd57f"}
+{"at": "2026-10-15T14:58:02+00:00", "branch": "loop/plugin-install-known-marketplace", "kind": "land", "schema_version": "1.0", "sha": "050fa541413a9358e3bc80ca0f9dc1399be17535"}
