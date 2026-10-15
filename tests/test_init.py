@@ -7,7 +7,7 @@ from conftest import okf_validate
 from typer.testing import CliRunner
 
 from kmctl import app
-from kmctl.scaffold import FIRST_DECISION, RULE_FILES, ScaffoldResult
+from kmctl.scaffold import FIRST_DECISION, RULE_FILES, ScaffoldResult, scaffold
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE_FILES = ("docs/README.md", ".okf/index.md", ".okf/log.md", ".okf/manifesto.md")
@@ -246,7 +246,7 @@ def test_init_claude_md_replaces_only_the_block(tmp_path: Path) -> None:
     assert text.startswith(before) and text.endswith(after)
     assert "old routing" not in text
     assert ".okf/decisions/" in _block(text)
-    assert not (tmp_path / "CLAUDE.md").exists()
+    assert (tmp_path / "CLAUDE.md").read_text() == "@AGENTS.md\n"
 
 
 def test_init_claude_md_symlink_gets_one_block(tmp_path: Path) -> None:
@@ -279,6 +279,184 @@ def test_init_claude_md_with_broken_markers_is_left_alone(tmp_path: Path) -> Non
     assert result.exit_code == 0, result.output
     assert (tmp_path / "CLAUDE.md").read_text() == mine
     assert "CLAUDE.md has <!-- kmctl:start --> without" in result.stderr
+
+
+# CLAUDE.md beside AGENTS.md imports it (init-claude-md-always r1)
+
+
+def test_init_agents_only_adds_block_and_writes_import(tmp_path: Path) -> None:
+    mine = "# Agents\n\nBuild with make.\n"
+    (tmp_path / "AGENTS.md").write_text(mine)
+
+    result = _init(tmp_path)
+
+    assert result.exit_code == 0, result.output
+    text = (tmp_path / "AGENTS.md").read_text()
+    assert text.startswith(mine)
+    assert text.replace(_block(text), "").rstrip() == mine.rstrip()
+    assert (tmp_path / "CLAUDE.md").read_text() == "@AGENTS.md\n"
+    assert "created CLAUDE.md" in result.stdout
+    assert "updated AGENTS.md" in result.stdout
+
+
+def test_init_agents_only_rule_leaves_empty_repo_with_block_in_claude_md(
+    tmp_path: Path,
+) -> None:
+    _init(tmp_path)
+
+    _block((tmp_path / "CLAUDE.md").read_text())
+    assert not (tmp_path / "AGENTS.md").exists()
+
+
+def test_init_agents_only_twice_changes_nothing(tmp_path: Path) -> None:
+    (tmp_path / "AGENTS.md").write_text("# Agents\n")
+    _init(tmp_path)
+    before = _snapshot(tmp_path)
+
+    result = _init(tmp_path)
+
+    assert result.exit_code == 0, result.output
+    assert _snapshot(tmp_path) == before
+    assert (tmp_path / "CLAUDE.md").read_text() == "@AGENTS.md\n"
+    assert "kept    CLAUDE.md" in result.stdout
+
+
+def test_init_agents_only_importing_claude_md_gets_no_block(tmp_path: Path) -> None:
+    mine = "# Mine\n\n@AGENTS.md\n\nUse uv.\n"
+    (tmp_path / "CLAUDE.md").write_text(mine)
+    (tmp_path / "AGENTS.md").write_text("# Agents\n")
+
+    _init(tmp_path)
+
+    assert (tmp_path / "CLAUDE.md").read_text() == mine
+    _block((tmp_path / "AGENTS.md").read_text())
+
+
+# Symlinks that are dangling or leave the repository (init-claude-md-always r2)
+
+
+def _repo_and_outside(tmp_path: Path) -> tuple[Path, Path]:
+    repo, outside = tmp_path / "repo", tmp_path / "outside"
+    repo.mkdir()
+    outside.mkdir()
+    return repo, outside
+
+
+def test_init_unsafe_link_dangling_claude_md_is_left_alone(tmp_path: Path) -> None:
+    (tmp_path / "CLAUDE.md").symlink_to("missing.md")
+
+    result = _init(tmp_path)
+
+    assert result.exit_code == 0, result.output
+    assert (tmp_path / "CLAUDE.md").is_symlink()
+    assert not (tmp_path / "missing.md").exists()
+    assert not (tmp_path / "AGENTS.md").exists()
+    assert "CLAUDE.md is a symlink to missing.md" in result.stderr
+
+
+def test_init_unsafe_link_dangling_claude_md_beside_agents_md(tmp_path: Path) -> None:
+    (tmp_path / "AGENTS.md").write_text("# Agents\n")
+    (tmp_path / "CLAUDE.md").symlink_to("missing.md")
+
+    result = _init(tmp_path)
+
+    assert (tmp_path / "CLAUDE.md").is_symlink()
+    assert not (tmp_path / "missing.md").exists()
+    _block((tmp_path / "AGENTS.md").read_text())
+    assert "CLAUDE.md is a symlink to missing.md" in result.stderr
+
+
+def test_init_unsafe_link_claude_md_outside_repo(tmp_path: Path) -> None:
+    repo, outside = _repo_and_outside(tmp_path)
+    (outside / "theirs.md").write_text("# Theirs\n")
+    (repo / "CLAUDE.md").symlink_to(outside / "theirs.md")
+    (repo / "AGENTS.md").symlink_to(outside / "gone.md")
+
+    result = _init(repo)
+
+    assert result.exit_code == 0, result.output
+    assert (outside / "theirs.md").read_text() == "# Theirs\n"
+    assert not (outside / "gone.md").exists()
+    assert (repo / "CLAUDE.md").is_symlink() and (repo / "AGENTS.md").is_symlink()
+    assert f"CLAUDE.md is a symlink to {outside / 'theirs.md'}" in result.stderr
+    assert f"AGENTS.md is a symlink to {outside / 'gone.md'}" in result.stderr
+
+
+def test_init_unsafe_link_agents_md_with_no_claude_md(tmp_path: Path) -> None:
+    repo, outside = _repo_and_outside(tmp_path)
+    (outside / "agents.md").write_text("# Theirs\n")
+    (repo / "AGENTS.md").symlink_to(outside / "agents.md")
+
+    result = _init(repo)
+
+    assert result.exit_code == 0, result.output
+    assert (outside / "agents.md").read_text() == "# Theirs\n"
+    assert not (repo / "CLAUDE.md").exists()
+    assert "AGENTS.md is a symlink to" in result.stderr
+    assert "wrote no CLAUDE.md" in result.stderr
+    assert "fix the link, then run kmctl init again" in result.stderr
+    assert (repo / ".okf" / "manifesto.md").is_file()
+
+
+def test_init_unsafe_link_dangling_agents_md_with_no_claude_md(tmp_path: Path) -> None:
+    (tmp_path / "AGENTS.md").symlink_to("missing.md")
+
+    result = _init(tmp_path)
+
+    assert not (tmp_path / "CLAUDE.md").exists()
+    assert not (tmp_path / "missing.md").exists()
+    assert "AGENTS.md is a symlink to missing.md" in result.stderr
+    assert "wrote no CLAUDE.md" in result.stderr
+
+
+def test_init_unsafe_link_importing_claude_md_beside_dangling_agents_md(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "CLAUDE.md").write_text("@AGENTS.md\n")
+    (tmp_path / "AGENTS.md").symlink_to("missing.md")
+
+    result = _init(tmp_path)
+
+    assert (tmp_path / "CLAUDE.md").read_text() == "@AGENTS.md\n"
+    assert not (tmp_path / "missing.md").exists()
+    assert "AGENTS.md is a symlink to missing.md" in result.stderr
+
+
+def test_init_unsafe_link_rule_writes_through_in_repo_link_once(tmp_path: Path) -> None:
+    real = tmp_path / "real"
+    real.mkdir()
+    (real / "docs").mkdir()
+    (real / "docs" / "agents.md").write_text("# Agents\n")
+    (real / "CLAUDE.md").symlink_to("docs/agents.md")
+    (real / "AGENTS.md").symlink_to("CLAUDE.md")
+    via = tmp_path / "via"
+    via.symlink_to(real)
+
+    result = _init(via)
+    _init(via)
+
+    assert result.exit_code == 0, result.output
+    assert "symlink" not in result.stderr
+    assert (real / "CLAUDE.md").is_symlink()
+    _block((real / "docs" / "agents.md").read_text())
+
+
+# This repository's record of the import rule (init-claude-md-always r4)
+
+
+def test_init_agents_import_documented() -> None:
+    adr = next((ROOT / ".okf" / "decisions").glob("0011-*.md")).read_text()
+    corrections = adr.split("## Correction, 2026-10-15")[1:]
+    assert any("@AGENTS.md" in c and "symlink" in c for c in corrections)
+
+    help_text = CliRunner().invoke(app, ["init", "--help"], terminal_width=80).stdout
+    assert "@AGENTS.md" in " ".join(help_text.split())
+    for doc in (ScaffoldResult.__doc__, scaffold.__doc__):
+        assert "@AGENTS.md" in " ".join((doc or "").split())
+    reference = (ROOT / "docs" / "reference" / "commands.md").read_text()
+    assert "@AGENTS.md" in reference
+    log = (ROOT / ".okf" / "log.md").read_text()
+    assert "@AGENTS.md" in log
 
 
 # The first decision (r3)
@@ -470,3 +648,20 @@ def test_init_human_output_names_why_each_file_was_updated(tmp_path: Path) -> No
     for rel in (".okf/log.md", ".okf/decisions/index.md"):
         assert f"updated {rel} (first decision's entry)" in out, rel
         assert f"updated {rel} (kmctl block)" not in out, rel
+
+
+def test_init_agents_only_folder_is_not_a_file(tmp_path: Path) -> None:
+    (tmp_path / "AGENTS.md").mkdir()
+
+    result = _init(tmp_path)
+
+    assert _block((tmp_path / "CLAUDE.md").read_text())
+    assert "AGENTS.md is not a file" in result.stderr
+    (tmp_path / "CLAUDE.md").write_text("@AGENTS.md\n")
+
+    again = _init(tmp_path)
+
+    assert _block((tmp_path / "CLAUDE.md").read_text()), (
+        "an import of a folder loads nothing"
+    )
+    assert "AGENTS.md is not a file" in again.stderr

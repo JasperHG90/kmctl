@@ -5,6 +5,7 @@ CLAUDE.md and AGENTS.md, and the first decision's index entry and log line
 (ADR 0011).
 """
 
+import os
 import re
 from dataclasses import dataclass
 from dataclasses import field as dataclass_field
@@ -29,6 +30,9 @@ RULE_FILES = (
 
 AGENT_FILES = ("CLAUDE.md", "AGENTS.md")
 BLOCK_START, BLOCK_END = "<!-- kmctl:start -->", "<!-- kmctl:end -->"
+#: The whole of a CLAUDE.md init writes beside an AGENTS.md: Claude Code reads
+#: AGENTS.md only through it, once (ADR 0011).
+AGENTS_IMPORT = "@AGENTS.md\n"
 
 BLOCK = f"""{BLOCK_START}
 ## Project knowledge (kmctl)
@@ -97,8 +101,11 @@ class ScaffoldResult:
     Paths are relative to the root. ``scaffold`` never edits a kept file, with
     two exceptions, both listed in ``updated``: it adds or replaces the kmctl
     block in CLAUDE.md and AGENTS.md, and when it writes the first decision
-    into a kept bundle it adds its index entry and log line. A warning names a
-    kept file that does not point at a file ``scaffold`` created.
+    into a kept bundle it adds its index entry and log line. A new CLAUDE.md
+    beside an AGENTS.md holds only ``@AGENTS.md`` and is listed in
+    ``created``. A warning names a kept file that does not point at a file
+    ``scaffold`` created, and a CLAUDE.md or AGENTS.md symlink left alone
+    because it is dangling or points outside the repository.
     """
 
     created: list[str] = dataclass_field(default_factory=list)
@@ -177,22 +184,77 @@ def _with_block(text: str) -> str | None:
     return text[:start] + BLOCK.rstrip("\n") + text[end + len(BLOCK_END) :]
 
 
+def _unsafe_link(root: Path, path: Path) -> str | None:
+    """Why ``path`` is a symlink init must not write through, or None when it is safe."""
+    if not path.is_symlink():
+        return None
+    if not path.exists():
+        why = "which is missing"
+    elif not path.resolve().is_relative_to(root.resolve()):
+        why = "outside the repository"
+    else:
+        return None
+    return f"{path.name} is a symlink to {os.readlink(path)}, {why}"
+
+
+def _imports_agents(text: str | None) -> bool:
+    return text is not None and any(
+        line.strip() == AGENTS_IMPORT.strip() for line in text.splitlines()
+    )
+
+
 def _write_block(root: Path, result: ScaffoldResult) -> None:
     """Add the kmctl block to each CLAUDE.md and AGENTS.md once per real file, or write CLAUDE.md.
 
-    A symlink is written through in place, so CLAUDE.md -> AGENTS.md stays a
-    link and its target gets one block.
+    A symlink inside the repository is written through in place, so
+    CLAUDE.md -> AGENTS.md stays a link and its target gets one block. A
+    symlink that is dangling or resolves outside the repository is left alone
+    with a warning. A CLAUDE.md with an ``@AGENTS.md`` line, beside an
+    AGENTS.md, gets no block, since it loads AGENTS.md's. When CLAUDE.md is
+    missing, init writes it as ``@AGENTS.md`` beside an AGENTS.md, or with
+    the block when neither file exists; beside an unsafe AGENTS.md link it
+    writes no CLAUDE.md. An AGENTS.md that is not a file (a folder, say)
+    counts as absent, with a warning.
     """
+    claude, agents = root / "CLAUDE.md", root / "AGENTS.md"
+    has_agents = os.path.lexists(agents)
+    unsafe_agents = _unsafe_link(root, agents) if has_agents else None
+    # An AGENTS.md that is a folder or another non-file loads nothing, so it
+    # counts as absent for the import, with a warning.
+    odd_agents = has_agents and unsafe_agents is None and not agents.is_file()
+    if odd_agents:
+        result.warnings.append(
+            "AGENTS.md is not a file, so kmctl treated it as absent: the kmctl "
+            "block goes in CLAUDE.md instead"
+        )
+        has_agents = False
     seen: set[Path] = set()
     for rel in AGENT_FILES:
         path = root / rel
+        if not os.path.lexists(path):
+            continue
+        unsafe = _unsafe_link(root, path)
+        if unsafe is not None:
+            if rel == "AGENTS.md" and not os.path.lexists(claude):
+                unsafe += (
+                    ", so kmctl wrote no CLAUDE.md: one with the block would hide "
+                    "AGENTS.md from Claude Code, and one importing it would load no block"
+                )
+            else:
+                unsafe += ", so kmctl left it alone"
+            result.warnings.append(f"{unsafe}; fix the link, then run kmctl init again")
+            result.skipped.append(rel)
+            continue
         if not path.is_file():
             continue
         real = path.resolve()
         if real in seen:
             continue
-        seen.add(real)
         text = _text(real)
+        if rel == "CLAUDE.md" and has_agents and _imports_agents(text):
+            result.skipped.append(rel)
+            continue
+        seen.add(real)
         new = _with_block(text) if text is not None else None
         if new is None:
             why = "is not UTF-8 text" if text is None else _marker_problem(text)
@@ -206,9 +268,10 @@ def _write_block(root: Path, result: ScaffoldResult) -> None:
         else:
             real.write_text(new, encoding="utf-8")
             result.updated.append(rel)
-    if not seen:
-        (root / "CLAUDE.md").write_text(BLOCK, encoding="utf-8")
-        result.created.append("CLAUDE.md")
+    if os.path.lexists(claude) or unsafe_agents is not None:
+        return
+    claude.write_text(AGENTS_IMPORT if has_agents else BLOCK, encoding="utf-8")
+    result.created.append("CLAUDE.md")
 
 
 def _marker_problem(text: str) -> str:
@@ -282,10 +345,14 @@ def scaffold(root: Path, now: datetime | None = None) -> ScaffoldResult:
 
     It writes docs/README.md and .okf/index.md, log.md and manifesto.md; the
     four knowledge rules in .claude/rules/; the kmctl block in each CLAUDE.md
-    and AGENTS.md (or a new CLAUDE.md); and the decision "Keep project
+    and AGENTS.md; a new CLAUDE.md when there is none, holding only
+    ``@AGENTS.md`` beside an AGENTS.md and the block otherwise; and the decision "Keep project
     knowledge in an OKF bundle" when no record has that title. A file that
     exists is kept, except for the kmctl block and the first decision's index
-    entry and log line.
+    entry and log line. A CLAUDE.md that imports ``@AGENTS.md`` gets no block.
+    A CLAUDE.md or AGENTS.md symlink that is dangling or points outside the
+    repository is left alone with a warning; when AGENTS.md is such a link and
+    there is no CLAUDE.md, no CLAUDE.md is written.
 
     Parameters
     ----------

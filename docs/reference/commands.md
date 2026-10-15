@@ -54,12 +54,17 @@ Set a repository up. It writes:
   `diagrams-stay-current.md` and `manifesto-invariants.md` in `.claude/rules/`,
   each with `paths:` front matter;
 - a kmctl block between `<!-- kmctl:start -->` and `<!-- kmctl:end -->` in
-  each `CLAUDE.md` and `AGENTS.md` that exists, or a new `CLAUDE.md` when
-  neither does. The block lists where each kind of knowledge lives and gives
-  the agent three duties: record each choice with `kmctl new decision`, keep
-  `.okf/architecture/` matching the code, and run `kmctl check` before
-  finishing. A `CLAUDE.md` that is a symlink to `AGENTS.md` gets one block,
-  and stays a symlink;
+  each `CLAUDE.md` and `AGENTS.md` that exists. The block lists where each
+  kind of knowledge lives and gives the agent three duties: record each
+  choice with `kmctl new decision`, keep `.okf/architecture/` matching the
+  code, and run `kmctl check` before finishing. A `CLAUDE.md` that is a
+  symlink to `AGENTS.md` gets one block, and stays a symlink;
+- a new `CLAUDE.md` when there is none. Beside an `AGENTS.md` it holds only
+  `@AGENTS.md`, because Claude Code reads `AGENTS.md` only when there is no
+  `CLAUDE.md` or when `CLAUDE.md` imports it; the import loads `AGENTS.md`
+  and its block once. With neither file, `CLAUDE.md` holds the block. A
+  `CLAUDE.md` with an `@AGENTS.md` line, beside an `AGENTS.md`, gets no
+  block;
 - the decision "Keep project knowledge in an OKF bundle", with its index
   entry and log line, when no record in `.okf/decisions/` has that title. In
   a fresh bundle it is `0001`.
@@ -70,6 +75,15 @@ exceptions. The kmctl block is added to an existing `CLAUDE.md` or
 file changes. Writing the first decision into a kept bundle adds its entry to
 the kept indexes and a line to the kept `log.md`. A second run changes
 nothing.
+
+A file counts as missing only when there is no directory entry for it, so a
+dangling symlink counts as there. A `CLAUDE.md` or `AGENTS.md` symlink that is
+dangling or points outside the repository is left alone, with a warning
+naming the link and its target; init does not create or change its target.
+When `AGENTS.md` is such a link and there is no `CLAUDE.md`, init writes no
+`CLAUDE.md`: one with the block would hide the linked `AGENTS.md` from Claude
+Code, and one importing it would load no block. Fix the link and run init
+again. A symlink inside the repository is written through once.
 
 Output lists each file as `created`, `updated` (its kmctl block, or the first decision's index entry and log line) or `kept`,
 and ends with the next steps: fill the purpose and invariants in the
