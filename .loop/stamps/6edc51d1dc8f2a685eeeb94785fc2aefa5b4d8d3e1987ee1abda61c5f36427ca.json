@@ -1,0 +1,95 @@
+{
+  "schema_version": "1.0",
+  "fingerprint": "6edc51d1dc8f2a685eeeb94785fc2aefa5b4d8d3e1987ee1abda61c5f36427ca",
+  "slug": "audit-agent-and-skills",
+  "results": [
+    {
+      "name": "lint",
+      "kind": "gate",
+      "command": "uv run ruff check",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "format",
+      "kind": "gate",
+      "command": "uv run ruff format --check",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "tests",
+      "kind": "gate",
+      "command": "uv run pytest",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r1",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_audit.py::test_auditor_tools_are_read_only -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 1,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r2",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_audit.py::test_findings_sample_has_shape -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 1,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r3",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_audit.py::test_audit_skill_routes -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 1,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r4",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_audit.py::test_review_skills_exist -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 1,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    }
+  ],
+  "green": true,
+  "at": "2026-10-15T12:55:56+00:00",
+  "commit": null,
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015"
+}
