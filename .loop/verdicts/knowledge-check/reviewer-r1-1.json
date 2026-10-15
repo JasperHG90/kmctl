@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "_entries treats list items inside fenced code blocks as index entries, so an index that shows an example entry in a code fence fails with \"entry links example.md, which does not exist\". A list item in a fence is not a markdown list item, so this breaks the plan's entry definition and gives a false failure.",
+      "anchor": "src/kmctl/checks.py:40",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "The plan says an entry links a page \"in that folder or below\", but _entries accepts any relative target, including ../outside.md, and _check_index then reports it as a missing entry file when it does not exist. That is link-check's job, not the index check's. Non-blocking because the fix is plain (drop targets that resolve outside index.parent) and needs one test.",
+      "anchor": "src/kmctl/checks.py:45",
+      "category": "contract",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "Hidden folders are handled two ways. check_okf skips dot-folders as sections, but docs/ rglob and _section_concepts rglob still pick up .md files under dot-folders (docs/.hidden/x.md is reported as unlisted, so a docs/.vitepress/ tree would fail). Pick one rule and apply it everywhere. Non-blocking because the fix is a filter plus a test.",
+      "anchor": "src/kmctl/checks.py:100",
+      "category": "design",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "open",
+      "claim": "index.read_text() uses the locale encoding and raises on a non-UTF-8 index, so kmctl check crashes with a UnicodeDecodeError traceback. cli-interface.md requires a one-line stderr refusal and a nonzero exit, or the bad file could be reported as a finding. Use encoding=\"utf-8\" and handle the decode error. Non-blocking because the fix is local.",
+      "anchor": "src/kmctl/checks.py:40",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f5",
+      "disposition": "open",
+      "claim": "Gaps against the docstring and type-hint rules. _rel and _section_concepts have no docstrings. Finding has no numpy Attributes section, and level is a plain str where it could be Literal[\"error\", \"skipped\"]. The test helpers _write, _good_repo, _check and _findings have no docstrings, and _check has no return annotation.",
+      "anchor": "src/kmctl/checks.py:51",
+      "category": "nit",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f6",
+      "disposition": "open",
+      "claim": "cli-interface.md help-is-tested asks for tests that each verb's help names what it produces, gives every input an example, and renders at 80 columns. No help test covers the new check verb, and none exists for any verb yet (pre-existing, but the rules say to fix it when found). Non-blocking because adding the test does not change behaviour.",
+      "anchor": "tests/test_cli.py:1",
+      "category": "missing",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "321a90aba33791bac95f603c480b1e3219dc7f67a6f7be4f9bb58762c6675b7e",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T10:37:59+00:00"
+}

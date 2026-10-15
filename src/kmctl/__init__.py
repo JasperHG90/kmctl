@@ -9,6 +9,7 @@ from typing import Annotated
 import typer
 
 from kmctl.checks import run_checks
+from kmctl.handoffs import live_handoffs
 from kmctl.scaffold import scaffold
 
 app = typer.Typer(
@@ -122,6 +123,50 @@ def check(
         typer.echo(f"{len(errors)} failed" if errors else "all checks passed")
     if errors:
         raise typer.Exit(1)
+
+
+@app.command(
+    epilog=(
+        "Examples:\n\n"
+        "  kmctl handoffs\n\n"
+        "  kmctl handoffs --json\n\n"
+        "Handoffs past their stale_after are left out; kmctl review due lists them."
+    ),
+)
+def handoffs(
+    path: Annotated[
+        Path,
+        typer.Option(
+            "--path",
+            metavar="../other-repo",
+            exists=True,
+            file_okay=False,
+            help="The repository to read: an existing folder. Default: the current directory.",
+        ),
+    ] = Path("."),
+    as_json: Annotated[
+        bool,
+        typer.Option(
+            "--json",
+            help="Print a JSON list of handoffs (id, path, title, description, date), for /continue.",
+        ),
+    ] = False,
+) -> None:
+    """List the live handoffs in .okf/handoffs/, newest first."""
+    warnings: list[str] = []
+    found = live_handoffs(path, warnings=warnings)
+    for warning in warnings:
+        typer.echo(f"warning: {warning}", err=True)
+    if as_json:
+        typer.echo(json.dumps([asdict(h) for h in found]))
+        return
+    if not found:
+        typer.echo("no live handoffs in .okf/handoffs/")
+        return
+    for h in found:
+        typer.echo(f"{h.date}  {h.title}  ({h.path})")
+        if h.description:
+            typer.echo(f"    {h.description}")
 
 
 def main() -> None:

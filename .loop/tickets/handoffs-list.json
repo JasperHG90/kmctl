@@ -1,44 +1,97 @@
 {
   "schema_version": "1.0",
   "slug": "handoffs-list",
-  "stage": "ready",
-  "attempts": 0,
+  "stage": "done",
+  "attempts": 1,
   "plan_rounds": 2,
-  "review_rounds": 0,
+  "review_rounds": 2,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 2,
+    "fingerprint": "dcf34b4084d5d3cb7eb00ad97fdacc7760c28ba7248e72d1384647c9c6aab6e5",
+    "tree": "ee4149e23f0adb865228828b3bfc148f6e46d00e",
+    "decisions": [
+      {
+        "finding": "reviewer:f4",
+        "outcome": "cleared-unreviewed",
+        "by": "judgement",
+        "judgement": "j-20261015T104229+0000-b129fb8a",
+        "paths": [
+          "tests/test_handoffs.py"
+        ]
+      }
+    ],
+    "at": "2026-10-15T10:42:29+00:00"
+  },
   "ask": null,
   "split": "j-20261015T082301+0000-bff319a4",
   "split_plan_hash": "9cddcde2bc49ce00eca7d1221a1a899e6e62ff6d3e40283ea781cdbb21ce07b3",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "74f0e1bde77031ce8f59a17ea84668d04f65435a",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
-  "worktree": null,
-  "branch": null,
-  "stamps": [],
-  "signoff": null,
+  "worktree": "/home/vscode/kmctl.worktrees/handoffs-list",
+  "branch": "loop/handoffs-list",
+  "stamps": [
+    "b06faa8700ab6dfa9b0bee720e82cdefdd6a360443eee06564f0c9f1ddc25132",
+    "f164bc963fc5e87154d495afed1d24c267bc28b720ef855e9ce873cc499c7bb4",
+    "dcf34b4084d5d3cb7eb00ad97fdacc7760c28ba7248e72d1384647c9c6aab6e5"
+  ],
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "1c3c9d2a638ca8725df99117fab6e8d189ae5274f58cde6a438350f78c766068",
+    "at": "2026-10-15T10:36:34+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "kmctl handoffs lists live handoffs newest first by generated.at, ties broken by file name.",
+      "fails_when": "the order differs from generated.at descending, or a tie is not ordered by file name",
+      "command": "uv run pytest tests/test_handoffs.py::test_handoffs_order -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "Handoffs past stale_after are left out; one with no stale_after is listed as live; index.md is never listed.",
+      "fails_when": "an expired handoff is listed, a handoff without stale_after is left out, or index.md appears",
+      "command": "uv run pytest tests/test_handoffs.py::test_handoffs_filtering -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "--json prints each entry with id, path, title, description and date, and [] when there is no handoffs folder.",
+      "fails_when": "an entry lacks any of the five keys, or the empty case is not []",
+      "command": "uv run pytest tests/test_handoffs.py::test_handoffs_json -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "Without .okf/handoffs/ the text output says there are none and exits 0.",
+      "fails_when": "the command exits nonzero or prints nothing",
+      "command": "uv run pytest tests/test_handoffs.py::test_handoffs_none -q",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
   "round": {
-    "kind": "plan",
+    "kind": "review",
     "n": 2,
-    "binds": "9cddcde2bc49ce00eca7d1221a1a899e6e62ff6d3e40283ea781cdbb21ce07b3",
-    "started_at": "2026-10-15T08:23:02+00:00",
+    "binds": "f164bc963fc5e87154d495afed1d24c267bc28b720ef855e9ce873cc499c7bb4",
+    "started_at": "2026-10-15T10:41:01+00:00",
     "passes": [
-      "plan-reviewer"
+      "reviewer"
     ],
-    "tree": null,
-    "plan_hash": null,
-    "eval_hash": null,
+    "tree": "d3060d7cb24e96f6fe51ed6f9e4e5164807fb19a",
+    "plan_hash": "9cddcde2bc49ce00eca7d1221a1a899e6e62ff6d3e40283ea781cdbb21ce07b3",
+    "eval_hash": "1c3c9d2a638ca8725df99117fab6e8d189ae5274f58cde6a438350f78c766068",
     "scope": "full",
     "sent_back": [],
     "since": null,
@@ -46,7 +99,7 @@
     "chosen": {},
     "skipped": [],
     "closed": true,
-    "outcome": "pass"
+    "outcome": "fail"
   },
   "plan_hash": "9cddcde2bc49ce00eca7d1221a1a899e6e62ff6d3e40283ea781cdbb21ce07b3",
   "intent": {
@@ -66,8 +119,44 @@
       "to": "ready",
       "at": "2026-10-15T08:24:10+00:00",
       "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-10-15T10:36:39+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-10-15T10:37:29+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-15T10:40:29+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-15T10:40:56+00:00",
+      "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-15T10:42:15+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "done",
+      "at": "2026-10-15T10:42:39+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T08:24:10+00:00"
+  "at": "2026-10-15T10:42:39+00:00"
 }

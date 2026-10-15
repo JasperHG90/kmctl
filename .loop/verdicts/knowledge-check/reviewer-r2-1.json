@@ -1,0 +1,112 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "Entries inside ``` and ~~~ fences are skipped (src/kmctl/checks.py:72-78); test_check_ignores_entries_in_code_fences fails without it.",
+      "anchor": "src/kmctl/checks.py:75",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "Targets that resolve outside the index's folder are dropped (src/kmctl/checks.py:84); test_check_ignores_links_that_leave_the_folder covers it.",
+      "anchor": "src/kmctl/checks.py:84",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "_visible filters hidden parts for docs/ pages and section concepts, prototypes skip dot-folders; test_check_skips_hidden_pages covers docs/ and a section.",
+      "anchor": "src/kmctl/checks.py:95",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "resolved",
+      "claim": "Indexes are read as UTF-8 and a decode error becomes an \"index is not UTF-8 text\" finding with exit 1; test_check_reports_non_utf8_index covers it.",
+      "anchor": "src/kmctl/checks.py:56",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f5",
+      "disposition": "resolved",
+      "claim": "Finding has an Attributes section and a Literal level; _rel, _section_concepts and the test helpers have docstrings and return types.",
+      "anchor": "src/kmctl/checks.py:27",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f6",
+      "disposition": "resolved",
+      "claim": "tests/test_help.py checks every verb's help at 80 columns, a first line ending in a full stop, a metavar per option and an Examples epilog.",
+      "anchor": "tests/test_help.py:1",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f7",
+      "disposition": "open",
+      "claim": "The fence tracking toggles on any line starting with ``` or ~~~, so it ignores the CommonMark rule that a fence closes only on the same character, at least as long as the opener. A ````md fence that shows a ``` example (the usual way to show markdown that contains a fence) flips the state, and the example entry after it is reported as \"entry links example.md, which does not exist\" (probed - docs/README.md:7). The same happens for ``` inside ~~~. Fix - remember the opener's character and length and close only on a matching line. Non-blocking because the fix is a few mechanical lines plus one test, and the common single-fence case already works.",
+      "anchor": "src/kmctl/checks.py:75",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f8",
+      "disposition": "open",
+      "claim": "When .okf/index.md is not UTF-8, check_okf sets linked to an empty set, so every section is also reported as \"section is not linked from .okf/index.md\". Those findings are noise behind the one real cause. Skip the unlinked-section findings when the root index cannot be read. Non-blocking - the real cause is still reported and the exit code is right.",
+      "anchor": "src/kmctl/checks.py:181",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": "reviewer:f4",
+      "eval_row": null
+    },
+    {
+      "id": "f9",
+      "disposition": "open",
+      "claim": "The new helper _read has no docstring, against the same rule f5 applied to the other helpers. Non-blocking - a one-line docstring.",
+      "anchor": "src/kmctl/checks.py:56",
+      "category": "nit",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": "reviewer:f5",
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "4d13ec08deff784f6c8690323c9ce91a815180e69cd24aca5e96f35f0dbb469b",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T10:41:21+00:00"
+}
