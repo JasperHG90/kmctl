@@ -20,10 +20,36 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "fe375eba85393e3df7ba70fd6a362f1550b0331d50bbb30a7085ab1e6689c4b1",
+    "at": "2026-10-15T11:15:33+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "The write-docs skill exists in the plugin with one reference file per Diataxis type.",
+      "fails_when": "plugin/skills/write-docs/SKILL.md is missing or any of the four reference files is missing",
+      "command": "uv run pytest tests/test_skills.py::test_write_docs_skill_layout -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "The skill creates pages only through kmctl new doc and writes only the prose.",
+      "fails_when": "SKILL.md tells the agent to create a page file, folder or index entry itself instead of running kmctl new doc",
+      "command": null,
+      "judgment": true
+    },
+    {
+      "id": "r3",
+      "behavior": "The skill was made with skill-creator and its test prompts are kept beside it, covering one request of each Diataxis type.",
+      "fails_when": "no test prompts are kept, fewer than four types are covered, or the skill-creator run's results show a request filed in the wrong folder",
+      "command": null,
+      "judgment": true
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -70,6 +96,6 @@
       "by": "advance"
     }
   ],
-  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T08:10:27+00:00"
+  "by": "process:loopctl/2.0.1.dev33+ge3aeaa855.d20261015",
+  "at": "2026-10-15T11:15:33+00:00"
 }
