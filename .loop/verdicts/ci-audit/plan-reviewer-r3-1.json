@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "Headless claude -p on a clean runner loading the plugin, resolving okf, running the agent with only the read tools and printing parseable findings is the plan's listed risk, accepted by the operator (risk hash 916482bb..., 'spiked during build in CI'); the hash still matches the current risk line.",
+      "anchor": ".loop/plans/ci-audit.md:30",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "Triggers and token permissions are chosen: workflow_dispatch and schedule only, now enforced by the script through GITHUB_EVENT_NAME, an issue as output, and the caller's workflow sets contents: read, issues: write.",
+      "anchor": ".loop/plans/ci-audit.md:24",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "resolved",
+      "claim": "Bash is no longer allowed at all. The script runs kmctl review due --json itself, claude runs with --allowedTools Read,Grep,Glob and --disallowedTools Bash,Edit,Write, matching the agent's tools in audit-agent-and-skills (which now states the same reason), so kmctl's write verbs and git log --output are out of reach. A spike checks the flags really refuse Bash and writes in -p mode.",
+      "anchor": ".loop/plans/ci-audit.md:22",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "0564401e500fdf3ac9871a47c91d2f3b33416856957442fb3bdefccd547139e6"
+  },
+  "by": "process:loopctl/2.0.1.dev77+gbd4712cf8.d20261015",
+  "at": "2026-10-15T12:27:49+00:00"
+}
