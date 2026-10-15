@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "Sources are now resolved per OKF section 6.2: URL skipped, '/' from the bundle root, relative from the concept folder with a repository-root fallback (backed by spike:review-due/1), and concept ids to the concept file.",
+      "anchor": ".loop/plans/review-due.md:26",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "An unresolved source, such as a scope descriptor, is now a separate 'source not resolved' notice and not a due reason, so verifying is no longer blocked by it.",
+      "anchor": ".loop/plans/review-due.md:26",
+      "category": "design",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "open",
+      "claim": "Handoffs are concepts in .okf/handoffs/ (ADR 0008) that kmctl writes with stale_after but no verified entry. The plan runs the concept checks over every concept in .okf/ and lists expired handoffs separately, without saying handoffs are left out of the concept checks. As written, every handoff is due for 'no verified entry' from the moment it is written, and an expired one shows twice. The plan must say whether .okf/handoffs/ is excluded from the three concept reasons (and test it).",
+      "anchor": ".loop/plans/review-due.md:22",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "bdc8306bd9a9a396053aa0778808a961d175186aa03da3fb8685140f9e106771"
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T08:22:50+00:00"
+}
