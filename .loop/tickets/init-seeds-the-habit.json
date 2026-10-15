@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "init-seeds-the-habit",
-  "stage": "building",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 0,
@@ -163,8 +163,14 @@
       "to": "building",
       "at": "2026-10-15T16:07:55+00:00",
       "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-10-15T16:26:04+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T16:26:00+00:00"
+  "at": "2026-10-15T16:26:04+00:00"
 }
