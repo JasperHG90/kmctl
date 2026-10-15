@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "new-concept-verbs",
-  "stage": "building",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 3,
   "review_rounds": 0,
@@ -116,8 +116,14 @@
       "to": "building",
       "at": "2026-10-15T10:45:42+00:00",
       "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-10-15T10:46:53+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T10:46:52+00:00"
+  "at": "2026-10-15T10:46:53+00:00"
 }
