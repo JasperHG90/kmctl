@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The kmctl-read plugin passes paths straight to Hermes' read and search handlers, which read anywhere the runner user can, not only the repository. Their guards are a denylist, and Hermes' own docstring says 'This is NOT a security boundary'. Run against Hermes 0.19.0 with a fresh HOME, the handlers read /etc/hostname and /home/vscode/.bashrc. They refuse /proc/*/environ for read_file, but search_files with output_mode count on /proc/PID/environ returns 1 for 'KMKEY=bfkey-s' and 0 for 'KMKEY=bfkey-x'. That is a prefix test a model can repeat to recover the provider key one character at a time. A non-sk- key (Ollama, Bifrost virtual keys, a custom gateway) has no known prefix, so redaction does not mask it. The findings text goes into a public issue, so a prompt planted in audited content could leak the key there. The config file is safe: it holds the literal ${KMKEY}, not the key. The plan should have the plugin resolve every path (following symlinks) and refuse any path outside the repository root, which also covers /proc and HOME. Its tests (r3 or r2) should show reads and searches outside the repo, including a count search on /proc/self/environ, are refused.",
+      "anchor": ".loop/plans/audit-any-provider.md (Read only (I2) bullet)",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r3"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "a1439a83ad0cfcf5cdcb77177d7cf5e85b780d0592baad3455d62dcbab28dd95"
+  },
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "at": "2026-10-15T14:38:22+00:00"
+}
