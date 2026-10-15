@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The listed fields (title, description, date) do not say which file each handoff is, so /continue, which loads the handoffs the user picks, has nothing to load them by. The --json shape this plan defines is the contract handoff-and-continue-skills builds on: it needs each entry's path (or concept id) and, with no handoffs folder, an empty list on stdout rather than the 'there are none' sentence.",
+      "anchor": ".loop/plans/handoffs-list.md",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "20dd13665d6735f9f5b3465543abe1b77963981d9a61c37749e53ef33191ec1e"
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T08:22:44+00:00"
+}
