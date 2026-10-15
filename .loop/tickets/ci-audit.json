@@ -1,14 +1,41 @@
 {
   "schema_version": "1.0",
   "slug": "ci-audit",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 3,
   "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "fe920f326ab8e06b534f21a9355d3a5d7bcfbc4f8101154b49d662aaaa0b7329",
+    "tree": "338fda82ab8d1e0dad22918cc5c3aadffa53640b",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "blocking",
+        "judgement": null,
+        "paths": [
+          "action/knowledge-audit.sh",
+          "tests/test_ci_audit.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f2",
+        "outcome": "sent-back",
+        "by": "blocking",
+        "judgement": null,
+        "paths": [
+          "action/knowledge-audit.sh",
+          "tests/test_ci_audit.py"
+        ]
+      }
+    ],
+    "at": "2026-10-15T13:14:00+00:00"
+  },
   "ask": null,
   "split": "j-20261015T122637+0000-e079787d",
   "split_plan_hash": "0564401e500fdf3ac9871a47c91d2f3b33416856957442fb3bdefccd547139e6",
@@ -171,8 +198,14 @@
       "to": "fixing",
       "at": "2026-10-15T13:09:48+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-15T13:14:00+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T13:13:50+00:00"
+  "at": "2026-10-15T13:14:00+00:00"
 }
