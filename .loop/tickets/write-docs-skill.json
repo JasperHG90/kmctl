@@ -3,7 +3,7 @@
   "slug": "write-docs-skill",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 1,
+  "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -30,9 +30,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 1,
-    "binds": "f302591c63f2b5de5615b5693438ad831ea59ed95bfde9068329f09329fed297",
-    "started_at": "2026-10-15T08:06:54+00:00",
+    "n": 2,
+    "binds": "b8c15e49af3f00ec735f25d47eb6a801604c80160883e87a287bfb31b7ab1eb1",
+    "started_at": "2026-10-15T08:08:25+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -45,10 +45,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "f302591c63f2b5de5615b5693438ad831ea59ed95bfde9068329f09329fed297",
+  "plan_hash": "b8c15e49af3f00ec735f25d47eb6a801604c80160883e87a287bfb31b7ab1eb1",
   "intent": {
     "epic": "plugin",
     "depends_on": [
@@ -65,5 +65,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T08:08:18+00:00"
+  "at": "2026-10-15T08:08:25+00:00"
 }
