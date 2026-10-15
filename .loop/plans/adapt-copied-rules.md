@@ -22,7 +22,12 @@ The loop workflow (tickets, `.loop/`, stamps, verdicts) is the loop-harness plug
 - delete a rule whose subject is loopctl's own internals (likely `artifact-outputs.md`, `data-management.md`, `schema-versioning.md`, `manifesto-invariants.md`);
 - rewrite a rule that holds for kmctl (likely `cli-interface.md`, `cli-version-floor.md`, `skills-are-thin.md`, `docs-layout.md`, `okf-bundle.md`, `diagrams-stay-current.md`, `adversarial-reviews.md`, `measure-before-ticketing.md`) so every claim, path and ADR in it is true here. A kept rule may name `loopctl` only as the tool this repository's tickets run on.
 
-`paths:` globs may name folders that registered tickets will create: `plugin/`, `docs/`, `src/kmctl/` and `.github/workflows/`. Removing those globs would stop the rules loading once the files exist.
+A rule may name a folder that the design or a registered ticket says will exist, even before it does. These are the planned locations:
+
+- the `.okf/` sections the manifesto names: `architecture/`, `practices/`, `proposals/`, `prototypes/` and `handoffs/`;
+- `plugin/`, `docs/`, `src/kmctl/`, `.github/workflows/` and the root `action.yml`, which the registered tickets create.
+
+Removing these from `paths:` globs or from a rule's text would stop the rule loading, or lose its subject, once the files exist. A rule that cites a specific page that does not exist (for example loop-harness's `cli-and-plugin.md` architecture page) drops the citation instead of pointing at a page nobody has written.
 
 Update `AGENTS.md` to drop the note that points at this ticket.
 
@@ -30,7 +35,7 @@ Done when, for every non-aim file under `.claude/rules/`:
 
 - it does not mention `loop_harness`, `loop-harness`, v1 or v2;
 - every `ADR NNNN` it cites exists under `.okf/decisions/`;
-- every repository path in backticks exists, or sits under one of the four planned folders above.
+- every repository path in backticks exists, or is one of the planned locations above or sits under one; a planned location is a folder or `action.yml`, never a specific page inside a folder that does not exist yet.
 
 ## Could invalidate this plan
 
