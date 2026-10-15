@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "The plan did not say how kmctl's tests reach the okf validator. It now names a pinned, test-only copy of okf_validate.py from okf-skills 0.10.1 under tests/vendor/ with its MIT licence, run in strict mode, with pyyaml as a dev dependency.",
+      "anchor": ".loop/plans/scaffold-init.md:27",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "47ac36884645757185cec0670ed602bc3e51be7d50e3b44e5ba1b86390210c03"
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T08:10:19+00:00"
+}
