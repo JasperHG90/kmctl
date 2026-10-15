@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "Missing means no directory entry (lexists false), so a dangling CLAUDE.md link is never replaced and no CLAUDE.md is written beside it; r2 tests it.",
+      "anchor": ".loop/plans/init-claude-md-always.md",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r2"
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "Spike 1 settles the Claude Code 2.1.300 premise: a CLAUDE.md hides AGENTS.md unless it imports it, and @AGENTS.md loads it once.",
+      "anchor": ".loop/spikes/init-claude-md-always/1/README.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    },
+    {
+      "id": "p3",
+      "disposition": "resolved",
+      "claim": "The ADR 0011 Correction, help, docstrings, reference and the changed test are named; r4 checks the text changes.",
+      "anchor": ".loop/plans/init-claude-md-always.md",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r4"
+    },
+    {
+      "id": "p4",
+      "disposition": "resolved",
+      "claim": "The plan now says a CLAUDE.md with an @AGENTS.md line, while AGENTS.md exists, never gets the block, so a second init changes nothing; r1 runs init twice and fails if CLAUDE.md gets the block or any file changes.",
+      "anchor": ".loop/plans/init-claude-md-always.md",
+      "category": "design",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    },
+    {
+      "id": "p5",
+      "disposition": "resolved",
+      "claim": "The plan picks an outcome for an unsafe AGENTS.md link with no CLAUDE.md: init writes no CLAUDE.md and warns to fix the link and rerun; r2 fails if a CLAUDE.md is written or the warning does not name AGENTS.md.",
+      "anchor": ".loop/plans/init-claude-md-always.md",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r2"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "e49267403233a773eca08fc6f9fcc06d208a8a9caf6010693e3966aad7b4efaa"
+  },
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "at": "2026-10-15T16:39:49+00:00"
+}
