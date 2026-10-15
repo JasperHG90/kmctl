@@ -22,8 +22,8 @@
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
-    "hash": "db52083bea15ba18f7ac43120dbf53873b411e89b4b1f0bbb027ff2f31e2058d",
-    "at": "2026-10-15T17:25:36+00:00"
+    "hash": "9fd4edce753810f1d1afe05c702ac828a25b0f2806d6a9fa6aec115e509278f0",
+    "at": "2026-10-15T17:28:28+00:00"
   },
   "delegation": null,
   "budget_base": null,
@@ -37,7 +37,7 @@
     },
     {
       "id": "r2",
-      "behavior": "kmctl schema KIND prints valid JSON Schema (draft 2020-12) whose properties are fields from ALLOWED_FIELDS only, each with a description; kinds with no front matter allow no properties (the root index only okf_version); the body is described in x-kmctl-sections as a section list, a heading pattern, or none.",
+      "behavior": "kmctl schema KIND prints valid JSON Schema (draft 2020-12) whose properties are fields from ALLOWED_FIELDS only, each with a description; kinds with no front matter allow no properties (the root index only okf_version); the body is described in x-kmctl-sections as a fixed section list, a heading pattern, free sections with a required last one ({\"last\": \"Depicts\"} for architecture), or none.",
       "fails_when": "for any kind the output is not valid draft 2020-12 JSON Schema, names a property not in ALLOWED_FIELDS or without a description, a no-front-matter kind allows a property, or x-kmctl-sections is missing",
       "command": "uv run pytest tests/test_schema.py -k valid -q",
       "judgment": false
@@ -45,7 +45,7 @@
     {
       "id": "r3",
       "behavior": "Everything kmctl init, kmctl new (each kind; with --stale-after for every kind and --source for every kind but handoff) and kmctl new doc (each type) writes matches its kind's schema, and this repository's own architecture page matches the architecture schema.",
-      "fails_when": "any file those verbs write, or .okf/architecture/overview.md, fails its kind's schema: front matter does not validate, or its ## sections differ from a fixed list, come in another order, or do not match a heading pattern",
+      "fails_when": "any file those verbs write, or .okf/architecture/overview.md, fails its kind's schema: front matter does not validate, or its ## sections differ from a fixed list, come in another order, do not match a heading pattern, or, on an architecture page, do not end with ## Depicts",
       "command": "uv run pytest tests/test_schema.py -k matches_what_kmctl_writes -q",
       "judgment": false
     },
@@ -96,6 +96,23 @@
         }
       },
       "at": "2026-10-15T17:25:36+00:00"
+    },
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+      "reason": "plan round 3 note: rows name the fourth body form (free sections, Depicts last)",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r2": [
+            "behavior"
+          ],
+          "r3": [
+            "fails_when"
+          ]
+        }
+      },
+      "at": "2026-10-15T17:28:28+00:00"
     }
   ],
   "accepted_risks": [],
@@ -138,5 +155,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T17:28:27+00:00"
+  "at": "2026-10-15T17:28:28+00:00"
 }

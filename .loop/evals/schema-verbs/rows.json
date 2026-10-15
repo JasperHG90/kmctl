@@ -9,14 +9,14 @@
     },
     {
       "id": "r2",
-      "behavior": "kmctl schema KIND prints valid JSON Schema (draft 2020-12) whose properties are fields from ALLOWED_FIELDS only, each with a description; kinds with no front matter allow no properties (the root index only okf_version); the body is described in x-kmctl-sections as a section list, a heading pattern, or none.",
+      "behavior": "kmctl schema KIND prints valid JSON Schema (draft 2020-12) whose properties are fields from ALLOWED_FIELDS only, each with a description; kinds with no front matter allow no properties (the root index only okf_version); the body is described in x-kmctl-sections as a fixed section list, a heading pattern, free sections with a required last one ({\"last\": \"Depicts\"} for architecture), or none.",
       "fails_when": "for any kind the output is not valid draft 2020-12 JSON Schema, names a property not in ALLOWED_FIELDS or without a description, a no-front-matter kind allows a property, or x-kmctl-sections is missing",
       "command": "uv run pytest tests/test_schema.py -k valid -q"
     },
     {
       "id": "r3",
       "behavior": "Everything kmctl init, kmctl new (each kind; with --stale-after for every kind and --source for every kind but handoff) and kmctl new doc (each type) writes matches its kind's schema, and this repository's own architecture page matches the architecture schema.",
-      "fails_when": "any file those verbs write, or .okf/architecture/overview.md, fails its kind's schema: front matter does not validate, or its ## sections differ from a fixed list, come in another order, or do not match a heading pattern",
+      "fails_when": "any file those verbs write, or .okf/architecture/overview.md, fails its kind's schema: front matter does not validate, or its ## sections differ from a fixed list, come in another order, do not match a heading pattern, or, on an architecture page, do not end with ## Depicts",
       "command": "uv run pytest tests/test_schema.py -k matches_what_kmctl_writes -q"
     },
     {

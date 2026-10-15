@@ -6,12 +6,12 @@ tags:
 - eval
 generated:
   by: process:loopctl/2.0.1.dev86+g9641fa018.d20261015
-  at: '2026-10-15T17:25:36+00:00'
+  at: '2026-10-15T17:28:28+00:00'
 slug: schema-verbs
 signoff:
   signer: delegated:jasperginn@gmail.com/claude-opus-5-5
-  hash: db52083bea15ba18f7ac43120dbf53873b411e89b4b1f0bbb027ff2f31e2058d
-  at: '2026-10-15T17:25:36+00:00'
+  hash: 9fd4edce753810f1d1afe05c702ac828a25b0f2806d6a9fa6aec115e509278f0
+  at: '2026-10-15T17:28:28+00:00'
 verified: null
 ---
 
@@ -19,10 +19,10 @@ Rows: rows.json; the fields each row takes: loopctl schema eval-rows.
 
 - r1: kmctl schema with no name lists every document kind with what it is for; an unknown kind is refused with that list.
   Fails when: the list lacks any of decision, practice, proposal, prototype, handoff, manifesto, index, section-index, log, architecture, tutorial, how-to, reference, explanation, docs-index; or an unknown kind exits 0 or does not list the kinds
-- r2: kmctl schema KIND prints valid JSON Schema (draft 2020-12) whose properties are fields from ALLOWED_FIELDS only, each with a description; kinds with no front matter allow no properties (the root index only okf_version); the body is described in x-kmctl-sections as a section list, a heading pattern, or none.
+- r2: kmctl schema KIND prints valid JSON Schema (draft 2020-12) whose properties are fields from ALLOWED_FIELDS only, each with a description; kinds with no front matter allow no properties (the root index only okf_version); the body is described in x-kmctl-sections as a fixed section list, a heading pattern, free sections with a required last one ({"last": "Depicts"} for architecture), or none.
   Fails when: for any kind the output is not valid draft 2020-12 JSON Schema, names a property not in ALLOWED_FIELDS or without a description, a no-front-matter kind allows a property, or x-kmctl-sections is missing
 - r3: Everything kmctl init, kmctl new (each kind; with --stale-after for every kind and --source for every kind but handoff) and kmctl new doc (each type) writes matches its kind's schema, and this repository's own architecture page matches the architecture schema.
-  Fails when: any file those verbs write, or .okf/architecture/overview.md, fails its kind's schema: front matter does not validate, or its ## sections differ from a fixed list, come in another order, or do not match a heading pattern
+  Fails when: any file those verbs write, or .okf/architecture/overview.md, fails its kind's schema: front matter does not validate, or its ## sections differ from a fixed list, come in another order, do not match a heading pattern, or, on an architecture page, do not end with ## Depicts
 - r4: kmctl schema's help says the schema is built from kmctl's own table and is what kmctl writes, without claiming kmctl check or the validator enforce it; the briefing names kmctl schema within its word budget.
   Fails when: kmctl schema --help does not say the schema is built from kmctl's table and is what kmctl writes, or says kmctl check or the strict validator enforce it; the briefing does not name kmctl schema; or the briefing budget test fails
 - r6: The per-kind table in src/kmctl/kinds.py is the one definition the writers and the schema read: skeletons, the manifesto's sections, status values and the architecture kind.
