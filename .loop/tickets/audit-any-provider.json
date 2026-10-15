@@ -25,8 +25,8 @@
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
-    "hash": "83bf002559d8b881e0dc052a67ffcd4b2d79c4af0ba833d9514b5bddfd1fae9b",
-    "at": "2026-10-15T14:48:49+00:00"
+    "hash": "15845c302a56846390fcd9fdfb8c6b9d0ac498d25225fcdb4ff08148727191da",
+    "at": "2026-10-15T15:11:11+00:00"
   },
   "delegation": null,
   "budget_base": null,
@@ -40,8 +40,8 @@
     },
     {
       "id": "r2",
-      "behavior": "Every audit run passes -t kmctl_read, installs the kmctl-read Hermes plugin into the run's HOME and enables it, sets HERMES_WRITE_SAFE_ROOT to an empty folder, and runs hermes under a time limit, with timeout-minutes on the audit step.",
-      "fails_when": "the stub hermes's arguments lack -t kmctl_read, the plugin files or plugins.enabled are missing from the run's HOME, HERMES_WRITE_SAFE_ROOT is unset or not an empty folder, hermes is not run under timeout, a stub hermes that sleeps past the limit is not stopped, or the audit step in action.yml and the shipped workflow has no timeout-minutes",
+      "behavior": "Every audit run passes -t kmctl_read, installs the kmctl-read Hermes plugin into the run's HOME and enables it, sets HERMES_WRITE_SAFE_ROOT to an empty folder, and runs hermes under timeout; the shipped workflow's audit step has timeout-minutes, and action.yml's mode help tells uses: callers to set it (a composite action's steps cannot take timeout-minutes).",
+      "fails_when": "the stub hermes's arguments lack -t kmctl_read, the plugin files or plugins.enabled are missing from the run's HOME, HERMES_WRITE_SAFE_ROOT is unset or not an empty folder, hermes is not run under timeout, a stub hermes that sleeps past the limit is not stopped, the shipped workflow's audit step has no timeout-minutes, or action.yml's mode help does not tell callers to set timeout-minutes",
       "command": "uv run pytest tests/test_ci_audit.py -k read_only -q",
       "judgment": false
     },
@@ -157,6 +157,21 @@
         }
       },
       "at": "2026-10-15T14:48:49+00:00"
+    },
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+      "reason": "r2: GitHub does not allow timeout-minutes on a composite action's step, so the shipped workflow sets it and action.yml's help tells callers to",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r2": [
+            "behavior",
+            "fails_when"
+          ]
+        }
+      },
+      "at": "2026-10-15T15:11:11+00:00"
     }
   ],
   "accepted_risks": [],
@@ -230,5 +245,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T15:10:03+00:00"
+  "at": "2026-10-15T15:11:11+00:00"
 }

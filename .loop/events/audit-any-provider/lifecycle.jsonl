@@ -24,3 +24,4 @@
 {"at": "2026-10-15T15:07:28+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "building"}
 {"at": "2026-10-15T15:10:03+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "building"}
 {"at": "2026-10-15T15:10:34+00:00", "kind": "spike-note", "n": 3, "replaced": false, "schema_version": "1.0"}
+{"at": "2026-10-15T15:11:11+00:00", "diff": {"added": [], "changed": {"r2": ["behavior", "fails_when"]}, "removed": []}, "grant": "g1", "hash": "15845c302a56846390fcd9fdfb8c6b9d0ac498d25225fcdb4ff08148727191da", "kind": "signoff", "reason": "r2: GitHub does not allow timeout-minutes on a composite action's step, so the shipped workflow sets it and action.yml's help tells callers to", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5", "step": "eval-sign"}
