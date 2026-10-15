@@ -21,7 +21,8 @@
   "branch": "loop/audit-hermes-hardening",
   "stamps": [
     "1922b8da6b8a1be99615b8a4b39e08969a86f9f6935da453b56808aa54349314",
-    "39775c59fdcb9f73c8a31af426380162a53488a6f31f214ebad4e2b54f5fc305"
+    "39775c59fdcb9f73c8a31af426380162a53488a6f31f214ebad4e2b54f5fc305",
+    "28bf47f02158a3208359b7b399a8ff2a8385151dfb88a861960b79a840dade2c"
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
@@ -152,5 +153,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T16:10:42+00:00"
+  "at": "2026-10-15T16:12:25+00:00"
 }
