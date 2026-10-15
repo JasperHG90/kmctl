@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "The grader keyed on folder names that skill-creator does not fix; the plan now joins eval_metadata.json's eval_id to evals.json's id, with a doc_type per eval.",
+      "anchor": "plugin/skills/write-docs/evals/grade.py:16",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "Reference-style links in the index check would have changed the entry contract; the plan now keeps them to the link check and leaves the index format as documented.",
+      "anchor": "src/kmctl/checks.py:1",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "6c21f5ac926128be3dfbc57c1bb0e9df59d1016400ae0d6fcc40c070a9cfee8b"
+  },
+  "by": "process:loopctl/2.0.1.dev77+gbd4712cf8.d20261015",
+  "at": "2026-10-15T11:57:41+00:00"
+}
