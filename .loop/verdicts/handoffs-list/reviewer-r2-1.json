@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "bad front matter crashed the whole listing",
+      "anchor": "src/kmctl/handoffs.py:52",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "an offset generated.at was printed as if it were UTC",
+      "anchor": "src/kmctl/okf.py:43",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "the new astimezone(UTC) call raises OverflowError for a datetime at the edge of the range, such as 0001-01-01T00:00:00+01:00, and the command crashes with a traceback",
+      "anchor": "src/kmctl/okf.py:43",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "open",
+      "claim": "the not-UTF-8 branch of front_matter has no test; only the bad-YAML and non-mapping generated cases are covered",
+      "anchor": "tests/test_handoffs.py:79",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "f164bc963fc5e87154d495afed1d24c267bc28b720ef855e9ce873cc499c7bb4",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T10:41:54+00:00"
+}
