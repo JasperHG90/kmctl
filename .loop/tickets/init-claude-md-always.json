@@ -22,24 +22,31 @@
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
-    "hash": "3d954475ad4ca4033d9f5ca3b540f7f369086309fe49ca06419b8365db816e61",
-    "at": "2026-10-15T16:32:13+00:00"
+    "hash": "ea4d2806ddfc7c57710f47cdc20192ca6020c6b52fc7c4c4ee6a45ac92489061",
+    "at": "2026-10-15T16:36:44+00:00"
   },
   "delegation": null,
   "budget_base": null,
   "signed_rows": [
     {
       "id": "r1",
-      "behavior": "kmctl init writes CLAUDE.md with the kmctl block whenever it is missing, and adds the block to AGENTS.md when that exists.",
-      "fails_when": "in a repository with only AGENTS.md, after init CLAUDE.md is missing or lacks the block, or AGENTS.md lacks the block or loses any of its text",
+      "behavior": "With AGENTS.md and no CLAUDE.md, kmctl init adds the block to AGENTS.md and writes a CLAUDE.md holding only @AGENTS.md; with neither, it writes CLAUDE.md with the block.",
+      "fails_when": "in a repository with only AGENTS.md, after init AGENTS.md lacks the block or loses any of its text, CLAUDE.md is missing, or CLAUDE.md holds anything but the @AGENTS.md line; or in an empty repository CLAUDE.md lacks the block",
       "command": "uv run pytest tests/test_init.py -k agents_only -q",
       "judgment": false
     },
     {
       "id": "r2",
-      "behavior": "A CLAUDE.md or AGENTS.md symlink that is dangling or points outside the repository is left alone with a warning naming the link and its target.",
-      "fails_when": "init creates or changes the target of a dangling link or of a link outside the repository, or gives no warning naming the link",
+      "behavior": "A CLAUDE.md or AGENTS.md symlink that is dangling or points outside the repository is left alone with a warning naming the link and its target; a dangling CLAUDE.md counts as existing, so no new CLAUDE.md is written; a link inside the repository is written through once.",
+      "fails_when": "init creates or changes the target of a dangling link or of a link outside the repository, replaces such a link, writes a new CLAUDE.md beside a dangling one, gives no warning naming the link, or stops writing through CLAUDE.md -> AGENTS.md inside the repository",
       "command": "uv run pytest tests/test_init.py -k unsafe_link -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "ADR 0011 has a dated Correction naming the @AGENTS.md case and the link rule, and init's help, the scaffold docstrings and docs/reference/commands.md say the same.",
+      "fails_when": "ADR 0011 has no Correction naming @AGENTS.md, or the help, docstrings or reference still say only that init writes CLAUDE.md when neither file exists",
+      "command": "uv run pytest tests/test_init.py -k agents_import_documented -q",
       "judgment": false
     },
     {
@@ -50,7 +57,29 @@
       "judgment": false
     }
   ],
-  "resigns": [],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+      "reason": "plan round 1 review and spike 1: CLAUDE.md imports AGENTS.md, a dangling link counts as existing, and the ADR, help and reference follow",
+      "diff": {
+        "added": [
+          "r4"
+        ],
+        "removed": [],
+        "changed": {
+          "r1": [
+            "behavior",
+            "fails_when"
+          ],
+          "r2": [
+            "behavior",
+            "fails_when"
+          ]
+        }
+      },
+      "at": "2026-10-15T16:36:44+00:00"
+    }
+  ],
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
@@ -91,5 +120,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T16:36:43+00:00"
+  "at": "2026-10-15T16:36:44+00:00"
 }

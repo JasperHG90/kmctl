@@ -1,8 +1,29 @@
 {
   "schema_version": "1.0",
   "rows": [
-    {"id": "r1", "behavior": "kmctl init writes CLAUDE.md with the kmctl block whenever it is missing, and adds the block to AGENTS.md when that exists.", "fails_when": "in a repository with only AGENTS.md, after init CLAUDE.md is missing or lacks the block, or AGENTS.md lacks the block or loses any of its text", "command": "uv run pytest tests/test_init.py -k agents_only -q"},
-    {"id": "r2", "behavior": "A CLAUDE.md or AGENTS.md symlink that is dangling or points outside the repository is left alone with a warning naming the link and its target.", "fails_when": "init creates or changes the target of a dangling link or of a link outside the repository, or gives no warning naming the link", "command": "uv run pytest tests/test_init.py -k unsafe_link -q"},
-    {"id": "r3", "behavior": "The other init tests still pass.", "fails_when": "any test in tests/test_init.py fails", "command": "uv run pytest tests/test_init.py -q"}
+    {
+      "id": "r1",
+      "behavior": "With AGENTS.md and no CLAUDE.md, kmctl init adds the block to AGENTS.md and writes a CLAUDE.md holding only @AGENTS.md; with neither, it writes CLAUDE.md with the block.",
+      "fails_when": "in a repository with only AGENTS.md, after init AGENTS.md lacks the block or loses any of its text, CLAUDE.md is missing, or CLAUDE.md holds anything but the @AGENTS.md line; or in an empty repository CLAUDE.md lacks the block",
+      "command": "uv run pytest tests/test_init.py -k agents_only -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "A CLAUDE.md or AGENTS.md symlink that is dangling or points outside the repository is left alone with a warning naming the link and its target; a dangling CLAUDE.md counts as existing, so no new CLAUDE.md is written; a link inside the repository is written through once.",
+      "fails_when": "init creates or changes the target of a dangling link or of a link outside the repository, replaces such a link, writes a new CLAUDE.md beside a dangling one, gives no warning naming the link, or stops writing through CLAUDE.md -> AGENTS.md inside the repository",
+      "command": "uv run pytest tests/test_init.py -k unsafe_link -q"
+    },
+    {
+      "id": "r4",
+      "behavior": "ADR 0011 has a dated Correction naming the @AGENTS.md case and the link rule, and init's help, the scaffold docstrings and docs/reference/commands.md say the same.",
+      "fails_when": "ADR 0011 has no Correction naming @AGENTS.md, or the help, docstrings or reference still say only that init writes CLAUDE.md when neither file exists",
+      "command": "uv run pytest tests/test_init.py -k agents_import_documented -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "The other init tests still pass.",
+      "fails_when": "any test in tests/test_init.py fails",
+      "command": "uv run pytest tests/test_init.py -q"
+    }
   ]
 }
