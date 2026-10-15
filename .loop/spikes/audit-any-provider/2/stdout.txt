@@ -1,0 +1,119 @@
+== F: flags + CUSTOM_BASE_URL, no config.yaml
+{
+ "rc": 0,
+ "secs": 1.1,
+ "auth": [
+  "Bearer no-key-required"
+ ],
+ "models": [
+  "fake-model"
+ ],
+ "stream": [
+  true
+ ],
+ "offered_tools": [
+  "patch",
+  "read_file",
+  "search_files",
+  "write_file"
+ ],
+ "stdout": "Audit done.\n\n```json\n{\"findings\": [{\"id\": \"F1\", \"status\": \"drifted\", \"path\": \"README.md\"}]}\n```\n\n\u26a0\ufe0f File-mutation verifier: 1 file(s) were NOT modified this turn despite any wording above that may suggest otherwise. Run `git status` or `read_file` to confirm.\n  \u2022 `/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-hermes/hrun-ho2wches/work/target.txt` \u2014 [patch] Could not find a match for old_string in the file\n",
+ "stderr_tail": "",
+ "requests": [
+  [
+   "GET",
+   "/api/v1/models"
+  ],
+  [
+   "GET",
+   "/api/v1/models"
+  ],
+  [
+   "POST",
+   "/api/show"
+  ],
+  [
+   "GET",
+   "/api/v1/models"
+  ],
+  [
+   "GET",
+   "/v1/models/fake-model"
+  ],
+  [
+   "POST",
+   "/v1/chat/completions"
+  ],
+  [
+   "POST",
+   "/v1/chat/completions"
+  ]
+ ],
+ "sys_has_agents_md": true,
+ "sys_has_claude_md": false,
+ "sys_has_cursorrules": false
+}
+
+F flags-only unattended run ok: True | parsed: {'findings': [{'id': 'F1', 'status': 'drifted', 'path': 'README.md'}]}
+== G: script-written config.yaml, key from ${FAKE_API_KEY}
+{
+ "rc": 0,
+ "secs": 1.1,
+ "auth": [
+  "Bearer sk-fake-123"
+ ],
+ "models": [
+  "fake-model"
+ ],
+ "stream": [
+  true
+ ],
+ "offered_tools": [
+  "patch",
+  "read_file",
+  "search_files",
+  "write_file"
+ ],
+ "stdout": "Audit done.\n\n```json\n{\"findings\": [{\"id\": \"F1\", \"status\": \"drifted\", \"path\": \"README.md\"}]}\n```\n\n\u26a0\ufe0f File-mutation verifier: 1 file(s) were NOT modified this turn despite any wording above that may suggest otherwise. Run `git status` or `read_file` to confirm.\n  \u2022 `/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-hermes/hrun-ync4wtgq/work/target.txt` \u2014 [patch] Could not find a match for old_string in the file\n",
+ "stderr_tail": "",
+ "requests": [
+  [
+   "GET",
+   "/api/v1/models"
+  ],
+  [
+   "GET",
+   "/api/v1/models"
+  ],
+  [
+   "POST",
+   "/api/show"
+  ],
+  [
+   "GET",
+   "/api/v1/models"
+  ],
+  [
+   "GET",
+   "/v1/models/fake-model"
+  ],
+  [
+   "POST",
+   "/v1/chat/completions"
+  ],
+  [
+   "POST",
+   "/v1/chat/completions"
+  ]
+ ],
+ "sys_has_agents_md": true,
+ "sys_has_claude_md": false,
+ "sys_has_cursorrules": false
+}
+
+G config route ok: True
+H with --ignore-user-config --ignore-rules: rc 0 AGENTS.md injected: True CLAUDE.md: False .cursorrules: False
+F (no ignore flags) AGENTS.md injected: True
+I endpoint reports 16K context: rc 1 | stderr: hermes -z: agent failed: Model fake-model has a context window of 16,384 tokens, which is below the minimum 64,000 required by Hermes Agent.  Choose a model with at least 64K context.  If your server reports a window smaller than the model's true window, set model.context_length in config.yaml to the real value (this must be at least 64K).
+I metadata requests: [('GET', '/api/v1/models'), ('GET', '/api/v1/models'), ('POST', '/api/show'), ('GET', '/api/v1/models'), ('GET', '/v1/models/fake-model')]
+RESULT: unattended run works

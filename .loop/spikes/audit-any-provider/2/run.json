@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "slug": "audit-any-provider",
+  "n": 2,
+  "command": "python3 -I /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-hermes/spike2_unattended.py",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-hermes/spike2_unattended.py",
+      "copy": "files/spike2_unattended.py"
+    },
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-hermes/drive.py",
+      "copy": "files/drive.py"
+    },
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-hermes/fake_llm.py",
+      "copy": "files/fake_llm.py"
+    }
+  ],
+  "where": "worktree",
+  "head": "d5801aba12751e2b8e5dfcb976b85eb9668e0e7f",
+  "fingerprint": "a84b98440a0da68fb69513df58219bec5c7f10711acb485a6c85da1ee3abb748",
+  "started_at": "2026-10-15T14:31:50+00:00",
+  "finished_at": "2026-10-15T14:31:54+00:00",
+  "duration_seconds": 4.236,
+  "timeout_seconds": 300.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "moved_from": null
+}
