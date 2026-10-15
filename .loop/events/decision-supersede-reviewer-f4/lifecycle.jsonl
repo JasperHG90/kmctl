@@ -1,1 +1,2 @@
 {"at": "2026-10-15T10:56:03+00:00", "by": "review close", "kind": "register", "schema_version": "1.0", "stage": "stub"}
+{"at": "2026-10-15T11:44:58+00:00", "kind": "drop", "reason": "fixed inside decision-supersede round 2 (a decision number must be ASCII digits, tested in test_supersede_refusals); landed in fc2efa51dd6e", "schema_version": "1.0"}
