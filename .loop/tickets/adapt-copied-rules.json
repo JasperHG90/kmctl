@@ -3,7 +3,7 @@
   "slug": "adapt-copied-rules",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "27c095a24194cdbd93ee7fc880c9cf5319e368c3b7e6e13e73873ee875ec11a7",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "65079bcfc921d6e20f5bdc5eeaacb28a689f900598962f93e180156ed137bd50",
+    "started_at": "2026-10-15T06:02:48+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "65079bcfc921d6e20f5bdc5eeaacb28a689f900598962f93e180156ed137bd50",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -44,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T06:02:21+00:00"
+  "at": "2026-10-15T06:02:48+00:00"
 }
