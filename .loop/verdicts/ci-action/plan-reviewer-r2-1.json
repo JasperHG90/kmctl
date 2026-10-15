@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "Shallow checkout broke review-due's git-history reason. The plan now runs git fetch --unshallow when the clone is shallow and, if that fails, says in the summary that the history reason was skipped. This matches review-due's own shallow-clone rule.",
+      "anchor": ".loop/plans/ci-action.md",
+      "category": "premise",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "Done needed a remote PR run. Done is now local tests that run the action's script against fixture repositories. The first GitHub run is left to the operator after merge.",
+      "anchor": ".loop/plans/ci-action.md",
+      "category": "contract",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "3df45f8b252a685218bec1bce313c023f2c21765ad9f6055016b462c55978366"
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T08:19:26+00:00"
+}
