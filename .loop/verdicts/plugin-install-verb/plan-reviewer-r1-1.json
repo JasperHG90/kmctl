@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The spike settled the cross-marketplace risk at user scope only, but the done-when test (install into a scratch repository) and the --scope project path are untested. At project scope it is open which scope the scaccogatto and kmctl marketplaces must be declared at (claude plugin marketplace add --scope project|user), whether okf resolves and installs at project scope when its marketplace is declared there, and whether a teammate who clones the repo gets both. If dependency resolution only sees user-scope marketplaces, or okf lands at user scope, the project-scope design changes. A spike should answer: with an isolated CLAUDE_CONFIG_DIR and a scratch repo, does `marketplace add --scope project` for both marketplaces followed by `plugin install --scope project` install okf at project scope, and is a second run a no-op?",
+      "anchor": ".loop/plans/plugin-install-verb.md:23",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "The plan does not say where kmctl's marketplace comes from, yet the intent rests on it: the plugin must come from the same release as the CLI (ADR 0001). Adding the repo at GitHub HEAD gives a plugin that can differ from the installed CLI; a path inside the installed wheel needs the plugin packaged into the wheel (pyproject has no such data today) and breaks when the environment moves (uvx caches, upgrades), since folder plugins load in place; a git ref (#vX.Y.Z) needs release tags. The choice also decides what 'a second install changes nothing' and 'plugin status against this CLI's version' mean when a marketplace of the same name is already added at a different version or source. Name the source and how an existing mismatched marketplace is handled before building; if a pinned ref is the answer, a spike should check that `claude plugin marketplace add owner/repo#ref` pins and that re-adding at a new ref updates rather than errors.",
+      "anchor": ".loop/plans/plugin-install-verb.md:21",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "a64f2f39a0143ecd404d2641da5e1ef9d288f2291291993170acada13f8d4e4a"
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T08:19:37+00:00"
+}
