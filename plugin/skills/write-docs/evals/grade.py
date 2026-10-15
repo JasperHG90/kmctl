@@ -1,7 +1,7 @@
 """Grade write-docs runs: page in its type folder, listed in docs/README.md, kmctl check passes, no stray pages.
 
-Usage: python grade.py ITERATION_DIR, with ITERATION_DIR/<eval-name>/<config>/repo as skill-creator lays
-out runs. kmctl must be on PATH, or set KMCTL_BIN to the folder holding it. Writes grading.json per run.
+Usage: python grade.py ITERATION_DIR, with ITERATION_DIR/<any-name>/<config>/repo as skill-creator lays
+out runs; each eval folder's eval_metadata.json names its eval_id in evals.json. kmctl must be on PATH, or set KMCTL_BIN to the folder holding it. Writes grading.json per run.
 """
 
 import json
@@ -12,16 +12,32 @@ from pathlib import Path
 
 ITER = Path(sys.argv[1])
 BIN = Path(os.environ.get("KMCTL_BIN", "")) if os.environ.get("KMCTL_BIN") else None
-FOLDER = {
-    "tutorial-getting-started": "tutorials",
-    "howto-supersede": "how-to",
-    "reference-commands": "reference",
-    "explanation-one-hook": "explanation",
+EVALS = {
+    e["id"]: e
+    for e in json.loads((Path(__file__).parent / "evals.json").read_text())["evals"]
+}
+TYPE_FOLDER = {
+    "tutorial": "tutorials",
+    "how-to": "how-to",
+    "reference": "reference",
+    "explanation": "explanation",
 }
 TYPE_FOLDERS = {"tutorials", "how-to", "reference", "explanation"}
 
 for eval_dir in sorted(p for p in ITER.iterdir() if p.is_dir()):
-    want = FOLDER[eval_dir.name]
+    meta_path = eval_dir / "eval_metadata.json"
+    if not meta_path.is_file():
+        print(eval_dir.name, "skipped: no eval_metadata.json")
+        continue
+    meta = json.loads(meta_path.read_text())
+    spec = EVALS.get(meta.get("eval_id"))
+    if spec is None or meta.get("prompt", spec["prompt"]) != spec["prompt"]:
+        print(
+            eval_dir.name,
+            f"skipped: eval_id {meta.get('eval_id')} or its prompt does not match evals.json",
+        )
+        continue
+    want = TYPE_FOLDER[spec["doc_type"]]
     for run in sorted(p for p in eval_dir.iterdir() if p.is_dir()):
         repo = run / "repo"
         docs = repo / "docs"

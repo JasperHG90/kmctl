@@ -313,3 +313,46 @@ def test_link_check_covers_other_links_on_index_lines(tmp_path: Path) -> None:
     _write(tmp_path, "docs/README.md", readme)
 
     assert _link_findings(tmp_path) == [("docs/README.md", 3), ("docs/README.md", 3)]
+
+
+def test_link_forms_resolve(tmp_path: Path) -> None:
+    _good_repo(tmp_path)
+    _write(tmp_path, "docs/how-to/my page.md", "# My page\n")
+    readme = (
+        "# Docs\n\n"
+        "- [Install](how-to/install.md?plain=1): install it.\n"
+        "- [Mine](<how-to/my page.md>): spaced.\n"
+    )
+    _write(tmp_path, "docs/README.md", readme)
+    page = (
+        "# Install\n\n"
+        "[a](my%20page.md) [b](my%20page.md?plain=1) [c](<my page.md>) "
+        "[d](my%20page.md 'a title') [e](my%20page.md \"a title\")\n"
+    )
+    _write(tmp_path, "docs/how-to/install.md", page)
+
+    assert _findings(tmp_path) == []
+
+
+def test_reference_style_links(tmp_path: Path) -> None:
+    _good_repo(tmp_path)
+    page = "# Install\n\nSee [the guide][g] and [gone][x].[^1]\n\n[g]: install.md\n[x]: missing.md\n[^1]: A footnote here.\n"
+    _write(tmp_path, "docs/how-to/install.md", page)
+    readme = (
+        tmp_path / "docs/README.md"
+    ).read_text() + "- [Ref entry][g]\n\n[g]: how-to/install.md\n"
+    _write(tmp_path, "docs/README.md", readme)
+    _write(tmp_path, "docs/how-to/other.md", "# Other\n")
+    readme2 = (
+        tmp_path / "docs/README.md"
+    ).read_text() + "- [Other][o]\n\n[o]: how-to/other.md\n"
+    _write(tmp_path, "docs/README.md", readme2)
+
+    findings = _findings(tmp_path)
+
+    assert [
+        (f["check"], f["file"], f["line"]) for f in findings if f["check"] == "link"
+    ] == [("link", "docs/how-to/install.md", 6)]
+    assert ("index", "docs/how-to/other.md") in {
+        (f["check"], f["file"]) for f in findings
+    }

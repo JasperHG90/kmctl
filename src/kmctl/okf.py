@@ -40,7 +40,10 @@ def front_matter(path: Path) -> dict[str, Any]:
 def as_datetime(value: object) -> datetime | None:
     """A front matter date or datetime as an aware UTC datetime; a bare date is its midnight."""
     if isinstance(value, datetime):
-        return value.astimezone(UTC) if value.tzinfo else value.replace(tzinfo=UTC)
+        try:
+            return value.astimezone(UTC) if value.tzinfo else value.replace(tzinfo=UTC)
+        except OverflowError:
+            return None  # a timestamp at the edge of the range has no UTC value
     if isinstance(value, date):
         return datetime(value.year, value.month, value.day, tzinfo=UTC)
     if isinstance(value, str):
