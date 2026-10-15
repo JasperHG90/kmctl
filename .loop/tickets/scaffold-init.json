@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "slug": "scaffold-init",
+  "stage": "planning",
+  "attempts": 0,
+  "plan_rounds": 0,
+  "review_rounds": 0,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": null,
+  "ask": null,
+  "split": null,
+  "split_plan_hash": null,
+  "split_hold": false,
+  "commit_sha": null,
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": null,
+  "branch": null,
+  "stamps": [],
+  "signoff": null,
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [],
+  "resigns": [],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [],
+  "round": null,
+  "plan_hash": "db28793b00833e3a4a28300ca6c2c98e7af233d09870b4864760a35f3f3767a0",
+  "intent": {
+    "epic": "cli",
+    "depends_on": [],
+    "priority": 4
+  },
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-10-15T05:10:20+00:00",
+      "by": "register"
+    }
+  ],
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T05:10:20+00:00"
+}
