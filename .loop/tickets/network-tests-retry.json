@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "network-tests-retry",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 3,
   "review_rounds": 2,
@@ -30,7 +30,7 @@
   "split": "j-20261015T191050+0000-4538cea5",
   "split_plan_hash": "c8f75a9a010d5e0a4cf98c4a0d7a93a4acc3e7c3994a757caeacfbd9f4639744",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "b682e3e1b64b54bf77fdeef87202d499c360ab88",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -211,8 +211,14 @@
       "to": "verifying",
       "at": "2026-10-15T19:31:42+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-15T19:34:40+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261015",
-  "at": "2026-10-15T19:34:34+00:00"
+  "at": "2026-10-15T19:34:40+00:00"
 }
