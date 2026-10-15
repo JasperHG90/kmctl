@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "prototype-check",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
@@ -73,8 +73,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "b824a79a388a259d6bb91d4fd4383fda0211f877785f4123d0d429ec83d8fc7b",
   "intent": {
@@ -108,8 +108,14 @@
       "to": "verifying",
       "at": "2026-10-15T10:54:30+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-15T10:55:31+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T10:54:31+00:00"
+  "at": "2026-10-15T10:55:31+00:00"
 }
