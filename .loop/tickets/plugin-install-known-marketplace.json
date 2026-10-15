@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "plugin-install-known-marketplace",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 4,
   "review_rounds": 2,
@@ -48,7 +48,7 @@
   "split": "j-20261015T144139+0000-440793a0",
   "split_plan_hash": "349e36b60935cdc41ef0a9fbc68e8861e3224f65ea438f584e5025f7d582b7be",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "d0bd814aeeb2edb2c6142acdc3535f3c414bd57f",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -251,8 +251,14 @@
       "to": "verifying",
       "at": "2026-10-15T14:53:28+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-15T14:56:52+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T14:56:44+00:00"
+  "at": "2026-10-15T14:56:52+00:00"
 }
