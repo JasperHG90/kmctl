@@ -18,3 +18,4 @@
 {"at": "2026-10-15T08:34:55+00:00", "binds": "4779b49f61eadc61fbe2693e1bec7d717d314bfdd0e5fb766f38f4341daaf3bb", "kind": "round-start", "n": 2, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "f0a23319f37084900e0de766529e0a8edfeb3a5a"}
 {"at": "2026-10-15T08:35:53+00:00", "dispatched_at": "2026-10-15T08:34:55+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-15T08:35:37+00:00"}}
 {"at": "2026-10-15T08:36:06+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "c881717555c118de291269872b141d59d391008a"}
+{"at": "2026-10-15T08:36:12+00:00", "branch": "loop/adapt-copied-rules", "kind": "land", "schema_version": "1.0", "sha": "fa3602cd67f1b0c33968e281de5d9b600e03ec3e"}
