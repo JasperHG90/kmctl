@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "slug": "plugin-install-known-marketplace",
-  "stage": "ready",
-  "attempts": 0,
+  "stage": "building",
+  "attempts": 1,
   "plan_rounds": 4,
   "review_rounds": 0,
   "extra_plan_rounds": 1,
@@ -17,8 +17,8 @@
   "closed_outside": false,
   "dropped": false,
   "archived": false,
-  "worktree": null,
-  "branch": null,
+  "worktree": "/home/vscode/kmctl.worktrees/plugin-install-known-marketplace",
+  "branch": "loop/plugin-install-known-marketplace",
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
@@ -189,8 +189,14 @@
       "to": "ready",
       "at": "2026-10-15T14:45:31+00:00",
       "by": "unblock"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-10-15T14:45:32+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T14:45:31+00:00"
+  "at": "2026-10-15T14:45:32+00:00"
 }
