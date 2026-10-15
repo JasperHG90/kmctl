@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "",
+      "anchor": null,
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "",
+      "anchor": null,
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "resolved",
+      "claim": "",
+      "anchor": null,
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p4",
+      "disposition": "resolved",
+      "claim": "",
+      "anchor": null,
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p5",
+      "disposition": "open",
+      "claim": "The plan assumes the entry's own field (url[#ref] for git, url for url) is an add argument claude reads back as the same entry. It is not always. claude 2.1.300 parses the add string itself (Jme): an https URL is git only if it ends in .git or has /_git/; on github and other known hosts an owner/repo URL gets .git appended; any other https URL becomes a url source; ssh:// URLs are rejected. A git entry such as https://github.com/scaccogatto/okf-skills (no .git) therefore gives a source with a different url, and a git entry on a self-hosted host without .git gives a url source. Both fail the full-equality check. Probed in an isolated CLAUDE_CONFIG_DIR/HOME/XDG_DATA_HOME: user entry {git, https://github.com/scaccogatto/okf-skills}, `claude plugin marketplace add https://github.com/scaccogatto/okf-skills --scope project` fails with the operator's exact message. kmctl would then show the error that tells the operator to \"add it from the source that entry lists\", which kmctl just did. The plan should treat such an entry as one with no matching add argument (stop with the PluginError before claude runs) or narrow which git and url entries it accepts. The r1 and r3 tests check only the string kmctl builds, so they would pass while the real add fails; r3 (or a new row) should cover a git entry without .git.",
+      "anchor": ".loop/plans/plugin-install-known-marketplace.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r3"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "e9016dcf72638d687d063c5024172648fc3477b7ce5298f455d6c65607841360"
+  },
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "at": "2026-10-15T14:40:58+00:00"
+}
