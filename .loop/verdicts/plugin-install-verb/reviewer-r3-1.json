@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "status() reads the installed version from claude plugin list.",
+      "anchor": "src/kmctl/plugin.py:200",
+      "category": "contract",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "install() declares scaccogatto at the chosen scope every run.",
+      "anchor": "src/kmctl/plugin.py:158",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "_entry() filters by scope and projectPath.",
+      "anchor": "src/kmctl/plugin.py:109",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "resolved",
+      "claim": "r1 and r2 tests assert scope, projectPath and the first exit code.",
+      "anchor": "tests/test_plugin_install.py:51",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f5",
+      "disposition": "resolved",
+      "claim": "_report takes PluginStatus; mypy clean apart from yaml stubs.",
+      "anchor": "src/kmctl/__init__.py:484",
+      "category": "nit",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f6",
+      "disposition": "resolved",
+      "claim": "The staged-copy mismatch hint now says run kmctl plugin update, the same fix as the installed mismatch.",
+      "anchor": "src/kmctl/plugin.py:205",
+      "category": "design",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f7",
+      "disposition": "resolved",
+      "claim": "test_installed_version_check_after_upgrade covers the installed-version check: status, plain install refusal, and update clearing it.",
+      "anchor": "tests/test_plugin_install.py:187",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "bfcdef7dde761b033b03a985e4a8b554fa78c92123195dd60cbeab4c7deb16fa",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev47+g2444f9291.d20261015",
+  "at": "2026-10-15T11:32:45+00:00"
+}
