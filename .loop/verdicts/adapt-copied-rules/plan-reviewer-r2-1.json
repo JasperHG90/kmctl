@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "The plan now allows paths: globs for plugin/, docs/, src/kmctl/ and .github/workflows/, so the done check no longer pushes the builder to strip rule scoping for planned folders.",
+      "anchor": ".loop/plans/adapt-copied-rules.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "The loopctl ban is gone; a kept rule may name loopctl as the tool this repository's tickets run on, and the loop workflow is handed to the loop-harness plugin.",
+      "anchor": ".loop/plans/adapt-copied-rules.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "open",
+      "claim": "The path clause still fails the OKF bundle sections that kmctl's own manifesto defines but that do not exist yet: .okf/architecture/, practices/, proposals/, prototypes/, handoffs/. Today .okf/ holds only decisions/, index.md, log.md and manifesto.md. diagrams-stay-current is about `.okf/architecture/`, okf-bundle lists the sections (and the briefing ticket builds its shipped rules from okf-bundle and docs-layout), docs-layout names `.okf/prototypes/<name>/` and `.okf/proposals/`, and cli-interface, cli-version-floor and skills-are-thin cite `.okf/architecture/cli-and-plugin.md`. Read as written, the check makes the builder delete these true references or drop diagrams-stay-current, the same problem as p1 in a different folder. Fix: allow paths under the .okf/ sections the manifesto names (manifesto.md lines 41-42), and say whether a cited page that does not exist yet, like cli-and-plugin.md, should be dropped or kept.",
+      "anchor": ".loop/plans/adapt-copied-rules.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "fd621a127f609dc83173477c8274e70533e7e1fb51d9e3cc204ad52ccac1b95c"
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T06:05:37+00:00"
+}
