@@ -1,0 +1,58 @@
+{
+  "skill_name": "write-docs",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "we just shipped kmctl and nobody knows how to start. can you write a getting started guide where someone new installs nothing fancy, runs kmctl init in an empty repo, adds their first decision and runs kmctl check? should be something a new person can follow start to finish",
+      "expected_output": "A tutorial page at docs/tutorials/, created with kmctl new doc tutorial, with working steps from init to check, and kmctl check passing.",
+      "files": [],
+      "expectations": [
+        "A page is created under docs/tutorials/",
+        "The page is listed in docs/README.md",
+        "kmctl check passes afterwards",
+        "No page sits outside a Diataxis type folder",
+        "The page's content fits its Diataxis type (judged by reading)",
+        "No install command or URL is guessed: each comes from the repository or is a marked TODO (judged)"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Write the docs page for how to supersede an old decision record with a new one using kmctl. People keep asking me how to do it.",
+      "expected_output": "A how-to page at docs/how-to/ created with kmctl new doc how-to, steps using kmctl new decision and kmctl decision supersede, and a check step; kmctl check passes.",
+      "files": [],
+      "expectations": [
+        "A page is created under docs/how-to/",
+        "The page is listed in docs/README.md",
+        "kmctl check passes afterwards",
+        "No page sits outside a Diataxis type folder",
+        "The page's content fits its Diataxis type (judged by reading)"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "I need a page in docs listing every kmctl command and its options, so people can look things up. Take it from the actual --help output.",
+      "expected_output": "A reference page at docs/reference/ created with kmctl new doc reference, listing the real verbs and options from --help, no instructions; kmctl check passes.",
+      "files": [],
+      "expectations": [
+        "A page is created under docs/reference/",
+        "The page is listed in docs/README.md",
+        "kmctl check passes afterwards",
+        "No page sits outside a Diataxis type folder",
+        "The page's content fits its Diataxis type (judged by reading)"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Users keep asking why kmctl only has a SessionStart hook and doesn't block commits when docs go stale. Write something for the docs explaining the reasoning.",
+      "expected_output": "An explanation page at docs/explanation/ created with kmctl new doc explanation, giving the reasoning and rejected alternatives with links to the ADRs, no steps; kmctl check passes.",
+      "files": [],
+      "expectations": [
+        "A page is created under docs/explanation/",
+        "The page is listed in docs/README.md",
+        "kmctl check passes afterwards",
+        "No page sits outside a Diataxis type folder",
+        "The page's content fits its Diataxis type (judged by reading)"
+      ]
+    }
+  ]
+}
