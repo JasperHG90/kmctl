@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "The PR 139 merge was a prose-only precondition. Now r5 fails unless the installed python-testing holds the Test tiers section and the three constraints, and r1 requires a pin that includes the merge. The plan also says what happens if the PR changes or closes.",
+      "anchor": ".loop/evals/repo-uses-apm/rows.json",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r5"
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "tests/test_rules.py read aim.toml and was out of scope. It is now in scope (it reads the managed set from apm.yml, and it and pyproject.toml stop naming aim), and r6 checks it.",
+      "anchor": "tests/test_rules.py:32",
+      "category": "missing",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r6"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "2e5a528ae0ff0bb4ce82766e0227fbb02fb97a82299263629827b9281b39c684"
+  },
+  "by": "process:loopctl/2.1.1.dev61+g8318eb7a1.d20261015",
+  "at": "2026-10-15T19:09:21+00:00"
+}

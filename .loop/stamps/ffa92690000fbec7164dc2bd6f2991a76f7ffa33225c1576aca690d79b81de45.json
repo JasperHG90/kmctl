@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "fingerprint": "ffa92690000fbec7164dc2bd6f2991a76f7ffa33225c1576aca690d79b81de45",
+  "slug": null,
+  "results": [
+    {
+      "name": "lint",
+      "kind": "gate",
+      "command": "uv run ruff check",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "format",
+      "kind": "gate",
+      "command": "uv run ruff format --check",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "tests",
+      "kind": "gate",
+      "command": "uv run pytest",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    }
+  ],
+  "green": true,
+  "at": "2026-10-15T19:10:06+00:00",
+  "commit": null,
+  "by": "process:loopctl/2.1.1.dev61+g8318eb7a1.d20261015"
+}
