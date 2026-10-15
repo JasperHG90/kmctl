@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "Index entry format undefined. Resolved: the plan defines which index, what an entry is (list item, first relative link to a page in that folder or below, prototype README.md), and the three writer plans cite it.",
+      "anchor": ".loop/plans/knowledge-check.md",
+      "category": "contract",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "'Does not repeat the validator' conflicted with checking .okf/ entries. Resolved: kmctl checks .okf/ entries itself because it does not run the validator; only front matter and spec conformance are left to the validator.",
+      "anchor": ".loop/plans/knowledge-check.md",
+      "category": "contract",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "resolved",
+      "claim": "Root index count unaddressed. Resolved: kmctl neither writes nor checks counts; the repo's okf-bundle rule still mentions counts and adapt-copied-rules rewrites it.",
+      "anchor": ".loop/plans/knowledge-check.md",
+      "category": "contract",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "b79d7ea5fa648b5d08544f4111e292c275280631ebe2f1897bfb731bf3e11d56"
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T08:19:38+00:00"
+}
