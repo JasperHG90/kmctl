@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "results.md misstates two iteration-1 counts. It says the two pages re-checked as holds (lifecycle, release) missed nothing, but the iteration-2 verification found REAL drift on both pages (lifecycle fixing->verifying labelled narrow round; release bundle job leaves out check_okf.py). It also says the baseline called 9 pages drifted, but one of the 9 is index.md, which is not a concept, so the baseline called 8 of 10 pages drifted.",
+      "anchor": "plugin/skills/audit/evals/results.md:28",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "6edc51d1dc8f2a685eeeb94785fc2aefa5b4d8d3e1987ee1abda61c5f36427ca",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "at": "2026-10-15T12:58:32+00:00"
+}
