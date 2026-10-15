@@ -1,0 +1,33 @@
+---
+type: plan
+title: 'Plan: plugin-install-known-marketplace'
+description: "kmctl plugin install adds the okf marketplace from the source the operator's user or managed settings already list, instead of failing when that source differs from scaccogatto/okf-skills."
+slug: plugin-install-known-marketplace
+epic: plugin
+depends_on: []
+priority: 5
+tags:
+- plan
+generated:
+  by: process:loopctl/2.0.1.dev86+g9641fa018.d20261015
+  at: '2026-10-15T14:27:49+00:00'
+---
+
+# plugin-install-known-marketplace
+
+Relayed from: operator, 2026-10-15, running `kmctl plugin install` on their machine:
+"refused: claude plugin marketplace add scaccogatto/okf-skills --scope project failed: ✘ Failed to add marketplace: Cannot add marketplace "scaccogatto": its source doesn't match its extraKnownMarketplaces entry in user or managed settings; add it from the source that entry lists, or change the entry."
+
+## Intent
+
+`install()` in `src/kmctl/plugin.py` always runs `claude plugin marketplace add scaccogatto/okf-skills --scope SCOPE`. When the user's settings (settings.json in claude's config folder: the one CLAUDE_CONFIG_DIR names, else .claude in the home folder) or the managed settings already declare a marketplace named `scaccogatto` under `extraKnownMarketplaces` with another source (a git URL, another repo, a local folder), claude refuses the add and kmctl stops. Skipping the add is not enough: the install then fails with `Dependency "okf@scaccogatto" ... not found`.
+
+kmctl reads the `scaccogatto` entry from those settings files when there is one and passes that entry's own source to `marketplace add` (`repo` for github, `url` for git and url, `path` for directory); with no entry it adds `scaccogatto/okf-skills` as now. It never edits the operator's settings. When the entry's source kind is one it cannot pass, it stops with a message naming the settings file and the entry.
+
+Measured with an isolated `CLAUDE_CONFIG_DIR` and `HOME` whose user settings declare `scaccogatto` from `https://github.com/scaccogatto/okf-skills.git`: the current add fails 1 of 1 times with the operator's message, skipping it fails the install on the missing dependency, and adding from the entry's URL then `claude plugin install kmctl@kmctl --scope project` succeeds with okf as a dependency (1 of 1). The repro is spike:plugin-install-known-marketplace/1.
+
+Done when a test with a stub claude shows the add uses the settings entry's source for each source kind (github, git, url, directory) and `scaccogatto/okf-skills` when no entry exists, a test shows an entry of an unknown kind gives a PluginError naming the file, and the existing plugin install tests pass.
+
+## Could invalidate this plan
+
+- none
