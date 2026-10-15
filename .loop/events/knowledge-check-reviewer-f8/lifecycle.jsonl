@@ -1,1 +1,2 @@
 {"at": "2026-10-15T10:41:44+00:00", "by": "review close", "kind": "register", "schema_version": "1.0", "stage": "stub"}
+{"at": "2026-10-15T10:49:21+00:00", "kind": "drop", "reason": "fixed inside knowledge-check round 3 (an unreadable root index is one finding, tested by test_check_non_utf8_root_index_is_one_finding); landed in dfb4d0092c25", "schema_version": "1.0"}
