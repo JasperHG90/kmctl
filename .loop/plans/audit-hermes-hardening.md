@@ -31,4 +31,4 @@ Done when a test with a stub hermes and 25 due concepts (12 architecture, 8 deci
 
 ## Could invalidate this plan
 
-- none (the time budget across batches, the one risk round 1 named, is settled in the intent above)
+- none
