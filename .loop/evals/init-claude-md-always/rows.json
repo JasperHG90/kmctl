@@ -3,14 +3,14 @@
   "rows": [
     {
       "id": "r1",
-      "behavior": "With AGENTS.md and no CLAUDE.md, kmctl init adds the block to AGENTS.md and writes a CLAUDE.md holding only @AGENTS.md; with neither, it writes CLAUDE.md with the block.",
-      "fails_when": "in a repository with only AGENTS.md, after init AGENTS.md lacks the block or loses any of its text, CLAUDE.md is missing, or CLAUDE.md holds anything but the @AGENTS.md line; or in an empty repository CLAUDE.md lacks the block",
+      "behavior": "With AGENTS.md and no CLAUDE.md, kmctl init adds the block to AGENTS.md and writes a CLAUDE.md holding only @AGENTS.md; with neither, it writes CLAUDE.md with the block. A CLAUDE.md that imports @AGENTS.md never gets the block, so a second init changes nothing.",
+      "fails_when": "in a repository with only AGENTS.md, after init AGENTS.md lacks the block or loses any of its text, CLAUDE.md is missing, or CLAUDE.md holds anything but the @AGENTS.md line; or in an empty repository CLAUDE.md lacks the block; or a second init in the AGENTS.md-only case changes any file or adds the block to CLAUDE.md",
       "command": "uv run pytest tests/test_init.py -k agents_only -q"
     },
     {
       "id": "r2",
-      "behavior": "A CLAUDE.md or AGENTS.md symlink that is dangling or points outside the repository is left alone with a warning naming the link and its target; a dangling CLAUDE.md counts as existing, so no new CLAUDE.md is written; a link inside the repository is written through once.",
-      "fails_when": "init creates or changes the target of a dangling link or of a link outside the repository, replaces such a link, writes a new CLAUDE.md beside a dangling one, gives no warning naming the link, or stops writing through CLAUDE.md -> AGENTS.md inside the repository",
+      "behavior": "A CLAUDE.md or AGENTS.md symlink that is dangling or points outside the repository is left alone with a warning naming the link and its target; a dangling CLAUDE.md counts as existing, so no new CLAUDE.md is written; a link inside the repository is written through once. With an unsafe AGENTS.md link and no CLAUDE.md, init writes nothing and the warning says to fix the link.",
+      "fails_when": "init creates or changes the target of a dangling link or of a link outside the repository, replaces such a link, writes a new CLAUDE.md beside a dangling one, gives no warning naming the link, or stops writing through CLAUDE.md -> AGENTS.md inside the repository; or with a dangling or outside AGENTS.md link and no CLAUDE.md, init writes a CLAUDE.md or gives no warning naming AGENTS.md",
       "command": "uv run pytest tests/test_init.py -k unsafe_link -q"
     },
     {
