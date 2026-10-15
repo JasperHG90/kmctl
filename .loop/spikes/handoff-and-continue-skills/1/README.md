@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.0.1.dev1+g4552fe226.d20261015
-  at: '2026-10-15T08:12:35+00:00'
+  at: '2026-10-15T08:12:42+00:00'
 slug: handoff-and-continue-skills
 n: 1
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike handoff-and-continue-skills/1
@@ -24,7 +24,9 @@ The command exited 0:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note handoff-and-continue-skills 1`.
+A skill can read the session id two ways, so no hook is needed. The Bash tool env carries `CLAUDE_CODE_SESSION_ID` (a UUID, here `eee74b7b-...`, the same as the parent session even from a subagent and a loopctl worktree). The skills docs list a `${CLAUDE_SESSION_ID}` substitution for SKILL.md text.
+The env-vars docs say this value matches the hook `session_id` and changes on `/clear`. So a second `/handoff` in the same session finds the same key, but one after `/clear` gets a new key. memex reads `.session_id` from hook stdin; we do not need that.
+This rules out falling back to matching on title. It settles risk 1. Limits: tested on Claude Code 2.1.300 in a local CLI session only. Per the docs, `${CLAUDE_SESSION_ID}` stays literal text in a non-local (synced) skill.
 
 ## Files
 
