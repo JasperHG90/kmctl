@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "review-due",
-  "stage": "fixing",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 3,
   "review_rounds": 2,
@@ -29,7 +29,7 @@
   "split": "j-20261015T082316+0000-7d3939dc",
   "split_plan_hash": "abbfa146062e4f707de13ab43b7483f0e679e9929a71a183739d518d9ea6b4aa",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "894abe62fbe3b3f14a7460315775c504b41b8316",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -170,8 +170,14 @@
       "to": "fixing",
       "at": "2026-10-15T10:49:42+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "done",
+      "at": "2026-10-15T10:50:00+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T10:49:52+00:00"
+  "at": "2026-10-15T10:50:00+00:00"
 }
