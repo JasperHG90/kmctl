@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.0.1.dev86+g9641fa018.d20261015
-  at: '2026-10-15T12:46:43+00:00'
+  at: '2026-10-15T12:56:36+00:00'
 slug: ci-audit
 n: 1
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike ci-audit/1
@@ -24,7 +24,9 @@ python3 -I /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note ci-audit 1`.
+Invalid run: every `claude -p` call exited 1 with "Input must be provided either through stdin or as a prompt argument", because `--allowedTools <tools...>` (and `--disallowedTools`) take any number of values and swallowed the trailing prompt.
+No model was reached, so this run shows nothing about tool refusal, plugin loading or the auditor; the absent bash-ran/write-ran files mean nothing.
+Lesson for the action script: pass the prompt on stdin (or before the variadic flags), not as the last argument. Superseded by ci-audit/2.
 
 ## Files
 
