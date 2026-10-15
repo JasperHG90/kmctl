@@ -3,7 +3,7 @@
   "slug": "new-concept-verbs",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "55665b96acd1d6888777008b01e5af9f7d2e4b7888d5568b898c9f8fe5097c2a",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "bbb63fa275b85aa2ed76a1472588da3e4a2aa6aef29eb40bac26af81b054b179",
+    "started_at": "2026-10-15T08:08:29+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "bbb63fa275b85aa2ed76a1472588da3e4a2aa6aef29eb40bac26af81b054b179",
   "intent": {
     "epic": "cli",
     "depends_on": [
@@ -46,5 +65,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T08:08:02+00:00"
+  "at": "2026-10-15T08:08:29+00:00"
 }

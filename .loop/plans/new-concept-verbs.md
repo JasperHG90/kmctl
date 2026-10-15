@@ -1,7 +1,7 @@
 ---
 type: plan
 title: 'Plan: new-concept-verbs'
-description: "kmctl new creates a decision, practice, proposal, prototype or handoff with its front matter, number and index entry, and kmctl decision supersede links two decisions."
+description: "kmctl new creates a decision, practice, proposal, prototype or handoff with its front matter, number and index entry."
 slug: new-concept-verbs
 epic: cli
 depends_on: [scaffold-init]
@@ -19,10 +19,9 @@ Relayed from: none
 
 ## Intent
 
-- `kmctl new decision|practice|proposal|prototype|handoff TITLE` writes the concept with valid OKF front matter, the next number for decisions, a `stale_after` date for handoffs, a folder with `README.md` for prototypes, and adds the entry to the section index and the root index count.
-- `kmctl decision supersede OLD --by NEW` marks the old record superseded, links both ways and updates the index.
+`kmctl new decision|practice|proposal|prototype|handoff TITLE` writes the concept with valid OKF front matter, the next number for decisions, a `stale_after` date for handoffs, a folder with `README.md` for prototypes, and adds the entry to the section index and the root index count. The agent writes the prose; the command writes the structure.
 
-The agent writes the prose; the command writes the structure. Done when tests show each kind is created, indexed and passes the okf validator.
+Done when tests show each kind is created, indexed and passes the okf validator.
 
 ## Could invalidate this plan
 
