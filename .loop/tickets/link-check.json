@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "link-check",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
@@ -49,7 +49,7 @@
   "split": "j-20261015T081330+0000-01a2314e",
   "split_plan_hash": "7f03dc8f5d28e418ea25b3383e424ae4c30e2f3142825ed9a5d974072a0a0fc0",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "47066d1f91c91fe6a53e6e0c21b67a5e086569c8",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -172,8 +172,14 @@
       "to": "verifying",
       "at": "2026-10-15T11:04:27+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-15T11:06:09+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T11:06:06+00:00"
+  "at": "2026-10-15T11:06:09+00:00"
 }
