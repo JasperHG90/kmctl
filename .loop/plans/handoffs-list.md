@@ -19,9 +19,9 @@ Relayed from: none
 
 ## Intent
 
-`kmctl handoffs` lists the handoffs in `.okf/handoffs/` whose `stale_after` has not passed, newest first by `generated.at`, with title, description and date. Expired ones are left out (`kmctl review due` lists them). The list is a function the briefing calls; `--json` prints it for `/continue`. With no `.okf/handoffs/` folder it prints that there are none and exits 0.
+`kmctl handoffs` lists the handoffs in `.okf/handoffs/` whose `stale_after` has not passed, newest first by `generated.at` (ties broken by file name), with concept id, path, title, description and date, so `/continue` can load the ones the user picks. The section's `index.md` is not a handoff. "Passed" uses one shared function with review-due, so a handoff is always in exactly one of the two lists. Expired ones are left out (`kmctl review due` lists them). The list is a function the briefing calls; `--json` prints it for `/continue`. With no `.okf/handoffs/` folder it prints that there are none (`[]` with `--json`) and exits 0.
 
-Done when tests cover ordering, leaving out expired handoffs, a handoff with no `stale_after` (listed as live), and a repository with no handoffs folder.
+Done when tests cover ordering, leaving out expired handoffs, a handoff with no `stale_after` (listed as live), a tie on `generated.at`, the `index.md` being skipped, path and id in the JSON, and a repository with no handoffs folder.
 
 ## Could invalidate this plan
 

@@ -3,7 +3,7 @@
   "slug": "handoffs-list",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 1,
+  "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -30,9 +30,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 1,
-    "binds": "20dd13665d6735f9f5b3465543abe1b77963981d9a61c37749e53ef33191ec1e",
-    "started_at": "2026-10-15T08:21:39+00:00",
+    "n": 2,
+    "binds": "9cddcde2bc49ce00eca7d1221a1a899e6e62ff6d3e40283ea781cdbb21ce07b3",
+    "started_at": "2026-10-15T08:23:02+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -45,10 +45,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "20dd13665d6735f9f5b3465543abe1b77963981d9a61c37749e53ef33191ec1e",
+  "plan_hash": "9cddcde2bc49ce00eca7d1221a1a899e6e62ff6d3e40283ea781cdbb21ce07b3",
   "intent": {
     "epic": "cli",
     "depends_on": [],
@@ -63,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T08:23:01+00:00"
+  "at": "2026-10-15T08:23:02+00:00"
 }
