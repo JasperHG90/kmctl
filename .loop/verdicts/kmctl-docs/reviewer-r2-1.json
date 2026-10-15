@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "install line and action uses line gave no note that the repository is private",
+      "anchor": "docs/how-to/install-the-plugin-and-the-ci-action.md:96",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "manifesto I2 was marked enforced without an outside test",
+      "anchor": ".okf/manifesto.md:70",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "briefing skills field and briefing to plugin.py edge were missing",
+      "anchor": ".okf/architecture/overview.md:69",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "cef6fa58a27abda6970a588cf25819dd995499aec29b2352c15063b9a1c24f4c",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
+  "at": "2026-10-15T13:42:48+00:00"
+}
