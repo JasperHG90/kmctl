@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "audit-hermes-hardening",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 3,
   "review_rounds": 2,
@@ -30,7 +30,7 @@
   "split": "j-20261015T155810+0000-27793304",
   "split_plan_hash": "c2c9f15a27e45c61d47c9a0efd10f8c53709d41eaf33d2e5b907e2f58e60e1ad",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "15adaf2cf9fb05263670aa789b2b25c4654a582b",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -171,8 +171,14 @@
       "to": "verifying",
       "at": "2026-10-15T16:12:27+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-15T16:14:39+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T16:14:32+00:00"
+  "at": "2026-10-15T16:14:39+00:00"
 }
