@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "In docs/README.md, _links drops every list-item line whole, so links the index check never looks at go unchecked: a list item linking ../CONTRIBUTING.md or /src/gone.py (which _entries discards as non-entries) and any second link on an entry line.",
+      "anchor": "src/kmctl/checks.py:267",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "The kmctl check help text and the checks.py module summary line still say the command checks only indexes and prototypes; neither mentions the link check.",
+      "anchor": "src/kmctl/__init__.py:118",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "test_link_check_okf_links_leaving_bundle checks only the finding count and file, so an inverted check (good link reported, missing one not) still passes; it should also check the line or the message target.",
+      "anchor": "tests/test_check.py:276",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r3"
+    },
+    {
+      "id": "f4",
+      "disposition": "open",
+      "claim": "Links that GitHub renders fine are reported as broken: percent-encoded paths (my%20page.md) and query strings (file.md?plain=1). Other links are skipped without notice: titles in single quotes, <angle brackets> with spaces, and reference-style [x][ref] definitions.",
+      "anchor": "src/kmctl/checks.py:28",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "97af93f3e312e801e7f1a796e93aac756639a2f05bd4dfadf5f96970b1ecf0f4",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
+  "at": "2026-10-15T11:01:52+00:00"
+}
