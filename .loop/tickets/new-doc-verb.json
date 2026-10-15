@@ -21,7 +21,8 @@
   "branch": "loop/new-doc-verb",
   "stamps": [
     "e1ba0bd243ee8736569ed6e1150bf5c58f63416039104d9835928d001b1903fc",
-    "b1adc436e2b4d7d64b86bab91351ce9256833c6a6392c7d4115f0035e2daa49a"
+    "b1adc436e2b4d7d64b86bab91351ce9256833c6a6392c7d4115f0035e2daa49a",
+    "c25c415f2d96bdcf4fff71e951d788d1e91771149ab89b645045b348c94c365b"
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
@@ -126,5 +127,5 @@
     }
   ],
   "by": "process:loopctl/2.0.1.dev32+g841b0ba75.d20261015",
-  "at": "2026-10-15T11:07:49+00:00"
+  "at": "2026-10-15T11:08:47+00:00"
 }
