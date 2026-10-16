@@ -1,0 +1,105 @@
+HOME=/tmp/tmp.p3hcIflrnO/home CLAUDE_CONFIG_DIR=/tmp/tmp.p3hcIflrnO/home/.claude
+== apm install -g http://127.0.0.1:52151/o/pkg.git --target claude --allow-insecure
+[i] Installing to user scope (~/.apm/)
+[!] User-scope primitives are fully supported by claude, kiro, gemini, 
+grok-build, grok-cloud, agent-skills, openclaw, hermes, copilot-cowork, 
+copilot-app. Partially supported: copilot, cursor, opencode, antigravity, codex,
+windsurf.
+Some primitives are not supported: cursor (instructions); opencode (hooks); 
+antigravity (instructions, hooks); windsurf (instructions)
+[*] Created /tmp/tmp.p3hcIflrnO/home/.apm/apm.yml
+[i] Targets set: claude (persisted to /tmp/tmp.p3hcIflrnO/home/.apm/apm.yml)
+[*] Validating 1 package...
+  Trying git ls-remote for 127.0.0.1 (1 attempt)
+  git ls-remote (http) rc=0 for http://127.0.0.1:52151/o/pkg.git
+[+] 127.0.0.1:52151/o/pkg
+Added 127.0.0.1:52151/o/pkg to apm.yml
+[*] Updated apm.yml with 1 new package(s)
+[>] Installing 1 new package...
+Parsed apm.yml: 1 APM deps, 0 MCP deps
+[*] Resolving refs from upstream; local cached refs bypassed
+[>] Resolving o/pkg...
+Resolved 1 direct dependencies (no transitive)
+[!] Insecure HTTP fetch (unencrypted): http://127.0.0.1:52151/o/pkg
+Phase: resolve -> 0.101s
+[i] Could not determine org from git remote; policy auto-discovery skipped
+Phase: policy_gate -> 0.001s
+Active global targets: claude (~/.claude/)
+Lockfile: /tmp/tmp.p3hcIflrnO/home/.apm/apm.lock.yaml
+Created .claude/ (claude target)
+Phase: targets -> 0.003s
+Copilot native registration: unavailable (copilot target not selected)
+Phase: copilot_activate -> 0.000s
+Phase: policy_target_check -> 0.000s
+Phase: download -> 0.000s
+  [+] o/pkg #main @d1a832ac
+  [*] rewritten: .claude/rules/okf-bundle.md
+  |-- 1 agents integrated -> .claude/agents/
+  |-- 1 rule(s) integrated -> .claude/rules/
+  |-- 1 skill(s) integrated -> .claude/skills/
+  [+] <project root> (local)
+Integrating local .apm/ content...
+  |-- (files unchanged)
+Phase: integrate -> 0.011s
+Skipping .gitignore update (global scope install).
+Phase: cleanup -> 0.000s
+Generated apm.lock.yaml with 1 dependencies
+Wrote 1 cache pin marker(s) for drift replay
+Phase: post_deps_local -> 0.000s
+Phase: audit -> 0.000s
+Phase: copilot_plugins -> 0.000s
+[#] Perf: 6 walks, 1 file matches, 33 files visited, 0.002s total walk time
+[#] Perf:   .apm/apm_modules/o/pkg: 3 walk(s) (1ms, 12 files visited, 1 matched)
+[#] Perf:   .apm: 3 walk(s) (1ms, 21 files visited, 0 matched)
+[#] Perf: discovery: 7 call(s) (2 unique base(s), 5 cache hit(s), 71%)
+Integrated 1 instruction(s)
+Phase: finalize -> 0.001s
+No MCP dependencies found in apm.yml
+No LSP dependencies found in apm.yml
+  [!] 1 dependency unpinned: o/pkg -- add #tag or #sha to prevent drift
+  [i] Skipped inactive experimental resolver for target 'copilot-cowork' during 
+lockfile reconciliation.
+    +- To include it, enable 'copilot-cowork' and select target 'copilot-cowork'
+for this install.
+  [i] Skipped inactive experimental resolver for target 'copilot-app' during 
+lockfile reconciliation.
+    +- To include it, enable 'copilot-app' and select target 'copilot-app' for 
+this install.
+[*] Installed 1 APM dependency in 0.4s.
+== apm exit 0
+== files under HOME (excluding caches):
+./.apm/.apm-lifecycle.lock
+./.apm/apm.lock.yaml
+./.apm/apm_modules/o/pkg/.apm/agents/x.md
+./.apm/apm_modules/o/pkg/.apm/instructions/okf-bundle.instructions.md
+./.apm/apm_modules/o/pkg/.apm-pin
+./.apm/apm_modules/o/pkg/.apm/skills/audit/SKILL.md
+./.apm/apm_modules/o/pkg/apm.yml
+./.apm/apm.yml
+./.apm/config.json
+./.claude/agents/x.md
+./.claude/rules/okf-bundle.md
+./.claude/skills/audit/SKILL.md
+== $CLAUDE_CONFIG_DIR/skills/audit/SKILL.md
+---
+name: audit
+description: package audit skill
+---
+
+PACKAGE AUDIT BODY
+== $CLAUDE_CONFIG_DIR/agents/x.md
+---
+name: x
+description: package agent
+---
+
+PACKAGE AGENT BODY
+== $CLAUDE_CONFIG_DIR/rules/okf-bundle.md
+---
+paths:
+  - "docs/**"
+  - ".okf/**"
+---
+
+PACKAGE RULE BODY
+== verdict fail=0
