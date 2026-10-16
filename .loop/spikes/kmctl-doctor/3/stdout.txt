@@ -1,0 +1,571 @@
+       "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/okf-skills/hooks/okf-stop-check.sh\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}
+--- .agents/hooks.json
+{
+  "apm": {
+    "Stop": [
+      {
+        "type": "command",
+        "statusMessage": "Checking OKF bundle...",
+        "command": "bash \".agents/hooks/okf-skills/hooks/okf-stop-check.sh\"",
+        "timeout": 15
+      }
+    ]
+  }
+}
+--- apm.lock.yaml
+lockfile_version: '1'
+apm_version: 0.33.0
+dependencies:
+- repo_url: scaccogatto/okf-skills
+  name: okf
+  host: github.com
+  resolved_commit: a8b96420de90d102c43cda1693d01ec4f925f2ab
+  resolved_ref: a8b96420de90d102c43cda1693d01ec4f925f2ab
+  version: 0.10.3
+  package_type: skill_bundle
+  deployed_files:
+  - .agents/hooks/okf-skills/hooks/okf-stop-check.sh
+  - .agents/skills/backfill
+  - .agents/skills/backfill/SKILL.md
+  - .agents/skills/backfill/scripts/okf_backfill_events.py
+  - .agents/skills/okf
+  - .agents/skills/okf/SKILL.md
+  - .agents/skills/okf/agents/openai.yaml
+  - .agents/skills/okf/reference/APACHE-2.0.txt
+  - .agents/skills/okf/reference/SPEC.md
+  - .agents/skills/okf/scripts/okf_init.py
+  - .agents/skills/okf/templates/concept.md
+  - .agents/skills/okf/templates/index.md
+  - .agents/skills/okf/templates/log.md
+  - .agents/skills/validate
+  - .agents/skills/validate/SKILL.md
+  - .agents/skills/validate/scripts/okf_validate.py
+  - .agents/skills/visualize
+  - .agents/skills/visualize/SKILL.md
+  - .agents/skills/visualize/scripts/okf_visualize.py
+  - .claude/agents/bundle-weaver.md
+  - .claude/agents/event-analyzer.md
+  - .claude/hooks/okf-skills/hooks/okf-stop-check.sh
+  - .claude/skills/backfill
+  - .claude/skills/backfill/SKILL.md
+  - .claude/skills/backfill/scripts/okf_backfill_events.py
+  - .claude/skills/okf
+  - .claude/skills/okf/SKILL.md
+  - .claude/skills/okf/agents/openai.yaml
+  - .claude/skills/okf/reference/APACHE-2.0.txt
+  - .claude/skills/okf/reference/SPEC.md
+  - .claude/skills/okf/scripts/okf_init.py
+  - .claude/skills/okf/templates/concept.md
+  - .claude/skills/okf/templates/index.md
+  - .claude/skills/okf/templates/log.md
+  - .claude/skills/validate
+  - .claude/skills/validate/SKILL.md
+  - .claude/skills/validate/scripts/okf_validate.py
+  - .claude/skills/visualize
+  - .claude/skills/visualize/SKILL.md
+  - .claude/skills/visualize/scripts/okf_visualize.py
+  deployed_file_hashes:
+    .agents/hooks/okf-skills/hooks/okf-stop-check.sh: sha256:7d24353e2cedb35dbf6ff7ee0307a6f3f6dd2a767185bc72b071493e1bf361c9
+    .agents/skills/backfill/SKILL.md: sha256:b34ce8740f3ff55f55af713ed350aa595aa94dbe716e25af328cbe6e5917bd8a
+    .agents/skills/backfill/scripts/okf_backfill_events.py: sha256:12bceb5872a4c7375f863d97186f681278908bdc2052017cac37844f9a76ce27
+    .agents/skills/okf/SKILL.md: sha256:ad4a2d130643816d579f9c394ee1bffa8881a42ed6dc17e4ff75fa3cb0ff272a
+    .agents/skills/okf/agents/openai.yaml: sha256:0f5392a890abc6ffa33ab70cb393892986dab436112a27f000390eb450859bbc
+    .agents/skills/okf/reference/APACHE-2.0.txt: sha256:cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30
+    .agents/skills/okf/reference/SPEC.md: sha256:1bc532f0b1baa5d021af97c9ce3205c26c6c402076f1eaa2e37a0abdd8de43c3
+    .agents/skills/okf/scripts/okf_init.py: sha256:5a7fa4937399109dc908640d33c8a3348f867d5d5ec3a45b157143eec6236d49
+    .agents/skills/okf/templates/concept.md: sha256:0d70e0f313b2019c8c1a6deb591d3929b60690fa41c345145fb18de8eaf82c4d
+    .agents/skills/okf/templates/index.md: sha256:fca29f13b7ac2b3c455cdce19edf518392bb5fed15b1b903e05c8a715c772880
+    .agents/skills/okf/templates/log.md: sha256:f5e352d5c2d017ebe135d92684334905cf4797f82bb91765605552596cc81c55
+    .agents/skills/validate/SKILL.md: sha256:6544ba26a5fe504d5c7b28f1fc07b135ca5127859297eb562041d0ecb9cce610
+    .agents/skills/validate/scripts/okf_validate.py: sha256:d9ad6d4347233cd6402f0336b36c08d54662f2b05b1f46a206d28752bace58f0
+    .agents/skills/visualize/SKILL.md: sha256:7dea574f70a7f0b9afbe6be660f8961dfabe32439b61ab6266d8ac0af4e595b6
+    .agents/skills/visualize/scripts/okf_visualize.py: sha256:82d2b7955f58130d01e0012115fcc7b1dcac2bd72cbc8d49e353b7b676010795
+    .claude/agents/bundle-weaver.md: sha256:69146e7ba4481c54644dbfd61ab4c68438851f9a74d2f2651216c52109a1d584
+    .claude/agents/event-analyzer.md: sha256:c88c8bfe0ccf082407e830291e7f78e9e052683b6db19bcf27229c17ed008a77
+    .claude/hooks/okf-skills/hooks/okf-stop-check.sh: sha256:7d24353e2cedb35dbf6ff7ee0307a6f3f6dd2a767185bc72b071493e1bf361c9
+    .claude/skills/backfill/SKILL.md: sha256:b34ce8740f3ff55f55af713ed350aa595aa94dbe716e25af328cbe6e5917bd8a
+    .claude/skills/backfill/scripts/okf_backfill_events.py: sha256:12bceb5872a4c7375f863d97186f681278908bdc2052017cac37844f9a76ce27
+    .claude/skills/okf/SKILL.md: sha256:ad4a2d130643816d579f9c394ee1bffa8881a42ed6dc17e4ff75fa3cb0ff272a
+    .claude/skills/okf/agents/openai.yaml: sha256:0f5392a890abc6ffa33ab70cb393892986dab436112a27f000390eb450859bbc
+    .claude/skills/okf/reference/APACHE-2.0.txt: sha256:cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30
+    .claude/skills/okf/reference/SPEC.md: sha256:1bc532f0b1baa5d021af97c9ce3205c26c6c402076f1eaa2e37a0abdd8de43c3
+    .claude/skills/okf/scripts/okf_init.py: sha256:5a7fa4937399109dc908640d33c8a3348f867d5d5ec3a45b157143eec6236d49
+    .claude/skills/okf/templates/concept.md: sha256:0d70e0f313b2019c8c1a6deb591d3929b60690fa41c345145fb18de8eaf82c4d
+    .claude/skills/okf/templates/index.md: sha256:fca29f13b7ac2b3c455cdce19edf518392bb5fed15b1b903e05c8a715c772880
+    .claude/skills/okf/templates/log.md: sha256:f5e352d5c2d017ebe135d92684334905cf4797f82bb91765605552596cc81c55
+    .claude/skills/validate/SKILL.md: sha256:6544ba26a5fe504d5c7b28f1fc07b135ca5127859297eb562041d0ecb9cce610
+    .claude/skills/validate/scripts/okf_validate.py: sha256:d9ad6d4347233cd6402f0336b36c08d54662f2b05b1f46a206d28752bace58f0
+    .claude/skills/visualize/SKILL.md: sha256:7dea574f70a7f0b9afbe6be660f8961dfabe32439b61ab6266d8ac0af4e595b6
+    .claude/skills/visualize/scripts/okf_visualize.py: sha256:82d2b7955f58130d01e0012115fcc7b1dcac2bd72cbc8d49e353b7b676010795
+  content_hash: sha256:ef6590010dcfe5dc0f735cb1621b8b33cb73ee936b62607c7eaaad477a4e7f4f
+  declared_license: MIT
+deployments:
+- kind: project-relative
+  target: antigravity
+  value: .agents/skills/backfill
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: null
+- kind: project-relative
+  target: antigravity
+  value: .agents/skills/backfill/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:b34ce8740f3ff55f55af713ed350aa595aa94dbe716e25af328cbe6e5917bd8a
+- kind: project-relative
+  target: antigravity
+  value: .agents/skills/backfill/scripts/okf_backfill_events.py
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:12bceb5872a4c7375f863d97186f681278908bdc2052017cac37844f9a76ce27
+- kind: project-relative
+  target: antigravity
+  value: .agents/skills/okf
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: null
+- kind: project-relative
+  target: antigravity
+  value: .agents/skills/okf/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:ad4a2d130643816d579f9c394ee1bffa8881a42ed6dc17e4ff75fa3cb0ff272a
+- kind: project-relative
+  target: antigravity
+  value: .agents/skills/okf/agents/openai.yaml
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:0f5392a890abc6ffa33ab70cb393892986dab436112a27f000390eb450859bbc
+- kind: project-relative
+  target: antigravity
+  value: .agents/skills/okf/reference/APACHE-2.0.txt
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30
+- kind: project-relative
+  target: antigravity
+  value: .agents/skills/okf/reference/SPEC.md
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:1bc532f0b1baa5d021af97c9ce3205c26c6c402076f1eaa2e37a0abdd8de43c3
+- kind: project-relative
+  target: antigravity
+  value: .agents/skills/okf/scripts/okf_init.py
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:5a7fa4937399109dc908640d33c8a3348f867d5d5ec3a45b157143eec6236d49
+- kind: project-relative
+  target: antigravity
+  value: .agents/skills/okf/templates/concept.md
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:0d70e0f313b2019c8c1a6deb591d3929b60690fa41c345145fb18de8eaf82c4d
+- kind: project-relative
+  target: antigravity
+  value: .agents/skills/okf/templates/index.md
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:fca29f13b7ac2b3c455cdce19edf518392bb5fed15b1b903e05c8a715c772880
+- kind: project-relative
+  target: antigravity
+  value: .agents/skills/okf/templates/log.md
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:f5e352d5c2d017ebe135d92684334905cf4797f82bb91765605552596cc81c55
+- kind: project-relative
+  target: antigravity
+  value: .agents/skills/validate
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: null
+- kind: project-relative
+  target: antigravity
+  value: .agents/skills/validate/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:6544ba26a5fe504d5c7b28f1fc07b135ca5127859297eb562041d0ecb9cce610
+- kind: project-relative
+  target: antigravity
+  value: .agents/skills/validate/scripts/okf_validate.py
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:d9ad6d4347233cd6402f0336b36c08d54662f2b05b1f46a206d28752bace58f0
+- kind: project-relative
+  target: antigravity
+  value: .agents/skills/visualize
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: null
+- kind: project-relative
+  target: antigravity
+  value: .agents/skills/visualize/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:7dea574f70a7f0b9afbe6be660f8961dfabe32439b61ab6266d8ac0af4e595b6
+- kind: project-relative
+  target: antigravity
+  value: .agents/skills/visualize/scripts/okf_visualize.py
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:82d2b7955f58130d01e0012115fcc7b1dcac2bd72cbc8d49e353b7b676010795
+- kind: project-relative
+  target: claude
+  value: .claude/agents/bundle-weaver.md
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:69146e7ba4481c54644dbfd61ab4c68438851f9a74d2f2651216c52109a1d584
+- kind: project-relative
+  target: claude
+  value: .claude/agents/event-analyzer.md
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:c88c8bfe0ccf082407e830291e7f78e9e052683b6db19bcf27229c17ed008a77
+- kind: project-relative
+  target: claude
+  value: .claude/hooks/okf-skills/hooks/okf-stop-check.sh
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:7d24353e2cedb35dbf6ff7ee0307a6f3f6dd2a767185bc72b071493e1bf361c9
+- kind: project-relative
+  target: claude
+  value: .claude/skills/backfill
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: null
+- kind: project-relative
+  target: claude
+  value: .claude/skills/backfill/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:b34ce8740f3ff55f55af713ed350aa595aa94dbe716e25af328cbe6e5917bd8a
+- kind: project-relative
+  target: claude
+  value: .claude/skills/backfill/scripts/okf_backfill_events.py
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:12bceb5872a4c7375f863d97186f681278908bdc2052017cac37844f9a76ce27
+- kind: project-relative
+  target: claude
+  value: .claude/skills/okf
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: null
+- kind: project-relative
+  target: claude
+  value: .claude/skills/okf/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:ad4a2d130643816d579f9c394ee1bffa8881a42ed6dc17e4ff75fa3cb0ff272a
+- kind: project-relative
+  target: claude
+  value: .claude/skills/okf/agents/openai.yaml
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:0f5392a890abc6ffa33ab70cb393892986dab436112a27f000390eb450859bbc
+- kind: project-relative
+  target: claude
+  value: .claude/skills/okf/reference/APACHE-2.0.txt
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30
+- kind: project-relative
+  target: claude
+  value: .claude/skills/okf/reference/SPEC.md
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:1bc532f0b1baa5d021af97c9ce3205c26c6c402076f1eaa2e37a0abdd8de43c3
+- kind: project-relative
+  target: claude
+  value: .claude/skills/okf/scripts/okf_init.py
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:5a7fa4937399109dc908640d33c8a3348f867d5d5ec3a45b157143eec6236d49
+- kind: project-relative
+  target: claude
+  value: .claude/skills/okf/templates/concept.md
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:0d70e0f313b2019c8c1a6deb591d3929b60690fa41c345145fb18de8eaf82c4d
+- kind: project-relative
+  target: claude
+  value: .claude/skills/okf/templates/index.md
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:fca29f13b7ac2b3c455cdce19edf518392bb5fed15b1b903e05c8a715c772880
+- kind: project-relative
+  target: claude
+  value: .claude/skills/okf/templates/log.md
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:f5e352d5c2d017ebe135d92684334905cf4797f82bb91765605552596cc81c55
+- kind: project-relative
+  target: claude
+  value: .claude/skills/validate
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: null
+- kind: project-relative
+  target: claude
+  value: .claude/skills/validate/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:6544ba26a5fe504d5c7b28f1fc07b135ca5127859297eb562041d0ecb9cce610
+- kind: project-relative
+  target: claude
+  value: .claude/skills/validate/scripts/okf_validate.py
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:d9ad6d4347233cd6402f0336b36c08d54662f2b05b1f46a206d28752bace58f0
+- kind: project-relative
+  target: claude
+  value: .claude/skills/visualize
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: null
+- kind: project-relative
+  target: claude
+  value: .claude/skills/visualize/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:7dea574f70a7f0b9afbe6be660f8961dfabe32439b61ab6266d8ac0af4e595b6
+- kind: project-relative
+  target: claude
+  value: .claude/skills/visualize/scripts/okf_visualize.py
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:82d2b7955f58130d01e0012115fcc7b1dcac2bd72cbc8d49e353b7b676010795
+- kind: project-relative
+  target: legacy
+  value: .agents/hooks/okf-skills/hooks/okf-stop-check.sh
+  runtime: null
+  scope: project
+  owners:
+  - scaccogatto/okf-skills
+  active_owner: scaccogatto/okf-skills
+  content_hash: sha256:7d24353e2cedb35dbf6ff7ee0307a6f3f6dd2a767185bc72b071493e1bf361c9
+- kind: uri
+  target: mcp
+  value: bundle
+  runtime: antigravity
+  scope: project
+  owners:
+  - .
+  active_owner: .
+  content_hash: null
+- kind: uri
+  target: mcp
+  value: bundle
+  runtime: claude
+  scope: project
+  owners:
+  - .
+  active_owner: .
+  content_hash: null
+mcp_servers:
+- bundle
+mcp_configs:
+  bundle:
+    name: bundle
+    transport: stdio
+    args:
+    - run
+    - /tmp/tmp.KPtgmqUSvd/consumer/apm_modules/scaccogatto/okf-skills/servers/okf_mcp.py
+    registry: false
+    command: uv
+mcp_target_servers:
+  antigravity:
+  - bundle
+  claude:
+  - bundle
+mcp_config_provenance:
+  bundle: okf
+===== merge SessionStart into .claude/settings.json
+{
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "statusMessage": "Checking OKF bundle...",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/okf-skills/hooks/okf-stop-check.sh\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "kmctl briefing"
+          }
+        ]
+      }
+    ]
+  }
+}
+
+===== check hashes
+listed paths: 40 hashed paths: 32
+hook/settings paths listed in lock: ['.agents/hooks/okf-skills/hooks/okf-stop-check.sh', '.claude/hooks/okf-skills/hooks/okf-stop-check.sh']
+OK   .agents/hooks/okf-skills/hooks/okf-stop-check.sh
+OK   .agents/skills/backfill/SKILL.md
+OK   .agents/skills/backfill/scripts/okf_backfill_events.py
+OK   .agents/skills/okf/SKILL.md
+OK   .agents/skills/okf/agents/openai.yaml
+OK   .agents/skills/okf/reference/APACHE-2.0.txt
+OK   .agents/skills/okf/reference/SPEC.md
+OK   .agents/skills/okf/scripts/okf_init.py
+OK   .agents/skills/okf/templates/concept.md
+OK   .agents/skills/okf/templates/index.md
+OK   .agents/skills/okf/templates/log.md
+OK   .agents/skills/validate/SKILL.md
+OK   .agents/skills/validate/scripts/okf_validate.py
+OK   .agents/skills/visualize/SKILL.md
+OK   .agents/skills/visualize/scripts/okf_visualize.py
+OK   .claude/agents/bundle-weaver.md
+OK   .claude/agents/event-analyzer.md
+OK   .claude/hooks/okf-skills/hooks/okf-stop-check.sh
+OK   .claude/skills/backfill/SKILL.md
+OK   .claude/skills/backfill/scripts/okf_backfill_events.py
+OK   .claude/skills/okf/SKILL.md
+OK   .claude/skills/okf/agents/openai.yaml
+OK   .claude/skills/okf/reference/APACHE-2.0.txt
+OK   .claude/skills/okf/reference/SPEC.md
+OK   .claude/skills/okf/scripts/okf_init.py
+OK   .claude/skills/okf/templates/concept.md
+OK   .claude/skills/okf/templates/index.md
+OK   .claude/skills/okf/templates/log.md
+OK   .claude/skills/validate/SKILL.md
+OK   .claude/skills/validate/scripts/okf_validate.py
+OK   .claude/skills/visualize/SKILL.md
+OK   .claude/skills/visualize/scripts/okf_visualize.py
+mismatches: 0
+--- final exit 0
