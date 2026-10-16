@@ -33,7 +33,8 @@ Knowledge in this repository:
 Verbs: kmctl new decision|practice|proposal|prototype|handoff to add a concept;
 kmctl new doc tutorial|how-to|reference|explanation for a docs/ page;
 kmctl check after editing an index; kmctl review due for what needs review;
-kmctl handoffs for live handoffs. Each takes --help and --json."""
+kmctl handoffs for live handoffs; kmctl schema KIND for a document's expected
+shape. Each takes --help and --json."""
 
 EMPTY = "No .okf/ bundle here. Run kmctl init to start docs/ and .okf/."
 

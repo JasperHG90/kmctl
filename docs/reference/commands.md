@@ -15,6 +15,7 @@ for people. Warnings and refusals go to stderr.
 | `kmctl check` | Check indexes agree with their folders, prototypes have a `README.md`, and links resolve. |
 | `kmctl handoffs` | List the live handoffs in `.okf/handoffs/`, newest first. |
 | `kmctl briefing` | Print the session briefing: where knowledge lives, what is due, and the rules. |
+| `kmctl schema` | Print the JSON Schema of one document kind, or list the kinds there are. |
 | `kmctl review` | Find knowledge that is due for review. Verbs: `due`. |
 | `kmctl review due` | List concepts in `.okf/` due for review, with the reason for each. |
 | `kmctl new` | Create a `.okf/` concept or a `docs/` page with its structure. Needs a repository set up by `kmctl init`. |
@@ -130,6 +131,35 @@ never writes.
 |---|---|---|
 | `--path DIR` | The repository to brief on: an existing folder. | `.` |
 | `--json` | Print one JSON object (`routing`, `state`, `rules`, `skills`). | off |
+
+### `kmctl schema`
+
+`kmctl schema [KIND]`
+
+Print the JSON Schema (draft 2020-12) of one document kind's front matter, or
+list the kinds with where each lives and what it is for. The schema is built
+from kmctl's own table of kinds (`src/kmctl/kinds.py`) when you run it, so it
+is what kmctl writes: the fields by their OKF names, which are required, the
+legal values and what each one means. Read it before you write a concept or a
+page by hand. Nothing checks a file against it yet.
+
+| Argument or option | Meaning | Default |
+|---|---|---|
+| `KIND` | The kind whose schema to print: `decision`, `practice`, `proposal`, `prototype`, `handoff` (what `kmctl new` writes); `manifesto`, `index`, `section-index`, `log` (the bundle files `kmctl init` writes); `architecture` (a diagram page, which no verb writes); `tutorial`, `how-to`, `reference`, `explanation`, `docs-index` (`docs/` pages and their index). | none: list the kinds |
+| `--json` | With no kind, print the list as one JSON object of kind to where it lives and what it is for. A kind's schema is JSON either way. | off |
+
+The body is in `x-kmctl-sections`: a list of the `##` sections in order,
+`{"pattern": REGEX}` when every heading has one form (the log's dated
+sections), `{"last": "Depicts"}` for an architecture page's free sections
+that end with Depicts, or `null` for no fixed sections. When sections may
+follow the fixed list, `x-kmctl-then` gives their `{"pattern": REGEX}`: a
+decision may end with any number of `Correction, YYYY-MM-DD` sections, which
+`kmctl decision supersede` appends. A kind with no front
+matter (the `docs/` pages, the indexes below the root, the log) allows no
+properties, and the root index allows only `okf_version`. Dates such as
+`generated.at` are a date or a UTC timestamp.
+
+Exit code: 1 for an unknown kind, with the list of kinds on stderr.
 
 ### `kmctl review due`
 

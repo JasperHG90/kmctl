@@ -12,6 +12,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from kmctl.concepts import ConceptError, append_log
+from kmctl.kinds import CORRECTION, DEPRECATED
 from kmctl.okf import BadFrontMatter, field, front_matter
 
 
@@ -54,10 +55,10 @@ def _deprecate(text: str) -> str:
     head, body = text[:end], text[end:]
     if re.search(r"^status:.*$", head, re.MULTILINE):
         head = re.sub(
-            r"^status:.*$", "status: deprecated", head, count=1, flags=re.MULTILINE
+            r"^status:.*$", f"status: {DEPRECATED}", head, count=1, flags=re.MULTILINE
         )
     else:
-        head += "\nstatus: deprecated"
+        head += f"\nstatus: {DEPRECATED}"
     return head + body
 
 
@@ -98,7 +99,7 @@ def supersede(
         )
     old_path, new_path = _record(decisions, old_n), _record(decisions, new_n)
     try:
-        if field(front_matter(old_path), "status") == "deprecated":
+        if field(front_matter(old_path), "status") == DEPRECATED:
             raise ConceptError(
                 f"decision {old_n} is already deprecated; supersede the record that replaced it"
             )
@@ -117,7 +118,7 @@ def supersede(
     old_text = _deprecate(old_path.read_text(encoding="utf-8")).rstrip("\n")
     old_path.write_text(
         old_text
-        + f"\n\n## Correction, {date}\n\nSuperseded by [ADR {new_n}]({new_path.name}).\n",
+        + f"\n\n## {CORRECTION}, {date}\n\nSuperseded by [ADR {new_n}]({new_path.name}).\n",
         encoding="utf-8",
     )
     new_text = new_path.read_text(encoding="utf-8").rstrip("\n")

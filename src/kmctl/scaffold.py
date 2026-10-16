@@ -15,6 +15,7 @@ from importlib.resources import files
 from pathlib import Path
 
 from kmctl.concepts import new_concept
+from kmctl.kinds import skeleton
 from kmctl.okf import BadFrontMatter, field, front_matter
 
 OKF_VERSION = "0.2"
@@ -145,9 +146,8 @@ def _files(now: datetime) -> dict[str, str]:
             "tags: [manifesto]\n"
             "---\n\n"
             "# Manifesto\n\n"
-            "## What this is for\n\n"
-            "## Invariants\n\n"
-            "## Values\n"
+            + "\n\n".join(f"## {h}" for h in skeleton("manifesto"))
+            + "\n"
         ),
     }
 
