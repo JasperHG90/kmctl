@@ -1,40 +1,72 @@
-"""Install the Claude Code plugin that ships inside this kmctl release (ADR 0001, ADR 0003).
+"""Install kmctl's APM package for an agent harness, and the pieces APM leaves out (ADR 0014).
 
-The plugin and its marketplace file are package data. ``install`` copies them
-to one fixed staging folder, stamped with this CLI's version, registers that
-folder as the ``kmctl`` marketplace, and installs ``kmctl@kmctl``. The okf
-dependency lives in the scaccogatto marketplace, which ``claude plugin
-install`` does not add by itself (spike:plugin-install-verb/1), so it is added
-first, from the source the operator's settings already give it when they do.
-The command order follows loopctl's working installer.
+``install`` writes the kmctl entry into the repository's apm.yml, runs
+``apm install`` at the version pinned in ``APM_CLI``, and then writes what the
+package cannot carry for Claude Code: the SessionStart hook in settings.json
+and okf's MCP server. Before that it moves two kinds of older install over:
+the claude plugin ``kmctl@kmctl`` (ADR 0003) and an apm.yml entry naming the
+package another way (ADR 0013).
+
+Each step is its own function and prints nothing, so ``kmctl doctor`` and the
+Antigravity harness can reuse the hook entry, the MCP entry and its launcher.
 """
 
 import json
 import os
+import re
 import shutil
 import subprocess
-import sys
+from collections.abc import Sequence
 from dataclasses import dataclass
 from importlib.metadata import version
 from importlib.resources import files
+from io import StringIO
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
+
+import yaml
+from pydantic import BaseModel, Field, TypeAdapter, ValidationError
+from ruamel.yaml import YAML
 
 Scope = Literal["project", "user"]
-MARKETPLACE = "kmctl"
-PLUGIN_ID = "kmctl@kmctl"
-OKF_MARKETPLACE = "scaccogatto"
-OKF_SOURCE = "scaccogatto/okf-skills"
-#: The source fields each kind may have for kmctl to pass it to ``marketplace add``.
-_ADDABLE = {
-    "github": {"source", "repo", "ref"},
-    "git": {"source", "url", "ref"},
-    "url": {"source", "url"},
-    "directory": {"source", "path"},
-}
-_MISMATCH = "its source doesn't match its extraKnownMarketplaces entry"
-#: The field holding each kind's location.
-_LOCATION = {"github": "repo", "git": "url", "url": "url", "directory": "path"}
+#: The harnesses ``--harness`` accepts, in the order help lists them.
+HARNESSES = ("claude",)
+#: The APM release kmctl runs through uvx, so every install uses the same one.
+APM_CLI = "apm-cli==0.33.0"
+#: Where the kmctl package comes from unless ``--source`` names another git URL.
+DEFAULT_SOURCE = "https://github.com/JasperHG90/Knowledge-management.git"
+#: The package's folder inside the source repository.
+PACKAGE_PATH = "apm"
+#: How an apm.yml written by hand (ADR 0013) names the package.
+OLD_PACKAGE = "JasperHG90/Knowledge-management/apm"
+#: The claude plugin and marketplace the install route before ADR 0014 added.
+OLD_PLUGIN = "kmctl@kmctl"
+OLD_MARKETPLACE = "kmctl"
+#: The okf-skills commit apm/apm.yml pins; a test keeps the two equal.
+OKF_COMMIT = "a8b96420de90d102c43cda1693d01ec4f925f2ab"
+#: The name kmctl gives okf's MCP server; it replaces only a server of this name.
+MCP_NAME = "okf-bundle"
+#: What marks an MCP server as okf's, under whatever name it was added.
+OKF_MCP_SCRIPT = "okf_mcp.py"
+#: The text that marks a settings.json hook as kmctl's.
+HOOK_MARK = "kmctl briefing"
+HOOK_COMMAND = (
+    "command -v kmctl >/dev/null 2>&1 || { echo '[kmctl] kmctl is not installed, "
+    "so there is no knowledge briefing. Install it with: uv tool install "
+    "git+https://github.com/JasperHG90/Knowledge-management'; exit 0; }; "
+    "kmctl briefing || echo '[kmctl] kmctl briefing failed; run kmctl briefing in "
+    "a terminal to see why, or upgrade with uv tool install --force "
+    "git+https://github.com/JasperHG90/Knowledge-management.'; exit 0"
+)
+HOOK_DESCRIPTION = (
+    "kmctl: print the knowledge briefing (where knowledge lives, what is due, "
+    "the rules). Never blocks."
+)
+HOOK_TIMEOUT = 10
+#: The line APM 0.33.0 prints when it leaves a file it did not write in place.
+SKIP_LINE = "skipped -- local files exist"
+#: The most characters of a tool's output a PluginError carries.
+CAUSE_CAP = 400
 
 
 class PluginError(Exception):
@@ -43,296 +75,909 @@ class PluginError(Exception):
 
 @dataclass(frozen=True)
 class PluginStatus:
-    """The installed plugin against this CLI."""
+    """kmctl's install in one repository, or at user scope, against this CLI.
+
+    Attributes
+    ----------
+    cli_version : str
+        This kmctl's version.
+    scope : str
+        ``project`` or ``user``.
+    package_ref : str | None
+        The ref apm.lock.yaml records for the kmctl package, or None when the
+        package is not installed.
+    hook : bool
+        Whether settings.json holds exactly the SessionStart hook this CLI writes.
+    problems : list[str]
+        One line per problem, each naming the command that fixes it.
+    """
 
     cli_version: str
-    plugin_version: str | None
-    staged_version: str | None
-    marketplace_path: str | None
+    scope: str
+    package_ref: str | None
+    hook: bool
     problems: list[str]
 
 
+@dataclass(frozen=True)
+class InstallResult:
+    """What ``install`` did besides the APM install, and the status afterwards.
+
+    Attributes
+    ----------
+    notes : list[str]
+        One line per thing a reader should know: an old install removed, a
+        step skipped and why, an MCP server kept.
+    status : PluginStatus
+        The install as ``status`` reports it afterwards.
+    """
+
+    notes: list[str]
+    status: PluginStatus
+
+
+class _ClaudePlugin(BaseModel):
+    """One entry of ``claude plugin list --json``."""
+
+    id: str = Field(description="The plugin id, NAME@MARKETPLACE.")
+    scope: str | None = Field(default=None, description="user, project or local.")
+    project_path: str | None = Field(
+        default=None,
+        alias="projectPath",
+        description="The repository a project or local install belongs to.",
+    )
+
+
+_CLAUDE_PLUGINS = TypeAdapter(list[_ClaudePlugin])
+
+
+class _LockDependency(BaseModel):
+    """One package in apm.lock.yaml, with the fields kmctl reads."""
+
+    name: str | None = Field(default=None, description="The package's apm.yml name.")
+    virtual_path: str | None = Field(
+        default=None, description="The package's folder inside its repository."
+    )
+    resolved_ref: str | None = Field(
+        default=None, description="The ref APM installed, such as v0.4.0."
+    )
+    deployed_files: list[str] = Field(
+        default_factory=list, description="Files and folders APM wrote for it."
+    )
+
+
+class _Lock(BaseModel):
+    """apm.lock.yaml, with the fields kmctl reads."""
+
+    dependencies: list[_LockDependency] = Field(
+        default_factory=list, description="The installed packages."
+    )
+
+
 def cli_version() -> str:
-    """This kmctl's version, which the staged plugin is stamped with."""
+    """This kmctl's version, which names the package tag it installs."""
     return version("kmctl")
 
 
-def data_dir() -> Path:
-    """Where kmctl keeps local state: $XDG_DATA_HOME/kmctl, by default ~/.local/share/kmctl."""
-    base = os.environ.get("XDG_DATA_HOME") or str(Path.home() / ".local" / "share")
-    return Path(base) / "kmctl"
+def package_ref() -> str:
+    """The git tag of the package this CLI installs: ``v<cli version>`` (ADR 0001)."""
+    return f"v{cli_version()}"
 
 
-def staging_dir() -> Path:
-    """The one folder the plugin is staged in, so the marketplace path never changes."""
-    return data_dir() / "marketplace"
-
-
-def _payload() -> tuple[Path, Path]:
-    """The plugin folder and marketplace file: package data in a wheel, the repository in a checkout."""
-    package = Path(str(files("kmctl")))
-    if (package / "_plugin").is_dir():
-        return package / "_plugin", package / "_marketplace.json"
-    repo = Path(__file__).resolve().parents[2]
-    return repo / "plugin", repo / ".claude-plugin" / "marketplace.json"
+def okf_mcp_url() -> str:
+    """The raw URL of okf's MCP server script at the pinned okf-skills commit."""
+    return (
+        f"https://raw.githubusercontent.com/scaccogatto/okf-skills/{OKF_COMMIT}"
+        "/servers/okf_mcp.py"
+    )
 
 
 def skills_dir() -> Path:
-    """The skills/ folder of the plugin this release ships."""
-    return _payload()[0] / "skills"
+    """The package's skills/ folder: package data in a wheel, the repository in a checkout."""
+    package = Path(str(files("kmctl")))
+    if (package / "_skills").is_dir():
+        return package / "_skills"
+    return Path(__file__).resolve().parents[2] / "apm" / ".apm" / "skills"
 
 
-def stage() -> Path:
-    """Copy this release's plugin into the staging folder, stamped with this CLI's version."""
-    plugin_src, marketplace_src = _payload()
-    dest = staging_dir()
-    if dest.exists():
-        shutil.rmtree(dest)
-    shutil.copytree(
-        plugin_src, dest / "plugin", ignore=shutil.ignore_patterns("__pycache__")
-    )
-    (dest / ".claude-plugin").mkdir(parents=True)
-    shutil.copyfile(marketplace_src, dest / ".claude-plugin" / "marketplace.json")
-    manifest = dest / "plugin" / ".claude-plugin" / "plugin.json"
-    data = json.loads(manifest.read_text())
-    data["version"] = cli_version()
-    manifest.write_text(json.dumps(data, indent=2) + "\n")
-    return dest
-
-
-def _managed_dir() -> Path:
-    """The folder claude reads managed settings from on this platform."""
-    if sys.platform == "darwin":
-        return Path("/Library/Application Support/ClaudeCode")
-    return Path("/etc/claude-code")
-
-
-def _settings_files() -> list[Path]:
-    """The settings files claude merges, lowest precedence first (claude 2.1.300)."""
-    config = os.environ.get("CLAUDE_CONFIG_DIR")
-    user = (Path(config) if config else Path.home() / ".claude") / "settings.json"
-    managed = _managed_dir()
-    drop_in = managed / "managed-settings.d"
-    extra = (
-        sorted(f for f in drop_in.glob("*.json") if not f.name.startswith("."))
-        if drop_in.is_dir()
-        else []
-    )
-    return [user, managed / "managed-settings.json", *extra]
-
-
-def _usable(entry: object) -> bool:
-    """Whether claude treats an entry as one: a ``source`` object with a kind and, for
-    a known kind, a string location. claude 2.1.300 ignores the rest, as kmctl does."""
-    if not isinstance(entry, dict) or not isinstance(entry.get("source"), dict):
-        return False
-    kind = entry["source"].get("source")
-    if not isinstance(kind, str):
-        return False
-    field = _LOCATION.get(kind)
-    return field is None or isinstance(entry["source"].get(field), str)
-
-
-def okf_source() -> tuple[str, Path | None]:
-    """The ``marketplace add`` argument for the okf marketplace, and the settings file it came from.
-
-    claude refuses to add a marketplace whose source differs from an
-    ``extraKnownMarketplaces`` entry of the same name, comparing the whole
-    entry, so the argument is built from the entry claude itself uses: the last
-    one in merge order. With no entry it is ``OKF_SOURCE``.
+def parse_harnesses(text: str) -> list[str]:
+    """Split a comma list of harnesses, without repeats.
 
     Raises
     ------
     PluginError
-        When the entry has a kind or a field no add argument can carry.
+        When the list is empty or a name is not one of ``HARNESSES``.
     """
-    found: tuple[dict, Path] | None = None
-    for file in _settings_files():
-        try:
-            data = json.loads(file.read_text(encoding="utf-8"))
-        except (OSError, ValueError):
-            continue
-        known = data.get("extraKnownMarketplaces") if isinstance(data, dict) else None
-        entry = known.get(OKF_MARKETPLACE) if isinstance(known, dict) else None
-        if _usable(entry):
-            found = (entry, file)
-    if found is None:
-        return OKF_SOURCE, None
-    entry, file = found
-    source = entry["source"]
-    kind = source.get("source")
-    if kind not in _ADDABLE or not set(source) <= _ADDABLE[kind]:
+    names = [n.strip() for n in text.split(",") if n.strip()]
+    unknown = [n for n in names if n not in HARNESSES]
+    if unknown or not names:
+        refused = ", ".join(map(repr, unknown)) if unknown else repr(text)
         raise PluginError(
-            f"{file} declares the {OKF_MARKETPLACE} marketplace as {json.dumps(source)}, "
-            "which claude plugin marketplace add cannot take as an argument; add that "
-            "marketplace by hand from the same source, or change the entry, then run "
-            "kmctl plugin install again"
+            f"no harness {refused}; give --harness one of: {', '.join(HARNESSES)}"
         )
-    value = source[_LOCATION[kind]]
-    ref = source.get("ref")
-    return (f"{value}#{ref}" if ref else str(value)), file
+    return list(dict.fromkeys(names))
 
 
-def _claude(args: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
-    if shutil.which("claude") is None:
-        raise PluginError("the claude CLI is not on PATH; install Claude Code first")
-    return subprocess.run(
-        ["claude", *args], cwd=cwd, capture_output=True, text=True, check=False
-    )
+def claude_config_dir() -> Path:
+    """The folder Claude Code reads user files from: $CLAUDE_CONFIG_DIR, by default ~/.claude."""
+    configured = os.environ.get("CLAUDE_CONFIG_DIR")
+    return Path(configured) if configured else Path.home() / ".claude"
 
 
-#: The most characters of claude's output a PluginError carries.
-CAUSE_CAP = 400
+def settings_path(cwd: Path, scope: Scope) -> Path:
+    """The settings.json the hook goes in: the repository's, or the user's."""
+    if scope == "user":
+        return claude_config_dir() / "settings.json"
+    return cwd / ".claude" / "settings.json"
+
+
+def apm_dir(cwd: Path, scope: Scope) -> Path:
+    """The folder holding apm.yml and apm.lock.yaml: the repository, or ~/.apm at user scope."""
+    return Path.home() / ".apm" if scope == "user" else cwd
+
+
+def _apm_cwd(cwd: Path, scope: Scope) -> Path:
+    """Where APM runs, which is also the root of the paths its lock records."""
+    return Path.home() if scope == "user" else cwd
+
+
+def _user_mcp_file() -> Path:
+    """The file claude keeps user-scope MCP servers in."""
+    configured = os.environ.get("CLAUDE_CONFIG_DIR")
+    return (Path(configured) if configured else Path.home()) / ".claude.json"
 
 
 def _cause(output: str) -> str:
-    """The lines of ``output`` that say why claude failed, joined with "; ".
+    """The lines of ``output`` that say why a tool failed, joined with "; ".
 
-    git's ``fatal:`` and ``error:`` lines name the cause (an unresolvable host,
-    a missing repository), but claude may print them before a last line that
-    does not, as when it falls back from HTTPS to SSH. So keep those lines in
-    order, then claude's last line, cut to CAUSE_CAP characters from the end.
+    git's ``fatal:`` and ``error:`` lines and APM's ``[x]`` lines name the
+    cause, but the tool may print them before a last line that does not. So
+    keep those lines in order, then the last line, cut to CAUSE_CAP
+    characters.
     """
     lines = [line.strip() for line in output.strip().splitlines() if line.strip()]
     if not lines:
         return "no output"
-    kept = [line for line in lines if line.startswith(("fatal:", "error:"))]
+    kept = [line for line in lines if line.startswith(("fatal:", "error:", "[x]"))]
     if lines[-1] not in kept[-1:]:
         kept.append(lines[-1])
     cause = "; ".join(kept)
     return cause if len(cause) <= CAUSE_CAP else cause[: CAUSE_CAP - 1] + "…"
 
 
-def _require(proc: subprocess.CompletedProcess[str], args: list[str]) -> None:
+def _run(args: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
+    """Run a command in ``cwd`` and capture its output."""
+    return subprocess.run(args, cwd=cwd, capture_output=True, text=True, check=False)
+
+
+def _require(proc: subprocess.CompletedProcess[str], what: str) -> None:
+    """Raise when ``proc`` failed, naming the command ``what`` and its cause."""
     if proc.returncode != 0:
+        output = f"{proc.stderr}\n{proc.stdout}"
         raise PluginError(
-            f"claude {' '.join(args)} failed: {_cause(proc.stderr or proc.stdout)}; "
-            "run it by hand to see why, then kmctl plugin install again"
+            f"{what} failed: {_cause(output)}; run it by hand to see why, then "
+            "kmctl plugin install again"
         )
 
 
-def _json(args: list[str], cwd: Path) -> list[dict]:
-    proc = _claude(args, cwd)
-    _require(proc, args)
-    return json.loads(proc.stdout or "[]")
-
-
-def _entry(cwd: Path, scope: Scope | None) -> dict | None:
-    """This plugin's entry in ``claude plugin list`` for ``scope``, or for whichever applies here.
-
-    claude lists project-scope installs of every repository, so a project entry
-    counts only when its project path is ``cwd``. With no ``scope``, this
-    repository's project install wins over a user install.
-    """
-    here = cwd.resolve()
-    entries = [
-        p for p in _json(["plugin", "list", "--json"], cwd) if p.get("id") == PLUGIN_ID
-    ]
-    project = [
-        p
-        for p in entries
-        if p.get("scope") == "project"
-        and p.get("projectPath")
-        and Path(p["projectPath"]).resolve() == here
-    ]
-    user = [p for p in entries if p.get("scope") == "user"]
-    if scope == "project":
-        return project[0] if project else None
-    if scope == "user":
-        return user[0] if user else None
-    found = project or user
-    return found[0] if found else None
-
-
-def install(scope: Scope, cwd: Path, reinstall: bool = False) -> PluginStatus:
-    """Stage the plugin and install it with its okf dependency at ``scope``.
-
-    Parameters
-    ----------
-    scope : Scope
-        ``project`` (the repository at ``cwd``) or ``user`` (every repository).
-    cwd : Path
-        The repository a project-scope install is declared in.
-    reinstall : bool
-        Uninstall first, as ``kmctl plugin update`` does, so a newer staged
-        version replaces the installed one.
-
-    Returns
-    -------
-    PluginStatus
-        What is installed afterwards.
+def _apm(args: list[str], cwd: Path) -> None:
+    """Run APM at ``APM_CLI`` through uvx, raising when it fails.
 
     Raises
     ------
     PluginError
-        When claude is missing, a step fails, or the plugin is not listed at
-        this CLI's version afterwards.
+        When uvx is not on PATH or APM fails, with APM's cause.
     """
-    okf, declared_in = okf_source()
-    folder = stage()
-    # Declare the okf marketplace at this scope every time: another scope having it
-    # does not declare it here, and adding it again is a no-op (spike 3).
-    add_okf = ["plugin", "marketplace", "add", okf, "--scope", scope]
-    added = _claude(add_okf, cwd)
-    if (
-        added.returncode != 0
-        and declared_in
-        and _MISMATCH in added.stdout + added.stderr
-    ):
+    _require(_apm_run(args, cwd), f"uvx --from {APM_CLI} apm {' '.join(args)}")
+
+
+def _apm_run(args: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
+    """Run APM at ``APM_CLI`` through uvx and return what it did.
+
+    Raises
+    ------
+    PluginError
+        When uvx is not on PATH.
+    """
+    if shutil.which("uvx") is None:
         raise PluginError(
-            f"{declared_in} declares the {OKF_MARKETPLACE} marketplace from {okf}, and "
-            "claude would not accept that source as an add argument; add that "
-            "marketplace by hand from the same source, or change the entry, then run "
+            "uvx is not on PATH, and kmctl runs APM through it; install uv "
+            "(https://docs.astral.sh/uv/), then run kmctl plugin install again"
+        )
+    return _run(["uvx", "--from", APM_CLI, "apm", *args], cwd)
+
+
+# Old installs ------------------------------------------------------------------
+
+
+def remove_old_plugin(cwd: Path, scope: Scope) -> list[str]:
+    """Remove the claude plugin ``kmctl@kmctl`` where it applies here, and say what happened.
+
+    A project or local install counts when its project path is ``cwd``; a user
+    install counts at user scope. For each, it runs ``claude plugin uninstall``,
+    then ``claude plugin prune`` (so okf, installed only as kmctl's dependency,
+    goes too, while an okf the user installed on purpose stays) and
+    ``claude plugin marketplace remove kmctl``, at that scope
+    (spike:apm-only-install/7).
+
+    Returns
+    -------
+    list[str]
+        Notes for the reader: what was removed, or why the step was skipped.
+
+    Raises
+    ------
+    PluginError
+        When an uninstall step fails.
+    """
+    if shutil.which("claude") is None:
+        return [
+            (
+                "the claude CLI is not on PATH, so kmctl did not look for the old "
+                f"{OLD_PLUGIN} plugin"
+            )
+        ]
+    listed = _run(["claude", "plugin", "list", "--json"], cwd)
+    if listed.returncode != 0:
+        return [
+            (
+                f"claude plugin list failed ({_cause(listed.stderr + listed.stdout)}), "
+                f"so kmctl did not look for the old {OLD_PLUGIN} plugin"
+            )
+        ]
+    try:
+        plugins = _CLAUDE_PLUGINS.validate_json(listed.stdout or "[]")
+    except ValidationError as error:
+        raise PluginError(
+            f"claude plugin list --json printed a list kmctl cannot read ({error}); "
+            "upgrade Claude Code, then run kmctl plugin install again"
+        ) from error
+    here = cwd.resolve()
+    scopes: list[str] = []
+    for found in plugins:
+        if found.id != OLD_PLUGIN or found.scope is None:
+            continue
+        if (
+            scope == "user"
+            and found.scope == "user"
+            or (
+                scope == "project"
+                and found.scope in ("project", "local")
+                and found.project_path
+                and Path(found.project_path).resolve() == here
+            )
+        ):
+            scopes.append(found.scope)
+    notes = []
+    for at in dict.fromkeys(scopes):
+        for args in (
+            ["plugin", "uninstall", OLD_PLUGIN, "--scope", at],
+            ["plugin", "prune", "--scope", at, "--yes"],
+            ["plugin", "marketplace", "remove", OLD_MARKETPLACE, "--scope", at],
+        ):
+            proc = _run(["claude", *args], cwd)
+            # A marketplace that is already gone is what this step wants (claude 2.1.301).
+            if args[1] == "marketplace" and "not found" in proc.stderr + proc.stdout:
+                continue
+            _require(proc, f"claude {' '.join(args)}")
+        notes.append(
+            f"removed the old claude plugin {OLD_PLUGIN} ({at} scope), the "
+            f"dependencies only it needed, and the {OLD_MARKETPLACE} marketplace"
+        )
+    return notes
+
+
+def _names_old_package(entry: object) -> bool:
+    """Whether an apm.yml dependency entry names kmctl's package on GitHub."""
+    if isinstance(entry, str):
+        return OLD_PACKAGE.lower() in entry.lower()
+    if isinstance(entry, dict):
+        repo = str(entry.get("git", "")).lower()
+        return "jasperhg90/knowledge-management" in repo and (
+            entry.get("path") == PACKAGE_PATH
+        )
+    return False
+
+
+def _is_kmctl_entry(entry: object, source: str) -> bool:
+    """Whether an apm.yml dependency entry is the one kmctl writes for ``source``, at any ref."""
+    return (
+        isinstance(entry, dict)
+        and entry.get("git") == source
+        and entry.get("path") == PACKAGE_PATH
+    )
+
+
+def _entry_label(entry: object) -> str:
+    """A one-line form of an apm.yml dependency entry, for a note."""
+    if isinstance(entry, dict):
+        return json.dumps({str(k): str(v) for k, v in entry.items()})
+    return str(entry)
+
+
+def _roundtrip() -> YAML:
+    """A YAML reader and writer that keeps comments and layout, set up as APM's is."""
+    rt = YAML(typ="rt")
+    rt.preserve_quotes = True
+    rt.indent(mapping=2, sequence=4, offset=2)
+    return rt
+
+
+def _read_manifest(path: Path) -> Any:
+    """The apm.yml at ``path`` as round-trip YAML, or None when there is none or it is empty.
+
+    Raises
+    ------
+    PluginError
+        When the file is not a YAML mapping.
+    """
+    if not path.is_file():
+        return None
+    try:
+        data = _roundtrip().load(path.read_text(encoding="utf-8"))
+    except Exception as error:  # ruamel raises error types with no common base
+        raise PluginError(
+            f"{path} is not valid YAML ({error}); fix it, then run kmctl plugin "
+            "install again"
+        ) from error
+    if data is not None and not isinstance(data, dict):
+        raise PluginError(
+            f"{path} is not a YAML mapping; fix it, then run kmctl plugin install again"
+        )
+    return data
+
+
+def _apm_entries(data: Any) -> list[object]:
+    """The ``dependencies.apm`` list of a parsed apm.yml, or an empty list."""
+    deps = data.get("dependencies") if isinstance(data, dict) else None
+    entries = deps.get("apm") if isinstance(deps, dict) else None
+    return list(entries) if isinstance(entries, list) else []
+
+
+def remove_old_apm_entry(cwd: Path, scope: Scope, source: str) -> list[str]:
+    """Run ``apm uninstall`` on an apm.yml entry naming the package another way than kmctl's.
+
+    An entry written by hand (ADR 0013) brought the package's old SessionStart
+    hook, which only ``apm uninstall`` removes (spike:apm-only-install/6), so
+    this runs before kmctl rewrites apm.yml.
+
+    Returns
+    -------
+    list[str]
+        A note per entry removed.
+
+    Raises
+    ------
+    PluginError
+        When apm.yml cannot be read or the uninstall fails.
+    """
+    manifest = _read_manifest(apm_dir(cwd, scope) / "apm.yml")
+    old = [
+        e
+        for e in _apm_entries(manifest)
+        if _names_old_package(e) and not _is_kmctl_entry(e, source)
+    ]
+    if not old:
+        return []
+    _apm(
+        ["uninstall", OLD_PACKAGE, *(["-g"] if scope == "user" else [])],
+        _apm_cwd(cwd, scope),
+    )
+    left = [
+        e
+        for e in _apm_entries(_read_manifest(apm_dir(cwd, scope) / "apm.yml"))
+        if _names_old_package(e) and not _is_kmctl_entry(e, source)
+    ]
+    if left:
+        raise PluginError(
+            f"apm uninstall {OLD_PACKAGE} left the entry {_entry_label(left[0])} in "
+            f"{apm_dir(cwd, scope) / 'apm.yml'}; run apm uninstall with that entry "
+            "by hand, then kmctl plugin install again"
+        )
+    return [
+        f"removed the old APM entry {_entry_label(e)} and its SessionStart hook "
+        "with apm uninstall"
+        for e in old
+    ]
+
+
+# apm.yml and the APM install ---------------------------------------------------
+
+
+def kmctl_entry(source: str) -> dict[str, object]:
+    """The apm.yml dependency entry naming this CLI's package in ``source``.
+
+    An ``http://`` source, such as a local test server, also carries
+    ``allow_insecure: true``, which APM requires for it.
+    """
+    entry: dict[str, object] = {
+        "git": source,
+        "path": PACKAGE_PATH,
+        "ref": package_ref(),
+    }
+    if source.startswith("http://"):
+        entry["allow_insecure"] = True
+    return entry
+
+
+def write_manifest(path: Path, source: str, harnesses: Sequence[str]) -> None:
+    """Put kmctl's entry and the harnesses into the apm.yml at ``path``, keeping the rest.
+
+    The entry replaces an earlier kmctl entry for the same source, in place,
+    and a missing file is created. ``targets`` gains each harness it lacks,
+    because APM records targets in apm.yml only when it creates the file
+    (spike:kmctl-doctor/1). Comments and layout are kept.
+
+    Raises
+    ------
+    PluginError
+        When the existing file is not a YAML mapping.
+    """
+    data = _read_manifest(path)
+    if data is None:
+        name = re.sub(r"[^A-Za-z0-9._-]", "-", path.parent.name).strip("-.")
+        data = {"name": name or "project", "version": "0.1.0"}
+    targets = data.get("targets")
+    if not isinstance(targets, list):
+        targets = [targets] if isinstance(targets, str) else []
+        data["targets"] = targets
+    for harness in harnesses:
+        if harness not in targets:
+            targets.append(harness)
+    deps = data.get("dependencies")
+    if not isinstance(deps, dict):
+        deps = {}
+        data["dependencies"] = deps
+    entries = deps.get("apm")
+    if not isinstance(entries, list):
+        entries = []
+        deps["apm"] = entries
+    entry = kmctl_entry(source)
+    for i, existing in enumerate(entries):
+        if _is_kmctl_entry(existing, source):
+            entries[i] = entry
+            break
+    else:
+        entries.append(entry)
+    out = StringIO()
+    _roundtrip().dump(data, out)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(out.getvalue(), encoding="utf-8")
+
+
+def apm_install_args(
+    harnesses: Sequence[str], scope: Scope, source: str, force: bool
+) -> list[str]:
+    """The arguments ``install`` gives ``apm``, after ``uvx --from APM_CLI apm``."""
+    args = ["install", "--target", ",".join(harnesses)]
+    if scope == "user":
+        args.append("-g")
+    if force:
+        args.append("--force")
+    if source.startswith("http://"):
+        args.append("--allow-insecure")
+    return args
+
+
+def _read_lock(cwd: Path, scope: Scope) -> _Lock | None:
+    """The apm.lock.yaml APM keeps for ``scope``, or None when there is none or it does not parse."""
+    path = apm_dir(cwd, scope) / "apm.lock.yaml"
+    if not path.is_file():
+        return None
+    try:
+        return _Lock.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
+    except (yaml.YAMLError, ValidationError):
+        return None
+
+
+def _kmctl_package(lock: _Lock | None) -> _LockDependency | None:
+    """The kmctl package's entry in the lock, or None."""
+    for dep in lock.dependencies if lock else []:
+        if dep.name == "kmctl" and dep.virtual_path == PACKAGE_PATH:
+            return dep
+    return None
+
+
+def skipped_skills(cwd: Path, scope: Scope) -> list[str]:
+    """The kmctl skill folders APM left alone because files it did not write were there.
+
+    APM prints only a count (spike:apm-only-install/5), so this compares the
+    skills this release ships with the paths the lock says APM deployed.
+    """
+    root = _apm_cwd(cwd, scope)
+    package = _kmctl_package(_read_lock(cwd, scope))
+    deployed = {
+        (root / p).resolve() for p in (package.deployed_files if package else [])
+    }
+    folder = claude_config_dir() if scope == "user" else cwd / ".claude"
+    names = sorted(p.name for p in skills_dir().iterdir() if p.is_dir())
+    return [
+        str(folder / "skills" / n) if scope == "user" else f".claude/skills/{n}"
+        for n in names
+        if (folder / "skills" / n).resolve() not in deployed
+    ]
+
+
+# The hook ----------------------------------------------------------------------
+
+
+def hook_entry() -> dict[str, object]:
+    """The one SessionStart hook kmctl writes: relay ``kmctl briefing``, never block (I1)."""
+    return {
+        "type": "command",
+        "description": HOOK_DESCRIPTION,
+        "command": HOOK_COMMAND,
+        "timeout": HOOK_TIMEOUT,
+    }
+
+
+def _read_json(path: Path) -> dict[str, Any]:
+    """The JSON object in ``path``, or an empty one when the file is missing.
+
+    Raises
+    ------
+    PluginError
+        When the file is not a JSON object.
+    """
+    if not path.is_file():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8") or "{}")
+    except ValueError as error:
+        raise PluginError(
+            f"{path} is not valid JSON ({error}); fix it, then run kmctl plugin "
+            "install again"
+        ) from error
+    if not isinstance(data, dict):
+        raise PluginError(
+            f"{path} is not a JSON object; fix it, then run kmctl plugin install again"
+        )
+    return data
+
+
+def _write_json(path: Path, data: dict[str, Any]) -> None:
+    """Write ``data`` to ``path`` as indented JSON, creating its folder."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+
+def _is_kmctl_hook(hook: object) -> bool:
+    """Whether a settings.json hook is kmctl's, which kmctl knows by its command."""
+    return isinstance(hook, dict) and HOOK_MARK in str(hook.get("command", ""))
+
+
+def merge_hook(path: Path) -> None:
+    """Put exactly one kmctl SessionStart hook into the settings.json at ``path``.
+
+    The first hook that runs ``kmctl briefing`` is replaced in place and any
+    other is removed, with a group it leaves empty; with none, a new
+    SessionStart group is appended. Every other key and hook is kept, and a
+    missing file is created.
+
+    Raises
+    ------
+    PluginError
+        When the file, or its ``hooks`` value, is not a JSON object.
+    """
+    data = _read_json(path)
+    hooks = data.setdefault("hooks", {})
+    if not isinstance(hooks, dict):
+        raise PluginError(
+            f'{path} has a "hooks" value that is not an object; fix it, then run '
             "kmctl plugin install again"
         )
-    _require(added, add_okf)
-    add = ["plugin", "marketplace", "add", str(folder), "--scope", scope]
-    if _claude(add, cwd).returncode != 0:
-        refresh = ["plugin", "marketplace", "update", MARKETPLACE]
-        _require(_claude(refresh, cwd), refresh)
-    if reinstall:
-        _claude(["plugin", "uninstall", PLUGIN_ID, "--scope", scope], cwd)
-    put = ["plugin", "install", PLUGIN_ID, "--scope", scope]
-    _require(_claude(put, cwd), put)
-    result = status(cwd, scope)
-    if result.plugin_version != cli_version():
-        raise PluginError(
-            f"claude lists {PLUGIN_ID} at {result.plugin_version}, not {cli_version()}; "
-            "run kmctl plugin update"
-        )
-    return result
+    groups = hooks.get("SessionStart")
+    placed = False
+    merged: list[object] = []
+    for group in groups if isinstance(groups, list) else []:
+        inner = group.get("hooks") if isinstance(group, dict) else None
+        if not isinstance(inner, list) or not any(_is_kmctl_hook(h) for h in inner):
+            merged.append(group)
+            continue
+        kept = []
+        for hook in inner:
+            if not _is_kmctl_hook(hook):
+                kept.append(hook)
+            elif not placed:
+                kept.append(hook_entry())
+                placed = True
+        if kept:
+            merged.append({**group, "hooks": kept})
+    if not placed:
+        merged.append({"hooks": [hook_entry()]})
+    hooks["SessionStart"] = merged
+    _write_json(path, data)
 
 
-def status(cwd: Path, scope: Scope | None = None) -> PluginStatus:
-    """Report the installed plugin, the staged copy and the marketplace path against this CLI.
+def kmctl_hooks(path: Path) -> list[dict[str, Any]]:
+    """Every SessionStart hook in the settings.json at ``path`` that runs ``kmctl briefing``."""
+    try:
+        data = _read_json(path)
+    except PluginError:
+        return []
+    hooks = data.get("hooks")
+    groups = hooks.get("SessionStart") if isinstance(hooks, dict) else None
+    return [
+        hook
+        for group in (groups if isinstance(groups, list) else [])
+        if isinstance(group, dict) and isinstance(group.get("hooks"), list)
+        for hook in group["hooks"]
+        if _is_kmctl_hook(hook)
+    ]
 
-    The installed version is the one ``claude plugin list`` reports for this
-    repository (or ``scope``), never the staged copy kmctl itself writes.
+
+# okf's MCP server --------------------------------------------------------------
+
+
+def okf_mcp_launcher(starts: Sequence[str] = ('"$PWD"',)) -> str:
+    """A POSIX sh script that starts okf's MCP server on the nearest ``.okf/`` folder.
+
+    It walks up from each start folder in turn to the first folder holding
+    ``.okf/`` and runs ``uv run <okf_mcp_url()> <that folder>/.okf``. When no
+    start leads to one, it passes ``.okf``, so the server starts and its tools
+    report that there is no bundle instead of the server failing to start.
+
+    Parameters
+    ----------
+    starts :
+        Shell words naming the folders to start from, tried in order; one
+        that is empty or not a folder is skipped. The default is the working
+        folder. The Antigravity plugin passes its own folder first.
     """
-    entry = _entry(cwd, scope)
-    markets = {
-        m.get("name"): m
-        for m in _json(["plugin", "marketplace", "list", "--json"], cwd)
-    }
-    path = (markets.get(MARKETPLACE) or {}).get("path")
-    manifest = staging_dir() / "plugin" / ".claude-plugin" / "plugin.json"
-    staged = (
-        json.loads(manifest.read_text()).get("version") if manifest.is_file() else None
+    url = okf_mcp_url()
+    return (
+        f"for d in {' '.join(starts)}; do "
+        '[ -n "$d" ] || continue; '
+        'd=$(cd "$d" 2>/dev/null && pwd -P) || continue; '
+        "while :; do "
+        f'if [ -d "$d/.okf" ]; then exec uv run {url} "$d/.okf"; fi; '
+        '[ "$d" = / ] && break; d=$(dirname "$d"); '
+        "done; done; "
+        f"exec uv run {url} .okf"
     )
-    installed = entry.get("version") if entry else None
+
+
+def okf_mcp_server() -> dict[str, object]:
+    """The MCP server entry kmctl writes for okf: the launcher, run by ``sh -c``."""
+    return {"type": "stdio", "command": "sh", "args": ["-c", okf_mcp_launcher()]}
+
+
+def _is_okf_server(server: object) -> bool:
+    """Whether an MCP server entry runs okf's server script."""
+    if not isinstance(server, dict):
+        return False
+    args = server.get("args")
+    words = [str(server.get("command", ""))]
+    words += [str(a) for a in args] if isinstance(args, list) else []
+    return any(OKF_MCP_SCRIPT in w for w in words)
+
+
+def other_okf_server(servers: object) -> str | None:
+    """The name of an okf MCP server in ``servers`` that is not kmctl's own, or None."""
+    if not isinstance(servers, dict):
+        return None
+    for name, server in servers.items():
+        if name != MCP_NAME and _is_okf_server(server):
+            return str(name)
+    return None
+
+
+def merge_mcp(path: Path) -> str | None:
+    """Put kmctl's okf-bundle server into the .mcp.json at ``path``, keeping other servers.
+
+    It replaces a server named ``okf-bundle``, so a new okf pin reaches it.
+    When another server already runs okf's script, it adds none and removes
+    its own, so one okf server is left.
+
+    Returns
+    -------
+    str | None
+        The name of the other okf server it kept, or None when it wrote its own.
+
+    Raises
+    ------
+    PluginError
+        When the file is not a JSON object.
+    """
+    data = _read_json(path)
+    servers = data.get("mcpServers")
+    if not isinstance(servers, dict):
+        servers = {}
+        data["mcpServers"] = servers
+    other = other_okf_server(servers)
+    if other is not None:
+        if servers.pop(MCP_NAME, None) is not None:
+            _write_json(path, data)
+        return other
+    servers[MCP_NAME] = okf_mcp_server()
+    _write_json(path, data)
+    return None
+
+
+def install_mcp(cwd: Path, scope: Scope) -> list[str]:
+    """Declare okf's MCP server for Claude Code at ``scope``, and say what happened.
+
+    At project scope it merges the server into the repository's .mcp.json; at
+    user scope it runs ``claude mcp add-json --scope user``. Either way it
+    keeps an okf server that is already there under another name.
+
+    Raises
+    ------
+    PluginError
+        When .mcp.json is not a JSON object or ``claude mcp add-json`` fails.
+    """
+    if scope == "project":
+        kept = merge_mcp(cwd / ".mcp.json")
+        if kept is not None:
+            return [
+                (
+                    f"kept the okf MCP server {kept!r} already in .mcp.json, so kmctl "
+                    f"added no {MCP_NAME}"
+                )
+            ]
+        return [
+            (
+                f"declared okf's MCP server {MCP_NAME} in .mcp.json; Claude Code asks "
+                "you to approve it once"
+            )
+        ]
+    config = _user_mcp_file()
+    try:
+        servers = _read_json(config).get("mcpServers")
+    except PluginError:
+        servers = None
+    kept = other_okf_server(servers)
+    own = isinstance(servers, dict) and MCP_NAME in servers
+    has_claude = shutil.which("claude") is not None
+    if kept is not None:
+        if own and has_claude:
+            remove = ["mcp", "remove", MCP_NAME, "--scope", "user"]
+            _require(_run(["claude", *remove], cwd), f"claude {' '.join(remove)}")
+        return [
+            (
+                f"kept the okf MCP server {kept!r} already in {config}, so kmctl "
+                f"added no {MCP_NAME}"
+            )
+        ]
+    server = json.dumps(okf_mcp_server())
+    add = ["mcp", "add-json", MCP_NAME, server, "--scope", "user"]
+    if not has_claude:
+        return [
+            (
+                "the claude CLI is not on PATH, so kmctl did not add okf's MCP server; "
+                f"run claude mcp add-json {MCP_NAME} '{server}' --scope user"
+            )
+        ]
+    # add-json refuses a name that exists, so drop kmctl's own entry first.
+    if own:
+        remove = ["mcp", "remove", MCP_NAME, "--scope", "user"]
+        _require(_run(["claude", *remove], cwd), f"claude {' '.join(remove)}")
+    _require(_run(["claude", *add], cwd), f"claude mcp add-json {MCP_NAME}")
+    return [f"declared okf's MCP server {MCP_NAME} at user scope"]
+
+
+# Install and status ------------------------------------------------------------
+
+
+def install(
+    cwd: Path,
+    harnesses: Sequence[str],
+    scope: Scope = "project",
+    source: str = DEFAULT_SOURCE,
+    force: bool = False,
+) -> InstallResult:
+    """Install this CLI's package for ``harnesses`` with APM, then the hook and okf's MCP server.
+
+    In order: refuse early when uvx is missing or a file it edits does not
+    parse; ``apm uninstall`` an old apm.yml entry; write kmctl's entry and the
+    targets into apm.yml; run ``apm install`` (``-g`` at user scope,
+    ``--force`` when asked); fail when APM left a skill folder in place; only
+    then remove the old claude plugin, so a failed install leaves it working;
+    then write the SessionStart hook and declare okf's MCP server.
+    ``kmctl plugin update`` runs the same.
+
+    Parameters
+    ----------
+    cwd :
+        The repository; at user scope, only where claude runs.
+    harnesses :
+        Names from ``HARNESSES``, as ``parse_harnesses`` returns them.
+    scope :
+        ``project`` (this repository) or ``user`` (every repository).
+    source :
+        The git URL holding the package.
+    force :
+        Pass ``--force`` to APM, which then replaces files it did not write.
+
+    Returns
+    -------
+    InstallResult
+        Notes on what else it did, and the status afterwards.
+
+    Raises
+    ------
+    PluginError
+        When a step fails, or APM left files in place, naming the fix.
+    """
+    _preflight(cwd, scope)
+    notes = remove_old_apm_entry(cwd, scope, source)
+    write_manifest(apm_dir(cwd, scope) / "apm.yml", source, harnesses)
+    args = apm_install_args(harnesses, scope, source, force)
+    proc = _apm_run(args, _apm_cwd(cwd, scope))
+    _require(proc, f"uvx --from {APM_CLI} apm {' '.join(args)}")
+    if SKIP_LINE in proc.stdout + proc.stderr:
+        skipped = skipped_skills(cwd, scope) or ["files APM does not name"]
+        again = "kmctl plugin install --harness " + ",".join(harnesses)
+        again += " --scope user" if scope == "user" else ""
+        raise PluginError(
+            f"APM left in place files it did not write: {', '.join(skipped)}; run "
+            f"{again} --force to replace them (--force replaces each of those "
+            "folders whole, deleting any file you added there)"
+        )
+    notes = remove_old_plugin(cwd, scope) + notes
+    merge_hook(settings_path(cwd, scope))
+    notes += install_mcp(cwd, scope)
+    return InstallResult(notes, status(cwd, scope))
+
+
+def _preflight(cwd: Path, scope: Scope) -> None:
+    """Refuse before changing anything when uvx is missing or a file kmctl edits does not parse.
+
+    Raises
+    ------
+    PluginError
+        Naming the missing tool or the broken file and the fix.
+    """
+    if shutil.which("uvx") is None:
+        raise PluginError(
+            "uvx is not on PATH, and kmctl runs APM through it; install uv "
+            "(https://docs.astral.sh/uv/), then run kmctl plugin install again"
+        )
+    _read_manifest(apm_dir(cwd, scope) / "apm.yml")
+    _read_json(settings_path(cwd, scope))
+    if scope == "project":
+        _read_json(cwd / ".mcp.json")
+
+
+def _shown(path: Path, cwd: Path) -> str:
+    """``path`` as a reader finds it: relative to ``cwd`` when inside it, else in full."""
+    try:
+        return str(path.relative_to(cwd))
+    except ValueError:
+        return str(path)
+
+
+def status(cwd: Path, scope: Scope = "project") -> PluginStatus:
+    """Report the kmctl package's ref in apm.lock.yaml and the hook, against this CLI.
+
+    It only reads files. Each problem names the command that fixes it.
+    """
+    suffix = " --scope user" if scope == "user" else ""
+    package = _kmctl_package(_read_lock(cwd, scope))
+    ref = package.resolved_ref if package else None
+    lock = _shown(apm_dir(cwd, scope) / "apm.lock.yaml", cwd)
     problems = []
-    if entry is None:
-        problems.append(f"{PLUGIN_ID} is not installed here; run kmctl plugin install")
-    elif installed != cli_version():
+    if package is None:
         problems.append(
-            f"version mismatch: installed plugin {installed}, kmctl {cli_version()}; run kmctl plugin update"
+            f"kmctl's APM package is not in {lock}; run kmctl plugin install "
+            f"--harness claude{suffix}"
         )
-    if staged is not None and staged != cli_version():
+    elif ref != package_ref():
         problems.append(
-            f"version mismatch: staged plugin {staged}, kmctl {cli_version()}; run kmctl plugin update"
+            f"version mismatch: {lock} has the kmctl package at {ref}, kmctl is "
+            f"{cli_version()}; run kmctl plugin update{suffix}"
         )
-    if path is not None and not Path(path).is_dir():
+    hooks = kmctl_hooks(settings_path(cwd, scope))
+    settings = _shown(settings_path(cwd, scope), cwd)
+    hook = hooks == [hook_entry()]
+    if not hooks:
         problems.append(
-            f"marketplace folder {path} does not exist on this machine; run kmctl plugin install"
+            f"the kmctl SessionStart hook is missing from {settings}; run kmctl "
+            f"plugin install --harness claude{suffix}"
         )
-    return PluginStatus(cli_version(), installed, staged, path, problems)
+    elif not hook:
+        problems.append(
+            f"the kmctl SessionStart hook in {settings} is not the one this kmctl "
+            f"writes; run kmctl plugin update{suffix}"
+        )
+    return PluginStatus(cli_version(), scope, ref, hook, problems)

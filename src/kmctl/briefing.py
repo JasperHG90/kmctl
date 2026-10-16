@@ -1,10 +1,11 @@
 """The session briefing: where knowledge lives, which skill to use, what is due, and the rules (ADR 0002).
 
-The plugin's SessionStart hook relays it, so it is read at the start of every
-session in every harness. It reads state and writes nothing, and stays within
-``TOKEN_BUDGET`` (invariant I3). The rules for writing knowledge are not in it:
-``kmctl init`` writes them to ``.claude/rules/``, which reach the system prompt
-anyway. It carries only ``RULES``, the guidance those files do not.
+The SessionStart hook ``kmctl plugin install`` writes relays it, so it is read
+at the start of every session in every harness. It reads state and writes
+nothing, and stays within ``TOKEN_BUDGET`` (invariant I3). The rules for
+writing knowledge are not in it: kmctl's APM package installs them in
+``.claude/rules/``, which reach the system prompt anyway. It carries only
+``RULES``, the guidance those files do not.
 """
 
 import re
@@ -14,15 +15,15 @@ from pathlib import Path
 
 import yaml
 
+from kmctl import plugin
 from kmctl.handoffs import live_handoffs
-from kmctl.plugin import skills_dir
 from kmctl.review_due import review_due
 
 #: The most tokens the briefing may take, estimated at CHARS_PER_TOKEN.
 TOKEN_BUDGET = 500
 CHARS_PER_TOKEN = 4
 
-#: Guidance the rule files kmctl init writes to .claude/rules/ do not carry.
+#: Guidance the knowledge rules kmctl's package installs in .claude/rules/ do not carry.
 RULES = [
     (
         "unverified-is-a-lead",
@@ -103,8 +104,8 @@ def _skill_summary(skill_md: Path) -> str:
 
 
 def load_skills() -> list[tuple[str, str]]:
-    """Each skill folder the packaged plugin ships, as (name, when to use it), read at run time."""
-    folder = skills_dir()
+    """Each skill folder kmctl's package ships, as (name, when to use it), read at run time."""
+    folder = plugin.skills_dir()
     if not folder.is_dir():
         return []
     return [
@@ -131,7 +132,7 @@ def build_briefing(root: Path) -> Briefing:
     -------
     Briefing
         Routing, state (None when there is no .okf/), RULES and the
-        plugin's skills (empty when there is no .okf/).
+        package's skills (empty when there is no .okf/).
     """
     if not (root / ".okf").is_dir():
         return Briefing(routing=EMPTY, state=None, rules=RULES, skills=[])

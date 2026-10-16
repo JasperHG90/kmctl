@@ -1,6 +1,6 @@
 [project]
 name = "kmctl"
-# The plugin manifest carries the one version (ADR 0012); see [tool.hatch.version].
+# apm/apm.yml carries the one version (ADR 0012); see [tool.hatch.version].
 dynamic = ["version"]
 description = "Keep a repository's docs/ and OKF knowledge bundle current, across agent harnesses."
 readme = "README.md"
@@ -9,7 +9,9 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
+    "pydantic>=2.14.1",
     "pyyaml>=6.0.3",
+    "ruamel-yaml>=0.19.1",
     "typer>=0.27.3",
 ]
 
@@ -20,20 +22,19 @@ kmctl = "kmctl:main"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-# Read from the manifest, not git, so a build from a download with no .git
+# Read from the APM package, not git, so a build from a download with no .git
 # (as action.yml installs) still has the release version (ADR 0012).
 [tool.hatch.version]
 source = "regex"
-path = "plugin/.claude-plugin/plugin.json"
-pattern = '"version": "(?P<version>[^"]+)"'
+path = "apm/apm.yml"
+pattern = '(?m)^version: (?P<version>[^\s#]+)'
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/kmctl"]
 
-# The plugin ships inside the release that installs it (ADR 0001).
+# The skills ship inside the release, so kmctl briefing can list them (ADR 0001).
 [tool.hatch.build.targets.wheel.force-include]
-"plugin" = "kmctl/_plugin"
-".claude-plugin/marketplace.json" = "kmctl/_marketplace.json"
+"apm/.apm/skills" = "kmctl/_skills"
 
 [dependency-groups]
 dev = [
@@ -44,9 +45,9 @@ dev = [
 ]
 
 # uv rebuilds kmctl when either file changes, so a local uv run picks up a
-# version bump in the manifest.
+# version bump in apm/apm.yml.
 [tool.uv]
-cache-keys = [{ file = "pyproject.toml" }, { file = "plugin/.claude-plugin/plugin.json" }]
+cache-keys = [{ file = "pyproject.toml" }, { file = "apm/apm.yml" }]
 
 [tool.ruff]
 # Spike evidence (.loop/), agent rules and skills (.claude/) and the knowledge
@@ -64,5 +65,5 @@ addopts = ["--strict-markers", "-m", "not integration"]
 # The repository root, so tests/scripts/ imports the release scripts as scripts.*.
 pythonpath = ["."]
 markers = [
-    "integration: reaches a real external system, such as GitHub through the claude CLI; off by default; the integration gate in .loop/config.toml runs it",
+    "integration: reaches a real external system, such as GitHub through APM; off by default; the integration gate in .loop/config.toml runs it",
 ]

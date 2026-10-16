@@ -5,7 +5,7 @@
 - [ADR 0002](0002-briefing-and-rules-injected-by-the-cli.md): The CLI serves
   one briefing with state, routing and rules; the hook injects it.
 - [ADR 0003](0003-claude-code-plugin-first-depends-on-okf.md): The Claude Code
-  plugin comes first and depends on okf@scaccogatto.
+  plugin comes first and depends on okf@scaccogatto. (superseded by ADR 0014)
 - [ADR 0004](0004-sessionstart-is-the-only-hook.md): SessionStart is the only
   hook.
 - [ADR 0005](0005-audits-report-only.md): Audits report only; CI runs free
@@ -23,4 +23,5 @@
   OpenAI-compatible provider, replacing Claude Code.
 - [ADR 0011: kmctl init writes knowledge rules and a CLAUDE.md block for Claude Code](0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md): kmctl init writes four knowledge rules to .claude/rules/, a kmctl block into CLAUDE.md and AGENTS.md, and a first decision; the briefing stays the cross-harness path.
 - [ADR 0012: Releases come from CI](0012-releases-come-from-ci.md): A hand-run release workflow opens a version pull request and a tag workflow publishes the GitHub Release; the plugin manifest is the one version source, with no PyPI and no hatch-vcs.
-- [ADR 0013: kmctl installs through APM too](0013-kmctl-installs-through-apm-too.md): APM installs kmctl's skills, agent and hook from the apm subfolder package as a second route beside kmctl plugin install; the CLI is still installed with uv tool install.
+- [ADR 0013: kmctl installs through APM too](0013-kmctl-installs-through-apm-too.md): APM installs kmctl's skills, agent and hook from the apm subfolder package as a second route beside kmctl plugin install; the CLI is still installed with uv tool install. (superseded by ADR 0014)
+- [ADR 0014: APM is the only install route](0014-apm-is-the-only-install-route.md): kmctl's skills, audit agent and knowledge rules ship only as the APM package in apm/, which kmctl plugin install --harness writes into apm.yml and installs with APM; kmctl writes the SessionStart hook and okf's MCP server itself.

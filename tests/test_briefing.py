@@ -66,15 +66,12 @@ def test_briefing_token_budget(tmp_path: Path) -> None:
 
 
 def test_briefing_rules_are_not_in_the_rule_files() -> None:
-    """The briefing repeats no constraint init already writes to .claude/rules/."""
-    from importlib.resources import files
-
-    from kmctl.scaffold import RULE_FILES
-
+    """The briefing repeats no constraint the package's rules already put in .claude/rules/."""
+    instructions = Path(__file__).resolve().parents[1] / "apm" / ".apm" / "instructions"
     written = " ".join(
-        " ".join(files("kmctl").joinpath("repo_rules", n).read_text().split())
-        for n in RULE_FILES
+        " ".join(p.read_text().split()) for p in sorted(instructions.glob("*.md"))
     )
+    assert written
     for name, text in RULES:
         assert f'name="{name}"' not in written, name
         assert text not in written, name
@@ -132,15 +129,15 @@ def test_briefing_state_line_reads_right_for_one(tmp_path: Path) -> None:
     assert "1 live handoff," in out
 
 
-def _skill_names(plugin_dir: Path) -> list[str]:
-    return sorted(p.name for p in (plugin_dir / "skills").iterdir() if p.is_dir())
+def _skill_names(skills_dir: Path) -> list[str]:
+    return sorted(p.name for p in skills_dir.iterdir() if p.is_dir())
 
 
 def test_briefing_names_every_skill(tmp_path: Path) -> None:
     root = tmp_path / "repo"
     root.mkdir()
     out = _briefing(_repo(root)).stdout
-    names = _skill_names(plugin._payload()[0])
+    names = _skill_names(plugin.skills_dir())
 
     assert names
     assert [n for n in names if f"- {n}:" not in out] == []
@@ -149,15 +146,14 @@ def test_briefing_names_every_skill(tmp_path: Path) -> None:
 def test_briefing_skills_are_read_at_run_time(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    plugin_dir, marketplace = plugin._payload()
-    copy = tmp_path / "payload"
-    shutil.copytree(plugin_dir, copy)
-    extra = copy / "skills" / "extra-skill"
+    copy = tmp_path / "skills"
+    shutil.copytree(plugin.skills_dir(), copy)
+    extra = copy / "extra-skill"
     extra.mkdir()
     (extra / "SKILL.md").write_text(
         "---\nname: extra-skill\ndescription: Do one extra thing. Use when asked.\n---\n"
     )
-    monkeypatch.setattr(plugin, "_payload", lambda: (copy, marketplace))
+    monkeypatch.setattr(plugin, "skills_dir", lambda: copy)
     root = tmp_path / "repo"
     root.mkdir()
 
@@ -168,14 +164,14 @@ def test_briefing_skills_are_read_at_run_time(
 
 
 def test_briefing_unchanged_by_the_seeded_files(tmp_path: Path) -> None:
-    """The rule files, agent-file block and first decision init writes leave the briefing's text alone."""
+    """The agent-file block and first decision init writes leave the briefing's text alone."""
     seeded, plain = tmp_path / "seeded", tmp_path / "plain"
     seeded.mkdir()
     assert _invoke("init", "--path", str(seeded)).exit_code == 0
     for rel in ("docs/README.md", ".okf/index.md", ".okf/log.md", ".okf/manifesto.md"):
         (plain / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(seeded / rel, plain / rel)
-    assert (seeded / ".claude" / "rules").is_dir()
+    assert (seeded / "CLAUDE.md").is_file()
 
     with_seed = json.loads(_briefing(seeded, "--json").stdout)
     without = json.loads(_briefing(plain, "--json").stdout)

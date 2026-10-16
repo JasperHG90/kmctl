@@ -7,8 +7,9 @@
 # It reports; it never edits or pushes. knowledge-audit-issue.sh, a later step,
 # posts the body.
 #
-# Needs: kmctl, hermes and timeout on PATH; KMCTL_PLUGIN_DIR, the plugin folder
-# from the action's checkout; and these settings:
+# Needs: kmctl, hermes and timeout on PATH; KMCTL_PLUGIN_DIR, the APM package
+# folder (apm/.apm, with skills/ and agents/) from the action's checkout; and
+# these settings:
 #   KMCTL_AUDIT_MODEL        the model name (required)
 #   KMCTL_AUDIT_PROVIDER     a Hermes provider name; default custom
 #   KMCTL_AUDIT_BASE_URL     the endpoint's base URL; required for custom

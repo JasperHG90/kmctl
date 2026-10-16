@@ -11,8 +11,8 @@ for people. Warnings and refusals go to stderr.
 
 | Command | What it does |
 |---|---|
-| `kmctl init` | Create `docs/`, a starter `.okf/` bundle, knowledge rules and a `CLAUDE.md` block; re-run to refresh the rules and block. |
-| `kmctl update` | Same as `kmctl init`. Run it after upgrading kmctl to refresh the knowledge rules and the `CLAUDE.md` block. |
+| `kmctl init` | Create `docs/`, a starter `.okf/` bundle and a `CLAUDE.md` block; re-run to refresh the block. |
+| `kmctl update` | Same as `kmctl init`. Run it after upgrading kmctl to refresh the `CLAUDE.md` block. |
 | `kmctl check` | Check indexes agree with their folders, prototypes have a `README.md`, and links resolve. |
 | `kmctl handoffs` | List the live handoffs in `.okf/handoffs/`, newest first. |
 | `kmctl briefing` | Print the session briefing: where knowledge lives, what is due, and the skills. |
@@ -28,10 +28,10 @@ for people. Warnings and refusals go to stderr.
 | `kmctl new doc` | Create a `docs/` page in its Diataxis folder with a skeleton and its index entry. |
 | `kmctl decision` | Change decision records in `.okf/decisions/`. Verbs: `supersede`. |
 | `kmctl decision supersede` | Mark one decision superseded by another and link the two records both ways. |
-| `kmctl plugin` | Install the Claude Code plugin that ships with this kmctl. Verbs: `install`, `update`, `status`. Needs the `claude` CLI on PATH. |
-| `kmctl plugin install` | Install the kmctl plugin and its okf dependency through the `claude` CLI. |
-| `kmctl plugin update` | Reinstall the plugin from this kmctl release, replacing an older one. |
-| `kmctl plugin status` | Report the installed plugin's version against this kmctl, and what to fix. |
+| `kmctl plugin` | Install kmctl's skills, audit agent, knowledge rules and session hook for an agent harness, through APM (Agent Package Manager). Verbs: `install`, `update`, `status`. Needs `uv` on PATH: kmctl runs APM with `uvx`. |
+| `kmctl plugin install` | Install kmctl's APM package, its session hook and okf's MCP server for a harness. |
+| `kmctl plugin update` | Reinstall kmctl's APM package at this kmctl's version; run it after upgrading kmctl. |
+| `kmctl plugin status` | Report the installed kmctl package's version and the session hook, and what to fix. |
 
 ## Details
 
@@ -52,9 +52,6 @@ Set a repository up. It writes:
 
 - `docs/README.md`, the docs index;
 - a starter `.okf/` bundle: `index.md`, `log.md` and `manifesto.md`;
-- the knowledge rules `okf-bundle.md`, `docs-layout.md`,
-  `diagrams-stay-current.md` and `manifesto-invariants.md` in `.claude/rules/`,
-  each with `paths:` front matter;
 - a kmctl block between `<!-- kmctl:start -->` and `<!-- kmctl:end -->` in
   each `CLAUDE.md` and `AGENTS.md` that exists. The block lists where each
   kind of knowledge lives and gives the agent four duties: record each
@@ -73,12 +70,12 @@ Set a repository up. It writes:
   entry and log line, when no record in `.okf/decisions/` has that title. In
   a fresh bundle it is `0001`.
 
-A file that already exists is kept, so it is safe to run again, with three
-exceptions. The four knowledge rules belong to kmctl: one that differs from
-the copy this kmctl ships is replaced, edits included, so an upgrade reaches
-them. Other files in `.claude/rules/` are never read or written, and a rule
-that is a symlink dangling or pointing outside the repository is left alone
-with a warning. The kmctl block is added to an existing `CLAUDE.md` or
+It writes no rules: the four knowledge rules (`okf-bundle`, `docs-layout`,
+`diagrams-stay-current` and `manifesto-invariants`) come with kmctl's skills
+from `kmctl plugin install`, and init never reads or writes `.claude/rules/`.
+
+A file that already exists is kept, so it is safe to run again, with two
+exceptions. The kmctl block is added to an existing `CLAUDE.md` or
 `AGENTS.md`, or replaced when it is already there, and no other text in the
 file changes. Writing the first decision into a kept bundle adds its entry to
 the kept indexes and a line to the kept `log.md`. A second run changes
@@ -93,10 +90,12 @@ When `AGENTS.md` is such a link and there is no `CLAUDE.md`, init writes no
 Code, and one importing it would load no block. Fix the link and run init
 again. A symlink inside the repository is written through once.
 
-Output lists each file as `created`, `updated` (a replaced knowledge rule, its kmctl block, or the first decision's index entry and log line) or `kept`,
-and ends with the next steps: fill the purpose and invariants in the
-manifesto (its values are the operator's), add an architecture page once
-there is code, and record each choice with `kmctl new decision`.
+Output lists each file as `created`, `updated` (its kmctl block, or the first
+decision's index entry and log line) or `kept`, and ends with the next steps:
+`kmctl plugin install --harness claude` for the skills and the knowledge
+rules, fill the purpose and invariants in the manifesto (its values are the
+operator's), add an architecture page once there is code, and record each
+choice with `kmctl new decision`.
 
 | Option | Meaning | Default |
 |---|---|---|
@@ -106,9 +105,9 @@ there is code, and record each choice with `kmctl new decision`.
 ### `kmctl update`
 
 The same command as `kmctl init`, with the same options and output. Run it
-after upgrading kmctl: it replaces the four knowledge rules with this
-release's copies and the kmctl block with this release's block, and keeps
-every other file.
+after upgrading kmctl: it replaces the kmctl block with this release's block,
+and keeps every other file. `kmctl plugin update` refreshes the skills and
+the knowledge rules.
 
 ### `kmctl check`
 
@@ -136,10 +135,10 @@ List the live handoffs in `.okf/handoffs/`, newest first. Handoffs past their
 ### `kmctl briefing`
 
 Print the session briefing: where knowledge lives, what is due, and the
-plugin's skills, in under 500 tokens. The rules for writing knowledge are not
-in it: `kmctl init` writes them to `.claude/rules/`, and the briefing adds only
-the one they lack. The plugin's SessionStart hook prints this. It reads and
-never writes.
+package's skills, in under 500 tokens. The rules for writing knowledge are not
+in it: `kmctl plugin install` puts them in `.claude/rules/`, and the briefing
+adds only the one they lack. The SessionStart hook `kmctl plugin install`
+writes prints this. It reads and never writes.
 
 | Option | Meaning | Default |
 |---|---|---|
@@ -249,36 +248,79 @@ Exit code: 1 when kmctl refuses, with the reason on stderr.
 
 ### `kmctl plugin install`
 
-Install the kmctl plugin and its `okf` dependency through the `claude` CLI.
-It adds the scaccogatto marketplace for the `okf` dependency when it is
-missing. Running it again at the same version changes nothing.
+Install kmctl's APM package (the skills, the audit agent and the four
+knowledge rules, with the okf skills they use), its session hook and okf's
+MCP server for a harness. It runs, in order:
+
+1. Refuses before changing anything when `uvx` is not on PATH, or when
+   `apm.yml`, `.claude/settings.json` or `.mcp.json` does not parse.
+2. Runs `apm uninstall` on an `apm.yml` entry that names
+   `JasperHG90/Knowledge-management/apm` another way than kmctl writes it, so
+   the old package's hook goes with it.
+3. Writes the entry `{git: SOURCE, path: apm, ref: vVERSION}`, where
+   `VERSION` is this kmctl's, and the harnesses as `targets:` into `apm.yml`
+   (`~/.apm/apm.yml` with `--scope user`). Other entries and comments are
+   kept; a missing file is created.
+4. Runs `uvx --from apm-cli==0.33.0 apm install --target HARNESSES` (with
+   `-g` at user scope). APM writes the skills to `.claude/skills/`, the agent
+   to `.claude/agents/` and the rules, with their `paths:`, to
+   `.claude/rules/`.
+5. Once APM has succeeded, removes the old claude plugin `kmctl@kmctl`
+   installed for this repository (or, with `--scope user`, for the user):
+   `claude plugin uninstall`, then `claude plugin prune`, which also removes
+   an okf plugin only kmctl needed, then
+   `claude plugin marketplace remove kmctl`, each at the plugin's scope.
+   When the `claude` CLI is not on PATH it skips this and says so.
+6. Merges one SessionStart hook that runs `kmctl briefing` into
+   `.claude/settings.json` (at user scope, the `settings.json` in
+   `$CLAUDE_CONFIG_DIR`, by default `~/.claude/`). It finds its own entry by
+   that command and replaces it in place; every other key and hook stays.
+   The hook prints how to install kmctl and exits 0 when kmctl is missing or
+   fails.
+7. Declares okf's MCP server as `okf-bundle` in `.mcp.json` (at user scope,
+   with `claude mcp add-json --scope user`). It runs okf's `okf_mcp.py` at
+   the pinned okf-skills commit with `uv run`, on the nearest `.okf/` folder
+   above where it starts. When there is already a server that runs
+   `okf_mcp.py` under another name, kmctl adds none, removes its own, and
+   says which it kept. Claude Code asks you to approve a project `.mcp.json`
+   server once.
+
+When APM reports that it left in place files it did not write, the install
+stops before step 5, names the skill folders and exits 1; run it again with
+`--force` to replace them. Running it again at the same version changes
+nothing. Output: a `note:` line for each old install removed or step
+skipped, then the status line as `kmctl plugin status` prints it, then a
+`Next:` line.
 
 | Option | Meaning | Default |
 |---|---|---|
-| `--scope SCOPE` | `project` (this repository) or `user` (every repository). | `project` |
-| `--json` | Print the resulting status as one JSON object. | off |
+| `--harness LIST` | The agent harnesses to install for, as a comma list. Accepted: `claude`. | `claude` |
+| `--scope SCOPE` | `project` (this repository: `apm.yml`, `.claude/` and `.mcp.json` here) or `user` (every repository: `~/.apm/apm.yml` and Claude Code's folder, `$CLAUDE_CONFIG_DIR` or `~/.claude`). | `project` |
+| `--source GIT_URL` | The git URL of the repository holding the kmctl package, its `apm/` folder at the tag `vVERSION`. Set it for a fork, a local git server or an unreleased tree; an `http://` URL is allowed as insecure. | `https://github.com/JasperHG90/Knowledge-management.git` |
+| `--force` | Let APM replace skill folders it did not write. It replaces each folder whole, deleting any file you added there. | off |
+| `--json` | Print the resulting status and a `notes` list as one JSON object. | off |
 
-Exit code: 1 when kmctl refuses, with the reason on stderr; for example when
-an older plugin is installed, which `kmctl plugin update` replaces.
+Exit code: 1 when kmctl refuses, with the reason and the fix on stderr; for
+example an unknown harness, an `apm.yml` or `settings.json` that does not
+parse, a failed APM run (with APM's cause), or skipped files.
 
 ### `kmctl plugin update`
 
-Reinstall the plugin from this kmctl release, replacing an older one. Run it
-after upgrading kmctl: it restages the plugin and reinstalls it.
-
-| Option | Meaning | Default |
-|---|---|---|
-| `--scope SCOPE` | `project` (this repository) or `user` (every repository). | `project` |
-| `--json` | Print the resulting status as one JSON object. | off |
+The same steps and options as `kmctl plugin install`. Run it after upgrading
+kmctl: it moves the `apm.yml` entry to the new version's tag and reinstalls.
 
 ### `kmctl plugin status`
 
-Report the installed plugin's version against this kmctl, and what to fix.
-Each problem names the command that fixes it.
+Report the ref `apm.lock.yaml` records for the kmctl package against this
+kmctl's version, and whether `.claude/settings.json` holds the hook this
+kmctl writes. Each problem names the command that fixes it: a missing
+package or hook names `kmctl plugin install --harness claude`, an older
+package or a changed hook names `kmctl plugin update`. It reads files only.
 
 | Option | Meaning | Default |
 |---|---|---|
-| `--json` | Print one JSON object. | off |
+| `--scope SCOPE` | `project` (this repository) or `user` (`~/.apm/` and Claude Code's folder). | `project` |
+| `--json` | Print one JSON object: `cli_version`, `scope`, `package_ref`, `hook`, `problems`. | off |
 
 Exit code: 0 whether or not there are problems.
 
@@ -286,4 +328,4 @@ Exit code: 0 whether or not there are problems.
 
 | Variable | Used by | Meaning |
 |---|---|---|
-| `XDG_DATA_HOME` | `kmctl plugin` | Where kmctl keeps the plugin it installs from: `$XDG_DATA_HOME/kmctl`, by default `~/.local/share/kmctl`. |
+| `CLAUDE_CONFIG_DIR` | `kmctl plugin --scope user` | Claude Code's user folder, where the hook's `settings.json` and APM's user-scope skills, agent and rules go; by default `~/.claude`. |

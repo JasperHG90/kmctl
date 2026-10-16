@@ -1,14 +1,13 @@
-"""The release version: one source in the plugin manifest, and ``scripts/release.py`` (ADR 0012).
+"""The release version: one source in ``apm/apm.yml``, and ``scripts/release.py`` (ADR 0012).
 
-``pyproject.toml`` reads the version from ``plugin/.claude-plugin/plugin.json``,
-so a build needs no git history. ``scripts/release.py`` reads, writes and
+``pyproject.toml`` reads the version from ``apm/apm.yml``, kmctl's APM package
+(ADR 0014), so a build needs no git history. ``scripts/release.py`` reads, writes and
 compares that version for the release workflows, and points the docs' install
 lines at the release tag. It never commits or tags.
 """
 
 from __future__ import annotations
 
-import json
 import re
 import shutil
 import subprocess
@@ -35,8 +34,8 @@ USES_RE = re.compile(
 
 
 def _manifest_version(root: Path) -> str:
-    """Return the version the plugin manifest under ``root`` declares."""
-    return str(json.loads((root / MANIFEST).read_text())["version"])
+    """Return the version ``apm/apm.yml`` under ``root`` declares."""
+    return _apm_version(root / MANIFEST)
 
 
 def _build(project: Path, out: Path) -> list[str]:
@@ -51,8 +50,8 @@ def _build(project: Path, out: Path) -> list[str]:
     return sorted(p.name for p in out.iterdir() if p.suffix in (".whl", ".gz"))
 
 
-def test_version_source_is_the_plugin_manifest() -> None:
-    """``pyproject.toml`` sets no fixed version; hatchling's regex source reads the manifest."""
+def test_version_source_is_the_apm_package() -> None:
+    """``pyproject.toml`` sets no fixed version; hatchling's regex source reads apm/apm.yml."""
     data = tomllib.loads((ROOT / "pyproject.toml").read_text())
 
     assert "version" not in data["project"]
@@ -66,7 +65,7 @@ def test_version_source_is_the_plugin_manifest() -> None:
 
 
 def test_version_source_builds_the_manifest_version(tmp_path: Path) -> None:
-    """``uv build`` of this repository gives a wheel and sdist at the manifest's version."""
+    """``uv build`` of this repository gives a wheel and sdist at apm/apm.yml's version."""
     version = _manifest_version(ROOT)
 
     names = _build(ROOT, tmp_path)
@@ -75,21 +74,18 @@ def test_version_source_builds_the_manifest_version(tmp_path: Path) -> None:
 
 
 def test_version_source_follows_a_changed_manifest(tmp_path: Path) -> None:
-    """A copy of the project with the manifest at another version builds that version."""
+    """A copy of the project with apm/apm.yml at another version builds that version."""
     project = tmp_path / "project"
     project.mkdir()
     for name in ("pyproject.toml", "README.md"):
         shutil.copy(ROOT / name, project / name)
-    for folder in ("src", "plugin", ".claude-plugin"):
+    for folder in ("src", "apm"):
         shutil.copytree(
             ROOT / folder,
             project / folder,
             ignore=shutil.ignore_patterns("__pycache__"),
         )
-    manifest = project / MANIFEST
-    data = json.loads(manifest.read_text())
-    data["version"] = "9.8.7"
-    manifest.write_text(json.dumps(data, indent=2) + "\n")
+    _set_apm_version(project / MANIFEST, "9.8.7")
 
     names = _build(project, tmp_path / "dist")
 
@@ -97,17 +93,11 @@ def test_version_source_follows_a_changed_manifest(tmp_path: Path) -> None:
 
 
 def _repo(tmp_path: Path, version: str = "0.1.0") -> Path:
-    """A git repository holding this repository's manifest, apm.yml files and the docs `set` edits."""
+    """A git repository holding this repository's apm.yml files and the docs `set` edits."""
     root = tmp_path / "repo"
-    for rel in (MANIFEST, *APM_FILES, *DOC_FILES, APM_DOC):
+    for rel in (*APM_FILES, *DOC_FILES, APM_DOC):
         (root / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(ROOT / rel, root / rel)
-    manifest = root / MANIFEST
-    manifest.write_text(
-        manifest.read_text().replace(
-            f'"version": "{_manifest_version(ROOT)}"', f'"version": "{version}"'
-        )
-    )
     for rel in APM_FILES:
         _set_apm_version(root / rel, version)
     subprocess.run(["git", "init", "-q"], cwd=root, check=True)
@@ -156,7 +146,7 @@ def _refs(root: Path) -> list[str | None]:
 
 
 def test_release_py_current_prints_the_manifest_version(tmp_path: Path) -> None:
-    """``current`` prints the plugin manifest's version and nothing else."""
+    """``current`` prints apm/apm.yml's version and nothing else."""
     res = _run(_repo(tmp_path, version="0.2.0a1"), "current")
 
     assert res.returncode == 0, res.stderr
@@ -168,37 +158,37 @@ def test_release_py_docs_start_with_five_install_lines() -> None:
     assert len(_refs(ROOT)) == 5
 
 
-def test_release_py_set_writes_the_manifest_and_the_five_doc_lines(
+def test_release_py_set_writes_the_version_and_the_five_doc_lines(
     tmp_path: Path,
 ) -> None:
-    """``set`` writes the version, keeps the manifest's other keys and pins each doc line.
+    """``set`` writes the version, keeps apm/apm.yml's other lines and pins each doc line.
 
     The target is far past any real release, so it never equals the repository's version.
     """
     root = _repo(tmp_path)
-    before = json.loads((root / MANIFEST).read_text())
+    before = yaml.safe_load((root / MANIFEST).read_text())
 
     res = _run(root, "set", "9.9.9")
 
     assert res.returncode == 0, res.stderr
-    assert json.loads((root / MANIFEST).read_text()) == {**before, "version": "9.9.9"}
+    assert yaml.safe_load((root / MANIFEST).read_text()) == {
+        **before,
+        "version": "9.9.9",
+    }
     changed = set((root / MANIFEST).read_text().splitlines()) ^ set(
         (ROOT / MANIFEST).read_text().splitlines()
     )
-    assert changed == {
-        f'  "version": "{_manifest_version(ROOT)}",',
-        '  "version": "9.9.9",',
-    }
+    assert changed == {f"version: {_manifest_version(ROOT)}", "version: 9.9.9"}
     assert _refs(root) == ["v9.9.9"] * 5
     assert res.stdout.splitlines() == [
-        f"wrote {p}" for p in (MANIFEST, *APM_FILES, *DOC_FILES, APM_DOC)
+        f"wrote {p}" for p in (*APM_FILES, *DOC_FILES, APM_DOC)
     ]
 
 
 def test_release_py_set_writes_the_apm_version_into_both_apm_yml_files(
     tmp_path: Path,
 ) -> None:
-    """``set 0.2.0`` leaves the manifest and both apm.yml files at 0.2.0, the rest as it was."""
+    """``set 0.2.0`` leaves both apm.yml files at 0.2.0, the rest as it was."""
     root = _repo(tmp_path)
     before = {rel: (root / rel).read_text() for rel in APM_FILES}
 
@@ -216,31 +206,30 @@ def test_release_py_set_writes_the_apm_version_into_both_apm_yml_files(
     assert _run(root, "current").stdout == "0.2.0\n"
 
 
-@pytest.mark.parametrize("rel", APM_FILES, ids=lambda p: p.as_posix())
-def test_release_py_current_refuses_a_differing_apm_version(
-    tmp_path: Path, rel: Path
-) -> None:
-    """``current`` exits nonzero and names the apm.yml whose version differs."""
+def test_release_py_current_refuses_a_differing_apm_version(tmp_path: Path) -> None:
+    """``current`` exits nonzero when the root apm.yml's version differs from apm/apm.yml's."""
     root = _repo(tmp_path, version="0.2.0")
-    _set_apm_version(root / rel, "0.1.9")
+    _set_apm_version(root / "apm.yml", "0.1.9")
 
     res = _run(root, "current")
 
     assert res.returncode == 1
     assert res.stdout == ""
-    assert f"{rel} has version 0.1.9" in res.stderr
+    assert "apm.yml has version 0.1.9 but apm/apm.yml has 0.2.0" in res.stderr
     assert "scripts/release.py set 0.2.0" in res.stderr
 
 
 def test_release_py_current_refuses_a_missing_apm_version(tmp_path: Path) -> None:
-    """``current`` exits nonzero when apm/apm.yml is gone."""
+    """``current`` exits nonzero when apm/apm.yml is gone or the root apm.yml is."""
     root = _repo(tmp_path)
+    (root / "apm.yml").unlink()
+    assert "apm.yml has version none" in _run(root, "current").stderr
     (root / "apm" / "apm.yml").unlink()
 
     res = _run(root, "current")
 
     assert res.returncode == 1
-    assert "apm/apm.yml has version none" in res.stderr
+    assert "apm/apm.yml has no top-level version: line" in res.stderr
 
 
 def test_release_py_set_moves_the_pins_from_an_older_tag(tmp_path: Path) -> None:

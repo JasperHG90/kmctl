@@ -1,5 +1,5 @@
 # Tag and publish a release when its version pull request lands on main
-# (ADR 0012). Only a push that raises the plugin manifest's version to a
+# (ADR 0012). Only a push that raises apm/apm.yml's version to a
 # releasable version releases; an unchanged or .dev version does nothing, a
 # lowered one fails, and a push with no previous commit to compare against (the
 # repository's first push) is skipped. The wheel and sdist are built and checked
@@ -15,7 +15,7 @@ on:
   push:
     branches: [main]
     paths:
-      - plugin/.claude-plugin/plugin.json
+      - apm/apm.yml
 
 permissions:
   contents: read

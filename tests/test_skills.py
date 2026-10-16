@@ -1,9 +1,9 @@
-"""The plugin's skills have the layout their tickets promise."""
+"""The package's skills have the layout their tickets promise."""
 
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SKILLS = ROOT / "plugin" / "skills"
+SKILLS = ROOT / "apm" / ".apm" / "skills"
 
 
 def test_write_docs_skill_layout() -> None:

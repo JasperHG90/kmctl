@@ -1,9 +1,10 @@
-"""What kmctl says when a claude plugin command fails.
+"""What kmctl says when the APM install it runs fails.
 
-A stub ``claude`` on PATH prints a recorded stderr and exits 1, so these tests
-need no network. The SSH-fallback stderr is what claude 2.1.300 printed with
-github.com unresolvable: HTTPS fails with git's network line, then SSH ends on
-an access-rights line that hides the cause.
+A stub ``uvx`` on PATH prints a recorded stderr and exits 1, so these tests
+need no network and never run the real APM. The SSH-fallback stderr is what
+claude 2.1.300 printed with github.com unresolvable, kept because a git clone
+fails the same way under APM: HTTPS fails with git's network line, then SSH
+ends on an access-rights line that hides the cause.
 """
 
 import os
@@ -35,30 +36,38 @@ and the repository exists.
 """
 
 
+PREFIX = "uvx --from apm-cli==0.33.0 apm install --target claude failed: "
+SUFFIX = "; run it by hand to see why, then kmctl plugin install again"
+
+
 @pytest.fixture
-def stub_claude(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
-    """Put a ``claude`` on PATH that prints ``stderr`` and exits 1."""
+def stub_uvx(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    """Put a ``uvx`` on PATH, alone with the system folders, that prints ``stderr`` and exits 1."""
+    monkeypatch.setenv("HOME", str(tmp_path / "home"))
+    monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(tmp_path / "home" / ".claude"))
 
     def install(stderr: str) -> None:
         bin_dir = tmp_path / "bin"
         bin_dir.mkdir(exist_ok=True)
         (tmp_path / "stderr.txt").write_text(stderr, encoding="utf-8")
-        claude = bin_dir / "claude"
-        claude.write_text(f"#!/bin/sh\ncat '{tmp_path / 'stderr.txt'}' >&2\nexit 1\n")
-        claude.chmod(claude.stat().st_mode | stat.S_IEXEC)
-        monkeypatch.setenv("PATH", f"{bin_dir}{os.pathsep}{os.environ['PATH']}")
+        uvx = bin_dir / "uvx"
+        uvx.write_text(f"#!/bin/sh\ncat '{tmp_path / 'stderr.txt'}' >&2\nexit 1\n")
+        uvx.chmod(uvx.stat().st_mode | stat.S_IEXEC)
+        monkeypatch.setenv("PATH", f"{bin_dir}{os.pathsep}/usr/bin:/bin")
 
     return install
 
 
 def _message(tmp_path: Path) -> str:
+    repo = tmp_path / "repo"
+    repo.mkdir(exist_ok=True)
     with pytest.raises(PluginError) as caught:
-        plugin.status(tmp_path)
+        plugin.install(repo, ["claude"])
     return str(caught.value)
 
 
-def test_cause_named_on_ssh_fallback(stub_claude, tmp_path: Path) -> None:
-    stub_claude(SSH_FALLBACK)
+def test_cause_named_on_ssh_fallback(stub_uvx, tmp_path: Path) -> None:
+    stub_uvx(SSH_FALLBACK)
 
     message = _message(tmp_path)
 
@@ -66,12 +75,12 @@ def test_cause_named_on_ssh_fallback(stub_claude, tmp_path: Path) -> None:
     ssh = message.index("fatal: Could not read from remote repository.")
     last = message.index("and the repository exists.")
     assert https < ssh < last, message
-    assert message.startswith("claude plugin list --json failed: fatal: unable to")
+    assert message.startswith(PREFIX + "fatal: unable to")
     assert "; fatal: Could not read" in message
 
 
-def test_cause_keeps_error_lines(stub_claude, tmp_path: Path) -> None:
-    stub_claude("cloning\nerror: RPC failed; curl 56\nfatal: early EOF\ngave up\n")
+def test_cause_keeps_error_lines(stub_uvx, tmp_path: Path) -> None:
+    stub_uvx("cloning\nerror: RPC failed; curl 56\nfatal: early EOF\ngave up\n")
 
     message = _message(tmp_path)
 
@@ -80,36 +89,31 @@ def test_cause_keeps_error_lines(stub_claude, tmp_path: Path) -> None:
     )
 
 
-def test_cause_not_doubled_when_last_line_is_fatal(stub_claude, tmp_path: Path) -> None:
-    stub_claude("cloning\nfatal: repository not found\n")
+def test_cause_not_doubled_when_last_line_is_fatal(stub_uvx, tmp_path: Path) -> None:
+    stub_uvx("cloning\nfatal: repository not found\n")
 
     message = _message(tmp_path)
 
     assert message.count("fatal: repository not found") == 1, message
 
 
-def test_last_line_and_cap_single_line_as_before(stub_claude, tmp_path: Path) -> None:
-    stub_claude("Plugin not found in marketplace\n")
+def test_last_line_and_cap_single_line_as_before(stub_uvx, tmp_path: Path) -> None:
+    stub_uvx("Plugin not found in marketplace\n")
 
-    assert _message(tmp_path) == (
-        "claude plugin list --json failed: Plugin not found in marketplace; "
-        "run it by hand to see why, then kmctl plugin install again"
-    )
+    assert _message(tmp_path) == PREFIX + "Plugin not found in marketplace" + SUFFIX
 
 
-def test_last_line_and_cap_no_output(stub_claude, tmp_path: Path) -> None:
-    stub_claude("")
+def test_last_line_and_cap_no_output(stub_uvx, tmp_path: Path) -> None:
+    stub_uvx("")
 
     assert "failed: no output; run it by hand" in _message(tmp_path)
 
 
-def test_last_line_and_cap_long_stderr(stub_claude, tmp_path: Path) -> None:
-    stub_claude("".join(f"fatal: line {n} {'x' * 80}\n" for n in range(20)))
+def test_last_line_and_cap_long_stderr(stub_uvx, tmp_path: Path) -> None:
+    stub_uvx("".join(f"fatal: line {n} {'x' * 80}\n" for n in range(20)))
 
     message = _message(tmp_path)
-    cause = message.removeprefix("claude plugin list --json failed: ").removesuffix(
-        "; run it by hand to see why, then kmctl plugin install again"
-    )
+    cause = message.removeprefix(PREFIX).removesuffix(SUFFIX)
 
     assert len(cause) <= plugin.CAUSE_CAP, len(cause)
     assert cause.startswith("fatal: line 0 ")
@@ -133,12 +137,12 @@ def test_flaky():
 
 
 def test_ssh_fallback_retried(
-    stub_claude,
+    stub_uvx,
     tmp_path: Path,
     pytester: pytest.Pytester,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    stub_claude(SSH_FALLBACK)
+    stub_uvx(SSH_FALLBACK)
     message = _message(tmp_path)
     pytester.makeconftest(CONFTEST.read_text())
     pytester.makeini(

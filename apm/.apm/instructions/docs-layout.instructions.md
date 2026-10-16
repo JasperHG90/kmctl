@@ -1,5 +1,5 @@
 ---
-paths: ["docs/**", ".okf/**", "README.md"]
+applyTo: "docs/**, .okf/**, README.md"
 ---
 
 # `docs/` and `.okf/`

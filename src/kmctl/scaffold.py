@@ -1,9 +1,9 @@
-"""Set a repository up with docs/, an OKF bundle, knowledge rules and an agent-file block.
+"""Set a repository up with docs/, an OKF bundle and an agent-file block.
 
-It never touches a file that exists, with three exceptions: the four
-knowledge rules it ships, which it replaces when they differ; the kmctl block
-in CLAUDE.md and AGENTS.md; and the first decision's index entry and log line
-(ADR 0011).
+It never touches a file that exists, with two exceptions: the kmctl block in
+CLAUDE.md and AGENTS.md, and the first decision's index entry and log line
+(ADR 0011). The knowledge rules come with kmctl's APM package, which
+``kmctl plugin install`` installs (ADR 0014).
 """
 
 import os
@@ -12,7 +12,6 @@ from dataclasses import dataclass
 from dataclasses import field as dataclass_field
 from datetime import UTC, datetime
 from importlib.metadata import version
-from importlib.resources import files
 from pathlib import Path
 
 from kmctl.concepts import new_concept
@@ -20,15 +19,6 @@ from kmctl.kinds import skeleton
 from kmctl.okf import BadFrontMatter, field, front_matter
 
 OKF_VERSION = "0.2"
-
-#: The knowledge rules init writes to .claude/rules/, from the packaged repo_rules/.
-#: The briefing does not repeat them; it carries only what they lack (I3).
-RULE_FILES = (
-    "okf-bundle.md",
-    "docs-layout.md",
-    "diagrams-stay-current.md",
-    "manifesto-invariants.md",
-)
 
 AGENT_FILES = ("CLAUDE.md", "AGENTS.md")
 BLOCK_START, BLOCK_END = "<!-- kmctl:start -->", "<!-- kmctl:end -->"
@@ -102,11 +92,9 @@ class ScaffoldResult:
     """What ``scaffold`` wrote, what it left alone, and what the user must finish by hand.
 
     Paths are relative to the root. ``scaffold`` never edits a kept file, with
-    three exceptions, all listed in ``updated``: it replaces a knowledge rule
-    in .claude/rules/ that differs from the one kmctl ships, it adds or
-    replaces the kmctl block in CLAUDE.md and AGENTS.md, and when it writes
-    the first decision into a kept bundle it adds its index entry and log
-    line. A rule that already matches is listed in ``skipped``. A new CLAUDE.md
+    two exceptions, both listed in ``updated``: it adds or replaces the kmctl
+    block in CLAUDE.md and AGENTS.md, and when it writes the first decision
+    into a kept bundle it adds its index entry and log line. A new CLAUDE.md
     beside an AGENTS.md holds only ``@AGENTS.md`` and is listed in
     ``created``. A warning names a kept file that does not point at a file
     ``scaffold`` created, and a CLAUDE.md or AGENTS.md symlink left alone
@@ -161,38 +149,6 @@ def _text(path: Path) -> str | None:
         return path.read_text(encoding="utf-8")
     except UnicodeDecodeError:
         return None
-
-
-def _write_rules(root: Path, result: ScaffoldResult) -> None:
-    for name in RULE_FILES:
-        rel = f".claude/rules/{name}"
-        path = root / rel
-        packaged = (
-            files("kmctl").joinpath("repo_rules", name).read_text(encoding="utf-8")
-        )
-        unsafe = _unsafe_link(root, path)
-        if unsafe is not None:
-            result.warnings.append(
-                f".claude/rules/{unsafe}, so kmctl left it alone; "
-                "fix the link, then run kmctl init again"
-            )
-            result.skipped.append(rel)
-            continue
-        if path.exists() and not path.is_file():
-            result.warnings.append(
-                f"{rel} is not a file, so kmctl left it alone; remove it, then run kmctl init again"
-            )
-            result.skipped.append(rel)
-            continue
-        if not path.exists():
-            result.created.append(rel)
-        elif path.read_bytes() == packaged.encode("utf-8"):
-            result.skipped.append(rel)
-            continue
-        else:
-            result.updated.append(rel)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(packaged, encoding="utf-8")
 
 
 def _with_block(text: str) -> str | None:
@@ -362,16 +318,16 @@ def _write_first_decision(root: Path, now: datetime, result: ScaffoldResult) -> 
 
 
 def scaffold(root: Path, now: datetime | None = None) -> ScaffoldResult:
-    """Set ``root`` up: docs/, a starter .okf/ bundle, knowledge rules, the agent-file block, a first decision.
+    """Set ``root`` up: docs/, a starter .okf/ bundle, the agent-file block, a first decision.
 
     It writes docs/README.md and .okf/index.md, log.md and manifesto.md; the
-    four knowledge rules in .claude/rules/; the kmctl block in each CLAUDE.md
-    and AGENTS.md; a new CLAUDE.md when there is none, holding only
-    ``@AGENTS.md`` beside an AGENTS.md and the block otherwise; and the decision "Keep project
-    knowledge in an OKF bundle" when no record has that title. A file that
-    exists is kept, except for a knowledge rule that differs from kmctl's,
-    which is replaced, the kmctl block, and the first decision's index entry
-    and log line. A CLAUDE.md that imports ``@AGENTS.md`` gets no block.
+    kmctl block in each CLAUDE.md and AGENTS.md; a new CLAUDE.md when there is
+    none, holding only ``@AGENTS.md`` beside an AGENTS.md and the block
+    otherwise; and the decision "Keep project knowledge in an OKF bundle" when
+    no record has that title. It writes no rules: those come with kmctl's APM
+    package. A file that exists is kept, except for the kmctl block and the
+    first decision's index entry and log line. A CLAUDE.md that imports
+    ``@AGENTS.md`` gets no block.
     A CLAUDE.md or AGENTS.md symlink that is dangling or points outside the
     repository is left alone with a warning; when AGENTS.md is such a link and
     there is no CLAUDE.md, no CLAUDE.md is written.
@@ -387,9 +343,9 @@ def scaffold(root: Path, now: datetime | None = None) -> ScaffoldResult:
     -------
     ScaffoldResult
         The files created, the files that already existed and were kept, the
-        kept files it changed (a replaced knowledge rule, an agent file's kmctl
-        block, or the first decision's index entry and log line), and a warning for
-        each kept file kmctl could not finish.
+        kept files it changed (an agent file's kmctl block, or the first
+        decision's index entry and log line), and a warning for each kept file
+        kmctl could not finish.
     """
     result = ScaffoldResult()
     now = now or datetime.now(UTC)
@@ -428,7 +384,6 @@ def scaffold(root: Path, now: datetime | None = None) -> ScaffoldResult:
                 "the kept .okf/log.md has no line for the new manifesto: append "
                 "a dated line naming `manifesto`"
             )
-    _write_rules(root, result)
     _write_block(root, result)
     _write_first_decision(root, now, result)
     return result

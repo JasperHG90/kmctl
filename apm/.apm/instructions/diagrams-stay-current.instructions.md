@@ -1,5 +1,5 @@
 ---
-paths: [".okf/**", "src/**", "lib/**", "app/**", "pkg/**", "cmd/**"]
+applyTo: ".okf/**, src/**, lib/**, app/**, pkg/**, cmd/**"
 ---
 
 # Diagrams stay current

@@ -6,7 +6,7 @@ generated:
   by: claude-opus/5.5
   at: 2026-10-15
 tags: [adr, decision]
-status: stable
+status: deprecated
 ---
 
 # ADR 0003: The Claude Code plugin comes first and depends on the okf plugin
@@ -53,3 +53,7 @@ The record had no Consequences section; this adds it.
   reaches kmctl users without warning.
 - Only Claude Code is supported so far; other harnesses get the briefing
   only if they run `kmctl briefing` themselves.
+
+## Correction, 2026-10-16
+
+Superseded by [ADR 0014](0014-apm-is-the-only-install-route.md).

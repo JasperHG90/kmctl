@@ -130,7 +130,7 @@ def test_release_bump_opens_the_version_pull_request() -> None:
 
 
 def test_release_tag_runs_on_a_manifest_change_on_main() -> None:
-    """release-tag.yml runs on a push to main touching the plugin manifest, and nothing else."""
+    """release-tag.yml runs on a push to main touching apm/apm.yml, the version source, and nothing else."""
     on = _load(RELEASE_TAG)["on"]
 
     assert on == {"push": {"branches": ["main"], "paths": [MANIFEST.as_posix()]}}

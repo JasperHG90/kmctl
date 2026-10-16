@@ -2,15 +2,15 @@
 
 ## The question
 
-kmctl exists to keep a repository's knowledge true. So why does its plugin do
-so little? It has one hook, which prints a briefing when a session starts and
+kmctl exists to keep a repository's knowledge true. So why does what it
+installs do so little? It has one hook, which prints a briefing when a session starts and
 never stops anything, and its audit reports what is wrong but fixes nothing.
 This page explains why kmctl stops there.
 
 ## How it works
 
-**The briefing.** When a Claude Code session starts, the plugin's only hook
-runs `kmctl briefing` and passes its output into the session. The briefing
+**The briefing.** When a Claude Code session starts, the only hook
+`kmctl plugin install` writes runs `kmctl briefing` and passes its output into the session. The briefing
 says where each kind of knowledge lives (`docs/` for people who use the
 project, `.okf/` for people and agents working on it), lists what is due for
 review and which handoffs are live, and gives the rules for writing knowledge.
@@ -18,7 +18,7 @@ The hook always exits 0: if kmctl is missing or fails, it prints a one-line
 note and the session goes on.
 
 Because the hook prints whatever the CLI prints, upgrading kmctl updates the
-briefing. The plugin carries no copy of the rules to drift out of date.
+briefing. The hook carries no copy of the briefing to drift out of date.
 
 **The audit.** A separate agent checks the knowledge that is due: architecture
 pages against the code, decisions against later decisions and the code,
@@ -47,10 +47,11 @@ manage knowledge is read only by an agent that already knows to look for it.
 Native rule files work only in some harnesses, each with its own format. Every
 harness that can run a command at session start can print the briefing
 ([ADR 0002](../../.okf/decisions/0002-briefing-and-rules-injected-by-the-cli.md)).
-For Claude Code, `kmctl init` also writes the knowledge rules to
-`.claude/rules/` and a kmctl block into `CLAUDE.md`, because the briefing alone
-left agents writing no architecture pages and has no room for the two rules
-it lacks
+For Claude Code, kmctl also puts the knowledge rules in `.claude/rules/`
+(through `kmctl plugin install`, [ADR 0014](../../.okf/decisions/0014-apm-is-the-only-install-route.md))
+and `kmctl init` writes a kmctl block into `CLAUDE.md`, because the briefing
+alone left agents writing no architecture pages and has no room for the two
+rules it lacks
 ([ADR 0011](../../.okf/decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md)).
 
 **Why there is only one hook.** Three more hooks were considered and rejected

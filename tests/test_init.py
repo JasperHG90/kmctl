@@ -7,15 +7,13 @@ from conftest import okf_validate
 from typer.testing import CliRunner
 
 from kmctl import app
-from kmctl.scaffold import FIRST_DECISION, RULE_FILES, ScaffoldResult, scaffold
+from kmctl.scaffold import FIRST_DECISION, ScaffoldResult, scaffold
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE_FILES = ("docs/README.md", ".okf/index.md", ".okf/log.md", ".okf/manifesto.md")
-RULES = tuple(f".claude/rules/{name}" for name in RULE_FILES)
 DECISION = ".okf/decisions/0001-keep-project-knowledge-in-an-okf-bundle.md"
 FILES = (
     *BASE_FILES,
-    *RULES,
     "CLAUDE.md",
     ".okf/decisions/index.md",
     DECISION,
@@ -90,7 +88,7 @@ def test_init_json_output(tmp_path: Path) -> None:
     assert sorted(first["created"]) == sorted(FILES)
     assert first["skipped"] == first["updated"] == []
     assert second["created"] == second["updated"] == []
-    assert sorted(second["skipped"]) == sorted([*BASE_FILES, *RULES, "CLAUDE.md"])
+    assert sorted(second["skipped"]) == sorted([*BASE_FILES, "CLAUDE.md"])
 
 
 def test_init_refuses_missing_path(tmp_path: Path) -> None:
@@ -169,109 +167,50 @@ def test_init_warns_on_non_utf8_kept_index(tmp_path: Path) -> None:
     assert "not UTF-8" in result.stderr
 
 
-# Rule files (r1)
+# Rules come from kmctl plugin install, not init (apm-only-install r8)
 
 
-def test_init_writes_rule_files_for_any_repository(tmp_path: Path) -> None:
-    result = _init(tmp_path)
-
-    assert result.exit_code == 0, result.output
-    for rel in RULES:
-        text = (tmp_path / rel).read_text()
-        assert rel in result.stdout, rel
-        assert re.match(r"---\npaths: \[[^\]]+\]\n---\n", text), rel
-        assert "<constraint name=" in text and "WHY:" in text, rel
-        assert not re.search(r"loopctl|ticket|\.loop/", text, re.IGNORECASE), rel
-
-
-def _packaged(name: str) -> str:
-    return (ROOT / "src" / "kmctl" / "repo_rules" / name).read_text()
-
-
-def test_init_overwrites_edited_rule(tmp_path: Path) -> None:
-    _init(tmp_path)
-    mine = tmp_path / ".claude" / "rules" / "okf-bundle.md"
-    mine.write_text("my own rule\n")
-
+def test_init_writes_no_rules(tmp_path: Path) -> None:
+    """init writes nothing in .claude/; the knowledge rules come with the APM package."""
     result = _init(tmp_path, "--json")
 
     assert result.exit_code == 0, result.output
-    assert mine.read_text() == _packaged("okf-bundle.md")
     report = json.loads(result.stdout)
-    assert ".claude/rules/okf-bundle.md" in report["updated"]
-    assert ".claude/rules/okf-bundle.md" not in report["skipped"]
+    listed = report["created"] + report["updated"] + report["skipped"]
+    assert [rel for rel in listed if rel.startswith(".claude/")] == []
+    assert not (tmp_path / ".claude").exists()
 
 
-def test_init_names_a_replaced_rule(tmp_path: Path) -> None:
-    _init(tmp_path)
-    (tmp_path / ".claude" / "rules" / "okf-bundle.md").write_text("old\n")
-
-    result = _init(tmp_path)
-
-    assert (
-        "updated .claude/rules/okf-bundle.md (replaced with kmctl's rule)"
-        in result.stdout
-    )
-
-
-def test_init_skips_current_rule(tmp_path: Path) -> None:
-    _init(tmp_path)
-    rule = tmp_path / ".claude" / "rules" / "okf-bundle.md"
-    before = rule.stat().st_mtime_ns
-
-    result = _init(tmp_path, "--json")
-
-    report = json.loads(result.stdout)
-    assert ".claude/rules/okf-bundle.md" in report["skipped"]
-    assert ".claude/rules/okf-bundle.md" not in report["updated"] + report["created"]
-    assert rule.stat().st_mtime_ns == before
-
-
-def test_init_leaves_other_rules(tmp_path: Path) -> None:
-    other = tmp_path / ".claude" / "rules" / "my-rule.md"
-    other.parent.mkdir(parents=True)
-    other.write_text("mine\n")
-    before = other.stat().st_mtime_ns
+def test_init_leaves_existing_rules(tmp_path: Path) -> None:
+    """A rule already in .claude/rules/, even one named like kmctl's, is left alone."""
+    rules = tmp_path / ".claude" / "rules"
+    rules.mkdir(parents=True)
+    for name in ("okf-bundle.md", "my-rule.md"):
+        (rules / name).write_text("mine\n")
+    before = _snapshot(rules)
 
     for _ in range(2):
         report = json.loads(_init(tmp_path, "--json").stdout)
         listed = report["created"] + report["updated"] + report["skipped"]
-        assert ".claude/rules/my-rule.md" not in listed
+        assert [rel for rel in listed if rel.startswith(".claude/")] == []
 
-    assert other.read_text() == "mine\n"
-    assert other.stat().st_mtime_ns == before
-
-
-def test_init_leaves_a_rule_symlink_outside_the_repo(tmp_path: Path) -> None:
-    outside = tmp_path / "outside.md"
-    outside.write_text("not ours\n")
-    repo = tmp_path / "repo"
-    rule = repo / ".claude" / "rules" / "okf-bundle.md"
-    rule.parent.mkdir(parents=True)
-    rule.symlink_to(outside)
-
-    report = json.loads(_init(repo, "--json").stdout)
-
-    assert outside.read_text() == "not ours\n"
-    assert ".claude/rules/okf-bundle.md" in report["skipped"]
-    assert any(
-        ".claude/rules/okf-bundle.md is a symlink" in w for w in report["warnings"]
-    )
+    assert _snapshot(rules) == before
 
 
-def test_init_leaves_a_folder_at_a_rule_path(tmp_path: Path) -> None:
-    folder = tmp_path / ".claude" / "rules" / "okf-bundle.md"
-    folder.mkdir(parents=True)
+def test_init_next_step_installs_the_rules(tmp_path: Path) -> None:
+    """init's Next: line starts with kmctl plugin install, which brings the rules."""
+    last = _init(tmp_path).stdout.strip().splitlines()[-1]
 
-    result = _init(tmp_path, "--json")
+    assert last.startswith("Next: kmctl plugin install --harness claude")
+    assert "knowledge rules" in last
 
-    assert result.exit_code == 0, result.output
-    report = json.loads(result.stdout)
-    assert folder.is_dir()
-    assert ".claude/rules/okf-bundle.md" in report["skipped"]
-    assert any(
-        ".claude/rules/okf-bundle.md is not a file" in w for w in report["warnings"]
-    )
+
+def test_init_help_says_rules_come_from_plugin_install() -> None:
+    help_text = CliRunner().invoke(app, ["init", "--help"], terminal_width=80).stdout
+    flat = " ".join(help_text.split())
+
+    assert "It writes no rules" in flat
+    assert "kmctl plugin install" in flat
 
 
 # The agent-file block (r2)
@@ -638,7 +577,6 @@ def test_init_twice_with_existing_agent_files_changes_nothing(tmp_path: Path) ->
     assert result.exit_code == 0, result.output
     assert _snapshot(tmp_path) == before
     assert sorted(p.name for p in tmp_path.iterdir()) == [
-        ".claude",
         ".okf",
         "AGENTS.md",
         "CLAUDE.md",

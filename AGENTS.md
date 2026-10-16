@@ -65,8 +65,8 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 kmctl keeps a repository's knowledge current: `docs/` for people who use a
 project, an `.okf/` bundle for people and agents working on it, and skills
-and rules for procedure. It is a standalone CLI with a Claude Code plugin
-and a reusable GitHub Action. The design is `.okf/manifesto.md`.
+and rules for procedure. It is a standalone CLI that installs an APM package
+of skills and rules, and a reusable GitHub Action. The design is `.okf/manifesto.md`.
 
 This file routes. Each entry below owns what it covers, so read the owner
 rather than a summary of it.

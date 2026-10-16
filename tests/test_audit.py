@@ -7,8 +7,15 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
-AGENT = ROOT / "plugin" / "agents" / "kmctl-auditor.md"
-SKILLS = ROOT / "plugin" / "skills"
+PACKAGE = ROOT / "apm" / ".apm"
+AGENT = PACKAGE / "agents" / "kmctl-auditor.md"
+SKILLS = PACKAGE / "skills"
+#: The files that set or read the folder the CI audit takes the skills and agent from.
+AUDIT_FILES = (
+    "action.yml",
+    ".github/workflows/knowledge-audit.yml",
+    "action/knowledge-audit.sh",
+)
 
 
 def _front_matter(path: Path) -> dict:
@@ -61,3 +68,19 @@ def test_review_skills_exist() -> None:
     for name in ("architecture-review", "decision-log-review", "practices-review"):
         assert (SKILLS / name / "SKILL.md").is_file(), name
         assert name in prompt, name
+
+
+def test_audit_paths_read_the_apm_package() -> None:
+    """The CI audit takes the skills and agent from apm/.apm, and nothing names plugin/."""
+    texts = {rel: (ROOT / rel).read_text() for rel in AUDIT_FILES}
+
+    assert [rel for rel, text in texts.items() if "plugin/" in text] == []
+    assert "KMCTL_PLUGIN_DIR: ${{ github.action_path }}/apm/.apm" in texts["action.yml"]
+    assert (
+        "KMCTL_PLUGIN_DIR: ${{ github.workspace }}/apm/.apm"
+        in texts[".github/workflows/knowledge-audit.yml"]
+    )
+    script = texts["action/knowledge-audit.sh"]
+    assert '"${KMCTL_PLUGIN_DIR}/skills"' in script
+    assert '"${KMCTL_PLUGIN_DIR}/agents/kmctl-auditor.md"' in script
+    assert (PACKAGE / "skills").is_dir() and AGENT.is_file()

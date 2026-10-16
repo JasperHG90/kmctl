@@ -81,3 +81,13 @@ wants them.
   action's `uses:` lines name `@main`.
 - A hand edit to the manifest's version on `main` also releases, through the
   same build-and-check steps.
+
+## Correction, 2026-10-16
+
+The one version source is now `apm/apm.yml`, kmctl's APM package, not the
+plugin manifest, which is gone with `plugin/`
+([ADR 0014](0014-apm-is-the-only-install-route.md)). `pyproject.toml`'s
+hatchling `regex` source reads its `version:` line, `scripts/release.py set`
+writes it and copies it to the root `apm.yml`, `current` refuses when the two
+differ, and `release.yml` and `release-tag.yml` stage and watch `apm/apm.yml`
+instead of the manifest. The rest of the release flow is unchanged.

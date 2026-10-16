@@ -1,28 +1,29 @@
 # Install kmctl with APM
 
-This page installs kmctl's skills, its audit agent and its SessionStart hook
-into one repository with [APM](https://microsoft.github.io/apm), the Agent
-Package Manager, instead of `kmctl plugin install`. APM also installs the okf
-skills kmctl's skills use.
+This page adds kmctl's APM package to a repository's `apm.yml` by hand, for a
+repository that already manages its agent files with
+[APM](https://microsoft.github.io/apm), the Agent Package Manager. The
+package holds kmctl's skills, its audit agent and its four knowledge rules,
+and brings the okf skills they use.
 
-`kmctl plugin install` stays the main route; see
-[Install the plugin and the CI action](install-the-plugin-and-the-ci-action.md).
-Use APM when the repository already manages its agent files with APM. The
-APM route leaves out two things:
+`kmctl plugin install --harness claude` does all of this for you and more;
+see [Install the plugin and the CI action](install-the-plugin-and-the-ci-action.md).
+A hand-added entry leaves out what kmctl writes itself:
 
-- **The kmctl CLI.** Most of the skills and the hook run `kmctl` commands, so
-  you install the CLI yourself, in step 1. Nothing checks that the CLI and
-  the skills come from the same release, as `kmctl plugin status` does on
-  the main route, so install both from the same tag.
+- **The session hook.** The package has no SessionStart hook, so a session
+  gets no kmctl briefing until you run `kmctl plugin install --harness
+  claude` once in the repository. It writes the hook into
+  `.claude/settings.json`.
 - **okf's MCP server.** APM skips it because it comes from a dependency of
-  kmctl's package, not from your apm.yml. To get it, run `apm install
-  --trust-transitive-mcp`, or add `scaccogatto/okf-skills` to your apm.yml
-  yourself.
+  kmctl's package. `kmctl plugin install --harness claude` declares it in
+  `.mcp.json`.
+- **The kmctl CLI.** Most of the skills and the hook run `kmctl` commands, so
+  you install the CLI yourself, in step 1, at the same tag as the package.
 
 How the commands below were run: with APM 0.33.0 in a scratch repository,
 installing the package from a local git server that held this repository's
 files, and with okf-skills from GitHub. `tests/test_apm_package.py` runs the
-same install.
+same install through `kmctl plugin install`.
 
 ## Before you start
 
@@ -45,14 +46,7 @@ uv tool install git+https://github.com/JasperHG90/Knowledge-management@v0.3.0
 
 ### 2. Add the kmctl package
 
-From the repository root, at the same tag as the CLI:
-
-```
-apm install JasperHG90/Knowledge-management/apm#v0.3.0
-```
-
-This adds the package to the repository's `apm.yml` and installs it. If you
-edit `apm.yml` by hand instead, the entry is:
+Add the package to the repository's `apm.yml`, at the same tag as the CLI:
 
 ```yaml
 dependencies:
@@ -60,13 +54,27 @@ dependencies:
     - JasperHG90/Knowledge-management/apm#v0.3.0
 ```
 
-and then run `apm install`.
+and then, from the repository root:
 
-Install it in the repository only. `apm install -g`, which installs for your
-user, refuses this package: it pulls in `plugin/` from its own repository
-with `git: parent`, which APM does not allow at user scope.
+```
+apm install --target claude
+```
 
-### 3. Start a new session
+### 3. Optional: hand the entry to kmctl for the session hook
+
+Skip this step to keep your own entry; the session then gets no briefing.
+To get the hook and okf's MCP server, run:
+
+```
+kmctl plugin install --harness claude
+```
+
+This writes the SessionStart hook and okf's MCP server. It also replaces
+your entry with the one kmctl writes, `{git: ..., path: apm, ref: v0.3.0}`,
+after running `apm uninstall` on yours, so the two never install the package
+twice.
+
+### 4. Start a new session
 
 Start a new Claude Code session in the repository. The SessionStart hook
 prints the kmctl briefing at the start of each session.
@@ -76,15 +84,17 @@ prints the kmctl briefing at the start of each session.
 APM writes kmctl's seven skills to `.claude/skills/` (`architecture-review`,
 `audit`, `continue`, `decision-log-review`, `handoff`, `practices-review`,
 `write-docs`) next to okf's (`okf`, `validate`, `backfill`, `visualize`),
-the agent to `.claude/agents/kmctl-auditor.md`, and the hook to
-`.claude/settings.json`. In the repository, run:
+the agent to `.claude/agents/kmctl-auditor.md`, and the rules to
+`.claude/rules/`. In the repository, run:
 
 ```
 kmctl briefing
 ```
 
 It prints the same briefing the hook prints. If it says `kmctl: command not
-found`, go back to step 1.
+found`, go back to step 1. If you skipped step 3, `kmctl plugin status`
+reports that there is no SessionStart hook, and names the command that adds
+it.
 
-To upgrade, change the tag in `apm.yml` and run `apm install`, and install
-the CLI at the same tag with `uv tool install --force`.
+To upgrade, install the CLI at the new tag with `uv tool install --force`,
+then run `kmctl plugin update`.

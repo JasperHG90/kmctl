@@ -60,30 +60,31 @@ with access to it; uv clones it with your git credentials.
 Then, in a repository:
 
 ```
-kmctl plugin install
+kmctl plugin install --harness claude
 ```
 
-This needs the `claude` CLI on your PATH. The steps, with the CI action, are
-in [Install the plugin and the CI action](docs/how-to/install-the-plugin-and-the-ci-action.md).
+This installs kmctl's skills, audit agent and knowledge rules with APM (it
+needs uv, which runs APM), and writes the session hook. The steps, with the
+CI action, are in
+[Install the plugin and the CI action](docs/how-to/install-the-plugin-and-the-ci-action.md).
 
 ## Quick start
 
 ### With an agent
 
 ```
-kmctl plugin install             # the Claude Code plugin, for this repository only
+kmctl plugin install --harness claude   # skills, rules and hook, for this repository only
 ```
 
-Start a Claude Code session in the repository, or run `/reload-plugins` in an
-open one. The session opens with a `kmctl briefing`: where knowledge lives,
+Start a Claude Code session in the repository. The session opens with a `kmctl briefing`: where knowledge lives,
 what is due for review and the rules for writing it. In a repository with no
 `.okf/` yet, the briefing says so and points the agent at `kmctl init`. Ask:
 
 > Set this repository up with kmctl.
 
-The agent runs `kmctl init`, which writes `docs/`, a starter `.okf/` bundle,
-the rules and a `CLAUDE.md` block. Start a new session afterwards so the agent
-loads the new rules. Then ask in plain words:
+The agent runs `kmctl init`, which writes `docs/`, a starter `.okf/` bundle
+and a `CLAUDE.md` block. Start a new session afterwards so the agent loads
+the block. Then ask in plain words:
 
 - "Fill in the manifesto from the code." The agent drafts
   `.okf/manifesto.md`: what the project is for, its invariants and values.
@@ -101,17 +102,17 @@ loads the new rules. Then ask in plain words:
 ### By hand
 
 ```
-kmctl init                       # docs/, a starter .okf/ bundle, rules and a CLAUDE.md block
-kmctl update                     # after upgrading kmctl: refresh the rules and the block
+kmctl init                       # docs/, a starter .okf/ bundle and a CLAUDE.md block
+kmctl update                     # after upgrading kmctl: refresh the block
 kmctl new decision 'Store data in SQLite' --description 'One SQLite file, no database server.'
 kmctl new doc how-to 'Back up the database' --description 'Copy the SQLite file safely.'
 kmctl check                      # indexes agree with their folders, links resolve
 kmctl review due                 # what is unverified or stale
 ```
 
-`kmctl init` keeps files that already exist, except the four knowledge rules
-and the kmctl block, which it replaces with this release's; `kmctl update` is
-the same command. Every command takes `--help`,
+`kmctl init` keeps files that already exist, except the kmctl block, which it
+replaces with this release's; `kmctl update` is the same command. The
+knowledge rules come with `kmctl plugin install`. Every command takes `--help`,
 and most take `--json` for scripts and agents. The
 [tutorial](docs/tutorials/get-started-with-kmctl.md) walks through this in one
 sitting.
