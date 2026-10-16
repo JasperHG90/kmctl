@@ -10,20 +10,20 @@
   "blocker": null,
   "fix": {
     "round": 1,
-    "fingerprint": "4cfb8ec9a04b5293502d21272cd0085ee49dcfae1bf24e9ad385f27dab42db82",
+    "fingerprint": "7c5adb19274d22136dd625caca693b444551139bfc5966b47f3889673cab9322",
     "tree": "57725650ba192d15e06cbe34f0b9dfc64e3245d2",
     "decisions": [
       {
         "finding": "reviewer:f1",
         "outcome": "cleared-unreviewed",
         "by": "judgement",
-        "judgement": "j-20261016T105152+0000-6374dcdc",
+        "judgement": "j-20261016T105335+0000-11ce5c18",
         "paths": [
           "tests/test_repo_apm.py"
         ]
       }
     ],
-    "at": "2026-10-16T10:51:53+00:00"
+    "at": "2026-10-16T10:53:35+00:00"
   },
   "ask": null,
   "split": "j-20261015T173711+0000-52dd2e6f",
@@ -172,5 +172,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
-  "at": "2026-10-16T10:53:22+00:00"
+  "at": "2026-10-16T10:53:35+00:00"
 }
