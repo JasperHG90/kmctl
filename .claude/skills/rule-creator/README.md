@@ -29,7 +29,7 @@ Given an intent like *"add a rule that every change ships with a test"* or
 
 | Location | What it is | When to use |
 |---|---|---|
-| `rules/` (this repo) | A shared, version-controlled library of rules | Default — shareable and reviewable; copy into `.claude/rules/` when adopted |
+| `rules/` (this repo) | A shared, version-controlled library of rules | Default — shareable and reviewable; install into `.claude/rules/` with apm when adopted |
 | `.claude/rules/` (a project) | Rules Claude Code loads for that project now | When you want the rule active immediately in the current project |
 | `~/.claude/rules/` (global) | Personal rules across all your projects | Personal standing preferences (not written by this skill by default) |
 
@@ -43,14 +43,16 @@ directory is a catalog; nothing auto-loads it.
 ---
 name: python-testing           # required — kebab-case, matches the filename
 description: How to write and run tests. Read before changing Python code.  # required
-paths: ["**/*.py"]             # optional — scopes the rule to matching files
+applyTo: "**/*.py"             # optional — scopes the rule to matching files
 ---
 ```
 
 - **`name`** / **`description`** are always written. `description` is a
   human-facing summary plus a "when to read" hint — not a trigger.
-- **`paths`** is an optional glob array that path-aware harnesses use to keep a
-  rule out of context on unrelated edits. Omit it for genuinely global rules.
+- **`applyTo`** is an optional glob, comma-separated for several, that keeps a
+  rule out of context on unrelated edits. apm writes it as `paths` in
+  `.claude/rules/`. A rule written straight into `.claude/rules/` uses
+  `paths: [...]` itself. Omit the scope for genuinely global rules.
 - Some legacy rules are keyed on `title` instead of `name`; new rules
   standardize on `name` (matching skills and agents) and legacy files are left
   untouched.
@@ -64,9 +66,9 @@ Invoke the skill and describe the behavior you want to standardize:
 The skill will confirm it's rule-shaped, ask whether it's Python-scoped and
 enforce-hard vs a nudge, check for an existing rule that already covers it, then
 write and self-review the file. See existing rules for the two body shapes it
-proposes between: `rules/uv-installer.md` (a single directive) and
-`rules/python-testing.md` (a hard core marked with `<constraint>` blocks amid
-explanatory prose).
+proposes between: `rules/uv-installer.instructions.md` (a single directive) and
+`rules/python-testing.instructions.md` (a hard core marked with `<constraint>`
+blocks amid explanatory prose).
 
 ## Prerequisites
 
@@ -76,6 +78,6 @@ explanatory prose).
 ## Validating
 
 The produced rule is a Markdown file with YAML frontmatter. Confirm the
-frontmatter parses, the filename matches `name`, and — if saved to
-`.claude/rules/` — that the body carries the guidance you intend, since that's
-what gets injected.
+frontmatter parses, the filename minus its extension matches `name`, and — if
+saved to `.claude/rules/` — that the body carries the guidance you intend, since
+that's what gets injected.

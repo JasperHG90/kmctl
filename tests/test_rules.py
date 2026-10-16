@@ -1,4 +1,4 @@
-"""The rules in .claude/rules/ that aim does not manage hold for kmctl.
+"""The rules in .claude/rules/ that apm.yml does not install hold for kmctl.
 
 The copied rules came from loop-harness. These tests fail when one still names
 loop-harness, cites an ADR kmctl does not have, or points at a path that is
@@ -6,10 +6,10 @@ neither here nor planned.
 """
 
 import re
-import tomllib
 from pathlib import Path
 
 import pytest
+import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 RULES = ROOT / ".claude" / "rules"
@@ -29,14 +29,19 @@ PLANNED = (
 )
 
 
-def _aim_managed() -> set[str]:
-    manifest = tomllib.loads((ROOT / "aim.toml").read_text())
-    return {Path(rule["source_path"]).name for rule in manifest.get("rule", [])}
+def _apm_managed() -> set[str]:
+    """Installed names of the rules apm.yml lists: `<name>.instructions.md` lands as `<name>.md`."""
+    manifest = yaml.safe_load((ROOT / "apm.yml").read_text())
+    entries = (e.partition("#")[0] for e in manifest["dependencies"]["apm"])
+    suffix = ".instructions.md"
+    return {
+        Path(e).name.removesuffix(suffix) + ".md" for e in entries if e.endswith(suffix)
+    }
 
 
 def _own_rules() -> list[Path]:
-    aim = _aim_managed()
-    return sorted(p for p in RULES.glob("*.md") if p.name not in aim)
+    managed = _apm_managed()
+    return sorted(p for p in RULES.glob("*.md") if p.name not in managed)
 
 
 def _cited_paths(text: str) -> list[str]:

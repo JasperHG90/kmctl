@@ -1,7 +1,6 @@
 ---
-name: async-python
-description: Use asyncio when the work is many independent I/O waits, and bound every fan-out explicitly. Read before writing concurrent Python.
-paths: ["**/*.py"]
+paths:
+  - "**/*.py"
 ---
 
 Async earns its complexity only when the program waits on many independent I/O

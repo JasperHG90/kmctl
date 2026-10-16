@@ -1,7 +1,6 @@
 ---
-name: pydantic-boundaries
-description: Parse external input and emit structured output through Pydantic models instead of raw dicts. Read before reading an HTTP response, a YAML/JSON/TOML config, or env vars, and before emitting structured output a caller depends on.
-paths: ["**/*.py"]
+paths:
+  - "**/*.py"
 ---
 
 <constraint name="model-at-the-boundary">

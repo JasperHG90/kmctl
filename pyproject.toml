@@ -49,7 +49,7 @@ dev = [
 cache-keys = [{ file = "pyproject.toml" }, { file = "plugin/.claude-plugin/plugin.json" }]
 
 [tool.ruff]
-# Spike evidence (.loop/), aim-managed rules (.claude/) and the knowledge
+# Spike evidence (.loop/), agent rules and skills (.claude/) and the knowledge
 # bundle (.okf/) are not project code, and tests/vendor/ is a pinned copy:
 # their files are kept as written.
 extend-exclude = [".loop", ".claude", ".okf", "tests/vendor"]

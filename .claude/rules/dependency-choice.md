@@ -1,7 +1,7 @@
 ---
-name: dependency-choice
-description: When to stay on the standard library and when to take a well-chosen third-party dependency. Read before writing utility code or adding a package.
-paths: ["**/*.py", "**/pyproject.toml"]
+paths:
+  - "**/*.py"
+  - "**/pyproject.toml"
 ---
 
 The standard library is the answer when it already does the job: `pathlib`,
