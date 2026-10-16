@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "apm-distribution",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 1,
@@ -87,8 +87,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "f894364e85faeb39cb30295b41f42ebdcdab94826b106285bffde76324155b50",
   "intent": {
@@ -120,8 +120,14 @@
       "to": "verifying",
       "at": "2026-10-16T10:59:52+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-16T11:05:39+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
-  "at": "2026-10-16T10:59:53+00:00"
+  "at": "2026-10-16T11:05:39+00:00"
 }
