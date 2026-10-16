@@ -19,7 +19,9 @@
   "archived": false,
   "worktree": "/home/vscode/kmctl.worktrees/repo-uses-apm",
   "branch": "loop/repo-uses-apm",
-  "stamps": [],
+  "stamps": [
+    "a098c484b33e60ee1be66418d1acccc17dc8da47c09788db715c8261df4a4deb"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
     "hash": "d5be1b0791f4bc48d26c0e0ed613e697762e6ee0896426d0d55902526df95f84",
@@ -140,5 +142,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
-  "at": "2026-10-16T09:54:11+00:00"
+  "at": "2026-10-16T10:47:11+00:00"
 }
