@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev72+ge53d4208b.d20261016
-  at: '2026-10-16T05:58:19+00:00'
+  at: '2026-10-16T05:58:38+00:00'
 slug: release-flow
 n: 3
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike release-flow/3
@@ -24,7 +24,9 @@ The command exited 0:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note release-flow 3`.
+The repository workflow setting reads `{"default_workflow_permissions":"read","can_approve_pull_request_reviews":true}` after the operator chose to turn it on (2026-10-16), so `gh pr create` with `GITHUB_TOKEN` is allowed. Default permissions stay read-only, and each job asks for what it needs.
+
+Settles risk 2: yes, while the setting stays on.
 
 ## Files
 
