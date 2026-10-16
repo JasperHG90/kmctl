@@ -20,10 +20,50 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "human:jasperginn@gmail.com",
+    "hash": "51d14d8a9c93d70c73dfe127b10d3c04309d62656afd5087fbc20f9505c76b85",
+    "at": "2026-10-16T10:58:16+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "kmctl init replaces an edited copy of a shipped rule with the packaged copy and lists it in updated.",
+      "fails_when": "after editing .claude/rules/okf-bundle.md and running init --json, the file differs from src/kmctl/repo_rules/okf-bundle.md or updated does not list it",
+      "command": "uv run pytest tests/test_init.py::test_init_overwrites_edited_rule -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "A shipped rule that already matches the packaged copy is not rewritten and is listed in skipped.",
+      "fails_when": "a second init lists a matching rule anywhere but skipped, or changes its mtime",
+      "command": "uv run pytest tests/test_init.py::test_init_skips_current_rule -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "init never reads or writes a .claude/rules/ file that is not one of the four shipped rules.",
+      "fails_when": "a user rule file in .claude/rules/ changes, or appears in created, updated or skipped",
+      "command": "uv run pytest tests/test_init.py::test_init_leaves_other_rules -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "kmctl update behaves as kmctl init: same options, same --json output, and both are listed in kmctl --help.",
+      "fails_when": "kmctl update --json on a fresh repo gives a different JSON object or file tree than kmctl init --json, update rejects --path, or kmctl --help omits update",
+      "command": "uv run pytest tests/test_cli.py::test_update_is_init_alias -q",
+      "judgment": false
+    },
+    {
+      "id": "r5",
+      "behavior": "The help, docs and decision log say init and update replace the four shipped rules, and the new ADR supersedes or corrects ADR 0011's keep-existing-rule clause.",
+      "fails_when": "kmctl init --help, docs/reference/commands.md, README.md or the tutorial still says rule files are kept, kmctl update is undocumented, or no decision records the change",
+      "command": null,
+      "judgment": true
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -44,5 +84,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
-  "at": "2026-10-16T10:56:53+00:00"
+  "at": "2026-10-16T10:58:16+00:00"
 }
