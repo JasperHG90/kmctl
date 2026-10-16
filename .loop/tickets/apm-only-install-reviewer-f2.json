@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "apm-only-install-reviewer-f2",
-  "stage": "stub",
+  "stage": "planning",
   "attempts": 0,
   "plan_rounds": 0,
   "review_rounds": 0,
@@ -35,7 +35,14 @@
     "depends_on": [],
     "priority": null
   },
-  "history": [],
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-10-16T22:17:48+00:00",
+      "by": "promote"
+    }
+  ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-16T21:15:08+00:00"
+  "at": "2026-10-16T22:17:48+00:00"
 }
