@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "The MCP entry no longer depends on PLUGIN_ROOT. The sh launcher walks up from $PLUGIN_ROOT/../../.. only when it is set, then from the working folder. The shell expands the variable at run time, so agy does not need to. If neither path finds .okf/, the server starts and reports no bundle, and the agent loses only three read-only tools. Row r2 now tests the launcher with PLUGIN_ROOT unset, run from the plugin folder and from a subfolder.",
+      "anchor": ".loop/plans/antigravity-harness.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r2"
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "The live residual is now scoped, not open. Spike 4 shows that agy registers the workspace plugin's hook (\"loaded 1 named hooks from 1 hooks.json file(s)\"), and validate counts the MCP server. agy's embedded plugin guide says a plugin's hooks.json hooks \"are registered and run\" and its mcp_config.json servers are launched. Done when no longer claims live behaviour, and the operator check lives in antigravity-live-check, which turns any failure into a ticket. If the live check fails, only the hook and MCP parts are lost, and they degrade safely. Agents (spike 3), skills and rules still land. So the plan stands without an operator acceptance.",
+      "anchor": ".loop/plans/antigravity-harness.md",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "aa09221d7d616b13921e7f064d3af41f7bea6b64385b6e31cb63292e9c093bf6"
+  },
+  "by": "process:loopctl/2.1.1.dev173+ga4f6ce93a.d20261016",
+  "at": "2026-10-16T20:25:06+00:00"
+}
