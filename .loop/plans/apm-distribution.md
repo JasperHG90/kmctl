@@ -1,0 +1,44 @@
+---
+type: plan
+title: 'Plan: apm-distribution'
+description: "A consumer repository can install kmctl's skills and agent with APM from a release tag, without getting this repository's own dev rules and skills, with the plugin manifest still the one version source and the docs saying the CLI is installed separately."
+tags:
+- plan
+generated:
+  by: process:loopctl/2.1.1.dev72+ge53d4208b.d20261016
+  at: '2026-10-16T10:03:24+00:00'
+slug: apm-distribution
+epic: plugin
+depends_on:
+- repo-uses-apm
+- release-flow
+priority: null
+---
+
+# apm-distribution
+
+Relayed from: none
+
+## Intent
+
+The operator asked (2026-10-16) that kmctl be installable through APM (Microsoft's Agent Package Manager, https://microsoft.github.io/apm, `apm-cli` 0.33.0) in release 0.2.0.
+
+Today kmctl's agent content reaches a repository one way: `kmctl plugin install` (`src/kmctl/plugin.py`) stages `plugin/` stamped with the CLI's version and installs it as the Claude Code plugin `kmctl@kmctl`, adding the okf dependency's marketplace first (ADR 0001, ADR 0003). The plugin holds 7 skills (`plugin/skills/architecture-review/SKILL.md`, `plugin/skills/audit/SKILL.md`, `plugin/skills/continue/SKILL.md`, `plugin/skills/decision-log-review/SKILL.md`, `plugin/skills/handoff/SKILL.md`, `plugin/skills/practices-review/SKILL.md`, `plugin/skills/write-docs/SKILL.md`), 1 agent (`plugin/agents/kmctl-auditor.md`) and 1 hook (`plugin/hooks/hooks.json`, SessionStart). repo-uses-apm adds a root apm.yml, but that file describes this repository as a consumer: its `dependencies.apm` are the 16 dev items (13 rules, 3 skills) from jasperhg90/skills, and nothing in it exports kmctl's own content.
+
+Measured on 2026-10-16: install routes for kmctl's skills and agent, 1 (the CLI); through APM, 0. Of the 7 skills and 1 agent, 5 skills and the agent name a `kmctl` command (`grep -c 'kmctl '`: handoff 7, write-docs 8, audit, continue, decision-log-review and the agent 1 each), so APM can deliver the files but not make them work alone; the CLI is still a separate `uv tool install`. Install docs: 1 page, `docs/how-to/install-the-plugin-and-the-ci-action.md`, with no APM route.
+
+What changes:
+
+- **The package.** `plugin/` stays as it is, with no apm.yml inside it: APM 0.33.0 reads `plugin/.claude-plugin/plugin.json` as a Claude plugin and installs it as a git subfolder package, writing the 7 skills to `.claude/skills/NAME/` and the agent to .claude/agents/kmctl-auditor.md in the consumer byte for byte, and the SessionStart hook to `.claude/settings.json` (spike:apm-distribution/2). A small meta package, apm/apm.yml (a new folder holding only that file) (`name`, `version`, both required), depends on `{git: parent, path: plugin}` and `scaccogatto/okf-skills` pinned to a commit, so a consumer adds one entry, JasperHG90/Knowledge-management/apm#v0.2.0, and gets kmctl's skills, agent and hook plus okf's skills, agents and Stop hook (spike:apm-distribution/5). No apm.yml goes in `plugin/`: one that declares dependencies makes APM read agents only from `.apm/agents/` and drop the kmctl agent (spike:apm-distribution/4). okf's MCP server is skipped as transitive on this route; the docs say how to add it (`--trust-transitive-mcp`, or list okf-skills directly).
+- **Dev items stay here.** A consumer of the `apm` or `plugin` subfolder gets none of the root apm.yml's dependencies (spike:apm-distribution/3), so the 16 dev items stay under the root apm.yml's plain `dependencies`.
+- **One version source.** APM requires `version:` in an apm.yml (spike:apm-distribution/3), so the root apm.yml and apm/apm.yml each carry a copy of the version in `plugin/.claude-plugin/plugin.json`. release-flow's scripts/release.py `set VERSION` rewrites both, and a test checks that `set 0.2.0` leaves the manifest and both apm.yml files at 0.2.0 and that `current` refuses when they differ.
+- **Tests.** A test under `tests/` (`new:tests/test_apm_package.py`) checks from the files alone, with no network, that apm/apm.yml depends on exactly `plugin` (from this repository) and a pinned okf-skills, that `plugin/` holds no apm.yml, and that the two apm.yml versions equal the manifest's, so the APM route cannot drift from the plugin route.
+- **Knowledge.** `new:.okf/decisions/0013-kmctl-installs-through-apm-too.md` records APM as a second install route beside `kmctl plugin install` (the operator's choice, 2026-10-16, over replacing it), what it does not install (the CLI, and okf's MCP server unless asked), and why the CLI route stays (ADR 0001: the CLI installs its plugin and `kmctl plugin status` checks the versions match; APM has no such check). The number follows release-flow's 0012; the builder takes the next free one. `.okf/manifesto.md` Parts names the second route. `new:docs/how-to/install-kmctl-with-apm.md` gives the `apm install JasperHG90/Knowledge-management/apm#v0.2.0` line, says to install the CLI with `uv tool install` first, and says what the route leaves out; `docs/how-to/install-the-plugin-and-the-ci-action.md` links to it. scripts/release.py `set` rewrites the `#vX.Y.Z` pin in that page too.
+
+Done when: in a scratch consumer repository with no kmctl content, installing the `apm` subfolder package at this branch's commit (and, after the release, JasperHG90/Knowledge-management/apm#v0.2.0) writes the 7 skills, the agent and the SessionStart hook to `.claude/`, okf's skills, and none of the 16 dev items; `apm.lock.yaml` there lists no jasperhg90/skills entry; with the CLI installed, the hook's `kmctl briefing` runs; scripts/release.py `set 0.2.0` leaves the plugin manifest and both apm.yml files at 0.2.0; `new:tests/test_apm_package.py` passes; and the gates pass.
+
+## Could invalidate this plan
+
+- Layout: APM 0.33.0 might not deploy from `plugin/` as laid out. Settled by spike:apm-distribution/2: it installs `plugin/` as a git subfolder package with no copy and no apm.yml, skills, agent and hook included (spike:apm-distribution/1 was a transport failure, superseded).
+- Dev items: APM might pull the root apm.yml's dependencies into consumers. Settled by spike:apm-distribution/3: a consumer of a subfolder package gets none of them.
+- Hook and okf: the route might give no briefing and no OKF authoring. Settled by spike:apm-distribution/5: the `apm` meta package delivers kmctl's hook and okf's skills, agents and Stop hook, and the hook's `kmctl briefing` runs with the CLI on PATH (spike:apm-distribution/4 shows why `plugin/` gets no apm.yml). The contract question (ADR 0001's version check) is the operator's, answered 2026-10-16: a second route beside `kmctl plugin install`, recorded in the new decision.
