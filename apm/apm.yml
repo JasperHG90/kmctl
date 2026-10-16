@@ -1,13 +1,11 @@
-# kmctl's APM package (ADR 0013). A consumer adds
-# JasperHG90/Knowledge-management/apm#vX.Y.Z and gets the plugin's skills,
-# agent and SessionStart hook from plugin/, plus the okf skills. The kmctl CLI
-# is installed separately with uv tool install. scripts/release.py set writes
-# the version below; plugin/.claude-plugin/plugin.json holds the one version.
+# kmctl's APM package (ADR 0014). kmctl plugin install writes it into a
+# repository's apm.yml and runs apm install, which brings the skills, the
+# audit agent and the knowledge rules under .apm/, plus the okf skills. The
+# version below is the one release version (ADR 0012): scripts/release.py set
+# writes it, and pyproject.toml reads it.
 name: kmctl
 version: 0.3.0
-description: kmctl's Claude Code skills, audit agent and SessionStart hook, with the okf skills they use.
+description: kmctl's skills, audit agent and knowledge rules, with the okf skills they use.
 dependencies:
   apm:
-    - git: parent
-      path: plugin
     - scaccogatto/okf-skills#a8b96420de90d102c43cda1693d01ec4f925f2ab

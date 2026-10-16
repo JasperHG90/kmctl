@@ -14,7 +14,15 @@ from kmctl.concepts import ConceptError, Kind, new_concept
 from kmctl.docs import DocType, new_doc
 from kmctl.handoffs import live_handoffs
 from kmctl.kinds import KINDS, schema
-from kmctl.plugin import PluginError, PluginStatus, Scope
+from kmctl.plugin import (
+    APM_CLI,
+    DEFAULT_SOURCE,
+    HARNESSES,
+    PluginError,
+    PluginStatus,
+    Scope,
+    parse_harnesses,
+)
 from kmctl.plugin import install as install_plugin
 from kmctl.plugin import status as plugin_status
 from kmctl.review_due import review_due
@@ -57,27 +65,24 @@ _INIT_EPILOG = (
     "Examples:\n\n"
     "  kmctl init\n\n"
     "  kmctl init --path ../other-repo --json\n\n"
-    "It writes docs/README.md; .okf/index.md, log.md and manifesto.md; the "
-    "knowledge rules okf-bundle, docs-layout, diagrams-stay-current and "
-    "manifesto-invariants in .claude/rules/; a kmctl block (where knowledge "
-    "lives and the agent's duties) in each CLAUDE.md and AGENTS.md; a new "
-    "CLAUDE.md when there is none, holding only @AGENTS.md when AGENTS.md "
-    "exists (Claude Code then reads AGENTS.md and its block once) and the "
-    "block otherwise; and the first decision, Keep project knowledge in an "
-    "OKF bundle, when no record has that title.\n\n"
+    "It writes docs/README.md; .okf/index.md, log.md and manifesto.md; a kmctl "
+    "block (where knowledge lives and the agent's duties) in each CLAUDE.md and "
+    "AGENTS.md; a new CLAUDE.md when there is none, holding only @AGENTS.md "
+    "when AGENTS.md exists (Claude Code then reads AGENTS.md and its block "
+    "once) and the block otherwise; and the first decision, Keep project "
+    "knowledge in an OKF bundle, when no record has that title. It writes no "
+    "rules: the knowledge rules come with kmctl's skills from kmctl plugin "
+    "install.\n\n"
     "A CLAUDE.md with an @AGENTS.md line, beside an AGENTS.md, gets no block. "
     "A CLAUDE.md or AGENTS.md symlink that is dangling or points outside the "
     "repository is left alone with a warning naming it and its target; when "
     "AGENTS.md is such a link and there is no CLAUDE.md, init writes no "
     "CLAUDE.md. A symlink inside the repository is written through.\n\n"
     "Run it again at any time, or as kmctl update after upgrading kmctl: a "
-    "file that already exists is kept, with three exceptions. The four "
-    "knowledge rules are kmctl's: one that differs from this kmctl's copy is "
-    "replaced, edits included, and other files in .claude/rules/ are never "
-    "touched. The kmctl block between <!-- kmctl:start --> and "
-    "<!-- kmctl:end --> is added or replaced, and no other text in the file "
-    "changes. Writing the first decision into a kept bundle adds its index "
-    "entry and log line."
+    "file that already exists is kept, with two exceptions. The kmctl block "
+    "between <!-- kmctl:start --> and <!-- kmctl:end --> is added or replaced, "
+    "and no other text in the file changes. Writing the first decision into a "
+    "kept bundle adds its index entry and log line."
 )
 
 
@@ -101,7 +106,7 @@ def init(
         ),
     ] = False,
 ) -> None:
-    """Create docs/, a starter .okf/ bundle, knowledge rules and a CLAUDE.md block; re-run to refresh the rules and block."""
+    """Create docs/, a starter .okf/ bundle and a CLAUDE.md block; re-run to refresh the block."""
     result = scaffold(path)
     if as_json:
         typer.echo(json.dumps(asdict(result)))
@@ -109,12 +114,9 @@ def init(
     for rel in result.created:
         typer.echo(f"created {rel}")
     for rel in result.updated:
-        if Path(rel).name in AGENT_FILES:
-            why = "kmctl block"
-        elif rel.startswith(".claude/rules/"):
-            why = "replaced with kmctl's rule"
-        else:
-            why = "first decision's entry"
+        why = (
+            "kmctl block" if Path(rel).name in AGENT_FILES else "first decision's entry"
+        )
         typer.echo(f"updated {rel} ({why})")
     for rel in result.skipped:
         typer.echo(f"kept    {rel} (already there)")
@@ -123,6 +125,8 @@ def init(
     if result.created or result.updated:
         typer.echo(
             next_step(
+                "kmctl plugin install --harness claude for the skills and the "
+                "knowledge rules",
                 "fill the purpose and invariants in .okf/manifesto.md (its values "
                 "are the operator's to write)",
                 "add a diagram page to .okf/architecture/ once there is code",
@@ -136,7 +140,7 @@ def init(
 app.command(
     "update",
     epilog=_INIT_EPILOG,
-    help="Same as kmctl init. Run it after upgrading kmctl to refresh the knowledge rules and the CLAUDE.md block.",
+    help="Same as kmctl init. Run it after upgrading kmctl to refresh the CLAUDE.md block.",
 )(init)
 
 
@@ -622,8 +626,9 @@ def decision_supersede(
 
 plugin_app = typer.Typer(
     help=(
-        "Install the Claude Code plugin that ships with this kmctl. Verbs: install, update, "
-        "status. Needs the claude CLI on PATH."
+        "Install kmctl's skills, audit agent, knowledge rules and session hook for an "
+        "agent harness, through APM (Agent Package Manager). Verbs: install, update, "
+        "status. Needs uv on PATH: kmctl runs APM with uvx."
     ),
     no_args_is_help=True,
 )
@@ -632,81 +637,127 @@ app.add_typer(plugin_app, name="plugin")
 _SCOPE_OPTION = typer.Option(
     "--scope",
     metavar="project",
-    help="project (this repository, the default) or user (every repository).",
+    help=(
+        "project (this repository: apm.yml, .claude/ and .mcp.json here; the default) "
+        "or user (every repository: ~/.apm/apm.yml, and Claude Code's folder, "
+        "$CLAUDE_CONFIG_DIR or ~/.claude)."
+    ),
+)
+_HARNESS_OPTION = typer.Option(
+    "--harness",
+    metavar="claude",
+    help=(
+        "The agent harnesses to install for, as a comma list. Accepted: "
+        f"{', '.join(HARNESSES)}. Default: claude."
+    ),
+)
+_SOURCE_OPTION = typer.Option(
+    "--source",
+    metavar="https://host/owner/repo.git",
+    show_default=False,
+    help=(
+        "The git URL of the repository holding the kmctl package (its apm/ folder, "
+        "at the tag v<this kmctl's version>). Default: kmctl's GitHub repository, "
+        "named below. Set it for a fork or a local git server; an http:// URL is "
+        "allowed as insecure."
+    ),
+)
+_FORCE_OPTION = typer.Option(
+    "--force",
+    help=(
+        "Let APM replace skill folders it did not write. It replaces each folder "
+        "whole, deleting any file you added there. Use it when the install says "
+        "APM left files in place."
+    ),
+)
+_PLUGIN_JSON_OPTION = typer.Option(
+    "--json",
+    help="Print the resulting status and notes as one JSON object, for scripts.",
+)
+_INSTALL_EPILOG = (
+    "Examples:\n\n"
+    "  kmctl plugin {verb} --harness claude\n\n"
+    "  kmctl plugin {verb} --harness claude --scope user --json\n\n"
+    "  kmctl plugin {verb} --source http://127.0.0.1:8080/o/kmctl.git\n\n"
+    f"The default --source is {DEFAULT_SOURCE}\n\n"
+    "In order: runs apm uninstall on an apm.yml entry that names "
+    "JasperHG90/Knowledge-management/apm another way; writes the kmctl entry "
+    "{{git: SOURCE, path: apm, ref: vVERSION}} and the harnesses as targets "
+    "into apm.yml, keeping its other entries; runs "
+    f"uvx --from {APM_CLI} apm install --target HARNESSES; once that worked, "
+    "removes the old claude plugin kmctl@kmctl from this repository (skipped "
+    "when the claude CLI is not on PATH); writes one "
+    "SessionStart hook that runs kmctl briefing into .claude/settings.json; and "
+    "declares okf's MCP server okf-bundle in .mcp.json (at user scope, with "
+    "claude mcp add-json), unless an okf server is already there. Running it "
+    "again changes nothing. It refuses, and names the fix, when APM leaves in "
+    "place a skill folder it did not write."
 )
 
 
-def _report(result: PluginStatus, as_json: bool) -> None:
+def _report(
+    result: PluginStatus, as_json: bool, notes: list[str] | None = None
+) -> None:
+    """Print a status: one JSON object, or a summary line and one line per problem."""
     if as_json:
-        typer.echo(json.dumps(asdict(result)))
+        data = asdict(result)
+        if notes is not None:
+            data["notes"] = notes
+        typer.echo(json.dumps(data))
         return
+    for note in notes or []:
+        typer.echo(f"note: {note}")
     typer.echo(
-        f"kmctl {result.cli_version}; plugin {result.plugin_version or 'not installed'}"
+        f"kmctl {result.cli_version}; package {result.package_ref or 'not installed'} "
+        f"({result.scope} scope); hook {'present' if result.hook else 'missing'}"
     )
     for problem in result.problems:
         typer.echo(f"problem: {problem}")
 
 
-def _install(scope: Scope, as_json: bool, reinstall: bool) -> None:
+def _install(
+    verb: str, harness: str, scope: Scope, source: str, force: bool, as_json: bool
+) -> None:
+    """Run ``kmctl plugin install`` or ``update``: map a PluginError to a refusal."""
     try:
-        result = install_plugin(scope, Path.cwd(), reinstall=reinstall)
+        result = install_plugin(
+            Path.cwd(), parse_harnesses(harness), scope, source=source, force=force
+        )
     except PluginError as error:
-        verb = "update" if reinstall else "install"
         typer.echo(f"kmctl plugin {verb}: refused: {error}", err=True)
         raise typer.Exit(1) from error
-    _report(result, as_json)
+    _report(result.status, as_json, result.notes)
     if not as_json:
+        scope_flag = " --scope user" if scope == "user" else ""
         typer.echo(
             next_step(
-                "start a new Claude Code session or run /reload-plugins",
-                "kmctl plugin status",
+                "start a new Claude Code session", f"kmctl plugin status{scope_flag}"
             )
         )
 
 
-@plugin_app.command(
-    "install",
-    epilog=(
-        "Examples:\n\n"
-        "  kmctl plugin install\n\n"
-        "  kmctl plugin install --scope user --json\n\n"
-        "Adds the scaccogatto marketplace for the okf dependency when it is missing. "
-        "Running it again at the same version changes nothing."
-    ),
-)
+@plugin_app.command("install", epilog=_INSTALL_EPILOG.format(verb="install"))
 def plugin_install(
+    harness: Annotated[str, _HARNESS_OPTION] = "claude",
     scope: Annotated[Scope, _SCOPE_OPTION] = "project",
-    as_json: Annotated[
-        bool,
-        typer.Option(
-            "--json", help="Print the resulting status as one JSON object, for scripts."
-        ),
-    ] = False,
+    source: Annotated[str, _SOURCE_OPTION] = DEFAULT_SOURCE,
+    force: Annotated[bool, _FORCE_OPTION] = False,
+    as_json: Annotated[bool, _PLUGIN_JSON_OPTION] = False,
 ) -> None:
-    """Install the kmctl plugin and its okf dependency through the claude CLI."""
-    _install(scope, as_json, reinstall=False)
+    """Install kmctl's APM package, its session hook and okf's MCP server for a harness."""
+    _install("install", harness, scope, source, force, as_json)
 
 
-@plugin_app.command(
-    "update",
-    epilog=(
-        "Examples:\n\n"
-        "  kmctl plugin update\n\n"
-        "  kmctl plugin update --scope user\n\n"
-        "Run it after upgrading kmctl: it restages the plugin and reinstalls it."
-    ),
-)
+@plugin_app.command("update", epilog=_INSTALL_EPILOG.format(verb="update"))
 def plugin_update(
+    harness: Annotated[str, _HARNESS_OPTION] = "claude",
     scope: Annotated[Scope, _SCOPE_OPTION] = "project",
-    as_json: Annotated[
-        bool,
-        typer.Option(
-            "--json", help="Print the resulting status as one JSON object, for scripts."
-        ),
-    ] = False,
+    source: Annotated[str, _SOURCE_OPTION] = DEFAULT_SOURCE,
+    force: Annotated[bool, _FORCE_OPTION] = False,
+    as_json: Annotated[bool, _PLUGIN_JSON_OPTION] = False,
 ) -> None:
-    """Reinstall the plugin from this kmctl release, replacing an older one."""
-    _install(scope, as_json, reinstall=True)
+    """Reinstall kmctl's APM package at this kmctl's version; run it after upgrading kmctl."""
+    _install("update", harness, scope, source, force, as_json)
 
 
 @plugin_app.command(
@@ -714,22 +765,26 @@ def plugin_update(
     epilog=(
         "Examples:\n\n"
         "  kmctl plugin status\n\n"
-        "  kmctl plugin status --json\n\n"
-        "Exits 0 either way; each problem names the command that fixes it."
+        "  kmctl plugin status --scope user --json\n\n"
+        "It reads apm.lock.yaml and settings.json and changes nothing. Exits 0 "
+        "either way; each problem names the command that fixes it."
     ),
 )
 def plugin_status_cmd(
+    scope: Annotated[Scope, _SCOPE_OPTION] = "project",
     as_json: Annotated[
-        bool, typer.Option("--json", help="Print one JSON object, for scripts.")
+        bool,
+        typer.Option(
+            "--json",
+            help=(
+                "Print one JSON object (cli_version, scope, package_ref, hook, "
+                "problems), for scripts."
+            ),
+        ),
     ] = False,
 ) -> None:
-    """Report the installed plugin's version against this kmctl, and what to fix."""
-    try:
-        result = plugin_status(Path.cwd())
-    except PluginError as error:
-        typer.echo(f"kmctl plugin status: refused: {error}", err=True)
-        raise typer.Exit(1) from error
-    _report(result, as_json)
+    """Report the installed kmctl package's version and the session hook, and what to fix."""
+    _report(plugin_status(Path.cwd(), scope), as_json)
 
 
 def main() -> None:

@@ -51,7 +51,7 @@ def _sections(text: str, level: str = "##") -> dict[str, str]:
 
 
 def test_decision_0012_matches_the_decision_schema() -> None:
-    """The record's front matter validates and its sections are the decision skeleton."""
+    """The record's front matter validates; its sections are the skeleton, then corrections."""
     validator = Draft202012Validator(schema("decision"))
 
     errors = [
@@ -59,7 +59,9 @@ def test_decision_0012_matches_the_decision_schema() -> None:
     ]
 
     assert errors == []
-    assert list(_sections(DECISION.read_text())) == skeleton("decision")
+    sections = list(_sections(DECISION.read_text()))
+    assert sections[:3] == skeleton("decision")
+    assert all(re.fullmatch(r"Correction, \d{4}-\d{2}-\d{2}", s) for s in sections[3:])
 
 
 def test_decision_0012_names_what_it_rejected_and_needs() -> None:

@@ -1,5 +1,5 @@
 ---
-paths: [".okf/**"]
+applyTo: ".okf/**"
 ---
 
 # Using the OKF bundle

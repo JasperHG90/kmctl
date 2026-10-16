@@ -1,16 +1,19 @@
 # Install the plugin and the CI action
 
-This page adds kmctl to one repository: the Claude Code plugin, which gives
-every session a briefing on where knowledge lives and what is due for review,
-and the GitHub Action, which checks docs/ and .okf/ on every pull request. A
-last, optional step turns on the LLM audit.
+This page adds kmctl to one repository: kmctl's skills, audit agent and
+knowledge rules for Claude Code, with a session hook that gives every session
+a briefing on where knowledge lives and what is due for review, and the
+GitHub Action, which checks docs/ and .okf/ on every pull request. A last,
+optional step turns on the LLM audit.
 
 How the commands below were run:
 
-- `kmctl plugin install` and `kmctl plugin status` were run in a scratch
-  repository with `CLAUDE_CONFIG_DIR`, `HOME` and `XDG_DATA_HOME` pointed at
-  scratch folders, so no real Claude Code config was touched. The output is
-  what they printed there.
+- `kmctl plugin install` and `kmctl plugin status` were run with kmctl 0.3.0
+  in a scratch repository with `CLAUDE_CONFIG_DIR`, `HOME` and
+  `XDG_DATA_HOME` pointed at scratch folders, so no real Claude Code config
+  was touched, and with `--source` naming a local git server that held this
+  repository's files at the tag `v0.3.0`. The output is what they printed
+  there.
 - The workflow files are quoted from this repository's `action.yml` and its
   shipped workflows, `.github/workflows/knowledge.yml` and
   `.github/workflows/knowledge-audit.yml`. Those steps run only on GitHub, so
@@ -21,7 +24,8 @@ How the commands below were run:
 ## Before you start
 
 - [uv](https://docs.astral.sh/uv/) and `git` on your PATH.
-- The `claude` CLI (Claude Code) on your PATH; `kmctl plugin` needs it.
+- Claude Code. `kmctl plugin install` runs APM (Agent Package Manager) with
+  `uvx`, so it needs uv, not a separate APM install.
 - A git repository set up with `kmctl init`. If you have not done that, follow
   [Get started with kmctl](../tutorials/get-started-with-kmctl.md) first.
 - For the CI action: the repository on GitHub.
@@ -37,39 +41,51 @@ uv tool install git+https://github.com/JasperHG90/Knowledge-management@v0.3.0
 The kmctl repository is private for now, so this needs a GitHub account
 with access to it; uv clones it with your git credentials.
 
-### 2. Install the plugin in the repository
+### 2. Install kmctl's skills and hook in the repository
 
 From the repository root:
 
 ```
-kmctl plugin install
+kmctl plugin install --harness claude
 ```
 
 It prints:
 
 ```
-kmctl 0.1.0; plugin 0.1.0
-Next: start a new Claude Code session or run /reload-plugins, then kmctl plugin status
+note: declared okf's MCP server okf-bundle in .mcp.json; Claude Code asks you to approve it once
+kmctl 0.3.0; package v0.3.0 (project scope); hook present
+Next: start a new Claude Code session, then kmctl plugin status
 ```
 
-This installs the `kmctl` plugin and the `okf` plugin it depends on for this
-repository only, and writes both to `.claude/settings.json`. kmctl keeps the
-plugin files it installs from in `$XDG_DATA_HOME/kmctl/marketplace`
-(`~/.local/share/kmctl/marketplace` when `XDG_DATA_HOME` is unset). To install
-the plugin for every repository instead, add `--scope user`.
+This adds kmctl's APM package to the repository's `apm.yml`, at the tag of
+the kmctl you installed, and installs it with APM. APM writes kmctl's seven
+skills and okf's four to `.claude/skills/`, the audit agent to
+`.claude/agents/`, and the four knowledge rules to `.claude/rules/`. kmctl
+then writes the SessionStart hook into `.claude/settings.json` and okf's MCP
+server, `okf-bundle`, into `.mcp.json`. Commit `apm.yml` and
+`apm.lock.yaml`; APM adds its download folder, `apm_modules/`, to
+`.gitignore`. To install for every repository instead, add `--scope user`.
 
-Running it again at the same version changes nothing.
+Running it again at the same version changes nothing. If the repository
+still has the old claude plugin `kmctl@kmctl`, or an `apm.yml` entry for
+kmctl written by hand, the install removes it first and prints a `note:` line
+saying so.
 
-If the repository manages its agent files with APM, you can install the
-plugin's skills, agent and hook with APM instead; see
-[Install kmctl with APM](install-kmctl-with-apm.md). This step is the main
-route, because it also checks that the plugin matches the CLI.
+If a skill folder with one of kmctl's skill names is already there and APM
+did not write it, the install stops and names it; run
+`kmctl plugin install --harness claude --force` to replace it. `--force`
+replaces the whole folder, so any file you added there goes.
+
+If the repository manages its agent files with APM and you would rather add
+the package entry yourself, see
+[Install kmctl with APM](install-kmctl-with-apm.md). That route gets no
+session hook unless you run this step too.
 
 ### 3. Start a new session
 
-Start a new Claude Code session in the repository, or run `/reload-plugins` in
-an open one. The plugin's SessionStart hook prints `kmctl briefing` at the
-start of each session.
+Start a new Claude Code session in the repository. Claude Code asks once
+whether to use the `okf-bundle` server from `.mcp.json`. The SessionStart
+hook prints `kmctl briefing` at the start of each session.
 
 ### 4. Add the checks workflow
 
@@ -246,14 +262,16 @@ its `vX.Y.Z` tag. To move to a newer one:
    `--force` replaces the kmctl you have. `kmctl --version` then prints the
    new version.
 
-2. In each repository that has the plugin, update it to the same release:
+2. In each repository where you ran `kmctl plugin install`, update it to
+   the same release:
 
    ```
    kmctl plugin update
    ```
 
+   It moves the `apm.yml` entry to the new tag and reinstalls.
    `kmctl plugin status` then prints the same version for kmctl and the
-   plugin.
+   package.
 
 3. Change the ref in each workflow's `uses: JasperHG90/Knowledge-management@`
    line to the same tag.
@@ -266,17 +284,18 @@ In the repository, run:
 kmctl plugin status
 ```
 
-When the plugin is installed, it prints:
+When the package and the hook are installed, it prints:
 
 ```
-kmctl 0.1.0; plugin 0.1.0
+kmctl 0.3.0; package v0.3.0 (project scope); hook present
 ```
 
 Before the install, the same command printed:
 
 ```
-kmctl 0.1.0; plugin not installed
-problem: kmctl@kmctl is not installed here; run kmctl plugin install
+kmctl 0.3.0; package not installed (project scope); hook missing
+problem: kmctl's APM package is not in apm.lock.yaml; run kmctl plugin install --harness claude
+problem: the kmctl SessionStart hook is missing from .claude/settings.json; run kmctl plugin install --harness claude
 ```
 
 Each problem it reports names the command that fixes it. After you upgrade
@@ -287,5 +306,5 @@ shows the `kmctl check` and `kmctl review due` reports. For the audit, run the
 "knowledge audit" workflow by hand from the repository's Actions tab.
 
 All options of these commands are in [Commands](../reference/commands.md).
-Why the plugin has one hook and the audit only reports is in
+Why kmctl has one hook and the audit only reports is in
 [Why one hook and report-only audits](../explanation/why-one-hook-and-report-only-audits.md).

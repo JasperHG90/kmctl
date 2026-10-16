@@ -1,5 +1,5 @@
 ---
-paths: [".okf/manifesto.md", "tests/**", "test/**"]
+applyTo: ".okf/manifesto.md, tests/**, test/**"
 ---
 
 # Manifesto invariants

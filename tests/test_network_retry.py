@@ -14,7 +14,8 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-PLUGIN_TESTS = ROOT / "tests" / "test_plugin_install.py"
+#: The tests that run the real kmctl plugin install, which reaches GitHub through APM.
+PLUGIN_TESTS = ROOT / "tests" / "test_apm_package.py"
 CONFTEST = ROOT / "tests" / "conftest.py"
 
 
@@ -51,7 +52,7 @@ def _is_install_call(node: ast.AST) -> bool:
 
 
 def _tests_that_install() -> set[str]:
-    """Tests in test_plugin_install.py that run kmctl plugin install or update."""
+    """Tests in test_apm_package.py that run kmctl plugin install or update."""
     tree = ast.parse(PLUGIN_TESTS.read_text())
     return {
         fn.name
@@ -96,10 +97,10 @@ def test_tier_unregistered_marker_fails_collection(tmp_path: Path) -> None:
     assert "integraton" in out.stdout + out.stderr
 
 
-def test_marked_every_test_that_adds_the_marketplace() -> None:
+def test_marked_every_test_that_runs_the_real_install() -> None:
     installs = _tests_that_install()
 
-    assert len(installs) == 10
+    assert len(installs) == 1
     assert installs <= _collected("-m", "integration")
 
 

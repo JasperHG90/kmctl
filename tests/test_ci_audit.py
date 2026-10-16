@@ -19,8 +19,8 @@ ISSUE_SCRIPT = ROOT / "action" / "knowledge-audit-issue.sh"
 BODY = "kmctl-audit-body.md"
 TOKENS = ("GH_TOKEN", "GITHUB_TOKEN")
 WORKFLOW = ROOT / ".github" / "workflows" / "knowledge-audit.yml"
-SKILLS = ROOT / "plugin" / "skills"
-AUDITOR = ROOT / "plugin" / "agents" / "kmctl-auditor.md"
+SKILLS = ROOT / "apm" / ".apm" / "skills"
+AUDITOR = ROOT / "apm" / ".apm" / "agents" / "kmctl-auditor.md"
 SETTINGS = {
     "KMCTL_AUDIT_PROVIDER": "my-provider",
     "KMCTL_AUDIT_MODEL": "my-model",
@@ -134,7 +134,7 @@ def _env(tmp_path: Path, bin_dir: Path, **extra: str) -> dict[str, str]:
         "PATH": f"{bin_dir}:{os.environ['PATH']}",
         "GITHUB_STEP_SUMMARY": str(tmp_path / "summary.md"),
         "RUNNER_TEMP": str(runner_temp),
-        "KMCTL_PLUGIN_DIR": str(ROOT / "plugin"),
+        "KMCTL_PLUGIN_DIR": str(ROOT / "apm" / ".apm"),
         **SETTINGS,
         **extra,
     }

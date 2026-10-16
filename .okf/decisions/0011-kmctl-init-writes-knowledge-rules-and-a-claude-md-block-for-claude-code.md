@@ -142,3 +142,15 @@ spare edited copies. So:
   an update verb after upgrading.
 - A repository that wants its own version of one of these rules puts it under
   another name (ticket update-refreshes-rules).
+
+## Correction, 2026-10-16
+
+`kmctl init` no longer writes the four knowledge rules, and `kmctl update`
+no longer refreshes them. Since
+[ADR 0014](0014-apm-is-the-only-install-route.md) they ship in kmctl's APM
+package as `apm/.apm/instructions/NAME.instructions.md`, with the same
+bodies and their `paths:` written as `applyTo:`, and `kmctl plugin install`
+puts them in `.claude/rules/` through APM, which also replaces an older copy.
+`src/kmctl/repo_rules/` is gone, and init's last line now starts with
+`kmctl plugin install --harness claude`. The rest of this record stands: the
+kmctl block in `CLAUDE.md` and `AGENTS.md`, and the first decision.

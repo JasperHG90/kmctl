@@ -1,7 +1,7 @@
 ---
 type: manifesto
 title: "Manifesto: kmctl"
-description: What kmctl is for, where each kind of knowledge lives, the parts (CLI, plugin installed by the CLI or APM, CI action), the invariants, values, and what is out of scope for now.
+description: What kmctl is for, where each kind of knowledge lives, the parts (CLI, APM package installed by the CLI, CI action), the invariants, values, and what is out of scope for now.
 generated:
   by: claude-opus/5.5
   at: 2026-10-15
@@ -43,23 +43,23 @@ this formalizes so every repository can have it.
 
 ## Parts
 
-- **`kmctl`, a standalone CLI** (ADR 0001). It serves the briefing and the
-  rules that are injected into context, installs the plugin, and does the
-  bookkeeping a script can do: scaffold `docs/` and `.okf/` and seed the
-  knowledge rules, a `CLAUDE.md` block and a first decision (ADR 0011), create a new
-  decision or practice with the next number and its index entry, supersede a
-  decision, list what is due for review, check indexes and links, and list
-  live and expired handoffs.
-- **A plugin**, for Claude Code first (ADR 0003). It depends on the `okf`
-  plugin for OKF authoring and validation and adds: one SessionStart hook
-  that relays `kmctl`'s briefing (ADR 0004), an audit agent with three review
-  skills (architecture, decision log, practices), a skill for writing
-  Diataxis docs, and `/handoff` and `/continue`, which write and read back
-  handoffs in `.okf/handoffs/` (ADR 0008). Skills route; `kmctl` decides
-  and writes. It installs two ways: `kmctl plugin install`, the main route,
-  or APM (Agent Package Manager) through the `apm/apm.yml` package, which
-  also brings the okf skills (ADR 0013). APM leaves out the CLI and skips
-  the CLI's check that the plugin matches its version.
+- **`kmctl`, a standalone CLI** (ADR 0001). It serves the briefing that is
+  injected into context, installs its package, and does the bookkeeping a
+  script can do: scaffold `docs/` and `.okf/` with a `CLAUDE.md` block and a
+  first decision (ADR 0011), create a new decision or practice with the next
+  number and its index entry, supersede a decision, list what is due for
+  review, check indexes and links, and list live and expired handoffs.
+- **An APM package**, `apm/`, installed by the CLI (ADR 0014). It holds an
+  audit agent with three review skills (architecture, decision log,
+  practices), a skill for writing Diataxis docs, `/handoff` and `/continue`,
+  which write and read back handoffs in `.okf/handoffs/` (ADR 0008), and the
+  four knowledge rules, and it depends on the okf skills for OKF authoring and
+  validation. Skills route; `kmctl` decides and writes.
+  `kmctl plugin install --harness claude` writes the package into the
+  repository's `apm.yml` at the CLI's own version and installs it with APM
+  (Agent Package Manager), then writes what APM does not carry: one
+  SessionStart hook that relays `kmctl`'s briefing (ADR 0004) and okf's MCP
+  server. Claude Code is the one harness so far.
 - **A reusable GitHub Action** (ADR 0005). On every pull request it runs the
   deterministic checks for free. The LLM audit is opt-in and reports only.
 
@@ -67,10 +67,10 @@ this formalizes so every repository can have it.
 
 Each is `planned` until the test named for it passes, then `enforced`.
 
-- **I1. One hook, and it never blocks.** The plugin's only hook is
+- **I1. One hook, and it never blocks.** The only hook kmctl installs is
   SessionStart, and it exits 0 even when `kmctl` is missing or fails.
-  Status: enforced by `tests/test_plugin.py` (one SessionStart hook; exit 0
-  without `kmctl` and when it fails).
+  Status: enforced by `tests/test_plugin.py` (`kmctl plugin install` writes
+  one SessionStart hook; it exits 0 without `kmctl` and when it fails).
 - **I2. Audits never write knowledge.** The audit agent, its skills and the
   CI action report findings; they never edit `.okf/` or `docs/` and never
   write a `verified` stamp. Status: planned.
@@ -101,5 +101,5 @@ Each is `planned` until the test named for it passes, then `enforced`.
 - Hooks beyond SessionStart: a nudge after code edits, a reminder at Stop,
   a commit gate (ADR 0004).
 - Harnesses other than Claude Code: opencode, Antigravity, Hermes and others
-  come after the Claude Code plugin works (ADR 0003).
+  come after Claude Code works (ADR 0014).
 - Writing `verified` stamps from an audit (ADR 0005).

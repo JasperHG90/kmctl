@@ -21,7 +21,6 @@ PLANNED = (
     ".okf/proposals/",
     ".okf/prototypes/",
     ".okf/handoffs/",
-    "plugin/",
     "docs/",
     "src/kmctl/",
     ".github/workflows/",

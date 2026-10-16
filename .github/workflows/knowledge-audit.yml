@@ -42,7 +42,7 @@ jobs:
           KMCTL_AUDIT_API_KEY_ENV: AUDIT_API_KEY
           AUDIT_API_KEY: ${{ secrets.AUDIT_API_KEY }}
           KMCTL_AUDIT_TIMEOUT: 30m
-          KMCTL_PLUGIN_DIR: ${{ github.workspace }}/plugin
+          KMCTL_PLUGIN_DIR: ${{ github.workspace }}/apm/.apm
         run: bash action/knowledge-audit.sh
       # Only this step gets the token; it posts the body the audit wrote.
       - name: Post the audit issue

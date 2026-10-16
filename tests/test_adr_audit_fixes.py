@@ -31,7 +31,7 @@ def test_records_have_consequences() -> None:
     records = _records()
     log = (OKF / "log.md").read_text(encoding="utf-8")
 
-    assert len(records) == 13
+    assert len(records) == 14
     missing = [
         p.name
         for p in records

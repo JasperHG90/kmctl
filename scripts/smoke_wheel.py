@@ -9,9 +9,9 @@ Usage::
 
 It creates a throwaway virtual environment, installs the wheel with its
 dependencies, and checks that ``kmctl --version`` prints the wheel's version
-(or ``--version`` when given) and that the installed package holds the plugin
-manifest, ``kmctl/_plugin/.claude-plugin/plugin.json``, that
-``kmctl plugin install`` stages. Exit 0 when both hold (ADR 0012).
+(or ``--version`` when given) and that the installed package holds the skills
+``kmctl briefing`` lists, such as ``kmctl/_skills/audit/SKILL.md``. Exit 0
+when both hold (ADR 0012).
 """
 
 from __future__ import annotations
@@ -22,7 +22,8 @@ import sys
 import tempfile
 from pathlib import Path
 
-PLUGIN_MANIFEST = "_plugin/.claude-plugin/plugin.json"
+#: One skill the package ships, under the folder ``kmctl briefing`` reads.
+SKILL = "_skills/audit/SKILL.md"
 
 
 def wheel_version(wheel: Path) -> str:
@@ -63,14 +64,14 @@ def smoke(wheel: Path, expect: str) -> list[str]:
                 "-c",
                 (
                     "import kmctl, pathlib; "
-                    f"p = pathlib.Path(kmctl.__file__).parent / {PLUGIN_MANIFEST!r}; "
+                    f"p = pathlib.Path(kmctl.__file__).parent / {SKILL!r}; "
                     "print(p); raise SystemExit(0 if p.is_file() else 1)"
                 ),
             ]
         )
         if found.returncode != 0:
             problems.append(
-                f"the installed package holds no plugin manifest at {found.stdout.strip()}"
+                f"the installed package holds no skills at {found.stdout.strip()}"
                 f"{found.stderr.strip()}"
             )
         return problems
@@ -93,7 +94,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"smoke_wheel: {problem}", file=sys.stderr)
     if not problems:
         print(
-            f"smoke_wheel: {args.wheel.name} installs, reports {expect}, holds its plugin"
+            f"smoke_wheel: {args.wheel.name} installs, reports {expect}, holds its skills"
         )
     return 1 if problems else 0
 

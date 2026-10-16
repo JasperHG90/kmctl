@@ -1,5 +1,5 @@
 ---
-paths: ["plugin/skills/**", "plugin/agents/**"]
+paths: ["apm/.apm/skills/**", "apm/.apm/agents/**"]
 ---
 
 # Skills are thin
@@ -26,5 +26,5 @@ WHY: a skill naming a verb or flag that does not exist teaches the agent to
 invent one.
 
 Every `kmctl` command in a skill exists in the CLI that ships with the
-plugin (`.claude/rules/cli-version-floor.md`).
+package (`.claude/rules/cli-version-floor.md`).
 </constraint>

@@ -56,14 +56,10 @@ created docs/README.md
 created .okf/index.md
 created .okf/log.md
 created .okf/manifesto.md
-created .claude/rules/okf-bundle.md
-created .claude/rules/docs-layout.md
-created .claude/rules/diagrams-stay-current.md
-created .claude/rules/manifesto-invariants.md
 created CLAUDE.md
 created .okf/decisions/index.md
 created .okf/decisions/0001-keep-project-knowledge-in-an-okf-bundle.md
-Next: fill the purpose and invariants in .okf/manifesto.md (its values are the operator's to write), then add a diagram page to .okf/architecture/ once there is code, then record each choice as you make it with kmctl new decision
+Next: kmctl plugin install --harness claude for the skills and the knowledge rules, then fill the purpose and invariants in .okf/manifesto.md (its values are the operator's to write), then add a diagram page to .okf/architecture/ once there is code, then record each choice as you make it with kmctl new decision
 ```
 
 `docs/README.md` is the index of pages for people who use your project.
@@ -72,10 +68,11 @@ Next: fill the purpose and invariants in .okf/manifesto.md (its values are the o
 `manifesto.md` is where your project's design will go. You can write the
 manifesto later; this tutorial leaves it as kmctl wrote it.
 
-The rest is for an agent such as Claude Code working in the repository. The
-files in `.claude/rules/` are the rules for writing knowledge. `CLAUDE.md`
-holds a block that says where each kind of knowledge lives and what the agent
-should do as it works. Decision 0001 records the first choice: keep the
+The rest is for an agent such as Claude Code working in the repository.
+`CLAUDE.md` holds a block that says where each kind of knowledge lives and
+what the agent should do as it works. The rules for writing knowledge come
+with kmctl's skills from `kmctl plugin install`, the first step the `Next:`
+line names; this tutorial does not need them. Decision 0001 records the first choice: keep the
 project's knowledge in `.okf/`.
 
 ### 3. Check it
@@ -189,10 +186,9 @@ together.
 
 ## What you learned
 
-- `kmctl init` sets up `docs/`, `.okf/`, the knowledge rules and a
-  `CLAUDE.md` block, and keeps a file that is already there, apart from the
-  knowledge rules and its block in `CLAUDE.md`. After upgrading kmctl,
-  `kmctl update` refreshes those two.
+- `kmctl init` sets up `docs/`, `.okf/` and a `CLAUDE.md` block, and keeps a
+  file that is already there, apart from its block in `CLAUDE.md`. After
+  upgrading kmctl, `kmctl update` refreshes the block.
 - `kmctl new decision` writes the structure of a record (number, front matter,
   index entry, log line) and you write the prose.
 - `kmctl check` fails when an index and its folder disagree.

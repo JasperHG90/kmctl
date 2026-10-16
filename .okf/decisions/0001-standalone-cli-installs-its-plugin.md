@@ -45,3 +45,17 @@ The record had no Consequences section; this adds it.
 - Installing the plugin needs the `claude` CLI on PATH, and the hook needs
   `kmctl` on PATH; without it the hook prints how to install it.
 - Skills stay short and call kmctl verbs, so logic lives in tested code.
+
+## Correction, 2026-10-16
+
+The Consequences said the plugin is package data that `kmctl plugin install`
+stages stamped with the CLI's version, and that installing it needs the
+`claude` CLI. Since [ADR 0014](0014-apm-is-the-only-install-route.md) the
+skills, agent and rules ship as the APM package in `apm/`, whose
+`apm/apm.yml` carries the release version. `kmctl plugin install --harness
+claude` writes that package into the repository's apm.yml at the tag
+`v<cli version>` and installs it with APM, so the CLI still installs the
+content of its own release, and `kmctl plugin status` compares the ref in
+`apm.lock.yaml` with the CLI's version. The wheel carries only the skills,
+for `kmctl briefing`; nothing is staged, and the install needs `uv` rather
+than `claude` on PATH.

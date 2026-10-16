@@ -6,7 +6,7 @@ tags: [adr, decision, install]
 generated:
   by: claude-opus/5.5
   at: 2026-10-16T10:50:31Z
-status: stable
+status: deprecated
 ---
 
 # ADR 0013: kmctl installs through APM too
@@ -78,3 +78,7 @@ Rejected:
   `scripts/release.py set` moves its `#vX.Y.Z` pin with each release.
   `tests/test_apm_package.py` checks the package against `plugin/` and
   installs it into a scratch consumer with APM 0.33.0.
+
+## Correction, 2026-10-16
+
+Superseded by [ADR 0014](0014-apm-is-the-only-install-route.md).

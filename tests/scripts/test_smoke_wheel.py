@@ -13,10 +13,10 @@ from scripts.smoke_wheel import version_matches, wheel_version
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "smoke_wheel.py"
-PLUGIN_MANIFEST = "kmctl/_plugin/.claude-plugin/plugin.json"
+SKILL = "kmctl/_skills/audit/SKILL.md"
 
 
-def _wheel(tmp_path: Path, version: str, prints: str, plugin: bool = True) -> Path:
+def _wheel(tmp_path: Path, version: str, prints: str, skills: bool = True) -> Path:
     """Write a dependency-free kmctl wheel whose ``kmctl --version`` prints ``prints``.
 
     It installs without reaching an index, so the smoke script's checks run offline.
@@ -28,8 +28,8 @@ def _wheel(tmp_path: Path, version: str, prints: str, plugin: bool = True) -> Pa
         f"{info}/WHEEL": "Wheel-Version: 1.0\nGenerator: test\nRoot-Is-Purelib: true\nTag: py3-none-any\n",
         f"{info}/entry_points.txt": "[console_scripts]\nkmctl = kmctl:main\n",
     }
-    if plugin:
-        files[PLUGIN_MANIFEST] = '{"name": "kmctl"}\n'
+    if skills:
+        files[SKILL] = "---\nname: audit\n---\n"
     files[f"{info}/RECORD"] = "".join(
         f"{name},,\n" for name in [*files, f"{info}/RECORD"]
     )
@@ -50,8 +50,8 @@ def _smoke(wheel: Path, *args: str) -> subprocess.CompletedProcess[str]:
     )
 
 
-def test_a_wheel_at_the_release_version_with_its_plugin_passes(tmp_path: Path) -> None:
-    """A wheel that reports the version asked for and holds the plugin manifest passes."""
+def test_a_wheel_at_the_release_version_with_its_skills_passes(tmp_path: Path) -> None:
+    """A wheel that reports the version asked for and holds the skills passes."""
     res = _smoke(_wheel(tmp_path, "0.2.0", "kmctl 0.2.0"), "--version", "0.2.0")
 
     assert res.returncode == 0, res.stderr
@@ -73,14 +73,14 @@ def test_the_version_defaults_to_the_wheel_file_name(tmp_path: Path) -> None:
     assert "not 0.2.0" in res.stderr
 
 
-def test_a_wheel_without_the_plugin_manifest_fails(tmp_path: Path) -> None:
-    """A wheel that installs no plugin manifest fails, naming the missing file."""
+def test_a_wheel_without_the_skills_fails(tmp_path: Path) -> None:
+    """A wheel that installs no skills fails, naming the missing file."""
     res = _smoke(
-        _wheel(tmp_path, "0.2.0", "kmctl 0.2.0", plugin=False), "--version", "0.2.0"
+        _wheel(tmp_path, "0.2.0", "kmctl 0.2.0", skills=False), "--version", "0.2.0"
     )
 
     assert res.returncode == 1
-    assert "_plugin/.claude-plugin/plugin.json" in res.stderr
+    assert "_skills/audit/SKILL.md" in res.stderr
 
 
 def test_wheel_version_reads_the_file_name() -> None:

@@ -95,3 +95,8 @@
 - The briefing drops the knowledge rules `.claude/rules/` already carries and fits 500 tokens: `manifesto`, `decisions/0002-briefing-and-rules-injected-by-the-cli`, `decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code`, `architecture/overview`.
 - Corrected `decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code`: init replaces the four knowledge rules when they differ, and `kmctl update` is an alias of init.
 - Updated `architecture/overview`: `kmctl init` replaces the four knowledge rules when they differ, and `kmctl update` is its alias.
+- Added `decisions/0014-apm-is-the-only-install-route` with `kmctl new decision`.
+- Superseded `decisions/0013-kmctl-installs-through-apm-too` with `decisions/0014-apm-is-the-only-install-route`.
+- Superseded `decisions/0003-claude-code-plugin-first-depends-on-okf` with `decisions/0014-apm-is-the-only-install-route`.
+- Corrected `decisions/0001-standalone-cli-installs-its-plugin`, `decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code` and `decisions/0012-releases-come-from-ci` for ADR 0014: the package in apm/ replaces the staged plugin, init stops writing the rules, and apm/apm.yml is the version source.
+- Updated `manifesto` and `architecture/overview` for ADR 0014: the APM package in apm/ replaces the plugin, `kmctl plugin install --harness claude` installs it and writes the hook and okf's MCP server, and I1's test checks the hook kmctl writes.
