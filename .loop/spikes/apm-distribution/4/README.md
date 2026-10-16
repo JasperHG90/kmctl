@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev72+ge53d4208b.d20261016
-  at: '2026-10-16T10:09:28+00:00'
+  at: '2026-10-16T10:11:11+00:00'
 slug: apm-distribution
 n: 4
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike apm-distribution/4
@@ -24,7 +24,9 @@ The command exited 0:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note apm-distribution 4`.
+A `plugin/apm.yml` declaring `scaccogatto/okf-skills#a8b96420` reached the consumer. It got okf's 4 skills (okf, validate, backfill, visualize), its 2 agents, and its Stop hook (script at `.claude/hooks/okf-skills/hooks/okf-stop-check.sh`). kmctl's SessionStart hook landed in `.claude/settings.json`. With kmctl on PATH (uv tool install), `kmctl --version` (0.1.0), `kmctl briefing --path <consumer>` and the deployed hook command all exit 0 and print the briefing.
+The script exited 0, but it did not check the kmctl agent, and the agent is missing: `.claude/agents/` holds only okf's two. An apm.yml that declares dependencies makes APM treat `plugin/` as an APM-format package, which reads agents only from `.apm/agents/` (format_detection.py, agent_integrator.py). Also, okf's MCP server `bundle` is skipped as a transitive one, unless the consumer declares it again or passes `--trust-transitive-mcp`.
+Does not settle risk 3 alone: deps in `plugin/apm.yml` lose the agent. See spike:apm-distribution/5.
 
 ## Files
 
