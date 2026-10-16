@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Literal
 
 from kmctl.concepts import ConceptError, link_text, one_line, slug
+from kmctl.kinds import skeleton
 
 DocType = Literal["tutorial", "how-to", "reference", "explanation"]
 
@@ -13,18 +14,6 @@ FOLDERS: dict[str, str] = {
     "how-to": "how-to",
     "reference": "reference",
     "explanation": "explanation",
-}
-
-SKELETONS: dict[str, list[str]] = {
-    "tutorial": [
-        "What you will build",
-        "Before you start",
-        "Steps",
-        "What you learned",
-    ],
-    "how-to": ["Before you start", "Steps", "Check it worked"],
-    "reference": ["Summary", "Details"],
-    "explanation": ["The question", "How it works", "Why it is this way"],
 }
 
 
@@ -72,7 +61,7 @@ def new_doc(root: Path, doc_type: DocType, title: str, description: str = "") ->
         )
     created_folder = not folder.is_dir()
     folder.mkdir(exist_ok=True)
-    body = "\n\n".join(f"## {h}" for h in SKELETONS[doc_type])
+    body = "\n\n".join(f"## {h}" for h in skeleton(doc_type))
     page.write_text(f"# {title}\n\n{body}\n", encoding="utf-8")
     rel = page.relative_to(root / "docs").as_posix()
     entry = f"- [{link_text(title)}]({rel})" + (

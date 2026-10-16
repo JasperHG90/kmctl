@@ -43,6 +43,7 @@ flowchart LR
         supersede["supersede.py<br/>decision supersede"]
         pluginPy["plugin.py<br/>plugin install|update|status"]
         okf["okf.py<br/>reads front matter"]
+        kinds["kinds.py<br/>schema; the table of kinds"]
     end
 
     subgraph action["action.yml (GitHub Action)"]
@@ -69,11 +70,13 @@ flowchart LR
     audit -- "dispatches" --> auditor
     auditor -. "reads only" .-> repo
 
-    app --> scaffold & checks & briefing & reviewDue & handoffs & concepts & docs & supersede & pluginPy
+    app --> scaffold & checks & briefing & reviewDue & handoffs & concepts & docs & supersede & pluginPy & kinds
     briefing --> reviewDue & handoffs & rules
     briefing -- "skills_dir: names the plugin's skills" --> pluginPy
     concepts & handoffs & reviewDue & supersede --> okf
     docs & supersede --> concepts
+    scaffold & concepts & docs & supersede -- "skeletons, status values" --> kinds
+    kinds -- "ALLOWED_FIELDS" --> okf
     scaffold -- "first decision" --> concepts
     scaffold --> repoRules
     scaffold & concepts & docs & supersede -- "write" --> repo
@@ -106,10 +109,17 @@ exit codes. Each verb calls one module:
 | `kmctl briefing` | `briefing.py`, with `review_due.py`, `handoffs.py`, the packaged `rules/`, and `plugin.py` for the skills it names | nothing |
 | `kmctl review due` | `review_due.py` | nothing |
 | `kmctl handoffs` | `handoffs.py` | nothing |
+| `kmctl schema` | `kinds.py`, with `okf.py` for the field names | nothing |
 | `kmctl new decision`, `practice`, `proposal`, `prototype`, `handoff` | `concepts.py`, with `okf.py` to find each `--source` the way `review_due.py` does | the concept, its section index entry and a log line; `--stale-after` and `--source` write its `stale_after` and `sources` |
 | `kmctl new doc` | `docs.py` | the page and its `docs/README.md` entry |
 | `kmctl decision supersede` | `supersede.py` | both decision records and a log line |
 | `kmctl plugin install`, `update`, `status` | `plugin.py` | the staged plugin in `$XDG_DATA_HOME/kmctl/marketplace`, then `claude plugin` installs it |
+
+`kinds.py` holds the one table of document kinds: each kind's front matter
+fields, its status values and its `##` sections. `kmctl new`, `kmctl new doc`,
+`kmctl init` and `kmctl decision supersede` take their skeletons, the
+manifesto's sections and the status they write from it, and `kmctl schema`
+prints a JSON Schema built from it, so the schema is what kmctl writes.
 
 `okf.py` is the one reader of OKF front matter. `concepts.py`, `handoffs.py`,
 `review_due.py` and `supersede.py` read fields through it, so the fields kmctl
@@ -170,11 +180,11 @@ action's own checkout.
 - Verbs: `kmctl init`, `kmctl check`, `kmctl briefing`, `kmctl review due`,
   `kmctl handoffs`, `kmctl new decision`, `kmctl new practice`,
   `kmctl new proposal`, `kmctl new prototype`, `kmctl new handoff`,
-  `kmctl new doc`, `kmctl decision supersede`, `kmctl plugin install`,
+  `kmctl new doc`, `kmctl schema`, `kmctl decision supersede`, `kmctl plugin install`,
   `kmctl plugin update`, `kmctl plugin status`.
 - Modules: `src/kmctl/__init__.py`, `scaffold.py`, `checks.py`,
   `briefing.py`, `rules/`, `repo_rules/`, `review_due.py`, `handoffs.py`, `concepts.py`,
-  `docs.py`, `supersede.py`, `plugin.py`, `okf.py`; `plugin/hooks/hooks.json`,
+  `docs.py`, `supersede.py`, `plugin.py`, `okf.py`, `kinds.py`; `plugin/hooks/hooks.json`,
   `plugin/skills/` (write-docs, handoff, continue, audit and the three review
   skills), `plugin/agents/kmctl-auditor.md`; `action.yml`,
   `action/knowledge-ci.sh`, `action/knowledge-audit.sh`,

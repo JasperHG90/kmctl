@@ -13,6 +13,7 @@ from kmctl.checks import run_checks
 from kmctl.concepts import ConceptError, Kind, new_concept
 from kmctl.docs import DocType, new_doc
 from kmctl.handoffs import live_handoffs
+from kmctl.kinds import KINDS, schema
 from kmctl.plugin import PluginError, PluginStatus, Scope
 from kmctl.plugin import install as install_plugin
 from kmctl.plugin import status as plugin_status
@@ -480,6 +481,67 @@ def briefing(
     """Print the session briefing: where knowledge lives, what is due, and the rules."""
     result = build_briefing(path)
     typer.echo(json.dumps(as_dict(result)) if as_json else render(result))
+
+
+@app.command(
+    "schema",
+    epilog=(
+        "Examples:\n\n"
+        "  kmctl schema\n\n"
+        "  kmctl schema decision\n\n"
+        "  kmctl schema architecture\n\n"
+        "The schema is JSON Schema (draft 2020-12) for the kind's front matter, "
+        "built from kmctl's own table of kinds when you run it, so it is what "
+        "kmctl writes: the fields by their OKF names, which are required, the "
+        "legal values and what each one means. x-kmctl-sections gives the body: "
+        'a list of the ## sections in order, {"pattern": REGEX} when every '
+        'heading has one form, {"last": NAME} for free sections ending with '
+        "NAME, or null for no fixed sections. A kind with no front matter allows "
+        "no properties. Read it before you write a concept or a page by hand; "
+        "nothing checks a file against it yet."
+    ),
+)
+def schema_cmd(
+    kind: Annotated[
+        str | None,
+        typer.Argument(
+            metavar="decision",
+            help=(
+                "The kind whose schema to print, one of the names kmctl schema "
+                f"lists with no name: {', '.join(KINDS)}. Leave it out for the list."
+            ),
+        ),
+    ] = None,
+    as_json: Annotated[
+        bool,
+        typer.Option(
+            "--json",
+            help=(
+                "With no kind, print the list as one JSON object of kind to where "
+                "it lives and what it is for, for scripts. A kind's schema is JSON "
+                "either way."
+            ),
+        ),
+    ] = False,
+) -> None:
+    """Print the JSON Schema of one document kind, or list the kinds there are."""
+    if kind is None:
+        purposes = {name: f"{k.where}, {k.purpose}" for name, k in KINDS.items()}
+        if as_json:
+            typer.echo(json.dumps(purposes))
+            return
+        width = max(map(len, purposes))
+        for name, purpose in purposes.items():
+            typer.echo(f"{name:<{width}}  {purpose}")
+        return
+    if kind not in KINDS:
+        typer.echo(
+            f"kmctl schema: refused: no kind {kind!r}; give one of "
+            f"{', '.join(KINDS)}, as kmctl schema lists them",
+            err=True,
+        )
+        raise typer.Exit(1)
+    typer.echo(json.dumps(schema(kind), indent=2))
 
 
 decision_app = typer.Typer(

@@ -14,6 +14,7 @@ from importlib.metadata import version
 from pathlib import Path
 from typing import Literal
 
+from kmctl.kinds import KINDS, skeleton
 from kmctl.okf import (
     BadFrontMatter,
     as_datetime,
@@ -30,14 +31,6 @@ SECTIONS: dict[str, str] = {
     "proposal": "proposals",
     "prototype": "prototypes",
     "handoff": "handoffs",
-}
-
-SKELETONS: dict[str, list[str]] = {
-    "decision": ["Context", "Decision", "Consequences"],
-    "practice": ["What happened", "The lesson", "Evidence"],
-    "proposal": ["Problem", "Proposal", "Open questions"],
-    "prototype": ["Question", "Method", "Results", "Conclusion"],
-    "handoff": ["Summary", "Where it stands", "Next steps", "Key references"],
 }
 
 #: How long a new handoff stays live before kmctl review due lists it as expired.
@@ -210,8 +203,8 @@ def _front_matter(
         f"  by: process:kmctl/{version('kmctl')}",
         f"  at: {stamp}",
     ]
-    if kind == "decision":
-        lines.append("status: stable")
+    if (status := KINDS[kind].status) is not None:
+        lines.append(f"status: {status}")
     if stale_after is None and kind == "handoff":
         stale_after = now + timedelta(days=HANDOFF_DAYS)
     if stale_after is not None:
@@ -348,7 +341,7 @@ def new_concept(
     if existing is not None:
         slug(title)  # the same title check a new handoff gets
         rel = existing.relative_to(section).as_posix()
-        body = "\n\n".join(f"## {h}" for h in SKELETONS[kind])
+        body = "\n\n".join(f"## {h}" for h in skeleton(kind))
         existing.write_text(
             _front_matter(kind, title, description, now, key, when)
             + f"\n# {title}\n\n{body}\n",
@@ -397,7 +390,7 @@ def new_concept(
             okf / "index.md", f"- [{name.capitalize()}]({name}/index.md): the {name}."
         )
     path.parent.mkdir(parents=True, exist_ok=True)
-    body = "\n\n".join(f"## {h}" for h in SKELETONS[kind])
+    body = "\n\n".join(f"## {h}" for h in skeleton(kind))
     path.write_text(
         _front_matter(kind, title, description, now, key, when, written_sources)
         + f"\n# {title}\n\n{body}\n",
