@@ -1,0 +1,45 @@
+UV_CACHE_DIR=/home/vscode/.cache/uv HOME=/tmp/tmp.N22IS9fmKC/home CLAUDE_CONFIG_DIR=/tmp/tmp.N22IS9fmKC/home/.claude
+claude: /home/vscode/.local/bin/claude 2.1.301 (Claude Code)
+===== warm the cache (network allowed)
+Downloading cpython-3.15.0-linux-aarch64-gnu (download) (30.0MiB)
+ Downloaded cpython-3.15.0-linux-aarch64-gnu (download)
+Installed 62 packages in 260ms
+Agent Package Manager (APM) CLI version 0.33.0
+--- exit 0
+===== uv: uv tool run --offline --from apm-cli==0.33.0 apm --version
+--- exit 0
+--- stdout
+Agent Package Manager (APM) CLI version 0.33.0
+--- stderr
+--- all connect() calls
+3865277 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=3865279, si_uid=1000, si_status=1, si_utime=0, si_stime=0} ---
+3865277 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=3865280, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+3865277 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=3865281, si_uid=1000, si_status=0, si_utime=3 /* 0.03 s */, si_stime=0} ---
+3865290 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=3865291, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+3865289 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=3865290, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+3865289 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=3865333, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+3865289 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=3865334, si_uid=1000, si_status=0, si_utime=0, si_stime=0} ---
+3865289 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=3865344, si_uid=1000, si_status=128, si_utime=0, si_stime=0} ---
+3865277 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=3865289, si_uid=1000, si_status=0, si_utime=35 /* 0.35 s */, si_stime=8 /* 0.08 s */} ---
+--- inet connects: 0
+--- HOME changes (diff before/after: mtime size sha path)
+SUMMARY uv: exit=0 inet_connects=0 home_changed=no
+===== claude: claude plugin list --json
+--- exit 0
+--- stdout
+[]
+--- stderr
+--- all connect() calls
+3888300 connect(9, {sa_family=AF_UNIX, sun_path="/var/run/nscd/socket"}, 110) = -1 ENOENT (No such file or directory)
+3888300 connect(9, {sa_family=AF_UNIX, sun_path="/var/run/nscd/socket"}, 110) = -1 ENOENT (No such file or directory)
+3888300 connect(9, {sa_family=AF_INET, sin_port=htons(53), sin_addr=inet_addr("0.250.250.200")}, 16) = 0
+3888302 connect(9, {sa_family=AF_INET, sin_port=htons(443), sin_addr=inet_addr("160.79.104.10")}, 16) = -1 EINPROGRESS (Operation now in progress)
+3888304 connect(10, {sa_family=AF_INET, sin_port=htons(53), sin_addr=inet_addr("0.250.250.200")}, 16) = 0
+3888295 connect(10, {sa_family=AF_INET, sin_port=htons(443), sin_addr=inet_addr("160.79.104.10")}, 16) = -1 EINPROGRESS (Operation now in progress)
+--- inet connects: 4
+--- HOME changes (diff before/after: mtime size sha path)
+1a2,3
+> 1792182243.4587332330 84 d45408e8825b1be0 ./.claude/backups/.claude.json.backup.1792182243458
+> 1792182243.5937343780 423 d86a28cf77c8175e ./.claude/.claude.json
+SUMMARY claude: exit=0 inet_connects=4 home_changed=yes
+--- final exit 1
