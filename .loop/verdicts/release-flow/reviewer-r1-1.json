@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The record count assertion went from == 11 to >= 11, so ADR 0012 (or any later record) could be deleted without this test noticing; pin it at == 12.",
+      "anchor": "tests/test_adr_audit_fixes.py:34",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "ADR 0012 says the docs' install lines still name main until the first release, but the three uv tool install lines name no ref at all; only the two uses: lines name @main.",
+      "anchor": ".okf/decisions/0012-releases-come-from-ci.md:80",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "59ad6b558cf5a316e354a4307cedef7a5de4fb88318c6e346ac3756df8828cc8",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
+  "at": "2026-10-16T10:21:56+00:00"
+}
