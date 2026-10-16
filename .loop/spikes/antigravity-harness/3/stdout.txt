@@ -1,0 +1,29 @@
+== agy 1.4.0
+== validate
+{
+  "dir": "/tmp/tmp.D61d8QaTwU/repo/.agents/plugins/kmctl",
+  "manifest": "plugin.json",
+  "name": "kmctl",
+  "agentPluginsSpec": false,
+  "components": {
+    "agents": 1,
+    "hooks": 1,
+    "mcpServers": 0,
+    "rules": 0,
+    "sidecars": 0,
+    "skills": 0
+  },
+  "findings": []
+}
+== plugin list (installed plugins only?)
+[]
+== agents, workspace untrusted
+<none>
+== agents, only repo root trusted, cwd=repo root
+kmctl-probe
+== agents, only repo root trusted, cwd=repo/sub (info)
+<none>
+== agents, only repo/sub trusted, cwd=repo/sub (walk up to .agents)
+kmctl-probe
+== no user-level plugins exist:
+ls: cannot access '/tmp/tmp.D61d8QaTwU/home/.gemini/config/plugins': No such file or directory

@@ -1,2 +1,3 @@
 {"at": "2026-10-16T19:48:22+00:00", "command": "python3 -I /tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/spike-ag-r2/mcp_probe.py", "exit": 0, "kind": "spike", "n": 1, "schema_version": "1.0"}
 {"at": "2026-10-16T19:49:50+00:00", "command": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/spike-ag-r1/probe.sh", "exit": 1, "kind": "spike", "n": 2, "schema_version": "1.0"}
+{"at": "2026-10-16T19:50:23+00:00", "command": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/spike-ag-r1/probe.sh", "exit": 0, "kind": "spike", "n": 3, "schema_version": "1.0"}

@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "antigravity-harness",
+  "n": 3,
+  "command": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/spike-ag-r1/probe.sh",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/spike-ag-r1/probe.sh",
+      "copy": "files/probe.sh"
+    }
+  ],
+  "where": "worktree",
+  "head": "70e731ac19fc09c20ac2cb4fc93334f2c75d3228",
+  "fingerprint": "e9a1bc1af3bf9439278066b1b2fe13b8e685b83e89ba9d24c3e55d8b7cf06a00",
+  "started_at": "2026-10-16T19:50:21+00:00",
+  "finished_at": "2026-10-16T19:50:23+00:00",
+  "duration_seconds": 1.992,
+  "timeout_seconds": 180.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
+  "moved_from": null
+}
