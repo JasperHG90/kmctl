@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev72+ge53d4208b.d20261016
-  at: '2026-10-16T19:49:50+00:00'
+  at: '2026-10-16T19:50:08+00:00'
 slug: antigravity-harness
 n: 2
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike antigravity-harness/2
@@ -24,7 +24,9 @@ The command exited 1:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note antigravity-harness 2`.
+Not the deciding run; spike 3 replaces it. With the repo root in `trustedWorkspaces`, `agy agents` (agy 1.4.0, offline) listed `kmctl-probe`, the agent inside `.agents/plugins/kmctl/`. With no trust it listed nothing. From `repo/sub` it also listed nothing, which made the run exit 1.
+A manual follow-up showed the subfolder miss comes from trust, not discovery: trust matches the exact working folder. Once `repo/sub` was trusted, the agent was listed from there too.
+`agy plugin list --json` printed `[]` in every case, so it shows only user-level installed plugins and cannot answer this question.
 
 ## Files
 
