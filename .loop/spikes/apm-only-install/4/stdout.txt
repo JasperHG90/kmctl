@@ -1,0 +1,161 @@
+== [a1] apm install (no -v, no --force)
+[*] Created apm.yml
+[i] Targets set: claude (persisted to apm.yml)
+[*] Validating 1 package...
+[+] 127.0.0.1:54145/o/pkg
+[*] Updated apm.yml with 1 new package(s)
+[>] Installing 1 new package...
+[>] Resolving o/pkg...
+[!] Insecure HTTP fetch (unencrypted): http://127.0.0.1:54145/o/pkg
+[i] Targets: claude  (source: --target flag)
+  [+] o/pkg #main @ff4ae866
+  |-- 1 agents integrated -> .claude/agents/
+  |-- 1 rule(s) integrated -> .claude/rules/
+[i] Added apm_modules/ to .gitignore
+  [!] 1 file skipped -- local files exist, not managed by APM
+    Use 'apm install --force' to overwrite
+  [!] 1 dependency unpinned: o/pkg -- add #tag or #sha to prevent drift
+  [i] Skipped inactive experimental resolver for target 'copilot-cowork' during 
+lockfile reconciliation.
+  [i] Skipped inactive experimental resolver for target 'copilot-app' during 
+lockfile reconciliation.
+[*] Installed 1 APM dependency in 0.3s.
+== exit 0
+== skip marker lines (plain):
+14:  [!] 1 file skipped -- local files exist, not managed by APM
+== [c] rule after plain install:
+---
+paths:
+  - "docs/**"
+  - ".okf/**"
+---
+
+PACKAGE RULE BODY
+== apm.lock.yaml after plain install:
+lockfile_version: '1'
+apm_version: 0.33.0
+dependencies:
+- repo_url: o/pkg
+  name: pkg
+  host: 127.0.0.1
+  port: 54145
+  resolved_commit: ff4ae8665398bdc98ed7097ee953c06df1c1a7d6
+  version: 0.1.0
+  package_type: apm_package
+  deployed_files:
+  - .claude/agents/x.md
+  - .claude/rules/okf-bundle.md
+  deployed_file_hashes:
+    .claude/agents/x.md: sha256:53ebea2690d2feeb864f0b3d02a5bcdd5bcd6e0ba858873a7e1f96518ca00fe9
+    .claude/rules/okf-bundle.md: sha256:2ccac896aca7384e30cd7d2845f779bcf07ded499ad80d041a6ba033ff33580b
+  content_hash: sha256:b385f72e7062fccf6a720aaedc9b01ec78d457d4a3d215a13c049ddaed66d081
+  is_insecure: true
+  allow_insecure: true
+deployments:
+- kind: project-relative
+  target: claude
+  value: .claude/agents/x.md
+  runtime: null
+  scope: project
+  owners:
+  - 127.0.0.1/o/pkg
+  active_owner: 127.0.0.1/o/pkg
+  content_hash: sha256:53ebea2690d2feeb864f0b3d02a5bcdd5bcd6e0ba858873a7e1f96518ca00fe9
+- kind: project-relative
+  target: claude
+  value: .claude/rules/okf-bundle.md
+  runtime: null
+  scope: project
+  owners:
+  - 127.0.0.1/o/pkg
+  active_owner: 127.0.0.1/o/pkg
+  content_hash: sha256:2ccac896aca7384e30cd7d2845f779bcf07ded499ad80d041a6ba033ff33580b
+== [a2] apm install -v (no --force), re-run
+[>] Installing dependencies from apm.yml...
+Parsed apm.yml: 1 APM deps, 0 MCP deps
+Using apm.lock.yaml (1 locked dependencies)
+    127.0.0.1/o/pkg: locked at ff4ae866
+Resolved 1 direct dependencies (no transitive)
+[!] Insecure HTTP fetch (unencrypted): http://127.0.0.1:54145/o/pkg
+Phase: resolve -> 0.002s
+[i] Could not determine org from git remote; policy auto-discovery skipped
+Phase: policy_gate -> 0.002s
+[i] Targets: claude  (source: --target flag)
+Phase: targets -> 0.001s
+Copilot native registration: unavailable (copilot target not selected)
+Phase: copilot_activate -> 0.000s
+Phase: policy_target_check -> 0.000s
+Phase: download -> 0.000s
+  [+] o/pkg @ff4ae866 (cached)
+  [=] adopted-unchanged: .claude/rules/okf-bundle.md
+  |-- 1 agents adopted -> .claude/agents/
+  |-- 1 rule(s) adopted -> .claude/rules/
+  |-- (files unchanged)
+    [!] 1 file skipped (local files exist)
+Phase: integrate -> 0.006s
+Phase: cleanup -> 0.000s
+Self-healed 1 cache pin marker(s) from existing lockfile
+Carrying forward local .apm state pending hash reconciliation: 0 file(s)
+MCP state unchanged -- carrying forward 0 servers, 0 configs
+LSP state unchanged -- carrying forward 0 server(s), 0 config(s)
+apm.lock.yaml unchanged -- skipping write
+Wrote 1 cache pin marker(s) for drift replay
+Phase: post_deps_local -> 0.000s
+Phase: audit -> 0.000s
+Phase: copilot_plugins -> 0.000s
+[#] Perf: 3 walks, 1 file matches, 15 files visited, 0.001s total walk time
+[#] Perf:   apm_modules/o/pkg: 3 walk(s) (1ms, 15 files visited, 1 matched)
+[#] Perf: discovery: 4 call(s) (1 unique base(s), 3 cache hit(s), 75%)
+Phase: finalize -> 0.000s
+No MCP dependencies found in apm.yml
+No LSP dependencies found in apm.yml
+  [!] 1 file skipped -- local files exist, not managed by APM
+    Use 'apm install --force' to overwrite
+  [!] 1 dependency unpinned: o/pkg -- add #tag or #sha to prevent drift
+  [i] Skipped inactive experimental resolver for target 'copilot-cowork' during 
+lockfile reconciliation.
+    +- To include it, enable 'copilot-cowork' and select target 'copilot-cowork'
+for this install.
+  [i] Skipped inactive experimental resolver for target 'copilot-app' during 
+lockfile reconciliation.
+    +- To include it, enable 'copilot-app' and select target 'copilot-app' for 
+this install.
+[i] No changes -- install state already up to date in 0.0s.
+== exit 0
+RECORD: marker present on re-run
+RECORD: skipped path not named in plain or -v output
+RECORD: lockfile does not list skills/audit
+FAIL a: skipped path cannot be found from APM output
+== [b] apm install --force
+[>] Installing dependencies from apm.yml...
+[!] Insecure HTTP fetch (unencrypted): http://127.0.0.1:54145/o/pkg
+[i] Targets: claude  (source: --target flag)
+  [+] o/pkg @ff4ae866 (cached)
+  |-- 1 agents adopted -> .claude/agents/
+  |-- 1 rule(s) integrated -> .claude/rules/
+  |-- 1 skill(s) integrated -> .claude/skills/
+  [!] 1 skill replaced by a different package (last installed wins)
+    Run with --verbose to see details
+  [!] 1 dependency unpinned: o/pkg -- add #tag or #sha to prevent drift
+  [i] Skipped inactive experimental resolver for target 'copilot-cowork' during 
+lockfile reconciliation.
+  [i] Skipped inactive experimental resolver for target 'copilot-app' during 
+lockfile reconciliation.
+[*] Installed 1 APM dependency in 0.1s.
+== exit 0
+RECORD: SKILL.md now matches package bytes
+RECORD: notes.txt removed by --force
+== skill dir:
+total 4
+drwxr-xr-x 1 vscode vscode 16 Oct 16 22:19 .
+drwxr-xr-x 1 vscode vscode 10 Oct 16 22:19 ..
+-rw-r--r-- 1 vscode vscode 73 Oct 16 22:19 SKILL.md
+== git status
+ M .claude/rules/okf-bundle.md
+ M .claude/skills/audit/SKILL.md
+ D .claude/skills/audit/notes.txt
+?? .claude/agents/x.md
+?? .gitignore
+?? apm.lock.yaml
+?? apm.yml
+== verdict fail=1
