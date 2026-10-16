@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "schema-verbs",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 3,
   "review_rounds": 2,
@@ -32,7 +32,7 @@
   "split": "j-20261015T172735+0000-442d6b3d",
   "split_plan_hash": "1ded8de3328cc33d3b3b3830fbd48422056c1ff77b3052428b1b3fc4243666a4",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "28ad3e05de1152809ed3991c821fb7a3cc29f941",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -205,8 +205,14 @@
       "to": "verifying",
       "at": "2026-10-16T05:26:09+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-16T05:56:15+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
-  "at": "2026-10-16T05:56:05+00:00"
+  "at": "2026-10-16T05:56:15+00:00"
 }
