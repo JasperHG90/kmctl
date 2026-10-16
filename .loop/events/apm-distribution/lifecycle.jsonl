@@ -5,3 +5,4 @@
 {"at": "2026-10-16T10:11:11+00:00", "kind": "spike-note", "n": 4, "replaced": false, "schema_version": "1.0"}
 {"at": "2026-10-16T10:11:12+00:00", "kind": "spike-note", "n": 5, "replaced": false, "schema_version": "1.0"}
 {"at": "2026-10-16T10:17:15+00:00", "binds": "f894364e85faeb39cb30295b41f42ebdcdab94826b106285bffde76324155b50", "kind": "round-start", "n": 1, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
+{"at": "2026-10-16T10:18:47+00:00", "dispatched_at": "2026-10-16T10:17:15+00:00", "kind": "round-close", "n": 1, "outcome": "pass", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-10-16T10:18:30+00:00"}}
