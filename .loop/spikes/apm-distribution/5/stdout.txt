@@ -1,0 +1,56 @@
+== kmctl HEAD: a777a03bb780f1ebb3b9291c84b9b6363eef80bf
+Agent Package Manager (APM) CLI version 0.33.0
+== M: meta package apm/apm.yml
+-- consumer m: apm install exit 0
+[!] Insecure HTTP fetch (unencrypted): http://127.0.0.1:8775/o/m
+[!] Insecure HTTP fetch (unencrypted): http://127.0.0.1:8775/o/m (transitive, 
+  [+] 127.0.0.1:8775/o/m/apm #default @81ec40a0
+  [+] 127.0.0.1:8775/o/m/plugin #default @81ec40a0
+  [+] scaccogatto/okf-skills #a8b96420de90d102c43cda1693d01ec4f925f2ab @a8b96420
+  |-- 1 agents integrated -> .claude/agents/
+  |-- 1 hook(s) integrated -> .claude/settings.json
+  |-- Skill integrated -> .claude/skills/
+  |-- 7 skill(s) integrated -> .claude/skills/
+  |-- 2 agents integrated -> .claude/agents/
+  |-- 1 hook(s) integrated -> .claude/settings.json
+  |-- Skill integrated -> .claude/skills/
+  |-- 4 skill(s) integrated -> .claude/skills/
+  [!] 1 file(s) contain hidden characters
+  [!] 2 dependencies unpinned: o/m -- add #tag or #sha to prevent drift
+  [!] Transitive package 'okf' declares self-defined MCP server 'bundle' 
+   kmctl agent: identical
+   kmctl hook in settings.json: yes
+   agents: bundle-weaver.md event-analyzer.md kmctl-auditor.md 
+   skills: architecture-review audit backfill continue decision-log-review handoff okf practices-review validate visualize write-docs 
+   lock: - repo_url: o/m virtual_path: apm - repo_url: o/m virtual_path: plugin - repo_url: scaccogatto/okf-skills 
+-- M result: 0
+== D: consumer lists plugin and okf
+-- consumer d: apm install exit 0
+[!] Insecure HTTP fetch (unencrypted): http://127.0.0.1:8775/o/d
+  [+] 127.0.0.1:8775/o/d/plugin #default @ee37b459
+  [+] scaccogatto/okf-skills #a8b96420de90d102c43cda1693d01ec4f925f2ab @a8b96420
+  |-- 1 agents integrated -> .claude/agents/
+  |-- 1 hook(s) integrated -> .claude/settings.json
+  |-- Skill integrated -> .claude/skills/
+  |-- 7 skill(s) integrated -> .claude/skills/
+  |-- 2 agents integrated -> .claude/agents/
+  |-- 1 hook(s) integrated -> .claude/settings.json
+  |-- Skill integrated -> .claude/skills/
+  |-- 4 skill(s) integrated -> .claude/skills/
+|  [+]  bundle -> Claude (configured)
+  [!] 1 file(s) contain hidden characters
+  [!] 1 dependency unpinned: o/d -- add #tag or #sha to prevent drift
+   kmctl agent: identical
+   kmctl hook in settings.json: yes
+   agents: bundle-weaver.md event-analyzer.md kmctl-auditor.md 
+   skills: architecture-review audit backfill continue decision-log-review handoff okf practices-review validate visualize write-docs 
+   lock: - repo_url: o/d virtual_path: plugin - repo_url: scaccogatto/okf-skills 
+-- D result: 0
+== kmctl from consumer /tmp/tmp.2yd5lfm5c1/c-m
+kmctl 0.1.0
+kmctl briefing (kmctl 0.1.0)
+No .okf/ bundle here. Run kmctl init to start docs/ and .okf/.
+kmctl briefing (kmctl 0.1.0)
+No .okf/ bundle here. Run kmctl init to start docs/ and .okf/.
+   kmctl --version exit 0, briefing exit 0, hook exit 0
+== RESULT: M=0 D=0 (0 = everything reached the consumer)

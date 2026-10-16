@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "slug": "apm-distribution",
+  "n": 5,
+  "command": "/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-apm-dist/spike5-okf-routes.sh",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-apm-dist/spike5-okf-routes.sh",
+      "copy": "files/spike5-okf-routes.sh"
+    },
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-apm-dist/common.sh",
+      "copy": "files/common.sh"
+    },
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-apm-dist/githttp.py",
+      "copy": "files/githttp.py"
+    }
+  ],
+  "where": "worktree",
+  "head": "a777a03bb780f1ebb3b9291c84b9b6363eef80bf",
+  "fingerprint": "8f3b773726013c8883eb30d326233c45727648b392661c558ed0d03ff336eeea",
+  "started_at": "2026-10-16T10:10:32+00:00",
+  "finished_at": "2026-10-16T10:10:40+00:00",
+  "duration_seconds": 7.587,
+  "timeout_seconds": 400.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
+  "moved_from": null
+}
