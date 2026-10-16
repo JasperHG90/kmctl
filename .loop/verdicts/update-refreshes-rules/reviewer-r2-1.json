@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "architecture overview said init keeps every existing file except the block, and the verb list left out kmctl update",
+      "anchor": ".okf/architecture/overview.md:129",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "_write_rules crashed with IsADirectoryError when a folder sat at a rule path",
+      "anchor": "src/kmctl/scaffold.py:182",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "9cc1b470fcb439c0720a5aefd76e260d9f73637ae5d7b69b8ee25f6f38c3eccd",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
+  "at": "2026-10-16T11:11:17+00:00"
+}
