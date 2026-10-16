@@ -95,12 +95,17 @@ What changes:
     so the two cannot drift. The server needs the `.okf` folder itself as
     its first argument when its working folder is not the repository root
     (spike:antigravity-harness/1: with no argument from another folder it
-    starts but every tool call fails). Antigravity does not document the
-    working folder of a plugin's MCP server, but it sets `PLUGIN_ROOT` in
-    the environment of processes a plugin starts (the binary sets
-    `PLUGIN_ROOT=`; changelog: plugins get `PLUGIN_DATA`). So the server is
-    declared as `sh -c 'exec uv run <url> "$PLUGIN_ROOT/../../../.okf"'`,
-    which resolves to the repository's `.okf/` from the plugin folder.
+    starts but every tool call fails). Antigravity documents neither the
+    working folder nor the environment of a plugin's MCP server, so the
+    entry uses the launcher apm-only-install writes for Claude: a short
+    POSIX `sh -c` script that walks up to the first folder holding `.okf/`,
+    starting from `$PLUGIN_ROOT/../../..` when that variable is set and
+    then from the working folder. It does not depend on either being
+    right: from the plugin folder or anywhere in the repository it finds
+    the same `.okf/`. If neither leads to it, the server starts and reports
+    "no OKF bundle", which costs only okf's three read-only MCP tools; the
+    agent still reads `.okf/` with its file tools (okf's own decision
+    record says the server duplicates them).
 - **`kmctl briefing --format antigravity`.** Prints
   `{"injectSteps": [{"systemMessage": {"systemMessage": "<briefing text>"}}]}`,
   the shape Antigravity's SessionStart hook injects into context. It takes
@@ -155,13 +160,17 @@ pass.
   `agy agents` listed the agent inside a workspace `.agents/plugins/kmctl/`
   from the repository root and from a subfolder. It loads only when the
   working folder is trusted (`trustedWorkspaces`, matched exactly), so the
-  install how-to tells users to trust the folder and `kmctl doctor` (next
-  ticket) can say so. What no offline command shows, and needs the
-  operator's live session to confirm: that the plugin's SessionStart hook
-  fires and its MCP server starts. The embedded docs say both load from a
-  discovered plugin; if either does not, the fix is inside this plan (the
-  hook and MCP entry move to the .agents/hooks.json file and the user-level MCP
-  config), so it does not throw the plan away.
+  install how-to tells users to trust the folder and `kmctl doctor` checks
+  it. spike:antigravity-harness/4 then got as far as agy logging "loaded 1
+  named hooks from 1 hooks.json file(s)" for a workspace plugin before the
+  account check stopped the session, so the plugin's hook is registered.
+  Whether it fires, and whether the plugin's MCP server starts, happens
+  after that check and cannot be seen on this account. Neither throws the
+  plan away: the briefing reads the repository from the hook's stdin and
+  the MCP launcher does not depend on the working folder or `PLUGIN_ROOT`,
+  so the only remaining unknown is whether Antigravity runs them at all,
+  which its embedded docs say it does. The live check is the stub ticket
+  antigravity-live-check, for the operator to run on an eligible account.
 - MCP server: `uv run <raw GitHub URL>` might not start okf's server or
   answer an MCP initialize over stdio, which would change how the server
   is shipped (a local copy instead of a URL). Settled by
