@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev72+ge53d4208b.d20261016
-  at: '2026-10-16T05:58:10+00:00'
+  at: '2026-10-16T05:58:37+00:00'
 slug: release-flow
 n: 2
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike release-flow/2
@@ -24,7 +24,7 @@ The command exited 127:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note release-flow 2`.
+Void: a mistyped `--risk` option was run as the command (exit 127). It shows nothing; spike:release-flow/3 is the real run.
 
 ## Files
 
