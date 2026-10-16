@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "apm-only-install-reviewer-f2",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
@@ -13,7 +13,7 @@
   "split": "j-20261016T222022+0000-5db9ecb4",
   "split_plan_hash": "1027f4956f42303c9f5b743f7b7c5f897b60fb289ed8a72bcf0c2cc827bc0dcb",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "a29698d322ebfcd97210bb0e7b598c6b0db149b1",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -106,8 +106,14 @@
       "to": "verifying",
       "at": "2026-10-16T22:25:14+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-16T22:28:31+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-16T22:28:26+00:00"
+  "at": "2026-10-16T22:28:31+00:00"
 }
