@@ -3,7 +3,7 @@
   "slug": "kmctl-doctor",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "e338e69e83ef62cba49fee0671faf56d7fe1103bed3dbf0aeecb1e2447a23721",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "7ccedae64f73e3c28816a85316a2f3ea15fc88e1a736362c749100e316e80575",
+    "started_at": "2026-10-16T20:18:58+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "7ccedae64f73e3c28816a85316a2f3ea15fc88e1a736362c749100e316e80575",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -44,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
-  "at": "2026-10-16T20:17:29+00:00"
+  "at": "2026-10-16T20:18:58+00:00"
 }
