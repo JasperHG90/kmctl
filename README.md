@@ -68,6 +68,38 @@ in [Install the plugin and the CI action](docs/how-to/install-the-plugin-and-the
 
 ## Quick start
 
+### With an agent
+
+```
+kmctl plugin install             # the Claude Code plugin, for this repository only
+```
+
+Start a Claude Code session in the repository, or run `/reload-plugins` in an
+open one. The session opens with a `kmctl briefing`: where knowledge lives,
+what is due for review and the rules for writing it. In a repository with no
+`.okf/` yet, the briefing says so and points the agent at `kmctl init`. Ask:
+
+> Set this repository up with kmctl.
+
+The agent runs `kmctl init`, which writes `docs/`, a starter `.okf/` bundle,
+the rules and a `CLAUDE.md` block. Start a new session afterwards so the agent
+loads the new rules. Then ask in plain words:
+
+- "Fill in the manifesto from the code." The agent drafts
+  `.okf/manifesto.md`: what the project is for, its invariants and values.
+  The values are yours; check them.
+- "Record that we store data in SQLite, and why." The agent runs
+  `kmctl new decision`, which writes the front matter, index entry and log
+  line; the agent writes the prose.
+- "Write a how-to for backing up the database." The `write-docs` skill files
+  it under `docs/how-to/` and lists it in `docs/README.md`.
+- `/audit` reports knowledge that has drifted from the code. It changes
+  nothing; you decide what to fix.
+- `/handoff` at the end of a session saves where the work stands; `/continue`
+  at the start of the next picks it up.
+
+### By hand
+
 ```
 kmctl init                       # docs/, a starter .okf/ bundle, rules and a CLAUDE.md block
 kmctl new decision 'Store data in SQLite' --description 'One SQLite file, no database server.'
