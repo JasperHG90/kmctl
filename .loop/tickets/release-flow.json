@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "release-flow",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 1,
@@ -101,8 +101,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "5e096f102ac0445b6d20d8408feaad3bba9c9d39a2d20512bd216cd1f5d9c4dc",
   "intent": {
@@ -134,8 +134,14 @@
       "to": "verifying",
       "at": "2026-10-16T10:16:18+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-16T10:22:14+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
-  "at": "2026-10-16T10:16:19+00:00"
+  "at": "2026-10-16T10:22:15+00:00"
 }
