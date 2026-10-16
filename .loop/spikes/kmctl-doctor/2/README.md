@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev72+ge53d4208b.d20261016
-  at: '2026-10-16T20:22:53+00:00'
+  at: '2026-10-16T20:23:19+00:00'
 slug: kmctl-doctor
 n: 2
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike kmctl-doctor/2
@@ -24,7 +24,7 @@ The command exited 1:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note kmctl-doctor 2`.
+Answers review finding p2. Discarded run: the check's regex also read the package-level `content_hash:` line as a file path and reported it as a mismatch (exit 1). The install and lock contents are valid, but the verdict is wrong. spike:kmctl-doctor/3 reruns it with the parser fixed. Does not settle risk 1.
 
 ## Files
 
