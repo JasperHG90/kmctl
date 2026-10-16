@@ -16,3 +16,4 @@
 {"at": "2026-10-16T05:13:20+00:00", "by": "human:jasperginn@gmail.com", "kind": "halt", "reason": "operator: manual intervention required", "schema_version": "1.0"}
 {"at": "2026-10-16T05:13:41+00:00", "kind": "resume", "schema_version": "1.0"}
 {"at": "2026-10-16T05:15:14+00:00", "by": "human:jasperginn@gmail.com", "kind": "halt", "reason": "add the integration gate, which only network-tests-retry can make green", "schema_version": "1.0"}
+{"at": "2026-10-16T05:15:16+00:00", "kind": "resume", "schema_version": "1.0"}
