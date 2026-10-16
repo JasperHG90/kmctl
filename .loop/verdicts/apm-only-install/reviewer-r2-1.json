@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "the overview's verb table removed the old kmctl@kmctl plugin before apm install",
+      "anchor": ".okf/architecture/overview.md:146",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "an entry written with one --source is not replaced when the next install uses a different source that does not name JasperHG90/Knowledge-management, so apm.yml can hold two kmctl packages",
+      "anchor": "src/kmctl/plugin.py:537",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "b85123906adf07c9368350a652e7103e74ad78e3307539ea8f150bad6d975c13",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
+  "at": "2026-10-16T21:18:06+00:00"
+}
