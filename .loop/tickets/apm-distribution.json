@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "slug": "apm-distribution",
+  "stage": "planning",
+  "attempts": 0,
+  "plan_rounds": 0,
+  "review_rounds": 0,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": null,
+  "ask": null,
+  "split": null,
+  "split_plan_hash": null,
+  "split_hold": false,
+  "commit_sha": null,
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": null,
+  "branch": null,
+  "stamps": [],
+  "signoff": null,
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [],
+  "resigns": [],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [],
+  "round": null,
+  "plan_hash": "b642a73a4f37d0da9e1fbfe17ad83ac7b708904c5b061aa9dfc1646d1c9f45fa",
+  "intent": {
+    "epic": null,
+    "depends_on": [],
+    "priority": null
+  },
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-10-16T10:03:24+00:00",
+      "by": "register"
+    }
+  ],
+  "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
+  "at": "2026-10-16T10:03:24+00:00"
+}
