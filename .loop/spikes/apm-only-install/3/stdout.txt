@@ -1,0 +1,86 @@
+== apm install http://127.0.0.1:38529/o/pkg.git --target claude --allow-insecure
+[*] Created apm.yml
+[i] Targets set: claude (persisted to apm.yml)
+[*] Validating 1 package...
+  Trying git ls-remote for 127.0.0.1 (1 attempt)
+  git ls-remote (http) rc=0 for http://127.0.0.1:38529/o/pkg.git
+[+] 127.0.0.1:38529/o/pkg
+Added 127.0.0.1:38529/o/pkg to apm.yml
+[*] Updated apm.yml with 1 new package(s)
+[>] Installing 1 new package...
+Parsed apm.yml: 1 APM deps, 0 MCP deps
+[*] Resolving refs from upstream; local cached refs bypassed
+[>] Resolving o/pkg...
+Resolved 1 direct dependencies (no transitive)
+[!] Insecure HTTP fetch (unencrypted): http://127.0.0.1:38529/o/pkg
+Phase: resolve -> 0.116s
+[i] Could not determine org from git remote; policy auto-discovery skipped
+Phase: policy_gate -> 0.002s
+[i] Targets: claude  (source: --target flag)
+Phase: targets -> 0.004s
+Copilot native registration: unavailable (copilot target not selected)
+Phase: copilot_activate -> 0.000s
+Phase: policy_target_check -> 0.000s
+Phase: download -> 0.000s
+  [+] o/pkg #main @1b6076bc
+  [*] rewritten: .claude/rules/okf-bundle.md
+  |-- 1 agents integrated -> .claude/agents/
+  |-- 1 rule(s) integrated -> .claude/rules/
+    [!] 1 file skipped (local files exist)
+Phase: integrate -> 0.013s
+[i] Added apm_modules/ to .gitignore
+Phase: cleanup -> 0.000s
+Generated apm.lock.yaml with 1 dependencies
+Wrote 1 cache pin marker(s) for drift replay
+Phase: post_deps_local -> 0.000s
+Phase: audit -> 0.000s
+Phase: copilot_plugins -> 0.000s
+[#] Perf: 3 walks, 1 file matches, 12 files visited, 0.002s total walk time
+[#] Perf:   apm_modules/o/pkg: 3 walk(s) (2ms, 12 files visited, 1 matched)
+[#] Perf: discovery: 4 call(s) (1 unique base(s), 3 cache hit(s), 75%)
+Integrated 1 instruction(s)
+Phase: finalize -> 0.000s
+No MCP dependencies found in apm.yml
+No LSP dependencies found in apm.yml
+  [!] 1 file skipped -- local files exist, not managed by APM
+    Use 'apm install --force' to overwrite
+  [!] 1 dependency unpinned: o/pkg -- add #tag or #sha to prevent drift
+  [i] Skipped inactive experimental resolver for target 'copilot-cowork' during 
+lockfile reconciliation.
+    +- To include it, enable 'copilot-cowork' and select target 'copilot-cowork'
+for this install.
+  [i] Skipped inactive experimental resolver for target 'copilot-app' during 
+lockfile reconciliation.
+    +- To include it, enable 'copilot-app' and select target 'copilot-app' for 
+this install.
+[*] Installed 1 APM dependency in 0.3s.
+== apm exit 0
+== git status
+ M .claude/rules/okf-bundle.md
+?? .claude/agents/x.md
+?? .gitignore
+?? apm.lock.yaml
+?? apm.yml
+== rule:
+---
+paths:
+  - "docs/**"
+  - ".okf/**"
+---
+
+PACKAGE RULE BODY
+== skill:
+---
+name: audit
+description: hand-made
+---
+
+OLD HAND SKILL
+== skill dir:
+total 8
+drwxr-xr-x 1 vscode vscode 34 Oct 16 22:17 .
+drwxr-xr-x 1 vscode vscode 10 Oct 16 22:17 ..
+-rw-r--r-- 1 vscode vscode  6 Oct 16 22:17 notes.txt
+-rw-r--r-- 1 vscode vscode 59 Oct 16 22:17 SKILL.md
+skill NOT overwritten
+== verdict fail=1
