@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+from conftest import plain
 from typer.testing import CliRunner
 
 from kmctl import app
@@ -29,4 +30,4 @@ def test_update_is_init_alias(tmp_path: Path) -> None:
         return {p.relative_to(root).as_posix() for p in root.rglob("*") if p.is_file()}
 
     assert tree(update_root) == tree(init_root)
-    assert " update " in runner.invoke(app, ["--help"]).stdout
+    assert " update " in plain(runner.invoke(app, ["--help"]).stdout)
