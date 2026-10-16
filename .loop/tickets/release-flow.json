@@ -1,14 +1,39 @@
 {
   "schema_version": "1.0",
   "slug": "release-flow",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "c076db965ca03990029b29e05439db2f56ac26dd189396d82d0deb2c9f8faebd",
+    "tree": "e141450d58cb5df5cc69a99ed11a5e7e72bc8eb0",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": "j-20261016T102444+0000-9036a328",
+        "paths": [
+          "tests/test_adr_audit_fixes.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f2",
+        "outcome": "cleared-unreviewed",
+        "by": "judgement",
+        "judgement": "j-20261016T102445+0000-671e13a4",
+        "paths": [
+          ".okf/decisions/0012-releases-come-from-ci.md"
+        ]
+      }
+    ],
+    "at": "2026-10-16T10:24:45+00:00"
+  },
   "ask": null,
   "split": "j-20261016T055847+0000-cf9637e1",
   "split_plan_hash": "5e096f102ac0445b6d20d8408feaad3bba9c9d39a2d20512bd216cd1f5d9c4dc",
@@ -141,8 +166,14 @@
       "to": "fixing",
       "at": "2026-10-16T10:22:14+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-16T10:24:45+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
-  "at": "2026-10-16T10:24:36+00:00"
+  "at": "2026-10-16T10:24:45+00:00"
 }
