@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The architecture overview's verb table lists the claude plugin removal first, before apm.yml is written and APM runs. The code removes kmctl@kmctl only after apm install succeeds, so a failed install leaves the old plugin working (plugin.py install, ADR 0014, commands.md step 5). The table gets the order wrong on exactly the point the design depends on.",
+      "anchor": ".okf/architecture/overview.md:146",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "write_manifest only recognises an earlier kmctl entry when its git URL equals the current --source. remove_old_apm_entry only catches entries whose URL contains jasperhg90/knowledge-management. So an entry written with a fork or local --source (for example http://127.0.0.1/o/kmctl.git), followed by an install with the default source, leaves two kmctl packages in apm.yml with no note. Either replace any {git, path: apm} entry whose lock name is kmctl, or refuse and name the stale entry.",
+      "anchor": "src/kmctl/plugin.py:537",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "12172dbd88f1f4381a6b7bd0197416b7da9bcd5a9c831a51c851382c5d6e62a9",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
+  "at": "2026-10-16T21:14:52+00:00"
+}
