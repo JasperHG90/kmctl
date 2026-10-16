@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev72+ge53d4208b.d20261016
-  at: '2026-10-16T20:17:06+00:00'
+  at: '2026-10-16T20:17:18+00:00'
 slug: apm-only-install
 n: 2
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike apm-only-install/2
@@ -24,7 +24,9 @@ The command exited 0:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note apm-only-install 2`.
+`apm install -g URL --target claude --allow-insecure` (APM 0.33.0) took a package with no `git: parent` and exited 0. It kept its state in `$HOME/.apm/` (apm.yml, lock, apm_modules) and wrote the skill and agent byte for byte to `$CLAUDE_CONFIG_DIR/skills/audit/SKILL.md` and `$CLAUDE_CONFIG_DIR/agents/x.md`, plus the rule to `$CLAUDE_CONFIG_DIR/rules/okf-bundle.md` with `applyTo` turned into a `paths:` list. Those are the user-level folders Claude Code reads.
+APM -g honours CLAUDE_CONFIG_DIR: an earlier unrecorded run with HOME pointed at scratch but CLAUDE_CONFIG_DIR=/home/vscode/.claude wrote into the real /home/vscode/.claude. This run set both to scratch and checked that nothing leaked into the real directory.
+Limit: here CLAUDE_CONFIG_DIR was `$HOME/.claude`, so this run alone cannot tell the two variables apart. The refusal and wrong-place outcomes are ruled out, which settles risk 3: `--scope user` stays.
 
 ## Files
 
