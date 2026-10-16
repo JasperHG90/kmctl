@@ -15,7 +15,8 @@ kmctl has three parts (manifesto, Parts). The CLI in `src/kmctl/` does every
 step a script can do and is the only part that writes knowledge. The plugin
 in `plugin/` and the action in `action.yml` and `action/` call the CLI; they
 hold no logic of their own beyond relaying it, and the audit they run reads
-and reports only. Releases come from two workflows and the scripts in
+and reports only. `apm/apm.yml` packages the plugin for APM, a second install
+route (ADR 0013). Releases come from two workflows and the scripts in
 `scripts/` (ADR 0012).
 
 ```mermaid
@@ -65,6 +66,9 @@ flowchart LR
     end
 
     manifest[("plugin/.claude-plugin/plugin.json<br/>the one version")]
+    apmPkg["apm/apm.yml<br/>APM package"]
+    apmCli["apm CLI<br/>in the consumer"]
+    okfSkills["scaccogatto/okf-skills<br/>pinned commit"]
     ghRelease["v* tag and GitHub Release<br/>wheel, sdist, SHA256SUMS"]
     repo[("docs/ and .okf/")]
     agentFiles[(".claude/rules/ and<br/>CLAUDE.md, AGENTS.md")]
@@ -94,6 +98,9 @@ flowchart LR
     scaffold -- "write: .claude/rules/,<br/>CLAUDE.md / AGENTS.md block" --> agentFiles
     checks & okf -. "read" .-> repo
     pluginPy -- "stages plugin/, then<br/>claude plugin install" --> claude
+    apmCli -- "apm install<br/>.../apm#vX.Y.Z" --> apmPkg
+    apmPkg -- "git: parent, path: plugin" --> plugin
+    apmPkg --> okfSkills
 
     ci -- "kmctl check,<br/>kmctl review due" --> app
     auditSh -- "kmctl review due --json" --> reviewDue
@@ -110,6 +117,7 @@ flowchart LR
     releaseYml -- "next version from v* tags" --> nextVersion
     releaseYml -- "set: version, docs' install lines" --> releasePy
     releasePy -- "write" --> manifest
+    releasePy -- "write: version copy" --> apmPkg
     releaseYml -- "uv build, then check" --> wheelChecks
     releaseYml -- "commits it on release/vX.Y.Z,<br/>gh pr create" --> manifest
     manifest -- "merged to main" --> releaseTag
@@ -161,6 +169,13 @@ plugin from the scaccogatto marketplace (ADR 0003).
 - **Skills route; kmctl writes.** `write-docs`, `handoff` and `continue` call
   `kmctl new doc`, `kmctl new handoff` and `kmctl handoffs`, so the file
   structure always comes from the CLI.
+- **A second route through APM.** `apm/apm.yml` depends on
+  `{git: parent, path: plugin}` and a pinned `scaccogatto/okf-skills`, so
+  `apm install JasperHG90/Knowledge-management/apm#vX.Y.Z` writes the skills,
+  the agent and the hook into the consumer's `.claude/`, with okf's skills.
+  It does not install the CLI or check its version, so `kmctl plugin
+  install` stays the main route (ADR 0013). `plugin/` has no apm.yml of its
+  own.
 - **The audit reads only.** The `audit` skill takes the due list from
   `kmctl review due --json`, batches it, and dispatches the `kmctl-auditor`
   agent with one of the three review skills. The auditor's tools are Read,
@@ -205,8 +220,9 @@ agree (ADR 0012).
   `scripts/next_release_version.py`, refuses a real run off `main` or a tag
   that exists, runs the lint and the tests, and builds and checks the wheel
   with `scripts/check_wheel.py` and `scripts/smoke_wheel.py`. A real run
-  commits `scripts/release.py set` (the manifest and the docs' five install
-  lines) on `release/vX.Y.Z` and opens the version pull request.
+  commits `scripts/release.py set` (the manifest, the version copies in
+  `apm.yml` and `apm/apm.yml`, the docs' five install lines and the APM
+  how-to's pin) on `release/vX.Y.Z` and opens the version pull request.
 - `.github/workflows/release-tag.yml` runs when a push to `main` changes the
   manifest. When `scripts/release.py compare` says the version went up, it
   builds and checks first, then pushes the tag `vX.Y.Z` and publishes the
@@ -236,3 +252,5 @@ agree (ADR 0012).
   `scripts/release.py`, `scripts/next_release_version.py`,
   `scripts/check_wheel.py`, `scripts/smoke_wheel.py`,
   `plugin/.claude-plugin/plugin.json`.
+- APM: `apm/apm.yml`, its `git: parent` dependency on `plugin/` and its
+  pinned `scaccogatto/okf-skills`.

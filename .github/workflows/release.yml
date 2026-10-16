@@ -1,8 +1,9 @@
 # Cut a release by hand (ADR 0012). Pick an increment or type the version; a
 # dry run (the default) resolves, tests and builds, then stops. A real run from
-# main opens a pull request that sets the plugin manifest to the version and
-# pins the docs' install lines to its tag; merging it is the approval, and
-# release-tag.yml tags the merge commit and publishes the GitHub Release.
+# main opens a pull request that sets the plugin manifest and both apm.yml
+# files to the version and pins the docs' install lines to its tag; merging it
+# is the approval, and release-tag.yml tags the merge commit and publishes the
+# GitHub Release.
 # Releases go to GitHub only, never to PyPI.
 name: Release
 
@@ -190,7 +191,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git switch -c "$BRANCH"
-          git add plugin/.claude-plugin/plugin.json README.md docs/tutorials/get-started-with-kmctl.md docs/how-to/install-the-plugin-and-the-ci-action.md
+          git add plugin/.claude-plugin/plugin.json apm.yml apm/apm.yml README.md docs/tutorials/get-started-with-kmctl.md docs/how-to/install-the-plugin-and-the-ci-action.md docs/how-to/install-kmctl-with-apm.md
           git commit -m "release: v$VERSION"
           if ! git diff --exit-code --stat; then
             echo "::error::release.py set changed a file this step does not stage. Add it to the git add line."
@@ -199,7 +200,7 @@ jobs:
           git push origin "$BRANCH"
           if ! gh pr create --base main --head "$BRANCH" \
             --title "release: v$VERSION" \
-            --body "Sets the plugin manifest to $VERSION and pins the docs' install lines to v$VERSION. Merging this tags v$VERSION and publishes the GitHub Release through release-tag.yml." \
+            --body "Sets the plugin manifest and both apm.yml files to $VERSION and pins the docs' install lines to v$VERSION. Merging this tags v$VERSION and publishes the GitHub Release through release-tag.yml." \
             >> "$GITHUB_STEP_SUMMARY"; then
             git push origin --delete "$BRANCH" || echo "::warning::Could not delete $BRANCH; delete it by hand."
             echo "::error::Could not open the pull request, so $BRANCH was deleted. Turn on \"Allow GitHub Actions to create and approve pull requests\" in the repository's Actions settings."

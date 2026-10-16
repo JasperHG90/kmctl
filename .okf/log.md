@@ -83,3 +83,12 @@
 ## 2026-10-16
 
 - Added `decisions/0012-releases-come-from-ci` with `kmctl new decision`.
+- Added `decisions/0013-kmctl-installs-through-apm-too` with `kmctl new decision`.
+- Wrote `decisions/0013-kmctl-installs-through-apm-too`: APM is a second
+  install route beside `kmctl plugin install`, through the `apm/apm.yml`
+  package; it leaves out the CLI and skips ADR 0001's version check.
+- Updated `manifesto` for ADR 0013: Parts says the plugin installs through
+  `kmctl plugin install` or through APM.
+- Updated `architecture/overview` for ADR 0013: the diagram, the plugin
+  section and Depicts show `apm/apm.yml`, its `git: parent` dependency on
+  `plugin/` and okf-skills, and `scripts/release.py set` writing its version.

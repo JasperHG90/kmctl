@@ -60,6 +60,11 @@ the plugin for every repository instead, add `--scope user`.
 
 Running it again at the same version changes nothing.
 
+If the repository manages its agent files with APM, you can install the
+plugin's skills, agent and hook with APM instead; see
+[Install kmctl with APM](install-kmctl-with-apm.md). This step is the main
+route, because it also checks that the plugin matches the CLI.
+
 ### 3. Start a new session
 
 Start a new Claude Code session in the repository, or run `/reload-plugins` in
