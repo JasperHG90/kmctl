@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev72+ge53d4208b.d20261016
-  at: '2026-10-16T19:48:22+00:00'
+  at: '2026-10-16T19:48:32+00:00'
 slug: antigravity-harness
 n: 1
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike antigravity-harness/1
@@ -24,7 +24,10 @@ python3 -I /tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f4
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note antigravity-harness 1`.
+`uv run <raw URL>` (uv 0.13.0, pinned commit a8b9642) started okf's MCP server over stdio in all three cases: `initialize` returned serverInfo `{"name":"okf","version":""}` and protocol 2025-06-18 in 0.5-1.1 s, and `tools/list` gave get_neighbors, read_concept, search_concepts.
+`search_concepts("hello")` found the test concept when cwd held `.okf/` (no arg) and when cwd was elsewhere with the bundle dir passed as the first argument (`uv run <url> <proj>/.okf`).
+With cwd elsewhere and no argument the server still started, but every tool call failed with "no OKF bundle at .okf", so the cwd matters: pass the bundle path (the `.okf` folder itself) or set `$OKF_BUNDLE` when the host's cwd is not the project root.
+Rules out the need to ship a local copy; settles risk 2. Limits: uv's package cache was warm (29 packages installed in 45 ms), so a cold first start was not timed; serverInfo version is empty when run from a URL because the script reads it from a sibling plugin.json.
 
 ## Files
 
