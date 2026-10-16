@@ -1,0 +1,45 @@
+---
+type: plan
+title: 'Plan: release-flow'
+description: "kmctl gets a hand-run release workflow that opens a version pull request and a tag workflow that, when it lands, tags main and publishes a GitHub Release with the wheel, sdist and SHA256SUMS, with the plugin manifest as the one version source; GitHub Releases only, no PyPI."
+tags:
+- plan
+generated:
+  by: process:loopctl/2.1.1.dev72+ge53d4208b.d20261015
+  at: '2026-10-16T05:21:53+00:00'
+slug: release-flow
+epic: repo
+depends_on: []
+priority: null
+---
+
+# release-flow
+
+Relayed from: none
+
+## Intent
+
+kmctl has no releases. The version is written twice by hand, `0.1.0` in `pyproject.toml` (`[project] version`) and in `plugin/.claude-plugin/plugin.json`; nothing tags, builds or checks a release; and every install line in the docs follows `main`. The operator asked for loop-harness's release flow (its ADR 0021, `release.yml` and `release-tag.yml`), publishing to GitHub Releases only, no PyPI.
+
+Measured on 2026-10-16: 0 `v*` tags and 0 GitHub Releases (`git tag`, `gh release list`) over 1173 commits on `main`; 5 doc lines point at `main` instead of a release (the `uv tool install git+...` line in `README.md`, `docs/tutorials/get-started-with-kmctl.md` and `docs/how-to/install-the-plugin-and-the-ci-action.md`, and the two `uses: JasperHG90/Knowledge-management@main` lines in the how-to); the repository's workflow setting read `can_approve_pull_request_reviews: false` (`gh api repos/JasperHG90/Knowledge-management/actions/permissions/workflow`), so a pull request opened with `GITHUB_TOKEN` was refused; the operator chose to turn it on (2026-10-16), and it now reads true.
+
+What changes:
+
+- **One version source.** `plugin/.claude-plugin/plugin.json` carries the version; `pyproject.toml` makes `version` dynamic and reads it with hatchling's `regex` version source from that file, so a build needs no git history. `kmctl --version` (`src/kmctl/__init__.py`) and the plugin stamp (`src/kmctl/plugin.py`, which writes `cli_version()` into the staged manifest) keep reading `importlib.metadata`, unchanged. hatch-vcs is rejected: `action.yml` installs kmctl with `uv tool install` from the action's checkout, which GitHub downloads as an archive with no `.git`, so a tag-derived version would fall back to a placeholder there.
+- **Scripts**, ported from loop-harness with its floor and ST-11 parts dropped (kmctl has no `min-cli-version` and no ST-11 surface test):
+  - `new:scripts/release.py`: `current`, `set VERSION`, `compare OLD NEW` (raised, same, lowered, skip) and `is-prerelease`. `set` writes the manifest and rewrites the `@vX.Y.Z` pin in the 5 doc lines, so the docs follow each release. No `check` subcommand and no `--min-cli`. It never commits or tags.
+  - `new:scripts/next_release_version.py`: unchanged logic (PATCH, MINOR, MAJOR, PRE, FINAL, `--pre`, `--version`); `--version 0.2.0` is required for the first release, since no tag exists.
+  - `new:scripts/check_wheel.py`: expects the wheel's `force-include` entries from `pyproject.toml` (kmctl/_plugin/ and kmctl/_marketplace.json inside the wheel); no assets prefix.
+  - `new:scripts/smoke_wheel.py`: installs the wheel into a fresh venv, checks `kmctl --version` prints the release version exactly and that the installed package holds kmctl/_plugin/.claude-plugin/plugin.json; no hook probe.
+- **Workflows**, each step spelled out as in `.github/workflows/knowledge-audit.yml`, actions pinned by commit SHA with the version as a comment (the SHAs loop-harness pins):
+  - `new:.github/workflows/release.yml`: `workflow_dispatch` with increment, pre-release, version and dry run (default true); resolves the version, refuses a real run off `main` and an existing tag; runs `just lint` and `just test`, because kmctl has no CI test workflow and a pull request opened with `GITHUB_TOKEN` starts no workflow; builds, runs `twine check` and the two wheel scripts above; a real run commits `release.py set` on the branch release/vX.Y.Z and opens the version pull request, deleting the branch and naming the repository setting when the pull request is refused.
+  - `new:.github/workflows/release-tag.yml`: on a push to `main` touching `plugin/.claude-plugin/plugin.json`; skips a first push, a same or `.dev` version; fails a lowered one; builds and checks before pushing the annotated tag `vX.Y.Z`; resumes when the tag is on this commit with no Release; publishes the GitHub Release (pre-release for a, b and rc) with the wheel, sdist and `SHA256SUMS`, notes since the previous `v*` tag.
+- **Tests** under `new:tests/scripts/test_release.py`, `new:tests/scripts/test_next_release_version.py`, `new:tests/scripts/test_check_wheel.py` and `new:tests/scripts/test_smoke_wheel.py`, as loop-harness does, with `pythonpath` set in `pyproject.toml` so they import `scripts`. They use real git repositories and real files under `tmp_path`, per `.claude/rules/python-testing.md`; a test that builds a wheel and runs over a second, by `--durations`, is marked `slow` and the marker is registered with where it runs.
+- **Knowledge**: `new:.okf/decisions/0012-releases-come-from-ci.md` records the flow, the rejected hatch-vcs and PyPI, and the repository setting it needs; `.okf/architecture/overview.md` shows the release path; `docs/how-to/install-the-plugin-and-the-ci-action.md` pins `uses:` and the install line at `@v0.2.0` and says how to upgrade. The version stays `0.1.0` in this ticket: the first run through the flow sets 0.2.0.
+
+Done when: on `main`, a release run with `--version 0.2.0` opens the branch release/v0.2.0; merging it creates tag `v0.2.0` and a GitHub Release holding `kmctl-0.2.0-py3-none-any.whl`, `kmctl-0.2.0.tar.gz` and `SHA256SUMS`; and both a uv tool install from git at tag v0.2.0 and the action at `@v0.2.0` give `kmctl --version` = `kmctl 0.2.0`. Before landing, the script tests pass and `uv build` on this branch gives `kmctl-0.1.0` read from the manifest.
+
+## Could invalidate this plan
+
+- The plugin manifest as the one version source, read by hatchling's `regex` source, must give the manifest's version on every install path kmctl has: `uv build`, `uv tool install git+...@tag`, and `uv tool install` of a source folder with no `.git` (what `action.yml` does from the action's download). Settled by spike:release-flow/1: with `pattern = '"version": "(?P<version>[^"]+)"'` and the manifest at 0.2.0, `uv build` (wheel, sdist, and a wheel from the sdist), `uv tool install git+file://...@v0.2.0` and `uv tool install` of a `git archive` folder all print `kmctl 0.2.0`.
+- A version pull request opened with `GITHUB_TOKEN` needs "Allow GitHub Actions to create and approve pull requests". The operator chose to turn it on rather than add a token secret (2026-10-16), and it is on; if it is turned off again, the bump job fails at `gh pr create` and says so. Settled by spike:release-flow/3 (spike:release-flow/2 is a void run).
