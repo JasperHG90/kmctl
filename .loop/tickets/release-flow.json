@@ -20,7 +20,8 @@
   "worktree": "/home/vscode/kmctl.worktrees/release-flow",
   "branch": "loop/release-flow",
   "stamps": [
-    "59ad6b558cf5a316e354a4307cedef7a5de4fb88318c6e346ac3756df8828cc8"
+    "59ad6b558cf5a316e354a4307cedef7a5de4fb88318c6e346ac3756df8828cc8",
+    "c076db965ca03990029b29e05439db2f56ac26dd189396d82d0deb2c9f8faebd"
   ],
   "signoff": {
     "signer": "human:jasperginn@gmail.com",
@@ -143,5 +144,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
-  "at": "2026-10-16T10:22:15+00:00"
+  "at": "2026-10-16T10:24:36+00:00"
 }
