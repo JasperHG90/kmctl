@@ -20,7 +20,8 @@
   "worktree": "/home/vscode/kmctl.worktrees/update-refreshes-rules",
   "branch": "loop/update-refreshes-rules",
   "stamps": [
-    "a84a5ade333897cfb7894a26d1c896c388bafbd73ab076296003ccbcb212ff35"
+    "a84a5ade333897cfb7894a26d1c896c388bafbd73ab076296003ccbcb212ff35",
+    "81979f12a34cc67e69f63b489c2f91d46bad6dbe8d9ed7a380a6619f5a66de8c"
   ],
   "signoff": {
     "signer": "human:jasperginn@gmail.com",
@@ -117,5 +118,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
-  "at": "2026-10-16T11:03:08+00:00"
+  "at": "2026-10-16T11:04:13+00:00"
 }
