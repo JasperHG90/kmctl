@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "claude.old-plugin gave the install fix for an okf@scaccogatto enabled on its own, which the install never removes",
+      "anchor": "src/kmctl/doctor.py:420",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "withdrawn",
+      "claim": "httpx is a new runtime dependency for one HEAD request",
+      "anchor": "src/kmctl/doctor.py:516",
+      "category": "design",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "c783b53f01b78f29065f9cb3d91fb8334023efdad67088a76525fe6118ba34c1",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
+  "at": "2026-10-16T22:15:52+00:00"
+}
