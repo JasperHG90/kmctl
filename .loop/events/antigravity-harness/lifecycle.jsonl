@@ -21,3 +21,4 @@
 {"at": "2026-10-16T21:42:46+00:00", "binds": "cf01df9041544b10cd2955ac042c187a9f1991f15e413e665d1d47896b8ad05c", "kind": "round-start", "n": 2, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "11efc771f072c0d648e92bc23ba997bbd4d7332e"}
 {"at": "2026-10-16T21:44:43+00:00", "dispatched_at": "2026-10-16T21:42:46+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-16T21:44:28+00:00"}}
 {"at": "2026-10-16T21:44:48+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "9506fc011eeea7861d6b916a0c318c5c63ef9ba2"}
+{"at": "2026-10-16T21:45:24+00:00", "branch": "loop/antigravity-harness", "kind": "land", "schema_version": "1.0", "sha": "0b9c0cb3ac0d1398e03c49b208240c34eaa1924a"}
