@@ -119,6 +119,10 @@ class LockDependency(BaseModel):
     repo_url: str | None = Field(
         default=None, description="Where the package came from, such as owner/repo."
     )
+    host: str | None = Field(
+        default=None, description="The git host, when it is not github.com."
+    )
+    port: int | None = Field(default=None, description="The git host's port, if any.")
     name: str | None = Field(default=None, description="The package's apm.yml name.")
     virtual_path: str | None = Field(
         default=None, description="The package's folder inside its repository."
@@ -356,24 +360,69 @@ def remove_old_plugin(cwd: Path, scope: Scope) -> list[str]:
     return notes
 
 
-def _names_old_package(entry: object) -> bool:
-    """Whether an apm.yml dependency entry names kmctl's package on GitHub."""
+def _old_layout(lock: Lock | None) -> bool:
+    """Whether the lock holds kmctl v0.3.0 or older, whose hook APM installed from plugin/."""
+    return any(
+        "jasperhg90/knowledge-management" in (dep.repo_url or "").lower()
+        and dep.virtual_path == "plugin"
+        for dep in (lock.dependencies if lock else [])
+    )
+
+
+def _names_old_package(entry: object, old_layout: bool) -> bool:
+    """Whether an apm.yml dependency entry is the hand-written form ADR 0013 users added.
+
+    The string form (the only one ADR 0013's docs gave) always is. kmctl's own
+    ``{git, path: apm}`` form is only when the lock shows the old layout
+    installed, since that layout's hook needs ``apm uninstall``
+    (spike:apm-only-install/6); otherwise ``write_manifest`` replaces it.
+    """
     if isinstance(entry, str):
         return OLD_PACKAGE.lower() in entry.lower()
     if isinstance(entry, dict):
         repo = str(entry.get("git", "")).lower()
-        return "jasperhg90/knowledge-management" in repo and (
-            entry.get("path") == PACKAGE_PATH
+        return (
+            old_layout
+            and "jasperhg90/knowledge-management" in repo
+            and entry.get("path") == PACKAGE_PATH
         )
     return False
 
 
-def _is_kmctl_entry(entry: object, source: str) -> bool:
-    """Whether an apm.yml dependency entry is the one kmctl writes for ``source``, at any ref."""
+def _bare_url(url: str) -> str:
+    """``url`` without scheme, user, ``.git`` suffix or trailing slash, in lower case."""
+    url = re.sub(r"^[a-z][a-z0-9+.-]*://", "", url.strip().lower())
+    url = re.sub(r"^[^@/]+@", "", url).rstrip("/")
+    return url.removesuffix(".git")
+
+
+def _locked_kmctl_urls(lock: Lock | None) -> set[str]:
+    """Where the lock says kmctl's package came from, as ``_bare_url`` gives them.
+
+    APM 0.33.0 splits a git source over ``host``, ``port`` and ``repo_url``
+    (owner/repo), so this joins them again (spikes apm-only-install/4 to /6).
+    """
+    urls = set()
+    for dep in lock.dependencies if lock else []:
+        if dep.name == "kmctl" and dep.virtual_path == PACKAGE_PATH and dep.repo_url:
+            host = (dep.host or "github.com") + (f":{dep.port}" if dep.port else "")
+            urls.add(_bare_url(f"{host}/{dep.repo_url}"))
+    return urls
+
+
+def _is_kmctl_entry(entry: object, source: str, locked: set[str] | None = None) -> bool:
+    """Whether an apm.yml dependency entry is kmctl's package, from ``source`` or another.
+
+    It is a ``path: apm`` mapping whose git URL is ``source``, names
+    kmctl's repository, or is where the lock (``locked``) says kmctl came from.
+    """
+    if not isinstance(entry, dict) or entry.get("path") != PACKAGE_PATH:
+        return False
+    git = str(entry.get("git", ""))
     return (
-        isinstance(entry, dict)
-        and entry.get("git") == source
-        and entry.get("path") == PACKAGE_PATH
+        git == source
+        or "jasperhg90/knowledge-management" in git.lower()
+        or _bare_url(git) in (locked or set())
     )
 
 
@@ -441,11 +490,8 @@ def remove_old_apm_entry(cwd: Path, scope: Scope, source: str) -> list[str]:
         When apm.yml cannot be read or the uninstall fails.
     """
     manifest = read_manifest(apm_dir(cwd, scope) / "apm.yml")
-    old = [
-        e
-        for e in apm_entries(manifest)
-        if _names_old_package(e) and not _is_kmctl_entry(e, source)
-    ]
+    old_layout = _old_layout(read_lock(cwd, scope))
+    old = [e for e in apm_entries(manifest) if _names_old_package(e, old_layout)]
     if not old:
         return []
     _apm(
@@ -455,7 +501,7 @@ def remove_old_apm_entry(cwd: Path, scope: Scope, source: str) -> list[str]:
     left = [
         e
         for e in apm_entries(read_manifest(apm_dir(cwd, scope) / "apm.yml"))
-        if _names_old_package(e) and not _is_kmctl_entry(e, source)
+        if _names_old_package(e, old_layout)
     ]
     if left:
         raise PluginError(
@@ -489,13 +535,22 @@ def kmctl_entry(source: str) -> dict[str, object]:
     return entry
 
 
-def write_manifest(path: Path, source: str, harnesses: Sequence[str]) -> None:
+def write_manifest(
+    path: Path, source: str, harnesses: Sequence[str], lock: Lock | None = None
+) -> list[str]:
     """Put kmctl's entry and the harnesses into the apm.yml at ``path``, keeping the rest.
 
-    The entry replaces an earlier kmctl entry for the same source, in place,
-    and a missing file is created. ``targets`` gains each harness it lacks,
-    because APM records targets in apm.yml only when it creates the file
-    (spike:kmctl-doctor/1). Comments and layout are kept.
+    The entry replaces the first earlier kmctl entry in place, from this
+    source or another one (``lock`` says where kmctl came from), and any
+    further kmctl entries are removed, so apm.yml never names the package
+    twice. A missing file is created. ``targets`` gains each harness it
+    lacks, because APM records targets in apm.yml only when it creates the
+    file (spike:kmctl-doctor/1). Comments and layout are kept.
+
+    Returns
+    -------
+    list[str]
+        A note per replaced entry that came from another source.
 
     Raises
     ------
@@ -521,17 +576,24 @@ def write_manifest(path: Path, source: str, harnesses: Sequence[str]) -> None:
     if not isinstance(entries, list):
         entries = []
         deps["apm"] = entries
-    entry = kmctl_entry(source)
-    for i, existing in enumerate(entries):
-        if _is_kmctl_entry(existing, source):
-            entries[i] = entry
-            break
+    locked = _locked_kmctl_urls(lock)
+    found = [i for i, e in enumerate(entries) if _is_kmctl_entry(e, source, locked)]
+    notes = [
+        f"replaced the kmctl entry from {entries[i]['git']} with one from {source}"
+        for i in found
+        if entries[i].get("git") != source
+    ]
+    for i in reversed(found[1:]):
+        del entries[i]
+    if found:
+        entries[found[0]] = kmctl_entry(source)
     else:
-        entries.append(entry)
+        entries.append(kmctl_entry(source))
     out = StringIO()
     _roundtrip().dump(data, out)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(out.getvalue(), encoding="utf-8")
+    return notes
 
 
 def apm_install_args(
@@ -906,7 +968,9 @@ def install(
 
     _preflight(cwd, scope, harnesses)
     notes = remove_old_apm_entry(cwd, scope, source)
-    write_manifest(apm_dir(cwd, scope) / "apm.yml", source, harnesses)
+    notes += write_manifest(
+        apm_dir(cwd, scope) / "apm.yml", source, harnesses, read_lock(cwd, scope)
+    )
     args = apm_install_args(harnesses, scope, source, force)
     proc = _apm_run(args, apm_root(cwd, scope))
     _require(proc, f"uvx --from {APM_CLI} apm {' '.join(args)}")

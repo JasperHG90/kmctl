@@ -613,6 +613,7 @@ def test_old_apm_entry_uninstalled_before_rewrite(
 ) -> None:
     kept = "name: mine\nversion: 1.0.0\ndependencies:\n  apm:\n    - acme/rules#abc\n"
     (repo / "apm.yml").write_text(kept + old)
+    (repo / "apm.lock.yaml").write_text(_old_layout_lock())
     fakes.on("uvx", "apm uninstall", write={"apm.yml": kept})
 
     result = _install()
@@ -637,6 +638,7 @@ def test_old_apm_entry_left_by_uninstall_is_refused(
         "    - git: https://github.com/JasperHG90/Knowledge-management\n"
         "      path: apm\n"
     )
+    (repo / "apm.lock.yaml").write_text(_old_layout_lock())
 
     result = _kmctl("plugin", "install", "--harness", "claude")
 
@@ -655,6 +657,107 @@ def test_old_apm_kmctl_entry_is_not_uninstalled(repo: Path, fakes: FakeTools) ->
     _install()
 
     assert _apm_calls(fakes, "uninstall") == []
+
+
+# f2: a kmctl entry from another --source ------------------------------------------
+
+LOCAL = "http://127.0.0.1:46239/o/kmctl.git"
+
+
+def _old_layout_lock() -> str:
+    """An apm.lock.yaml as APM 0.33.0 writes it for kmctl v0.3.0, whose hook came from plugin/."""
+    return yaml.safe_dump(
+        {
+            "lockfile_version": "1",
+            "dependencies": [
+                {
+                    "repo_url": "JasperHG90/Knowledge-management",
+                    "name": "kmctl",
+                    "virtual_path": "apm",
+                    "resolved_ref": "v0.3.0",
+                },
+                {
+                    "repo_url": "JasperHG90/Knowledge-management",
+                    "name": "kmctl",
+                    "virtual_path": "plugin",
+                    "resolved_ref": "v0.3.0",
+                },
+            ],
+        }
+    )
+
+
+def _lock_at(git: str, name: str = "kmctl") -> str:
+    """An apm.lock.yaml in APM 0.33.0's shape for a package at ``git`` with ``path: apm``.
+
+    APM splits a git source over host, port and repo_url (spikes
+    apm-only-install/4 to /6): http://127.0.0.1:N/o/kmctl.git becomes
+    repo_url o/kmctl, host 127.0.0.1, port N.
+    """
+    if git == GITHUB:
+        place = {"repo_url": "JasperHG90/Knowledge-management"}
+    else:
+        place = {"repo_url": "o/kmctl", "host": "127.0.0.1", "port": 46239}
+    return yaml.safe_dump(
+        {
+            "lockfile_version": "1",
+            "dependencies": [
+                {**place, "name": name, "virtual_path": "apm", "resolved_ref": REF}
+            ],
+        }
+    )
+
+
+@pytest.mark.parametrize(("first", "then"), [(LOCAL, GITHUB), (GITHUB, LOCAL)])
+def test_other_source_entry_replaced_in_place(
+    repo: Path, fakes: FakeTools, first: str, then: str
+) -> None:
+    """A kmctl entry from another --source is replaced in its place, with a note."""
+    (repo / "apm.yml").write_text(
+        "name: mine\nversion: 1.0.0\ndependencies:\n  apm:\n"
+        f"    - git: {first}\n      path: apm\n      ref: v0.0.1\n"
+        "    - acme/rules#abc\n"
+    )
+    (repo / "apm.lock.yaml").write_text(_lock_at(first))
+    args = () if then == GITHUB else ("--source", then)
+
+    result = _install(*args)
+
+    deps = yaml.safe_load((repo / "apm.yml").read_text())["dependencies"]["apm"]
+    assert deps[1:] == ["acme/rules#abc"]
+    assert deps[0]["git"] == then and deps[0]["path"] == "apm"
+    assert f"replaced the kmctl entry from {first}" in result.stdout
+    assert _apm_calls(fakes, "uninstall") == []
+
+
+def test_unrelated_apm_path_package_kept(repo: Path, fakes: FakeTools) -> None:
+    """A path: apm package the lock names something else is not kmctl's."""
+    other = "https://example.com/acme/tools.git"
+    (repo / "apm.yml").write_text(
+        "name: mine\nversion: 1.0.0\ndependencies:\n  apm:\n"
+        f"    - git: {other}\n      path: apm\n"
+    )
+    (repo / "apm.lock.yaml").write_text(
+        yaml.safe_dump(
+            {
+                "lockfile_version": "1",
+                "dependencies": [
+                    {
+                        "repo_url": "acme/tools",
+                        "host": "example.com",
+                        "name": "tools",
+                        "virtual_path": "apm",
+                    }
+                ],
+            }
+        )
+    )
+
+    _install()
+
+    deps = yaml.safe_load((repo / "apm.yml").read_text())["dependencies"]["apm"]
+    assert deps[0] == {"git": other, "path": "apm"}
+    assert deps[1]["git"] == GITHUB
 
 
 def test_old_apm_uninstall_failure_names_cause(repo: Path, fakes: FakeTools) -> None:
