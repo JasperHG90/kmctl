@@ -42,16 +42,16 @@ still true; that takes judgment. So kmctl does two things instead:
 - **A Claude Code plugin** with one SessionStart hook that prints the
   briefing, an audit agent, a skill for writing `docs/` pages, and
   `/handoff` and `/continue` to save and resume work between sessions.
-  Claude Code is the only harness today. The plan is to package the rules,
-  skills and agents with [APM](https://microsoft.github.io/apm), so you can
-  install kmctl into any agent harness APM supports.
+  Claude Code is the only harness today. The plugin's skills, agent and
+  hook also install with [APM](https://microsoft.github.io/apm); see
+  [Install kmctl with APM](docs/how-to/install-kmctl-with-apm.md).
 - **A GitHub Action** that runs `kmctl check` on every pull request for free,
   and an opt-in audit you run by hand or on a schedule.
 
 ## Install
 
 ```
-uv tool install git+https://github.com/JasperHG90/Knowledge-management
+uv tool install git+https://github.com/JasperHG90/Knowledge-management@v0.2.0
 ```
 
 The kmctl repository is private for now, so this needs a GitHub account
@@ -131,6 +131,7 @@ The [docs index](docs/README.md) lists every page:
 
 - Tutorial: [Get started with kmctl](docs/tutorials/get-started-with-kmctl.md)
 - How-to: [Install the plugin and the CI action](docs/how-to/install-the-plugin-and-the-ci-action.md)
+- How-to: [Install kmctl with APM](docs/how-to/install-kmctl-with-apm.md)
 - Reference: [Commands](docs/reference/commands.md)
 - Explanation: [Why one hook and report-only audits](docs/explanation/why-one-hook-and-report-only-audits.md)
 - Explanation: [Where kmctl fits in knowledge management](docs/explanation/where-kmctl-fits-in-knowledge-management.md)

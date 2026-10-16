@@ -1,0 +1,1 @@
+{"at": "2026-10-16T11:03:08+00:00", "command": "uv run ruff format --check", "exit": 1, "fingerprint": "a84a5ade333897cfb7894a26d1c896c388bafbd73ab076296003ccbcb212ff35", "kind": "red", "name": "format", "note": null, "output": ".loop/events/update-refreshes-rules/gate-output/8f52e550ac7325ca27cb65ddb5bd6a42af3d11a522e0e49a0254cbe8f5d64d14.txt", "schema_version": "1.0"}

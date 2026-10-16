@@ -1,25 +1,45 @@
 {
   "schema_version": "1.0",
   "slug": "apm-distribution",
-  "stage": "building",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
-  "review_rounds": 0,
+  "review_rounds": 2,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "7ceedca28510e81966edfaa5a27b18097a25358171da6322857e0e752d39c787",
+    "tree": "c77b1fc70b6e53d4e39c7d0ef0611d51677c5b7e",
+    "decisions": [
+      {
+        "finding": "reviewer:f2",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": "j-20261016T111138+0000-922e0303",
+        "paths": [
+          "docs/how-to/install-kmctl-with-apm.md"
+        ]
+      }
+    ],
+    "at": "2026-10-16T11:11:38+00:00"
+  },
   "ask": null,
   "split": "j-20261016T101711+0000-e38a9880",
   "split_plan_hash": "f894364e85faeb39cb30295b41f42ebdcdab94826b106285bffde76324155b50",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "deca3d8f674ea0699997e14d34e92b0b2f0ae886",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
   "worktree": "/home/vscode/kmctl.worktrees/apm-distribution",
   "branch": "loop/apm-distribution",
-  "stamps": [],
+  "stamps": [
+    "4c55c9443a5da9c8e66105d0eb378883538606f5c5aac94090757014560ef2e3",
+    "2c04e4f10e2f881967f0e9f0348c19c0067f12bdb03ca4a115846ece3995346d",
+    "7ceedca28510e81966edfaa5a27b18097a25358171da6322857e0e752d39c787"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
     "hash": "818221e7db4bf8ab81a2ddcce3b036f729d16a97965f66ebc3fefda7a17eaf5c",
@@ -69,16 +89,16 @@
   "waivers": [],
   "overrides": [],
   "round": {
-    "kind": "plan",
-    "n": 1,
-    "binds": "f894364e85faeb39cb30295b41f42ebdcdab94826b106285bffde76324155b50",
-    "started_at": "2026-10-16T10:17:15+00:00",
+    "kind": "review",
+    "n": 2,
+    "binds": "7ceedca28510e81966edfaa5a27b18097a25358171da6322857e0e752d39c787",
+    "started_at": "2026-10-16T11:11:42+00:00",
     "passes": [
-      "plan-reviewer"
+      "reviewer"
     ],
-    "tree": null,
-    "plan_hash": null,
-    "eval_hash": null,
+    "tree": "c77b1fc70b6e53d4e39c7d0ef0611d51677c5b7e",
+    "plan_hash": "f894364e85faeb39cb30295b41f42ebdcdab94826b106285bffde76324155b50",
+    "eval_hash": "818221e7db4bf8ab81a2ddcce3b036f729d16a97965f66ebc3fefda7a17eaf5c",
     "scope": "full",
     "sent_back": [],
     "since": null,
@@ -112,8 +132,32 @@
       "to": "building",
       "at": "2026-10-16T10:55:20+00:00",
       "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-10-16T10:59:52+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-16T11:05:39+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-16T11:11:38+00:00",
+      "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-16T11:14:54+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
-  "at": "2026-10-16T10:55:20+00:00"
+  "at": "2026-10-16T11:14:54+00:00"
 }

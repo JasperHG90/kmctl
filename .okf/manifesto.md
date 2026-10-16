@@ -1,7 +1,7 @@
 ---
 type: manifesto
 title: "Manifesto: kmctl"
-description: What kmctl is for, where each kind of knowledge lives, the parts (CLI, plugin, CI action), the invariants, values, and what is out of scope for now.
+description: What kmctl is for, where each kind of knowledge lives, the parts (CLI, plugin installed by the CLI or APM, CI action), the invariants, values, and what is out of scope for now.
 generated:
   by: claude-opus/5.5
   at: 2026-10-15
@@ -56,7 +56,10 @@ this formalizes so every repository can have it.
   skills (architecture, decision log, practices), a skill for writing
   Diataxis docs, and `/handoff` and `/continue`, which write and read back
   handoffs in `.okf/handoffs/` (ADR 0008). Skills route; `kmctl` decides
-  and writes.
+  and writes. It installs two ways: `kmctl plugin install`, the main route,
+  or APM (Agent Package Manager) through the `apm/apm.yml` package, which
+  also brings the okf skills (ADR 0013). APM leaves out the CLI and skips
+  the CLI's check that the plugin matches its version.
 - **A reusable GitHub Action** (ADR 0005). On every pull request it runs the
   deterministic checks for free. The LLM audit is opt-in and reports only.
 
@@ -72,8 +75,8 @@ Each is `planned` until the test named for it passes, then `enforced`.
   CI action report findings; they never edit `.okf/` or `docs/` and never
   write a `verified` stamp. Status: planned.
 - **I3. The briefing comes from the CLI and fits a budget.** The hook prints
-  what `kmctl` prints, so upgrading the CLI updates the briefing, and its
-  word count stays under a fixed budget. Status: enforced by `tests/test_briefing.py::test_briefing_word_budget`.
+  what `kmctl` prints, so upgrading the CLI updates the briefing, and it
+  stays under 500 tokens (estimated at four characters a token). Status: enforced by `tests/test_briefing.py::test_briefing_token_budget`.
 - **I4. kmctl reads OKF as it is.** It uses the fields the OKF v0.2 spec
   defines (`stale_after`, `verified`, `sources`, `status`) plus the extension
   fields an ADR names. The only one is `handoff_key` (ADR 0009); a covers

@@ -63,3 +63,12 @@ pages, and the two rules it lacks do not fit its word budget. Why is
 [ADR 0011](0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md).
 The briefing stays the one path that works across harnesses, and its rules
 are unchanged.
+
+## Correction, 2026-10-16
+
+The briefing no longer carries the knowledge rules. `kmctl init` writes them
+to `.claude/rules/`, and those files reach the agent's system prompt anyway,
+so repeating them only spent the budget. `src/kmctl/rules/` is gone; the
+briefing keeps one rule the rule files lack (`unverified-is-a-lead`, in
+`src/kmctl/briefing.py`), and its budget is 500 tokens instead of 600 words
+(I3). The operator asked for this on 2026-10-16.

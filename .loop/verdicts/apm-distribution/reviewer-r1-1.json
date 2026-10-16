@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "release-tag.yml reads the before commit with `release.py current ... || true`, and current now also refuses on a missing or differing apm.yml, so any such before commit gives an empty OLD, which compare treats as raised and so skips the lowered-version guard. It does not break 0.2.0 (main's before commit will hold both apm.yml files at 0.1.0), but the before read only needs the manifest's version.",
+      "anchor": ".github/workflows/release-tag.yml:55",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "docs/how-to/install-kmctl-with-apm.md pins v0.2.0 for both the CLI and the package while the manifest is 0.1.0 and no v0.2.0 tag exists, so the page's commands fail between landing and the release; and step 3 says the hook \"prints `kmctl briefing`\" where it prints the briefing that command outputs.",
+      "anchor": "docs/how-to/install-kmctl-with-apm.md:43",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "4c55c9443a5da9c8e66105d0eb378883538606f5c5aac94090757014560ef2e3",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
+  "at": "2026-10-16T11:03:57+00:00"
+}

@@ -23,3 +23,4 @@
   OpenAI-compatible provider, replacing Claude Code.
 - [ADR 0011: kmctl init writes knowledge rules and a CLAUDE.md block for Claude Code](0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md): kmctl init writes four knowledge rules to .claude/rules/, a kmctl block into CLAUDE.md and AGENTS.md, and a first decision; the briefing stays the cross-harness path.
 - [ADR 0012: Releases come from CI](0012-releases-come-from-ci.md): A hand-run release workflow opens a version pull request and a tag workflow publishes the GitHub Release; the plugin manifest is the one version source, with no PyPI and no hatch-vcs.
+- [ADR 0013: kmctl installs through APM too](0013-kmctl-installs-through-apm-too.md): APM installs kmctl's skills, agent and hook from the apm subfolder package as a second route beside kmctl plugin install; the CLI is still installed with uv tool install.
