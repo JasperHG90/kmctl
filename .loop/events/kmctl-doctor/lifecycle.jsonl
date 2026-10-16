@@ -20,3 +20,4 @@
 {"at": "2026-10-16T22:13:13+00:00", "binds": "c783b53f01b78f29065f9cb3d91fb8334023efdad67088a76525fe6118ba34c1", "kind": "round-start", "n": 2, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "b02bd53d0040caf356dd3c2d9bb99ca27e504c6f"}
 {"at": "2026-10-16T22:16:12+00:00", "dispatched_at": "2026-10-16T22:13:13+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-16T22:15:52+00:00"}}
 {"at": "2026-10-16T22:16:16+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "0d3ebf2dfa4d4fc2a571d3f0dd6fd22f94a0a0d6"}
+{"at": "2026-10-16T22:17:05+00:00", "branch": "loop/kmctl-doctor", "kind": "land", "schema_version": "1.0", "sha": "bb2a4b6ab0e8a1b1199f942e9750ffc950f68927"}
