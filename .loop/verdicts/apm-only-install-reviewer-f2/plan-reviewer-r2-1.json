@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "The lock gives repo_url as owner/repo with host and port apart, so a plain URL comparison never matched a local or fork source.",
+      "anchor": "src/kmctl/plugin.py:116",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "In the reverse order, remove_old_apm_entry ran apm uninstall on kmctl's own default-source mapping, which no spike shows works.",
+      "anchor": "src/kmctl/plugin.py:359",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "1027f4956f42303c9f5b743f7b7c5f897b60fb289ed8a72bcf0c2cc827bc0dcb"
+  },
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
+  "at": "2026-10-16T22:21:17+00:00"
+}
