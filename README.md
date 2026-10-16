@@ -51,7 +51,7 @@ still true; that takes judgment. So kmctl does two things instead:
 ## Install
 
 ```
-uv tool install git+https://github.com/JasperHG90/Knowledge-management
+uv tool install git+https://github.com/JasperHG90/Knowledge-management@v0.2.0
 ```
 
 The kmctl repository is private for now, so this needs a GitHub account
