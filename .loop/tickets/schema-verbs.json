@@ -21,7 +21,8 @@
   "branch": "loop/schema-verbs",
   "stamps": [
     "c2daf8a25565d46975276f4ee63a6375e3c3ac754a27945ce45631f55909a2b7",
-    "95ab9218f2b496b8aa993a3bf21188beabd7cc6f5f2ca4eb55e8087572c7f76a"
+    "95ab9218f2b496b8aa993a3bf21188beabd7cc6f5f2ca4eb55e8087572c7f76a",
+    "cc4e938c6c95ccb1f27e5eaecb777f221ca29c0203976afd2948b3cba7ed6090"
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
@@ -182,5 +183,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261015",
-  "at": "2026-10-16T05:22:08+00:00"
+  "at": "2026-10-16T05:25:50+00:00"
 }
