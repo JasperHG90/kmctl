@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "slug": "apm-distribution",
+  "n": 2,
+  "command": "/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-apm-dist/spike1-layout.sh",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-apm-dist/spike1-layout.sh",
+      "copy": "files/spike1-layout.sh"
+    },
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-apm-dist/common.sh",
+      "copy": "files/common.sh"
+    },
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-apm-dist/githttp.py",
+      "copy": "files/githttp.py"
+    }
+  ],
+  "where": "worktree",
+  "head": "c7259fb2c069a6cc3411920acdf0bef216ef2b79",
+  "fingerprint": "8f3b773726013c8883eb30d326233c45727648b392661c558ed0d03ff336eeea",
+  "started_at": "2026-10-16T10:08:46+00:00",
+  "finished_at": "2026-10-16T10:08:53+00:00",
+  "duration_seconds": 6.6,
+  "timeout_seconds": 300.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
+  "moved_from": null
+}

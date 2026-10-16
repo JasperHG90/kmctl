@@ -1,0 +1,91 @@
+== kmctl HEAD: c7259fb2c069a6cc3411920acdf0bef216ef2b79
+Agent Package Manager (APM) CLI version 0.33.0
+== A: repo root, no apm.yml
+-- consumer a: apm install exit 1
+  [x] 1 package failed:
+[x] Installation failed with 1 error(s) in 1.1s. No install transaction changes 
+== B: plugin/ as is, path: plugin
+-- consumer b: apm install exit 0
+  [+] 127.0.0.1:8771/o/b/plugin #default @d0ca0d1d
+  |-- 1 agents integrated -> .claude/agents/
+  |-- 1 hook(s) integrated -> .claude/settings.json
+  |-- Skill integrated -> .claude/skills/
+  |-- 7 skill(s) integrated -> .claude/skills/
+-- files written:
+./.claude/agents/kmctl-auditor.md
+./.claude/apm-hooks.json
+./.claude/settings.json
+./.claude/skills/architecture-review/SKILL.md
+./.claude/skills/audit/evals/evals.json
+./.claude/skills/audit/evals/results.md
+./.claude/skills/audit/evals/sample-findings.json
+./.claude/skills/audit/SKILL.md
+./.claude/skills/continue/evals/evals.json
+./.claude/skills/continue/evals/results.md
+./.claude/skills/continue/SKILL.md
+./.claude/skills/decision-log-review/SKILL.md
+./.claude/skills/handoff/evals/evals.json
+./.claude/skills/handoff/evals/results.md
+./.claude/skills/handoff/SKILL.md
+./.claude/skills/practices-review/SKILL.md
+./.claude/skills/write-docs/evals/evals.json
+./.claude/skills/write-docs/evals/grade.py
+./.claude/skills/write-docs/evals/results.md
+./.claude/skills/write-docs/references/explanation.md
+./.claude/skills/write-docs/references/how-to.md
+./.claude/skills/write-docs/references/reference.md
+./.claude/skills/write-docs/references/tutorial.md
+./.claude/skills/write-docs/SKILL.md
+   skill architecture-review: identical
+   skill audit: identical
+   skill continue: identical
+   skill decision-log-review: identical
+   skill handoff: identical
+   skill practices-review: identical
+   skill write-docs: identical
+   agent kmctl-auditor: identical
+-- B result: 0
+== C: plugin/apm.yml beside plugin.json, path: plugin
+-- consumer c: apm install exit 0
+  [+] 127.0.0.1:8771/o/c/plugin #default @2296558e
+  |-- 1 agents integrated -> .claude/agents/
+  |-- 1 hook(s) integrated -> .claude/settings.json
+  |-- Skill integrated -> .claude/skills/
+  |-- 7 skill(s) integrated -> .claude/skills/
+-- files written:
+./.claude/agents/kmctl-auditor.md
+./.claude/apm-hooks.json
+./.claude/settings.json
+./.claude/skills/architecture-review/SKILL.md
+./.claude/skills/audit/evals/evals.json
+./.claude/skills/audit/evals/results.md
+./.claude/skills/audit/evals/sample-findings.json
+./.claude/skills/audit/SKILL.md
+./.claude/skills/continue/evals/evals.json
+./.claude/skills/continue/evals/results.md
+./.claude/skills/continue/SKILL.md
+./.claude/skills/decision-log-review/SKILL.md
+./.claude/skills/handoff/evals/evals.json
+./.claude/skills/handoff/evals/results.md
+./.claude/skills/handoff/SKILL.md
+./.claude/skills/practices-review/SKILL.md
+./.claude/skills/write-docs/evals/evals.json
+./.claude/skills/write-docs/evals/grade.py
+./.claude/skills/write-docs/evals/results.md
+./.claude/skills/write-docs/references/explanation.md
+./.claude/skills/write-docs/references/how-to.md
+./.claude/skills/write-docs/references/reference.md
+./.claude/skills/write-docs/references/tutorial.md
+./.claude/skills/write-docs/SKILL.md
+   skill architecture-review: identical
+   skill audit: identical
+   skill continue: identical
+   skill decision-log-review: identical
+   skill handoff: identical
+   skill practices-review: identical
+   skill write-docs: identical
+   agent kmctl-auditor: identical
+-- C result: 0
+-- C hook in settings.json:
+1
+== RESULT: risk does not hold: plugin/ deploys as is
