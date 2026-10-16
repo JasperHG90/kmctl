@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "claude.okf-mcp has nothing to check. The Claude install does not declare okf's MCP server anywhere: in spike:apm-only-install/1 APM warned \"Transitive package 'okf' declares self-defined MCP server 'bundle'\" and wrote no .mcp.json (the other files were apm-hooks.json, the okf stop hook, settings.json, .gitignore, the lock and apm.yml), and apm-only-install's plan never writes one. So either the check always fails, which breaks Done-when (exit 0 with every check ok) and r1, or it checks nothing. The plan must drop claude.okf-mcp, or say which ticket makes the Claude install declare the server (that changes apm-only-install's contract).",
+      "anchor": ".loop/plans/kmctl-doctor.md:37",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "The sha256 check of every lock-listed deployed file may fail on every correct install. APM writes okf's hook into .claude/settings.json (spike:apm-only-install/1: '1 hook(s) integrated -> .claude/settings.json'; for Antigravity it writes .agents/hooks.json), and kmctl then merges its own SessionStart entry into that same settings.json. If apm.lock.yaml lists settings.json (or apm-hooks.json, .agents/hooks.json) in deployed_file_hashes, kmctl's merge changes the hash and doctor reports a broken install that is fine. No spike shows a lock from a hook-bearing install. Spike question: after an APM 0.33.0 install with the pinned okf-skills dependency for claude and antigravity, followed by merging a SessionStart entry into .claude/settings.json, does deployed_file_hashes list any hook or settings file, and does every listed hash still match the bytes on disk?",
+      "anchor": ".loop/plans/kmctl-doctor.md:37",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    },
+    {
+      "id": "p3",
+      "disposition": "open",
+      "claim": "The read-only, no-network contract rests on two real commands nobody has run that way: `uv tool run --offline --from apm-cli==0.33.0 apm --version` (uv may build or link a tool env in its cache under HOME; APM may check for a newer version) and `claude plugin list --json` (the claude CLI writes ~/.claude.json on start and may refresh marketplaces). r5 checks HOME and sockets but the unit tests use fake tools, so it would pass while the real doctor writes and connects. Spike question: with a scratch HOME and XDG cache whose uv cache already holds apm-cli 0.33.0, and with networking blocked (unshare -n or strace -f -e trace=connect), do those two commands open a connection or change any file under HOME? If they do, the plan has to change how doctor checks APM and the old plugin, or narrow its promise.",
+      "anchor": ".loop/plans/kmctl-doctor.md:40",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r5"
+    },
+    {
+      "id": "p4",
+      "disposition": "open",
+      "claim": "User scope is out of the plan, but apm-only-install keeps `kmctl plugin install --scope user` (apm install -g, state and lock in ~/.apm/, files and hook under $CLAUDE_CONFIG_DIR). Doctor only reads the repository, so after a user-scope install it prints `no kmctl harness in this repository; run kmctl plugin install --harness claude` and exits 1: a false failure with a fix that installs a second copy at project scope. Since doctor replaces `plugin status`, the plan must say whether doctor checks the user-scope install (~/.apm/apm.lock.yaml, $CLAUDE_CONFIG_DIR/settings.json) or names it as found elsewhere rather than failing.",
+      "anchor": ".loop/plans/kmctl-doctor.md:38",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r3"
+    },
+    {
+      "id": "p5",
+      "disposition": "open",
+      "claim": "antigravity.plugin checks that `.agents/plugins/kmctl/` 'holds its 4 files', but antigravity-harness writes plugin.json, hooks.json, mcp_config.json and three agents (kmctl-auditor plus okf's bundle-weaver and event-analyzer), 6 files unless okf's agents are cut. Its `plugin status --harness antigravity` also compares each file with what this CLI would write and reports missing, extra or different files. Doctor removes `plugin status` but keeps only a presence count, so a hand-edited hooks.json or a stale translated agent goes unreported. The plan should reuse antigravity-harness's comparison function rather than a count. It should also say what happens when apm_modules/ (gitignored, the source of okf's agents) is absent, as in a fresh clone.",
+      "anchor": ".loop/plans/kmctl-doctor.md:37",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r2"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "7ccedae64f73e3c28816a85316a2f3ea15fc88e1a736362c749100e316e80575"
+  },
+  "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
+  "at": "2026-10-16T20:21:07+00:00"
+}
