@@ -5,3 +5,5 @@
 {"at": "2026-10-15T16:19:19+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "3e5f1370eb0e17f91c54f864ab617c4316fd8ca5", "subject": "operator: manual commit"}
 {"at": "2026-10-15T17:35:34+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "e0c84218b8de1fed8709839778e8c69daafb746d", "subject": "operator: manual commit"}
 {"at": "2026-10-15T19:02:41+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "7a67becdf852c48541dc3a2e2b03222c20565691", "subject": "operator: manual commit"}
+{"at": "2026-10-16T04:54:41+00:00", "branch": "loop/network-tests-retry", "kind": "commit", "schema_version": "1.0", "sha": "4d0ea6c8681bcd2e4c457f1e0f85bd129ea3086d", "subject": "Keep loop config in the primary checkout"}
+{"at": "2026-10-16T05:15:16+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "c2244c202354f6ef20e00bf29d0a379925ae511b", "subject": "Add the integration gate for network-tests-retry"}

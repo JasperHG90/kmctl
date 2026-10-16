@@ -11,3 +11,9 @@
 {"at": "2026-10-15T17:35:34+00:00", "kind": "resume", "schema_version": "1.0"}
 {"at": "2026-10-15T19:02:40+00:00", "by": "human:jasperginn@gmail.com", "kind": "halt", "reason": "operator: manual commits", "schema_version": "1.0"}
 {"at": "2026-10-15T19:02:41+00:00", "kind": "resume", "schema_version": "1.0"}
+{"at": "2026-10-16T04:54:39+00:00", "by": "human:jasperginn@gmail.com", "kind": "halt", "reason": "operator: manual actions required", "schema_version": "1.0"}
+{"at": "2026-10-16T04:54:45+00:00", "kind": "resume", "schema_version": "1.0"}
+{"at": "2026-10-16T05:13:20+00:00", "by": "human:jasperginn@gmail.com", "kind": "halt", "reason": "operator: manual intervention required", "schema_version": "1.0"}
+{"at": "2026-10-16T05:13:41+00:00", "kind": "resume", "schema_version": "1.0"}
+{"at": "2026-10-16T05:15:14+00:00", "by": "human:jasperginn@gmail.com", "kind": "halt", "reason": "add the integration gate, which only network-tests-retry can make green", "schema_version": "1.0"}
+{"at": "2026-10-16T05:15:16+00:00", "kind": "resume", "schema_version": "1.0"}

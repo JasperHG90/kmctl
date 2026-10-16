@@ -1,0 +1,107 @@
+{
+  "schema_version": "1.0",
+  "fingerprint": "b1b520f3d8870a4f09ed79d6c40d50a9d07577898f779e82fcdcdfdbef21b568",
+  "slug": "network-tests-retry",
+  "results": [
+    {
+      "name": "lint",
+      "kind": "gate",
+      "command": "uv run ruff check",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "format",
+      "kind": "gate",
+      "command": "uv run ruff format --check",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "tests",
+      "kind": "gate",
+      "command": "uv run pytest",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r1",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_network_retry.py -k tier -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 5,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r2",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_network_retry.py -k retry -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 15,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r3",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_network_retry.py -k marked -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 1,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r5",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_network_retry.py -k installs_asserted -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 1,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r4",
+      "kind": "eval-row",
+      "command": "uv run pytest -q -m \"not integration or integration\"",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 333,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    }
+  ],
+  "green": true,
+  "at": "2026-10-15T19:34:07+00:00",
+  "commit": null,
+  "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261015"
+}

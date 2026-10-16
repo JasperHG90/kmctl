@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "AGENTS.md says `just lint` and `just test` run the gates by hand, but the new integration gate has no recipe and `just test` (uv run pytest) now leaves the integration tier out, so that line is false after this change.",
+      "anchor": "AGENTS.md:93",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "a34610d85cac858ec7901e99ec880f391be6459ca0e3c271f220a4f7e6a0edb3",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261015",
+  "at": "2026-10-15T19:29:23+00:00"
+}
