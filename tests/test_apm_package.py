@@ -30,6 +30,7 @@ from jsonschema import Draft202012Validator
 from typer.testing import CliRunner, Result
 
 from kmctl import app
+from kmctl.doctor import run_doctor
 from kmctl.kinds import schema, skeleton
 from kmctl.okf import front_matter
 from scripts.release import APM_DOC, APM_FILES, DOC_FILES, MANIFEST, set_version
@@ -385,12 +386,12 @@ def test_docs_overview_names_the_package_and_the_hook_writer() -> None:
 
 
 def test_docs_commands_reference_names_the_install_options() -> None:
-    """The commands reference documents every install option and plugin status."""
+    """The commands reference documents every install option and kmctl doctor."""
     text = _flat(COMMANDS.read_text())
 
     for option in ("--harness", "--source", "--force", "--scope"):
         assert option in text, option
-    assert "kmctl plugin status" in text
+    assert "kmctl doctor" in text
 
 
 def test_docs_install_how_to_uses_the_harness_option() -> None:
@@ -491,8 +492,8 @@ def test_consumer_gets_the_package_hook_and_okf_but_no_dev_items(
         and (set(parts[:-1]) & dev or parts[-1].split(".")[0] in dev)
     ] == []
     assert "jasperhg90/skills" not in (consumer / "apm.lock.yaml").read_text().lower()
-    status = _kmctl("plugin", "status", "--json")
-    assert status.exit_code == 0, status.output
-    assert json.loads(status.stdout)["problems"] == []
+    checks = {c.id: c for c in run_doctor(consumer).checks}
+    for cid in ("lock", "files", "okf-skills", "hook", "okf-mcp", "old-plugin"):
+        assert checks[f"claude.{cid}"].ok, checks[f"claude.{cid}"]
     after = {rel: (REAL_CLAUDE / rel).exists() for rel in WATCHED}
     assert after == before, f"the install wrote into {REAL_CLAUDE}"

@@ -19,19 +19,21 @@ from kmctl.briefing import (
 from kmctl.checks import run_checks
 from kmctl.concepts import ConceptError, Kind, new_concept
 from kmctl.docs import DocType, new_doc
+from kmctl.doctor import as_json as doctor_json
+from kmctl.doctor import render as render_doctor
+from kmctl.doctor import run_doctor
 from kmctl.handoffs import live_handoffs
 from kmctl.kinds import KINDS, schema
 from kmctl.plugin import (
     APM_CLI,
     DEFAULT_SOURCE,
     HARNESSES,
+    InstallResult,
     PluginError,
-    PluginStatus,
     Scope,
     parse_harnesses,
 )
 from kmctl.plugin import install as install_plugin
-from kmctl.plugin import status as plugin_status
 from kmctl.review_due import review_due
 from kmctl.scaffold import AGENT_FILES, scaffold
 from kmctl.supersede import supersede
@@ -664,8 +666,8 @@ def decision_supersede(
 plugin_app = typer.Typer(
     help=(
         "Install kmctl's skills, audit agent, knowledge rules and session hook for an "
-        "agent harness, through APM (Agent Package Manager). Verbs: install, update, "
-        "status. Needs uv on PATH: kmctl runs APM with uvx."
+        "agent harness, through APM (Agent Package Manager). Verbs: install, update. "
+        "Needs uv on PATH: kmctl runs APM with uvx. kmctl doctor checks the install."
     ),
     no_args_is_help=True,
 )
@@ -710,7 +712,7 @@ _FORCE_OPTION = typer.Option(
 )
 _PLUGIN_JSON_OPTION = typer.Option(
     "--json",
-    help="Print the resulting status and notes as one JSON object, for scripts.",
+    help=("Print one JSON object (scope, harnesses, package_ref, notes), for scripts."),
 )
 _INSTALL_EPILOG = (
     "Examples:\n\n"
@@ -741,24 +743,17 @@ _INSTALL_EPILOG = (
 )
 
 
-def _report(
-    result: PluginStatus, as_json: bool, notes: list[str] | None = None
-) -> None:
-    """Print a status: one JSON object, or a summary line and one line per problem."""
+def _report(result: InstallResult, as_json: bool) -> None:
+    """Print what an install did: one JSON object, or its notes and a summary line."""
     if as_json:
-        data = asdict(result)
-        if notes is not None:
-            data["notes"] = notes
-        typer.echo(json.dumps(data))
+        typer.echo(json.dumps(asdict(result)))
         return
-    for note in notes or []:
+    for note in result.notes:
         typer.echo(f"note: {note}")
     typer.echo(
-        f"kmctl {result.cli_version}; package {result.package_ref or 'not installed'} "
-        f"({result.scope} scope); hook {'present' if result.hook else 'missing'}"
+        f"installed kmctl's package {result.package_ref or '(not in apm.lock.yaml)'} "
+        f"for {', '.join(result.harnesses)} ({result.scope} scope)"
     )
-    for problem in result.problems:
-        typer.echo(f"problem: {problem}")
 
 
 def _install(
@@ -772,7 +767,7 @@ def _install(
     except PluginError as error:
         typer.echo(f"kmctl plugin {verb}: refused: {error}", err=True)
         raise typer.Exit(1) from error
-    _report(result.status, as_json, result.notes)
+    _report(result, as_json)
     if not as_json:
         names = parse_harnesses(harness)
         steps = []
@@ -782,9 +777,8 @@ def _install(
             steps.append(
                 "open this folder in Antigravity, trust it and start a new session"
             )
-        flags = "" if names == ["claude"] else f" --harness {','.join(names)}"
-        flags += " --scope user" if scope == "user" else ""
-        typer.echo(next_step(*steps, f"kmctl plugin status{flags}"))
+        flags = " --scope user" if scope == "user" else ""
+        typer.echo(next_step(*steps, f"kmctl doctor{flags}"))
 
 
 @plugin_app.command("install", epilog=_INSTALL_EPILOG.format(verb="install"))
@@ -811,41 +805,92 @@ def plugin_update(
     _install("update", harness, scope, source, force, as_json)
 
 
-@plugin_app.command(
-    "status",
-    epilog=(
-        "Examples:\n\n"
-        "  kmctl plugin status\n\n"
-        "  kmctl plugin status --harness antigravity\n\n"
-        "  kmctl plugin status --scope user --json\n\n"
-        "It reads apm.lock.yaml and, for claude, settings.json; for antigravity "
-        "it compares every file under .agents/plugins/kmctl/ with what this "
-        "kmctl writes and reports each missing, extra or different one. It "
-        "changes nothing. Exits 0 either way; each problem names the command "
-        "that fixes it."
-    ),
+_DOCTOR_EPILOG = (
+    "Examples:\n\n"
+    "  kmctl doctor\n\n"
+    "  kmctl doctor --path ../other-repo --json\n\n"
+    "  kmctl doctor --scope user\n\n"
+    "  kmctl doctor --online\n\n"
+    "It prints one line per check on stdout: ok   ID: DETAIL, or fail ID: "
+    "WHAT IS WRONG; THE FIX. Exit 0 when every check is ok, 1 when any "
+    "fails, 2 for a usage error.\n\n"
+    "The checks, by id: kmctl.version (this kmctl's version); dep.uv, "
+    "dep.git (on PATH); dep.apm (APM "
+    f"{APM_CLI.split('==')[1]} runs from uv's cache, with uv tool run "
+    "--offline); dep.claude, dep.agy (on PATH, for each harness installed); "
+    "init.okf, init.docs (.okf/index.md and docs/README.md, from kmctl "
+    "init; project scope only); kmctl.harness (which harnesses are "
+    "installed, from apm.yml targets, apm.lock.yaml, the hook and "
+    ".agents/plugins/kmctl/); claude.scope (no Claude Code install here, "
+    "but one at user scope). Then per harness, claude. or antigravity.: "
+    "lock (apm.lock.yaml names kmctl's package at v<this version>); files "
+    "(every kmctl file the lock lists for the harness exists with its "
+    "sha256); okf-skills (the same for okf's skills); okf-mcp (okf's MCP "
+    "server as this kmctl declares it). claude.hook (the SessionStart hook "
+    "in settings.json); claude.old-plugin (no settings file enables "
+    "kmctl@kmctl or okf@scaccogatto). antigravity.plugin (every file in "
+    ".agents/plugins/kmctl/ is what this kmctl writes); antigravity.hook "
+    "(its hooks.json); antigravity.trust (when agy is on PATH, the "
+    "repository is in trustedWorkspaces of "
+    "~/.gemini/antigravity-cli/settings.json); antigravity.okf-mcp-url "
+    "(--online only).\n\n"
+    "It writes nothing and uses no network unless --online. The only "
+    f"command it runs is uv tool run --offline --from {APM_CLI} apm "
+    "--version; it never runs claude or agy."
 )
-def plugin_status_cmd(
-    harness: Annotated[str, _HARNESS_OPTION] = "claude",
-    scope: Annotated[Scope, _SCOPE_OPTION] = "project",
+
+
+@app.command("doctor", epilog=_DOCTOR_EPILOG)
+def doctor_cmd(
+    path: Annotated[
+        Path,
+        typer.Option(
+            "--path",
+            metavar="../other-repo",
+            exists=True,
+            file_okay=False,
+            help="The repository to check: an existing folder. Default: the current directory.",
+        ),
+    ] = Path("."),
+    scope: Annotated[
+        Scope,
+        typer.Option(
+            "--scope",
+            metavar="project",
+            help=(
+                "project (the install in this repository; the default) or user "
+                "(the install kmctl plugin install --scope user made: "
+                "~/.apm/ and $CLAUDE_CONFIG_DIR, by default ~/.claude)."
+            ),
+        ),
+    ] = "project",
+    online: Annotated[
+        bool,
+        typer.Option(
+            "--online",
+            help=(
+                "Also check that okf's MCP script URL, which Antigravity's MCP "
+                "server runs with uv, can be fetched. The only check that uses "
+                "the network."
+            ),
+        ),
+    ] = False,
     as_json: Annotated[
         bool,
         typer.Option(
             "--json",
             help=(
-                "Print one JSON object (cli_version, scope, package_ref, hook, "
-                "problems), for scripts."
+                "Print one JSON object, {ok, checks: [{id, harness, ok, detail, "
+                "fix}]}, for scripts; fix is null for a passed check."
             ),
         ),
     ] = False,
 ) -> None:
-    """Report the installed kmctl package's version and the session hook, and what to fix."""
-    try:
-        harnesses = parse_harnesses(harness)
-    except PluginError as error:
-        typer.echo(f"kmctl plugin status: refused: {error}", err=True)
-        raise typer.Exit(1) from error
-    _report(plugin_status(Path.cwd(), scope, harnesses), as_json)
+    """Check kmctl's tools, its installed package per harness and the kmctl init files."""
+    result = run_doctor(path, scope, online)
+    typer.echo(doctor_json(result) if as_json else render_doctor(result))
+    if not result.ok:
+        raise typer.Exit(1)
 
 
 def main() -> None:

@@ -28,10 +28,10 @@ for people. Warnings and refusals go to stderr.
 | `kmctl new doc` | Create a `docs/` page in its Diataxis folder with a skeleton and its index entry. |
 | `kmctl decision` | Change decision records in `.okf/decisions/`. Verbs: `supersede`. |
 | `kmctl decision supersede` | Mark one decision superseded by another and link the two records both ways. |
-| `kmctl plugin` | Install kmctl's skills, audit agent, knowledge rules and session hook for an agent harness, through APM (Agent Package Manager). Verbs: `install`, `update`, `status`. Needs `uv` on PATH: kmctl runs APM with `uvx`. |
+| `kmctl plugin` | Install kmctl's skills, audit agent, knowledge rules and session hook for an agent harness, through APM (Agent Package Manager). Verbs: `install`, `update`. Needs `uv` on PATH: kmctl runs APM with `uvx`. `kmctl doctor` checks the install. |
 | `kmctl plugin install` | Install kmctl's APM package, its session hook and okf's MCP server for a harness. |
 | `kmctl plugin update` | Reinstall kmctl's APM package at this kmctl's version; run it after upgrading kmctl. |
-| `kmctl plugin status` | Report the installed kmctl package's version and the session hook, and what to fix. |
+| `kmctl doctor` | Check kmctl's tools, its installed package per harness and the `kmctl init` files. |
 
 ## Details
 
@@ -321,8 +321,8 @@ When APM reports that it left in place files it did not write, the install
 stops before step 5, names the skill folders and exits 1; run it again with
 `--force` to replace them. Running it again at the same version changes
 nothing. Output: a `note:` line for each old install removed or step
-skipped, then the status line as `kmctl plugin status` prints it, then a
-`Next:` line.
+skipped, then a line naming the package ref `apm.lock.yaml` records, the
+harnesses and the scope, then a `Next:` line ending with `kmctl doctor`.
 
 | Option | Meaning | Default |
 |---|---|---|
@@ -330,7 +330,7 @@ skipped, then the status line as `kmctl plugin status` prints it, then a
 | `--scope SCOPE` | `project` (this repository: `apm.yml`, `.claude/`, `.mcp.json` and `.agents/` here) or `user` (every repository: `~/.apm/apm.yml` and Claude Code's folder, `$CLAUDE_CONFIG_DIR` or `~/.claude`). `antigravity` is `project` only. | `project` |
 | `--source GIT_URL` | The git URL of the repository holding the kmctl package, its `apm/` folder at the tag `vVERSION`. Set it for a fork, a local git server or an unreleased tree; an `http://` URL is allowed as insecure. | `https://github.com/JasperHG90/Knowledge-management.git` |
 | `--force` | Let APM replace skill folders it did not write. It replaces each folder whole, deleting any file you added there. | off |
-| `--json` | Print the resulting status and a `notes` list as one JSON object. | off |
+| `--json` | Print one JSON object: `scope`, `harnesses`, `package_ref` (the ref `apm.lock.yaml` records for the kmctl package, or `null`) and `notes`. | off |
 
 Exit code: 1 when kmctl refuses, with the reason and the fix on stderr; for
 example an unknown harness, an `apm.yml` or `settings.json` that does not
@@ -341,29 +341,68 @@ parse, a failed APM run (with APM's cause), or skipped files.
 The same steps and options as `kmctl plugin install`. Run it after upgrading
 kmctl: it moves the `apm.yml` entry to the new version's tag and reinstalls.
 
-### `kmctl plugin status`
+### `kmctl doctor`
 
-Report the ref `apm.lock.yaml` records for the kmctl package against this
-kmctl's version, and for `claude` whether `.claude/settings.json` holds the
-hook this kmctl writes. For `antigravity` it compares every file under
-`.agents/plugins/kmctl/` with what this kmctl writes and reports each
-missing, extra or different one, or that `apm_modules/` is missing. Each
-problem names the command that fixes it: a missing package or hook, and any
-problem with the Antigravity folder, names
-`kmctl plugin install --harness HARNESS`, an older package names
-`kmctl plugin update --harness HARNESS`, and a changed Claude hook names
-`kmctl plugin update`. It reads files only.
+Check that kmctl's tools, its installed package for each harness and the
+`kmctl init` files are in place. It prints one line per check on stdout,
+`ok   ID: DETAIL` or `fail ID: WHAT IS WRONG; THE FIX`, where the fix is the
+command to run (or, for trust, what to do in Antigravity).
+
+It writes nothing and uses no network unless `--online`. It reads files,
+and the one command it runs is
+`uv tool run --offline --from apm-cli==0.33.0 apm --version`, which uses
+uv's cache only. It never runs `claude` or `agy`: `claude plugin list` goes
+online and writes `.claude.json`, so doctor reads `enabledPlugins` from the
+settings files instead.
+
+It finds the harnesses installed from what an install leaves: the
+`targets:` in an `apm.yml` that names kmctl's package, the paths
+`apm.lock.yaml` lists for that package (`.claude/` or `.agents/`), the
+kmctl hook or an old kmctl plugin in `.claude/settings.json`, and
+`.agents/plugins/kmctl/`. Any one is enough, so a deleted piece is
+reported by name rather than hiding the harness. A harness that is not
+installed gets no checks.
+
+| Check | Harness | Passes when | Fix on failure |
+|---|---|---|---|
+| `kmctl.version` | all | Always; the detail is this kmctl's version, which the other checks compare against. | none |
+| `dep.uv` | all | `uv` is on PATH. | install uv |
+| `dep.git` | all | `git` is on PATH. | install git |
+| `dep.apm` | all | `uv tool run --offline --from apm-cli==0.33.0 apm --version` exits 0. | `uvx --from apm-cli==0.33.0 apm --version`, which downloads it once |
+| `dep.claude` | claude | `claude` is on PATH. | install Claude Code |
+| `dep.agy` | antigravity | `agy` is on PATH. | install the Antigravity CLI |
+| `init.okf` | all, project scope | `.okf/index.md` exists. | `kmctl init` |
+| `init.docs` | all, project scope | `docs/README.md` exists. | `kmctl init` |
+| `kmctl.harness` | all | A harness is installed; the detail names them. | `kmctl plugin install --harness claude` |
+| `claude.scope` | claude | Passes, at project scope, when Claude Code is installed at user scope but not here; it says to run `kmctl doctor --scope user`. | none |
+| `claude.lock`, `antigravity.lock` | each | `apm.lock.yaml` names kmctl's package at `v<this version>`. | `kmctl plugin install --harness H` when the lock or the package is missing, `kmctl plugin update --harness H` for another version |
+| `claude.files`, `antigravity.files` | each | Every path the lock lists for kmctl's package under `.claude/` or `.agents/` exists, and each file matches the sha256 the lock records. This covers the skills, the agent and the rules. | `kmctl plugin install --harness H` |
+| `claude.okf-skills`, `antigravity.okf-skills` | each | The same for okf's skills. | `kmctl plugin install --harness H` |
+| `claude.hook` | claude | `.claude/settings.json` holds exactly the SessionStart hook this kmctl writes. | `kmctl plugin install --harness claude` when missing, `kmctl plugin update --harness claude` when changed |
+| `claude.okf-mcp` | claude | `.mcp.json` (at user scope, `.claude.json` in `$CLAUDE_CONFIG_DIR`, by default `~/.claude.json`) declares `okf-bundle` as this kmctl writes it, or another server that runs `okf_mcp.py`. | `kmctl plugin install --harness claude` when missing, `kmctl plugin update --harness claude` when changed |
+| `claude.old-plugin` | claude | No settings file (`.claude/settings.json` or `.claude/settings.local.json`; at user scope, `settings.json` in `$CLAUDE_CONFIG_DIR`) enables `kmctl@kmctl` or `okf@scaccogatto`. | `kmctl plugin install --harness claude` when `kmctl@kmctl` is enabled (it removes okf too when okf came as its dependency); otherwise `claude plugin uninstall okf@scaccogatto --scope SCOPE`, the scope of the file that enables it |
+| `antigravity.plugin` | antigravity | Every file under `.agents/plugins/kmctl/` is what this kmctl writes, with none missing or extra. Fails with `apm_modules/ is missing` when okf's agents cannot be read to compare. | `kmctl plugin install --harness antigravity` |
+| `antigravity.hook` | antigravity | `.agents/plugins/kmctl/hooks.json` is the hook this kmctl writes. | `kmctl plugin install --harness antigravity` |
+| `antigravity.okf-mcp` | antigravity | `.agents/plugins/kmctl/mcp_config.json` declares okf's MCP server as this kmctl writes it. | `kmctl plugin install --harness antigravity` |
+| `antigravity.trust` | antigravity | Checked only when `agy` is on PATH: the repository is in `trustedWorkspaces` of `~/.gemini/antigravity-cli/settings.json`. Antigravity loads `.agents/` only from a trusted folder. | open the folder in Antigravity and trust it |
+| `antigravity.okf-mcp-url` | antigravity | With `--online` only: okf's MCP script URL, which the MCP server runs with `uv run`, answers HTTP 200. | check the network, then run it again |
+
+With `--scope user`, a fix adds `--scope user`, and the `init.` and
+`antigravity.` checks are left out: Antigravity installs per repository
+only, and the init files belong to a repository.
 
 | Option | Meaning | Default |
 |---|---|---|
-| `--harness LIST` | The harnesses to check, as a comma list: `claude`, `antigravity`. | `claude` |
-| `--scope SCOPE` | `project` (this repository) or `user` (`~/.apm/` and Claude Code's folder). | `project` |
-| `--json` | Print one JSON object: `cli_version`, `scope`, `package_ref`, `hook` (every checked harness's hook is the one this kmctl writes), `problems`. | off |
+| `--path DIR` | The repository to check: an existing folder. | `.` |
+| `--scope SCOPE` | `project` (the install in this repository) or `user` (the install `kmctl plugin install --scope user` made: `~/.apm/` and `$CLAUDE_CONFIG_DIR`, by default `~/.claude`). | `project` |
+| `--online` | Also check that okf's MCP script URL can be fetched. The only check that uses the network. | off |
+| `--json` | Print one JSON object, `{"ok": bool, "checks": [{"id", "harness", "ok", "detail", "fix"}]}`. `harness` is `null` for a check that serves all harnesses; `fix` is `null` for a passed check. The ids are the ones in the table. | off |
 
-Exit code: 0 whether or not there are problems; 1 for a harness it does not know.
+Exit code: 0 when every check is ok, 1 when any fails, 2 for a usage
+error such as a `--path` that is not a folder.
 
 ### Environment
 
 | Variable | Used by | Meaning |
 |---|---|---|
-| `CLAUDE_CONFIG_DIR` | `kmctl plugin --scope user` | Claude Code's user folder, where the hook's `settings.json` and APM's user-scope skills, agent and rules go; by default `~/.claude`. |
+| `CLAUDE_CONFIG_DIR` | `kmctl plugin --scope user`, `kmctl doctor --scope user` | Claude Code's user folder, where the hook's `settings.json` and APM's user-scope skills, agent and rules go; by default `~/.claude`. |

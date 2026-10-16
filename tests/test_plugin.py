@@ -1,4 +1,4 @@
-"""kmctl plugin install, update and status, with fake uvx, claude and uv on PATH (ADR 0014).
+"""kmctl plugin install and update, with fake uvx, claude and uv on PATH (ADR 0014).
 
 No test here runs the real APM or claude: ``FakeTools`` stands in for them,
 records each run, and answers as a test tells it. HOME, CLAUDE_CONFIG_DIR and
@@ -10,7 +10,6 @@ hook tests are invariant I1's: kmctl writes one SessionStart hook, and it exits
 from __future__ import annotations
 
 import json
-import re
 import subprocess
 from importlib.metadata import version
 from pathlib import Path
@@ -330,16 +329,24 @@ def test_install_ends_with_next_line(repo: Path, fakes: FakeTools) -> None:
     last = _install().stdout.strip().splitlines()[-1]
 
     assert last.startswith("Next: ")
-    assert "kmctl plugin status" in last
+    assert last.endswith(", then kmctl doctor")
 
 
-def test_install_json_prints_status_and_notes(repo: Path, fakes: FakeTools) -> None:
+def test_install_json_prints_what_it_installed_and_notes(
+    repo: Path, fakes: FakeTools
+) -> None:
     data = json.loads(_install("--json").stdout)
 
+    assert data["scope"] == "project"
+    assert data["harnesses"] == ["claude"]
     assert data["package_ref"] == REF
-    assert data["hook"] is True
-    assert data["problems"] == []
     assert isinstance(data["notes"], list)
+
+
+def test_install_prints_the_installed_ref(repo: Path, fakes: FakeTools) -> None:
+    out = _install().stdout
+
+    assert f"installed kmctl's package {REF} for claude (project scope)" in out
 
 
 @pytest.mark.parametrize("harness", ["codex", "claude,codex", ""])
@@ -907,79 +914,3 @@ def test_user_scope_is_not_the_default(
     assert "-g" not in _apm_calls(fakes, "install")[0].args
     assert not (home / ".claude" / "settings.json").exists()
     assert not (home / ".apm").exists()
-
-
-# r8: status ---------------------------------------------------------------------
-
-
-def _status(*args: str) -> Result:
-    """Run ``kmctl plugin status`` with ``args``."""
-    return _kmctl("plugin", "status", *args)
-
-
-def test_status_reports_no_problems_after_install(repo: Path, fakes: FakeTools) -> None:
-    _install()
-
-    data = json.loads(_status("--json").stdout)
-
-    assert data == {
-        "cli_version": version("kmctl"),
-        "scope": "project",
-        "package_ref": REF,
-        "hook": True,
-        "problems": [],
-    }
-
-
-def test_status_mismatched_ref_names_update(repo: Path, fakes: FakeTools) -> None:
-    _install()
-    (repo / "apm.lock.yaml").write_text(_lock(ref="v0.0.1"))
-
-    result = _status()
-
-    assert result.exit_code == 0
-    assert re.search(
-        r"problem: version mismatch.*v0\.0\.1.*; run kmctl plugin update --harness claude$",
-        result.stdout,
-        re.MULTILINE,
-    )
-
-
-def test_status_missing_hook_names_install(repo: Path, fakes: FakeTools) -> None:
-    _install()
-    (repo / ".claude" / "settings.json").write_text("{}")
-
-    [problem] = json.loads(_status("--json").stdout)["problems"]
-
-    assert "SessionStart hook is missing" in problem
-    assert problem.endswith("run kmctl plugin install --harness claude")
-
-
-def test_status_changed_hook_names_update(repo: Path, fakes: FakeTools) -> None:
-    _install()
-    path = repo / ".claude" / "settings.json"
-    path.write_text(path.read_text().replace('"timeout": 10', '"timeout": 99'))
-
-    [problem] = json.loads(_status("--json").stdout)["problems"]
-
-    assert problem.endswith("run kmctl plugin update")
-
-
-def test_status_without_install_names_install(repo: Path, fakes: FakeTools) -> None:
-    data = json.loads(_status("--json").stdout)
-
-    assert data["package_ref"] is None and data["hook"] is False
-    assert len(data["problems"]) == 2
-    assert all(
-        p.endswith("run kmctl plugin install --harness claude")
-        for p in data["problems"]
-    )
-    assert fakes.calls() == []
-
-
-def test_status_user_scope_fix_names_the_scope(repo: Path, fakes: FakeTools) -> None:
-    data = json.loads(_status("--scope", "user", "--json").stdout)
-
-    assert data["scope"] == "user"
-    assert len(data["problems"]) == 2
-    assert all(p.endswith("--scope user") for p in data["problems"])

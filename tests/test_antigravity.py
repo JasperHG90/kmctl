@@ -420,7 +420,7 @@ def test_plugin_folder_install_for_both_harnesses(repo: Path, fakes: FakeTools) 
     assert result.exit_code == 0, result.output
     assert sorted(_files(_folder(repo))) == PLUGIN_FILES
     assert (repo / ".claude" / "settings.json").is_file()
-    assert json.loads(result.stdout)["problems"] == []
+    assert json.loads(result.stdout)["harnesses"] == ["claude", "antigravity"]
 
 
 def test_plugin_folder_skipped_skills_named_under_agents(
@@ -454,7 +454,7 @@ def test_plugin_folder_install_ends_with_trust_step(
     result = _install()
 
     assert re.search(
-        r"^Next: .*trust.*kmctl plugin status --harness antigravity$",
+        r"^Next: .*trust.*, then kmctl doctor$",
         result.stdout,
         re.MULTILINE,
     )
@@ -651,111 +651,38 @@ def test_hook_never_blocks_and_relays_the_briefing(tmp_path: Path) -> None:
     assert data["got"] == {"workspacePaths": [str(tmp_path)]}
 
 
-# r5: status -------------------------------------------------------------------
+# r5: the folder comparison doctor uses ---------------------------------------
 
 
-def _status(*args: str) -> dict:
-    result = _kmctl("plugin", "status", "--harness", "antigravity", "--json", *args)
-    assert result.exit_code == 0, result.output
-    return json.loads(result.stdout)
-
-
-FIX = "run kmctl plugin install --harness antigravity"
-
-
-def test_status_clean_after_install(repo: Path, fakes: FakeTools) -> None:
-    _install()
-
-    data = _status()
-
-    assert data == {
-        "cli_version": version("kmctl"),
-        "scope": "project",
-        "package_ref": REF,
-        "hook": True,
-        "problems": [],
-    }
-
-
-def test_status_reports_an_edited_file(repo: Path, fakes: FakeTools) -> None:
-    _install()
-    (_folder(repo) / "agents" / "kmctl-auditor.md").write_text("edited\n")
-
-    [problem] = _status()["problems"]
-
-    assert "agents/kmctl-auditor.md" in problem and "differs" in problem
-    assert problem.endswith(FIX)
-
-
-def test_status_version_mismatch_names_the_harness(
-    repo: Path, fakes: FakeTools
-) -> None:
-    """Plain ``kmctl plugin update`` would install for claude and leave .agents/ stale."""
-    _install()
-    lock = repo / "apm.lock.yaml"
-    lock.write_text(lock.read_text().replace(REF, "v0.0.1"))
-
-    [problem] = _status()["problems"]
-
-    assert "version mismatch" in problem
-    assert problem.endswith("run kmctl plugin update --harness antigravity")
-
-
-def test_status_reports_a_deleted_file(repo: Path, fakes: FakeTools) -> None:
-    _install()
-    (_folder(repo) / "hooks.json").unlink()
-
-    data = _status()
-
-    [problem] = data["problems"]
-    assert "hooks.json" in problem and "missing" in problem
-    assert problem.endswith(FIX)
-    assert data["hook"] is False
-
-
-def test_status_reports_an_added_file(repo: Path, fakes: FakeTools) -> None:
-    _install()
-    (_folder(repo) / "agents" / "extra.md").write_text("x\n")
-
-    [problem] = _status()["problems"]
-
-    assert "agents/extra.md" in problem and "not one kmctl writes" in problem
-    assert problem.endswith(FIX)
-
-
-def test_status_without_apm_modules_names_the_fix(repo: Path, fakes: FakeTools) -> None:
-    _install()
-    shutil.rmtree(repo / "apm_modules")
-
-    problems = _status()["problems"]
-
-    assert problems == [f"apm_modules/ is missing; {FIX}"]
-
-
-def test_status_user_scope_says_antigravity_is_per_repository(
-    repo: Path, fakes: FakeTools
-) -> None:
-    data = _status("--scope", "user")
-
-    assert data["hook"] is False
-    assert any("per repository" in p for p in data["problems"])
-
-
-def test_status_before_install_names_install(repo: Path, fakes: FakeTools) -> None:
-    problems = _status()["problems"]
-
-    assert problems and all(p.endswith(FIX) for p in problems)
-
-
-def test_status_function_is_callable_without_the_cli(
+def test_plugin_problems_name_each_file_without_the_cli(
     repo: Path, fakes: FakeTools
 ) -> None:
     _install()
     (_folder(repo) / "plugin.json").write_text("{}")
+    (_folder(repo) / "hooks.json").unlink()
+    (_folder(repo) / "agents" / "extra.md").write_text("x\n")
 
     problems = antigravity.plugin_problems(repo)
 
-    assert len(problems) == 1 and "plugin.json" in problems[0]
+    assert problems == [
+        ".agents/plugins/kmctl/agents/extra.md is not one kmctl writes",
+        ".agents/plugins/kmctl/hooks.json is missing",
+        ".agents/plugins/kmctl/plugin.json differs from what this kmctl writes",
+    ]
+    assert not antigravity.hook_present(repo)
+
+
+def test_plugin_problems_without_apm_modules_raise_the_fix(
+    repo: Path, fakes: FakeTools
+) -> None:
+    _install()
+    shutil.rmtree(repo / "apm_modules")
+
+    with pytest.raises(
+        plugin.PluginError,
+        match=r"^apm_modules/ is missing; run kmctl plugin install --harness antigravity$",
+    ):
+        antigravity.plugin_problems(repo)
 
 
 # r6: agy validates the folder -------------------------------------------------
@@ -818,8 +745,8 @@ def test_consumer_gets_skills_rules_and_the_plugin_folder(
     assert {k: v.decode() for k, v in _files(folder).items()} == (
         antigravity.plugin_files(consumer)
     )
-    status = _kmctl("plugin", "status", "--harness", "antigravity", "--json")
-    assert json.loads(status.stdout)["problems"] == []
+    assert antigravity.plugin_problems(consumer) == []
+    assert antigravity.hook_present(consumer)
 
 
 # r8: the decision and the docs ------------------------------------------------

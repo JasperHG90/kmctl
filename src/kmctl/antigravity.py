@@ -7,8 +7,8 @@ which Antigravity loads from a trusted workspace (spike:antigravity-harness/3).
 
 Every function here prints nothing. ``plugin_files`` says what the folder
 holds, ``write_plugin`` replaces the folder with it, and ``compare_plugin``
-and ``plugin_problems`` report how a folder on disk differs: ``kmctl plugin
-status`` uses that comparison, and any other check can call it.
+and ``plugin_problems`` report how a folder on disk differs: ``kmctl doctor``
+uses that comparison, and any other check can call it.
 """
 
 import json
@@ -231,14 +231,20 @@ _SAID = {
 
 
 def plugin_problems(cwd: Path) -> list[str]:
-    """One line per file under the plugin folder in ``cwd`` that differs from what this kmctl writes, each naming the fix."""
-    try:
-        want = plugin_files(cwd)
-    except PluginError as error:
-        return [str(error)]
+    """One line per file under the plugin folder in ``cwd`` that differs from what this kmctl writes.
+
+    Each line names the file and how it differs; the fix for every one is
+    ``FIX``.
+
+    Raises
+    ------
+    PluginError
+        As ``plugin_files`` does, such as when ``apm_modules/`` is missing.
+    """
+    want = plugin_files(cwd)
     shown = PLUGIN_PATH.as_posix()
     return [
-        f"{shown}/{rel} {_SAID[kind]}; {FIX}"
+        f"{shown}/{rel} {_SAID[kind]}"
         for rel, kind in compare_plugin(plugin_dir(cwd), want)
     ]
 

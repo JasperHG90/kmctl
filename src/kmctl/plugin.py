@@ -75,46 +75,27 @@ class PluginError(Exception):
 
 
 @dataclass(frozen=True)
-class PluginStatus:
-    """kmctl's install in one repository, or at user scope, against this CLI.
+class InstallResult:
+    """What ``install`` did besides the APM install.
 
     Attributes
     ----------
-    cli_version : str
-        This kmctl's version.
     scope : str
         ``project`` or ``user``.
+    harnesses : list[str]
+        The harnesses it installed for.
     package_ref : str | None
-        The ref apm.lock.yaml records for the kmctl package, or None when the
-        package is not installed.
-    hook : bool
-        Whether settings.json holds exactly the SessionStart hook this CLI writes.
-    problems : list[str]
-        One line per problem, each naming the command that fixes it.
-    """
-
-    cli_version: str
-    scope: str
-    package_ref: str | None
-    hook: bool
-    problems: list[str]
-
-
-@dataclass(frozen=True)
-class InstallResult:
-    """What ``install`` did besides the APM install, and the status afterwards.
-
-    Attributes
-    ----------
+        The ref apm.lock.yaml records for the kmctl package afterwards, or
+        None when the lock does not name it.
     notes : list[str]
         One line per thing a reader should know: an old install removed, a
         step skipped and why, an MCP server kept.
-    status : PluginStatus
-        The install as ``status`` reports it afterwards.
     """
 
+    scope: str
+    harnesses: list[str]
+    package_ref: str | None
     notes: list[str]
-    status: PluginStatus
 
 
 class _ClaudePlugin(BaseModel):
@@ -132,9 +113,12 @@ class _ClaudePlugin(BaseModel):
 _CLAUDE_PLUGINS = TypeAdapter(list[_ClaudePlugin])
 
 
-class _LockDependency(BaseModel):
+class LockDependency(BaseModel):
     """One package in apm.lock.yaml, with the fields kmctl reads."""
 
+    repo_url: str | None = Field(
+        default=None, description="Where the package came from, such as owner/repo."
+    )
     name: str | None = Field(default=None, description="The package's apm.yml name.")
     virtual_path: str | None = Field(
         default=None, description="The package's folder inside its repository."
@@ -145,12 +129,16 @@ class _LockDependency(BaseModel):
     deployed_files: list[str] = Field(
         default_factory=list, description="Files and folders APM wrote for it."
     )
+    deployed_file_hashes: dict[str, str] = Field(
+        default_factory=dict,
+        description="Each deployed file's hash as APM recorded it, sha256:HEX.",
+    )
 
 
-class _Lock(BaseModel):
+class Lock(BaseModel):
     """apm.lock.yaml, with the fields kmctl reads."""
 
-    dependencies: list[_LockDependency] = Field(
+    dependencies: list[LockDependency] = Field(
         default_factory=list, description="The installed packages."
     )
 
@@ -217,12 +205,12 @@ def apm_dir(cwd: Path, scope: Scope) -> Path:
     return Path.home() / ".apm" if scope == "user" else cwd
 
 
-def _apm_cwd(cwd: Path, scope: Scope) -> Path:
+def apm_root(cwd: Path, scope: Scope) -> Path:
     """Where APM runs, which is also the root of the paths its lock records."""
     return Path.home() if scope == "user" else cwd
 
 
-def _user_mcp_file() -> Path:
+def user_mcp_file() -> Path:
     """The file claude keeps user-scope MCP servers in."""
     configured = os.environ.get("CLAUDE_CONFIG_DIR")
     return (Path(configured) if configured else Path.home()) / ".claude.json"
@@ -404,7 +392,7 @@ def _roundtrip() -> YAML:
     return rt
 
 
-def _read_manifest(path: Path) -> Any:
+def read_manifest(path: Path) -> Any:
     """The apm.yml at ``path`` as round-trip YAML, or None when there is none or it is empty.
 
     Raises
@@ -428,7 +416,7 @@ def _read_manifest(path: Path) -> Any:
     return data
 
 
-def _apm_entries(data: Any) -> list[object]:
+def apm_entries(data: Any) -> list[object]:
     """The ``dependencies.apm`` list of a parsed apm.yml, or an empty list."""
     deps = data.get("dependencies") if isinstance(data, dict) else None
     entries = deps.get("apm") if isinstance(deps, dict) else None
@@ -452,21 +440,21 @@ def remove_old_apm_entry(cwd: Path, scope: Scope, source: str) -> list[str]:
     PluginError
         When apm.yml cannot be read or the uninstall fails.
     """
-    manifest = _read_manifest(apm_dir(cwd, scope) / "apm.yml")
+    manifest = read_manifest(apm_dir(cwd, scope) / "apm.yml")
     old = [
         e
-        for e in _apm_entries(manifest)
+        for e in apm_entries(manifest)
         if _names_old_package(e) and not _is_kmctl_entry(e, source)
     ]
     if not old:
         return []
     _apm(
         ["uninstall", OLD_PACKAGE, *(["-g"] if scope == "user" else [])],
-        _apm_cwd(cwd, scope),
+        apm_root(cwd, scope),
     )
     left = [
         e
-        for e in _apm_entries(_read_manifest(apm_dir(cwd, scope) / "apm.yml"))
+        for e in apm_entries(read_manifest(apm_dir(cwd, scope) / "apm.yml"))
         if _names_old_package(e) and not _is_kmctl_entry(e, source)
     ]
     if left:
@@ -514,7 +502,7 @@ def write_manifest(path: Path, source: str, harnesses: Sequence[str]) -> None:
     PluginError
         When the existing file is not a YAML mapping.
     """
-    data = _read_manifest(path)
+    data = read_manifest(path)
     if data is None:
         name = re.sub(r"[^A-Za-z0-9._-]", "-", path.parent.name).strip("-.")
         data = {"name": name or "project", "version": "0.1.0"}
@@ -560,18 +548,18 @@ def apm_install_args(
     return args
 
 
-def _read_lock(cwd: Path, scope: Scope) -> _Lock | None:
+def read_lock(cwd: Path, scope: Scope) -> Lock | None:
     """The apm.lock.yaml APM keeps for ``scope``, or None when there is none or it does not parse."""
     path = apm_dir(cwd, scope) / "apm.lock.yaml"
     if not path.is_file():
         return None
     try:
-        return _Lock.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
+        return Lock.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
     except (yaml.YAMLError, ValidationError):
         return None
 
 
-def _kmctl_package(lock: _Lock | None) -> _LockDependency | None:
+def kmctl_package(lock: Lock | None) -> LockDependency | None:
     """The kmctl package's entry in the lock, or None."""
     for dep in lock.dependencies if lock else []:
         if dep.name == "kmctl" and dep.virtual_path == PACKAGE_PATH:
@@ -589,8 +577,8 @@ def skipped_skills(
     paths the lock says APM deployed. Antigravity installs at project scope
     only.
     """
-    root = _apm_cwd(cwd, scope)
-    package = _kmctl_package(_read_lock(cwd, scope))
+    root = apm_root(cwd, scope)
+    package = kmctl_package(read_lock(cwd, scope))
     deployed = {
         (root / p).resolve() for p in (package.deployed_files if package else [])
     }
@@ -623,7 +611,7 @@ def hook_entry() -> dict[str, object]:
     }
 
 
-def _read_json(path: Path) -> dict[str, Any]:
+def read_json(path: Path) -> dict[str, Any]:
     """The JSON object in ``path``, or an empty one when the file is missing.
 
     Raises
@@ -671,7 +659,7 @@ def merge_hook(path: Path) -> None:
     PluginError
         When the file, or its ``hooks`` value, is not a JSON object.
     """
-    data = _read_json(path)
+    data = read_json(path)
     hooks = data.setdefault("hooks", {})
     if not isinstance(hooks, dict):
         raise PluginError(
@@ -704,7 +692,7 @@ def merge_hook(path: Path) -> None:
 def kmctl_hooks(path: Path) -> list[dict[str, Any]]:
     """Every SessionStart hook in the settings.json at ``path`` that runs ``kmctl briefing``."""
     try:
-        data = _read_json(path)
+        data = read_json(path)
     except PluginError:
         return []
     hooks = data.get("hooks")
@@ -791,7 +779,7 @@ def merge_mcp(path: Path) -> str | None:
     PluginError
         When the file is not a JSON object.
     """
-    data = _read_json(path)
+    data = read_json(path)
     servers = data.get("mcpServers")
     if not isinstance(servers, dict):
         servers = {}
@@ -833,9 +821,9 @@ def install_mcp(cwd: Path, scope: Scope) -> list[str]:
                 "you to approve it once"
             )
         ]
-    config = _user_mcp_file()
+    config = user_mcp_file()
     try:
-        servers = _read_json(config).get("mcpServers")
+        servers = read_json(config).get("mcpServers")
     except PluginError:
         servers = None
     kept = other_okf_server(servers)
@@ -868,7 +856,7 @@ def install_mcp(cwd: Path, scope: Scope) -> list[str]:
     return [f"declared okf's MCP server {MCP_NAME} at user scope"]
 
 
-# Install and status ------------------------------------------------------------
+# Install -----------------------------------------------------------------------
 
 
 def install(
@@ -905,7 +893,8 @@ def install(
     Returns
     -------
     InstallResult
-        Notes on what else it did, and the status afterwards.
+        The harnesses and scope, the ref the lock records, and notes on what
+        else it did.
 
     Raises
     ------
@@ -919,7 +908,7 @@ def install(
     notes = remove_old_apm_entry(cwd, scope, source)
     write_manifest(apm_dir(cwd, scope) / "apm.yml", source, harnesses)
     args = apm_install_args(harnesses, scope, source, force)
-    proc = _apm_run(args, _apm_cwd(cwd, scope))
+    proc = _apm_run(args, apm_root(cwd, scope))
     _require(proc, f"uvx --from {APM_CLI} apm {' '.join(args)}")
     if SKIP_LINE in proc.stdout + proc.stderr:
         skipped = skipped_skills(cwd, scope, harnesses) or ["files APM does not name"]
@@ -937,11 +926,14 @@ def install(
     if "antigravity" in harnesses:
         folder = antigravity.write_plugin(cwd)
         notes.append(
-            f"wrote {_shown(folder, cwd)}/ (the agents, the SessionStart hook and "
+            f"wrote {shown_path(folder, cwd)}/ (the agents, the SessionStart hook and "
             f"okf's MCP server {antigravity.MCP_NAME}); Antigravity loads it once "
             "you trust this folder"
         )
-    return InstallResult(notes, status(cwd, scope, harnesses))
+    package = kmctl_package(read_lock(cwd, scope))
+    return InstallResult(
+        scope, list(harnesses), package.resolved_ref if package else None, notes
+    )
 
 
 def _preflight(cwd: Path, scope: Scope, harnesses: Sequence[str]) -> None:
@@ -963,71 +955,16 @@ def _preflight(cwd: Path, scope: Scope, harnesses: Sequence[str]) -> None:
             "uvx is not on PATH, and kmctl runs APM through it; install uv "
             "(https://docs.astral.sh/uv/), then run kmctl plugin install again"
         )
-    _read_manifest(apm_dir(cwd, scope) / "apm.yml")
+    read_manifest(apm_dir(cwd, scope) / "apm.yml")
     if "claude" in harnesses:
-        _read_json(settings_path(cwd, scope))
+        read_json(settings_path(cwd, scope))
         if scope == "project":
-            _read_json(cwd / ".mcp.json")
+            read_json(cwd / ".mcp.json")
 
 
-def _shown(path: Path, cwd: Path) -> str:
+def shown_path(path: Path, cwd: Path) -> str:
     """``path`` as a reader finds it: relative to ``cwd`` when inside it, else in full."""
     try:
         return str(path.relative_to(cwd))
     except ValueError:
         return str(path)
-
-
-def status(
-    cwd: Path, scope: Scope = "project", harnesses: Sequence[str] = ("claude",)
-) -> PluginStatus:
-    """Report the kmctl package's ref in apm.lock.yaml and each harness's hook, against this CLI.
-
-    For Claude Code the hook is the settings.json entry; for Antigravity it
-    is the plugin folder's hooks.json, and every file in that folder is
-    compared with what this kmctl writes. It only reads files. Each problem
-    names the command that fixes it.
-    """
-    from kmctl import antigravity  # imports this module; see install
-
-    suffix = " --scope user" if scope == "user" else ""
-    package = _kmctl_package(_read_lock(cwd, scope))
-    ref = package.resolved_ref if package else None
-    lock = _shown(apm_dir(cwd, scope) / "apm.lock.yaml", cwd)
-    problems = []
-    if package is None:
-        problems.append(
-            f"kmctl's APM package is not in {lock}; run kmctl plugin install "
-            f"--harness {','.join(harnesses)}{suffix}"
-        )
-    elif ref != package_ref():
-        problems.append(
-            f"version mismatch: {lock} has the kmctl package at {ref}, kmctl is "
-            f"{cli_version()}; run kmctl plugin update --harness "
-            f"{','.join(harnesses)}{suffix}"
-        )
-    hook = True
-    if "claude" in harnesses:
-        hooks = kmctl_hooks(settings_path(cwd, scope))
-        settings = _shown(settings_path(cwd, scope), cwd)
-        hook = hooks == [hook_entry()]
-        if not hooks:
-            problems.append(
-                f"the kmctl SessionStart hook is missing from {settings}; run kmctl "
-                f"plugin install --harness claude{suffix}"
-            )
-        elif not hook:
-            problems.append(
-                f"the kmctl SessionStart hook in {settings} is not the one this "
-                f"kmctl writes; run kmctl plugin update{suffix}"
-            )
-    if "antigravity" in harnesses and scope == "user":
-        hook = False
-        problems.append(
-            "antigravity installs per repository only; run kmctl plugin status "
-            "--harness antigravity in the repository"
-        )
-    elif "antigravity" in harnesses:
-        hook = hook and antigravity.hook_present(cwd)
-        problems += antigravity.plugin_problems(cwd)
-    return PluginStatus(cli_version(), scope, ref, hook, problems)
