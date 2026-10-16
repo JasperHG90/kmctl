@@ -20,10 +20,106 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "26880e71148f890fb2a1c69eae70facc4eb436c509165fa1e1cc3a11e1c8510a",
+    "at": "2026-10-16T20:31:14+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "The package is apm/: apm/apm.yml (name, version, only scaccogatto/okf-skills pinned to a full commit, no git: parent), the 7 skills under apm/.apm/skills/, kmctl-auditor.md under apm/.apm/agents/, and the 4 rules as apm/.apm/instructions/NAME.instructions.md whose applyTo equals the old paths: globs and whose bodies equal the old rule bodies; plugin/, .claude-plugin/marketplace.json and src/kmctl/repo_rules/ are gone.",
+      "fails_when": "any of those files is missing or differs, apm/apm.yml has another dependency or an unpinned okf-skills, or plugin/, the marketplace file or repo_rules/ still exists",
+      "command": "uv run pytest tests/test_apm_package.py -k package -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "apm/apm.yml is the one version source: scripts/release.py set writes it and the root apm.yml, current refuses when they differ, pyproject.toml reads the version from it, and the built wheel reports it and carries the skills for the briefing.",
+      "fails_when": "after set 9.8.7 either apm.yml is not 9.8.7, current exits 0 on a mismatch, or the wheel's version or skills folder is wrong",
+      "command": "uv run pytest tests/test_apm_package.py tests/scripts -k \"version or wheel\" -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "The Claude hook writer merges exactly one kmctl SessionStart entry (the briefing command, description and timeout, never blocking: I1) into .claude/settings.json: other keys and hooks are kept, a second run leaves one entry, an old kmctl entry is replaced in place, and a missing file is created.",
+      "fails_when": "another key or hook is lost or changed, there are zero or two kmctl entries, the command differs from the one I1 tests, or a missing settings file is not created",
+      "command": "uv run pytest tests/test_plugin.py -k hook -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "kmctl plugin install --harness claude [--source URL] [--force] writes the kmctl dependency {git: URL, path: apm, ref: v<cli version>} and targets: [claude] into the repository's apm.yml (keeping other entries), runs uvx --from apm-cli==0.33.0 apm install --target claude, writes the hook, and on success ends with a Next: line; --source defaults to the GitHub repository; an unknown harness is refused naming the accepted values.",
+      "fails_when": "the apm.yml entry, ref or targets differ, other apm.yml entries are lost, the APM command line differs, the hook is not written, or an unknown harness is accepted",
+      "command": "uv run pytest tests/test_plugin.py -k install -q",
+      "judgment": false
+    },
+    {
+      "id": "r5",
+      "behavior": "When APM's output says it skipped local files not managed by APM, kmctl plugin install fails (exit 1) naming the skipped paths and kmctl plugin install --force; with --force it passes --force to APM; a failed APM run fails with APM's cause.",
+      "fails_when": "a skip exits 0 or names no path or no fix, --force is not passed through, or an APM failure loses its cause",
+      "command": "uv run pytest tests/test_plugin.py -k \"skip or force or apm_fails\" -q",
+      "judgment": false
+    },
+    {
+      "id": "r6",
+      "behavior": "When claude plugin list --json shows kmctl@kmctl for this repository, kmctl plugin install runs claude plugin uninstall kmctl@kmctl, claude plugin prune and claude plugin marketplace remove kmctl at that scope and says so; when apm.yml names JasperHG90/Knowledge-management/apm in another form, it runs apm uninstall on that entry before writing its own; with claude not on PATH it skips the claude step and says so.",
+      "fails_when": "any of those commands is missing, runs at the wrong scope or out of order (apm uninstall after the apm.yml rewrite), runs silently, or a missing claude CLI fails the install",
+      "command": "uv run pytest tests/test_plugin.py -k \"old_plugin or old_apm\" -q",
+      "judgment": false
+    },
+    {
+      "id": "r6b",
+      "behavior": "kmctl declares okf's MCP server for Claude: it merges one okf-bundle entry into the repository's .mcp.json (claude mcp add-json --scope user at user scope), keeping other servers, running uv run of okf_mcp.py's raw URL at the sha apm/apm.yml pins through a sh launcher that walks up to the first folder holding .okf/. When an okf server already exists under any name (its command or args name okf_mcp.py), kmctl adds none and says which one it kept. kmctl's own okf-bundle entry is replaced by name on every install (so a new okf pin reaches it); only another server naming okf_mcp.py makes kmctl skip.",
+      "fails_when": "other servers are lost, the entry is missing or duplicated after two installs, the sha differs from the pin, or the launcher run from a repository subfolder does not resolve the repository's .okf/, or a second okf server is added next to an existing one, or a reinstall with a changed okf pin leaves okf-bundle at the old sha",
+      "command": "uv run pytest tests/test_plugin.py -k mcp -q",
+      "judgment": false
+    },
+    {
+      "id": "r7",
+      "behavior": "--scope user runs apm install -g and writes the hook to the user settings file under CLAUDE_CONFIG_DIR (default ~/.claude); project scope stays the default.",
+      "fails_when": "user scope does not pass -g, writes the hook into the repository, or ignores CLAUDE_CONFIG_DIR",
+      "command": "uv run pytest tests/test_plugin.py -k user_scope -q",
+      "judgment": false
+    },
+    {
+      "id": "r8",
+      "behavior": "kmctl plugin status reports the kmctl ref in apm.lock.yaml against the CLI version and whether the hook entry is present, each problem naming its fix, with --json; kmctl init no longer writes .claude/rules/ and its next step points at kmctl plugin install.",
+      "fails_when": "a mismatched ref or missing hook goes unreported, a problem names no fix, or kmctl init writes any rule file",
+      "command": "uv run pytest tests/test_plugin.py tests/test_init.py -k \"status or rules\" -q",
+      "judgment": false
+    },
+    {
+      "id": "r9",
+      "behavior": "In a scratch consumer, with HOME and CLAUDE_CONFIG_DIR pointed at scratch folders, kmctl plugin install --harness claude --source <tree served from a local git server> leaves the 7 skills and the agent byte for byte in .claude/, the 4 rules with paths: equal to the old globs, okf's skills, exactly one briefing SessionStart entry in .claude/settings.json, none of this repository's 16 dev items, and kmctl plugin status reports no problems.",
+      "fails_when": "the install fails, any listed item is missing or differs, a dev item lands, or status reports a problem",
+      "command": "uv run pytest tests/test_apm_package.py -m integration -k consumer -q",
+      "judgment": false
+    },
+    {
+      "id": "r10",
+      "behavior": "The CI audit (action.yml, .github/workflows/knowledge-audit.yml, action/knowledge-audit.sh) reads the skills and agent from apm/.apm, and the repository's own rules that scoped to plugin/** scope to apm/.apm/**.",
+      "fails_when": "any of them still names plugin/",
+      "command": "uv run pytest tests/test_audit.py tests/test_apm_package.py -k \"audit_paths or rule_paths\" -q",
+      "judgment": false
+    },
+    {
+      "id": "r11",
+      "behavior": "A new decision (kmctl schema decision shape) records APM as the only install route wrapped by kmctl plugin install --harness, the hook written by kmctl, the rules shipped in the package, the --source, --force and old-plugin removal choices; ADR 0013 and ADR 0003 are marked superseded by it, ADR 0011 and ADR 0012 and ADR 0001 name what changed; the manifesto, architecture overview, commands reference and both install how-tos describe the new route, and the APM how-to says a hand-added APM entry gets no hook.",
+      "fails_when": "the decision is missing or malformed, a superseded record is not marked, or any of those pages still describes the claude marketplace route or plugin/",
+      "command": "uv run pytest tests/test_apm_package.py -k docs -q",
+      "judgment": false
+    },
+    {
+      "id": "r12",
+      "behavior": "The other tests still pass.",
+      "fails_when": "uv run pytest or uv run pytest -m integration fails",
+      "command": "uv run pytest -q -m \"not integration or integration\"",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -69,5 +165,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev173+ga4f6ce93a.d20261016",
-  "at": "2026-10-16T20:31:12+00:00"
+  "at": "2026-10-16T20:31:14+00:00"
 }
