@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "claude.old-plugin tells the user to run kmctl plugin install --harness claude for okf@scaccogatto too, but install cannot remove that plugin in the common cases. remove_old_plugin (src/kmctl/plugin.py:282) acts only when claude plugin list shows kmctl@kmctl for this folder, then runs prune, which keeps an okf the user installed on purpose. A repository whose settings still enable okf@scaccogatto without kmctl@kmctl (kmctl removed by hand, or okf installed on its own) therefore fails doctor for good, and the fix it prints does nothing.",
+      "anchor": "src/kmctl/doctor.py:419",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "The --online check adds httpx as a runtime dependency, which locks in six new packages (httpx, httpcore, h11, anyio, certifi, idna), for one optional HEAD request. The standard library's urllib.request would do the same job. Tests could then patch the fetch, and respx would not be needed either.",
+      "anchor": "src/kmctl/doctor.py:499",
+      "category": "design",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "ddb5540e2a8eed89a872e760eae4e1832299122e12570dc1ab2c2fb4311e6f97",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
+  "at": "2026-10-16T22:10:02+00:00"
+}
