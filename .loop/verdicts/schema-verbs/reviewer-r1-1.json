@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The decision kind's x-kmctl-sections is the fixed list [Context, Decision, Consequences], but kmctl decision supersede, a writer the kinds.py docstring says reads this table, appends '## Correction, DATE' sections. Any superseded record then fails its own kind's schema, although the help and docs/reference/commands.md say the schema is what kmctl writes. 8 of this repo's decisions (0001-0006, 0008, 0011) fail the decision schema for this reason. The prose description mentions the Correction section; the machine-readable form says otherwise.",
+      "anchor": "src/kmctl/kinds.py:127",
+      "category": "design",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "95ab9218f2b496b8aa993a3bf21188beabd7cc6f5f2ca4eb55e8087572c7f76a",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261015",
+  "at": "2026-10-16T05:21:50+00:00"
+}
