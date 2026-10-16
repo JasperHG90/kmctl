@@ -1,0 +1,1 @@
+{"ask":"Fix test_update_is_init_alias failing in CI: typer adds ANSI colour to --help on GitHub Actions, so strip it with conftest.plain() before checking for ' update '. Blocks the v0.3.0 release."}
