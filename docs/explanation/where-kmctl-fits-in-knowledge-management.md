@@ -102,8 +102,11 @@ kmctl stops at the edge of the repository. A full set-up also needs:
 
 - **Shared procedures.** Rules, skills and subagents are software: they
   start in one repository and, once a second one needs them, move to a shared
-  library where each repository pins a version. A package manager does that.
-  kmctl ships only the rules and skills that keep its own knowledge current.
+  library where each repository pins a version. A package manager such as
+  [APM](https://microsoft.github.io/apm) does that, and installs the same
+  package into each agent harness in that harness's own format, so no team is
+  tied to one vendor. kmctl ships only the rules and skills that keep its own
+  knowledge current, and today only as a Claude Code plugin.
 - **A shared layer and search.** Copying each repository's `docs/` and
   `.okf/` to a shared place on every merge to the main branch, and searching
   across them as the reader, so nobody sees what they may not read. A managed
