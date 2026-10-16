@@ -16,7 +16,7 @@ and the output shown is what it printed.
 - kmctl installed:
 
   ```
-  uv tool install git+https://github.com/JasperHG90/Knowledge-management
+  uv tool install git+https://github.com/JasperHG90/Knowledge-management@v0.2.0
   ```
 
   The kmctl repository is private for now, so this needs a GitHub account
