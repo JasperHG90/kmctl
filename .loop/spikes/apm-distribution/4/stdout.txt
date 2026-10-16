@@ -1,0 +1,100 @@
+== kmctl HEAD: c700d5812321b15b82e32a032655c712e7de4ddf
+Agent Package Manager (APM) CLI version 0.33.0
+== okf-skills main now: a8b96420de90d102c43cda1693d01ec4f925f2ab
+-- consumer k: apm install exit 0
+[!] Insecure HTTP fetch (unencrypted): http://127.0.0.1:8773/o/k
+  [+] 127.0.0.1:8773/o/k/plugin #default @04e46920
+  [+] scaccogatto/okf-skills #a8b96420de90d102c43cda1693d01ec4f925f2ab @a8b96420
+  |-- 1 hook(s) integrated -> .claude/settings.json
+  |-- Skill integrated -> .claude/skills/
+  |-- 7 skill(s) integrated -> .claude/skills/
+  |-- 2 agents integrated -> .claude/agents/
+  |-- 1 hook(s) integrated -> .claude/settings.json
+  |-- Skill integrated -> .claude/skills/
+  |-- 4 skill(s) integrated -> .claude/skills/
+  [!] 1 file(s) contain hidden characters
+  [!] 1 dependency unpinned: o/k -- add #tag or #sha to prevent drift
+  [!] Transitive package 'okf' declares self-defined MCP server 'bundle' 
+(registry: false). Re-declare it in your apm.yml or use --trust-transitive-mcp.
+-- files written:
+./.claude/agents/bundle-weaver.md
+./.claude/agents/event-analyzer.md
+./.claude/apm-hooks.json
+./.claude/hooks/okf-skills/hooks/okf-stop-check.sh
+./.claude/settings.json
+./.claude/skills/architecture-review/SKILL.md
+./.claude/skills/audit/evals/evals.json
+./.claude/skills/audit/evals/results.md
+./.claude/skills/audit/evals/sample-findings.json
+./.claude/skills/audit/SKILL.md
+./.claude/skills/backfill/scripts/okf_backfill_events.py
+./.claude/skills/backfill/SKILL.md
+./.claude/skills/continue/evals/evals.json
+./.claude/skills/continue/evals/results.md
+./.claude/skills/continue/SKILL.md
+./.claude/skills/decision-log-review/SKILL.md
+./.claude/skills/handoff/evals/evals.json
+./.claude/skills/handoff/evals/results.md
+./.claude/skills/handoff/SKILL.md
+./.claude/skills/okf/agents/openai.yaml
+./.claude/skills/okf/reference/APACHE-2.0.txt
+./.claude/skills/okf/reference/SPEC.md
+./.claude/skills/okf/scripts/okf_init.py
+./.claude/skills/okf/SKILL.md
+./.claude/skills/okf/templates/concept.md
+./.claude/skills/okf/templates/index.md
+./.claude/skills/okf/templates/log.md
+./.claude/skills/practices-review/SKILL.md
+./.claude/skills/validate/scripts/okf_validate.py
+./.claude/skills/validate/SKILL.md
+./.claude/skills/visualize/scripts/okf_visualize.py
+./.claude/skills/visualize/SKILL.md
+./.claude/skills/write-docs/evals/evals.json
+./.claude/skills/write-docs/evals/grade.py
+./.claude/skills/write-docs/evals/results.md
+./.claude/skills/write-docs/references/explanation.md
+./.claude/skills/write-docs/references/how-to.md
+./.claude/skills/write-docs/references/reference.md
+./.claude/skills/write-docs/references/tutorial.md
+./.claude/skills/write-docs/SKILL.md
+== (a) hook
+   kmctl SessionStart hook in .claude/settings.json: yes
+   settings.json SessionStart -> command -v kmctl >/dev/null 2>&1 || { echo '[kmctl] kmctl is not installed, so there is no
+   settings.json Stop -> bash "${CLAUDE_PROJECT_DIR}/.claude/hooks/okf-skills/hooks/okf-stop-check.sh"
+== (b) okf
+   okf skill okf: yes
+   okf skill validate: yes
+   okf skill backfill: yes
+   okf skill visualize: yes
+   agent: bundle-weaver.md
+   agent: event-analyzer.md
+-- lock deps:
+- repo_url: o/k
+  resolved_commit: 04e4692090e8e24145ccc61bc7c3fa36365dd3d9
+  virtual_path: plugin
+- repo_url: scaccogatto/okf-skills
+  resolved_commit: a8b96420de90d102c43cda1693d01ec4f925f2ab
+  depth: 2
+== (c) kmctl from the consumer
+kmctl 0.1.0
+   kmctl --version exit 0
+   kmctl briefing --path exit 0
+kmctl briefing (kmctl 0.1.0)
+No .okf/ bundle here. Run kmctl init to start docs/ and .okf/.
+Rules for writing knowledge:
+- audience-picks-the-folder: docs/ is for people who use the project; .okf/ is for people and agents working on it. A decision, proposal, prototype, audit or handoff goes in .okf/, even when it reads like a guide.
+- docs-sorted-by-reader-intent: Each docs/ page has one Diataxis type: tutorials/ (a lesson that works in one sitting), how-to/ (one task, one way), reference/ (facts, no instructions), explanation/ (why it is shaped this way). Two intents in one page means two pages.
+- docs-describe-what-exists: A docs/ page lands in the same change as the behaviour it describes. Until then the design lives in .okf/.
+- prototypes-hold-their-scripts: A prototype is one folder in .okf/prototypes/ with its README.md, every script behind a number in it, and the raw results. Never run analysis inline or from a scratch folder.
+- start-at-the-index: Start at .okf/index.md and follow links. One concept is one file, named in kebab-case for an entity, never a change. Prefer updating a concept to adding a neighbour.
+- kmctl-writes-the-structure: Create concepts with kmctl new; it writes front matter, the index entry and the log line, and you write the prose. After any hand edit to an index, run kmctl check.
+- every-touched-concept-is-logged: A change that touches a concept appends a dated line to .okf/log.md naming its id in backticks. Never rewrite an earlier line.
+- decisions-are-never-rewritten: Record a decision when it is made, with the alternative it rejected. Correct it with an appended dated section; reverse it with a new record that supersedes it.
+- trust-is-recorded: An agent records itself in generated.by and leaves the concept unverified. Only a person who checked the content adds a verified entry. Treat unverified or stale concepts as leads, not facts.
+   deployed hook command exit 0; first lines:
+kmctl briefing (kmctl 0.1.0)
+No .okf/ bundle here. Run kmctl init to start docs/ and .okf/.
+Rules for writing knowledge:
+- audience-picks-the-folder: docs/ is for people who use the project; .okf/ is for people and agents working on it. A decision, proposal, prototype, audit or handoff goes in .okf/, even when it reads like a guide.
+- docs-sorted-by-reader-intent: Each docs/ page has one Diataxis type: tutorials/ (a lesson that works in one sitting), how-to/ (one task, one way), reference/ (facts, no instructions), explanation/ (why it is shaped this way). Two intents in one page means two pages.
+== RESULT: risk does not hold
