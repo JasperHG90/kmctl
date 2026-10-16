@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "slug": "update-refreshes-rules",
-  "stage": "ready",
-  "attempts": 0,
+  "stage": "building",
+  "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
@@ -17,8 +17,8 @@
   "closed_outside": false,
   "dropped": false,
   "archived": false,
-  "worktree": null,
-  "branch": null,
+  "worktree": "/home/vscode/kmctl.worktrees/update-refreshes-rules",
+  "branch": "loop/update-refreshes-rules",
   "stamps": [],
   "signoff": {
     "signer": "human:jasperginn@gmail.com",
@@ -106,8 +106,14 @@
       "to": "ready",
       "at": "2026-10-16T10:59:33+00:00",
       "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-10-16T10:59:41+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
-  "at": "2026-10-16T10:59:33+00:00"
+  "at": "2026-10-16T10:59:41+00:00"
 }
