@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "slug": "antigravity-live-check",
+  "stage": "stub",
+  "attempts": 0,
+  "plan_rounds": 0,
+  "review_rounds": 0,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": null,
+  "ask": "j-20261016T194318+0000-d118af8d",
+  "split": null,
+  "split_plan_hash": null,
+  "split_hold": false,
+  "commit_sha": null,
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": null,
+  "branch": null,
+  "stamps": [],
+  "signoff": null,
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [],
+  "resigns": [],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [],
+  "round": null,
+  "plan_hash": "8f99ea08b53c26b80271fc7c5d7329e479430bab8e6c758cae58ac8713be1f5f",
+  "intent": {
+    "epic": "multi-harness",
+    "depends_on": [
+      "antigravity-harness"
+    ],
+    "priority": null
+  },
+  "history": [],
+  "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
+  "at": "2026-10-16T20:24:05+00:00"
+}

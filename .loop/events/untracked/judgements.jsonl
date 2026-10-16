@@ -9,3 +9,4 @@
 {"at": "2026-10-16T19:44:52+00:00", "judgement": "j-20261016T194318+0000-d118af8d", "kind": "judgement-link", "schema_version": "1.0", "ticket": "antigravity-harness"}
 {"at": "2026-10-16T19:45:20+00:00", "judgement": "j-20261016T194318+0000-d118af8d", "kind": "judgement-link", "schema_version": "1.0", "ticket": "kmctl-doctor"}
 {"at": "2026-10-16T19:46:19+00:00", "judgement": "j-20261016T194318+0000-d118af8d", "kind": "judgement-link", "schema_version": "1.0", "ticket": "apm-only-install"}
+{"at": "2026-10-16T20:24:05+00:00", "judgement": "j-20261016T194318+0000-d118af8d", "kind": "judgement-link", "schema_version": "1.0", "ticket": "antigravity-live-check"}
