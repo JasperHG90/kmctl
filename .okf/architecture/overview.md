@@ -19,7 +19,9 @@ their own beyond relaying it, and the audit they run reads and reports only.
 `kmctl plugin install` installs the package with APM and writes the
 SessionStart hook and okf's MCP server itself (ADR 0014); for Antigravity it
 writes them, with the agents, as the plugin folder `.agents/plugins/kmctl/`
-(ADR 0015). Releases come from
+(ADR 0015). `kmctl doctor` reads what an install left, without writing
+or using the network, and names each missing or changed piece with its
+fix. Releases come from
 two workflows and the scripts in `scripts/` (ADR 0012).
 
 ```mermaid
@@ -45,7 +47,8 @@ flowchart LR
         concepts["concepts.py<br/>new decision|practice|<br/>proposal|prototype|handoff"]
         docs["docs.py<br/>new doc"]
         supersede["supersede.py<br/>decision supersede"]
-        pluginPy["plugin.py<br/>plugin install|update|status"]
+        pluginPy["plugin.py<br/>plugin install|update"]
+        doctorPy["doctor.py<br/>doctor: reads the install,<br/>runs apm --version offline"]
         antigravityPy["antigravity.py<br/>the Antigravity plugin folder,<br/>agent translator"]
         okf["okf.py<br/>reads front matter"]
         kinds["kinds.py<br/>schema; the table of kinds"]
@@ -89,7 +92,10 @@ flowchart LR
     audit -- "dispatches" --> auditor
     auditor -. "reads only" .-> repo
 
-    app --> scaffold & checks & briefing & reviewDue & handoffs & concepts & docs & supersede & pluginPy & kinds
+    app --> scaffold & checks & briefing & reviewDue & handoffs & concepts & docs & supersede & pluginPy & doctorPy & kinds
+    doctorPy -- "hook and MCP entries,<br/>lock reader" --> pluginPy
+    doctorPy -- "plugin_problems" --> antigravityPy
+    doctorPy -. "reads only" .-> consumer & agConsumer
     briefing --> reviewDue & handoffs
     briefing -- "skills_dir: names the package's skills" --> pluginPy
     concepts & handoffs & reviewDue & supersede --> okf
@@ -152,7 +158,7 @@ exit codes. Each verb calls one module:
 | `kmctl new doc` | `docs.py` | the page and its `docs/README.md` entry |
 | `kmctl decision supersede` | `supersede.py` | both decision records and a log line |
 | `kmctl plugin install`, `update` | `plugin.py`, with `antigravity.py` for `--harness antigravity` | runs `apm uninstall` on an old apm.yml entry; writes kmctl's entry and `targets:` into `apm.yml`; runs `apm install` through `uvx`; for claude, only once that succeeds removes the old claude plugin `kmctl@kmctl`, then merges one SessionStart hook into `.claude/settings.json` and the `okf-bundle` server into `.mcp.json` (ADR 0014); for antigravity, replaces `.agents/plugins/kmctl/` (ADR 0015) |
-| `kmctl plugin status` | `plugin.py`, with `antigravity.py` | nothing; it reads `apm.lock.yaml`, `.claude/settings.json` and `.agents/plugins/kmctl/` |
+| `kmctl doctor` | `doctor.py`, with `plugin.py` for the hook, MCP entries and lock reader and `antigravity.py` for the folder comparison | nothing; it reads `apm.yml`, `apm.lock.yaml` and the files it lists, the settings files, `.mcp.json`, `.agents/plugins/kmctl/` and agy's trust list, and runs only `uv tool run --offline --from apm-cli==0.33.0 apm --version`; `--online` fetches okf's MCP script URL |
 
 `kinds.py` holds the one table of document kinds: each kind's front matter
 fields, its status values and its `##` sections. `kmctl new`, `kmctl new doc`,
@@ -261,11 +267,12 @@ tag `kmctl plugin install` asks for and a build from a download with no
   `kmctl handoffs`, `kmctl new decision`, `kmctl new practice`,
   `kmctl new proposal`, `kmctl new prototype`, `kmctl new handoff`,
   `kmctl new doc`, `kmctl schema`, `kmctl decision supersede`, `kmctl plugin install`,
-  `kmctl plugin update`, `kmctl plugin status`.
+  `kmctl plugin update`, `kmctl doctor`.
 - Modules: `src/kmctl/__init__.py`, `scaffold.py`, `checks.py`,
   `briefing.py`, `review_due.py`, `handoffs.py`, `concepts.py`,
   `docs.py`, `supersede.py`, `src/kmctl/plugin.py` (the hook and MCP
   writers), `src/kmctl/antigravity.py` (the Antigravity plugin folder),
+  `src/kmctl/doctor.py` (the install checks),
   `okf.py`, `kinds.py`; `apm/.apm/skills/` (write-docs, handoff,
   continue, audit and the three review skills),
   `apm/.apm/agents/kmctl-auditor.md`, `apm/.apm/instructions/`; `action.yml`,

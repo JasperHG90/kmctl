@@ -8,12 +8,14 @@ request. A last, optional step turns on the LLM audit.
 
 How the commands below were run:
 
-- `kmctl plugin install` and `kmctl plugin status` were run with kmctl 0.3.0
+- `kmctl plugin install` and `kmctl doctor` were run with kmctl 0.3.0
   in a scratch repository with `CLAUDE_CONFIG_DIR`, `HOME` and
   `XDG_DATA_HOME` pointed at scratch folders, so no real Claude Code config
   was touched, and with `--source` naming a local git server that held this
   repository's files at the tag `v0.3.0`. The output is what they printed
-  there.
+  there. `claude` and `agy` were stand-ins that do nothing, since doctor
+  only looks them up on PATH; the folder paths in doctor's `dep.` and
+  `antigravity.trust` lines are left out below.
 - The workflow files are quoted from this repository's `action.yml` and its
   shipped workflows, `.github/workflows/knowledge.yml` and
   `.github/workflows/knowledge-audit.yml`. Those steps run only on GitHub, so
@@ -54,8 +56,8 @@ It prints:
 
 ```
 note: declared okf's MCP server okf-bundle in .mcp.json; Claude Code asks you to approve it once
-kmctl 0.3.0; package v0.3.0 (project scope); hook present
-Next: start a new Claude Code session, then kmctl plugin status
+installed kmctl's package v0.3.0 for claude (project scope)
+Next: start a new Claude Code session, then kmctl doctor
 ```
 
 This adds kmctl's APM package to the repository's `apm.yml`, at the tag of
@@ -94,8 +96,8 @@ It prints:
 
 ```
 note: wrote .agents/plugins/kmctl/ (the agents, the SessionStart hook and okf's MCP server bundle); Antigravity loads it once you trust this folder
-kmctl 0.3.0; package v0.3.0 (project scope); hook present
-Next: open this folder in Antigravity, trust it and start a new session, then kmctl plugin status --harness antigravity
+installed kmctl's package v0.3.0 for antigravity (project scope)
+Next: open this folder in Antigravity, trust it and start a new session, then kmctl doctor
 ```
 
 APM writes kmctl's seven skills and okf's four to `.agents/skills/` and the
@@ -122,6 +124,10 @@ hook prints `kmctl briefing` at the start of each session.
 For Antigravity, open the trusted repository folder and start a new
 session. The plugin's SessionStart hook adds the same briefing to the
 session.
+
+Then run `kmctl doctor` in the repository. It checks every piece the
+install left and prints one `ok` or `fail` line each; see
+[Check it worked](#check-it-worked).
 
 ### 4. Add the checks workflow
 
@@ -308,8 +314,8 @@ its `vX.Y.Z` tag. To move to a newer one:
    For Antigravity, run `kmctl plugin update --harness antigravity` (or
    `--harness claude,antigravity`). It moves the `apm.yml` entry to the new
    tag and reinstalls.
-   `kmctl plugin status` then prints the same version for kmctl and the
-   package.
+   `kmctl doctor` then reports `claude.lock` (and `antigravity.lock`) as
+   `ok` at the new version.
 
 3. Change the ref in each workflow's `uses: JasperHG90/Knowledge-management@`
    line to the same tag.
@@ -319,28 +325,58 @@ its `vX.Y.Z` tag. To move to a newer one:
 In the repository, run:
 
 ```
-kmctl plugin status
+kmctl doctor
 ```
 
-For Antigravity, run `kmctl plugin status --harness antigravity`; it also
-names each file under `.agents/plugins/kmctl/` that is missing, extra or
-not what this kmctl writes. When the package and the hook are installed, it
-prints:
+It checks the tools kmctl needs, the `kmctl init` files and, for each
+harness installed, the APM lock, every file the lock lists, the hook,
+okf's skills and MCP server, and for Antigravity the
+`.agents/plugins/kmctl/` folder and the folder's trust. It writes nothing
+and uses no network. After both installs and trusting the folder in
+Antigravity, it printed, and exited 0:
 
 ```
-kmctl 0.3.0; package v0.3.0 (project scope); hook present
+ok   kmctl.version: kmctl 0.3.0
+ok   dep.uv: …/bin/uv
+ok   dep.git: /usr/bin/git
+ok   dep.apm: APM runs from uv's cache: Agent Package Manager (APM) CLI version 0.33.0
+ok   dep.claude: …/bin/claude
+ok   dep.agy: …/bin/agy
+ok   init.okf: .okf/index.md exists
+ok   init.docs: docs/README.md exists
+ok   kmctl.harness: installed for claude, antigravity
+ok   claude.lock: apm.lock.yaml has kmctl's package at v0.3.0
+ok   claude.files: 33 kmctl paths match apm.lock.yaml
+ok   claude.okf-skills: 21 okf-skills paths match apm.lock.yaml
+ok   claude.hook: .claude/settings.json holds the SessionStart hook this kmctl writes
+ok   claude.okf-mcp: .mcp.json declares okf's MCP server okf-bundle
+ok   claude.old-plugin: no settings file enables kmctl@kmctl or okf@scaccogatto
+ok   antigravity.lock: apm.lock.yaml has kmctl's package at v0.3.0
+ok   antigravity.files: 32 kmctl paths match apm.lock.yaml
+ok   antigravity.okf-skills: 19 okf-skills paths match apm.lock.yaml
+ok   antigravity.plugin: .agents/plugins/kmctl/ holds what this kmctl writes
+ok   antigravity.hook: .agents/plugins/kmctl/hooks.json holds the SessionStart hook this kmctl writes
+ok   antigravity.okf-mcp: .agents/plugins/kmctl/mcp_config.json declares okf's MCP server bundle
+ok   antigravity.trust: …/repo is in trustedWorkspaces of ~/.gemini/antigravity-cli/settings.json
 ```
 
-Before the install, the same command printed:
+Before the install, the same command printed, and exited 1:
 
 ```
-kmctl 0.3.0; package not installed (project scope); hook missing
-problem: kmctl's APM package is not in apm.lock.yaml; run kmctl plugin install --harness claude
-problem: the kmctl SessionStart hook is missing from .claude/settings.json; run kmctl plugin install --harness claude
+ok   kmctl.version: kmctl 0.3.0
+ok   dep.uv: …/bin/uv
+ok   dep.git: /usr/bin/git
+ok   dep.apm: APM runs from uv's cache: Agent Package Manager (APM) CLI version 0.33.0
+fail init.okf: .okf/index.md is missing; run kmctl init
+fail init.docs: docs/README.md is missing; run kmctl init
+fail kmctl.harness: no kmctl harness in this repository; run kmctl plugin install --harness claude
 ```
 
-Each problem it reports names the command that fixes it. After you upgrade
-kmctl, run `kmctl plugin update`.
+Each `fail` line names what is wrong and, after the `;`, the command that
+fixes it. With one skill file deleted, it printed
+`fail claude.files: .claude/skills/audit/SKILL.md is missing; run kmctl plugin install --harness claude`.
+For an install made with `--scope user`, run `kmctl doctor --scope user`.
+After you upgrade kmctl, run `kmctl plugin update`.
 
 For the action, open a pull request: the `knowledge` job runs and its summary
 shows the `kmctl check` and `kmctl review due` reports. For the audit, run the

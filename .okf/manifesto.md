@@ -44,7 +44,8 @@ this formalizes so every repository can have it.
 ## Parts
 
 - **`kmctl`, a standalone CLI** (ADR 0001). It serves the briefing that is
-  injected into context, installs its package, and does the bookkeeping a
+  injected into context, installs its package and checks the install
+  (`kmctl doctor`, which writes nothing), and does the bookkeeping a
   script can do: scaffold `docs/` and `.okf/` with a `CLAUDE.md` block and a
   first decision (ADR 0011), create a new decision or practice with the next
   number and its index entry, supersede a decision, list what is due for

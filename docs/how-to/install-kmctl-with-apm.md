@@ -92,9 +92,9 @@ kmctl briefing
 ```
 
 It prints the same briefing the hook prints. If it says `kmctl: command not
-found`, go back to step 1. If you skipped step 3, `kmctl plugin status`
-reports that there is no SessionStart hook, and names the command that adds
-it.
+found`, go back to step 1. If you skipped step 3, `kmctl doctor` fails
+`claude.hook`, saying there is no SessionStart hook, and names the command
+that adds it.
 
 To upgrade, install the CLI at the new tag with `uv tool install --force`,
 then run `kmctl plugin update`.
