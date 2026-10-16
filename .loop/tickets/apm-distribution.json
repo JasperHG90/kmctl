@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "apm-distribution",
-  "stage": "planning",
+  "stage": "ready",
   "attempts": 0,
   "plan_rounds": 1,
   "review_rounds": 0,
@@ -60,8 +60,14 @@
       "to": "planning",
       "at": "2026-10-16T10:03:24+00:00",
       "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-10-16T10:18:48+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
-  "at": "2026-10-16T10:18:47+00:00"
+  "at": "2026-10-16T10:18:48+00:00"
 }
