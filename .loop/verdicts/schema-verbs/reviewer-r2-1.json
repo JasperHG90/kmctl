@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "a superseded decision did not match the decision schema's fixed section list",
+      "anchor": "src/kmctl/kinds.py:134",
+      "category": "design",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "cc4e938c6c95ccb1f27e5eaecb777f221ca29c0203976afd2948b3cba7ed6090",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261015",
+  "at": "2026-10-16T05:29:30+00:00"
+}
