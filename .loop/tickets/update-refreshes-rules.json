@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "update-refreshes-rules",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 1,
@@ -90,8 +90,8 @@
     },
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "0fdbbce3fb300a8cbe1d5dd1fc5195117ea93cfed14d4b4bb921ff1ef2cfe2f6",
   "intent": {
@@ -123,8 +123,14 @@
       "to": "verifying",
       "at": "2026-10-16T11:04:17+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-16T11:07:00+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
-  "at": "2026-10-16T11:06:28+00:00"
+  "at": "2026-10-16T11:07:00+00:00"
 }
