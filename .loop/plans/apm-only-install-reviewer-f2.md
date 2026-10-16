@@ -37,13 +37,29 @@ scratch repo would see it.
 Change: an apm.yml entry is kmctl's when it is a mapping with
 `path: apm` and either its `git:` equals the current source, or names
 jasperhg90/knowledge-management, or the repository's apm.lock.yaml records
-the package at that URL with `name: kmctl` (URLs compared without scheme,
-`.git` suffix, trailing slash or case). `write_manifest` replaces the first
+a package with `name: kmctl` and `virtual_path: apm` at that URL. APM 0.33.0
+splits a git source over `host`, `port` and `repo_url` (owner/repo): spike
+apm-only-install/6 locked `http://127.0.0.1:PORT/o/kmctl.git` as
+`repo_url: o/kmctl`, `host: 127.0.0.1`, and spikes 4 and 5 show `port`. So
+`LockDependency` gains `host` and `port`, the lock side is built as
+`host[:port]/repo_url` (host `github.com` when absent), and the entry's URL
+is compared after dropping its scheme, any user part, the `.git` suffix and
+a trailing slash, case-insensitively. `write_manifest` replaces the first
 such entry in place and removes the others, and install prints a note naming
-each entry it replaced that had another source. Tests in
-`tests/test_plugin.py`: an entry from a local source, recorded in the lock as
-kmctl, followed by a default-source install, leaves one kmctl entry and a
-note; an unrelated `path: apm` package whose lock name is not kmctl is kept.
+each entry it replaced that had another source.
+
+The reverse order (default source first, then another) must not reach `apm
+uninstall`: `_names_old_package` today also matches kmctl's own
+`{git: ...knowledge-management..., path: apm}` entry, and no spike shows
+`apm uninstall` removes that form. So `_names_old_package` matches only the
+forms ADR 0013 users wrote (a string entry, or a mapping without
+`path: apm`), and kmctl's own mapping form is left to `write_manifest`.
+
+Tests in `tests/test_plugin.py`, with lock fixtures in APM's real shape
+(`repo_url` owner/repo plus `host` and `port`): a local-source install
+followed by a default-source install leaves one kmctl entry and a note;
+the reverse order does the same and runs no `apm uninstall`; an unrelated
+`path: apm` package whose lock name is not kmctl is kept.
 
 Done when those tests pass and the gates pass.
 
