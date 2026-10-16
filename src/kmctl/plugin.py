@@ -2,8 +2,9 @@
 
 ``install`` writes the kmctl entry into the repository's apm.yml, runs
 ``apm install`` at the version pinned in ``APM_CLI``, and then writes what the
-package cannot carry for Claude Code: the SessionStart hook in settings.json
-and okf's MCP server. Before that it moves two kinds of older install over:
+package cannot carry: for Claude Code, the SessionStart hook in settings.json
+and okf's MCP server; for Antigravity, the plugin folder ``kmctl.antigravity``
+builds (ADR 0015). Before that it moves two kinds of older install over:
 the claude plugin ``kmctl@kmctl`` (ADR 0003) and an apm.yml entry naming the
 package another way (ADR 0013).
 
@@ -30,7 +31,7 @@ from ruamel.yaml import YAML
 
 Scope = Literal["project", "user"]
 #: The harnesses ``--harness`` accepts, in the order help lists them.
-HARNESSES = ("claude",)
+HARNESSES = ("claude", "antigravity")
 #: The APM release kmctl runs through uvx, so every install uses the same one.
 APM_CLI = "apm-cli==0.33.0"
 #: Where the kmctl package comes from unless ``--source`` names another git URL.
@@ -578,24 +579,35 @@ def _kmctl_package(lock: _Lock | None) -> _LockDependency | None:
     return None
 
 
-def skipped_skills(cwd: Path, scope: Scope) -> list[str]:
+def skipped_skills(
+    cwd: Path, scope: Scope, harnesses: Sequence[str] = ("claude",)
+) -> list[str]:
     """The kmctl skill folders APM left alone because files it did not write were there.
 
     APM prints only a count (spike:apm-only-install/5), so this compares the
-    skills this release ships with the paths the lock says APM deployed.
+    skills this release ships, in each harness's skills folder, with the
+    paths the lock says APM deployed. Antigravity installs at project scope
+    only.
     """
     root = _apm_cwd(cwd, scope)
     package = _kmctl_package(_read_lock(cwd, scope))
     deployed = {
         (root / p).resolve() for p in (package.deployed_files if package else [])
     }
-    folder = claude_config_dir() if scope == "user" else cwd / ".claude"
     names = sorted(p.name for p in skills_dir().iterdir() if p.is_dir())
-    return [
-        str(folder / "skills" / n) if scope == "user" else f".claude/skills/{n}"
-        for n in names
-        if (folder / "skills" / n).resolve() not in deployed
-    ]
+    found = []
+    for harness in harnesses:
+        if harness == "claude" and scope == "user":
+            folder, shown = claude_config_dir(), str(claude_config_dir())
+        else:
+            shown = ".agents" if harness == "antigravity" else ".claude"
+            folder = cwd / shown
+        found += [
+            f"{shown}/skills/{n}"
+            for n in names
+            if (folder / "skills" / n).resolve() not in deployed
+        ]
+    return found
 
 
 # The hook ----------------------------------------------------------------------
@@ -873,8 +885,9 @@ def install(
     targets into apm.yml; run ``apm install`` (``-g`` at user scope,
     ``--force`` when asked); fail when APM left a skill folder in place; only
     then remove the old claude plugin, so a failed install leaves it working;
-    then write the SessionStart hook and declare okf's MCP server.
-    ``kmctl plugin update`` runs the same.
+    then, for Claude Code, write the SessionStart hook and declare okf's MCP
+    server, and for Antigravity, rewrite its plugin folder
+    (``antigravity.write_plugin``). ``kmctl plugin update`` runs the same.
 
     Parameters
     ----------
@@ -899,14 +912,17 @@ def install(
     PluginError
         When a step fails, or APM left files in place, naming the fix.
     """
-    _preflight(cwd, scope)
+    # antigravity imports this module, so it is imported here, not at the top.
+    from kmctl import antigravity
+
+    _preflight(cwd, scope, harnesses)
     notes = remove_old_apm_entry(cwd, scope, source)
     write_manifest(apm_dir(cwd, scope) / "apm.yml", source, harnesses)
     args = apm_install_args(harnesses, scope, source, force)
     proc = _apm_run(args, _apm_cwd(cwd, scope))
     _require(proc, f"uvx --from {APM_CLI} apm {' '.join(args)}")
     if SKIP_LINE in proc.stdout + proc.stderr:
-        skipped = skipped_skills(cwd, scope) or ["files APM does not name"]
+        skipped = skipped_skills(cwd, scope, harnesses) or ["files APM does not name"]
         again = "kmctl plugin install --harness " + ",".join(harnesses)
         again += " --scope user" if scope == "user" else ""
         raise PluginError(
@@ -914,29 +930,44 @@ def install(
             f"{again} --force to replace them (--force replaces each of those "
             "folders whole, deleting any file you added there)"
         )
-    notes = remove_old_plugin(cwd, scope) + notes
-    merge_hook(settings_path(cwd, scope))
-    notes += install_mcp(cwd, scope)
-    return InstallResult(notes, status(cwd, scope))
+    if "claude" in harnesses:
+        notes = remove_old_plugin(cwd, scope) + notes
+        merge_hook(settings_path(cwd, scope))
+        notes += install_mcp(cwd, scope)
+    if "antigravity" in harnesses:
+        folder = antigravity.write_plugin(cwd)
+        notes.append(
+            f"wrote {_shown(folder, cwd)}/ (the agents, the SessionStart hook and "
+            f"okf's MCP server {antigravity.MCP_NAME}); Antigravity loads it once "
+            "you trust this folder"
+        )
+    return InstallResult(notes, status(cwd, scope, harnesses))
 
 
-def _preflight(cwd: Path, scope: Scope) -> None:
-    """Refuse before changing anything when uvx is missing or a file kmctl edits does not parse.
+def _preflight(cwd: Path, scope: Scope, harnesses: Sequence[str]) -> None:
+    """Refuse before changing anything when uvx is missing, a file kmctl edits does not parse, or Antigravity is asked for at user scope.
 
     Raises
     ------
     PluginError
-        Naming the missing tool or the broken file and the fix.
+        Naming the missing tool, the broken file or the unsupported scope, and the fix.
     """
+    if scope == "user" and "antigravity" in harnesses:
+        raise PluginError(
+            "antigravity installs per repository only: APM 0.33.0 writes no "
+            "rules or hooks at Antigravity's user scope; run kmctl plugin "
+            "install --harness antigravity in each repository, without --scope user"
+        )
     if shutil.which("uvx") is None:
         raise PluginError(
             "uvx is not on PATH, and kmctl runs APM through it; install uv "
             "(https://docs.astral.sh/uv/), then run kmctl plugin install again"
         )
     _read_manifest(apm_dir(cwd, scope) / "apm.yml")
-    _read_json(settings_path(cwd, scope))
-    if scope == "project":
-        _read_json(cwd / ".mcp.json")
+    if "claude" in harnesses:
+        _read_json(settings_path(cwd, scope))
+        if scope == "project":
+            _read_json(cwd / ".mcp.json")
 
 
 def _shown(path: Path, cwd: Path) -> str:
@@ -947,11 +978,18 @@ def _shown(path: Path, cwd: Path) -> str:
         return str(path)
 
 
-def status(cwd: Path, scope: Scope = "project") -> PluginStatus:
-    """Report the kmctl package's ref in apm.lock.yaml and the hook, against this CLI.
+def status(
+    cwd: Path, scope: Scope = "project", harnesses: Sequence[str] = ("claude",)
+) -> PluginStatus:
+    """Report the kmctl package's ref in apm.lock.yaml and each harness's hook, against this CLI.
 
-    It only reads files. Each problem names the command that fixes it.
+    For Claude Code the hook is the settings.json entry; for Antigravity it
+    is the plugin folder's hooks.json, and every file in that folder is
+    compared with what this kmctl writes. It only reads files. Each problem
+    names the command that fixes it.
     """
+    from kmctl import antigravity  # imports this module; see install
+
     suffix = " --scope user" if scope == "user" else ""
     package = _kmctl_package(_read_lock(cwd, scope))
     ref = package.resolved_ref if package else None
@@ -960,24 +998,36 @@ def status(cwd: Path, scope: Scope = "project") -> PluginStatus:
     if package is None:
         problems.append(
             f"kmctl's APM package is not in {lock}; run kmctl plugin install "
-            f"--harness claude{suffix}"
+            f"--harness {','.join(harnesses)}{suffix}"
         )
     elif ref != package_ref():
         problems.append(
             f"version mismatch: {lock} has the kmctl package at {ref}, kmctl is "
-            f"{cli_version()}; run kmctl plugin update{suffix}"
+            f"{cli_version()}; run kmctl plugin update --harness "
+            f"{','.join(harnesses)}{suffix}"
         )
-    hooks = kmctl_hooks(settings_path(cwd, scope))
-    settings = _shown(settings_path(cwd, scope), cwd)
-    hook = hooks == [hook_entry()]
-    if not hooks:
+    hook = True
+    if "claude" in harnesses:
+        hooks = kmctl_hooks(settings_path(cwd, scope))
+        settings = _shown(settings_path(cwd, scope), cwd)
+        hook = hooks == [hook_entry()]
+        if not hooks:
+            problems.append(
+                f"the kmctl SessionStart hook is missing from {settings}; run kmctl "
+                f"plugin install --harness claude{suffix}"
+            )
+        elif not hook:
+            problems.append(
+                f"the kmctl SessionStart hook in {settings} is not the one this "
+                f"kmctl writes; run kmctl plugin update{suffix}"
+            )
+    if "antigravity" in harnesses and scope == "user":
+        hook = False
         problems.append(
-            f"the kmctl SessionStart hook is missing from {settings}; run kmctl "
-            f"plugin install --harness claude{suffix}"
+            "antigravity installs per repository only; run kmctl plugin status "
+            "--harness antigravity in the repository"
         )
-    elif not hook:
-        problems.append(
-            f"the kmctl SessionStart hook in {settings} is not the one this kmctl "
-            f"writes; run kmctl plugin update{suffix}"
-        )
+    elif "antigravity" in harnesses:
+        hook = hook and antigravity.hook_present(cwd)
+        problems += antigravity.plugin_problems(cwd)
     return PluginStatus(cli_version(), scope, ref, hook, problems)

@@ -342,7 +342,7 @@ def test_install_json_prints_status_and_notes(repo: Path, fakes: FakeTools) -> N
     assert isinstance(data["notes"], list)
 
 
-@pytest.mark.parametrize("harness", ["antigravity", "claude,codex", ""])
+@pytest.mark.parametrize("harness", ["codex", "claude,codex", ""])
 def test_install_refuses_unknown_harness(
     repo: Path, fakes: FakeTools, harness: str
 ) -> None:
@@ -939,7 +939,7 @@ def test_status_mismatched_ref_names_update(repo: Path, fakes: FakeTools) -> Non
 
     assert result.exit_code == 0
     assert re.search(
-        r"problem: version mismatch.*v0\.0\.1.*; run kmctl plugin update$",
+        r"problem: version mismatch.*v0\.0\.1.*; run kmctl plugin update --harness claude$",
         result.stdout,
         re.MULTILINE,
     )

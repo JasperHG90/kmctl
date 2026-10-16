@@ -39,12 +39,13 @@ still true; that takes judgment. So kmctl does two things instead:
 - **The `kmctl` CLI** sets a repository up, creates new decisions, docs pages
   and other concepts with their index entries, checks that indexes and links
   agree, and lists what is due for review.
-- **A Claude Code plugin** with one SessionStart hook that prints the
-  briefing, an audit agent, a skill for writing `docs/` pages, and
-  `/handoff` and `/continue` to save and resume work between sessions.
-  Claude Code is the only harness today. The plugin's skills, agent and
-  hook also install with [APM](https://microsoft.github.io/apm); see
-  [Install kmctl with APM](docs/how-to/install-kmctl-with-apm.md).
+- **An APM package** for Claude Code and Antigravity, which
+  `kmctl plugin install` installs with [APM](https://microsoft.github.io/apm):
+  an audit agent, a skill for writing `docs/` pages, `/handoff` and
+  `/continue` to save and resume work between sessions, and the knowledge
+  rules, plus one SessionStart hook that prints the briefing. See
+  [Install kmctl with APM](docs/how-to/install-kmctl-with-apm.md) to add the
+  package entry yourself.
 - **A GitHub Action** that runs `kmctl check` on every pull request for free,
   and an opt-in audit you run by hand or on a schedule.
 
@@ -64,8 +65,8 @@ kmctl plugin install --harness claude
 ```
 
 This installs kmctl's skills, audit agent and knowledge rules with APM (it
-needs uv, which runs APM), and writes the session hook. The steps, with the
-CI action, are in
+needs uv, which runs APM), and writes the session hook. For Antigravity, use
+`--harness antigravity`. The steps, with the CI action, are in
 [Install the plugin and the CI action](docs/how-to/install-the-plugin-and-the-ci-action.md).
 
 ## Quick start

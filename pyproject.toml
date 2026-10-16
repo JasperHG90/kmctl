@@ -32,9 +32,11 @@ pattern = '(?m)^version: (?P<version>[^\s#]+)'
 [tool.hatch.build.targets.wheel]
 packages = ["src/kmctl"]
 
-# The skills ship inside the release, so kmctl briefing can list them (ADR 0001).
+# The skills ship inside the release, so kmctl briefing can list them (ADR 0001),
+# and the agents, which kmctl translates for Antigravity (ADR 0015).
 [tool.hatch.build.targets.wheel.force-include]
 "apm/.apm/skills" = "kmctl/_skills"
+"apm/.apm/agents" = "kmctl/_agents"
 
 [dependency-groups]
 dev = [

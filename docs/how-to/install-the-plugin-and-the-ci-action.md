@@ -1,10 +1,10 @@
 # Install the plugin and the CI action
 
 This page adds kmctl to one repository: kmctl's skills, audit agent and
-knowledge rules for Claude Code, with a session hook that gives every session
-a briefing on where knowledge lives and what is due for review, and the
-GitHub Action, which checks docs/ and .okf/ on every pull request. A last,
-optional step turns on the LLM audit.
+knowledge rules for Claude Code, Antigravity or both, with a session hook that
+gives every session a briefing on where knowledge lives and what is due for
+review, and the GitHub Action, which checks docs/ and .okf/ on every pull
+request. A last, optional step turns on the LLM audit.
 
 How the commands below were run:
 
@@ -24,8 +24,9 @@ How the commands below were run:
 ## Before you start
 
 - [uv](https://docs.astral.sh/uv/) and `git` on your PATH.
-- Claude Code. `kmctl plugin install` runs APM (Agent Package Manager) with
-  `uvx`, so it needs uv, not a separate APM install.
+- Claude Code, or Antigravity (Google's agent IDE and its `agy` CLI).
+  `kmctl plugin install` runs APM (Agent Package Manager) with `uvx`, so it
+  needs uv, not a separate APM install.
 - A git repository set up with `kmctl init`. If you have not done that, follow
   [Get started with kmctl](../tutorials/get-started-with-kmctl.md) first.
 - For the CI action: the repository on GitHub.
@@ -81,11 +82,46 @@ the package entry yourself, see
 [Install kmctl with APM](install-kmctl-with-apm.md). That route gets no
 session hook unless you run this step too.
 
+#### For Antigravity
+
+From the repository root:
+
+```
+kmctl plugin install --harness antigravity
+```
+
+It prints:
+
+```
+note: wrote .agents/plugins/kmctl/ (the agents, the SessionStart hook and okf's MCP server bundle); Antigravity loads it once you trust this folder
+kmctl 0.3.0; package v0.3.0 (project scope); hook present
+Next: open this folder in Antigravity, trust it and start a new session, then kmctl plugin status --harness antigravity
+```
+
+APM writes kmctl's seven skills and okf's four to `.agents/skills/` and the
+four knowledge rules to `.agents/rules/`. kmctl then writes the folder
+`.agents/plugins/kmctl/`, which it owns and replaces on every run: the audit
+agent and okf's two agents in Antigravity's format, one SessionStart hook
+that runs `kmctl briefing --format antigravity`, and okf's MCP server,
+`bundle`. okf's MCP server runs with `uv run`, so it needs `uv` on PATH
+wherever Antigravity runs. For both harnesses at once, run
+`kmctl plugin install --harness claude,antigravity`. Antigravity installs
+per repository only; `--scope user` is refused for it.
+
+Antigravity loads a repository's `.agents/` only once you trust the
+folder: open the repository folder in Antigravity and accept its trust
+prompt. Trust matches the exact folder, so trust the repository root, the
+folder you open.
+
 ### 3. Start a new session
 
 Start a new Claude Code session in the repository. Claude Code asks once
 whether to use the `okf-bundle` server from `.mcp.json`. The SessionStart
 hook prints `kmctl briefing` at the start of each session.
+
+For Antigravity, open the trusted repository folder and start a new
+session. The plugin's SessionStart hook adds the same briefing to the
+session.
 
 ### 4. Add the checks workflow
 
@@ -269,7 +305,9 @@ its `vX.Y.Z` tag. To move to a newer one:
    kmctl plugin update
    ```
 
-   It moves the `apm.yml` entry to the new tag and reinstalls.
+   For Antigravity, run `kmctl plugin update --harness antigravity` (or
+   `--harness claude,antigravity`). It moves the `apm.yml` entry to the new
+   tag and reinstalls.
    `kmctl plugin status` then prints the same version for kmctl and the
    package.
 
@@ -284,7 +322,10 @@ In the repository, run:
 kmctl plugin status
 ```
 
-When the package and the hook are installed, it prints:
+For Antigravity, run `kmctl plugin status --harness antigravity`; it also
+names each file under `.agents/plugins/kmctl/` that is missing, extra or
+not what this kmctl writes. When the package and the hook are installed, it
+prints:
 
 ```
 kmctl 0.3.0; package v0.3.0 (project scope); hook present

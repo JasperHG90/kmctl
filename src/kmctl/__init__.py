@@ -1,14 +1,21 @@
 """kmctl: knowledge management for repositories that keep docs/ and an OKF bundle."""
 
 import json
+import sys
 from dataclasses import asdict
 from importlib.metadata import version
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Literal
 
 import typer
 
-from kmctl.briefing import as_dict, build_briefing, render
+from kmctl.briefing import (
+    as_antigravity,
+    as_dict,
+    build_briefing,
+    hook_workspace,
+    render,
+)
 from kmctl.checks import run_checks
 from kmctl.concepts import ConceptError, Kind, new_concept
 from kmctl.docs import DocType, new_doc
@@ -474,7 +481,14 @@ def new_doc_page(
         "Examples:\n\n"
         "  kmctl briefing\n\n"
         "  kmctl briefing --path ../other-repo --json\n\n"
-        "The plugin's SessionStart hook prints this. It reads and never writes."
+        '  echo \'{"workspacePaths": ["/repo"]}\' | kmctl briefing --format '
+        "antigravity\n\n"
+        "The SessionStart hook kmctl plugin install writes prints this: Claude "
+        "Code's runs kmctl briefing, Antigravity's runs kmctl briefing --format "
+        "antigravity. With --format antigravity the repository is "
+        "workspacePaths[0] of the JSON object on stdin, which Antigravity sends "
+        "every hook; when stdin is a terminal, empty or not that JSON, it is "
+        "--path. It reads and never writes."
     ),
 )
 def briefing(
@@ -495,8 +509,31 @@ def briefing(
             help="Print one JSON object (routing, state, rules, skills), for scripts.",
         ),
     ] = False,
+    output_format: Annotated[
+        Literal["text", "antigravity"],
+        typer.Option(
+            "--format",
+            metavar="text",
+            help=(
+                "text (the briefing as text; the default) or antigravity (one "
+                'JSON object, {"injectSteps": [{"systemMessage": {"systemMessage": '
+                "TEXT}}]}, for Antigravity's SessionStart hook, with the "
+                "repository read from the hook's stdin). Not with --json."
+            ),
+        ),
+    ] = "text",
 ) -> None:
     """Print the session briefing: where knowledge lives, what is due, and the rules."""
+    if output_format == "antigravity":
+        if as_json:
+            raise typer.BadParameter(
+                "--json prints the briefing's parts and --format antigravity the "
+                "hook's JSON; give one of them",
+                param_hint="'--format'",
+            )
+        root = hook_workspace(sys.stdin) or path
+        typer.echo(as_antigravity(render(build_briefing(root))))
+        return
     result = build_briefing(path)
     typer.echo(json.dumps(as_dict(result)) if as_json else render(result))
 
@@ -638,16 +675,17 @@ _SCOPE_OPTION = typer.Option(
     "--scope",
     metavar="project",
     help=(
-        "project (this repository: apm.yml, .claude/ and .mcp.json here; the default) "
-        "or user (every repository: ~/.apm/apm.yml, and Claude Code's folder, "
-        "$CLAUDE_CONFIG_DIR or ~/.claude)."
+        "project (this repository: apm.yml, .claude/, .mcp.json and .agents/ "
+        "here; the default) or user (every repository: ~/.apm/apm.yml, and "
+        "Claude Code's folder, $CLAUDE_CONFIG_DIR or ~/.claude). antigravity "
+        "is project only."
     ),
 )
 _HARNESS_OPTION = typer.Option(
     "--harness",
-    metavar="claude",
+    metavar="claude,antigravity",
     help=(
-        "The agent harnesses to install for, as a comma list. Accepted: "
+        "The agent harnesses, as a comma list. Accepted: "
         f"{', '.join(HARNESSES)}. Default: claude."
     ),
 )
@@ -677,6 +715,7 @@ _PLUGIN_JSON_OPTION = typer.Option(
 _INSTALL_EPILOG = (
     "Examples:\n\n"
     "  kmctl plugin {verb} --harness claude\n\n"
+    "  kmctl plugin {verb} --harness claude,antigravity\n\n"
     "  kmctl plugin {verb} --harness claude --scope user --json\n\n"
     "  kmctl plugin {verb} --source http://127.0.0.1:8080/o/kmctl.git\n\n"
     f"The default --source is {DEFAULT_SOURCE}\n\n"
@@ -689,9 +728,16 @@ _INSTALL_EPILOG = (
     "when the claude CLI is not on PATH); writes one "
     "SessionStart hook that runs kmctl briefing into .claude/settings.json; and "
     "declares okf's MCP server okf-bundle in .mcp.json (at user scope, with "
-    "claude mcp add-json), unless an okf server is already there. Running it "
-    "again changes nothing. It refuses, and names the fix, when APM leaves in "
-    "place a skill folder it did not write."
+    "claude mcp add-json), unless an okf server is already there. Those last "
+    "three are for claude. For antigravity, APM writes the skills to "
+    ".agents/skills/ and the rules to .agents/rules/, and kmctl replaces the "
+    "folder .agents/plugins/kmctl/ with plugin.json, hooks.json (one "
+    "SessionStart hook running kmctl briefing --format antigravity), the "
+    "agents translated from Claude Code's format (kmctl-auditor and okf's "
+    "two, read from apm_modules/) and mcp_config.json (okf's MCP server "
+    "bundle, which needs uv). Antigravity loads that folder only once you "
+    "trust the repository. Running it again changes nothing. It refuses, and "
+    "names the fix, when APM leaves in place a skill folder it did not write."
 )
 
 
@@ -728,12 +774,17 @@ def _install(
         raise typer.Exit(1) from error
     _report(result.status, as_json, result.notes)
     if not as_json:
-        scope_flag = " --scope user" if scope == "user" else ""
-        typer.echo(
-            next_step(
-                "start a new Claude Code session", f"kmctl plugin status{scope_flag}"
+        names = parse_harnesses(harness)
+        steps = []
+        if "claude" in names:
+            steps.append("start a new Claude Code session")
+        if "antigravity" in names:
+            steps.append(
+                "open this folder in Antigravity, trust it and start a new session"
             )
-        )
+        flags = "" if names == ["claude"] else f" --harness {','.join(names)}"
+        flags += " --scope user" if scope == "user" else ""
+        typer.echo(next_step(*steps, f"kmctl plugin status{flags}"))
 
 
 @plugin_app.command("install", epilog=_INSTALL_EPILOG.format(verb="install"))
@@ -765,12 +816,17 @@ def plugin_update(
     epilog=(
         "Examples:\n\n"
         "  kmctl plugin status\n\n"
+        "  kmctl plugin status --harness antigravity\n\n"
         "  kmctl plugin status --scope user --json\n\n"
-        "It reads apm.lock.yaml and settings.json and changes nothing. Exits 0 "
-        "either way; each problem names the command that fixes it."
+        "It reads apm.lock.yaml and, for claude, settings.json; for antigravity "
+        "it compares every file under .agents/plugins/kmctl/ with what this "
+        "kmctl writes and reports each missing, extra or different one. It "
+        "changes nothing. Exits 0 either way; each problem names the command "
+        "that fixes it."
     ),
 )
 def plugin_status_cmd(
+    harness: Annotated[str, _HARNESS_OPTION] = "claude",
     scope: Annotated[Scope, _SCOPE_OPTION] = "project",
     as_json: Annotated[
         bool,
@@ -784,7 +840,12 @@ def plugin_status_cmd(
     ] = False,
 ) -> None:
     """Report the installed kmctl package's version and the session hook, and what to fix."""
-    _report(plugin_status(Path.cwd(), scope), as_json)
+    try:
+        harnesses = parse_harnesses(harness)
+    except PluginError as error:
+        typer.echo(f"kmctl plugin status: refused: {error}", err=True)
+        raise typer.Exit(1) from error
+    _report(plugin_status(Path.cwd(), scope, harnesses), as_json)
 
 
 def main() -> None:
