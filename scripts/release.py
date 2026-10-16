@@ -12,8 +12,11 @@ Usage::
     uv run scripts/release.py is-prerelease VERSION
 
 ``plugin/.claude-plugin/plugin.json`` carries the one version, and
-``pyproject.toml`` reads it from there. ``set`` writes the manifest and points
-the five install lines in the docs at the tag ``vVERSION``. This script never
+``pyproject.toml`` reads it from there. APM needs a ``version:`` in each
+apm.yml, so ``set`` writes the manifest and copies the version into the root
+``apm.yml`` and ``apm/apm.yml``; ``current`` refuses when a copy differs
+(ADR 0013). ``set`` also points the five install lines in the docs, and the
+APM how-to's package pins and CLI install line, at the tag ``vVERSION``. This script never
 commits or tags: ``.github/workflows/release.yml`` opens the version pull
 request and ``release-tag.yml`` tags the merge, so there is one release path.
 """
@@ -37,6 +40,10 @@ DOC_FILES = (
 )
 #: How many install lines ``DOC_FILES`` hold between them.
 DOC_LINES = 5
+#: The apm.yml files that copy the manifest's version, because APM requires one.
+APM_FILES = (Path("apm.yml"), Path("apm/apm.yml"))
+#: The how-to whose ``JasperHG90/Knowledge-management/apm`` pins ``set`` moves.
+APM_DOC = Path("docs/how-to/install-kmctl-with-apm.md")
 _INSTALL = re.compile(
     r"^(\s*uv tool install git\+https://github\.com/JasperHG90/Knowledge-management)(@\S+)?$",
     re.MULTILINE,
@@ -45,6 +52,12 @@ _INSTALL = re.compile(
 # version string changes and the rest of the manifest keeps its layout.
 _VERSION = re.compile(r'("version": ")[^"]+(")')
 _USES = re.compile(r"^(\s*- uses: JasperHG90/Knowledge-management)@\S+$", re.MULTILINE)
+# One top-level ``version:`` line, rewritten as text so comments and layout stay.
+_APM_VERSION = re.compile(r"^(version: )(.*)$", re.MULTILINE)
+# The APM package with an optional #ref; not apm.yml or a longer path.
+_APM_PIN = re.compile(
+    r"(JasperHG90/Knowledge-management/apm)(?:#[\w.+-]+)?(?![\w/]|\.\w)"
+)
 
 
 class ReleaseRefused(Exception):
@@ -79,9 +92,29 @@ def parse_release(text: str) -> Version:
     return version
 
 
+def _apm_version(path: Path) -> str | None:
+    """Return the top-level ``version:`` of the apm.yml at ``path``, or None."""
+    match = _APM_VERSION.search(path.read_text()) if path.is_file() else None
+    return match.group(2).strip().strip("'\"") if match else None
+
+
 def current(repo: Path) -> str:
-    """Return the version the plugin manifest declares."""
-    return str(json.loads((repo / MANIFEST).read_text())["version"])
+    """Return the version the plugin manifest declares.
+
+    Raises
+    ------
+    ReleaseRefused
+        When an apm.yml in ``APM_FILES`` is missing or holds another version.
+    """
+    version = str(json.loads((repo / MANIFEST).read_text())["version"])
+    for rel in APM_FILES:
+        found = _apm_version(repo / rel)
+        if found != version:
+            raise ReleaseRefused(
+                f"{rel} has version {found or 'none'} but {MANIFEST} has {version}; "
+                f"run scripts/release.py set {version}"
+            )
+    return version
 
 
 def pin_docs(text: str, version: str) -> tuple[str, int]:
@@ -97,10 +130,22 @@ def pin_docs(text: str, version: str) -> tuple[str, int]:
     return text, installs + uses
 
 
-def set_version(repo: Path, version_text: str) -> list[Path]:
-    """Write the version into the plugin manifest and pin the docs' install lines to it.
+def pin_apm_doc(text: str, version: str) -> tuple[str, int]:
+    """Point each ``JasperHG90/Knowledge-management/apm`` in ``text`` at ``#v<version>``.
 
-    Nothing is written unless the version is valid and all five lines are found.
+    Returns
+    -------
+    tuple[str, int]
+        The new text and how many pins it moved.
+    """
+    return _APM_PIN.subn(rf"\g<1>#v{version}", text)
+
+
+def set_version(repo: Path, version_text: str) -> list[Path]:
+    """Write the version into the plugin manifest and both apm.yml files, and pin the docs.
+
+    Nothing is written unless the version is valid, all five install lines and
+    an APM pin in ``APM_DOC`` are found, and each apm.yml has a ``version:`` line.
 
     Returns
     -------
@@ -110,7 +155,8 @@ def set_version(repo: Path, version_text: str) -> list[Path]:
     Raises
     ------
     ReleaseRefused
-        When the version is malformed or the docs hold fewer than five install lines.
+        When the version is malformed, the docs hold fewer than five install
+        lines, ``APM_DOC`` has no APM pin, or an apm.yml has no ``version:``.
     """
     version = str(parse_release(version_text))
     docs: dict[Path, str] = {}
@@ -123,14 +169,27 @@ def set_version(repo: Path, version_text: str) -> list[Path]:
             f"found {found} of the {DOC_LINES} install lines in {', '.join(map(str, DOC_FILES))}; "
             "restore the missing uv tool install or uses: line"
         )
+    apm_doc, _ = pin_docs((repo / APM_DOC).read_text(), version)
+    docs[APM_DOC], count = pin_apm_doc(apm_doc, version)
+    if count == 0:
+        raise ReleaseRefused(
+            f"{APM_DOC} has no JasperHG90/Knowledge-management/apm pin; restore it"
+        )
     manifest = repo / MANIFEST
     text, count = _VERSION.subn(rf"\g<1>{version}\g<2>", manifest.read_text(), count=1)
     if count != 1:
         raise ReleaseRefused(f'{MANIFEST} has no "version": "..." line; restore it')
+    apm: dict[Path, str] = {}
+    for rel in APM_FILES:
+        apm[rel], count = _APM_VERSION.subn(
+            rf"\g<1>{version}", (repo / rel).read_text(), count=1
+        )
+        if count != 1:
+            raise ReleaseRefused(f"{rel} has no top-level version: line; restore it")
     manifest.write_text(text)
-    for rel, text in docs.items():
+    for rel, text in {**apm, **docs}.items():
         (repo / rel).write_text(text)
-    return [MANIFEST, *DOC_FILES]
+    return [MANIFEST, *APM_FILES, *DOC_FILES, APM_DOC]
 
 
 def compare(old_text: str, new_text: str) -> str:
@@ -158,10 +217,13 @@ def main(argv: list[str] | None = None) -> int:
         "--repo", type=Path, default=Path.cwd(), help="the repository root"
     )
     sub = parser.add_subparsers(dest="cmd", required=True)
-    p_cur = sub.add_parser("current", help="print the plugin manifest's version")
+    p_cur = sub.add_parser(
+        "current",
+        help="print the plugin manifest's version; refuse when an apm.yml differs",
+    )
     p_set = sub.add_parser(
         "set",
-        help="write the version into the manifest and pin the docs' install lines",
+        help="write the version into the manifest and both apm.yml files, and pin the docs",
     )
     p_set.add_argument("version", help="the release version, e.g. 0.2.0 or 0.2.0rc1")
     p_cmp = sub.add_parser("compare", help="print raised, same, lowered or skip")

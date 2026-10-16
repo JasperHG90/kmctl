@@ -1,7 +1,7 @@
 ---
 type: manifesto
 title: "Manifesto: kmctl"
-description: What kmctl is for, where each kind of knowledge lives, the parts (CLI, plugin, CI action), the invariants, values, and what is out of scope for now.
+description: What kmctl is for, where each kind of knowledge lives, the parts (CLI, plugin installed by the CLI or APM, CI action), the invariants, values, and what is out of scope for now.
 generated:
   by: claude-opus/5.5
   at: 2026-10-15
@@ -56,7 +56,10 @@ this formalizes so every repository can have it.
   skills (architecture, decision log, practices), a skill for writing
   Diataxis docs, and `/handoff` and `/continue`, which write and read back
   handoffs in `.okf/handoffs/` (ADR 0008). Skills route; `kmctl` decides
-  and writes.
+  and writes. It installs two ways: `kmctl plugin install`, the main route,
+  or APM (Agent Package Manager) through the `apm/apm.yml` package, which
+  also brings the okf skills (ADR 0013). APM leaves out the CLI and skips
+  the CLI's check that the plugin matches its version.
 - **A reusable GitHub Action** (ADR 0005). On every pull request it runs the
   deterministic checks for free. The LLM audit is opt-in and reports only.
 
