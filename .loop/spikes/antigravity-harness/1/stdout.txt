@@ -1,0 +1,56 @@
+uv: uv 0.13.0 (aarch64-unknown-linux-gnu)
+{
+  "case": "A cwd=project, no arg",
+  "ok": true,
+  "init_seconds": 1.1,
+  "serverInfo": {
+    "name": "okf",
+    "version": ""
+  },
+  "protocolVersion": "2025-06-18",
+  "tools": [
+    "get_neighbors",
+    "read_concept",
+    "search_concepts"
+  ],
+  "search_isError": false,
+  "search_text": "{\n  \"id\": \"concepts/hello\",\n  \"type\": \"Concept\",\n  \"title\": \"Hello\",\n  \"description\": \"hello test concept\",\n  \"status\": \"\",\n  \"stale_after\": \"\"\n}",
+  "stderr_tail": "Installed 29 packages in 45ms\n"
+}
+{
+  "case": "B cwd=elsewhere, arg=bundle",
+  "ok": true,
+  "init_seconds": 0.5,
+  "serverInfo": {
+    "name": "okf",
+    "version": ""
+  },
+  "protocolVersion": "2025-06-18",
+  "tools": [
+    "get_neighbors",
+    "read_concept",
+    "search_concepts"
+  ],
+  "search_isError": false,
+  "search_text": "{\n  \"id\": \"concepts/hello\",\n  \"type\": \"Concept\",\n  \"title\": \"Hello\",\n  \"description\": \"hello test concept\",\n  \"status\": \"\",\n  \"stale_after\": \"\"\n}",
+  "stderr_tail": ""
+}
+{
+  "case": "C cwd=elsewhere, no arg",
+  "ok": false,
+  "init_seconds": 0.5,
+  "serverInfo": {
+    "name": "okf",
+    "version": ""
+  },
+  "protocolVersion": "2025-06-18",
+  "tools": [
+    "get_neighbors",
+    "read_concept",
+    "search_concepts"
+  ],
+  "search_isError": true,
+  "search_text": "Error executing tool search_concepts: no OKF bundle at .okf; set OKF_BUNDLE to one",
+  "stderr_tail": "Tool 'search_concepts' failed: 'Error executing tool search_concepts: no OKF bundle at .okf; set OKF_BUNDLE to one'\n"
+}
+A ok=True B ok=True C ok=False
