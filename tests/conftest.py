@@ -1,3 +1,4 @@
+import re
 import subprocess
 import sys
 import time
@@ -21,6 +22,15 @@ NETWORK_ERRORS = (
 )
 RUNS = 3
 RETRY_DELAY_SECONDS = 5
+
+
+# typer forces a colour terminal on GitHub Actions, so help carries ANSI codes.
+ANSI = re.compile(r"\x1b\[[0-9;]*m")
+
+
+def plain(text: str) -> str:
+    """``text`` without ANSI colour codes: what a reader sees."""
+    return ANSI.sub("", text)
 
 
 def okf_validate(bundle: Path) -> subprocess.CompletedProcess[str]:

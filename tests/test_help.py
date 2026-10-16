@@ -1,6 +1,7 @@
 """Every verb's help says what it produces, gives an example for each input and fits 80 columns."""
 
 import pytest
+from conftest import plain
 from typer.core import TyperGroup, TyperOption
 from typer.main import get_command
 from typer.testing import CliRunner
@@ -32,7 +33,7 @@ def test_help_renders_at_80_columns(words: tuple[str, ...]) -> None:
     )
 
     assert result.exit_code == 0, result.output
-    assert all(len(line) <= 80 for line in result.stdout.splitlines())
+    assert all(len(plain(line)) <= 80 for line in result.stdout.splitlines())
 
 
 @pytest.mark.parametrize("words", VERBS, ids=IDS)

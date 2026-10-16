@@ -5,7 +5,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
-from conftest import okf_validate
+from conftest import okf_validate, plain
 from typer.testing import CliRunner, Result
 
 from kmctl import app
@@ -389,12 +389,13 @@ def test_new_freshness_documented() -> None:
         app, ["new", "decision", "--help"], env={"COLUMNS": "200"}, terminal_width=200
     )
     reference = (Path(__file__).parents[1] / "docs/reference/commands.md").read_text()
+    help_text = plain(result.stdout)
 
     for option in ("--stale-after", "--source"):
-        assert option in result.stdout, option
+        assert option in help_text, option
         assert f"`{option} " in reference, option
     for form in ("30d", "12w", "6m", "1y", "2027-01-15"):
-        assert form in result.stdout, form
+        assert form in help_text, form
         assert form in reference, form
 
 
