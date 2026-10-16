@@ -1,14 +1,42 @@
 {
   "schema_version": "1.0",
   "slug": "antigravity-harness",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "cf01df9041544b10cd2955ac042c187a9f1991f15e413e665d1d47896b8ad05c",
+    "tree": "11efc771f072c0d648e92bc23ba997bbd4d7332e",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "judgement",
+        "judgement": "j-20261016T214239+0000-6a1e65cf",
+        "paths": [
+          "docs/reference/commands.md",
+          "src/kmctl/plugin.py",
+          "tests/test_antigravity.py",
+          "tests/test_plugin.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f2",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": null,
+        "paths": [
+          "src/kmctl/antigravity.py"
+        ]
+      }
+    ],
+    "at": "2026-10-16T21:42:39+00:00"
+  },
   "ask": "j-20261016T194318+0000-d118af8d",
   "split": "j-20261016T202356+0000-85792644",
   "split_plan_hash": "aa09221d7d616b13921e7f064d3af41f7bea6b64385b6e31cb63292e9c093bf6",
@@ -156,8 +184,14 @@
       "to": "fixing",
       "at": "2026-10-16T21:39:04+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-16T21:42:39+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-16T21:42:37+00:00"
+  "at": "2026-10-16T21:42:39+00:00"
 }
