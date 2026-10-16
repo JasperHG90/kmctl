@@ -3,7 +3,7 @@
   "slug": "apm-only-install",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 1,
+  "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -30,9 +30,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 1,
-    "binds": "dd1ee89066ca8005b65685033f607e0813e42e4df70b27236236b50b3421f70a",
-    "started_at": "2026-10-16T20:20:31+00:00",
+    "n": 2,
+    "binds": "9f1cfd15be4648d4d3418eca6d7573b859ab31d9e569e3e37c2cfc3b2a748812",
+    "started_at": "2026-10-16T20:28:01+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -45,10 +45,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "dd1ee89066ca8005b65685033f607e0813e42e4df70b27236236b50b3421f70a",
+  "plan_hash": "9f1cfd15be4648d4d3418eca6d7573b859ab31d9e569e3e37c2cfc3b2a748812",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -63,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev173+ga4f6ce93a.d20261016",
-  "at": "2026-10-16T20:27:58+00:00"
+  "at": "2026-10-16T20:28:01+00:00"
 }
