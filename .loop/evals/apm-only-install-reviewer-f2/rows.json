@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "After an install from a local --source (http://127.0.0.1:PORT/o/kmctl.git), recorded in apm.lock.yaml in APM 0.33.0's shape (repo_url o/kmctl, host 127.0.0.1, port PORT, name kmctl, virtual_path apm), an install with the default source leaves exactly one kmctl entry in apm.yml, at the new source and in the old entry's place, and prints a note naming the replaced entry; the reverse order (default first, then the local source) gives the same result and runs no apm uninstall.",
+      "fails_when": "apm.yml holds two kmctl entries in either order, the entry is not at the new source, its position changed, no note names the old entry, the reverse order runs apm uninstall, or the lock fixture is not in APM's host/port/repo_url shape",
+      "command": "uv run pytest tests/test_plugin.py -k other_source -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "An apm.yml entry with path: apm that the lock records under a name other than kmctl is kept unchanged.",
+      "fails_when": "that entry is removed or changed",
+      "command": "uv run pytest tests/test_plugin.py -k unrelated_apm_path -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "The other tests still pass.",
+      "fails_when": "uv run pytest or uv run pytest -m integration fails",
+      "command": "uv run pytest -q -m \"not integration or integration\""
+    }
+  ]
+}
