@@ -3,7 +3,7 @@
   "slug": "antigravity-harness",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "5ac7e3bd39ba3c266c21a4f566f561257170df88cf6e13d487717be93ef08356",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "9684d945267d098655fe65d11b397cf1713c3800fbe939038d9a1c7d6d4ac898",
+    "started_at": "2026-10-16T20:18:57+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "9684d945267d098655fe65d11b397cf1713c3800fbe939038d9a1c7d6d4ac898",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -44,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
-  "at": "2026-10-16T20:16:45+00:00"
+  "at": "2026-10-16T20:18:57+00:00"
 }
