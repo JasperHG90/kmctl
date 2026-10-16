@@ -1,0 +1,97 @@
+== scratch: /tmp/tmp.oqYWMy6xi1
+== agy 1.4.0
+== validate
+{
+  "dir": "/tmp/tmp.oqYWMy6xi1/repo/.agents/plugins/probe",
+  "manifest": "plugin.json",
+  "name": "probe",
+  "agentPluginsSpec": false,
+  "components": {
+    "agents": 0,
+    "hooks": 1,
+    "mcpServers": 1,
+    "rules": 0,
+    "sidecars": 0,
+    "skills": 0
+  },
+  "findings": []
+}
+########## phase A: no auth
+== agents
+== mcp list
+No MCP servers configured.
+== plugin list
+No plugins installed.
+== -p hi
+Error: authentication required. Run 'agy' to log in, then retry.
+error: authentication failed or timed out
+exit 1
+== agy log tail (A)
+I1016 22:22:38.843647     117 model_configs.go:346] Auth mode is unspecified, skipping fetchAvailableModels and returning empty response
+I1016 22:22:38.846424      82 auth_store.go:136] Using file-based secret storage at /tmp/tmp.oqYWMy6xi1/home/.config/antigravity/plugin-secrets.json
+I1016 22:22:38.846438      82 auth_store.go:136] Using file-based secret storage at /tmp/tmp.oqYWMy6xi1/home/.config/antigravity/plugin-secrets.json
+I1016 22:22:38.849327     171 manager.go:91] Migration [MIGRATION_ID_PLUGIN_ENABLEMENT] is enabled
+I1016 22:22:38.849349     171 manager.go:100] Migration [MIGRATION_ID_PLUGIN_ENABLEMENT] already has status MIGRATION_STATUS_COMPLETED, skipping
+I1016 22:22:38.849352     171 manager.go:91] Migration [MIGRATION_ID_BUILTIN_SIDECARS_TO_PLUGINS] is enabled
+I1016 22:22:38.849367     171 manager.go:100] Migration [MIGRATION_ID_BUILTIN_SIDECARS_TO_PLUGINS] already has status MIGRATION_STATUS_COMPLETED, skipping
+I1016 22:22:38.853015      82 server.go:3185] Auth succeeded, refreshing features and managers
+I1016 22:22:38.853547     196 manager.go:91] Migration [MIGRATION_ID_PLUGIN_ENABLEMENT] is enabled
+I1016 22:22:38.853564     196 manager.go:100] Migration [MIGRATION_ID_PLUGIN_ENABLEMENT] already has status MIGRATION_STATUS_COMPLETED, skipping
+I1016 22:22:38.853567     196 manager.go:91] Migration [MIGRATION_ID_BUILTIN_SIDECARS_TO_PLUGINS] is enabled
+I1016 22:22:38.853583     196 manager.go:100] Migration [MIGRATION_ID_BUILTIN_SIDECARS_TO_PLUGINS] already has status MIGRATION_STATUS_COMPLETED, skipping
+I1016 22:22:38.853952       1 auth_provider.go:952] [AuthProvider] SetEnableBusinessLogin called with enable: true
+I1016 22:22:38.855796       1 hooks_manager.go:53] loaded 1 named hooks from 1 hooks.json file(s)
+I1016 22:22:38.855843       1 printmode.go:403] Print mode: not authenticated, trying silent auth
+I1016 22:22:38.855865       1 printmode.go:409] Print mode: silent auth failed
+########## phase B: copy of real ~/.gemini auth (real dir untouched)
+antigravity-oauth-token
+bin
+brain
+builtin
+cache
+cli.log
+conversations
+conversation_summaries.db
+crashes
+installation_id
+jetski_state.pbtxt
+last_check.timestamp
+log
+settings.json
+updater
+== agents
+== mcp list
+No MCP servers configured.
+== plugin list
+No plugins installed.
+== -p hi
+error: Eligibility check failed: Your current account is not eligible for Antigravity. Try signing in with another personal Google account. If you believe this is an error, please contact your administrator.
+exit 1
+== agy log tail (B)
+I1016 22:22:46.062024      97 model_configs.go:346] Auth mode is unspecified, skipping fetchAvailableModels and returning empty response
+I1016 22:22:46.065013      67 auth_store.go:136] Using file-based secret storage at /tmp/tmp.oqYWMy6xi1/home/.config/antigravity/plugin-secrets.json
+I1016 22:22:46.065023      67 auth_store.go:136] Using file-based secret storage at /tmp/tmp.oqYWMy6xi1/home/.config/antigravity/plugin-secrets.json
+I1016 22:22:46.066480     151 manager.go:91] Migration [MIGRATION_ID_PLUGIN_ENABLEMENT] is enabled
+I1016 22:22:46.066497     151 manager.go:100] Migration [MIGRATION_ID_PLUGIN_ENABLEMENT] already has status MIGRATION_STATUS_COMPLETED, skipping
+I1016 22:22:46.066500     151 manager.go:91] Migration [MIGRATION_ID_BUILTIN_SIDECARS_TO_PLUGINS] is enabled
+I1016 22:22:46.066515     151 manager.go:100] Migration [MIGRATION_ID_BUILTIN_SIDECARS_TO_PLUGINS] already has status MIGRATION_STATUS_COMPLETED, skipping
+I1016 22:22:46.069392      67 server.go:3185] Auth succeeded, refreshing features and managers
+I1016 22:22:46.069980     160 manager.go:91] Migration [MIGRATION_ID_PLUGIN_ENABLEMENT] is enabled
+I1016 22:22:46.069997     160 manager.go:100] Migration [MIGRATION_ID_PLUGIN_ENABLEMENT] already has status MIGRATION_STATUS_COMPLETED, skipping
+I1016 22:22:46.070000     160 manager.go:91] Migration [MIGRATION_ID_BUILTIN_SIDECARS_TO_PLUGINS] is enabled
+I1016 22:22:46.070023     160 manager.go:100] Migration [MIGRATION_ID_BUILTIN_SIDECARS_TO_PLUGINS] already has status MIGRATION_STATUS_COMPLETED, skipping
+I1016 22:22:46.070404       1 auth_provider.go:952] [AuthProvider] SetEnableBusinessLogin called with enable: true
+I1016 22:22:46.071912       1 hooks_manager.go:53] loaded 1 named hooks from 1 hooks.json file(s)
+I1016 22:22:46.071931       1 printmode.go:403] Print mode: not authenticated, trying silent auth
+I1016 22:22:46.073271     257 keyring.go:64] keyringAuth: loaded token, expiry=2026-10-16 22:20:55.784132923 +0200 CEST expired=true
+I1016 22:22:46.209235       1 auth.go:157] ChainedAuth: authenticated via keyring (effective: keyring)
+I1016 22:22:46.209245       1 server_oauth.go:224] applyAuthResult: email=jasper.ginn@xebia.com, authMethod=consumer, quotaProject=
+I1016 22:22:46.209250       1 server_oauth.go:229] OAuth: authenticated successfully as jasper.ginn@xebia.com
+I1016 22:22:46.209256       1 server_oauth.go:235] b.codeAssistClient.AuthProvider (0x3db3be723e00) is same as b.cliAuth (0x3db3be723e00)
+I1016 22:22:47.462729       1 printmode.go:405] Print mode: silent auth succeeded
+W1016 22:22:47.686344     281 server_oauth.go:134] Account ineligible: Your current account is not eligible for Antigravity. Try signing in with another personal Google account. If you believe this is an error, please contact your administrator.
+E1016 22:22:47.713704       1 printmode.go:291] Print mode: eligibility check failed: Eligibility check failed: Your current account is not eligible for Antigravity. Try signing in with another personal Google account. If you believe this is an error, please contact your administrator.
+########## hook.log
+<absent>
+########## mcp.log
+<absent>
