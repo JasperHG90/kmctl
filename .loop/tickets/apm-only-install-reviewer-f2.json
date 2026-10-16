@@ -3,7 +3,7 @@
   "slug": "apm-only-install-reviewer-f2",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "9449dfa815fc57491e7aef8e42fdc95e113dc73bfe6fa6bcac59ac09a5ae4218",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "f3fc3d8272d486874d36387ec7b4dfd9de3c8e20908010086658fcbcd187efb4",
+    "started_at": "2026-10-16T22:18:19+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "f3fc3d8272d486874d36387ec7b4dfd9de3c8e20908010086658fcbcd187efb4",
   "intent": {
     "epic": "multi-harness",
     "depends_on": [],
@@ -44,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-16T22:18:12+00:00"
+  "at": "2026-10-16T22:18:19+00:00"
 }
