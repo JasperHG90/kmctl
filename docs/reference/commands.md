@@ -273,13 +273,16 @@ order:
 1. Refuses before changing anything when `uvx` is not on PATH, when
    `apm.yml`, `.claude/settings.json` or `.mcp.json` does not parse, or when
    `antigravity` is asked for with `--scope user`.
-2. Runs `apm uninstall` on an `apm.yml` entry that names
-   `JasperHG90/Knowledge-management/apm` another way than kmctl writes it, so
-   the old package's hook goes with it.
+2. Runs `apm uninstall` on an `apm.yml` entry for kmctl v0.3.0 or older:
+   the string `JasperHG90/Knowledge-management/apm#…`, or a `path: apm`
+   entry when `apm.lock.yaml` shows that old layout, so the old package's
+   hook goes with it.
 3. Writes the entry `{git: SOURCE, path: apm, ref: vVERSION}`, where
    `VERSION` is this kmctl's, and the harnesses as `targets:` into `apm.yml`
-   (`~/.apm/apm.yml` with `--scope user`). Other entries and comments are
-   kept; a missing file is created.
+   (`~/.apm/apm.yml` with `--scope user`). It replaces an earlier kmctl
+   entry in place, also one from another `--source` (the lock says where
+   kmctl came from), removes any second one, and says which it replaced.
+   Other entries and comments are kept; a missing file is created.
 4. Runs `uvx --from apm-cli==0.33.0 apm install --target HARNESSES` (with
    `-g` at user scope). For `claude`, APM writes the skills to
    `.claude/skills/`, the agent to `.claude/agents/` and the rules, with
