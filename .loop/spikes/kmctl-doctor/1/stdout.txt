@@ -1,0 +1,239 @@
+===== CASE fresh (pre-existing apm.yml: no) =====
+Downloading cpython-3.15.0-linux-aarch64-gnu (download) (30.0MiB)
+ Downloaded cpython-3.15.0-linux-aarch64-gnu (download)
+Installed 62 packages in 219ms
+[*] Created apm.yml
+[i] Targets set: antigravity, claude (persisted to apm.yml)
+[*] Validating 1 package...
+[+] ../pkg
+[*] Updated apm.yml with 1 new package(s)
+[>] Installing 1 new package...
+[>] Resolving ../pkg...
+[i] Targets: antigravity, claude  (source: --target flag)
+  [+] ../pkg (local)
+  |-- 2 rule(s) integrated -> .agents/rules/, .claude/rules/
+  |-- 1 skill(s) integrated -> .agents/skills/, .claude/skills/
+[i] Added apm_modules/ to .gitignore
+  [i] Skipped inactive experimental resolver for target 'copilot-cowork' during 
+lockfile reconciliation.
+  [i] Skipped inactive experimental resolver for target 'copilot-app' during 
+lockfile reconciliation.
+[*] Installed 1 APM dependency in 0.2s.
+--- exit 0
+--- files (excluding .git)
+./.agents/rules/demo.md
+./.agents/skills/demo/SKILL.md
+./apm.lock.yaml
+./apm_modules/_local/pkg/.apm/instructions/demo.instructions.md
+./apm_modules/_local/pkg/.apm/skills/demo/SKILL.md
+./apm_modules/_local/pkg/apm.yml
+./apm.yml
+./.claude/rules/demo.md
+./.claude/skills/demo/SKILL.md
+./.gitignore
+--- apm.yml
+name: fresh
+version: 1.0.0
+description: APM project for fresh
+author: s
+# Which agent platforms to deploy to.
+# Resolution order: --target flag > this field > auto-detect from filesystem.
+# Accepted values: agent-skills, antigravity, claude, codex, copilot, cursor, gemini, grok-build, hermes, kiro, opencode, vscode, windsurf
+targets:
+  - antigravity
+  - claude
+dependencies:
+  apm:
+    - ../pkg
+  mcp: []
+includes: auto
+scripts: {}
+--- apm.lock.yaml
+lockfile_version: '1'
+apm_version: 0.33.0
+dependencies:
+- repo_url: _local/pkg
+  name: demo-pkg
+  version: 0.1.0
+  package_type: apm_package
+  deployed_files:
+  - .agents/rules/demo.md
+  - .agents/skills/demo
+  - .agents/skills/demo/SKILL.md
+  - .claude/rules/demo.md
+  - .claude/skills/demo
+  - .claude/skills/demo/SKILL.md
+  deployed_file_hashes:
+    .agents/rules/demo.md: sha256:6cc4e86e57d93022c513b45b4644eb7d7b6722514aac01e6511cbaf88d254c34
+    .agents/skills/demo/SKILL.md: sha256:0b64ded05c3075ea938161a9cefa4072427b5af6fd640c40a25a57074bf2026b
+    .claude/rules/demo.md: sha256:9968f292d98890453de72929e9bb2f78296a321dc9f25918e8a9c50b75bd09fc
+    .claude/skills/demo/SKILL.md: sha256:0b64ded05c3075ea938161a9cefa4072427b5af6fd640c40a25a57074bf2026b
+  source: local
+  local_path: ../pkg
+deployments:
+- kind: project-relative
+  target: antigravity
+  value: .agents/rules/demo.md
+  runtime: null
+  scope: project
+  owners:
+  - ../pkg
+  active_owner: ../pkg
+  content_hash: sha256:6cc4e86e57d93022c513b45b4644eb7d7b6722514aac01e6511cbaf88d254c34
+- kind: project-relative
+  target: antigravity
+  value: .agents/skills/demo
+  runtime: null
+  scope: project
+  owners:
+  - ../pkg
+  active_owner: ../pkg
+  content_hash: null
+- kind: project-relative
+  target: antigravity
+  value: .agents/skills/demo/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - ../pkg
+  active_owner: ../pkg
+  content_hash: sha256:0b64ded05c3075ea938161a9cefa4072427b5af6fd640c40a25a57074bf2026b
+- kind: project-relative
+  target: claude
+  value: .claude/rules/demo.md
+  runtime: null
+  scope: project
+  owners:
+  - ../pkg
+  active_owner: ../pkg
+  content_hash: sha256:9968f292d98890453de72929e9bb2f78296a321dc9f25918e8a9c50b75bd09fc
+- kind: project-relative
+  target: claude
+  value: .claude/skills/demo
+  runtime: null
+  scope: project
+  owners:
+  - ../pkg
+  active_owner: ../pkg
+  content_hash: null
+- kind: project-relative
+  target: claude
+  value: .claude/skills/demo/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - ../pkg
+  active_owner: ../pkg
+  content_hash: sha256:0b64ded05c3075ea938161a9cefa4072427b5af6fd640c40a25a57074bf2026b
+SUMMARY fresh: apm.yml targets=yes lock mentions target=yes lock .claude/=yes lock .agents/=yes
+RECOVERABLE fresh: yes
+===== CASE existing (pre-existing apm.yml: yes) =====
+[*] Validating 1 package...
+[+] ../pkg
+[*] Updated apm.yml with 1 new package(s)
+[>] Installing 1 new package...
+[>] Resolving ../pkg...
+[i] Targets: antigravity, claude  (source: --target flag)
+  [+] ../pkg (local)
+  |-- 2 rule(s) integrated -> .agents/rules/, .claude/rules/
+  |-- 1 skill(s) integrated -> .agents/skills/, .claude/skills/
+[i] Added apm_modules/ to .gitignore
+
+[*] Installed 1 APM dependency in 0.1s.
+--- exit 0
+--- files (excluding .git)
+./.agents/rules/demo.md
+./.agents/skills/demo/SKILL.md
+./apm.lock.yaml
+./apm_modules/_local/pkg/.apm/instructions/demo.instructions.md
+./apm_modules/_local/pkg/.apm/skills/demo/SKILL.md
+./apm_modules/_local/pkg/apm.yml
+./apm.yml
+./.claude/rules/demo.md
+./.claude/skills/demo/SKILL.md
+./.gitignore
+--- apm.yml
+name: consumer
+version: 0.0.1
+dependencies:
+  apm:
+    - ../pkg
+--- apm.lock.yaml
+lockfile_version: '1'
+apm_version: 0.33.0
+dependencies:
+- repo_url: _local/pkg
+  name: demo-pkg
+  version: 0.1.0
+  package_type: apm_package
+  deployed_files:
+  - .agents/rules/demo.md
+  - .agents/skills/demo
+  - .agents/skills/demo/SKILL.md
+  - .claude/rules/demo.md
+  - .claude/skills/demo
+  - .claude/skills/demo/SKILL.md
+  deployed_file_hashes:
+    .agents/rules/demo.md: sha256:6cc4e86e57d93022c513b45b4644eb7d7b6722514aac01e6511cbaf88d254c34
+    .agents/skills/demo/SKILL.md: sha256:0b64ded05c3075ea938161a9cefa4072427b5af6fd640c40a25a57074bf2026b
+    .claude/rules/demo.md: sha256:9968f292d98890453de72929e9bb2f78296a321dc9f25918e8a9c50b75bd09fc
+    .claude/skills/demo/SKILL.md: sha256:0b64ded05c3075ea938161a9cefa4072427b5af6fd640c40a25a57074bf2026b
+  source: local
+  local_path: ../pkg
+deployments:
+- kind: project-relative
+  target: antigravity
+  value: .agents/rules/demo.md
+  runtime: null
+  scope: project
+  owners:
+  - ../pkg
+  active_owner: ../pkg
+  content_hash: sha256:6cc4e86e57d93022c513b45b4644eb7d7b6722514aac01e6511cbaf88d254c34
+- kind: project-relative
+  target: antigravity
+  value: .agents/skills/demo
+  runtime: null
+  scope: project
+  owners:
+  - ../pkg
+  active_owner: ../pkg
+  content_hash: null
+- kind: project-relative
+  target: antigravity
+  value: .agents/skills/demo/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - ../pkg
+  active_owner: ../pkg
+  content_hash: sha256:0b64ded05c3075ea938161a9cefa4072427b5af6fd640c40a25a57074bf2026b
+- kind: project-relative
+  target: claude
+  value: .claude/rules/demo.md
+  runtime: null
+  scope: project
+  owners:
+  - ../pkg
+  active_owner: ../pkg
+  content_hash: sha256:9968f292d98890453de72929e9bb2f78296a321dc9f25918e8a9c50b75bd09fc
+- kind: project-relative
+  target: claude
+  value: .claude/skills/demo
+  runtime: null
+  scope: project
+  owners:
+  - ../pkg
+  active_owner: ../pkg
+  content_hash: null
+- kind: project-relative
+  target: claude
+  value: .claude/skills/demo/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - ../pkg
+  active_owner: ../pkg
+  content_hash: sha256:0b64ded05c3075ea938161a9cefa4072427b5af6fd640c40a25a57074bf2026b
+SUMMARY existing: apm.yml targets=no lock mentions target=yes lock .claude/=yes lock .agents/=yes
+RECOVERABLE existing: yes
