@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "release-flow",
+  "n": 1,
+  "command": "/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-release-flow/version-source.sh",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-release-flow/version-source.sh",
+      "copy": "files/version-source.sh"
+    }
+  ],
+  "where": "worktree",
+  "head": "90ea08d0327e2ae5bf737ab73e926cf5db6e0c6e",
+  "fingerprint": "3aa4e479b171bdab651b24e31fd46f278a6aee4f9c34786088e44dd48592aea5",
+  "started_at": "2026-10-16T05:28:25+00:00",
+  "finished_at": "2026-10-16T05:28:32+00:00",
+  "duration_seconds": 7.575,
+  "timeout_seconds": 300.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261015",
+  "moved_from": null
+}

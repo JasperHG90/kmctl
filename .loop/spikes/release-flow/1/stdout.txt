@@ -1,0 +1,18 @@
+ plugin/.claude-plugin/plugin.json | 2 +-
+ pyproject.toml                    | 7 ++++++-
+ 2 files changed, 7 insertions(+), 2 deletions(-)
+== (a) uv build
+kmctl-0.2.0-py3-none-any.whl
+kmctl-0.2.0.tar.gz
+PASS wheel name: kmctl-0.2.0-py3-none-any.whl
+PASS sdist name: kmctl-0.2.0.tar.gz
+-- sdist holds manifest:
+kmctl-0.2.0/plugin/.claude-plugin/plugin.json
+PASS wheel install --version: kmctl 0.2.0
+== (a2) build wheel from sdist
+PASS wheel from sdist: kmctl-0.2.0-py3-none-any.whl
+== (b) git+file bare remote at tag
+PASS git tag install --version: kmctl 0.2.0
+== (c) git archive folder, no .git
+PASS archive folder install --version: kmctl 0.2.0
+fail=0
