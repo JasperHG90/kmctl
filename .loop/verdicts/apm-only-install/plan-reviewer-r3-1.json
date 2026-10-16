@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "ADR 0013-route consumers are migrated by apm uninstall before the rewrite (spike:apm-only-install/6). Unchanged since round 2.",
+      "anchor": ".loop/plans/apm-only-install.md",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "The old claude plugin, okf plugin and marketplace are removed by uninstall, prune and marketplace remove (spike:apm-only-install/7). Unchanged since round 2.",
+      "anchor": ".loop/plans/apm-only-install.md",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "resolved",
+      "claim": "Two okf MCP servers when okf-skills is a direct dependency. The plan now adds no okf-bundle when any server in .mcp.json (or the user-scope config) names okf_mcp.py, says which server it kept, and drops the how-to advice that created the case. r6b fails when a second okf server is added.",
+      "anchor": ".loop/plans/apm-only-install.md",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r6b"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "0cab79b9bd406ef40750a280dbb08b02aa5b0a404a63948fc9c3477f5ece3abc"
+  },
+  "by": "process:loopctl/2.1.1.dev173+ga4f6ce93a.d20261016",
+  "at": "2026-10-16T20:30:55+00:00"
+}
