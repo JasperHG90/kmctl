@@ -8,7 +8,23 @@
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "4cfb8ec9a04b5293502d21272cd0085ee49dcfae1bf24e9ad385f27dab42db82",
+    "tree": "57725650ba192d15e06cbe34f0b9dfc64e3245d2",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "cleared-unreviewed",
+        "by": "judgement",
+        "judgement": "j-20261016T105152+0000-6374dcdc",
+        "paths": [
+          "tests/test_repo_apm.py"
+        ]
+      }
+    ],
+    "at": "2026-10-16T10:51:53+00:00"
+  },
   "ask": null,
   "split": "j-20261015T173711+0000-52dd2e6f",
   "split_plan_hash": "2e5a528ae0ff0bb4ce82766e0227fbb02fb97a82299263629827b9281b39c684",
@@ -155,5 +171,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
-  "at": "2026-10-16T10:51:44+00:00"
+  "at": "2026-10-16T10:51:53+00:00"
 }
