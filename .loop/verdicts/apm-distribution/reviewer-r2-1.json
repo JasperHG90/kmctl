@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "release-tag.yml's before-commit `current || true` swallows apm.yml refusals and reads them as \"raised\"; reading only the manifest for OLD keeps the lowered-version guard",
+      "anchor": ".github/workflows/release-tag.yml",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "APM page step 3 wording, and the v0.2.0 pin before the tag exists",
+      "anchor": "docs/how-to/install-kmctl-with-apm.md",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "7ceedca28510e81966edfaa5a27b18097a25358171da6322857e0e752d39c787",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
+  "at": "2026-10-16T11:14:32+00:00"
+}
