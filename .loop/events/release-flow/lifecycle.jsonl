@@ -7,3 +7,4 @@
 {"at": "2026-10-16T06:02:17+00:00", "by": "advance", "from": "planning", "kind": "transition", "schema_version": "1.0", "to": "ready"}
 {"at": "2026-10-16T09:50:09+00:00", "hash": "b553e43272356aa2cf8cc702627c769a961ef1daf87574b0b5423a847dcdc82f", "kind": "signoff", "schema_version": "1.0", "signer": "human:jasperginn@gmail.com"}
 {"at": "2026-10-16T09:52:54+00:00", "by": "advance", "from": "ready", "kind": "transition", "schema_version": "1.0", "to": "building"}
+{"at": "2026-10-16T10:16:13+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "building"}
