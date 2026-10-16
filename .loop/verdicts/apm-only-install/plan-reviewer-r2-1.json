@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "ADR 0013-route consumers were not migrated. The plan now runs apm uninstall on the old entry before rewriting apm.yml, and spike:apm-only-install/6 shows that this removes the old hook and files and leaves one kmctl entry across two installs.",
+      "anchor": ".loop/plans/apm-only-install.md",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "The okf plugin and marketplaces left by old installs. The plan now runs uninstall, prune and marketplace remove, backed by spike:apm-only-install/7.",
+      "anchor": ".loop/plans/apm-only-install.md",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "open",
+      "claim": "Two okf MCP servers for repositories that followed today's APM how-to. docs/how-to/install-kmctl-with-apm.md tells ADR 0013 users to get okf's MCP server by adding scaccogatto/okf-skills to their apm.yml. In that case okf is a direct dependency, so APM writes its server as `bundle` into .mcp.json (spike:kmctl-doctor/3, lock mcp_configs.bundle). The migration in Old installs (b) uninstalls only the JasperHG90/Knowledge-management/apm entry, so the direct okf-skills entry and its `bundle` server stay. kmctl then adds `okf-bundle` beside it: two okf servers that expose the same three tools. The plan should say what install does when apm.yml names okf-skills directly, or .mcp.json already holds an APM-managed okf server. For example, it could remove the direct entry with apm uninstall (kmctl's package pins okf anyway), or skip its own server and report this. r6b should then cover that case. The --trust-transitive-mcp variant is fine: APM's uninstall drops stale managed servers (apm_cli/commands/uninstall/engine.py _cleanup_stale_mcp).",
+      "anchor": "docs/how-to/install-kmctl-with-apm.md:17",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r6b"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "9f1cfd15be4648d4d3418eca6d7573b859ab31d9e569e3e37c2cfc3b2a748812"
+  },
+  "by": "process:loopctl/2.1.1.dev173+ga4f6ce93a.d20261016",
+  "at": "2026-10-16T20:29:48+00:00"
+}
