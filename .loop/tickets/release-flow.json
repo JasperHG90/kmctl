@@ -10,8 +10,8 @@
   "blocker": null,
   "fix": null,
   "ask": null,
-  "split": "j-20261016T052240+0000-becc4f30",
-  "split_plan_hash": "85e7dea5c649b127a702029b600d53a8063387bcbc69059913ccd717416e97d5",
+  "split": "j-20261016T052305+0000-a12075e3",
+  "split_plan_hash": "07e61afdfa8430b072da990fd594a0b6f4d66c67fae93414f8a37c326ccd2a1c",
   "split_hold": true,
   "commit_sha": null,
   "closed_outside": false,
@@ -44,5 +44,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261015",
-  "at": "2026-10-16T05:22:40+00:00"
+  "at": "2026-10-16T05:23:05+00:00"
 }
