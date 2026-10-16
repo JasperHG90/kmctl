@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "release-flow",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 2,
@@ -38,7 +38,7 @@
   "split": "j-20261016T055847+0000-cf9637e1",
   "split_plan_hash": "5e096f102ac0445b6d20d8408feaad3bba9c9d39a2d20512bd216cd1f5d9c4dc",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "248f72a4ec748c9f302c8435a4ca48887b23e5af",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -172,8 +172,14 @@
       "to": "verifying",
       "at": "2026-10-16T10:24:45+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-16T10:27:44+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
-  "at": "2026-10-16T10:27:39+00:00"
+  "at": "2026-10-16T10:27:44+00:00"
 }
