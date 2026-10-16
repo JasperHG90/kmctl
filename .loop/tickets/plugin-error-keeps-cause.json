@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "slug": "plugin-error-keeps-cause",
-  "stage": "ready",
-  "attempts": 0,
+  "stage": "building",
+  "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
@@ -17,8 +17,8 @@
   "closed_outside": false,
   "dropped": false,
   "archived": false,
-  "worktree": null,
-  "branch": null,
+  "worktree": "/home/vscode/kmctl.worktrees/plugin-error-keeps-cause",
+  "branch": "loop/plugin-error-keeps-cause",
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
@@ -101,8 +101,14 @@
       "to": "ready",
       "at": "2026-10-15T19:25:22+00:00",
       "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-10-16T05:59:05+00:00",
+      "by": "advance"
     }
   ],
-  "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261015",
-  "at": "2026-10-15T19:25:22+00:00"
+  "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
+  "at": "2026-10-16T05:59:05+00:00"
 }
