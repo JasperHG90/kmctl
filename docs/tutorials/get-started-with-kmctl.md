@@ -190,8 +190,9 @@ together.
 ## What you learned
 
 - `kmctl init` sets up `docs/`, `.okf/`, the knowledge rules and a
-  `CLAUDE.md` block, and keeps a file that is already there, apart from its
-  block in `CLAUDE.md`.
+  `CLAUDE.md` block, and keeps a file that is already there, apart from the
+  knowledge rules and its block in `CLAUDE.md`. After upgrading kmctl,
+  `kmctl update` refreshes those two.
 - `kmctl new decision` writes the structure of a record (number, front matter,
   index entry, log line) and you write the prose.
 - `kmctl check` fails when an index and its folder disagree.

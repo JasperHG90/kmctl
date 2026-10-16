@@ -53,31 +53,35 @@ def _root(
     """kmctl: keep a repository's docs/ and .okf/ knowledge current."""
 
 
-@app.command(
-    epilog=(
-        "Examples:\n\n"
-        "  kmctl init\n\n"
-        "  kmctl init --path ../other-repo --json\n\n"
-        "It writes docs/README.md; .okf/index.md, log.md and manifesto.md; the "
-        "knowledge rules okf-bundle, docs-layout, diagrams-stay-current and "
-        "manifesto-invariants in .claude/rules/; a kmctl block (where knowledge "
-        "lives and the agent's duties) in each CLAUDE.md and AGENTS.md; a new "
-        "CLAUDE.md when there is none, holding only @AGENTS.md when AGENTS.md "
-        "exists (Claude Code then reads AGENTS.md and its block once) and the "
-        "block otherwise; and the first decision, Keep project knowledge in an "
-        "OKF bundle, when no record has that title.\n\n"
-        "A CLAUDE.md with an @AGENTS.md line, beside an AGENTS.md, gets no block. "
-        "A CLAUDE.md or AGENTS.md symlink that is dangling or points outside the "
-        "repository is left alone with a warning naming it and its target; when "
-        "AGENTS.md is such a link and there is no CLAUDE.md, init writes no "
-        "CLAUDE.md. A symlink inside the repository is written through.\n\n"
-        "Run it again at any time: a file that already exists is kept, with two "
-        "exceptions. The kmctl block between <!-- kmctl:start --> and "
-        "<!-- kmctl:end --> is added or replaced, and no other text in the file "
-        "changes. Writing the first decision into a kept bundle adds its index "
-        "entry and log line."
-    ),
+_INIT_EPILOG = (
+    "Examples:\n\n"
+    "  kmctl init\n\n"
+    "  kmctl init --path ../other-repo --json\n\n"
+    "It writes docs/README.md; .okf/index.md, log.md and manifesto.md; the "
+    "knowledge rules okf-bundle, docs-layout, diagrams-stay-current and "
+    "manifesto-invariants in .claude/rules/; a kmctl block (where knowledge "
+    "lives and the agent's duties) in each CLAUDE.md and AGENTS.md; a new "
+    "CLAUDE.md when there is none, holding only @AGENTS.md when AGENTS.md "
+    "exists (Claude Code then reads AGENTS.md and its block once) and the "
+    "block otherwise; and the first decision, Keep project knowledge in an "
+    "OKF bundle, when no record has that title.\n\n"
+    "A CLAUDE.md with an @AGENTS.md line, beside an AGENTS.md, gets no block. "
+    "A CLAUDE.md or AGENTS.md symlink that is dangling or points outside the "
+    "repository is left alone with a warning naming it and its target; when "
+    "AGENTS.md is such a link and there is no CLAUDE.md, init writes no "
+    "CLAUDE.md. A symlink inside the repository is written through.\n\n"
+    "Run it again at any time, or as kmctl update after upgrading kmctl: a "
+    "file that already exists is kept, with three exceptions. The four "
+    "knowledge rules are kmctl's: one that differs from this kmctl's copy is "
+    "replaced, edits included, and other files in .claude/rules/ are never "
+    "touched. The kmctl block between <!-- kmctl:start --> and "
+    "<!-- kmctl:end --> is added or replaced, and no other text in the file "
+    "changes. Writing the first decision into a kept bundle adds its index "
+    "entry and log line."
 )
+
+
+@app.command(epilog=_INIT_EPILOG)
 def init(
     path: Annotated[
         Path,
@@ -97,7 +101,7 @@ def init(
         ),
     ] = False,
 ) -> None:
-    """Create docs/, a starter .okf/ bundle, knowledge rules and a CLAUDE.md block, keeping existing files."""
+    """Create docs/, a starter .okf/ bundle, knowledge rules and a CLAUDE.md block; re-run to refresh the rules and block."""
     result = scaffold(path)
     if as_json:
         typer.echo(json.dumps(asdict(result)))
@@ -105,9 +109,12 @@ def init(
     for rel in result.created:
         typer.echo(f"created {rel}")
     for rel in result.updated:
-        why = (
-            "kmctl block" if Path(rel).name in AGENT_FILES else "first decision's entry"
-        )
+        if Path(rel).name in AGENT_FILES:
+            why = "kmctl block"
+        elif rel.startswith(".claude/rules/"):
+            why = "replaced with kmctl's rule"
+        else:
+            why = "first decision's entry"
         typer.echo(f"updated {rel} ({why})")
     for rel in result.skipped:
         typer.echo(f"kept    {rel} (already there)")
@@ -124,6 +131,13 @@ def init(
         )
     else:
         typer.echo("Nothing to do: every file already exists.")
+
+
+app.command(
+    "update",
+    epilog=_INIT_EPILOG,
+    help="Same as kmctl init. Run it after upgrading kmctl to refresh the knowledge rules and the CLAUDE.md block.",
+)(init)
 
 
 @app.command(

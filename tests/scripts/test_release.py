@@ -171,22 +171,25 @@ def test_release_py_docs_start_with_five_install_lines() -> None:
 def test_release_py_set_writes_the_manifest_and_the_five_doc_lines(
     tmp_path: Path,
 ) -> None:
-    """``set`` writes the version, keeps the manifest's other keys and pins each doc line."""
+    """``set`` writes the version, keeps the manifest's other keys and pins each doc line.
+
+    The target is far past any real release, so it never equals the repository's version.
+    """
     root = _repo(tmp_path)
     before = json.loads((root / MANIFEST).read_text())
 
-    res = _run(root, "set", "0.2.0")
+    res = _run(root, "set", "9.9.9")
 
     assert res.returncode == 0, res.stderr
-    assert json.loads((root / MANIFEST).read_text()) == {**before, "version": "0.2.0"}
+    assert json.loads((root / MANIFEST).read_text()) == {**before, "version": "9.9.9"}
     changed = set((root / MANIFEST).read_text().splitlines()) ^ set(
         (ROOT / MANIFEST).read_text().splitlines()
     )
     assert changed == {
         f'  "version": "{_manifest_version(ROOT)}",',
-        '  "version": "0.2.0",',
+        '  "version": "9.9.9",',
     }
-    assert _refs(root) == ["v0.2.0"] * 5
+    assert _refs(root) == ["v9.9.9"] * 5
     assert res.stdout.splitlines() == [
         f"wrote {p}" for p in (MANIFEST, *APM_FILES, *DOC_FILES, APM_DOC)
     ]
