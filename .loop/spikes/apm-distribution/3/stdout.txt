@@ -1,0 +1,74 @@
+== kmctl HEAD: 36b55243896afe92d9a7fc7424fc786364332e93
+Agent Package Manager (APM) CLI version 0.33.0
+== R1: root dependencies.apm, consumer installs root
+-- consumer r1: apm install exit 0
+   rule in consumer: YES; kmctl skills in consumer: no
+     ./.claude/rules/plain-language.md
+== R2: root devDependencies.apm, consumer installs root
+-- consumer r2: apm install exit 0
+   rule in consumer: no; kmctl skills in consumer: no
+-- R2 source repo itself: apm install
+   exit 0; rule installed in source repo: YES
+18:  is_dev: true
+== R3a: root dependencies.apm, consumer installs path: plugin (no plugin/apm.yml)
+-- consumer r3a: apm install exit 0
+   rule in consumer: no; kmctl skills in consumer: YES
+     ./.claude/agents/kmctl-auditor.md
+     ./.claude/apm-hooks.json
+     ./.claude/settings.json
+     ./.claude/skills/architecture-review/SKILL.md
+     ./.claude/skills/audit/evals/evals.json
+     ./.claude/skills/audit/evals/results.md
+     ./.claude/skills/audit/evals/sample-findings.json
+     ./.claude/skills/audit/SKILL.md
+     ./.claude/skills/continue/evals/evals.json
+     ./.claude/skills/continue/evals/results.md
+     ./.claude/skills/continue/SKILL.md
+     ./.claude/skills/decision-log-review/SKILL.md
+     ./.claude/skills/handoff/evals/evals.json
+     ./.claude/skills/handoff/evals/results.md
+     ./.claude/skills/handoff/SKILL.md
+     ./.claude/skills/practices-review/SKILL.md
+     ./.claude/skills/write-docs/evals/evals.json
+     ./.claude/skills/write-docs/evals/grade.py
+     ./.claude/skills/write-docs/evals/results.md
+     ./.claude/skills/write-docs/references/explanation.md
+     ./.claude/skills/write-docs/references/how-to.md
+     ./.claude/skills/write-docs/references/reference.md
+     ./.claude/skills/write-docs/references/tutorial.md
+     ./.claude/skills/write-docs/SKILL.md
+== R3b: root dependencies.apm, consumer installs path: plugin (plugin/apm.yml, no deps)
+-- consumer r3b: apm install exit 0
+   rule in consumer: no; kmctl skills in consumer: YES
+     ./.claude/agents/kmctl-auditor.md
+     ./.claude/apm-hooks.json
+     ./.claude/settings.json
+     ./.claude/skills/architecture-review/SKILL.md
+     ./.claude/skills/audit/evals/evals.json
+     ./.claude/skills/audit/evals/results.md
+     ./.claude/skills/audit/evals/sample-findings.json
+     ./.claude/skills/audit/SKILL.md
+     ./.claude/skills/continue/evals/evals.json
+     ./.claude/skills/continue/evals/results.md
+     ./.claude/skills/continue/SKILL.md
+     ./.claude/skills/decision-log-review/SKILL.md
+     ./.claude/skills/handoff/evals/evals.json
+     ./.claude/skills/handoff/evals/results.md
+     ./.claude/skills/handoff/SKILL.md
+     ./.claude/skills/practices-review/SKILL.md
+     ./.claude/skills/write-docs/evals/evals.json
+     ./.claude/skills/write-docs/evals/grade.py
+     ./.claude/skills/write-docs/evals/results.md
+     ./.claude/skills/write-docs/references/explanation.md
+     ./.claude/skills/write-docs/references/how-to.md
+     ./.claude/skills/write-docs/references/reference.md
+     ./.claude/skills/write-docs/references/tutorial.md
+     ./.claude/skills/write-docs/SKILL.md
+== V1: plugin/apm.yml with no version: field
+-- consumer v1: apm install exit 0
+   kmctl skills in consumer: YES
+== V2: consumer apm.yml with no version: field
+   exit 1
+[x] Failed to parse apm.yml: Missing required field 'version' in apm.yml
+[x] Install failed after 0.0s.
+== RESULT: R2(devDependencies)=1 R3a=0 R3b=0 (0 = rule kept out, skills in)
