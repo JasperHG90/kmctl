@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev72+ge53d4208b.d20261016
-  at: '2026-10-16T20:24:08+00:00'
+  at: '2026-10-16T20:24:28+00:00'
 slug: kmctl-doctor
 n: 4
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike kmctl-doctor/4
@@ -24,7 +24,11 @@ The command exited 1:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note kmctl-doctor 4`.
+Answers review finding p3. `unshare -rn` is not allowed in this container, so the run watched `connect()` with strace instead of blocking the network.
+After warming the cache, `uv tool run --offline --from apm-cli==0.33.0 apm --version` exited 0 and printed 0.33.0. It made 0 AF_INET/AF_INET6 connects and changed no file under the scratch HOME, so this half holds.
+`claude plugin list --json` (2.1.301) exited 0 and printed `[]`, but it made 4 inet connects (2 DNS on :53, 2 to 160.79.104.10:443). It also wrote `$CLAUDE_CONFIG_DIR/.claude.json` (firstStartTime, machineID, userID, migration flags) plus a `backups/.claude.json.backup.*` file.
+So doctor cannot treat `claude plugin list` as a read-only, offline probe. The risk is real for that half and is not settled.
+Limits: a fresh, empty CLAUDE_CONFIG_DIR, so some writes may be first-run only. Not tested with CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC. The real ~/.claude/agents, rules and skills/audit stayed absent.
 
 ## Files
 
