@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "kmctl-doctor",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
@@ -38,7 +38,7 @@
   "split": "j-20261016T202510+0000-d0f890e0",
   "split_plan_hash": "a7f58193c81833af200afce33be86445faa1638b9749323d16496d27b53f5d57",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "0d3ebf2dfa4d4fc2a571d3f0dd6fd22f94a0a0d6",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -193,8 +193,14 @@
       "to": "verifying",
       "at": "2026-10-16T22:13:05+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-16T22:16:16+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-16T22:16:12+00:00"
+  "at": "2026-10-16T22:16:16+00:00"
 }
