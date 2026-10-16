@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev72+ge53d4208b.d20261016
-  at: '2026-10-16T10:08:53+00:00'
+  at: '2026-10-16T10:11:10+00:00'
 slug: apm-distribution
 n: 2
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike apm-distribution/2
@@ -24,7 +24,9 @@ The command exited 0:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note apm-distribution 2`.
+APM 0.33.0 installed kmctl's `plugin/` as it is, as a git subfolder package (`git: <repo>`, `path: plugin`, from a local smart-HTTP git server because APM rejects `file://` git URLs). It needs no apm.yml, because APM reads `plugin/.claude-plugin/plugin.json` as a Claude plugin. All 7 skill folders landed byte for byte at `.claude/skills/<name>/` (evals/ and references/ included), the agent at `.claude/agents/kmctl-auditor.md`, and the SessionStart hook in `.claude/settings.json` (APM adds `"matcher": "*"` and writes `.claude/apm-hooks.json`). The same holds with an apm.yml in `plugin/` that declares no dependencies.
+Installing the repo root fails: "Not a valid APM package: no apm.yml, SKILL.md, hooks, or plugin structure". So the package is the `plugin/` subfolder, and no `.apm/` or root `skills/` copy is needed.
+Settles risk 1: the layout needs no second copy. Limit: local git server, not GitHub. GitHub would use the same `path:` route, written `JasperHG90/Knowledge-management/plugin`.
 
 ## Files
 
