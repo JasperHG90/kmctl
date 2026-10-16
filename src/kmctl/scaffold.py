@@ -1,7 +1,8 @@
 """Set a repository up with docs/, an OKF bundle, knowledge rules and an agent-file block.
 
-It never touches a file that exists, with two exceptions: the kmctl block in
-CLAUDE.md and AGENTS.md, and the first decision's index entry and log line
+It never touches a file that exists, with three exceptions: the four
+knowledge rules it ships, which it replaces when they differ; the kmctl block
+in CLAUDE.md and AGENTS.md; and the first decision's index entry and log line
 (ADR 0011).
 """
 
@@ -101,9 +102,11 @@ class ScaffoldResult:
     """What ``scaffold`` wrote, what it left alone, and what the user must finish by hand.
 
     Paths are relative to the root. ``scaffold`` never edits a kept file, with
-    two exceptions, both listed in ``updated``: it adds or replaces the kmctl
-    block in CLAUDE.md and AGENTS.md, and when it writes the first decision
-    into a kept bundle it adds its index entry and log line. A new CLAUDE.md
+    three exceptions, all listed in ``updated``: it replaces a knowledge rule
+    in .claude/rules/ that differs from the one kmctl ships, it adds or
+    replaces the kmctl block in CLAUDE.md and AGENTS.md, and when it writes
+    the first decision into a kept bundle it adds its index entry and log
+    line. A rule that already matches is listed in ``skipped``. A new CLAUDE.md
     beside an AGENTS.md holds only ``@AGENTS.md`` and is listed in
     ``created``. A warning names a kept file that does not point at a file
     ``scaffold`` created, and a CLAUDE.md or AGENTS.md symlink left alone
@@ -164,15 +167,32 @@ def _write_rules(root: Path, result: ScaffoldResult) -> None:
     for name in RULE_FILES:
         rel = f".claude/rules/{name}"
         path = root / rel
-        if path.exists():
+        packaged = (
+            files("kmctl").joinpath("repo_rules", name).read_text(encoding="utf-8")
+        )
+        unsafe = _unsafe_link(root, path)
+        if unsafe is not None:
+            result.warnings.append(
+                f".claude/rules/{unsafe}, so kmctl left it alone; "
+                "fix the link, then run kmctl init again"
+            )
             result.skipped.append(rel)
             continue
+        if path.exists() and not path.is_file():
+            result.warnings.append(
+                f"{rel} is not a file, so kmctl left it alone; remove it, then run kmctl init again"
+            )
+            result.skipped.append(rel)
+            continue
+        if not path.exists():
+            result.created.append(rel)
+        elif path.read_bytes() == packaged.encode("utf-8"):
+            result.skipped.append(rel)
+            continue
+        else:
+            result.updated.append(rel)
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(
-            files("kmctl").joinpath("repo_rules", name).read_text(encoding="utf-8"),
-            encoding="utf-8",
-        )
-        result.created.append(rel)
+        path.write_text(packaged, encoding="utf-8")
 
 
 def _with_block(text: str) -> str | None:
@@ -349,8 +369,9 @@ def scaffold(root: Path, now: datetime | None = None) -> ScaffoldResult:
     and AGENTS.md; a new CLAUDE.md when there is none, holding only
     ``@AGENTS.md`` beside an AGENTS.md and the block otherwise; and the decision "Keep project
     knowledge in an OKF bundle" when no record has that title. A file that
-    exists is kept, except for the kmctl block and the first decision's index
-    entry and log line. A CLAUDE.md that imports ``@AGENTS.md`` gets no block.
+    exists is kept, except for a knowledge rule that differs from kmctl's,
+    which is replaced, the kmctl block, and the first decision's index entry
+    and log line. A CLAUDE.md that imports ``@AGENTS.md`` gets no block.
     A CLAUDE.md or AGENTS.md symlink that is dangling or points outside the
     repository is left alone with a warning; when AGENTS.md is such a link and
     there is no CLAUDE.md, no CLAUDE.md is written.
@@ -366,7 +387,8 @@ def scaffold(root: Path, now: datetime | None = None) -> ScaffoldResult:
     -------
     ScaffoldResult
         The files created, the files that already existed and were kept, the
-        kept files it changed (an agent file's kmctl block, or the first decision's index entry and log line), and a warning for
+        kept files it changed (a replaced knowledge rule, an agent file's kmctl
+        block, or the first decision's index entry and log line), and a warning for
         each kept file kmctl could not finish.
     """
     result = ScaffoldResult()

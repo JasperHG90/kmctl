@@ -184,16 +184,94 @@ def test_init_writes_rule_files_for_any_repository(tmp_path: Path) -> None:
         assert not re.search(r"loopctl|ticket|\.loop/", text, re.IGNORECASE), rel
 
 
-def test_init_rule_files_keep_an_existing_one(tmp_path: Path) -> None:
+def _packaged(name: str) -> str:
+    return (ROOT / "src" / "kmctl" / "repo_rules" / name).read_text()
+
+
+def test_init_overwrites_edited_rule(tmp_path: Path) -> None:
+    _init(tmp_path)
     mine = tmp_path / ".claude" / "rules" / "okf-bundle.md"
-    mine.parent.mkdir(parents=True)
     mine.write_text("my own rule\n")
+
+    result = _init(tmp_path, "--json")
+
+    assert result.exit_code == 0, result.output
+    assert mine.read_text() == _packaged("okf-bundle.md")
+    report = json.loads(result.stdout)
+    assert ".claude/rules/okf-bundle.md" in report["updated"]
+    assert ".claude/rules/okf-bundle.md" not in report["skipped"]
+
+
+def test_init_names_a_replaced_rule(tmp_path: Path) -> None:
+    _init(tmp_path)
+    (tmp_path / ".claude" / "rules" / "okf-bundle.md").write_text("old\n")
 
     result = _init(tmp_path)
 
-    assert mine.read_text() == "my own rule\n"
-    assert "kept    .claude/rules/okf-bundle.md" in result.stdout
-    assert (tmp_path / ".claude" / "rules" / "docs-layout.md").is_file()
+    assert (
+        "updated .claude/rules/okf-bundle.md (replaced with kmctl's rule)"
+        in result.stdout
+    )
+
+
+def test_init_skips_current_rule(tmp_path: Path) -> None:
+    _init(tmp_path)
+    rule = tmp_path / ".claude" / "rules" / "okf-bundle.md"
+    before = rule.stat().st_mtime_ns
+
+    result = _init(tmp_path, "--json")
+
+    report = json.loads(result.stdout)
+    assert ".claude/rules/okf-bundle.md" in report["skipped"]
+    assert ".claude/rules/okf-bundle.md" not in report["updated"] + report["created"]
+    assert rule.stat().st_mtime_ns == before
+
+
+def test_init_leaves_other_rules(tmp_path: Path) -> None:
+    other = tmp_path / ".claude" / "rules" / "my-rule.md"
+    other.parent.mkdir(parents=True)
+    other.write_text("mine\n")
+    before = other.stat().st_mtime_ns
+
+    for _ in range(2):
+        report = json.loads(_init(tmp_path, "--json").stdout)
+        listed = report["created"] + report["updated"] + report["skipped"]
+        assert ".claude/rules/my-rule.md" not in listed
+
+    assert other.read_text() == "mine\n"
+    assert other.stat().st_mtime_ns == before
+
+
+def test_init_leaves_a_rule_symlink_outside_the_repo(tmp_path: Path) -> None:
+    outside = tmp_path / "outside.md"
+    outside.write_text("not ours\n")
+    repo = tmp_path / "repo"
+    rule = repo / ".claude" / "rules" / "okf-bundle.md"
+    rule.parent.mkdir(parents=True)
+    rule.symlink_to(outside)
+
+    report = json.loads(_init(repo, "--json").stdout)
+
+    assert outside.read_text() == "not ours\n"
+    assert ".claude/rules/okf-bundle.md" in report["skipped"]
+    assert any(
+        ".claude/rules/okf-bundle.md is a symlink" in w for w in report["warnings"]
+    )
+
+
+def test_init_leaves_a_folder_at_a_rule_path(tmp_path: Path) -> None:
+    folder = tmp_path / ".claude" / "rules" / "okf-bundle.md"
+    folder.mkdir(parents=True)
+
+    result = _init(tmp_path, "--json")
+
+    assert result.exit_code == 0, result.output
+    report = json.loads(result.stdout)
+    assert folder.is_dir()
+    assert ".claude/rules/okf-bundle.md" in report["skipped"]
+    assert any(
+        ".claude/rules/okf-bundle.md is not a file" in w for w in report["warnings"]
+    )
 
 
 # The agent-file block (r2)

@@ -126,7 +126,7 @@ exit codes. Each verb calls one module:
 
 | Verb | Module | Writes |
 |---|---|---|
-| `kmctl init` | `scaffold.py`, with the packaged `repo_rules/` and `concepts.py` for the first decision | `docs/README.md`, a starter `.okf/`, the four knowledge rules in `.claude/rules/`, the kmctl block in `CLAUDE.md` and `AGENTS.md`, and decision "Keep project knowledge in an OKF bundle"; it keeps every file that exists except for that block and the decision's index entry and log line (ADR 0011) |
+| `kmctl init`, `kmctl update` (an alias) | `scaffold.py`, with the packaged `repo_rules/` and `concepts.py` for the first decision | `docs/README.md`, a starter `.okf/`, the four knowledge rules in `.claude/rules/`, the kmctl block in `CLAUDE.md` and `AGENTS.md`, and decision "Keep project knowledge in an OKF bundle"; it keeps every file that exists except for those four rules, which it replaces when they differ from the packaged copy, that block, and the decision's index entry and log line (ADR 0011) |
 | `kmctl check` | `checks.py` | nothing |
 | `kmctl briefing` | `briefing.py`, with `review_due.py`, `handoffs.py`, the packaged `rules/`, and `plugin.py` for the skills it names | nothing |
 | `kmctl review due` | `review_due.py` | nothing |
@@ -218,7 +218,7 @@ agree (ADR 0012).
 - Invariants: I1 (the SessionStart hook never blocks), I2 (the auditor and
   the action's audit mode read only), I3 (the hook prints `kmctl briefing`),
   I4 (`okf.py` reads OKF fields for every module).
-- Verbs: `kmctl init`, `kmctl check`, `kmctl briefing`, `kmctl review due`,
+- Verbs: `kmctl init`, `kmctl update`, `kmctl check`, `kmctl briefing`, `kmctl review due`,
   `kmctl handoffs`, `kmctl new decision`, `kmctl new practice`,
   `kmctl new proposal`, `kmctl new prototype`, `kmctl new handoff`,
   `kmctl new doc`, `kmctl schema`, `kmctl decision supersede`, `kmctl plugin install`,

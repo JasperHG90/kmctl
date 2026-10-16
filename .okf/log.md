@@ -83,3 +83,5 @@
 ## 2026-10-16
 
 - Added `decisions/0012-releases-come-from-ci` with `kmctl new decision`.
+- Corrected `decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code`: init replaces the four knowledge rules when they differ, and `kmctl update` is an alias of init.
+- Updated `architecture/overview`: `kmctl init` replaces the four knowledge rules when they differ, and `kmctl update` is its alias.

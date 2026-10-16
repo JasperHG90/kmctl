@@ -114,3 +114,22 @@ name the code a concept describes with `kmctl new --source` and to give
 anything time-bound a `--stale-after`, so `kmctl review due` can flag the
 concept when that code changes or the date passes (ticket new-concept-freshness).
 
+## Correction, 2026-10-16
+
+The Decision said an existing rule file of the same name is kept, and the
+Consequences said an upgrade does not reach an edited rule. In practice an
+upgrade reached no copy at all, edited or not, so every repository kept the
+rules of the kmctl that first set it up. The operator asked for the rules to
+be overwritten and for a `kmctl update` verb, and rejected tracking hashes to
+spare edited copies. So:
+
+- The four rule files belong to kmctl. Each run of `kmctl init` replaces one
+  that differs from the packaged copy, edits included, and lists it under
+  `updated`; one that matches is listed under `skipped` and not rewritten.
+  Other files in `.claude/rules/` are never read or written. A rule that is a
+  symlink dangling or pointing outside the repository is left alone with a
+  warning, as `CLAUDE.md` and `AGENTS.md` are.
+- `kmctl update` is the same command as `kmctl init`, for users who look for
+  an update verb after upgrading.
+- A repository that wants its own version of one of these rules puts it under
+  another name (ticket update-refreshes-rules).

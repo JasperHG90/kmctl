@@ -102,13 +102,16 @@ loads the new rules. Then ask in plain words:
 
 ```
 kmctl init                       # docs/, a starter .okf/ bundle, rules and a CLAUDE.md block
+kmctl update                     # after upgrading kmctl: refresh the rules and the block
 kmctl new decision 'Store data in SQLite' --description 'One SQLite file, no database server.'
 kmctl new doc how-to 'Back up the database' --description 'Copy the SQLite file safely.'
 kmctl check                      # indexes agree with their folders, links resolve
 kmctl review due                 # what is unverified or stale
 ```
 
-`kmctl init` keeps files that already exist. Every command takes `--help`,
+`kmctl init` keeps files that already exist, except the four knowledge rules
+and the kmctl block, which it replaces with this release's; `kmctl update` is
+the same command. Every command takes `--help`,
 and most take `--json` for scripts and agents. The
 [tutorial](docs/tutorials/get-started-with-kmctl.md) walks through this in one
 sitting.

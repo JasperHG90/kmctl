@@ -11,7 +11,8 @@ for people. Warnings and refusals go to stderr.
 
 | Command | What it does |
 |---|---|
-| `kmctl init` | Create `docs/`, a starter `.okf/` bundle, knowledge rules and a `CLAUDE.md` block, keeping existing files. |
+| `kmctl init` | Create `docs/`, a starter `.okf/` bundle, knowledge rules and a `CLAUDE.md` block; re-run to refresh the rules and block. |
+| `kmctl update` | Same as `kmctl init`. Run it after upgrading kmctl to refresh the knowledge rules and the `CLAUDE.md` block. |
 | `kmctl check` | Check indexes agree with their folders, prototypes have a `README.md`, and links resolve. |
 | `kmctl handoffs` | List the live handoffs in `.okf/handoffs/`, newest first. |
 | `kmctl briefing` | Print the session briefing: where knowledge lives, what is due, and the rules. |
@@ -72,8 +73,12 @@ Set a repository up. It writes:
   entry and log line, when no record in `.okf/decisions/` has that title. In
   a fresh bundle it is `0001`.
 
-A file that already exists is kept, so it is safe to run again, with two
-exceptions. The kmctl block is added to an existing `CLAUDE.md` or
+A file that already exists is kept, so it is safe to run again, with three
+exceptions. The four knowledge rules belong to kmctl: one that differs from
+the copy this kmctl ships is replaced, edits included, so an upgrade reaches
+them. Other files in `.claude/rules/` are never read or written, and a rule
+that is a symlink dangling or pointing outside the repository is left alone
+with a warning. The kmctl block is added to an existing `CLAUDE.md` or
 `AGENTS.md`, or replaced when it is already there, and no other text in the
 file changes. Writing the first decision into a kept bundle adds its entry to
 the kept indexes and a line to the kept `log.md`. A second run changes
@@ -88,7 +93,7 @@ When `AGENTS.md` is such a link and there is no `CLAUDE.md`, init writes no
 Code, and one importing it would load no block. Fix the link and run init
 again. A symlink inside the repository is written through once.
 
-Output lists each file as `created`, `updated` (its kmctl block, or the first decision's index entry and log line) or `kept`,
+Output lists each file as `created`, `updated` (a replaced knowledge rule, its kmctl block, or the first decision's index entry and log line) or `kept`,
 and ends with the next steps: fill the purpose and invariants in the
 manifesto (its values are the operator's), add an architecture page once
 there is code, and record each choice with `kmctl new decision`.
@@ -97,6 +102,13 @@ there is code, and record each choice with `kmctl new decision`.
 |---|---|---|
 | `--path DIR` | The repository to set up: an existing folder. | `.` |
 | `--json` | Print one JSON object with `created`, `skipped`, `updated` and `warnings` lists. | off |
+
+### `kmctl update`
+
+The same command as `kmctl init`, with the same options and output. Run it
+after upgrading kmctl: it replaces the four knowledge rules with this
+release's copies and the kmctl block with this release's block, and keeps
+every other file.
 
 ### `kmctl check`
 
