@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "antigravity-harness",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
@@ -41,7 +41,7 @@
   "split": "j-20261016T202356+0000-85792644",
   "split_plan_hash": "aa09221d7d616b13921e7f064d3af41f7bea6b64385b6e31cb63292e9c093bf6",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "9506fc011eeea7861d6b916a0c318c5c63ef9ba2",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -190,8 +190,14 @@
       "to": "verifying",
       "at": "2026-10-16T21:42:39+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-16T21:44:47+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-16T21:44:43+00:00"
+  "at": "2026-10-16T21:44:47+00:00"
 }
