@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "antigravity-harness",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
@@ -115,8 +115,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "aa09221d7d616b13921e7f064d3af41f7bea6b64385b6e31cb63292e9c093bf6",
   "intent": {
@@ -148,8 +148,14 @@
       "to": "verifying",
       "at": "2026-10-16T21:35:41+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-16T21:39:04+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-16T21:35:41+00:00"
+  "at": "2026-10-16T21:39:04+00:00"
 }
