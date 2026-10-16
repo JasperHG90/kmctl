@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "kmctl plugin status --harness antigravity reports a version mismatch with the fix 'run kmctl plugin update', which defaults to --harness claude: following it in an Antigravity-only repository installs Claude Code's skills, settings.json hook and .mcp.json, and leaves .agents/ and .agents/plugins/kmctl/ at the old version. The fix must name the harnesses status was asked about.",
+      "anchor": "src/kmctl/plugin.py:1003",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "The antigravity.py module docstring says plugin status and 'kmctl doctor' share compare_plugin/plugin_problems, but there is no kmctl doctor command (it is the separate ticket kmctl-doctor); the sentence states something false today.",
+      "anchor": "src/kmctl/antigravity.py:10",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "02cb8dd9e7573221448ed24155b7138182f846a669dde340ddbec79e53572a20",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
+  "at": "2026-10-16T21:38:49+00:00"
+}
