@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev72+ge53d4208b.d20261016
-  at: '2026-10-16T20:19:06+00:00'
+  at: '2026-10-16T20:20:06+00:00'
 slug: apm-only-install
 n: 4
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike apm-only-install/4
@@ -24,7 +24,7 @@ The command exited 1:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note apm-only-install 4`.
+Same setup as spike 5, but condition (a) required APM's own output to name the skipped path. APM 0.33.0 exited 0 and printed `[!] 1 file skipped -- local files exist, not managed by APM` on both a plain and a `-v` run, yet neither run named `.claude/skills/audit` (only a count). The lockfile omits the skipped skill from `deployed_files`. `--force` replaced SKILL.md with the package bytes and deleted notes.txt; the hand rule was overwritten without `--force`. Superseded by spike 5, which also tries `--dry-run` and accepts a path derived from the lockfile.
 
 ## Files
 
