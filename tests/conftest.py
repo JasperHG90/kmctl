@@ -10,7 +10,7 @@ pytest_plugins = ("pytester",)
 
 VALIDATOR = Path(__file__).parent / "vendor" / "okf" / "okf_validate.py"
 
-# git's wording for a network failure, as kmctl passes on claude's last stderr line.
+# git's wording for a network failure, as kmctl passes on claude's fatal: and error: lines.
 NETWORK_ERRORS = (
     "Could not resolve host",
     "Failed to connect",
