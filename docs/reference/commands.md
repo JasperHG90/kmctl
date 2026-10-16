@@ -14,7 +14,7 @@ for people. Warnings and refusals go to stderr.
 | `kmctl init` | Create `docs/`, a starter `.okf/` bundle, knowledge rules and a `CLAUDE.md` block, keeping existing files. |
 | `kmctl check` | Check indexes agree with their folders, prototypes have a `README.md`, and links resolve. |
 | `kmctl handoffs` | List the live handoffs in `.okf/handoffs/`, newest first. |
-| `kmctl briefing` | Print the session briefing: where knowledge lives, what is due, and the rules. |
+| `kmctl briefing` | Print the session briefing: where knowledge lives, what is due, and the skills. |
 | `kmctl schema` | Print the JSON Schema of one document kind, or list the kinds there are. |
 | `kmctl review` | Find knowledge that is due for review. Verbs: `due`. |
 | `kmctl review due` | List concepts in `.okf/` due for review, with the reason for each. |
@@ -123,8 +123,10 @@ List the live handoffs in `.okf/handoffs/`, newest first. Handoffs past their
 
 ### `kmctl briefing`
 
-Print the session briefing: where knowledge lives, what is due, and the rules
-for writing knowledge. The plugin's SessionStart hook prints this. It reads and
+Print the session briefing: where knowledge lives, what is due, and the
+plugin's skills, in under 500 tokens. The rules for writing knowledge are not
+in it: `kmctl init` writes them to `.claude/rules/`, and the briefing adds only
+the one they lack. The plugin's SessionStart hook prints this. It reads and
 never writes.
 
 | Option | Meaning | Default |

@@ -6,7 +6,7 @@ import pytest
 from typer.testing import CliRunner, Result
 
 from kmctl import app, plugin
-from kmctl.briefing import WORD_BUDGET
+from kmctl.briefing import RULES, TOKEN_BUDGET, estimate_tokens
 
 
 def _invoke(*args: str) -> Result:
@@ -40,7 +40,8 @@ def test_briefing_has_three_parts(tmp_path: Path) -> None:
     assert "Knowledge in this repository" in out
     assert "Verbs:" in out
     assert "due for review" in out
-    assert "every-touched-concept-is-logged" in out
+    assert ".claude/rules/" in out
+    assert "unverified-is-a-lead" in out
 
 
 def test_briefing_state_counts(tmp_path: Path) -> None:
@@ -58,10 +59,25 @@ def test_briefing_state_counts(tmp_path: Path) -> None:
     assert "manifesto" not in json.dumps(state)
 
 
-def test_briefing_word_budget(tmp_path: Path) -> None:
+def test_briefing_token_budget(tmp_path: Path) -> None:
     out = _briefing(_repo(tmp_path)).stdout
 
-    assert len(out.split()) <= WORD_BUDGET, len(out.split())
+    assert estimate_tokens(out) < TOKEN_BUDGET, estimate_tokens(out)
+
+
+def test_briefing_rules_are_not_in_the_rule_files() -> None:
+    """The briefing repeats no constraint init already writes to .claude/rules/."""
+    from importlib.resources import files
+
+    from kmctl.scaffold import RULE_FILES
+
+    written = " ".join(
+        " ".join(files("kmctl").joinpath("repo_rules", n).read_text().split())
+        for n in RULE_FILES
+    )
+    for name, text in RULES:
+        assert f'name="{name}"' not in written, name
+        assert text not in written, name
 
 
 def test_briefing_empty_repository(tmp_path: Path) -> None:
@@ -166,14 +182,4 @@ def test_briefing_unchanged_by_the_seeded_files(tmp_path: Path) -> None:
 
     for key in ("routing", "rules", "skills"):
         assert with_seed[key] == without[key], key
-    assert [r["name"] for r in with_seed["rules"]] == [
-        "audience-picks-the-folder",
-        "docs-sorted-by-reader-intent",
-        "docs-describe-what-exists",
-        "prototypes-hold-their-scripts",
-        "start-at-the-index",
-        "kmctl-writes-the-structure",
-        "every-touched-concept-is-logged",
-        "decisions-are-never-rewritten",
-        "trust-is-recorded",
-    ]
+    assert [r["name"] for r in with_seed["rules"]] == ["unverified-is-a-lead"]

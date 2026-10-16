@@ -75,8 +75,8 @@ Each is `planned` until the test named for it passes, then `enforced`.
   CI action report findings; they never edit `.okf/` or `docs/` and never
   write a `verified` stamp. Status: planned.
 - **I3. The briefing comes from the CLI and fits a budget.** The hook prints
-  what `kmctl` prints, so upgrading the CLI updates the briefing, and its
-  word count stays under a fixed budget. Status: enforced by `tests/test_briefing.py::test_briefing_word_budget`.
+  what `kmctl` prints, so upgrading the CLI updates the briefing, and it
+  stays under 500 tokens (estimated at four characters a token). Status: enforced by `tests/test_briefing.py::test_briefing_token_budget`.
 - **I4. kmctl reads OKF as it is.** It uses the fields the OKF v0.2 spec
   defines (`stale_after`, `verified`, `sources`, `status`) plus the extension
   fields an ADR names. The only one is `handoff_key` (ADR 0009); a covers

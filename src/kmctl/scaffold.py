@@ -21,7 +21,7 @@ from kmctl.okf import BadFrontMatter, field, front_matter
 OKF_VERSION = "0.2"
 
 #: The knowledge rules init writes to .claude/rules/, from the packaged repo_rules/.
-#: They are not the briefing's rules (kmctl/rules/), which stay unchanged (I3).
+#: The briefing does not repeat them; it carries only what they lack (I3).
 RULE_FILES = (
     "okf-bundle.md",
     "docs-layout.md",

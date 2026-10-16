@@ -2,13 +2,14 @@
 
 The plugin's SessionStart hook relays it, so it is read at the start of every
 session in every harness. It reads state and writes nothing, and stays within
-``WORD_BUDGET`` (invariant I3).
+``TOKEN_BUDGET`` (invariant I3). The rules for writing knowledge are not in it:
+``kmctl init`` writes them to ``.claude/rules/``, which reach the system prompt
+anyway. It carries only ``RULES``, the guidance those files do not.
 """
 
 import re
 from dataclasses import asdict, dataclass
 from importlib.metadata import version
-from importlib.resources import files
 from pathlib import Path
 
 import yaml
@@ -17,8 +18,20 @@ from kmctl.handoffs import live_handoffs
 from kmctl.plugin import skills_dir
 from kmctl.review_due import review_due
 
-WORD_BUDGET = 600
-RULE_FILES = ("docs-layout.md", "okf-bundle.md")
+#: The most tokens the briefing may take, estimated at CHARS_PER_TOKEN.
+TOKEN_BUDGET = 500
+CHARS_PER_TOKEN = 4
+
+#: Guidance the rule files kmctl init writes to .claude/rules/ do not carry.
+RULES = [
+    (
+        "unverified-is-a-lead",
+        (
+            "Treat a concept with no verified entry, or past its stale_after, "
+            "as a lead to check, not a fact."
+        ),
+    )
+]
 
 ROUTING = """\
 Knowledge in this repository:
@@ -29,7 +42,7 @@ Knowledge in this repository:
   what it rejected; architecture/ the design as diagrams; practices/ lessons
   backed by evidence; proposals/ designs not yet built; prototypes/ spikes with
   their scripts; handoffs/ notes on where work stopped.
-- Skills do repeatable tasks; the rules below are standing guidance.
+- Skills do repeatable tasks; .claude/rules/ holds the rules for writing knowledge.
 Verbs: kmctl new decision|practice|proposal|prototype|handoff to add a concept;
 kmctl new doc tutorial|how-to|reference|explanation for a docs/ page;
 kmctl check after editing an index; kmctl review due for what needs review;
@@ -39,9 +52,8 @@ shape. Each takes --help and --json."""
 EMPTY = "No .okf/ bundle here. Run kmctl init to start docs/ and .okf/."
 
 _FIRST_SENTENCE = re.compile(r"\.\s| - ")
-#: Words kept from a skill's description, so new skills cannot break WORD_BUDGET.
+#: Words kept from a skill's description, so new skills cannot break TOKEN_BUDGET.
 _SUMMARY_WORDS = 12
-_CONSTRAINT = re.compile(r'<constraint name="([^"]+)">\n(.*?)</constraint>', re.DOTALL)
 
 
 @dataclass(frozen=True)
@@ -102,17 +114,9 @@ def load_skills() -> list[tuple[str, str]]:
     ]
 
 
-def load_rules() -> list[tuple[str, str]]:
-    """The packaged knowledge rules as (name, text), each without its WHY paragraph."""
-    rules = []
-    for name in RULE_FILES:
-        text = files("kmctl").joinpath("rules", name).read_text(encoding="utf-8")
-        for rule, body in _CONSTRAINT.findall(text):
-            paragraphs = [
-                p for p in body.strip().split("\n\n") if not p.startswith("WHY:")
-            ]
-            rules.append((rule, " ".join(" ".join(paragraphs).split())))
-    return rules
+def estimate_tokens(text: str) -> int:
+    """About how many tokens ``text`` takes, at CHARS_PER_TOKEN characters each."""
+    return -(-len(text) // CHARS_PER_TOKEN)
 
 
 def build_briefing(root: Path) -> Briefing:
@@ -126,20 +130,18 @@ def build_briefing(root: Path) -> Briefing:
     Returns
     -------
     Briefing
-        Routing, state (None when there is no .okf/), the rules and the
+        Routing, state (None when there is no .okf/), RULES and the
         plugin's skills (empty when there is no .okf/).
     """
     if not (root / ".okf").is_dir():
-        return Briefing(routing=EMPTY, state=None, rules=load_rules(), skills=[])
+        return Briefing(routing=EMPTY, state=None, rules=RULES, skills=[])
     handoffs = live_handoffs(root)
     state = State(
         due=len(review_due(root).due),
         live_handoffs=len(handoffs),
         newest_handoff=handoffs[0].title if handoffs else None,
     )
-    return Briefing(
-        routing=ROUTING, state=state, rules=load_rules(), skills=load_skills()
-    )
+    return Briefing(routing=ROUTING, state=state, rules=RULES, skills=load_skills())
 
 
 def render(briefing: Briefing) -> str:
@@ -159,7 +161,7 @@ def render(briefing: Briefing) -> str:
         lines.append(
             line + (f", newest: {s.newest_handoff}." if s.newest_handoff else ".")
         )
-    lines.append("Rules for writing knowledge:")
+    lines.append("Reading knowledge:")
     lines += [f"- {name}: {text}" for name, text in briefing.rules]
     return "\n".join(lines)
 

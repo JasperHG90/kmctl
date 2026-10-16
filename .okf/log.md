@@ -92,3 +92,4 @@
 - Updated `architecture/overview` for ADR 0013: the diagram, the plugin
   section and Depicts show `apm/apm.yml`, its `git: parent` dependency on
   `plugin/` and okf-skills, and `scripts/release.py set` writing its version.
+- The briefing drops the knowledge rules `.claude/rules/` already carries and fits 500 tokens: `manifesto`, `decisions/0002-briefing-and-rules-injected-by-the-cli`, `decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code`, `architecture/overview`.

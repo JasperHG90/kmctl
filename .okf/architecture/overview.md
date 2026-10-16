@@ -37,7 +37,6 @@ flowchart LR
         repoRules["repo_rules/*.md"]
         checks["checks.py<br/>check"]
         briefing["briefing.py<br/>briefing"]
-        rules["rules/*.md"]
         reviewDue["review_due.py<br/>review due"]
         handoffs["handoffs.py<br/>handoffs"]
         concepts["concepts.py<br/>new decision|practice|<br/>proposal|prototype|handoff"]
@@ -86,7 +85,7 @@ flowchart LR
     auditor -. "reads only" .-> repo
 
     app --> scaffold & checks & briefing & reviewDue & handoffs & concepts & docs & supersede & pluginPy & kinds
-    briefing --> reviewDue & handoffs & rules
+    briefing --> reviewDue & handoffs
     briefing -- "skills_dir: names the plugin's skills" --> pluginPy
     concepts & handoffs & reviewDue & supersede --> okf
     docs & supersede --> concepts
@@ -136,7 +135,7 @@ exit codes. Each verb calls one module:
 |---|---|---|
 | `kmctl init` | `scaffold.py`, with the packaged `repo_rules/` and `concepts.py` for the first decision | `docs/README.md`, a starter `.okf/`, the four knowledge rules in `.claude/rules/`, the kmctl block in `CLAUDE.md` and `AGENTS.md`, and decision "Keep project knowledge in an OKF bundle"; it keeps every file that exists except for that block and the decision's index entry and log line (ADR 0011) |
 | `kmctl check` | `checks.py` | nothing |
-| `kmctl briefing` | `briefing.py`, with `review_due.py`, `handoffs.py`, the packaged `rules/`, and `plugin.py` for the skills it names | nothing |
+| `kmctl briefing` | `briefing.py`, with `review_due.py`, `handoffs.py` and `plugin.py` for the skills it names; the knowledge rules are in `.claude/rules/`, not the briefing | nothing |
 | `kmctl review due` | `review_due.py` | nothing |
 | `kmctl handoffs` | `handoffs.py` | nothing |
 | `kmctl schema` | `kinds.py`, with `okf.py` for the field names | nothing |
@@ -240,7 +239,7 @@ agree (ADR 0012).
   `kmctl new doc`, `kmctl schema`, `kmctl decision supersede`, `kmctl plugin install`,
   `kmctl plugin update`, `kmctl plugin status`.
 - Modules: `src/kmctl/__init__.py`, `scaffold.py`, `checks.py`,
-  `briefing.py`, `rules/`, `repo_rules/`, `review_due.py`, `handoffs.py`, `concepts.py`,
+  `briefing.py`, `repo_rules/`, `review_due.py`, `handoffs.py`, `concepts.py`,
   `docs.py`, `supersede.py`, `plugin.py`, `okf.py`, `kinds.py`; `plugin/hooks/hooks.json`,
   `plugin/skills/` (write-docs, handoff, continue, audit and the three review
   skills), `plugin/agents/kmctl-auditor.md`; `action.yml`,

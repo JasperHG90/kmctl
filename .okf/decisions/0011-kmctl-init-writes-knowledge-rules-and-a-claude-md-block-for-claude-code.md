@@ -114,3 +114,11 @@ name the code a concept describes with `kmctl new --source` and to give
 anything time-bound a `--stale-after`, so `kmctl review due` can flag the
 concept when that code changes or the date passes (ticket new-concept-freshness).
 
+## Correction, 2026-10-16
+
+The briefing no longer carries the knowledge rules. `kmctl init` writes them
+to `.claude/rules/`, and those files reach the agent's system prompt anyway,
+so repeating them only spent the budget. `src/kmctl/rules/` is gone; the
+briefing keeps one rule the rule files lack (`unverified-is-a-lead`, in
+`src/kmctl/briefing.py`), and its budget is 500 tokens instead of 600 words
+(I3). The operator asked for this on 2026-10-16.
