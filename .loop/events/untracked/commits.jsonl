@@ -16,3 +16,4 @@
 {"at": "2026-10-16T11:17:32+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "d021b40351790028f3463a461db64d8203d82e7f", "subject": "Drop the knowledge rules from the briefing"}
 {"ask": "j-20261016T113725+0000-41efa225", "at": "2026-10-16T11:38:45+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "ae7fd6944da54ed909a7dfdf0de4ad0f7b4977b9", "subject": "Strip colour from help in test_update_is_init_alias"}
 {"at": "2026-10-16T16:04:25+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "570431a97fbae20a7920d54c89314713ba2418ba", "subject": "operator: manual commit"}
+{"at": "2026-10-16T22:18:30+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "ea094ab38707cdcde8ea7da80179ae156ae7967e", "subject": "loop: register antigravity-live-check stub"}
