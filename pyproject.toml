@@ -1,6 +1,7 @@
 [project]
 name = "kmctl"
-version = "0.1.0"
+# The plugin manifest carries the one version (ADR 0012); see [tool.hatch.version].
+dynamic = ["version"]
 description = "Keep a repository's docs/ and OKF knowledge bundle current, across agent harnesses."
 readme = "README.md"
 authors = [
@@ -19,6 +20,13 @@ kmctl = "kmctl:main"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+# Read from the manifest, not git, so a build from a download with no .git
+# (as action.yml installs) still has the release version (ADR 0012).
+[tool.hatch.version]
+source = "regex"
+path = "plugin/.claude-plugin/plugin.json"
+pattern = '"version": "(?P<version>[^"]+)"'
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/kmctl"]
 
@@ -30,9 +38,15 @@ packages = ["src/kmctl"]
 [dependency-groups]
 dev = [
     "jsonschema>=4.26.0",
+    "packaging>=26.3",
     "pytest>=9.1.1",
     "ruff>=0.17.0",
 ]
+
+# uv rebuilds kmctl when either file changes, so a local uv run picks up a
+# version bump in the manifest.
+[tool.uv]
+cache-keys = [{ file = "pyproject.toml" }, { file = "plugin/.claude-plugin/plugin.json" }]
 
 [tool.ruff]
 # Spike evidence (.loop/), aim-managed rules (.claude/) and the knowledge
@@ -47,6 +61,8 @@ extend-exclude = [".loop", ".claude", ".okf", "tests/vendor"]
 
 [tool.pytest.ini_options]
 addopts = ["--strict-markers", "-m", "not integration"]
+# The repository root, so tests/scripts/ imports the release scripts as scripts.*.
+pythonpath = ["."]
 markers = [
     "integration: reaches a real external system, such as GitHub through the claude CLI; off by default; the integration gate in .loop/config.toml runs it",
 ]

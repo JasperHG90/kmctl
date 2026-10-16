@@ -1,0 +1,123 @@
+# Tag and publish a release when its version pull request lands on main
+# (ADR 0012). Only a push that raises the plugin manifest's version to a
+# releasable version releases; an unchanged or .dev version does nothing, a
+# lowered one fails, and a push with no previous commit to compare against (the
+# repository's first push) is skipped. The wheel and sdist are built and checked
+# before the tag exists, so a failed build leaves no tag behind; a rerun after a
+# failed publish resumes from the tag it pushed. The GitHub Release carries the
+# wheel, the sdist and their checksums; nothing goes to PyPI.
+#
+# No concurrency group: a group keeps one pending run and cancels the rest,
+# which would drop the tag of a version merged between two others.
+name: Release tag
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - plugin/.claude-plugin/plugin.json
+
+permissions:
+  contents: read
+
+jobs:
+  tag:
+    name: Tag and publish the release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: true
+      # verdict: raised (tag and release), resume (tag here, release missing),
+      # or nothing. A tag at another commit fails.
+      - name: Decide whether this push releases
+        id: plan
+        env:
+          BEFORE: ${{ github.event.before }}
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(uv run scripts/release.py current)"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ] \
+            || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            echo "No previous commit to compare against (a first push); nothing to release." >> "$GITHUB_STEP_SUMMARY"
+            echo "verdict=nothing" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git worktree add -q --detach "$RUNNER_TEMP/before" "$BEFORE"
+          OLD="$(uv run scripts/release.py --repo "$RUNNER_TEMP/before" current || true)"
+          VERDICT="$(uv run scripts/release.py compare "$OLD" "$VERSION")"
+          case "$VERDICT" in
+            raised) ;;
+            same) echo "The version is still $VERSION; nothing to release." >> "$GITHUB_STEP_SUMMARY"; VERDICT=nothing ;;
+            skip) echo "$VERSION is a .dev or +local version, which is never released." >> "$GITHUB_STEP_SUMMARY"; VERDICT=nothing ;;
+            lowered) echo "::error::This push lowers the version from $OLD to $VERSION. Raise it instead."; exit 1 ;;
+          esac
+          if [ "$VERDICT" = "raised" ] && git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+            TAGGED="$(git rev-list -n 1 "v$VERSION")"
+            if [ "$TAGGED" != "$GITHUB_SHA" ]; then
+              echo "::error::v$VERSION already tags $TAGGED, not this commit $GITHUB_SHA. Pick the next version."
+              exit 1
+            fi
+            if gh release view "v$VERSION" >/dev/null 2>&1; then
+              echo "v$VERSION is already tagged and released; nothing to do." >> "$GITHUB_STEP_SUMMARY"
+              VERDICT=nothing
+            else
+              echo "v$VERSION is tagged here but has no Release; resuming." >> "$GITHUB_STEP_SUMMARY"
+              VERDICT=resume
+            fi
+          fi
+          echo "verdict=$VERDICT" >> "$GITHUB_OUTPUT"
+      - name: Build and check the release files
+        if: ${{ steps.plan.outputs.verdict == 'raised' || steps.plan.outputs.verdict == 'resume' }}
+        env:
+          VERSION: ${{ steps.plan.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          uv build -o dist
+          for file in dist/*; do
+            case "$(basename "$file")" in
+              *-"$VERSION"-*.whl | *-"$VERSION".tar.gz) ;;
+              *) echo "::error::$file does not carry version $VERSION."; exit 1 ;;
+            esac
+          done
+          uvx twine check dist/*
+          uv run scripts/check_wheel.py dist/*.whl
+          uv run scripts/smoke_wheel.py dist/*.whl --version "$VERSION"
+          (cd dist && sha256sum ./* > SHA256SUMS)
+      - name: Push the annotated tag
+        if: ${{ steps.plan.outputs.verdict == 'raised' }}
+        env:
+          VERSION: ${{ steps.plan.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "v$VERSION" -m "kmctl $VERSION" "$GITHUB_SHA"
+          git push origin "v$VERSION"
+      - name: Publish the GitHub Release
+        if: ${{ steps.plan.outputs.verdict == 'raised' || steps.plan.outputs.verdict == 'resume' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.plan.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          ARGS=(--title "v$VERSION" --verify-tag --generate-notes)
+          PREVIOUS="$( { git tag --list "v*" | grep -xE "v[0-9]+\.[0-9]+\.[0-9]+((a|b|rc)[0-9]+)?" || true; echo "v$VERSION"; } \
+            | sort -V | grep -x -B1 "v$VERSION" | grep -vx "v$VERSION" || true)"
+          if [ -n "$PREVIOUS" ]; then
+            ARGS+=(--notes-start-tag "$PREVIOUS")
+          fi
+          if uv run scripts/release.py is-prerelease "$VERSION"; then
+            ARGS+=(--prerelease)
+          fi
+          gh release create "v$VERSION" "${ARGS[@]}" dist/*
+          echo "Released v$VERSION." >> "$GITHUB_STEP_SUMMARY"

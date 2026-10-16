@@ -70,8 +70,7 @@ start of each session.
 
 Create `.github/workflows/knowledge.yml`. This is the shipped
 `.github/workflows/knowledge.yml`, with `uses: ./` (which only works inside
-kmctl's own repository) replaced by the action's repository and its `main`
-branch:
+kmctl's own repository) replaced by the action's repository and a ref:
 
 ```yaml
 name: knowledge
@@ -96,7 +95,9 @@ jobs:
 
 While the kmctl repository is private, GitHub runs this action only in
 repositories its Actions access setting allows (Settings, Actions, General,
-Access). There is no release tag yet, so the line pins `main`.
+Access). The ref is the newest release tag, `vX.Y.Z`, once kmctl has a
+release, and `main` until then. Keep it the same as the tag you installed kmctl
+from in step 1.
 
 `fetch-depth: 0` gives `kmctl review due` the git history it reads. Per
 `action.yml`, this default `checks` mode installs kmctl, runs `kmctl check` and
@@ -225,6 +226,32 @@ secrets included, is in its view, and its findings quote what it read into
 the "Knowledge audit" issue in the same repository.
 
 `issues: write` lets that step open or update the "Knowledge audit" issue.
+
+### 6. Later: upgrade to a newer release
+
+Once kmctl has releases, the repository's Releases page lists each one with
+its `vX.Y.Z` tag. To move to a newer one:
+
+1. Install kmctl at the new tag, replacing `vX.Y.Z` with it:
+
+   ```
+   uv tool install --force git+https://github.com/JasperHG90/Knowledge-management@vX.Y.Z
+   ```
+
+   `--force` replaces the kmctl you have. `kmctl --version` then prints the
+   new version.
+
+2. In each repository that has the plugin, update it to the same release:
+
+   ```
+   kmctl plugin update
+   ```
+
+   `kmctl plugin status` then prints the same version for kmctl and the
+   plugin.
+
+3. Change the ref in each workflow's `uses: JasperHG90/Knowledge-management@`
+   line to the same tag.
 
 ## Check it worked
 

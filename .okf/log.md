@@ -79,3 +79,7 @@
   `stale_after` from `--stale-after` and `sources` from `--source`, each source
   found through `okf.py` the way `review_due.py` finds it.
 - Corrected `decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code`: the kmctl block now has four duties, adding `--source` and `--stale-after`.
+
+## 2026-10-16
+
+- Added `decisions/0012-releases-come-from-ci` with `kmctl new decision`.

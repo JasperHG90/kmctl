@@ -1,0 +1,278 @@
+"""The release version: one source in the plugin manifest, and ``scripts/release.py`` (ADR 0012).
+
+``pyproject.toml`` reads the version from ``plugin/.claude-plugin/plugin.json``,
+so a build needs no git history. ``scripts/release.py`` reads, writes and
+compares that version for the release workflows, and points the docs' install
+lines at the release tag. It never commits or tags.
+"""
+
+from __future__ import annotations
+
+import json
+import re
+import shutil
+import subprocess
+import sys
+import tomllib
+from pathlib import Path
+
+import pytest
+
+from scripts.release import DOC_FILES, MANIFEST
+
+ROOT = Path(__file__).resolve().parents[2]
+SCRIPT = ROOT / "scripts" / "release.py"
+GIT = ["git", "-c", "user.email=o@e.com", "-c", "user.name=O"]
+# The five lines `set` points at the release tag, as they start in the docs.
+INSTALL_RE = re.compile(
+    r"^\s*uv tool install git\+https://github\.com/JasperHG90/Knowledge-management(@\S+)?$",
+    re.MULTILINE,
+)
+USES_RE = re.compile(
+    r"^\s*- uses: JasperHG90/Knowledge-management@(\S+)$", re.MULTILINE
+)
+
+
+def _manifest_version(root: Path) -> str:
+    """Return the version the plugin manifest under ``root`` declares."""
+    return str(json.loads((root / MANIFEST).read_text())["version"])
+
+
+def _build(project: Path, out: Path) -> list[str]:
+    """Build ``project``'s wheel and sdist into ``out`` and return their file names."""
+    res = subprocess.run(
+        ["uv", "build", "-q", "-o", str(out), str(project)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert res.returncode == 0, res.stderr
+    return sorted(p.name for p in out.iterdir() if p.suffix in (".whl", ".gz"))
+
+
+def test_version_source_is_the_plugin_manifest() -> None:
+    """``pyproject.toml`` sets no fixed version; hatchling's regex source reads the manifest."""
+    data = tomllib.loads((ROOT / "pyproject.toml").read_text())
+
+    assert "version" not in data["project"]
+    assert "version" in data["project"]["dynamic"]
+    source = data["tool"]["hatch"]["version"]
+    assert source["source"] == "regex"
+    assert source["path"] == MANIFEST.as_posix()
+    # A local uv run rebuilds kmctl when the manifest changes.
+    assert {"file": MANIFEST.as_posix()} in data["tool"]["uv"]["cache-keys"]
+    assert {"file": "pyproject.toml"} in data["tool"]["uv"]["cache-keys"]
+
+
+def test_version_source_builds_the_manifest_version(tmp_path: Path) -> None:
+    """``uv build`` of this repository gives a wheel and sdist at the manifest's version."""
+    version = _manifest_version(ROOT)
+
+    names = _build(ROOT, tmp_path)
+
+    assert names == [f"kmctl-{version}-py3-none-any.whl", f"kmctl-{version}.tar.gz"]
+
+
+def test_version_source_follows_a_changed_manifest(tmp_path: Path) -> None:
+    """A copy of the project with the manifest at another version builds that version."""
+    project = tmp_path / "project"
+    project.mkdir()
+    for name in ("pyproject.toml", "README.md"):
+        shutil.copy(ROOT / name, project / name)
+    for folder in ("src", "plugin", ".claude-plugin"):
+        shutil.copytree(
+            ROOT / folder,
+            project / folder,
+            ignore=shutil.ignore_patterns("__pycache__"),
+        )
+    manifest = project / MANIFEST
+    data = json.loads(manifest.read_text())
+    data["version"] = "9.8.7"
+    manifest.write_text(json.dumps(data, indent=2) + "\n")
+
+    names = _build(project, tmp_path / "dist")
+
+    assert names == ["kmctl-9.8.7-py3-none-any.whl", "kmctl-9.8.7.tar.gz"]
+
+
+def _repo(tmp_path: Path, version: str = "0.1.0") -> Path:
+    """A git repository holding this repository's manifest and the three docs `set` edits."""
+    root = tmp_path / "repo"
+    for rel in (MANIFEST, *DOC_FILES):
+        (root / rel).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy(ROOT / rel, root / rel)
+    manifest = root / MANIFEST
+    manifest.write_text(
+        manifest.read_text().replace(
+            f'"version": "{_manifest_version(ROOT)}"', f'"version": "{version}"'
+        )
+    )
+    subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+    subprocess.run(["git", "add", "."], cwd=root, check=True)
+    subprocess.run([*GIT, "commit", "-q", "-m", "init"], cwd=root, check=True)
+    return root
+
+
+def _run(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    """Run ``scripts/release.py`` against ``root``."""
+    return subprocess.run(
+        [sys.executable, str(SCRIPT), *args, "--repo", str(root)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+def _refs(root: Path) -> list[str | None]:
+    """The refs the five install lines name, in file order (None for no ref)."""
+    refs: list[str | None] = []
+    for rel in DOC_FILES:
+        text = (root / rel).read_text()
+        refs += [
+            m.group(1)[1:] if m.group(1) else None for m in INSTALL_RE.finditer(text)
+        ]
+        refs += [m.group(1) for m in USES_RE.finditer(text)]
+    return refs
+
+
+def test_release_py_current_prints_the_manifest_version(tmp_path: Path) -> None:
+    """``current`` prints the plugin manifest's version and nothing else."""
+    res = _run(_repo(tmp_path, version="0.2.0a1"), "current")
+
+    assert res.returncode == 0, res.stderr
+    assert res.stdout == "0.2.0a1\n"
+
+
+def test_release_py_docs_start_with_five_install_lines() -> None:
+    """The docs this repository ships hold the five lines `set` rewrites."""
+    assert len(_refs(ROOT)) == 5
+
+
+def test_release_py_set_writes_the_manifest_and_the_five_doc_lines(
+    tmp_path: Path,
+) -> None:
+    """``set`` writes the version, keeps the manifest's other keys and pins each doc line."""
+    root = _repo(tmp_path)
+    before = json.loads((root / MANIFEST).read_text())
+
+    res = _run(root, "set", "0.2.0")
+
+    assert res.returncode == 0, res.stderr
+    assert json.loads((root / MANIFEST).read_text()) == {**before, "version": "0.2.0"}
+    changed = set((root / MANIFEST).read_text().splitlines()) ^ set(
+        (ROOT / MANIFEST).read_text().splitlines()
+    )
+    assert changed == {
+        f'  "version": "{_manifest_version(ROOT)}",',
+        '  "version": "0.2.0",',
+    }
+    assert _refs(root) == ["v0.2.0"] * 5
+    assert res.stdout.splitlines() == [f"wrote {p}" for p in (MANIFEST, *DOC_FILES)]
+
+
+def test_release_py_set_moves_the_pins_from_an_older_tag(tmp_path: Path) -> None:
+    """A second ``set`` replaces the older tag on every line instead of appending."""
+    root = _repo(tmp_path)
+    assert _run(root, "set", "0.2.0").returncode == 0
+
+    res = _run(root, "set", "0.3.0rc1")
+
+    assert res.returncode == 0, res.stderr
+    assert _manifest_version(root) == "0.3.0rc1"
+    assert _refs(root) == ["v0.3.0rc1"] * 5
+
+
+def test_release_py_set_refuses_fewer_than_five_doc_lines(tmp_path: Path) -> None:
+    """With an install line gone, ``set`` exits nonzero and writes nothing."""
+    root = _repo(tmp_path)
+    readme = root / "README.md"
+    readme.write_text(INSTALL_RE.sub("", readme.read_text()))
+    before = {rel: (root / rel).read_text() for rel in (MANIFEST, *DOC_FILES)}
+
+    res = _run(root, "set", "0.2.0")
+
+    assert res.returncode == 1
+    assert "found 4 of the 5 install lines" in res.stderr
+    assert {rel: (root / rel).read_text() for rel in before} == before
+
+
+@pytest.mark.parametrize(
+    ("version", "needle"),
+    [
+        ("0.2", "X.Y.Z"),
+        ("0.2.0-rc1", "canonical"),
+        ("banana", "not a version"),
+        ("0.2.0.dev3", "not a release"),
+        ("0.2.0+local", "not a release"),
+    ],
+)
+def test_release_py_set_refuses_an_invalid_version(
+    tmp_path: Path, version: str, needle: str
+) -> None:
+    """A malformed or unreleasable version exits nonzero and changes no file."""
+    root = _repo(tmp_path)
+
+    res = _run(root, "set", version)
+
+    assert res.returncode == 1
+    assert needle in res.stderr
+    status = subprocess.run(
+        ["git", "status", "--porcelain"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert status.stdout == ""
+
+
+@pytest.mark.parametrize(
+    ("old", "new", "verdict"),
+    [
+        ("0.1.0", "0.2.0", "raised"),
+        ("0.2.0a1", "0.2.0", "raised"),
+        ("", "0.2.0", "raised"),
+        ("0.2.0", "0.2.0", "same"),
+        ("0.2.0", "0.1.9", "lowered"),
+        ("0.2.0", "0.3.0.dev1", "skip"),
+        ("0.2.0", "0.3.0+abc", "skip"),
+        ("", "0.2.0.dev0", "skip"),
+    ],
+)
+def test_release_py_compare(tmp_path: Path, old: str, new: str, verdict: str) -> None:
+    """``compare OLD NEW`` says whether a push raised, kept or lowered the version."""
+    res = _run(_repo(tmp_path), "compare", old, new)
+
+    assert res.returncode == 0, res.stderr
+    assert res.stdout == f"{verdict}\n"
+
+
+@pytest.mark.parametrize(
+    ("version", "code"),
+    [("0.2.0a1", 0), ("0.2.0b2", 0), ("0.2.0rc1", 0), ("0.2.0", 1)],
+)
+def test_release_py_is_prerelease(tmp_path: Path, version: str, code: int) -> None:
+    """``is-prerelease`` exits 0 for an a, b or rc version and 1 for a release."""
+    assert _run(_repo(tmp_path), "is-prerelease", version).returncode == code
+
+
+def test_release_py_set_never_commits_or_tags(tmp_path: Path) -> None:
+    """``set`` leaves HEAD, the branches and the tags as they were."""
+    root = _repo(tmp_path)
+
+    def refs() -> str:
+        return subprocess.run(
+            ["git", "show-ref"], cwd=root, capture_output=True, text=True, check=True
+        ).stdout
+
+    before = refs()
+
+    assert _run(root, "set", "0.2.0").returncode == 0
+
+    assert refs() == before
+    assert (
+        subprocess.run(
+            ["git", "tag"], cwd=root, capture_output=True, text=True, check=True
+        ).stdout
+        == ""
+    )
