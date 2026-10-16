@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The PINNED comment says 'Until that PR merges it is the PR's head commit'. PR 139 has merged and PINNED is now its merge commit, so the sentence is stale and suggests the pin is temporary.",
+      "anchor": "tests/test_repo_apm.py:19",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "a098c484b33e60ee1be66418d1acccc17dc8da47c09788db715c8261df4a4deb",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
+  "at": "2026-10-16T10:49:57+00:00"
+}
