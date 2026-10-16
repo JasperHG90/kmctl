@@ -1,0 +1,120 @@
+== kmctl HEAD 0732206337f02a1d60ba1585f26ec498eb3a5a2b; claude 2.1.301 (Claude Code)
+######## 1. old install: kmctl plugin install --scope project
+kmctl 0.3.0; plugin 0.3.0
+Next: start a new Claude Code session or run /reload-plugins, then kmctl plugin status
+== exit 0
+-- claude plugin list --json (from repo):
+   {"id": "kmctl@kmctl", "scope": "project", "enabled": true, "version": "0.3.0", "projectPath": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/spike-migrate/p2.fGUC/repo"}
+   {"id": "okf@scaccogatto", "scope": "project", "enabled": true, "version": "0.10.3", "projectPath": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/spike-migrate/p2.fGUC/repo"}
+-- .claude/settings.json:
+   {
+     "extraKnownMarketplaces": {
+       "scaccogatto": {
+         "source": {
+           "source": "github",
+           "repo": "scaccogatto/okf-skills"
+         }
+       },
+       "kmctl": {
+         "source": {
+           "source": "directory",
+           "path": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/spike-migrate/p2.fGUC/home/.local/share/kmctl/marketplace"
+         }
+       }
+     },
+     "enabledPlugins": {
+       "okf@scaccogatto": true,
+       "kmctl@kmctl": true
+     }
+   }
+-- claude plugin marketplace list --json:
+   [
+     {
+       "name": "kmctl",
+       "source": "directory",
+       "path": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/spike-migrate/p2.fGUC/home/.local/share/kmctl/marketplace",
+       "installLocation": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/spike-migrate/p2.fGUC/home/.local/share/kmctl/marketplace"
+     },
+     {
+       "name": "scaccogatto",
+       "source": "github",
+       "repo": "scaccogatto/okf-skills",
+       "installLocation": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/spike-migrate/p2.fGUC/home/.claude/plugins/marketplaces/scaccogatto"
+     }
+   ]
+
+######## 2. claude plugin uninstall kmctl@kmctl --scope project
+✔ Successfully uninstalled plugin: kmctl (scope: project)
+1 auto-installed dependency no longer needed: okf. Run `claude plugin prune --scope project` to remove.
+== exit 0
+-- claude plugin list --json (from repo):
+   {"id": "okf@scaccogatto", "scope": "project", "enabled": true, "version": "0.10.3", "projectPath": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/spike-migrate/p2.fGUC/repo"}
+-- .claude/settings.json:
+   {
+     "enabledPlugins": {
+       "okf@scaccogatto": true
+     },
+     "extraKnownMarketplaces": {
+       "scaccogatto": {
+         "source": {
+           "source": "github",
+           "repo": "scaccogatto/okf-skills"
+         }
+       },
+       "kmctl": {
+         "source": {
+           "source": "directory",
+           "path": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/spike-migrate/p2.fGUC/home/.local/share/kmctl/marketplace"
+         }
+       }
+     }
+   }
+-- claude plugin marketplace list --json:
+   [
+     {
+       "name": "kmctl",
+       "source": "directory",
+       "path": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/spike-migrate/p2.fGUC/home/.local/share/kmctl/marketplace",
+       "installLocation": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/spike-migrate/p2.fGUC/home/.local/share/kmctl/marketplace"
+     },
+     {
+       "name": "scaccogatto",
+       "source": "github",
+       "repo": "scaccogatto/okf-skills",
+       "installLocation": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/spike-migrate/p2.fGUC/home/.claude/plugins/marketplaces/scaccogatto"
+     }
+   ]
+
+######## 3. claude plugin uninstall okf@scaccogatto --scope project
+✔ Successfully uninstalled plugin: okf (scope: project)
+== exit 0
+######## 4. claude plugin marketplace remove kmctl
+✔ Successfully removed marketplace: kmctl
+== exit 0
+-- claude plugin list --json (from repo):
+   (none)
+-- .claude/settings.json:
+   {
+     "enabledPlugins": {},
+     "extraKnownMarketplaces": {
+       "scaccogatto": {
+         "source": {
+           "source": "github",
+           "repo": "scaccogatto/okf-skills"
+         }
+       }
+     }
+   }
+-- claude plugin marketplace list --json:
+   [
+     {
+       "name": "scaccogatto",
+       "source": "github",
+       "repo": "scaccogatto/okf-skills",
+       "installLocation": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/spike-migrate/p2.fGUC/home/.claude/plugins/marketplaces/scaccogatto"
+     }
+   ]
+
+   enabled kmctl/okf per plugin list: []
+   enabled kmctl/okf per settings.json enabledPlugins: []
+== RESULT: kmctl/okf still enabled=no; real ~/.claude untouched=yes
