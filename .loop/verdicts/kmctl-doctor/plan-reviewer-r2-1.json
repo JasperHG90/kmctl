@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "claude.okf-mcp now checks the okf-bundle entry apm-only-install merges into .mcp.json (or the user-scope entry), built by the same function, so there is something to check.",
+      "anchor": ".loop/plans/kmctl-doctor.md:37",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "spike:kmctl-doctor/3 shows the lock never lists .claude/settings.json, .agents/hooks.json or apm-hooks.json, and all 32 listed hashes matched after a kmctl-style merge.",
+      "anchor": ".loop/plans/kmctl-doctor.md:52",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    },
+    {
+      "id": "p3",
+      "disposition": "resolved",
+      "claim": "spike:kmctl-doctor/4 shows claude plugin list connects and writes, so the plan drops it and reads enabledPlugins from the settings file; the offline uv tool run made no connection and changed nothing under HOME.",
+      "anchor": ".loop/plans/kmctl-doctor.md:46",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r5"
+    },
+    {
+      "id": "p4",
+      "disposition": "resolved",
+      "claim": "The plan adds kmctl doctor --scope user and a claude.scope ok line when only a user-scope install exists; eval row r3b covers both.",
+      "anchor": ".loop/plans/kmctl-doctor.md:38",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r3b"
+    },
+    {
+      "id": "p5",
+      "disposition": "resolved",
+      "claim": "antigravity.plugin now compares every file under .agents/plugins/kmctl/ with what the CLI would write, reusing antigravity-harness's comparison, and a missing apm_modules/ fails with a named fix; r2 covers it.",
+      "anchor": ".loop/plans/kmctl-doctor.md:37",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r2"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "a7f58193c81833af200afce33be86445faa1638b9749323d16496d27b53f5d57"
+  },
+  "by": "process:loopctl/2.1.1.dev173+ga4f6ce93a.d20261016",
+  "at": "2026-10-16T20:26:58+00:00"
+}
