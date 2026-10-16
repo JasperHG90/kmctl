@@ -20,10 +20,50 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "818221e7db4bf8ab81a2ddcce3b036f729d16a97965f66ebc3fefda7a17eaf5c",
+    "at": "2026-10-16T10:41:39+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "apm/apm.yml is kmctl's APM package: it has a name and version, and depends on exactly this repository's plugin folder ({git: parent, path: plugin}) and scaccogatto/okf-skills pinned to a full commit; plugin/ holds no apm.yml.",
+      "fails_when": "apm/apm.yml is missing, lacks name or version, depends on anything else (such as a jasperhg90/skills item) or on okf-skills unpinned or pinned to a branch or tag, or plugin/apm.yml exists",
+      "command": "uv run pytest tests/test_apm_package.py -k package -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "scripts/release.py set VERSION writes the version to the plugin manifest, the root apm.yml and apm/apm.yml, and current refuses when they differ.",
+      "fails_when": "after set 0.2.0 any of the three files is not at 0.2.0, or current exits 0 when an apm.yml version differs from the manifest's",
+      "command": "uv run pytest tests/test_apm_package.py tests/scripts/test_release.py -k apm_version -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "In a scratch consumer, installing the apm subfolder package of this repository (served from a local git server at this tree's commit) with APM 0.33.0 writes kmctl's 7 skills and agent byte for byte, its SessionStart hook in .claude/settings.json and okf's skills, and none of the 16 dev items; its apm.lock.yaml lists no jasperhg90/skills entry.",
+      "fails_when": "any of the 7 skills or the agent is missing or differs from plugin/, the hook is not in .claude/settings.json, no okf skill is installed, any dev rule or dev skill is installed, or the lock names jasperhg90/skills",
+      "command": "uv run pytest tests/test_apm_package.py -k consumer -m integration -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "A new decision records APM as a second install route beside kmctl plugin install, what it leaves out and why the CLI route stays; the manifesto's Parts names it; docs/how-to/install-kmctl-with-apm.md gives the project-scope apm install line for JasperHG90/Knowledge-management/apm, says to install the CLI first and that a private repository needs GitHub auth, and the install how-to links to it; release.py set also rewrites that page's #vX.Y.Z pin.",
+      "fails_when": "the decision is missing, does not match kmctl schema decision or does not name kmctl plugin install, ADR 0001 and the version check; the manifesto does not mention APM; the how-to page is missing any of those points or uses apm install -g; the install how-to has no link to it; or set leaves the page's pin unchanged",
+      "command": "uv run pytest tests/test_apm_package.py -k docs -q",
+      "judgment": false
+    },
+    {
+      "id": "r5",
+      "behavior": "The other tests still pass.",
+      "fails_when": "uv run pytest or uv run pytest -m integration fails",
+      "command": "uv run pytest -q -m \"not integration or integration\"",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -69,5 +109,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
-  "at": "2026-10-16T10:18:48+00:00"
+  "at": "2026-10-16T10:41:39+00:00"
 }
