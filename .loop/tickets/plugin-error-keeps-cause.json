@@ -19,7 +19,9 @@
   "archived": false,
   "worktree": "/home/vscode/kmctl.worktrees/plugin-error-keeps-cause",
   "branch": "loop/plugin-error-keeps-cause",
-  "stamps": [],
+  "stamps": [
+    "3fe3de39db7fb93fdd4ad4c68f421943bebc28d4f0290e9521c083b094b16e4b"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
     "hash": "0db444128d81f03a694708024599b37a7b78e061481b484f856b815b5486819d",
@@ -110,5 +112,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
-  "at": "2026-10-16T05:59:05+00:00"
+  "at": "2026-10-16T06:02:04+00:00"
 }
