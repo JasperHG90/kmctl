@@ -4,7 +4,7 @@
 # is installed separately with uv tool install. scripts/release.py set writes
 # the version below; plugin/.claude-plugin/plugin.json holds the one version.
 name: kmctl
-version: 0.2.0
+version: 0.3.0
 description: kmctl's Claude Code skills, audit agent and SessionStart hook, with the okf skills they use.
 dependencies:
   apm:

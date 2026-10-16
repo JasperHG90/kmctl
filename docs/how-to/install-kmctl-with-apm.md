@@ -40,7 +40,7 @@ same install.
 ### 1. Install the kmctl CLI
 
 ```
-uv tool install git+https://github.com/JasperHG90/Knowledge-management@v0.2.0
+uv tool install git+https://github.com/JasperHG90/Knowledge-management@v0.3.0
 ```
 
 ### 2. Add the kmctl package
@@ -48,7 +48,7 @@ uv tool install git+https://github.com/JasperHG90/Knowledge-management@v0.2.0
 From the repository root, at the same tag as the CLI:
 
 ```
-apm install JasperHG90/Knowledge-management/apm#v0.2.0
+apm install JasperHG90/Knowledge-management/apm#v0.3.0
 ```
 
 This adds the package to the repository's `apm.yml` and installs it. If you
@@ -57,7 +57,7 @@ edit `apm.yml` by hand instead, the entry is:
 ```yaml
 dependencies:
   apm:
-    - JasperHG90/Knowledge-management/apm#v0.2.0
+    - JasperHG90/Knowledge-management/apm#v0.3.0
 ```
 
 and then run `apm install`.
