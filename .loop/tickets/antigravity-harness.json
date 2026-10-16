@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "antigravity-harness",
-  "stage": "planning",
+  "stage": "ready",
   "attempts": 0,
   "plan_rounds": 2,
   "review_rounds": 0,
@@ -60,8 +60,14 @@
       "to": "planning",
       "at": "2026-10-16T19:44:52+00:00",
       "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-10-16T20:25:30+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.1.1.dev173+ga4f6ce93a.d20261016",
-  "at": "2026-10-16T20:25:29+00:00"
+  "at": "2026-10-16T20:25:30+00:00"
 }
