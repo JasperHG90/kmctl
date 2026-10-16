@@ -31,7 +31,7 @@ How the commands below were run:
 ### 1. Install kmctl
 
 ```
-uv tool install git+https://github.com/JasperHG90/Knowledge-management@v0.2.0
+uv tool install git+https://github.com/JasperHG90/Knowledge-management@v0.3.0
 ```
 
 The kmctl repository is private for now, so this needs a GitHub account
@@ -95,7 +95,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: JasperHG90/Knowledge-management@v0.2.0
+      - uses: JasperHG90/Knowledge-management@v0.3.0
 ```
 
 While the kmctl repository is private, GitHub runs this action only in
@@ -180,7 +180,7 @@ vendor's own API, or your own server. You give it four settings:
            with:
              fetch-depth: 0
              persist-credentials: false
-         - uses: JasperHG90/Knowledge-management@v0.2.0
+         - uses: JasperHG90/Knowledge-management@v0.3.0
            timeout-minutes: 40
            env:
              AUDIT_API_KEY: ${{ secrets.AUDIT_API_KEY }}
