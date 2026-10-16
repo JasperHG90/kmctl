@@ -1,0 +1,90 @@
+== kmctl HEAD 26933eb903659a30f073be25a9cbd5b768c1a4e7; Agent Package Manager (APM) CLI version 0.33.0
+   diagrams-stay-current applyTo: .okf/**, src/**, lib/**, app/**, pkg/**, cmd/**
+   docs-layout applyTo: docs/**, .okf/**, README.md
+   manifesto-invariants applyTo: .okf/manifesto.md, tests/**, test/**
+   okf-bundle applyTo: .okf/**
+== package tree:
+   ./.apm/agents/kmctl-auditor.md
+   ./.apm/instructions/diagrams-stay-current.instructions.md
+   ./.apm/instructions/docs-layout.instructions.md
+   ./.apm/instructions/manifesto-invariants.instructions.md
+   ./.apm/instructions/okf-bundle.instructions.md
+   ./.apm/skills/architecture-review/SKILL.md
+   ./.apm/skills/audit/SKILL.md
+   ./.apm/skills/continue/SKILL.md
+   ./.apm/skills/decision-log-review/SKILL.md
+   ./.apm/skills/handoff/SKILL.md
+   ./.apm/skills/practices-review/SKILL.md
+   ./.apm/skills/write-docs/references/explanation.md
+   ./.apm/skills/write-docs/references/how-to.md
+   ./.apm/skills/write-docs/references/reference.md
+   ./.apm/skills/write-docs/references/tutorial.md
+   ./.apm/skills/write-docs/SKILL.md
+   ./apm.yml
+== A (apm.yml entry): apm install exit 0
+[!] Insecure HTTP fetch (unencrypted): http://127.0.0.1:54455/o/kmctl
+  [+] 127.0.0.1:54455/o/kmctl/apm #default @295d874c
+  [+] scaccogatto/okf-skills #a8b96420de90d102c43cda1693d01ec4f925f2ab @a8b96420
+  |-- 1 agents integrated -> .claude/agents/
+  |-- 4 rule(s) integrated -> .claude/rules/
+  |-- 7 skill(s) integrated -> .claude/skills/
+  |-- 2 agents integrated -> .claude/agents/
+  |-- 1 hook(s) integrated -> .claude/settings.json
+  |-- Skill integrated -> .claude/skills/
+  |-- 4 skill(s) integrated -> .claude/skills/
+  [!] 1 file(s) contain hidden characters
+  [!] 1 dependency unpinned: o/kmctl -- add #tag or #sha to prevent drift
+  [!] Transitive package 'okf' declares self-defined MCP server 'bundle' 
+   skill architecture-review: identical
+   skill audit: identical
+   skill continue: identical
+   skill decision-log-review: identical
+   skill handoff: identical
+   skill practices-review: identical
+   skill write-docs: identical
+   agent kmctl-auditor: identical
+   rule diagrams-stay-current: paths equal, body equal
+   rule docs-layout: paths equal, body equal
+   rule manifesto-invariants: paths equal, body equal
+   rule okf-bundle: paths equal, body equal
+   okf skill okf: present
+   okf skill validate: present
+   okf skill backfill: present
+   okf skill visualize: present
+   other files: ['.claude/apm-hooks.json', '.claude/hooks/okf-skills/hooks/okf-stop-check.sh', '.claude/settings.json', '.gitignore', 'apm.lock.yaml', 'apm.yml']
+== B1 (no apm.yml, CLI 'http://127.0.0.1:54455/o/kmctl.git/apm'): exit 1
+[x] http://127.0.0.1:54455/o/kmctl.git/apm -- '127.0.0.1' was treated as a 
+single repository path ('o/kmctl.git/apm') because it isn't recognised as 
+GitHub, Azure DevOps, or GitLab. If this is a self-hosted GitLab instance, set 
+== B2 (no apm.yml, CLI 'JasperHG90/Knowledge-management/apm#v0.3.0'): exit 0
+[*] Created apm.yml
+[+] jasperhg90/knowledge-management/apm#v0.3.0
+  [+] github.com/JasperHG90/Knowledge-management/apm#v0.3.0 #v0.3.0 @57de4422
+  [+] github.com/JasperHG90/Knowledge-management/plugin#v0.3.0 #v0.3.0 @57de4422
+  [+] scaccogatto/okf-skills #a8b96420de90d102c43cda1693d01ec4f925f2ab @a8b96420
+  |-- 1 agents integrated -> .claude/agents/
+  |-- 1 hook(s) integrated -> .claude/settings.json
+  |-- Skill integrated -> .claude/skills/
+  |-- 7 skill(s) integrated -> .claude/skills/
+  |-- 2 agents integrated -> .claude/agents/
+  |-- 1 hook(s) integrated -> .claude/settings.json
+  |-- Skill integrated -> .claude/skills/
+  |-- 4 skill(s) integrated -> .claude/skills/
+   apm.yml written:
+     name: c-b2
+     version: 1.0.0
+     description: APM project for c-b2
+     author: spike
+     # Which agent platforms to deploy to.
+     # Resolution order: --target flag > this field > auto-detect from filesystem.
+     # Accepted values: agent-skills, antigravity, claude, codex, copilot, cursor, gemini, grok-build, hermes, kiro, opencode, vscode, windsurf
+     targets:
+       - claude
+     dependencies:
+       apm:
+         - JasperHG90/Knowledge-management/apm#v0.3.0
+       mcp: []
+     includes: auto
+     scripts: {}
+   agent present
+== RESULT: A=0 B=0 (0 = everything delivered)
