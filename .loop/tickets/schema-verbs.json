@@ -158,8 +158,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "pass"
   },
   "plan_hash": "1ded8de3328cc33d3b3b3830fbd48422056c1ff77b3052428b1b3fc4243666a4",
   "intent": {
@@ -207,6 +207,6 @@
       "by": "review fixed"
     }
   ],
-  "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261015",
-  "at": "2026-10-16T05:26:13+00:00"
+  "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
+  "at": "2026-10-16T05:56:05+00:00"
 }
