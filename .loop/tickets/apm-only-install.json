@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "apm-only-install",
-  "stage": "building",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 3,
   "review_rounds": 0,
@@ -170,8 +170,14 @@
       "to": "building",
       "at": "2026-10-16T20:31:16+00:00",
       "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-10-16T21:12:20+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-16T21:12:16+00:00"
+  "at": "2026-10-16T21:12:20+00:00"
 }
