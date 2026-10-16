@@ -1,8 +1,3 @@
----
-name: prek-code-quality
-description: This file describes python code quality rules
----
-
 - Prefer using `prek` with a `.pre-commit-config.yaml` file to enforce code
   quality rules.
 - The user's pre-commit configuration is leading. You don't need to enforce

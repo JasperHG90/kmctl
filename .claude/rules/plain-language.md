@@ -1,8 +1,3 @@
----
-name: plain-language
-description: Speak and write plainly, in chat replies, code, comments, commits, PRs, and docs; name a technical concept only with a one-sentence explanation tied to the context.
----
-
 <constraint name="plain-speaking">
 Plain language is the default in everything you say to the user, not just
 what you write down. In chat replies, summaries, explanations, and answers,

@@ -1,7 +1,6 @@
 ---
-name: Python Testing Rules
-description: How to write, run, and locate tests in Python projects (pytest + uv). Read before adding or changing Python code.
-paths: ["**/*.py"]
+paths:
+  - "**/*.py"
 ---
 
 <constraint name="all-code-needs-tests">

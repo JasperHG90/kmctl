@@ -11,8 +11,8 @@ description: >
   constraint / guardrail / coding convention / standing instruction / always-on
   guidance / .claude/rules entry, or turn a repeated correction ("stop doing X",
   "always do Y") into a permanent rule. NOT for: authoring a reusable multi-step
-  procedure (use skill-creator); a subagent (use agent-creator);
-  editing settings.json, hooks, or permissions (use update-config); or recording
+  procedure (use skill-creator); a subagent (use agent-creator); editing
+  settings.json, hooks, or permissions (use update-config); or recording
   project-specific facts like build commands and directory layout (those belong
   in CLAUDE.md / AGENTS.md, not a rule).
 compatibility: >
@@ -44,13 +44,16 @@ a different kind of artifact, so lead with what makes it different.
 - **`.claude/rules/*.md`** (project) and **`~/.claude/rules/*.md`** (global) are
   read by Claude Code and injected as standing instructions. The body is what
   the agent sees — a rule here works even with no frontmatter at all.
-- **This repo's top-level `rules/`** is a curated, version-controlled *library*
-  of rules. Nothing auto-loads it; rules live here to be shared, reviewed, and
-  copied into a `.claude/rules/` when adopted. Frontmatter is the catalog entry.
-- **`paths`** is an optional glob array (e.g. `["**/*.py"]`). Path-aware setups
-  use it to scope a rule to matching files so it doesn't burn context on
-  unrelated edits. Where scoping isn't supported, the rule is simply always-on.
-  Treat `paths` as *tightening*, never as a trigger the rule depends on.
+- **This repo's top-level `rules/`** is a curated, version-controlled
+  *library* of rules, one `<name>.instructions.md` file each. Nothing
+  auto-loads it; a project adopts a rule by installing it with apm, which
+  writes it to `.claude/rules/<name>.md`. Frontmatter is the catalog entry.
+- **Scope** is an optional glob list. Path-aware setups use it to keep a rule
+  out of context on unrelated edits. Where scoping isn't supported, the rule is
+  simply always-on. Treat it as *tightening*, never as a trigger the rule
+  depends on. A library rule spells it `applyTo: "**/*.py"`, a comma-separated
+  string, because apm keeps only `applyTo` and turns it into `paths`. A rule
+  written straight into `.claude/rules/` spells it `paths: ["**/*.py"]`.
 
 ## Where you are in the process
 
@@ -100,24 +103,25 @@ Before writing, resolve the decisions that change the file. Prefer
 `AskUserQuestion` so the user picks from concrete options; group them into one
 prompt. The load-bearing questions:
 
-1. **Check for duplication first.** Scan existing rules — `rules/*.md` and, if
-   present, `.claude/rules/*.md` — for one that already covers this ground
-   (CONTRIBUTING requires this). If a near-match exists, surface it and ask
-   whether to **extend the existing rule** instead of adding a competing one.
-   Overlap is the main way an always-on rule turns into noise. When two rules
-   are related but distinct, cross-reference rather than restate — as
-   `python-testing` points at `pre-existing-issues` instead of duplicating it.
+1. **Check for duplication first.** Scan existing rules —
+   `rules/*.instructions.md` and, if present, `.claude/rules/*.md` — for one
+   that already covers this ground (CONTRIBUTING requires this). If a near-match
+   exists, surface it and ask whether to **extend the existing rule** instead of
+   adding a competing one. Overlap is the main way an always-on rule turns into
+   noise. When two rules are related but distinct, cross-reference rather than
+   restate — as `python-testing` points at `pre-existing-issues` instead of
+   duplicating it.
 2. **Scope — when does this actually apply?** If it only matters for certain
-   files, capture that and derive a tight `paths` glob (e.g. `["**/*.py"]`). A
+   files, capture that and derive a tight glob (e.g. `**/*.py`). A
    Python-only rule left global taxes every Markdown and YAML edit for nothing.
-   If it genuinely applies everywhere, leave `paths` off.
+   If it genuinely applies everywhere, leave the scope off.
 3. **Enforce-hard or nudge?** This sets the tone. A hard rule states a
    non-negotiable ("every change ships with a test"); a nudge leans the agent a
    direction it can override with reason (`pre-existing-issues` nudges; the
    user can always say otherwise). Don't dress a preference up as a mandate.
-4. **Save location.** This repo's `rules/` library (shareable, reviewed) or the
-   active project's `.claude/rules/` (loaded now). Offer both; default to
-   `rules/` unless the user wants it live immediately.
+4. **Save location.** This repo's `rules/` library (shareable,
+   reviewed) or the active project's `.claude/rules/` (loaded now). Offer both;
+   default to the library unless the user wants it live immediately.
 
 Infer the name and description from intent and let the user edit the draft —
 don't turn confirming them into a separate ceremony.
@@ -128,8 +132,10 @@ ask the user to correct them in one pass.
 
 ## Step 4 — Write the rule file
 
-**Filename**: a kebab-case slug of the topic (`python-testing.md`,
-`pre-existing-issues.md`). Confirm it doesn't collide with an existing file.
+**Filename**: a kebab-case slug of the topic. In the library it ends in
+`.instructions.md` (`python-testing.instructions.md`), which is how apm
+recognizes it. In `.claude/rules/` it ends in `.md`. Confirm it doesn't collide
+with an existing file.
 
 **Frontmatter** — always at least these two:
 
@@ -137,15 +143,19 @@ ask the user to correct them in one pass.
 ---
 name: <kebab-case identifier matching the filename>
 description: <one line: what it constrains + when it's relevant>
-paths: ["**/*.py"]   # optional — include only if the rule is file-scoped
+applyTo: "**/*.py"   # optional — include only if the rule is file-scoped
 ---
 ```
 
+In `.claude/rules/`, write the scope as `paths: ["**/*.py"]` instead. apm drops
+every other key when it installs a library rule, so a `paths` key in a library
+rule is lost and the rule loads everywhere.
+
 The `description` is a human-facing summary and a "when to read" hint (e.g.
 "Read before adding or changing Python code"), not a trigger — routing lives in
-`paths`, and the behavior lives in the body. New rules use `name` (matching how
-skills and agents are keyed); you'll see some legacy rules keyed on `title` —
-leave those as they are, don't churn them.
+the scope, and the behavior lives in the body. New rules use `name` (matching
+how skills and agents are keyed); you'll see some legacy rules keyed on `title`
+— leave those as they are, don't churn them.
 
 **Body** — keep it terse; it's injected on every relevant turn. Match the
 repo's voice: declarative sentences that *explain why the constraint matters*,
@@ -169,17 +179,17 @@ Choose the body shape to fit the rule; propose it, don't default blindly:
 Read the draft cold and check:
 
 - **Earns its rent** — worth injecting on the median relevant turn, not a rare
-  edge case. If it's niche, scope it with `paths` or reconsider it as a skill.
-- **Scoped tightly** — file-specific rules carry a `paths` glob; global rules
-  genuinely apply everywhere.
+  edge case. If it's niche, scope it with a glob or reconsider it as a skill.
+- **Scoped tightly** — file-specific rules carry an `applyTo` or `paths` glob;
+  global rules genuinely apply everywhere.
 - **No overlap** — doesn't restate an existing rule; cross-references where it
   relates to one.
 - **Terse** — no filler; every line pulls weight, because every line costs
   context forever.
 - **Explains why** — the reasoning is present, not just the command, and the
   tone matches enforce-hard vs nudge.
-- **Placed right** — landed in the location the user chose, filename matches
-  `name`, frontmatter is valid YAML.
+- **Placed right** — landed in the location the user chose, filename minus
+  its extension matches `name`, frontmatter is valid YAML.
 
 ## Quality bar
 

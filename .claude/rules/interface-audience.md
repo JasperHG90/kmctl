@@ -1,8 +1,3 @@
----
-name: interface-audience
-description: Design every interface for a named audience — human, script, agent, or calling code — because the same information needs a different shape for each. Read before designing a CLI, an API, a library's public surface, an agent tool, or an error message.
----
-
 <constraint name="name-the-audience">
 Before designing anything another party consumes — a CLI, an HTTP or library
 API, an agent tool, a config format, an error message — name who consumes it.

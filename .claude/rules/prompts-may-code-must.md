@@ -1,7 +1,11 @@
 ---
-name: prompts-may-code-must
-description: When authoring skills, agents, or hooks, express anything that must happen every time as code, and reserve prose for judgment. Read before writing a SKILL.md step, a hook, or a checklist an agent is meant to follow.
-paths: ["**/skills/**", "**/agents/**", "**/.claude/**", "**/SKILL.md", "**/AGENTS.md", "**/CLAUDE.md"]
+paths:
+  - "**/skills/**"
+  - "**/agents/**"
+  - "**/.claude/**"
+  - "**/SKILL.md"
+  - "**/AGENTS.md"
+  - "**/CLAUDE.md"
 ---
 
 <constraint name="deterministic-over-probabilistic">
