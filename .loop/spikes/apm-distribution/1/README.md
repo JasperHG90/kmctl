@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev72+ge53d4208b.d20261016
-  at: '2026-10-16T10:07:25+00:00'
+  at: '2026-10-16T10:11:09+00:00'
 slug: apm-distribution
 n: 1
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike apm-distribution/1
@@ -24,7 +24,7 @@ The command exited 0:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note apm-distribution 1`.
+Superseded by spike:apm-distribution/2. Served the source repo over dumb HTTP, where APM 0.33.0's shallow clone fails ("dumb http transport does not support shallow capabilities"). So case A (install the repo root) failed on transport, not on layout, and does not count. Cases B and C match spike 2: with `path: plugin`, all 7 skills and the agent deploy byte for byte. Use spike 2 for risk 1.
 
 ## Files
 
