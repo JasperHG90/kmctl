@@ -1,0 +1,32 @@
+warning: `VIRTUAL_ENV=/home/vscode/kmctl/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+unformatted: File would be reformatted
+   --> src/kmctl/scaffold.py:170:20
+    |
+169 |         path = root / rel
+    -         packaged = files("kmctl").joinpath("repo_rules", name).read_text(encoding="utf-8")
+170 +         packaged = (
+171 +             files("kmctl").joinpath("repo_rules", name).read_text(encoding="utf-8")
+172 +         )
+173 |         unsafe = _unsafe_link(root, path)
+    |
+
+unformatted: File would be reformatted
+   --> tests/test_init.py:211:12
+    |
+210 |
+    -     assert "updated .claude/rules/okf-bundle.md (replaced with kmctl's rule)" in result.stdout
+211 +     assert (
+212 +         "updated .claude/rules/okf-bundle.md (replaced with kmctl's rule)"
+213 +         in result.stdout
+214 +     )
+215 |
+--------------------------------------------------------------------------------
+256 |     assert ".claude/rules/okf-bundle.md" in report["skipped"]
+    -     assert any(".claude/rules/okf-bundle.md is a symlink" in w for w in report["warnings"])
+257 +     assert any(
+258 +         ".claude/rules/okf-bundle.md is a symlink" in w for w in report["warnings"]
+259 +     )
+260 |
+    |
+
+2 files would be reformatted, 83 files already formatted
