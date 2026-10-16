@@ -1,0 +1,207 @@
+# Cut a release by hand (ADR 0012). Pick an increment or type the version; a
+# dry run (the default) resolves, tests and builds, then stops. A real run from
+# main opens a pull request that sets the plugin manifest to the version and
+# pins the docs' install lines to its tag; merging it is the approval, and
+# release-tag.yml tags the merge commit and publishes the GitHub Release.
+# Releases go to GitHub only, never to PyPI.
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      increment:
+        description: "Raise the newest v* tag: PATCH, MINOR, MAJOR, PRE (next pre-release), FINAL (promote a pre-release). Ignored when version is set."
+        type: choice
+        required: true
+        default: PATCH
+        options: [PATCH, MINOR, MAJOR, PRE, FINAL]
+      prerelease:
+        description: "Start or switch a pre-release series: a, b or rc. none for a release."
+        type: choice
+        required: true
+        default: none
+        options: [none, a, b, rc]
+      version:
+        description: "Override: the exact version, X.Y.Z or X.Y.Z{a,b,rc}N, no v. Required for the first release."
+        type: string
+        required: false
+      dry_run:
+        description: "Resolve, test and build, then stop without opening the version pull request."
+        type: boolean
+        required: true
+        default: true
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  resolve:
+    name: Resolve the version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.next.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: true
+      - name: Work out the version
+        id: next
+        env:
+          INCREMENT: ${{ inputs.increment }}
+          PRE: ${{ inputs.prerelease }}
+          OVERRIDE: ${{ inputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=("$INCREMENT")
+          if [ "$PRE" != "none" ]; then args+=(--pre "$PRE"); fi
+          if [ -n "$OVERRIDE" ]; then args+=(--version "$OVERRIDE"); fi
+          VERSION="$(uv run scripts/next_release_version.py "${args[@]}")"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+      - name: Refuse a real run off main
+        if: ${{ !inputs.dry_run && github.ref != 'refs/heads/main' }}
+        run: |
+          echo "::error::A release is cut only from main, not $GITHUB_REF. Run it from main, or keep dry run on."
+          exit 1
+      - name: Refuse a tag that exists on origin
+        env:
+          VERSION: ${{ steps.next.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          set +e
+          git ls-remote --exit-code --tags origin "refs/tags/v$VERSION" >/dev/null
+          rc=$?
+          set -e
+          case "$rc" in
+            2) ;;
+            0) echo "::error::Tag v$VERSION already exists. Pick the next version."; exit 1 ;;
+            *) echo "::error::Could not check whether v$VERSION exists (git exit $rc)."; exit 1 ;;
+          esac
+      - name: Summary
+        env:
+          VERSION: ${{ steps.next.outputs.version }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          {
+            echo "## v$VERSION"
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| commit | \`$GITHUB_SHA\` |"
+            echo "| dry run | $DRY_RUN |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # GitHub starts no workflow for a pull request that GITHUB_TOKEN opens, so
+  # the lint and the tests run here, before the version pull request exists.
+  test:
+    name: Lint and test
+    needs: resolve
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: true
+      - run: uv run ruff check
+      - run: uv run ruff format --check
+      - run: uv run pytest
+
+  build:
+    name: Build and smoke-test
+    needs: resolve
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: true
+      # Build what the version pull request will hold: the manifest at the
+      # release version. This checkout is thrown away; bump commits the change.
+      - name: Set the release version
+        env:
+          VERSION: ${{ needs.resolve.outputs.version }}
+        run: uv run scripts/release.py set "$VERSION"
+      - name: Build at the release version
+        env:
+          VERSION: ${{ needs.resolve.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          uv build -o dist
+          for file in dist/*; do
+            case "$(basename "$file")" in
+              *-"$VERSION"-*.whl | *-"$VERSION".tar.gz) ;;
+              *) echo "::error::$file does not carry version $VERSION."; exit 1 ;;
+            esac
+          done
+      - run: uvx twine check dist/*
+      - run: uv run scripts/check_wheel.py dist/*.whl
+      - name: Smoke-test the wheel
+        env:
+          VERSION: ${{ needs.resolve.outputs.version }}
+        run: uv run scripts/smoke_wheel.py dist/*.whl --version "$VERSION"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
+  bump:
+    name: Open the version pull request
+    needs: [resolve, test, build]
+    if: ${{ !inputs.dry_run }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: true
+      # Needs "Allow GitHub Actions to create and approve pull requests" in the
+      # repository's Actions settings (ADR 0012).
+      - name: Commit the version and open the pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.resolve.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          BRANCH="release/v$VERSION"
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null; then
+            PR="$(gh pr list --head "$BRANCH" --state open --json url --jq '.[0].url')"
+            if [ -n "$PR" ]; then
+              echo "::error::$BRANCH already has an open pull request, $PR. Merge or close it."
+            else
+              echo "::error::$BRANCH exists with no open pull request. Delete it: git push origin --delete $BRANCH"
+            fi
+            exit 1
+          fi
+          uv run scripts/release.py set "$VERSION"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$BRANCH"
+          git add plugin/.claude-plugin/plugin.json README.md docs/tutorials/get-started-with-kmctl.md docs/how-to/install-the-plugin-and-the-ci-action.md
+          git commit -m "release: v$VERSION"
+          if ! git diff --exit-code --stat; then
+            echo "::error::release.py set changed a file this step does not stage. Add it to the git add line."
+            exit 1
+          fi
+          git push origin "$BRANCH"
+          if ! gh pr create --base main --head "$BRANCH" \
+            --title "release: v$VERSION" \
+            --body "Sets the plugin manifest to $VERSION and pins the docs' install lines to v$VERSION. Merging this tags v$VERSION and publishes the GitHub Release through release-tag.yml." \
+            >> "$GITHUB_STEP_SUMMARY"; then
+            git push origin --delete "$BRANCH" || echo "::warning::Could not delete $BRANCH; delete it by hand."
+            echo "::error::Could not open the pull request, so $BRANCH was deleted. Turn on \"Allow GitHub Actions to create and approve pull requests\" in the repository's Actions settings."
+            exit 1
+          fi

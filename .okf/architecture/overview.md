@@ -4,7 +4,7 @@ title: "Architecture overview"
 description: "The parts of kmctl (the CLI modules, the Claude Code plugin and the GitHub Action) and how they connect."
 generated:
   by: claude-opus/5.5
-  at: 2026-10-15
+  at: 2026-10-16
 tags: [architecture, diagram]
 status: stable
 ---
@@ -15,7 +15,8 @@ kmctl has three parts (manifesto, Parts). The CLI in `src/kmctl/` does every
 step a script can do and is the only part that writes knowledge. The plugin
 in `plugin/` and the action in `action.yml` and `action/` call the CLI; they
 hold no logic of their own beyond relaying it, and the audit they run reads
-and reports only.
+and reports only. Releases come from two workflows and the scripts in
+`scripts/` (ADR 0012).
 
 ```mermaid
 flowchart LR
@@ -55,6 +56,16 @@ flowchart LR
         issueSh["action/knowledge-audit-issue.sh<br/>own step, GH_TOKEN"]
     end
 
+    subgraph release["releases (ADR 0012)"]
+        releaseYml[".github/workflows/release.yml<br/>by hand: version pull request"]
+        releaseTag[".github/workflows/release-tag.yml<br/>on a manifest change on main"]
+        releasePy["scripts/release.py<br/>current, set, compare"]
+        nextVersion["scripts/next_release_version.py"]
+        wheelChecks["scripts/check_wheel.py<br/>scripts/smoke_wheel.py"]
+    end
+
+    manifest[("plugin/.claude-plugin/plugin.json<br/>the one version")]
+    ghRelease["v* tag and GitHub Release<br/>wheel, sdist, SHA256SUMS"]
     repo[("docs/ and .okf/")]
     agentFiles[(".claude/rules/ and<br/>CLAUDE.md, AGENTS.md")]
     claude["claude CLI"]
@@ -95,6 +106,17 @@ flowchart LR
     report -- "body in RUNNER_TEMP" --> issueSh
     issueSh -- "gh issue create or edit" --> summary
     ci --> summary
+
+    releaseYml -- "next version from v* tags" --> nextVersion
+    releaseYml -- "set: version, docs' install lines" --> releasePy
+    releasePy -- "write" --> manifest
+    releaseYml -- "uv build, then check" --> wheelChecks
+    releaseYml -- "commits it on release/vX.Y.Z,<br/>gh pr create" --> manifest
+    manifest -- "merged to main" --> releaseTag
+    releaseTag -- "compare old and new" --> releasePy
+    releaseTag -- "uv build, then check" --> wheelChecks
+    releaseTag -- "tag after the build,<br/>gh release create" --> ghRelease
+    app -. "kmctl --version reads it<br/>through pyproject's regex source" .-> manifest
 ```
 
 ## The CLI
@@ -172,6 +194,25 @@ action's own checkout.
   A later step of its own, `action/knowledge-audit-issue.sh`, is the only one
   that gets `GH_TOKEN`; it posts the body to the one "Knowledge audit" issue.
 
+## Releases
+
+The version is written once, in `plugin/.claude-plugin/plugin.json`;
+`pyproject.toml` reads it with hatchling's `regex` version source, so
+`kmctl --version`, the plugin stamp and a build from a download with no `.git`
+agree (ADR 0012).
+
+- `.github/workflows/release.yml` runs by hand. It works out the version with
+  `scripts/next_release_version.py`, refuses a real run off `main` or a tag
+  that exists, runs the lint and the tests, and builds and checks the wheel
+  with `scripts/check_wheel.py` and `scripts/smoke_wheel.py`. A real run
+  commits `scripts/release.py set` (the manifest and the docs' five install
+  lines) on `release/vX.Y.Z` and opens the version pull request.
+- `.github/workflows/release-tag.yml` runs when a push to `main` changes the
+  manifest. When `scripts/release.py compare` says the version went up, it
+  builds and checks first, then pushes the tag `vX.Y.Z` and publishes the
+  GitHub Release with the wheel, the sdist and `SHA256SUMS`. Nothing goes to
+  PyPI.
+
 ## Depicts
 
 - Invariants: I1 (the SessionStart hook never blocks), I2 (the auditor and
@@ -191,3 +232,7 @@ action's own checkout.
   `action/hermes/kmctl-read/`, `action/audit-batches.py`,
   `action/audit-report.py`,
   `action/knowledge-audit-issue.sh`; `.github/workflows/knowledge-audit.yml`.
+- Releases: `.github/workflows/release.yml`, `.github/workflows/release-tag.yml`,
+  `scripts/release.py`, `scripts/next_release_version.py`,
+  `scripts/check_wheel.py`, `scripts/smoke_wheel.py`,
+  `plugin/.claude-plugin/plugin.json`.
