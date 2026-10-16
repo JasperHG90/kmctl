@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "update-refreshes-rules",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 2,
@@ -40,7 +40,7 @@
   "split": "j-20261016T105653+0000-9d49e03b",
   "split_plan_hash": "0fdbbce3fb300a8cbe1d5dd1fc5195117ea93cfed14d4b4bb921ff1ef2cfe2f6",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "960058d3ac0603e01ecb53c6a64223f0a459ac3a",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -161,8 +161,14 @@
       "to": "verifying",
       "at": "2026-10-16T11:08:27+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-16T11:11:40+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
-  "at": "2026-10-16T11:11:29+00:00"
+  "at": "2026-10-16T11:11:40+00:00"
 }
