@@ -181,11 +181,32 @@ def _claude(args: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
     )
 
 
+#: The most characters of claude's output a PluginError carries.
+CAUSE_CAP = 400
+
+
+def _cause(output: str) -> str:
+    """The lines of ``output`` that say why claude failed, joined with "; ".
+
+    git's ``fatal:`` and ``error:`` lines name the cause (an unresolvable host,
+    a missing repository), but claude may print them before a last line that
+    does not, as when it falls back from HTTPS to SSH. So keep those lines in
+    order, then claude's last line, cut to CAUSE_CAP characters from the end.
+    """
+    lines = [line.strip() for line in output.strip().splitlines() if line.strip()]
+    if not lines:
+        return "no output"
+    kept = [line for line in lines if line.startswith(("fatal:", "error:"))]
+    if lines[-1] not in kept[-1:]:
+        kept.append(lines[-1])
+    cause = "; ".join(kept)
+    return cause if len(cause) <= CAUSE_CAP else cause[: CAUSE_CAP - 1] + "…"
+
+
 def _require(proc: subprocess.CompletedProcess[str], args: list[str]) -> None:
     if proc.returncode != 0:
-        detail = (proc.stderr or proc.stdout).strip().splitlines()
         raise PluginError(
-            f"claude {' '.join(args)} failed: {detail[-1] if detail else 'no output'}; "
+            f"claude {' '.join(args)} failed: {_cause(proc.stderr or proc.stdout)}; "
             "run it by hand to see why, then kmctl plugin install again"
         )
 
