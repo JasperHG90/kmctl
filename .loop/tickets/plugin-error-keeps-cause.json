@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "plugin-error-keeps-cause",
-  "stage": "building",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 0,
@@ -109,8 +109,14 @@
       "to": "building",
       "at": "2026-10-16T05:59:05+00:00",
       "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-10-16T06:02:11+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
-  "at": "2026-10-16T06:02:04+00:00"
+  "at": "2026-10-16T06:02:11+00:00"
 }
