@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "release-flow",
-  "stage": "planning",
+  "stage": "ready",
   "attempts": 0,
   "plan_rounds": 1,
   "review_rounds": 0,
@@ -60,8 +60,14 @@
       "to": "planning",
       "at": "2026-10-16T05:21:53+00:00",
       "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-10-16T06:02:17+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
-  "at": "2026-10-16T06:02:10+00:00"
+  "at": "2026-10-16T06:02:17+00:00"
 }
