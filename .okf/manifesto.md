@@ -59,7 +59,11 @@ this formalizes so every repository can have it.
   repository's `apm.yml` at the CLI's own version and installs it with APM
   (Agent Package Manager), then writes what APM does not carry: one
   SessionStart hook that relays `kmctl`'s briefing (ADR 0004) and okf's MCP
-  server. Claude Code is the one harness so far.
+  server. `kmctl plugin install --harness antigravity` does the same for
+  Antigravity: APM writes the skills and rules into `.agents/`, and kmctl
+  writes the folder `.agents/plugins/kmctl/` with the agents translated to
+  Antigravity's format, the SessionStart hook and okf's MCP server
+  (ADR 0015). The harnesses are Claude Code and Antigravity.
 - **A reusable GitHub Action** (ADR 0005). On every pull request it runs the
   deterministic checks for free. The LLM audit is opt-in and reports only.
 
@@ -70,7 +74,9 @@ Each is `planned` until the test named for it passes, then `enforced`.
 - **I1. One hook, and it never blocks.** The only hook kmctl installs is
   SessionStart, and it exits 0 even when `kmctl` is missing or fails.
   Status: enforced by `tests/test_plugin.py` (`kmctl plugin install` writes
-  one SessionStart hook; it exits 0 without `kmctl` and when it fails).
+  one SessionStart hook; it exits 0 without `kmctl` and when it fails) and
+  `tests/test_antigravity.py` (Antigravity's one SessionStart hook prints
+  `{}` and exits 0 in both cases).
 - **I2. Audits never write knowledge.** The audit agent, its skills and the
   CI action report findings; they never edit `.okf/` or `docs/` and never
   write a `verified` stamp. Status: planned.
@@ -100,6 +106,6 @@ Each is `planned` until the test named for it passes, then `enforced`.
 - A `covers` field mapping concepts to code paths (ADR 0006).
 - Hooks beyond SessionStart: a nudge after code edits, a reminder at Stop,
   a commit gate (ADR 0004).
-- Harnesses other than Claude Code: opencode, Antigravity, Hermes and others
-  come after Claude Code works (ADR 0014).
+- More harnesses than the two in Parts: opencode, Hermes and others come
+  later (ADR 0014, ADR 0015).
 - Writing `verified` stamps from an audit (ADR 0005).

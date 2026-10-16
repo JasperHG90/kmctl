@@ -1,7 +1,7 @@
 # /// script
 # requires-python = ">=3.12"
 # ///
-"""Check that a built wheel carries the package data pyproject force-includes: the skills.
+"""Check that a built wheel carries the package data pyproject force-includes: the skills and agents.
 
 Usage::
 

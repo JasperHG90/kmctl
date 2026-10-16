@@ -138,12 +138,28 @@ Print the session briefing: where knowledge lives, what is due, and the
 package's skills, in under 500 tokens. The rules for writing knowledge are not
 in it: `kmctl plugin install` puts them in `.claude/rules/`, and the briefing
 adds only the one they lack. The SessionStart hook `kmctl plugin install`
-writes prints this. It reads and never writes.
+writes prints this: Claude Code's runs `kmctl briefing`, Antigravity's runs
+`kmctl briefing --format antigravity`. It reads and never writes.
+
+With `--format antigravity` it prints
+`{"injectSteps": [{"systemMessage": {"systemMessage": "TEXT"}}]}`, where
+`TEXT` is the text briefing, the shape an Antigravity SessionStart hook
+prints to put text into the session. It takes the repository from
+`workspacePaths[0]` of the JSON object on stdin, which Antigravity sends to
+every hook, so it does not depend on the folder the hook runs in. When stdin
+is a terminal, empty, not that JSON or names no folder, it uses `--path`:
+
+```
+echo '{"workspacePaths": ["/home/me/repo"]}' | kmctl briefing --format antigravity
+```
 
 | Option | Meaning | Default |
 |---|---|---|
 | `--path DIR` | The repository to brief on: an existing folder. | `.` |
-| `--json` | Print one JSON object (`routing`, `state`, `rules`, `skills`). | off |
+| `--json` | Print one JSON object (`routing`, `state`, `rules`, `skills`). Not with `--format antigravity`. | off |
+| `--format FORMAT` | `text` (the briefing as text) or `antigravity` (the briefing in the JSON an Antigravity SessionStart hook prints, with the repository read from stdin). | `text` |
+
+Exit code: 2 when `--json` and `--format antigravity` are given together.
 
 ### `kmctl schema`
 
@@ -250,10 +266,13 @@ Exit code: 1 when kmctl refuses, with the reason on stderr.
 
 Install kmctl's APM package (the skills, the audit agent and the four
 knowledge rules, with the okf skills they use), its session hook and okf's
-MCP server for a harness. It runs, in order:
+MCP server for a harness: `claude` (Claude Code), `antigravity` or both.
+Steps 5 to 7 are for `claude`; step 8 is for `antigravity`. It runs, in
+order:
 
-1. Refuses before changing anything when `uvx` is not on PATH, or when
-   `apm.yml`, `.claude/settings.json` or `.mcp.json` does not parse.
+1. Refuses before changing anything when `uvx` is not on PATH, when
+   `apm.yml`, `.claude/settings.json` or `.mcp.json` does not parse, or when
+   `antigravity` is asked for with `--scope user`.
 2. Runs `apm uninstall` on an `apm.yml` entry that names
    `JasperHG90/Knowledge-management/apm` another way than kmctl writes it, so
    the old package's hook goes with it.
@@ -262,9 +281,10 @@ MCP server for a harness. It runs, in order:
    (`~/.apm/apm.yml` with `--scope user`). Other entries and comments are
    kept; a missing file is created.
 4. Runs `uvx --from apm-cli==0.33.0 apm install --target HARNESSES` (with
-   `-g` at user scope). APM writes the skills to `.claude/skills/`, the agent
-   to `.claude/agents/` and the rules, with their `paths:`, to
-   `.claude/rules/`.
+   `-g` at user scope). For `claude`, APM writes the skills to
+   `.claude/skills/`, the agent to `.claude/agents/` and the rules, with
+   their `paths:`, to `.claude/rules/`. For `antigravity`, it writes the
+   skills to `.agents/skills/` and the rules to `.agents/rules/`.
 5. Once APM has succeeded, removes the old claude plugin `kmctl@kmctl`
    installed for this repository (or, with `--scope user`, for the user):
    `claude plugin uninstall`, then `claude plugin prune`, which also removes
@@ -284,6 +304,18 @@ MCP server for a harness. It runs, in order:
    `okf_mcp.py` under another name, kmctl adds none, removes its own, and
    says which it kept. Claude Code asks you to approve a project `.mcp.json`
    server once.
+8. Replaces the folder `.agents/plugins/kmctl/`, which kmctl alone owns,
+   with what this kmctl writes: `plugin.json`; `hooks.json` with one named
+   hook, `kmctl-briefing`, whose one SessionStart handler runs
+   `kmctl briefing --format antigravity` and prints `{}` and exits 0 when
+   kmctl is missing or fails; `agents/kmctl-auditor.md` and okf's
+   `agents/bundle-weaver.md` and `agents/event-analyzer.md`, translated
+   from Claude Code's format (okf's are read from
+   `apm_modules/scaccogatto/okf-skills/agents/`); and `mcp_config.json`
+   declaring okf's MCP server as `bundle`, the same `uv run` launcher as
+   step 7, which also looks above the plugin folder. Antigravity loads the
+   folder only once you trust the repository folder, and the MCP server
+   needs `uv` on PATH.
 
 When APM reports that it left in place files it did not write, the install
 stops before step 5, names the skill folders and exits 1; run it again with
@@ -294,8 +326,8 @@ skipped, then the status line as `kmctl plugin status` prints it, then a
 
 | Option | Meaning | Default |
 |---|---|---|
-| `--harness LIST` | The agent harnesses to install for, as a comma list. Accepted: `claude`. | `claude` |
-| `--scope SCOPE` | `project` (this repository: `apm.yml`, `.claude/` and `.mcp.json` here) or `user` (every repository: `~/.apm/apm.yml` and Claude Code's folder, `$CLAUDE_CONFIG_DIR` or `~/.claude`). | `project` |
+| `--harness LIST` | The agent harnesses to install for, as a comma list. Accepted: `claude`, `antigravity`. | `claude` |
+| `--scope SCOPE` | `project` (this repository: `apm.yml`, `.claude/`, `.mcp.json` and `.agents/` here) or `user` (every repository: `~/.apm/apm.yml` and Claude Code's folder, `$CLAUDE_CONFIG_DIR` or `~/.claude`). `antigravity` is `project` only. | `project` |
 | `--source GIT_URL` | The git URL of the repository holding the kmctl package, its `apm/` folder at the tag `vVERSION`. Set it for a fork, a local git server or an unreleased tree; an `http://` URL is allowed as insecure. | `https://github.com/JasperHG90/Knowledge-management.git` |
 | `--force` | Let APM replace skill folders it did not write. It replaces each folder whole, deleting any file you added there. | off |
 | `--json` | Print the resulting status and a `notes` list as one JSON object. | off |
@@ -312,17 +344,23 @@ kmctl: it moves the `apm.yml` entry to the new version's tag and reinstalls.
 ### `kmctl plugin status`
 
 Report the ref `apm.lock.yaml` records for the kmctl package against this
-kmctl's version, and whether `.claude/settings.json` holds the hook this
-kmctl writes. Each problem names the command that fixes it: a missing
-package or hook names `kmctl plugin install --harness claude`, an older
-package or a changed hook names `kmctl plugin update`. It reads files only.
+kmctl's version, and for `claude` whether `.claude/settings.json` holds the
+hook this kmctl writes. For `antigravity` it compares every file under
+`.agents/plugins/kmctl/` with what this kmctl writes and reports each
+missing, extra or different one, or that `apm_modules/` is missing. Each
+problem names the command that fixes it: a missing package or hook, and any
+problem with the Antigravity folder, names
+`kmctl plugin install --harness HARNESS`, an older package names
+`kmctl plugin update --harness HARNESS`, and a changed Claude hook names
+`kmctl plugin update`. It reads files only.
 
 | Option | Meaning | Default |
 |---|---|---|
+| `--harness LIST` | The harnesses to check, as a comma list: `claude`, `antigravity`. | `claude` |
 | `--scope SCOPE` | `project` (this repository) or `user` (`~/.apm/` and Claude Code's folder). | `project` |
-| `--json` | Print one JSON object: `cli_version`, `scope`, `package_ref`, `hook`, `problems`. | off |
+| `--json` | Print one JSON object: `cli_version`, `scope`, `package_ref`, `hook` (every checked harness's hook is the one this kmctl writes), `problems`. | off |
 
-Exit code: 0 whether or not there are problems.
+Exit code: 0 whether or not there are problems; 1 for a harness it does not know.
 
 ### Environment
 

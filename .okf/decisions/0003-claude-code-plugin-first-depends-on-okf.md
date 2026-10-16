@@ -57,3 +57,6 @@ The record had no Consequences section; this adds it.
 ## Correction, 2026-10-16
 
 Superseded by [ADR 0014](0014-apm-is-the-only-install-route.md).
+
+The other harnesses follow through APM: Antigravity in
+[ADR 0015](0015-antigravity-gets-skills-and-rules-from-apm-and-a-kmctl-plugin-folder.md).

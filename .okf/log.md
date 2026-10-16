@@ -100,3 +100,5 @@
 - Superseded `decisions/0003-claude-code-plugin-first-depends-on-okf` with `decisions/0014-apm-is-the-only-install-route`.
 - Corrected `decisions/0001-standalone-cli-installs-its-plugin`, `decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code` and `decisions/0012-releases-come-from-ci` for ADR 0014: the package in apm/ replaces the staged plugin, init stops writing the rules, and apm/apm.yml is the version source.
 - Updated `manifesto` and `architecture/overview` for ADR 0014: the APM package in apm/ replaces the plugin, `kmctl plugin install --harness claude` installs it and writes the hook and okf's MCP server, and I1's test checks the hook kmctl writes.
+- Added `decisions/0015-antigravity-gets-skills-and-rules-from-apm-and-a-kmctl-plugin-folder` with `kmctl new decision`.
+- Updated `manifesto` and `architecture/overview`, and corrected `decisions/0003-claude-code-plugin-first-depends-on-okf`, for ADR 0015: Antigravity is a harness `kmctl plugin install` serves, through APM and the plugin folder `antigravity.py` writes.

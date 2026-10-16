@@ -17,12 +17,8 @@ import json
 import os
 import re
 import shutil
-import socket
 import subprocess
-import sys
-import time
 import zipfile
-from collections.abc import Iterator
 from datetime import date, datetime
 from importlib.metadata import version
 from pathlib import Path
@@ -51,7 +47,6 @@ OVERVIEW = ROOT / ".okf" / "architecture" / "overview.md"
 COMMANDS = ROOT / "docs" / "reference" / "commands.md"
 PAGE = ROOT / APM_DOC
 INSTALL_HOW_TO = ROOT / "docs" / "how-to" / "install-the-plugin-and-the-ci-action.md"
-GITHTTP = Path(__file__).parent / "fixtures" / "githttp.py"
 #: The Claude Code folder of whoever runs the tests, read before any test
 #: points CLAUDE_CONFIG_DIR elsewhere, to check the integration test leaves it alone.
 REAL_CLAUDE = Path(os.environ.get("CLAUDE_CONFIG_DIR") or Path.home() / ".claude")
@@ -215,6 +210,7 @@ def test_wheel_reports_the_set_version_and_carries_the_skills(tmp_path: Path) ->
         if p.is_file() and "__pycache__" not in p.parts
     }
     assert want <= names
+    assert "kmctl/_agents/kmctl-auditor.md" in names
     assert not [n for n in names if "_plugin" in n or "marketplace" in n]
 
 
@@ -437,104 +433,6 @@ def test_docs_release_set_moves_the_page_pins(tmp_path: Path) -> None:
 
 
 # r9: a real consumer ----------------------------------------------------------
-
-
-def _free_port() -> int:
-    """A TCP port on 127.0.0.1 that nothing listens on now."""
-    with socket.socket() as sock:
-        sock.bind(("127.0.0.1", 0))
-        return int(sock.getsockname()[1])
-
-
-def _git(*args: str, cwd: Path) -> None:
-    """Run git in ``cwd``, failing the test with its stderr."""
-    res = subprocess.run(
-        ["git", *args], cwd=cwd, capture_output=True, text=True, check=False
-    )
-    assert res.returncode == 0, res.stderr
-
-
-@pytest.fixture
-def served(tmp_path: Path) -> Iterator[str]:
-    """This tree's files (not git-ignored ones) served as kmctl.git, tagged v<version>; yields its URL."""
-    files = subprocess.run(
-        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
-        cwd=ROOT,
-        capture_output=True,
-        check=True,
-    ).stdout.split(b"\0")
-    work = tmp_path / "kmctl"
-    for name in filter(None, files):
-        src = ROOT / os.fsdecode(name)
-        if src.is_file():
-            (work / os.fsdecode(name)).parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(src, work / os.fsdecode(name))
-    _git("init", "-q", "-b", "main", cwd=work)
-    _git("add", "-A", cwd=work)
-    _git(
-        *("-c", "user.email=t@e.invalid", "-c", "user.name=t"),
-        *("commit", "-qm", "tree"),
-        cwd=work,
-    )
-    _git("tag", f"v{version('kmctl')}", cwd=work)
-    # APM wants an owner/repo path, as on GitHub.
-    srv = tmp_path / "srv"
-    bare = srv / "o" / "kmctl.git"
-    bare.parent.mkdir(parents=True)
-    _git("clone", "-q", "--bare", str(work), str(bare), cwd=tmp_path)
-    _git("update-server-info", cwd=bare)
-    port = _free_port()
-    proc = subprocess.Popen(
-        [sys.executable, "-I", str(GITHTTP), str(srv), str(port)],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
-    try:
-        for _ in range(50):
-            try:
-                socket.create_connection(("127.0.0.1", port), timeout=0.2).close()
-                break
-            except OSError:
-                time.sleep(0.1)
-        yield f"http://127.0.0.1:{port}/o/kmctl.git"
-    finally:
-        proc.terminate()
-        proc.wait()
-
-
-def _uv_cache() -> str:
-    """The uv cache dir of the real HOME, so the scratch HOME reuses downloads."""
-    return subprocess.run(
-        ["uv", "cache", "dir"], capture_output=True, text=True, check=True
-    ).stdout.strip()
-
-
-@pytest.fixture
-def consumer(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
-    """A scratch git repository as the working folder, with scratch HOME and Claude config.
-
-    PATH holds uv, uvx and the system folders only, so the real claude CLI is
-    never run.
-    """
-    home = tmp_path / "home"
-    (home / ".claude").mkdir(parents=True)
-    tools = tmp_path / "tools"
-    tools.mkdir()
-    for tool in ("uv", "uvx"):
-        found = shutil.which(tool)
-        assert found, f"{tool} must be on PATH"
-        (tools / tool).symlink_to(found)
-    monkeypatch.setenv("UV_CACHE_DIR", os.environ.get("UV_CACHE_DIR") or _uv_cache())
-    monkeypatch.setenv("HOME", str(home))
-    monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(home / ".claude"))
-    monkeypatch.setenv("XDG_DATA_HOME", str(home / ".local" / "share"))
-    monkeypatch.setenv("PATH", f"{tools}:/usr/bin:/bin")
-    monkeypatch.delenv("VIRTUAL_ENV", raising=False)
-    repo = tmp_path / "consumer"
-    repo.mkdir()
-    _git("init", "-q", cwd=repo)
-    monkeypatch.chdir(repo)
-    return repo
 
 
 def _kmctl(*args: str) -> Result:

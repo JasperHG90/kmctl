@@ -8,12 +8,16 @@ writing knowledge are not in it: kmctl's APM package installs them in
 ``RULES``, the guidance those files do not.
 """
 
+import json
 import re
 from dataclasses import asdict, dataclass
 from importlib.metadata import version
 from pathlib import Path
+from typing import Protocol
+from urllib.parse import unquote, urlparse
 
 import yaml
+from pydantic import BaseModel, Field, ValidationError
 
 from kmctl import plugin
 from kmctl.handoffs import live_handoffs
@@ -173,3 +177,55 @@ def as_dict(briefing: Briefing) -> dict:
     data["rules"] = [{"name": n, "text": t} for n, t in briefing.rules]
     data["skills"] = [{"name": n, "summary": s} for n, s in briefing.skills]
     return data
+
+
+class _Stdin(Protocol):
+    """What ``hook_workspace`` uses of standard input."""
+
+    def isatty(self) -> bool:
+        """Whether it is a terminal."""
+        ...
+
+    def read(self) -> str:
+        """All of it."""
+        ...
+
+
+class _HookInput(BaseModel):
+    """The JSON object Antigravity sends a hook on stdin, with the field kmctl reads."""
+
+    workspace_paths: list[str] = Field(
+        default_factory=list,
+        alias="workspacePaths",
+        description="The open workspaces' folders; the first is the repository.",
+    )
+
+
+def hook_workspace(stdin: _Stdin | None) -> Path | None:
+    """The repository an Antigravity hook names on stdin, or None.
+
+    Antigravity sends every hook a JSON object whose ``workspacePaths`` lists
+    the open workspaces; the first is the repository. A terminal is never
+    read, so a person running the command by hand is not left waiting. Empty
+    input, input that is not that JSON, and a path that is not a folder all
+    give None, and the caller falls back to ``--path``. A ``file://`` URI is
+    read as its path.
+    """
+    if stdin is None or stdin.isatty():
+        return None
+    try:
+        paths = _HookInput.model_validate_json(stdin.read()).workspace_paths
+    except ValidationError:
+        return None
+    first = paths[0] if paths else ""
+    if not first:
+        return None
+    if first.startswith("file://"):
+        first = unquote(urlparse(first).path)
+    path = Path(first)
+    return path if path.is_dir() else None
+
+
+def as_antigravity(text: str) -> str:
+    """The briefing ``text`` in the JSON an Antigravity SessionStart hook prints to inject it."""
+    return json.dumps({"injectSteps": [{"systemMessage": {"systemMessage": text}}]})
