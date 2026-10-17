@@ -3,7 +3,7 @@
   "slug": "verify-verb",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -103,8 +103,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "6e023ed8534b407005471eb90f5c24acbc414941db14a4306c4285dd88e88c71",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "c5a9bf454206df2c3575a889cf403ab6fb4601314c113901cfa22b21e3e20a93",
+    "started_at": "2026-10-17T21:22:24+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "c5a9bf454206df2c3575a889cf403ab6fb4601314c113901cfa22b21e3e20a93",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -119,5 +138,5 @@
     }
   ],
   "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
-  "at": "2026-10-17T21:22:00+00:00"
+  "at": "2026-10-17T21:22:24+00:00"
 }
