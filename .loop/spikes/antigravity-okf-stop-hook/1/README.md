@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016
-  at: '2026-10-17T06:30:58+00:00'
+  at: '2026-10-17T06:32:20+00:00'
 slug: antigravity-okf-stop-hook
 n: 1
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike antigravity-okf-stop-hook/1
@@ -24,7 +24,7 @@ The command exited 1:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note antigravity-okf-stop-hook 1`.
+The command exited 1 because its guard expected executionNum 1 on the first stop. agy 1.4.0 sends executionNum 0 on the first Stop of a turn (its docs show 1), so the hook passed and the agent stopped; the hook ran once. Spike 2 reruns this with the guard on 0.
 
 ## Files
 
