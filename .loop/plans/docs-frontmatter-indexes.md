@@ -40,7 +40,13 @@ replace "none" with that ticket's slug and the finding, in one line (ADR 0001). 
   `kmctl check --fix` regenerates them on demand, as `ruff --fix` does.
   `check_docs` in `src/kmctl/checks.py` fails (level `error`) when a
   folder index is missing or differs from what kmctl would generate, with
-  "run `kmctl check --fix`" as the fix. `--fix` touches nothing else: not
+  "run `kmctl check --fix`" as the fix. The operator chose an error for a
+  missing folder index: a downstream repo that bumps kmctl (or the
+  action's ref) without running `kmctl update` or `kmctl check --fix`
+  fails CI once, with that fix line; the ADR and the upgrade notes in
+  `docs/reference/commands.md` say so. A page directly in `docs/` or in a
+  folder outside the four Diataxis ones must still be listed in
+  `docs/README.md`, as today. `--fix` touches nothing else: not
   the root index, not a hand-written folder index, not `.okf/`.
   A generated index starts with a marker comment saying kmctl writes it.
   kmctl overwrites only a folder `README.md` that carries the marker or
@@ -49,7 +55,10 @@ replace "none" with that ticket's slug and the finding, in one line (ADR 0001). 
 - A pre-commit hook. `new:.pre-commit-hooks.yaml` at the repo root offers
   hook `kmctl-check` (runs `kmctl check`, no file names passed) so another
   repo can list kmctl under `repos:` and add `args: [--fix]` to fix as it
-  commits. This repo's `.pre-commit-config.yaml` runs it too.
+  commits. This repo's `.pre-commit-config.yaml` runs it too. The hook's
+  shape is checked offline; running it through prek from a scratch repo
+  that points at a temporary commit of this checkout is an `integration`
+  test, run by the integration gate.
 - Agent instructions. The knowledge rule kmctl ships,
   `apm/claude/.apm/instructions/docs-layout.instructions.md` (and its
   generated Antigravity copy), the `CLAUDE.md`/`AGENTS.md` block in
@@ -70,6 +79,12 @@ replace "none" with that ticket's slug and the finding, in one line (ADR 0001). 
   through `field` in `src/kmctl/okf.py`; `kmctl check` reports a field of the
   wrong shape. A docs page is due only when its `stale_after` has passed
   or a listed source changed; a missing `verified` does not make it due.
+  "Source changed" means the source's last commit is newer than the
+  page's latest `verified` date or, with none, the page's own last commit,
+  so a page kmctl created goes due once a source changes after it and
+  stops being due when the page is next committed or verified.
+  `review_due` lists docs pages in a repo with no `.okf/` too (today it
+  returns early there).
   `kmctl new doc` writes `description` (from `--description`),
   `stale_after` three months ahead and an empty `sources`, never
   `verified`. In `kmctl review due` a docs page's id starts with `docs/`
@@ -95,4 +110,9 @@ warning and exit 0, and a docs page past its `stale_after` appears in
 
 ## Could invalidate this plan
 
-- none
+- prek cannot install and run a `language: python` hook from a local
+  path repo pinned to a temporary commit of this checkout, within the
+  integration gate's time; then r11 needs another way to show the hook
+  works from another repo. Settled by spike:docs-frontmatter-indexes/1:
+  prek 0.5.5 installed and ran the hook from a local clone pinned by sha
+  in about 2 s, and `args` pass through.

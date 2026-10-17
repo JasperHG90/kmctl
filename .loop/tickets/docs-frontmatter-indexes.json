@@ -3,7 +3,7 @@
   "slug": "docs-frontmatter-indexes",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 1,
+  "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -182,9 +182,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 1,
-    "binds": "6ff5aeadbf3139e6fd2d4c3824fd1325af2da2a45b2f3e13cd4bd8cf610f0fe2",
-    "started_at": "2026-10-17T16:42:25+00:00",
+    "n": 2,
+    "binds": "1b4fdba0cc6f355b2eb529fe82544b1a22ed40eda3e2d9d5caa683ecbe10b1aa",
+    "started_at": "2026-10-17T16:46:42+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -197,10 +197,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "6ff5aeadbf3139e6fd2d4c3824fd1325af2da2a45b2f3e13cd4bd8cf610f0fe2",
+  "plan_hash": "1b4fdba0cc6f355b2eb529fe82544b1a22ed40eda3e2d9d5caa683ecbe10b1aa",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -215,5 +215,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
-  "at": "2026-10-17T16:46:41+00:00"
+  "at": "2026-10-17T16:46:42+00:00"
 }
