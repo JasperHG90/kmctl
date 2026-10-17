@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "antigravity-rules",
+  "n": 1,
+  "command": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/spike-rules.sh",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/spike-rules.sh",
+      "copy": "files/spike-rules.sh"
+    }
+  ],
+  "where": "worktree",
+  "head": "ab03e8a6db140c1c808783ae8736e7c1fdf5f6d5",
+  "fingerprint": "873296580311e233676b9f29a01245643f24022be4e5d9d462fe287859d224af",
+  "started_at": "2026-10-17T06:29:13+00:00",
+  "finished_at": "2026-10-17T06:29:20+00:00",
+  "duration_seconds": 6.651,
+  "timeout_seconds": 600.0,
+  "exit": 1,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
+  "moved_from": null
+}

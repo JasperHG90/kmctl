@@ -1,0 +1,12 @@
+before: diagrams-stay-current.md docs-layout.md manifesto-invariants.md okf-bundle.md 
+deleted: 
+apm install rc=0; skip lines: 2
+after install: diagrams-stay-current.md docs-layout.md manifesto-invariants.md okf-bundle.md 
+apm uninstall rc=0
+/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratch
+pad/spike-rules.10TE/p/apm.yml (removed 1 package(s))
+[+] Cleaned up 2 integrated hooks
+[*] Uninstall complete: Removed 1 package(s) from apm.yml, Removed 2 package(s) 
+from apm_modules/
+left files: 0
+ls: cannot access 'apm.lock.yaml': No such file or directory
