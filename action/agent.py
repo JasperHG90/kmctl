@@ -1,6 +1,11 @@
 # /// script
 # requires-python = ">=3.12"
-# dependencies = ["pydantic-ai-slim[openai]==2.57.0", "pyyaml>=6.0.3"]
+# dependencies = [
+#   "pydantic-ai-slim[openai]==2.57.0",
+#   "pyyaml>=6.0.3",
+#   "opentelemetry-sdk==1.45.1",
+#   "opentelemetry-exporter-otlp-proto-http==1.45.1",
+# ]
 # ///
 """A small agent for CI: give it a task, a model, folders to read and skills to use.
 
@@ -26,6 +31,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import base64
 import functools
 import json
 import os
@@ -44,8 +50,10 @@ os.environ.setdefault("PYDANTIC_AI_NO_BANNER", "1")
 import yaml
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent, ModelRetry
+from pydantic_ai.capabilities import Instrumentation
 from pydantic_ai.exceptions import UnexpectedModelBehavior
 from pydantic_ai.models import Model
+from pydantic_ai.models.instrumented import InstrumentationSettings
 from pydantic_ai.usage import UsageLimits
 
 HERE = Path(__file__).resolve().parent
@@ -590,6 +598,48 @@ def bad_citations(ws: Workspace, report: Report) -> list[str]:
     return bad
 
 
+#: Langfuse's OTLP path, after its base URL.
+LANGFUSE_OTLP = "/api/public/otel/v1/traces"
+LANGFUSE_BASE_URL = "https://cloud.langfuse.com"
+OTLP_ENDPOINT_VARS = (
+    "OTEL_EXPORTER_OTLP_ENDPOINT",
+    "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT",
+)
+
+
+def tracer_provider():
+    """Return an OpenTelemetry tracer provider that sends traces over OTLP, or None.
+
+    Tracing is off unless the environment asks for it. With
+    ``LANGFUSE_PUBLIC_KEY`` and ``LANGFUSE_SECRET_KEY`` set, traces go to
+    Langfuse at ``LANGFUSE_BASE_URL`` (default Langfuse's EU cloud). Otherwise,
+    with ``OTEL_EXPORTER_OTLP_ENDPOINT`` or ``OTEL_EXPORTER_OTLP_TRACES_ENDPOINT``
+    set, they go wherever the standard OpenTelemetry variables say. OpenTelemetry's
+    SDK and exporter are imported only when tracing is on.
+    """
+    public = os.environ.get("LANGFUSE_PUBLIC_KEY")
+    secret = os.environ.get("LANGFUSE_SECRET_KEY")
+    endpoint = headers = None
+    if public and secret:
+        base = os.environ.get("LANGFUSE_BASE_URL") or LANGFUSE_BASE_URL
+        endpoint = base.rstrip("/") + LANGFUSE_OTLP
+        auth = base64.b64encode(f"{public}:{secret}".encode()).decode()
+        headers = {"Authorization": f"Basic {auth}"}
+    elif not any(os.environ.get(name) for name in OTLP_ENDPOINT_VARS):
+        return None
+
+    from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+    from opentelemetry.sdk.resources import Resource
+    from opentelemetry.sdk.trace import TracerProvider
+    from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
+    provider = TracerProvider(resource=Resource.create({"service.name": "kmctl-agent"}))
+    provider.add_span_processor(
+        BatchSpanProcessor(OTLPSpanExporter(endpoint=endpoint, headers=headers))
+    )
+    return provider
+
+
 async def run_agent(
     model: Model | str,
     instructions: str,
@@ -597,11 +647,13 @@ async def run_agent(
     ws: Workspace,
     timeout: float,
     max_requests: int,
+    tracer=None,
 ):
     """Run the agent once and return PydanticAI's result.
 
     The report goes back to the agent, up to ``OUTPUT_RETRIES`` times, while
-    it cites a line the agent did not see.
+    it cites a line the agent did not see. With ``tracer``, a tracer provider,
+    the run, its model requests and its tool calls are traced.
     """
     agent = Agent(
         model,
@@ -609,6 +661,11 @@ async def run_agent(
         instructions=instructions,
         tools=make_tools(ws),
         retries={"output": OUTPUT_RETRIES},
+        capabilities=(
+            [Instrumentation(settings=InstrumentationSettings(tracer_provider=tracer))]
+            if tracer
+            else []
+        ),
     )
 
     @agent.output_validator
@@ -676,9 +733,12 @@ def run(args: argparse.Namespace, model: Model | str | None = None) -> int:
     if model is None:
         model = build_model(args.model, args.base_url, args.api_key_env)
 
+    tracer = tracer_provider()
     try:
         result = asyncio.run(
-            run_agent(model, instructions, prompt, ws, timeout, args.max_requests)
+            run_agent(
+                model, instructions, prompt, ws, timeout, args.max_requests, tracer
+            )
         )
     except TimeoutError:
         print(f"agent: stopped after the time limit ({args.timeout}).", file=sys.stderr)
@@ -694,6 +754,10 @@ def run(args: argparse.Namespace, model: Model | str | None = None) -> int:
         else:
             print(f"agent: stopped; the model failed: {err}", file=sys.stderr)
         return 1
+    finally:
+        # Send what is left, also when the run failed or ran out of time.
+        if tracer:
+            tracer.shutdown()
 
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)

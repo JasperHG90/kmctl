@@ -146,3 +146,20 @@ stay available to the agent. `.github/workflows/knowledge-audit.yml` runs
 all three as a matrix, each with its own `agent-report-NAME` artifact and
 issue; `action.yml`'s `report_name` input names the artifact so a workflow
 can do the same through the action.
+
+## Correction, 2026-10-17
+
+`action/agent.py run` can send OpenTelemetry traces of each run: the agent
+run, each model request with its input, output and token use, and each
+tool call. Tracing is off unless the environment asks for it. With
+`LANGFUSE_PUBLIC_KEY` and `LANGFUSE_SECRET_KEY` set, traces go over OTLP to
+`LANGFUSE_BASE_URL` (default Langfuse's EU cloud) plus
+`/api/public/otel/v1/traces` with Basic auth; otherwise
+`OTEL_EXPORTER_OTLP_ENDPOINT` or `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` sends
+them to any OTLP backend. The script passes PydanticAI's `Instrumentation`
+capability a tracer provider with a batch exporter, and shuts it down on
+every exit so a failed or timed-out run still sends its spans. A replay of
+a 64-request audit sent 166 spans (33 MB) and all reached Langfuse with
+input, output and usage (spike:langfuse-traces/2 in `.loop/`). The keys are
+not in the shell tool's environment. A trace holds what the agent read, so
+it goes only where the repository's readers may look.

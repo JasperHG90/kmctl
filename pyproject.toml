@@ -41,6 +41,8 @@ packages = ["src/kmctl"]
 [dependency-groups]
 dev = [
     "jsonschema>=4.26.0",
+    "opentelemetry-exporter-otlp-proto-http==1.45.1",
+    "opentelemetry-sdk==1.45.1",
     "packaging>=26.3",
     "pydantic-ai-slim[openai]==2.57.0",
     "pytest>=9.1.1",
