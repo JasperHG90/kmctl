@@ -209,8 +209,9 @@ from in step 1.
 
 `fetch-depth: 0` gives `kmctl review due` the git history it reads. Per
 `action.yml`, this default `checks` mode installs kmctl, runs `kmctl check` and
-`kmctl review due`, writes both to the job summary, and fails only when
-`kmctl check` fails. It needs no API key.
+`kmctl review due`, writes both to the job summary, and fails when
+`kmctl check` fails or `kmctl review due` crashes, never because a concept is
+due. It needs no API key.
 
 Run locally on the repository from the tutorial, with two decisions, the script behind this step
 writes this summary and exits 0:

@@ -110,8 +110,9 @@ kmctl stops at the edge of the repository. A full set-up also needs:
   [APM](https://microsoft.github.io/apm) does that, and installs the same
   package into each agent harness in that harness's own format, so no team is
   tied to one vendor. kmctl ships only the rules and skills that keep its own
-  knowledge current, as one APM package, which APM installs for Claude Code
-  and Antigravity.
+  knowledge current, as an APM package (a shared package and one per
+  harness, in one folder), which APM installs for Claude Code and
+  Antigravity.
 - **A shared layer and search.** Copying each repository's `docs/` and
   `.okf/` to a shared place on every merge to the main branch, and searching
   across them as the reader, so nobody sees what they may not read. A managed

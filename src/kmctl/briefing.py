@@ -1,4 +1,4 @@
-"""The session briefing: where knowledge lives, which skill to use, what is due, and the rules (ADR 0002).
+"""The session briefing: where knowledge lives, which skill to use, what is due, and one reading rule (ADR 0002).
 
 The SessionStart hook in kmctl's APM package relays it, so it is read
 at the start of every session in every harness. It reads state and writes

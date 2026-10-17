@@ -6,7 +6,7 @@ description: "Every kmctl command, subcommand and option."
 
 ## Summary
 
-Every `kmctl` command, subcommand and option in kmctl 0.3.0, taken from
+Every `kmctl` command, subcommand and option, taken from
 `kmctl --help` and each command's `--help`. Every command takes `--help` (or
 `-h`). Commands that read or write a repository take `--path` (default: the
 current directory, which must be an existing folder). `--json` prints one
@@ -19,10 +19,10 @@ for people. Warnings and refusals go to stderr.
 | `kmctl update` | Same as `kmctl init`. Run it after upgrading kmctl to refresh the `CLAUDE.md` block. |
 | `kmctl check` | Check indexes agree with their folders, docs front matter has its shape, prototypes have a `README.md`, and links resolve; `--fix` writes the generated docs folder indexes first. |
 | `kmctl handoffs` | List the live handoffs in `.okf/handoffs/`, newest first. |
-| `kmctl briefing` | Print the session briefing: where knowledge lives, what is due, and the rules. |
+| `kmctl briefing` | Print the session briefing: where knowledge lives, the skills, what is due, and the rule for reading knowledge. |
 | `kmctl schema` | Print the JSON Schema of one document kind, or list the kinds there are. |
 | `kmctl review` | Find knowledge that is due for review. Verbs: `due`. |
-| `kmctl review due` | List concepts in `.okf/` due for review, with the reason for each. |
+| `kmctl review due` | List the concepts in `.okf/` and the pages in `docs/` that are due for review, with the reason for each. |
 | `kmctl new` | Create a `.okf/` concept or a `docs/` page with its structure. Needs a repository set up by `kmctl init`. |
 | `kmctl new decision` | Create a decision in `.okf/` with its front matter, skeleton, index entry and log line. |
 | `kmctl new practice` | Create a practice in `.okf/`, the same way. |
@@ -225,7 +225,7 @@ page by hand. Nothing checks a file against it yet.
 
 | Argument or option | Meaning | Default |
 |---|---|---|
-| `KIND` | The kind whose schema to print: `decision`, `practice`, `proposal`, `prototype`, `handoff` (what `kmctl new` writes); `manifesto`, `index`, `section-index`, `log` (the bundle files `kmctl init` writes); `architecture` (a diagram page, which no verb writes); `tutorial`, `how-to`, `reference`, `explanation`, `docs-index` (`docs/` pages and their index). | none: list the kinds |
+| `KIND` | The kind whose schema to print: `decision`, `practice`, `proposal`, `prototype`, `handoff` (what `kmctl new` writes); `manifesto`, `index`, `section-index`, `log` (the bundle files `kmctl init` writes); `architecture` (a diagram page, which no verb writes); `tutorial`, `how-to`, `reference`, `explanation` (`docs/` pages); `docs-index` (`docs/README.md`, the root index you write by hand), `docs-folder-index` (a Diataxis folder's `README.md`, which `kmctl check --fix` generates). | none: list the kinds |
 | `--json` | With no kind, print the list as one JSON object of kind to where it lives and what it is for. A kind's schema is JSON either way. | off |
 
 The body is in `x-kmctl-sections`: a list of the `##` sections in order,
@@ -235,8 +235,9 @@ that end with Depicts, or `null` for no fixed sections. When sections may
 follow the fixed list, `x-kmctl-then` gives their `{"pattern": REGEX}`: a
 decision may end with any number of `Correction, YYYY-MM-DD` sections, which
 `kmctl decision supersede` appends. A kind with no front
-matter (the `docs/` pages, the indexes below the root, the log) allows no
-properties, and the root index allows only `okf_version`. Dates such as
+matter (the indexes below the root, the `docs/` indexes, the log) allows no
+properties, the root index allows only `okf_version`, and a `docs/` page
+allows only `description`, `stale_after`, `verified` and `sources` (ADR 0022). Dates such as
 `generated.at` are a date or a UTC timestamp.
 
 Exit code: 1 for an unknown kind, with the list of kinds on stderr.
@@ -274,7 +275,7 @@ concept of a kind creates its section and links it from `.okf/index.md`.
 | `TITLE` | The title; its kebab-case form names the file. Required. | |
 | `--description TEXT` | One sentence for the front matter and the index entry. Required. | |
 | `--path DIR` | The repository to write in: an existing folder. | `.` |
-| `--json` | Print one JSON object (`id`, `path`, `created_section`). | off |
+| `--json` | Print one JSON object (`id`, `path`, `created_section`, `updated`). | off |
 | `--key KEY` | Handoffs only: a session key, for example `$CLAUDE_CODE_SESSION_ID`. A handoff with the same key is updated in place instead of refused (ADR 0009). | none |
 | `--stale-after WHEN` | When `kmctl review due` lists the concept as due, written as `stale_after`. A duration from now: `30d` days, `12w` weeks, `6m` calendar months, `1y` calendar years (a month end past the new month's last day moves back to it). Or a date: `2027-01-15`, read as its midnight UTC, or a timestamp such as `2027-01-15T08:00:00Z`. It must be in the future, so `0d` and today's date are refused. | `14d` for a handoff, none for the rest |
 | `--source PATH` | Not for handoffs: a file or folder the concept describes, written to `sources` as `- resource: PATH`. Repeat it for more; they are written in the order given. It must exist on disk, found the way `kmctl review due` finds sources: from the concept's folder, then `.okf/`, then the repository root, with a leading `/` meaning `.okf/` and `.md` added when needed. Git is not needed, so a file you have not added yet is fine. Once someone verifies the concept, `kmctl review due` lists it when a commit changes a source. | none |

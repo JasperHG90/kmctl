@@ -81,3 +81,9 @@ it writes no rules: they ship in kmctl's APM package, and
 `kmctl plugin install` puts them in `.claude/rules/` through APM
 (`src/kmctl/scaffold.py`). The reason the briefing stopped carrying them
 still holds: the rule files reach the agent's system prompt.
+
+## Correction, 2026-10-17
+
+The 2026-10-17 correction above says `kmctl plugin install` puts the rules
+in `.claude/rules/`. That verb is gone ([ADR 0021](0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md)): `apm install` puts them
+there, from kmctl's package. The rest of that correction holds.

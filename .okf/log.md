@@ -126,3 +126,9 @@
 - Corrected `decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script`: three shipped audits replace the audit skill as the default task; updated `architecture/overview` to show `action/prompts/`.
 - Corrected `decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script`: optional OTLP traces to Langfuse or any OTLP backend; updated `architecture/overview` to show them.
 - Updated `architecture/overview`: the briefing's setup line reads `kinds.ARCHITECTURE`.
+- Corrected `decisions/0001-standalone-cli-installs-its-plugin`, `decisions/0002-briefing-and-rules-injected-by-the-cli`, `decisions/0015-antigravity-gets-skills-and-rules-from-apm-and-a-kmctl-plugin-folder`, `decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity` and `decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest`: `kmctl plugin install` is gone; APM installs the package and `kmctl plugin patch` adds the rest (ADR 0021). Found by the okf-vs-code audit.
+- Corrected `decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code`: init's current last line, and the kmctl block's five duties.
+- Updated `decisions/index`: notes on the lines for ADRs 0001, 0002, 0011, 0012, 0014 and 0015 naming what amended them.
+- Updated `manifesto`: APM installs kmctl's package and `kmctl plugin patch` adds the rest; the CLI no longer installs it.
+- Updated `architecture/overview`: what `kmctl plugin patch` writes and runs, where the rules live, the audit's task and the four apm.yml files a release sets; updated `architecture/index` to match its description.
+- Updated `index`: dropped the concept and record counts, which nothing keeps true.

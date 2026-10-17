@@ -105,3 +105,11 @@ Rejected:
   reads. ADRs 0014, 0015 and 0018 point here for what changed.
 
 Supersedes [ADR 0016](0016-antigravity-rules-come-from-the-kmctl-plugin-folder.md).
+
+## Correction, 2026-10-17
+
+The Decision says `kmctl plugin install` removes, before running APM, what
+an older kmctl wrote that APM now writes. That verb is gone ([ADR 0021](0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md)):
+`kmctl plugin patch` does the removing, after the user's `apm install`, and
+it never runs APM; when APM must write a piece again, it says to run
+`apm install` again (`src/kmctl/plugin.py`).

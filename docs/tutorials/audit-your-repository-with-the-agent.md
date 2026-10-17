@@ -61,7 +61,7 @@ grep -n 'as-json' docs/reference/commands.md
 ```
 
 ```
-256:| `--as-json` | Print one JSON object (`due`, `notices`, `expired_handoffs`, `history_skipped`). | off |
+257:| `--as-json` | Print one JSON object (`due`, `notices`, `expired_handoffs`, `history_skipped`). | off |
 ```
 
 The code still says `--json`, so the page is now wrong in one place. `sed`
@@ -103,10 +103,11 @@ Open `../report/report.md`. Under its heading it starts with a summary and
 a count by severity:
 
 ```
-Checked the `kmctl review due` section of docs/reference/commands.md
-against src/kmctl/__init__.py and src/kmctl/review_due.py. The command
-behavior, exit code, docs due criteria, and output formatting match the
-implementation, but the options table documents `--as-json` instead of
+Audited the `kmctl review due` section in `docs/reference/commands.md`
+against its implementation in `src/kmctl/__init__.py` and
+`src/kmctl/review_due.py`. The command name, purpose, due conditions for
+docs pages, `--path` option and default, exit code, and JSON payload fields
+all hold. However, the options table documents `--as-json` instead of
 `--json`.
 
 1 high, 0 medium, 0 low, 0 info.
@@ -118,17 +119,17 @@ summary column:
 
 | Severity | Finding | Claim | Contradicted by | Fix |
 |---|---|---|---|---|
-| high | Incorrect option name `--as-json` in options table | `docs/reference/commands.md:256` | `src/kmctl/__init__.py:276`, `src/kmctl/__init__.py:292-298` | Change `--as-json` to `--json` in the options table for `kmctl review due`. |
+| high | Incorrect JSON option flag name --as-json | `docs/reference/commands.md:257` | `src/kmctl/__init__.py:276`, `src/kmctl/__init__.py:292-298` | Change `--as-json` to `--json` in the options table of the `kmctl review due` section to match the CLI flag defined in Typer. |
 
 That is the line you broke. Last comes the checked list: what the agent
 compared, what it compared it against and the lines it read. Something that
-holds goes here, not in the findings. This run checked five things, for
+holds goes here, not in the findings. This run checked seven things, for
 example:
 
 ```
-- `Exit code of `kmctl review due`` against Command implementation and CLI
-  epilog in src/kmctl/__init__.py: `docs/reference/commands.md:258`,
-  `src/kmctl/__init__.py:277`, `src/kmctl/__init__.py:301-319`
+- `--path option name, description, and default value` against
+  src/kmctl/__init__.py:282-291: `docs/reference/commands.md:256`,
+  `src/kmctl/__init__.py:282-291`
 ```
 
 ### 7. Check the finding yourself
@@ -137,7 +138,7 @@ Every citation is a `path:line`, so you can look at it. Print the claim and
 the lines that contradict it, using the numbers in your own report:
 
 ```
-sed -n 256p docs/reference/commands.md
+sed -n 257p docs/reference/commands.md
 sed -n 292,298p src/kmctl/__init__.py
 ```
 
@@ -199,13 +200,14 @@ folder and cites them like any other file:
 
 ```
 Checked every page in docs/tutorials/ against the documentation rules in
-context/docs-rules.md. docs/tutorials/README.md is the auto-generated
+../context/docs-rules.md. docs/tutorials/README.md is the auto-generated
 section index and contains no reader commands.
-docs/tutorials/get-started-with-kmctl.md satisfies rule 1 (time estimate
-near the top) and rule 2 (prerequisites listed before starting), but has 1
-low-severity mismatch against rule 3 where 'kmctl --version' in the
-prerequisites verification is written inline rather than in a fenced code
-block.
+docs/tutorials/audit-your-repository-with-the-agent.md satisfies all three
+rules (time estimate near top, prerequisites before start, and fenced code
+blocks for commands). docs/tutorials/get-started-with-kmctl.md satisfies
+rule 1 and rule 2, but has 1 low-severity mismatch against rule 3 where
+'kmctl --version' in the prerequisites verification is written inline
+rather than in a fenced code block.
 
 0 high, 0 medium, 1 low, 0 info.
 ```
@@ -213,9 +215,6 @@ block.
 | Severity | Finding | Claim | Contradicted by | Fix |
 |---|---|---|---|---|
 | low | Command not in fenced code block | `docs/tutorials/get-started-with-kmctl.md:29` | `../context/docs-rules.md:5` | Put the kmctl --version command in a fenced code block. |
-
-Your clone also has this page, so your agent checks it too and may report
-on it.
 
 ## What you learned
 

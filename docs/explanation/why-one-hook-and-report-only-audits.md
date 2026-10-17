@@ -7,18 +7,22 @@ description: "Why the session briefing is the only hook and why audits only repo
 ## The question
 
 kmctl exists to keep a repository's knowledge true. So why does what it
-installs do so little? It has one hook, which prints a briefing when a session starts and
-never stops anything, and its audit reports what is wrong but fixes nothing.
+installs do so little? Its own hook prints a briefing when a session starts
+and never stops anything, and its audit reports what is wrong but fixes
+nothing. (In Antigravity it also relays okf's opt-in Stop check, which is
+okf's, not kmctl's; see below.)
 This page explains why kmctl stops there.
 
 ## How it works
 
-**The briefing.** When a Claude Code session starts, the only hook in
-kmctl's package, which APM installs, runs
+**The briefing.** When a Claude Code session starts, kmctl's own hook, which
+APM installs from kmctl's package, runs
 `kmctl briefing` and passes its output into the session. The briefing
 says where each kind of knowledge lives (`docs/` for people who use the
 project, `.okf/` for people and agents working on it), lists what is due for
-review and which handoffs are live, and gives the rules for writing knowledge.
+review and which handoffs are live, lists the skills, and gives the one rule
+for reading knowledge. The rules for writing knowledge reach the agent from
+`.claude/rules/`, where APM installs them.
 The hook always exits 0: if kmctl is missing or fails, it prints a one-line
 note and the session goes on.
 
@@ -58,8 +62,8 @@ For Claude Code, kmctl's package also puts the knowledge rules in
 `.claude/rules/` (APM installs it, [ADR 0014](../../.okf/decisions/0014-apm-is-the-only-install-route.md),
 [ADR 0021](../../.okf/decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md))
 and `kmctl init` writes a kmctl block into `CLAUDE.md`, because the briefing
-alone left agents writing no architecture pages and has no room for the two
-rules it lacks
+alone left agents writing no architecture pages. The briefing now carries
+only the one rule those files lack
 ([ADR 0011](../../.okf/decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md)).
 
 **Why there is only one hook.** Three more hooks were considered and rejected
@@ -74,6 +78,13 @@ The commit gate shows the cost best. A refactor changes code without making
 any page wrong, so the gate would refuse often for nothing, and people learn
 to work around a gate like that. kmctl adds a hook or a gate
 only when a count shows it catches something.
+
+One Stop hook does ship, for Antigravity only, and it is okf's, not kmctl's.
+okf's package has an opt-in check that can send the agent back to work at
+the end of a turn while a bundle's `.okf/index.md` sets `upkeep: enforced`.
+APM's copy of it cannot run in Antigravity, so kmctl relays it there and
+changes nothing about what it checks
+([ADR 0018](../../.okf/decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity.md)).
 
 **Why the audit only reports.** An agent that both judges the knowledge and
 edits it can quietly make the knowledge agree with itself. Keeping the audit

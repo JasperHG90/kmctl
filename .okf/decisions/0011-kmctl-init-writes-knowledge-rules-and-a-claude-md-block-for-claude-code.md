@@ -154,3 +154,18 @@ puts them in `.claude/rules/` through APM, which also replaces an older copy.
 `src/kmctl/repo_rules/` is gone, and init's last line now starts with
 `kmctl plugin install --harness claude`. The rest of this record stands: the
 kmctl block in `CLAUDE.md` and `AGENTS.md`, and the first decision.
+
+## Correction, 2026-10-17
+
+The 2026-10-16 correction says init's last line starts with `kmctl plugin
+install --harness claude`. That verb is gone ([ADR 0021](0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md)). Init's last line now
+starts: "Next: install kmctl's package with APM for the skills and the
+knowledge rules (the kmctl README's install section: an apm.yml entry, apm
+install, kmctl plugin patch)" (`src/kmctl/__init__.py`), and `apm install`
+puts the rules in `.claude/rules/`.
+
+The kmctl block now holds five duties, not four: the fourth says a `docs/`
+page may carry `description`, `stale_after` and `sources` front matter and
+that a folder's `README.md` index is written by `kmctl check --fix`, never
+by hand ([ADR 0022](0022-docs-pages-carry-optional-okf-front-matter-and-generated-folder-indexes.md),
+`src/kmctl/scaffold.py`).

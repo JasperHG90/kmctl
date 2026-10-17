@@ -126,3 +126,11 @@ with what this kmctl writes, through `antigravity.plugin_problems`
 kmctl's package now ships the SessionStart hooks, okf's MCP server and the
 rules for each harness, and APM writes them; kmctl writes only the
 Antigravity agents and removes APM's broken okf Stop handler.
+
+## Correction, 2026-10-17
+
+`kmctl plugin install --harness antigravity`, which the Decision and the
+Consequences name, no longer exists ([ADR 0021](0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md)). The user runs `apm install
+--target antigravity`, then `kmctl plugin patch`, which writes
+`.agents/plugins/kmctl/` (the translated agents). A fresh clone needs the
+same two steps.
