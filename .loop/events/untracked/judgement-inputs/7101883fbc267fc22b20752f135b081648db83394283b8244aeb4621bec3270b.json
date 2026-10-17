@@ -1,0 +1,1 @@
+{"ask":"Fix knowledge drift the live audit found: ADR 0001 and ADR 0015 still describe kmctl plugin status, which was replaced by kmctl doctor; ADR 0002's 2026-10-16 correction says kmctl init writes the knowledge rules, which ADR 0014 moved to APM. Append dated Correction sections."}
