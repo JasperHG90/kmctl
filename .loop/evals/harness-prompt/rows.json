@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "With stdin a terminal and no --harness, kmctl plugin install writes to stderr a question listing each harness in HARNESSES with a number, reads a comma list of numbers or names, and installs exactly the harnesses the answer names; an empty answer installs claude; an answer naming no known harness is asked again, naming the accepted values; stdout holds no part of the question.",
+      "fails_when": "no question is asked, the question goes to stdout, the APM --target differs from the answer, an empty answer installs anything but claude, or a bad answer is accepted or ends the command",
+      "command": "uv run pytest tests/test_plugin.py -k prompt -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "kmctl plugin update with stdin a terminal and no --harness asks the same question, with the harnesses doctor's harnesses_found finds installed at that scope as its default (claude when none is found), and an empty answer updates those.",
+      "fails_when": "update asks no question, or an empty answer in a repository with antigravity installed (or claude and antigravity) updates a different set",
+      "command": "uv run pytest tests/test_plugin.py -k update_default -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "Without --harness, when stdin is not a terminal or --json is given, install and update refuse with exit 1 and a message naming --harness and the accepted values, without prompting and without running APM; with --harness they never prompt.",
+      "fails_when": "the command prompts, exits 0, runs APM, or its message does not name --harness and every harness; or a run with --harness prompts",
+      "command": "uv run pytest tests/test_plugin.py -k \"no_terminal or json_no_harness or harness_given\" -q"
+    },
+    {
+      "id": "r4",
+      "behavior": "kmctl plugin install --help and update --help, docs/reference/commands.md and both install how-tos say that without --harness the command asks at a terminal and refuses otherwise, and what update's default is.",
+      "fails_when": "the help or any of those pages still says the default is claude or does not mention the question",
+      "command": "uv run pytest tests/test_plugin.py -k harness_docs -q"
+    },
+    {
+      "id": "r5",
+      "behavior": "The other tests still pass.",
+      "fails_when": "uv run pytest or uv run pytest -m integration fails",
+      "command": "uv run pytest -q -m \"not integration or integration\""
+    }
+  ]
+}
