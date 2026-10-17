@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "The plan picked actions/prek by name, but at v1.3.0 it runs pre-commit; actions/pre_commit runs prek.",
+      "anchor": ".loop/plans/ci-toiminnot.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "336789223e6b0afa25ecffb8834ef3e4741b5caed4e40f2df38cc41a3df8fe91"
+  },
+  "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
+  "at": "2026-10-17T18:04:31+00:00"
+}
