@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The plan points release.py's APM pin pattern at JasperHG90/kmctl, but the only pin it moves in APM_DOC is the 'Older installs' example (`JasperHG90/Knowledge-management/apm#v0.3.0`), which records what a v0.3.0 user's apm.yml holds. If that example keeps the old name, `pin_apm_doc` finds no pin and `set_version` refuses ('has no ... pin; restore it'), which blocks cutting v0.4.0. If the example is renamed, it describes an entry no v0.3.0 user has, and `release set 0.4.0` then rewrites it to `#v0.4.0` under 'kmctl 0.3.0 and older'. The plan has to decide what that pin is for (drop pin_apm_doc and its count check, or point it at a real current pin) rather than just rename the pattern. Row r2 needs the same change.",
+      "anchor": "scripts/release.py:60",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r2"
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "The outcome and row r1 allow the old name only in src/kmctl/plugin.py, .okf/decisions/ and .loop/. Some docs describe old installs and must still use the old name to stay correct: the 'Older installs' string entry in docs/how-to/install-kmctl-with-apm.md:135, the refusal described in docs/reference/commands.md:337, and any `apm uninstall` example meant for a v0.3.0 install (OLD_PACKAGE stays the old name, and the refusal tells users to run exactly that). Applied as written, r1 would make those docs point v0.3.0 users at a name their apm.yml does not contain. The plan needs to list which docs and tests keep the old name on purpose (for example a docs section about old installs, and tests/test_plugin_patch.py's old-install fixtures, which r3 itself needs), and r1 needs the same exceptions.",
+      "anchor": "docs/how-to/install-kmctl-with-apm.md:135",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "83b019db5839bb3a58987256b817fd4e3ee7b74f913be2cf4e43c3b40764719d"
+  },
+  "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
+  "at": "2026-10-17T18:50:59+00:00"
+}
