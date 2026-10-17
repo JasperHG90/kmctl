@@ -46,6 +46,10 @@ jobs:
         timeout-minutes: 40
         env:
           AUDIT_API_KEY: ${{ secrets.AUDIT_API_KEY }}
+          # Traces go to Langfuse when both keys are set; unset, none are sent.
+          LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+          LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+          LANGFUSE_BASE_URL: ${{ secrets.LANGFUSE_BASE_URL }}
         run: >-
           uv run --script action/agent.py run
           --model deepseek-v4.1-flash

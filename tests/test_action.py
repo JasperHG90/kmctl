@@ -256,6 +256,8 @@ def test_workflow_audit_job_runs_agent_without_token_or_cache() -> None:
     assert "--audit ${{ matrix.audit }}" in agent["run"]
     assert job["strategy"] == {"fail-fast": False, "matrix": {"audit": AUDITS}}
     assert agent["env"]["AUDIT_API_KEY"] == "${{ secrets.AUDIT_API_KEY }}"
+    for name in ("LANGFUSE_PUBLIC_KEY", "LANGFUSE_SECRET_KEY", "LANGFUSE_BASE_URL"):
+        assert agent["env"][name] == f"${{{{ secrets.{name} }}}}", name
     _no_token(job)
     _no_cache(steps)
     assert keep["with"]["name"] == "agent-report-${{ matrix.audit }}"
