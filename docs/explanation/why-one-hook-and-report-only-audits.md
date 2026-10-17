@@ -10,7 +10,7 @@ This page explains why kmctl stops there.
 ## How it works
 
 **The briefing.** When a Claude Code session starts, the only hook in
-kmctl's package, which `kmctl plugin install` installs with APM, runs
+kmctl's package, which APM installs, runs
 `kmctl briefing` and passes its output into the session. The briefing
 says where each kind of knowledge lives (`docs/` for people who use the
 project, `.okf/` for people and agents working on it), lists what is due for
@@ -48,8 +48,9 @@ manage knowledge is read only by an agent that already knows to look for it.
 Native rule files work only in some harnesses, each with its own format. Every
 harness that can run a command at session start can print the briefing
 ([ADR 0002](../../.okf/decisions/0002-briefing-and-rules-injected-by-the-cli.md)).
-For Claude Code, kmctl also puts the knowledge rules in `.claude/rules/`
-(through `kmctl plugin install`, [ADR 0014](../../.okf/decisions/0014-apm-is-the-only-install-route.md))
+For Claude Code, kmctl's package also puts the knowledge rules in
+`.claude/rules/` (APM installs it, [ADR 0014](../../.okf/decisions/0014-apm-is-the-only-install-route.md),
+[ADR 0021](../../.okf/decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md))
 and `kmctl init` writes a kmctl block into `CLAUDE.md`, because the briefing
 alone left agents writing no architecture pages and has no room for the two
 rules it lacks

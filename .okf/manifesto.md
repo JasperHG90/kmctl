@@ -59,12 +59,12 @@ this formalizes so every repository can have it.
   The package also ships, per harness, the SessionStart hook that relays
   `kmctl`'s briefing (ADR 0004), okf's MCP server and, for Antigravity, okf's
   Stop check (ADR 0018), so APM (Agent Package Manager) installs all of it
-  (ADR 0020). `kmctl plugin install --harness claude` (or
-  `--harness antigravity`) writes the package into the repository's
-  `apm.yml` at the CLI's own version, runs APM, and adds only what APM
-  cannot install yet: the agents translated to
-  Antigravity's format, in `.agents/plugins/kmctl/` (ADR 0015). The harnesses
-  are Claude Code and Antigravity.
+  (ADR 0020). The user adds the package to `apm.yml` at the CLI's own
+  version and runs `apm install --target claude` (or `--target
+  antigravity`); `kmctl plugin patch` then adds only what APM cannot
+  install yet: the agents translated to Antigravity's format, in
+  `.agents/plugins/kmctl/` (ADR 0015, ADR 0021). The harnesses are Claude
+  Code and Antigravity.
 - **A reusable GitHub Action** (ADR 0005). On every pull request it runs the
   deterministic checks for free. The LLM audit is opt-in and reports only.
 

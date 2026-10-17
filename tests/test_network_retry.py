@@ -40,19 +40,16 @@ def _collected(*args: str) -> set[str]:
 
 
 def _is_install_call(node: ast.AST) -> bool:
-    """A ``_kmctl("plugin", "install"|"update", ...)`` call."""
+    """An ``apm_install(...)`` call, which runs the real APM against the network."""
     return (
         isinstance(node, ast.Call)
         and isinstance(node.func, ast.Name)
-        and node.func.id == "_kmctl"
-        and len(node.args) >= 2
-        and isinstance(node.args[1], ast.Constant)
-        and node.args[1].value in ("install", "update")
+        and node.func.id == "apm_install"
     )
 
 
 def _tests_that_install() -> set[str]:
-    """Tests in test_apm_package.py that run kmctl plugin install or update."""
+    """Tests in test_apm_package.py that install kmctl's package with the real APM."""
     tree = ast.parse(PLUGIN_TESTS.read_text())
     return {
         fn.name
@@ -105,33 +102,20 @@ def test_marked_every_test_that_runs_the_real_install() -> None:
 
 
 def test_installs_asserted_with_expected_exit_and_output() -> None:
-    tree = ast.parse(PLUGIN_TESTS.read_text())
-    unchecked = []
-    for fn in tree.body:
-        if not isinstance(fn, ast.FunctionDef):
-            continue
-        names = set()
-        for node in ast.walk(fn):
-            if isinstance(node, ast.Expr) and _is_install_call(node.value):
-                unchecked.append(f"{fn.name}:{node.lineno} result ignored")
-            if (
-                isinstance(node, ast.Assign)
-                and _is_install_call(node.value)
-                and isinstance(node.targets[0], ast.Name)
-            ):
-                names.add((node.targets[0].id, node.lineno))
-        for name, line in names:
-            if not any(
-                isinstance(node, ast.Assert)
-                and isinstance(node.test, ast.Compare)
-                and ast.unparse(node.test.left) == f"{name}.exit_code"
-                and node.msg is not None
-                and ast.unparse(node.msg) == f"{name}.output"
-                for node in ast.walk(fn)
-            ):
-                unchecked.append(f"{fn.name}:{line} {name} exit not asserted")
+    """apm_install fails the test when APM or kmctl plugin patch fails, so a call needs no check of its own."""
+    tree = ast.parse((ROOT / "tests" / "conftest.py").read_text())
+    [helper] = [
+        fn
+        for fn in tree.body
+        if isinstance(fn, ast.FunctionDef) and fn.name == "apm_install"
+    ]
+    asserted = {
+        ast.unparse(node.test.left)
+        for node in ast.walk(helper)
+        if isinstance(node, ast.Assert) and isinstance(node.test, ast.Compare)
+    }
 
-    assert unchecked == []
+    assert {"proc.returncode", "result.exit_code"} <= asserted
 
 
 GENERATED = """

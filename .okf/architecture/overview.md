@@ -16,10 +16,10 @@ step a script can do and is the only part that writes knowledge. The APM
 package in `apm/` (skills, the audit agent and the knowledge rules) and the
 action in `action.yml` and `action/` call the CLI; they hold no logic of
 their own beyond relaying it, and the audit they run reads and reports only.
-`kmctl plugin install` installs the package with APM, which also writes the
-package's SessionStart hooks, okf's MCP server and the per-harness rules
-(ADR 0014, ADR 0020); for Antigravity kmctl adds the agents as the plugin
-folder `.agents/plugins/kmctl/` (ADR 0015). `kmctl doctor` reads what an install left, without writing
+APM installs the package from the consumer's `apm.yml`, writing its skills,
+SessionStart hooks, okf's MCP server and per-harness rules (ADR 0014,
+ADR 0020); `kmctl plugin patch` then adds the Antigravity agents as the
+plugin folder `.agents/plugins/kmctl/` (ADR 0015, ADR 0021). `kmctl doctor` reads what an install left, without writing
 or using the network, and names each missing or changed piece with its
 fix. Releases come from
 two workflows and the scripts in `scripts/` (ADR 0012).
@@ -47,7 +47,7 @@ flowchart LR
         concepts["concepts.py<br/>new decision|practice|<br/>proposal|prototype|handoff"]
         docs["docs.py<br/>new doc"]
         supersede["supersede.py<br/>decision supersede"]
-        pluginPy["plugin.py<br/>plugin install|update"]
+        pluginPy["plugin.py<br/>plugin patch"]
         doctorPy["doctor.py<br/>doctor: reads the install,<br/>runs apm --version offline"]
         antigravityPy["antigravity.py<br/>the Antigravity plugin folder,<br/>agent translator"]
         okf["okf.py<br/>reads front matter"]
@@ -156,8 +156,7 @@ exit codes. Each verb calls one module:
 | `kmctl new decision`, `practice`, `proposal`, `prototype`, `handoff` | `concepts.py`, with `okf.py` to find each `--source` the way `review_due.py` does | the concept, its section index entry and a log line; `--stale-after` and `--source` write its `stale_after` and `sources` |
 | `kmctl new doc` | `docs.py` | the page and its `docs/README.md` entry |
 | `kmctl decision supersede` | `supersede.py` | both decision records and a log line |
-| `kmctl plugin install`, `update` | `plugin.py`, with `antigravity.py` for `--harness antigravity` | runs `apm uninstall` on an old apm.yml entry; removes the hook and `okf-bundle` an older kmctl wrote; writes kmctl's entry and `targets:` into `apm.yml`; runs `apm install` through `uvx`, which writes the package's skills, rules, hooks and `okf-bundle` (ADR 0014, ADR 0020); for claude, only once that succeeds removes the old claude plugin `kmctl@kmctl`; for antigravity, replaces `.agents/plugins/kmctl/` with the translated agents and takes APM's broken okf Stop handler out of `.agents/hooks.json` (ADR 0015, ADR 0018) |
-| `kmctl plugin remove` | `plugin.py`, with `doctor.py` for the harnesses installed and `antigravity.py` for the plugin folder | runs `apm uninstall` on kmctl's apm.yml entry; drops a removed harness from `targets:` when no other dependency is left; takes out the SessionStart hook and `okf-bundle` for claude and `.agents/plugins/kmctl/` for antigravity; installs the kept harnesses again at their ref (ADR 0019) |
+| `kmctl plugin patch` | `plugin.py`, with `antigravity.py` for the plugin folder | runs nothing: reads `apm.lock.yaml`; refuses an `apm.yml` that names the package the v0.3.0 way, naming the `apm uninstall`; for claude, removes the hook and `okf-bundle` an older kmctl wrote and the old claude plugin `kmctl@kmctl`; for antigravity, writes `.agents/plugins/kmctl/` with the translated agents and takes APM's broken okf Stop handler out of `.agents/hooks.json` (ADR 0018, ADR 0020, ADR 0021); `--undo` deletes the plugin folder |
 | `kmctl doctor` | `doctor.py`, with `plugin.py` for the hook, MCP entries and lock reader and `antigravity.py` for the folder comparison | nothing; it reads `apm.yml`, `apm.lock.yaml` and the files it lists, the settings files, `.mcp.json`, `.agents/plugins/kmctl/` and agy's trust list, and runs only `uv tool run --offline --from apm-cli==0.33.0 apm --version`; `--online` fetches okf's MCP script URL |
 
 `kinds.py` holds the one table of document kinds: each kind's front matter
@@ -175,10 +174,9 @@ ADR 0009).
 
 The skills, the audit agent and the knowledge rules live in `apm/.apm/`, and
 `apm/apm.yml` names the package, carries the one release version and pins
-`scaccogatto/okf-skills` (ADR 0014). `kmctl plugin install --harness claude`
-writes `{git: SOURCE, path: apm, ref: v<cli version>}` into the repository's
-`apm.yml` and runs APM, so the CLI always installs the package of its own
-release (ADR 0001). The wheel carries `apm/.apm/skills/`, for the
+`scaccogatto/okf-skills` (ADR 0014). A consumer names it in `apm.yml` as
+`{git: SOURCE, path: apm, ref: v<cli version>}`, the ref of the CLI it
+runs, and doctor says when the two differ (ADR 0001, ADR 0021). The wheel carries `apm/.apm/skills/`, for the
 briefing, and `apm/.apm/agents/`, for the Antigravity translation.
 
 - **Three packages in one folder** (ADR 0020). `apm/` holds what both
@@ -250,7 +248,7 @@ install kmctl from the action's own checkout.
 
 The version is written once, in `apm/apm.yml`; `pyproject.toml` reads it
 with hatchling's `regex` version source, so `kmctl --version`, the package
-tag `kmctl plugin install` asks for and a build from a download with no
+tag a consumer's `apm.yml` names and a build from a download with no
 `.git` agree (ADR 0012, ADR 0014).
 
 - `.github/workflows/release.yml` runs by hand. It works out the version with
@@ -274,8 +272,8 @@ tag `kmctl plugin install` asks for and a build from a download with no
 - Verbs: `kmctl init`, `kmctl update`, `kmctl check`, `kmctl briefing` (and `--format antigravity`), `kmctl review due`,
   `kmctl handoffs`, `kmctl new decision`, `kmctl new practice`,
   `kmctl new proposal`, `kmctl new prototype`, `kmctl new handoff`,
-  `kmctl new doc`, `kmctl schema`, `kmctl decision supersede`, `kmctl plugin install`,
-  `kmctl plugin update`, `kmctl plugin remove`, `kmctl doctor`.
+  `kmctl new doc`, `kmctl schema`, `kmctl decision supersede`, `kmctl plugin patch`,
+  `kmctl doctor`.
 - Modules: `src/kmctl/__init__.py`, `scaffold.py`, `checks.py`,
   `briefing.py`, `review_due.py`, `handoffs.py`, `concepts.py`,
   `docs.py`, `supersede.py`, `src/kmctl/plugin.py` (the hook and MCP

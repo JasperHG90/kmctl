@@ -8,14 +8,15 @@ request. A last, optional step turns on the LLM audit.
 
 How the commands below were run:
 
-- `kmctl plugin install` and `kmctl doctor` were run with kmctl 0.3.0
-  in a scratch repository with `CLAUDE_CONFIG_DIR`, `HOME` and
-  `XDG_DATA_HOME` pointed at scratch folders, so no real Claude Code config
-  was touched, and with `--source` naming a local git server that held this
-  repository's files at the tag `v0.3.0`. The output is what they printed
-  there. `claude` and `agy` were stand-ins that do nothing, since doctor
-  only looks them up on PATH; the folder paths in doctor's `dep.` and
-  `antigravity.trust` lines are left out below.
+- `kmctl doctor` was run with kmctl 0.3.0 in a scratch repository with
+  `CLAUDE_CONFIG_DIR`, `HOME` and `XDG_DATA_HOME` pointed at scratch
+  folders, so no real Claude Code config was touched, after installing
+  kmctl's package from a local git server that held this repository's files
+  at the tag `v0.3.0`. The output is what it printed there. `claude` and
+  `agy` were stand-ins that do nothing, since doctor only looks them up on
+  PATH; the folder paths in doctor's `dep.` and `antigravity.trust` lines
+  are left out below. The `kmctl plugin patch` output is the text kmctl
+  prints for the same install, with the same stand-ins.
 - The workflow files are quoted from this repository's `action.yml` and its
   shipped workflows, `.github/workflows/knowledge.yml` and
   `.github/workflows/knowledge-audit.yml`. Those steps run only on GitHub, so
@@ -27,8 +28,11 @@ How the commands below were run:
 
 - [uv](https://docs.astral.sh/uv/) and `git` on your PATH.
 - Claude Code, or Antigravity (Google's agent IDE and its `agy` CLI).
-  `kmctl plugin install` runs APM (Agent Package Manager) with `uvx`, so it
-  needs uv, not a separate APM install.
+- APM (Agent Package Manager), which installs kmctl's package. You need not
+  install it: `uvx --from apm-cli==0.33.0 apm` runs it through uv, as the
+  steps below do. If APM is on your PATH, write `apm` instead. APM needs a
+  GitHub token with access to the kmctl repository; see
+  [Install kmctl with APM](install-kmctl-with-apm.md#before-you-start).
 - A git repository set up with `kmctl init`. If you have not done that, follow
   [Get started with kmctl](../tutorials/get-started-with-kmctl.md) first.
 - For the CI action: the repository on GitHub.
@@ -46,63 +50,81 @@ with access to it; uv clones it with your git credentials.
 
 ### 2. Install kmctl's skills and hook in the repository
 
-From the repository root:
+Add kmctl's package to `apm.yml` in the repository root, at the tag of the
+kmctl you installed (`kmctl --version` prints it; put `v` before it). A new
+`apm.yml` looks like this:
+
+```yaml
+name: my-project
+version: 0.1.0
+dependencies:
+  apm:
+    - git: https://github.com/JasperHG90/Knowledge-management.git
+      path: apm
+      ref: vX.Y.Z
+```
+
+In an existing `apm.yml`, add only the entry under `dependencies.apm`. If
+it has an `allowExecutables` block, allow kmctl's package there; otherwise
+APM installs no hook or MCP server from it. Run `kmctl plugin patch` before
+adding the entry and it refuses, naming the exact entry for your kmctl.
+
+Then, from the repository root, install the package with APM and run
+`kmctl plugin patch`, which adds what APM cannot install yet:
 
 ```
-kmctl plugin install --harness claude
+uvx --from apm-cli==0.33.0 apm install --target claude
+kmctl plugin patch
 ```
 
-Run bare `kmctl plugin install` and it asks which harnesses to install
-for; `--harness` answers that up front, and a script or an agent must pass it.
-
-It prints:
+`kmctl plugin patch` prints:
 
 ```
-installed kmctl's package v0.3.0 for claude (project scope)
+patched kmctl's package v0.3.0 for claude (project scope)
 Next: start a new Claude Code session, then kmctl doctor
 ```
 
-This adds kmctl's APM package to the repository's `apm.yml`, at the tag of
-the kmctl you installed, and installs it with APM. APM writes kmctl's seven
-skills and okf's four to `.claude/skills/`, the audit agent to
-`.claude/agents/`, the four knowledge rules to `.claude/rules/`, the
-SessionStart hook into `.claude/settings.json`, and okf's MCP server,
-`okf-bundle`, into `.mcp.json`. Commit `apm.yml` and `apm.lock.yaml`; APM
-adds its download folder, `apm_modules/`, to `.gitignore`. To install for
-every repository instead, add `--scope user`.
+APM writes kmctl's seven skills and okf's four to `.claude/skills/`, the
+audit agent to `.claude/agents/`, the four knowledge rules to
+`.claude/rules/`, the SessionStart hook into `.claude/settings.json`, and
+okf's MCP server, `okf-bundle`, into `.mcp.json`. Commit `apm.yml` and
+`apm.lock.yaml`; APM adds its download folder, `apm_modules/`, to
+`.gitignore`.
 
-Running it again at the same version changes nothing. If the repository
-still has the old claude plugin `kmctl@kmctl`, or an `apm.yml` entry for
-kmctl written by hand, the install removes it first and prints a `note:` line
-saying so. It also removes the hook and `okf-bundle` server an older kmctl
-wrote itself, so APM's copies are the only ones.
+To install for every repository instead, put the entry in
+`~/.apm/apm.yml` and run:
 
-If your `apm.yml` has an `allowExecutables` block, allow kmctl's package
-there; otherwise APM installs no hook or MCP server from it.
+```
+uvx --from apm-cli==0.33.0 apm install -g --target claude
+kmctl plugin patch --scope user
+```
 
-If a skill folder with one of kmctl's skill names is already there and APM
-did not write it, the install stops and names it; run
-`kmctl plugin install --harness claude --force` to replace it. `--force`
-replaces the whole folder, so any file you added there goes.
+Running `kmctl plugin patch` again changes nothing. If the repository still
+has the old claude plugin `kmctl@kmctl`, or the hook and `okf-bundle` server
+an older kmctl wrote itself, patch removes them and prints a `note:` line
+for each, so APM's copies are the only ones. When it removes an older
+`okf-bundle`, its last note says to run `apm install` again, so APM writes
+the package's server.
 
-If the repository manages its agent files with APM and you would rather add
-the package entry yourself, see
-[Install kmctl with APM](install-kmctl-with-apm.md). That route gets the
-session hook and okf's MCP server from APM too.
+If `apm.yml` still names kmctl the way kmctl 0.3.0 and older did, patch
+refuses and names the `apm uninstall` to run first; see
+[Install kmctl with APM](install-kmctl-with-apm.md#older-installs).
 
 #### For Antigravity
 
 From the repository root:
 
 ```
-kmctl plugin install --harness antigravity
+uvx --from apm-cli==0.33.0 apm install --target antigravity
+kmctl plugin patch
 ```
 
-It prints:
+`kmctl plugin patch` prints:
 
 ```
 note: wrote .agents/plugins/kmctl/ (the agents, which APM does not install for Antigravity yet); Antigravity loads it once you trust this folder
-installed kmctl's package v0.3.0 for antigravity (project scope)
+note: took APM's okf Stop handler out of .agents/hooks.json, where it cannot run; kmctl's package runs okf's check instead
+patched kmctl's package v0.3.0 for antigravity (project scope)
 Next: open this folder in Antigravity, trust it and start a new session, then kmctl doctor
 ```
 
@@ -111,14 +133,21 @@ four knowledge rules to `.agents/rules/`, okf's MCP server, `okf-bundle`, to
 `.agents/mcp_config.json`, and two hooks to `.agents/hooks.json`: one
 SessionStart hook that runs `kmctl briefing --format antigravity`, and one
 Stop hook that runs okf's bundle check (it keeps the agent working only when
-`.okf/index.md` sets `upkeep: enforced`). kmctl then writes the folder
-`.agents/plugins/kmctl/`, which it owns and replaces on every run, with the
-audit agent and okf's two agents in Antigravity's format, and takes out of
-`.agents/hooks.json` a broken copy of okf's Stop check that APM also writes.
-okf's MCP server runs with `uv run`, so it needs `uv` on PATH wherever
-Antigravity runs. For both harnesses at once, run
-`kmctl plugin install --harness claude,antigravity`. Antigravity installs
-per repository only; `--scope user` is refused for it.
+`.okf/index.md` sets `upkeep: enforced`). `kmctl plugin patch` then writes
+the folder `.agents/plugins/kmctl/`, which it owns and replaces on every
+run, with the audit agent and okf's two agents in Antigravity's format, and
+takes out of `.agents/hooks.json` a broken copy of okf's Stop check that APM
+also writes. APM writes that copy again on every `apm install`, so run
+`kmctl plugin patch` after each one. okf's MCP server runs with `uv run`, so
+it needs `uv` on PATH wherever Antigravity runs. Antigravity installs per
+repository only, so there is no user-scope install for it.
+
+For both harnesses at once:
+
+```
+uvx --from apm-cli==0.33.0 apm install --target claude,antigravity
+kmctl plugin patch
+```
 
 Antigravity loads a repository's `.agents/` only once you trust the
 folder: open the repository folder in Antigravity and accept its trust
@@ -379,36 +408,47 @@ its `vX.Y.Z` tag. To move to a newer one:
    `--force` replaces the kmctl you have. `kmctl --version` then prints the
    new version.
 
-2. In each repository where you ran `kmctl plugin install`, update it to
-   the same release:
+2. In each repository where you installed kmctl's package, set `ref` in
+   kmctl's `apm.yml` entry to the same tag, then run the `apm install` line
+   you installed with and `kmctl plugin patch` again, for example:
 
    ```
-   kmctl plugin update
+   uvx --from apm-cli==0.33.0 apm install --target claude
+   kmctl plugin patch
    ```
 
-   It asks which harnesses to update; press Enter for the ones already
-   installed. In a script, pass them: `kmctl plugin update --harness
-   claude,antigravity`. It moves the `apm.yml` entry to the new
-   tag and reinstalls.
+   For a user-scope install, change `~/.apm/apm.yml` and run
+   `apm install -g` and `kmctl plugin patch --scope user`.
    `kmctl doctor` then reports `claude.lock` (and `antigravity.lock`) as
    `ok` at the new version.
 
 3. Change the ref in each workflow's `uses: JasperHG90/Knowledge-management@`
    line to the same tag.
 
-### 7. To remove kmctl from a harness
+### 7. To remove kmctl
+
+From the repository root:
 
 ```
-kmctl plugin remove
+uvx --from apm-cli==0.33.0 apm uninstall github.com/JasperHG90/Knowledge-management/apm
+kmctl plugin patch --undo
 ```
 
-It asks which harnesses to remove kmctl from; press Enter for all of them,
-or pass `--harness antigravity` to keep Claude Code. It runs `apm uninstall`
-for you, so APM need not be on your PATH; APM takes out the hook and okf's
-MCP server with the rest of the package, and kmctl removes any copy APM
-leaves, such as `okf-bundle` in the user `.claude.json` after a
-`--scope user` remove. The harnesses you keep are installed again at the
-version they had. Run `kmctl doctor` afterwards to see what is left.
+`apm uninstall` takes kmctl's entry out of `apm.yml` and removes the
+package for every harness: the skills, agent, rules, hooks and okf's MCP
+server. The name is the host, owner and repository of the entry's `git:`
+URL, then `apm`. `kmctl plugin patch --undo` deletes
+`.agents/plugins/kmctl/`, the one folder patch writes, and prints
+`note: deleted .agents/plugins/kmctl/`.
+
+For a user-scope install, run `apm uninstall -g` with the same name, then
+remove okf's MCP server, which APM leaves in your user `.claude.json`:
+
+```
+claude mcp remove okf-bundle --scope user
+```
+
+Run `kmctl doctor` afterwards to see what is left.
 
 ## Check it worked
 
@@ -460,14 +500,15 @@ ok   dep.git: /usr/bin/git
 ok   dep.apm: APM runs from uv's cache: Agent Package Manager (APM) CLI version 0.33.0
 fail init.okf: .okf/index.md is missing; run kmctl init
 fail init.docs: docs/README.md is missing; run kmctl init
-fail kmctl.harness: no kmctl harness in this repository; run kmctl plugin install --harness claude
+fail kmctl.harness: no kmctl harness in this repository; run apm install --target claude (kmctl's package must be in apm.yml), then kmctl plugin patch
 ```
 
 Each `fail` line names what is wrong and, after the `;`, the command that
 fixes it. With one skill file deleted, it printed
-`fail claude.files: .claude/skills/audit/SKILL.md is missing; run kmctl plugin install --harness claude`.
-For an install made with `--scope user`, run `kmctl doctor --scope user`.
-After you upgrade kmctl, run `kmctl plugin update`.
+`fail claude.files: .claude/skills/audit/SKILL.md is missing; run apm install --target claude (kmctl's package must be in apm.yml), then kmctl plugin patch`.
+For an install made with `apm install -g`, run `kmctl doctor --scope user`.
+After you upgrade kmctl, `claude.lock` fails until you move the `apm.yml`
+ref to the new tag, as in step 6.
 
 For the action, open a pull request: the `knowledge` job runs and its summary
 shows the `kmctl check` and `kmctl review due` reports. For the audit, run the

@@ -162,3 +162,10 @@ Supersedes [ADR 0003](0003-claude-code-plugin-first-depends-on-okf.md).
 kmctl's package now ships the SessionStart hooks, okf's MCP server and the
 rules for each harness, and APM writes them; kmctl writes only the
 Antigravity agents and removes APM's broken okf Stop handler.
+
+### Amended again, 2026-10-17
+
+[ADR 0021](0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md):
+users install, upgrade and remove the package with APM's own verbs;
+`kmctl plugin install`, `update` and `remove` are gone, and
+`kmctl plugin patch` adds what APM cannot install yet.

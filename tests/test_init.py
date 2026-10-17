@@ -197,12 +197,14 @@ def test_init_leaves_existing_rules(tmp_path: Path) -> None:
     assert _snapshot(rules) == before
 
 
-def test_init_next_step_installs_the_rules(tmp_path: Path) -> None:
-    """init's Next: line starts with kmctl plugin install, which brings the rules."""
+def test_init_next_line_installs_the_package_with_apm(tmp_path: Path) -> None:
+    """init's Next: line starts with installing kmctl's package with APM, which brings the rules."""
     last = _init(tmp_path).stdout.strip().splitlines()[-1]
 
-    assert last.startswith("Next: kmctl plugin install --harness claude")
+    assert last.startswith("Next: install kmctl's package with APM")
+    assert "apm install" in last and "kmctl plugin patch" in last
     assert "knowledge rules" in last
+    assert "plugin install" not in last
 
 
 def test_init_help_says_rules_come_from_plugin_install() -> None:
@@ -210,7 +212,7 @@ def test_init_help_says_rules_come_from_plugin_install() -> None:
     flat = " ".join(help_text.split())
 
     assert "It writes no rules" in flat
-    assert "kmctl plugin install" in flat
+    assert "apm install" in flat and "kmctl plugin patch" in flat
 
 
 # The agent-file block (r2)

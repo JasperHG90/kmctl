@@ -1,11 +1,12 @@
 """kmctl's APM package, apm/, and the knowledge that describes it (ADR 0014).
 
 apm/apm.yml names the package, carries the one release version and depends
-only on a pinned okf-skills; the skills, the audit agent and the four
-knowledge rules sit under apm/.apm/. The tests without a marker read files
-only. The ``integration`` test serves this tree from a local git server and
-runs ``kmctl plugin install --harness claude --source <it>`` in a scratch
-consumer, which runs the real APM 0.33.0 and fetches okf-skills from GitHub.
+on a pinned okf-skills and the two per-harness sub-packages (ADR 0020); the
+skills and the audit agent sit under apm/.apm/, the rules and hooks under
+apm/claude/ and apm/antigravity/. The tests without a marker read files
+only. The ``integration`` test serves this tree from a local git server and,
+in a scratch consumer, adds kmctl's entry to apm.yml, runs the real APM
+0.33.0 (which fetches okf-skills from GitHub) and kmctl plugin patch.
 HOME, CLAUDE_CONFIG_DIR and XDG_DATA_HOME point at scratch folders, and the
 claude CLI is left off PATH, so nothing reaches the real Claude Code config.
 """
@@ -26,6 +27,7 @@ from typing import Any
 
 import pytest
 import yaml
+from conftest import apm_install
 from jsonschema import Draft202012Validator
 from typer.testing import CliRunner, Result
 
@@ -350,11 +352,11 @@ def test_docs_changed_records_name_what_changed(record: str, words: str) -> None
 
 
 def test_docs_manifesto_parts_name_the_apm_route() -> None:
-    """The manifesto's Parts describe the APM package installed by kmctl plugin install."""
+    """The manifesto's Parts describe the APM package APM installs and kmctl plugin patch completes."""
     sections = _sections(MANIFESTO.read_text())
     parts = _flat(sections["Parts"])
 
-    assert "kmctl plugin install --harness" in parts
+    assert "apm install --target" in parts and "kmctl plugin patch" in parts
     assert "APM" in parts and "ADR 0014" in parts
     assert "tests/test_plugin.py" in sections["Invariants"]
 
@@ -390,21 +392,22 @@ def test_docs_overview_names_the_package_and_the_hook_writer() -> None:
 
 
 def test_docs_commands_reference_names_the_install_options() -> None:
-    """The commands reference documents every install option and kmctl doctor."""
+    """The commands reference documents every kmctl plugin patch option and kmctl doctor."""
     text = _flat(COMMANDS.read_text())
 
-    for option in ("--harness", "--source", "--force", "--scope"):
+    for option in ("--undo", "--json", "--scope"):
         assert option in text, option
     assert "kmctl doctor" in text
 
 
 def test_docs_install_how_to_uses_the_harness_option() -> None:
-    """The plugin install how-to installs with --harness claude and links the APM page."""
+    """The install how-to installs with apm install --target claude, then kmctl plugin patch, and links the APM page."""
     text = INSTALL_HOW_TO.read_text()
     commands = "\n".join(FENCE.findall(text))
 
-    assert "kmctl plugin install --harness claude" in commands
-    assert "(install-kmctl-with-apm.md)" in text
+    assert "apm install --target claude" in commands
+    assert "kmctl plugin patch" in commands
+    assert "(install-kmctl-with-apm.md" in text
 
 
 def test_docs_apm_page_says_what_a_hand_added_entry_gets() -> None:
@@ -414,7 +417,7 @@ def test_docs_apm_page_says_what_a_hand_added_entry_gets() -> None:
 
     assert "okf-bundle" in text
     assert "SessionStart" in text
-    assert "kmctl plugin install --harness claude" in text
+    assert "kmctl plugin patch" in text
     assert "- JasperHG90/Knowledge-management/apm#v" in commands
     assert "scaccogatto/okf-skills" not in commands
     assert "--trust-transitive-mcp" not in commands
@@ -459,14 +462,12 @@ def _same_tree(want: Path, got: Path) -> None:
 def test_consumer_gets_the_package_hook_and_okf_but_no_dev_items(
     consumer: Path, served: str, tmp_path: Path
 ) -> None:
-    """``kmctl plugin install --harness claude`` against the served tree installs everything once."""
+    """apm install of kmctl's entry for claude, then kmctl plugin patch, against the served tree installs everything once."""
     before = {rel: (REAL_CLAUDE / rel).exists() for rel in WATCHED}
 
-    result = _kmctl("plugin", "install", "--harness", "claude", "--source", served)
-    again = _kmctl("plugin", "install", "--harness", "claude", "--source", served)
+    apm_install(consumer, served, "claude")
+    apm_install(consumer, served, "claude")
 
-    assert result.exit_code == 0, result.output
-    assert again.exit_code == 0, again.output
     claude = consumer / ".claude"
     for name in SKILL_NAMES:
         _same_tree(SKILLS / name, claude / "skills" / name)

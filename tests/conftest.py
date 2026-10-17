@@ -177,3 +177,40 @@ def consumer(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     _git("init", "-q", cwd=repo)
     monkeypatch.chdir(repo)
     return repo
+
+
+def apm_install(consumer: Path, served: str, targets: str) -> str:
+    """Install kmctl's package as a user does (ADR 0021): the apm.yml entry, apm install, kmctl plugin patch.
+
+    The entry names ``served`` at this kmctl's tag; APM 0.33.0 runs through
+    uvx. Returns kmctl plugin patch's output; fails the test when a step fails.
+    """
+    import yaml
+    from typer.testing import CliRunner
+
+    from kmctl import app
+
+    entry = {
+        "git": served,
+        "path": "apm",
+        "ref": f"v{version('kmctl')}",
+        "allow_insecure": True,
+    }
+    manifest = {
+        "name": "consumer",
+        "version": "0.1.0",
+        "dependencies": {"apm": [entry]},
+        "targets": targets.split(","),
+    }
+    (consumer / "apm.yml").write_text(yaml.safe_dump(manifest))
+    proc = subprocess.run(
+        ["uvx", "--from", "apm-cli==0.33.0", "apm", "install", "--allow-insecure"],
+        cwd=consumer,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert proc.returncode == 0, proc.stderr + proc.stdout
+    result = CliRunner().invoke(app, ["plugin", "patch"])
+    assert result.exit_code == 0, result.output
+    return result.stdout
