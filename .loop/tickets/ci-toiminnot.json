@@ -20,10 +20,43 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "542df600807edfb95caf0a7e0b5556885cd25f19dc8620115072e9ab18768d72",
+    "at": "2026-10-17T18:05:01+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "ci.yml's prek job puts uv on PATH, then runs prek at the justfile's version through toiminnot's pre_commit action (which runs prek in v1.3.0) on Python 3.12",
+      "fails_when": "the prek job has no setup-uv step before a JasperHG90/toiminnot/actions/pre_commit step, or that step's prek_version differs from the justfile's prek@ version, or its python_version is not 3.12",
+      "command": "uv run pytest tests/test_ci.py -k prek -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "ci.yml's tests job runs toiminnot's pytest action on tests/, leaving out the integration tier, on Python 3.12",
+      "fails_when": "the tests job has no JasperHG90/toiminnot/actions/pytest step, or its inputs are not directory tests, markers 'not integration' and python_version 3.12",
+      "command": "uv run pytest tests/test_ci.py -k pytest -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "every action in ci.yml, toiminnot's included, is pinned by commit SHA, and the setup-uv steps ci.yml writes have their cache off",
+      "fails_when": "a uses: other than ./ is not owner/repo[/path]@<40-character SHA>, or a setup-uv step in ci.yml lacks enable-cache: false",
+      "command": "uv run pytest tests/test_ci.py -k pinned -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "the triggers, the knowledge job and the how-to's quoted workflows still hold",
+      "fails_when": "any of test_ci.py's trigger, knowledge or quoted tests fails",
+      "command": "uv run pytest tests/test_ci.py -k 'triggers or knowledge or quoted' -q",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -69,5 +102,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
-  "at": "2026-10-17T18:04:56+00:00"
+  "at": "2026-10-17T18:05:01+00:00"
 }
