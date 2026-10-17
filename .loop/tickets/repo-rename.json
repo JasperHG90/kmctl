@@ -3,7 +3,7 @@
   "slug": "repo-rename",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 1,
+  "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -30,9 +30,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 1,
-    "binds": "83b019db5839bb3a58987256b817fd4e3ee7b74f913be2cf4e43c3b40764719d",
-    "started_at": "2026-10-17T18:49:33+00:00",
+    "n": 2,
+    "binds": "32cd447f0bfddec9453b39978aec75f972b3854f54e5c90e6ca1e39a44d22303",
+    "started_at": "2026-10-17T18:51:46+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -45,10 +45,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "83b019db5839bb3a58987256b817fd4e3ee7b74f913be2cf4e43c3b40764719d",
+  "plan_hash": "32cd447f0bfddec9453b39978aec75f972b3854f54e5c90e6ca1e39a44d22303",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -63,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
-  "at": "2026-10-17T18:51:45+00:00"
+  "at": "2026-10-17T18:51:46+00:00"
 }

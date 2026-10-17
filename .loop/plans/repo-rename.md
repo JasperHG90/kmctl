@@ -38,7 +38,14 @@ run or write names the new repository:
   `src/kmctl/antigravity.py`'s hook and its issues link. The generated
   `apm/claude/.apm/hooks/hooks.json`, `apm/antigravity/.apm/hooks/hooks.json`
   and the comment in `apm/apm.yml` follow.
-- `scripts/release.py`: the patterns that move the docs' version pins.
+- `scripts/release.py`: the patterns that move the docs' `uv tool install`
+  and `uses:` pins. Its third step, `pin_apm_doc`, moves the one
+  `JasperHG90/Knowledge-management/apm#…` pin in
+  `docs/how-to/install-kmctl-with-apm.md`, which is the "Older installs"
+  example of what a v0.3.0 user's `apm.yml` holds. Moving it to each new
+  version makes that example wrong, so `pin_apm_doc`, its pattern and its
+  "no pin; restore it" refusal go; `set` still pins the page's install line
+  through `pin_docs`.
 - `README.md` and every page under `docs/` that names the repository.
 - The tests that name it.
 
@@ -53,10 +60,17 @@ The template repository `/home/vscode/kmctl-starter` names the old
 repository in four files; it is a separate git repository, updated and
 committed there alongside this ticket.
 
-The outcome: outside `.okf/decisions/` and `.loop/`, no tracked file names
-`JasperHG90/Knowledge-management` except the constants that recognise old
-installs, and an install from the old name is still found by patch and
-doctor.
+The old name stays where it describes or detects what an existing install
+holds: the constants and checks in `src/kmctl/plugin.py`; the "Older
+installs" example in `docs/how-to/install-kmctl-with-apm.md`; the old
+string entry `JasperHG90/Knowledge-management/apm#…` that
+`docs/reference/commands.md` says patch refuses; and the old-install
+fixtures in the tests.
+
+The outcome: outside `.okf/decisions/`, `.loop/` and those places, no
+tracked file names `JasperHG90/Knowledge-management`; in the two docs pages
+it appears only as the old package name `JasperHG90/Knowledge-management/apm`;
+and an install from the old name is still found by patch and doctor.
 
 ## Could invalidate this plan
 
