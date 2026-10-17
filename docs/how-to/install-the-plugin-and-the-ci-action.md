@@ -393,6 +393,18 @@ its `vX.Y.Z` tag. To move to a newer one:
 3. Change the ref in each workflow's `uses: JasperHG90/Knowledge-management@`
    line to the same tag.
 
+### 7. To remove kmctl from a harness
+
+```
+kmctl plugin remove
+```
+
+It asks which harnesses to remove kmctl from; press Enter for all of them,
+or pass `--harness antigravity` to keep Claude Code. It runs `apm uninstall`
+for you, so APM need not be on your PATH, and takes out the hook and okf's
+MCP server kmctl wrote. The harnesses you keep are installed again at the
+version they had. Run `kmctl doctor` afterwards to see what is left.
+
 ## Check it worked
 
 In the repository, run:

@@ -116,3 +116,4 @@
 - Added `decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity` with `kmctl new decision`.
 - Corrected `decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script`: `action/agent.py publish` posts the report from its own job; updated `architecture/overview` to match.
 - Corrected `decisions/0012-releases-come-from-ci`: six install lines, since the CI how-to's audit workflow has a publish job.
+- Added `decisions/0019-kmctl-plugin-remove-uninstalls-the-package-and-reinstalls-the-harnesses-kept` with `kmctl new decision`.

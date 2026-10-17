@@ -28,9 +28,10 @@ for people. Warnings and refusals go to stderr.
 | `kmctl new doc` | Create a `docs/` page in its Diataxis folder with a skeleton and its index entry. |
 | `kmctl decision` | Change decision records in `.okf/decisions/`. Verbs: `supersede`. |
 | `kmctl decision supersede` | Mark one decision superseded by another and link the two records both ways. |
-| `kmctl plugin` | Install kmctl's skills, audit agent, knowledge rules and session hook for an agent harness, through APM (Agent Package Manager). Verbs: `install`, `update`. Needs `uv` on PATH: kmctl runs APM with `uvx`. `kmctl doctor` checks the install. |
+| `kmctl plugin` | Install kmctl's skills, audit agent, knowledge rules and session hook for an agent harness, through APM (Agent Package Manager). Verbs: `install`, `update`, `remove`. Needs `uv` on PATH: kmctl runs APM with `uvx`. `kmctl doctor` checks the install. |
 | `kmctl plugin install` | Install kmctl's APM package, its session hook and okf's MCP server for a harness. |
 | `kmctl plugin update` | Reinstall kmctl's APM package at this kmctl's version; run it after upgrading kmctl. |
+| `kmctl plugin remove` | Remove kmctl's APM package, its session hook and okf's MCP server from harnesses. |
 | `kmctl doctor` | Check kmctl's tools, its installed package per harness and the `kmctl init` files. |
 
 ## Details
@@ -362,6 +363,52 @@ kmctl: it moves the `apm.yml` entry to the new version's tag and reinstalls.
 Without `--harness` it asks which harnesses to update, as install does, and
 Enter takes the harnesses already installed at that scope (`claude` when it
 finds none).
+
+### `kmctl plugin remove`
+
+Take out what `kmctl plugin install` put in, for the harnesses named, and
+leave everything else. Without `--harness` it asks which harnesses to
+remove kmctl from, and Enter takes every harness installed at that scope;
+when stdin is not a terminal, or with `--json`, it refuses and names
+`--harness`. A harness kmctl is not installed for is skipped with a note,
+and with nothing installed it says so and exits 0. It needs `uv` on PATH.
+In order:
+
+1. Runs `uvx --from apm-cli==0.33.0 apm uninstall NAME` (with `-g` at user
+   scope), where `NAME` is `HOST[:PORT]/OWNER/REPO/apm` built from the
+   `git:` URL of kmctl's `apm.yml` entry, for example
+   `github.com/JasperHG90/Knowledge-management/apm`. APM removes kmctl's and
+   okf's skills, agent, rules, hooks and lock entries for every harness.
+2. Takes each removed harness out of `targets:` in `apm.yml`, but only when
+   no other `dependencies.apm` entry is left there. Otherwise it keeps the
+   target, because your other packages may use it, and says that a bare
+   `apm install` (without `--target`) would deploy kmctl to it again.
+3. For `claude`, takes kmctl's SessionStart hook out of `.claude/settings.json`
+   (at user scope, the one in `$CLAUDE_CONFIG_DIR`) and kmctl's `okf-bundle`
+   server out of `.mcp.json` (at user scope, with
+   `claude mcp remove okf-bundle --scope user`), keeping every other hook and
+   server, an okf server kmctl did not write included. A `.mcp.json` left
+   empty is deleted.
+4. For `antigravity`, deletes `.agents/plugins/kmctl/` and a
+   `.agents/hooks.json` that APM's uninstall left as `{}`.
+5. When harnesses stay installed, installs them again with the steps of
+   `kmctl plugin install`, from the removed entry's `git:` source at its
+   `ref`, so they keep their version. APM cannot drop one target cleanly:
+   it would leave okf's Antigravity hook script behind. If this install
+   fails, the command exits 1 with APM's cause and names the
+   `kmctl plugin install --harness KEPT --source SOURCE` that puts them
+   back, at this kmctl's version.
+
+| Option | Meaning | Default |
+|---|---|---|
+| `--harness LIST` | The harnesses to remove kmctl from, as a comma list: `claude`, `antigravity`. | Left out, asked at a terminal, refused otherwise |
+| `--scope SCOPE` | `project` (this repository) or `user` (the install `kmctl plugin install --scope user` made). | `project` |
+| `--json` | Print one JSON object, `{scope, removed, kept, notes}`, for scripts. | off |
+
+Output: a `note:` line for each harness skipped, target kept or step
+skipped, then a line naming the harnesses removed and those still
+installed, then `Next: kmctl doctor`. It exits 1, naming the fix, when APM
+or `claude` fails.
 
 ### `kmctl doctor`
 

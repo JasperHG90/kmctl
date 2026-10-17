@@ -157,6 +157,7 @@ exit codes. Each verb calls one module:
 | `kmctl new doc` | `docs.py` | the page and its `docs/README.md` entry |
 | `kmctl decision supersede` | `supersede.py` | both decision records and a log line |
 | `kmctl plugin install`, `update` | `plugin.py`, with `antigravity.py` for `--harness antigravity` | runs `apm uninstall` on an old apm.yml entry; writes kmctl's entry and `targets:` into `apm.yml`; runs `apm install` through `uvx`; for claude, only once that succeeds removes the old claude plugin `kmctl@kmctl`, then merges one SessionStart hook into `.claude/settings.json` and the `okf-bundle` server into `.mcp.json` (ADR 0014); for antigravity, replaces `.agents/plugins/kmctl/` and deletes APM's copies of kmctl's rules from `.agents/rules/` and its okf Stop handler from `.agents/hooks.json` (ADR 0015, ADR 0016, ADR 0018) |
+| `kmctl plugin remove` | `plugin.py`, with `doctor.py` for the harnesses installed and `antigravity.py` for the plugin folder | runs `apm uninstall` on kmctl's apm.yml entry; drops a removed harness from `targets:` when no other dependency is left; takes out the SessionStart hook and `okf-bundle` for claude and `.agents/plugins/kmctl/` for antigravity; installs the kept harnesses again at their ref (ADR 0019) |
 | `kmctl doctor` | `doctor.py`, with `plugin.py` for the hook, MCP entries and lock reader and `antigravity.py` for the folder comparison | nothing; it reads `apm.yml`, `apm.lock.yaml` and the files it lists, the settings files, `.mcp.json`, `.agents/plugins/kmctl/` and agy's trust list, and runs only `uv tool run --offline --from apm-cli==0.33.0 apm --version`; `--online` fetches okf's MCP script URL |
 
 `kinds.py` holds the one table of document kinds: each kind's front matter
@@ -279,7 +280,7 @@ tag `kmctl plugin install` asks for and a build from a download with no
   `kmctl handoffs`, `kmctl new decision`, `kmctl new practice`,
   `kmctl new proposal`, `kmctl new prototype`, `kmctl new handoff`,
   `kmctl new doc`, `kmctl schema`, `kmctl decision supersede`, `kmctl plugin install`,
-  `kmctl plugin update`, `kmctl doctor`.
+  `kmctl plugin update`, `kmctl plugin remove`, `kmctl doctor`.
 - Modules: `src/kmctl/__init__.py`, `scaffold.py`, `checks.py`,
   `briefing.py`, `review_due.py`, `handoffs.py`, `concepts.py`,
   `docs.py`, `supersede.py`, `src/kmctl/plugin.py` (the hook and MCP
