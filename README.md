@@ -75,7 +75,7 @@ follow these steps.
 ### 1. Install the kmctl CLI
 
 ```
-uv tool install git+https://github.com/JasperHG90/kmctl@v0.4.0
+uv tool install git+https://github.com/JasperHG90/kmctl@v0.4.1
 ```
 
 ### 2. Set up the repository
