@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016
-  at: '2026-10-17T06:31:50+00:00'
+  at: '2026-10-17T06:32:22+00:00'
 slug: antigravity-okf-stop-hook
 n: 2
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike antigravity-okf-stop-hook/2
@@ -24,7 +24,7 @@ The command exited 0:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note antigravity-okf-stop-hook 2`.
+The approach works (exit 0). With upkeep: enforced in .okf/index.md and a tracked change outside .okf/, a Stop handler in .agents/plugins/kmctl/hooks.json that runs okf-stop-check.sh from the repository root (cd ../../.. from the plugin folder, the hook's working folder) and rewrites okf's "decision":"block" to "continue" made agy re-enter the loop with okf's reason: the agent ran git status, git diff and looked through .okf/. The second Stop came with executionNum 1, and the guard (continue only when executionNum is 0) let it end, so the hook ran twice and did not loop.
 
 ## Files
 
