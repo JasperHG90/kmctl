@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017
-  at: '2026-10-17T18:42:59+00:00'
+  at: '2026-10-17T18:43:03+00:00'
 slug: fix-audit-drift
 n: 1
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike fix-audit-drift/1
@@ -29,7 +29,7 @@ for a in ('docs-vs-code','okf-vs-code','okf-vs-docs'):
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note fix-audit-drift 1`.
+Exit 0: the three audits' report.json files, printed in full to stdout.txt: docs-vs-code 7 findings (1 high, 3 medium, 3 low), okf-vs-code 21 (12 medium, 9 low), okf-vs-docs 7 (2 medium, 5 low); 35 in all. This is the ticket's input list; each finding is checked against the code before anything is fixed.
 
 ## Files
 
