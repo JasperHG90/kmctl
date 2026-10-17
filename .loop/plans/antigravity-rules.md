@@ -40,6 +40,10 @@ none of kmctl's four rules reaches an Antigravity session:
 - agy takes several globs as one comma-separated string (`"**/README.md,
   **/docs/**"` fired for both files; a `{a,b}` brace pattern did not), and it
   loads glob rules from a plugin's `rules/` folder.
+- spike:antigravity-rules/3 recorded these for plugin rules: `**/.okf/**`
+  fires for `.okf/index.md` (so `**` enters the hidden folder) and `.okf/**`
+  does not; `"**/docs/**, **/README.md"` fires for both files; `docs/**` and
+  the brace form never fire.
 - APM 0.33.0 is the newest release, and its Antigravity writer is the same.
 
 So kmctl writes the rules itself, as it does the agents: `plugin_files` in
