@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "This repo's docs-layout rule keeps the old sentence next to the new one: 'Its index page, README.md at the top of docs/, lists every page. Its index page, README.md at the top of docs/, links each folder's own README.md index'. The first sentence is now false and contradicts the second. The shipped claude and antigravity copies got it right.",
+      "anchor": ".claude/rules/docs-layout.md:10",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "Row r7's fails_when includes 'a page with no front matter fails', but neither field_shape test has a page without front matter: test_field_shape_good_and_absent_pass overwrites upgrade.md with full front matter, and install.md has a description. The name says 'absent' but no absent case is checked. Other tests (check_fix) cover it indirectly, but not the row's command.",
+      "anchor": "tests/test_docs_frontmatter.py:228",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "The tutorial still says every command was run with kmctl 0.1.0 and the output is what it printed, but the new check / check --fix output (warning level, 'fixed', '1 failed, 1 warning') only exists from this change on.",
+      "anchor": "docs/tutorials/get-started-with-kmctl.md:14",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "d541da4729b6c4e7c085b95168d74ebf029ec6668d5f31ff5d849625bd985578",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
+  "at": "2026-10-17T17:09:11+00:00"
+}
