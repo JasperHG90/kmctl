@@ -50,6 +50,18 @@ still true; that takes judgment. So kmctl does two things instead:
 
 ## Install
 
+**Starting a new repository?** [kmctl-starter](https://github.com/JasperHG90/kmctl-starter)
+is a [copier](https://copier.readthedocs.io/) template that sets one up with
+`docs/`, `.okf/` and kmctl's package for your agent harness, so you can skip
+the steps below:
+
+```
+uvx copier copy gh:JasperHG90/kmctl-starter my-project
+```
+
+Its README lists what it asks and what it needs. For an existing repository,
+follow these steps.
+
 ### You need
 
 - [uv](https://docs.astral.sh/uv/) and `git`. uv installs the kmctl CLI and
