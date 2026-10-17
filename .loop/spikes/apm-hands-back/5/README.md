@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017
-  at: '2026-10-17T12:58:05+00:00'
+  at: '2026-10-17T12:58:37+00:00'
 slug: apm-hands-back
 n: 5
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike apm-hands-back/5
@@ -24,7 +24,7 @@ The command exited 0:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note apm-hands-back 5`.
+Exit 0 (observation): user scope works like project scope. With ~/.apm/apm.yml naming the split package over git, apm 0.33.0 install -g --target claude resolved ./claude and ./antigravity (the latter skipped for its target), wrote the shared skill and the SessionStart hook into $CLAUDE_CONFIG_DIR (recorded in its apm-hooks.json) and reported okf-bundle. Over a user install today's kmctl wrote (kmctl's hook group with no matcher in settings.json, an okf-bundle at an older pin in $CLAUDE_CONFIG_DIR/.claude.json): two kmctl hooks and the stale okf-bundle stayed. After removing kmctl's unrecorded hook group and the stale okf-bundle, a second install -g left exactly one hook, recorded by APM, and the package's okf-bundle in .claude.json; another server stayed. apm uninstall -g then removed the hook and the skill but LEFT okf-bundle in .claude.json, unlike project scope, where uninstall emptied okf-bundle from .mcp.json and .agents/mcp_config.json (spike 1's consumer).
 
 ## Files
 
