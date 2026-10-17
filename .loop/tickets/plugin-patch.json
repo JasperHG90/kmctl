@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "plugin-patch",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 3,
   "review_rounds": 1,
@@ -103,8 +103,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "d2ada53a24742b8dbc3c7014be2a9f576b55e162acca5cf388edbbc8542650cd",
   "intent": {
@@ -136,8 +136,14 @@
       "to": "verifying",
       "at": "2026-10-17T15:46:02+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-17T15:50:08+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
-  "at": "2026-10-17T15:46:03+00:00"
+  "at": "2026-10-17T15:50:08+00:00"
 }
