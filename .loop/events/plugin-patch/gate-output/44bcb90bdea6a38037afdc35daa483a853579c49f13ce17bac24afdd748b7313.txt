@@ -1,0 +1,85 @@
+warning: `VIRTUAL_ENV=/home/vscode/kmctl/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+============================= test session starts ==============================
+platform linux -- Python 3.12.15, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/vscode/kmctl.worktrees/plugin-patch
+configfile: pyproject.toml
+plugins: respx-0.23.1, anyio-4.15.1
+collected 651 items / 7 deselected / 644 selected
+
+tests/scripts/test_check_wheel.py ....                                   [  0%]
+tests/scripts/test_next_release_version.py ........................      [  4%]
+tests/scripts/test_release.py .............................              [  8%]
+tests/scripts/test_release_docs.py .....                                 [  9%]
+tests/scripts/test_smoke_wheel.py .........                              [ 11%]
+tests/scripts/test_workflows.py .............                            [ 13%]
+tests/test_action.py ............                                        [ 14%]
+tests/test_adr_audit_fixes.py ....                                       [ 15%]
+tests/test_agent.py ......................................               [ 21%]
+tests/test_antigravity.py .............................................. [ 28%]
+...........                                                              [ 30%]
+tests/test_apm_package.py .......................................        [ 36%]
+tests/test_audit.py .....                                                [ 37%]
+tests/test_briefing.py ...........                                       [ 38%]
+tests/test_check.py .........................                            [ 42%]
+tests/test_cli.py ..                                                     [ 43%]
+tests/test_docs.py .....                                                 [ 43%]
+tests/test_doctor.py ................................................... [ 51%]
+..............................                                           [ 56%]
+tests/test_handoff_key.py ........                                       [ 57%]
+tests/test_handoffs.py .........                                         [ 59%]
+tests/test_help.py ................................................      [ 66%]
+tests/test_init.py ..............................................        [ 73%]
+tests/test_network_retry.py .....F.........                              [ 75%]
+tests/test_new_concept.py ....................                           [ 79%]
+tests/test_new_doc.py .......                                            [ 80%]
+tests/test_okf_fields.py ......                                          [ 81%]
+tests/test_plugin.py ......                                              [ 81%]
+tests/test_plugin_error.py .......                                       [ 83%]
+tests/test_plugin_patch.py ..................                            [ 85%]
+tests/test_repo_apm.py ..........                                        [ 87%]
+tests/test_review_due.py .........                                       [ 88%]
+tests/test_rules.py ...............................                      [ 93%]
+tests/test_schema.py ...............................                     [ 98%]
+tests/test_skills.py ...                                                 [ 98%]
+tests/test_supersede.py .......                                          [100%]
+
+=================================== FAILURES ===================================
+_____________ test_installs_asserted_with_expected_exit_and_output _____________
+
+    def test_installs_asserted_with_expected_exit_and_output() -> None:
+        tree = ast.parse(PLUGIN_TESTS.read_text())
+        unchecked = []
+        for fn in tree.body:
+            if not isinstance(fn, ast.FunctionDef):
+                continue
+            names = set()
+            for node in ast.walk(fn):
+                if isinstance(node, ast.Expr) and _is_install_call(node.value):
+                    unchecked.append(f"{fn.name}:{node.lineno} result ignored")
+                if (
+                    isinstance(node, ast.Assign)
+                    and _is_install_call(node.value)
+                    and isinstance(node.targets[0], ast.Name)
+                ):
+                    names.add((node.targets[0].id, node.lineno))
+            for name, line in names:
+                if not any(
+                    isinstance(node, ast.Assert)
+                    and isinstance(node.test, ast.Compare)
+                    and ast.unparse(node.test.left) == f"{name}.exit_code"
+                    and node.msg is not None
+                    and ast.unparse(node.msg) == f"{name}.output"
+                    for node in ast.walk(fn)
+                ):
+                    unchecked.append(f"{fn.name}:{line} {name} exit not asserted")
+    
+>       assert unchecked == []
+E       AssertionError: assert ['test_consum...sult ignored'] == []
+E         
+E         Left contains 2 more items, first extra item: 'test_consumer_gets_the_package_hook_and_okf_but_no_dev_items:467 result ignored'
+E         Use -v to get more diff
+
+tests/test_network_retry.py:131: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_network_retry.py::test_installs_asserted_with_expected_exit_and_output
+================= 1 failed, 643 passed, 7 deselected in 17.39s =================

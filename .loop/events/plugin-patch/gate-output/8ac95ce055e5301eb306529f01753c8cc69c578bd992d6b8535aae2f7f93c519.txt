@@ -1,0 +1,51 @@
+warning: `VIRTUAL_ENV=/home/vscode/kmctl/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+........................................................................ [ 11%]
+........................................................................ [ 22%]
+........................................................................ [ 33%]
+........................................................................ [ 44%]
+........................................................................ [ 55%]
+........................................................................ [ 66%]
+.....................................................F.................. [ 77%]
+........................................................................ [ 88%]
+........................................................................ [ 99%]
+...                                                                      [100%]
+=================================== FAILURES ===================================
+_____________ test_installs_asserted_with_expected_exit_and_output _____________
+
+    def test_installs_asserted_with_expected_exit_and_output() -> None:
+        tree = ast.parse(PLUGIN_TESTS.read_text())
+        unchecked = []
+        for fn in tree.body:
+            if not isinstance(fn, ast.FunctionDef):
+                continue
+            names = set()
+            for node in ast.walk(fn):
+                if isinstance(node, ast.Expr) and _is_install_call(node.value):
+                    unchecked.append(f"{fn.name}:{node.lineno} result ignored")
+                if (
+                    isinstance(node, ast.Assign)
+                    and _is_install_call(node.value)
+                    and isinstance(node.targets[0], ast.Name)
+                ):
+                    names.add((node.targets[0].id, node.lineno))
+            for name, line in names:
+                if not any(
+                    isinstance(node, ast.Assert)
+                    and isinstance(node.test, ast.Compare)
+                    and ast.unparse(node.test.left) == f"{name}.exit_code"
+                    and node.msg is not None
+                    and ast.unparse(node.msg) == f"{name}.output"
+                    for node in ast.walk(fn)
+                ):
+                    unchecked.append(f"{fn.name}:{line} {name} exit not asserted")
+    
+>       assert unchecked == []
+E       AssertionError: assert ['test_consum...sult ignored'] == []
+E         
+E         Left contains 2 more items, first extra item: 'test_consumer_gets_the_package_hook_and_okf_but_no_dev_items:467 result ignored'
+E         Use -v to get more diff
+
+tests/test_network_retry.py:131: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_network_retry.py::test_installs_asserted_with_expected_exit_and_output
+1 failed, 650 passed in 51.26s
