@@ -1,0 +1,60 @@
+warning: `VIRTUAL_ENV=/home/vscode/kmctl/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+I001 [*] Import block is un-sorted or un-formatted
+  --> src/kmctl/__init__.py:3:1
+   |
+ 1 |   """kmctl: knowledge management for repositories that keep docs/ and an OKF bundle."""
+ 2 |
+ 3 | / import json
+ 4 | | import sys
+ 5 | | from dataclasses import asdict
+ 6 | | from importlib.metadata import version
+ 7 | | from pathlib import Path
+ 8 | | from typing import Annotated, Literal
+ 9 | |
+10 | | import typer
+11 | |
+12 | | from kmctl.briefing import (
+13 | |     as_antigravity,
+14 | |     as_dict,
+15 | |     build_briefing,
+16 | |     hook_workspace,
+17 | |     render,
+18 | | )
+19 | | from kmctl.checks import run_checks
+20 | | from kmctl.concepts import ConceptError, Kind, new_concept
+21 | | from kmctl.docs import DocType, new_doc
+22 | | from kmctl.doctor import as_json as doctor_json
+23 | | from kmctl.doctor import harnesses_found
+24 | | from kmctl.doctor import render as render_doctor
+25 | | from kmctl.doctor import run_doctor
+26 | | from kmctl.handoffs import live_handoffs
+27 | | from kmctl.kinds import KINDS, schema
+28 | | from kmctl.plugin import (
+29 | |     APM_CLI,
+30 | |     DEFAULT_SOURCE,
+31 | |     HARNESSES,
+32 | |     InstallResult,
+33 | |     PluginError,
+34 | |     Scope,
+35 | |     parse_harnesses,
+36 | | )
+37 | | from kmctl.plugin import install as install_plugin
+38 | | from kmctl.review_due import review_due
+39 | | from kmctl.scaffold import AGENT_FILES, scaffold
+40 | | from kmctl.supersede import supersede
+   | |_____________________________________^
+41 |
+42 |   app = typer.Typer(
+   |
+help: Organize imports
+   |
+22 | from kmctl.doctor import as_json as doctor_json
+   - from kmctl.doctor import harnesses_found
+23 + from kmctl.doctor import harnesses_found, run_doctor
+24 | from kmctl.doctor import render as render_doctor
+   - from kmctl.doctor import run_doctor
+25 | from kmctl.handoffs import live_handoffs
+   |
+
+Found 1 error.
+[*] 1 fixable with `--fix`.

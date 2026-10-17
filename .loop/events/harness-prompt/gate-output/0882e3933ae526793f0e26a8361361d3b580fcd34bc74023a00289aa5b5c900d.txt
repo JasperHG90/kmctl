@@ -1,0 +1,13 @@
+warning: `VIRTUAL_ENV=/home/vscode/kmctl/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+unformatted: File would be reformatted
+   --> src/kmctl/__init__.py:803:16
+    |
+802 |
+    - def _harnesses(verb: str, harness: str | None, scope: Scope, as_json: bool) -> list[str]:
+803 + def _harnesses(
+804 +     verb: str, harness: str | None, scope: Scope, as_json: bool
+805 + ) -> list[str]:
+806 |     """The harnesses to install for: from --harness, or asked of a person at a terminal.
+    |
+
+1 file would be reformatted, 89 files already formatted
