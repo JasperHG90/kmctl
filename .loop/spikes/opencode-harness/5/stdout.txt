@@ -1,0 +1,52 @@
+apm: Agent Package Manager (APM) CLI version 0.33.0
+== (a) first install, .opencode/ exists before: no
+install rc=0
+[i] Targets: opencode  (source: apm.yml)
+  |-- 1 agents integrated -> .opencode/agents/
+[i] Trusting direct dependency MCP 'okf-bundle' from 'pkg'
+[i] Targeting declared target from apm.yml: opencode
+|  [>]  okf-bundle (self-defined, stdio)
+|     +- Configuring for Opencode...
+Successfully configured MCP server 'okf-bundle' for OpenCode
+  + okf-bundle
+|  [+]  okf-bundle -> Opencode (configured)
+  [!] [pkg] OpenCode agent 'pkg/kmctl-auditor.md' has tools as str; OpenCode 
+requires a mapping of tool-name to boolean. OpenCode will reject this agent at 
+  [i] Skipped inactive experimental resolver for target 'copilot-cowork' during 
+  [i] Skipped inactive experimental resolver for target 'copilot-app' during 
+.opencode/ after: .opencode .opencode/agents .opencode/agents/kmctl-auditor.md 
+opencode.json exists: yes
+== second plain install (does opencode.json change?)
+install rc=0
+[i] Trusting direct dependency MCP 'okf-bundle' from 'pkg'
+|  [>]  okf-bundle (self-defined, stdio)
+Successfully configured MCP server 'okf-bundle' for OpenCode
+  + okf-bundle
+|  [+]  okf-bundle -> Opencode (configured)
+opencode.json unchanged by 2nd install
+== (c) pre-seed instructions + theme, reinstall
+install rc=0
+[i] Trusting direct dependency MCP 'okf-bundle' from 'pkg'
+|  [>]  okf-bundle (self-defined, stdio)
+Successfully configured MCP server 'okf-bundle' for OpenCode
+  + okf-bundle
+|  [+]  okf-bundle -> Opencode (configured)
+--- opencode.json now:
+{
+  "mcp": {
+    "okf-bundle": {
+      "type": "local",
+      "enabled": true,
+      "command": [
+        "sh",
+        "-c",
+        "for d in \"$PWD\"; do [ -n \"$d\" ] || continue; d=$(cd \"$d\" 2>/dev/null && pwd -P) || continue; while :; do if [ -d \"$d/.okf\" ]; then exec uv run https://raw.githubusercontent.com/scaccogatto/okf-skills/a8b96420de90d102c43cda1693d01ec4f925f2ab/servers/okf_mcp.py \"$d/.okf\"; fi; [ \"$d\" = / ] && break; d=$(dirname \"$d\"); done; done; exec uv run https://raw.githubusercontent.com/scaccogatto/okf-skills/a8b96420de90d102c43cda1693d01ec4f925f2ab/servers/okf_mcp.py .okf"
+      ]
+    }
+  },
+  "instructions": [
+    ".opencode/rules/*.md"
+  ],
+  "theme": "x"
+}
+== (b)+(d) check entry and start it
