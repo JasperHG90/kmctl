@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "release.py's pin_apm_doc would move or refuse on the Older installs example pin. The revised plan drops pin_apm_doc, its pattern and its refusal, keeps the page's install line under pin_docs, and r4 checks set_version leaves JasperHG90/Knowledge-management/apm#v0.3.0 alone and does not refuse.",
+      "anchor": "scripts/release.py:60",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r4"
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "The old-name exceptions were too narrow. The plan now keeps the old name in plugin.py, the Older installs example, commands.md's refused string and the test fixtures, and r1 allows exactly the old package name in those two docs pages plus plugin.py and tests.",
+      "anchor": "docs/how-to/install-kmctl-with-apm.md:135",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "32cd447f0bfddec9453b39978aec75f972b3854f54e5c90e6ca1e39a44d22303"
+  },
+  "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
+  "at": "2026-10-17T18:52:45+00:00"
+}
