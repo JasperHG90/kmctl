@@ -1,0 +1,426 @@
+kmctl 0.3.0
+
+===== drop antigravity, keep claude
+note: the claude CLI is not on PATH, so kmctl did not look for the old kmctl@kmctl plugin
+note: declared okf's MCP server okf-bundle in .mcp.json; Claude Code asks you to approve it once
+note: wrote .agents/plugins/kmctl/ (the agents, the SessionStart hook and okf's MCP server bundle); Antigravity loads it once you trust this folder
+installed kmctl's package v0.3.0 for claude, antigravity (project scope)
+Next: start a new Claude Code session, then open this folder in Antigravity, trust it and start a new session, then kmctl doctor
+--- files (after install both)
+.agents/apm-hooks.json
+.agents/hooks.json
+.agents/hooks/okf-skills/hooks/okf-stop-check.sh
+.agents/plugins/kmctl/agents/bundle-weaver.md
+.agents/plugins/kmctl/agents/event-analyzer.md
+.agents/plugins/kmctl/agents/kmctl-auditor.md
+.agents/plugins/kmctl/hooks.json
+.agents/plugins/kmctl/mcp_config.json
+.agents/plugins/kmctl/plugin.json
+.agents/rules/diagrams-stay-current.md
+.agents/rules/docs-layout.md
+.agents/rules/manifesto-invariants.md
+.agents/rules/okf-bundle.md
+.agents/skills/architecture-review/SKILL.md
+.agents/skills/audit/evals/evals.json
+.agents/skills/audit/evals/results.md
+.agents/skills/audit/evals/sample-findings.json
+.agents/skills/audit/SKILL.md
+.agents/skills/backfill/scripts/okf_backfill_events.py
+.agents/skills/backfill/SKILL.md
+.agents/skills/continue/evals/evals.json
+.agents/skills/continue/evals/results.md
+.agents/skills/continue/SKILL.md
+.agents/skills/decision-log-review/SKILL.md
+.agents/skills/handoff/evals/evals.json
+.agents/skills/handoff/evals/results.md
+.agents/skills/handoff/SKILL.md
+.agents/skills/okf/agents/openai.yaml
+.agents/skills/okf/reference/APACHE-2.0.txt
+.agents/skills/okf/reference/SPEC.md
+.agents/skills/okf/scripts/okf_init.py
+.agents/skills/okf/SKILL.md
+.agents/skills/okf/templates/concept.md
+.agents/skills/okf/templates/index.md
+.agents/skills/okf/templates/log.md
+.agents/skills/practices-review/SKILL.md
+.agents/skills/validate/scripts/okf_validate.py
+.agents/skills/validate/SKILL.md
+.agents/skills/visualize/scripts/okf_visualize.py
+.agents/skills/visualize/SKILL.md
+.agents/skills/write-docs/evals/evals.json
+.agents/skills/write-docs/evals/grade.py
+.agents/skills/write-docs/evals/results.md
+.agents/skills/write-docs/references/explanation.md
+.agents/skills/write-docs/references/how-to.md
+.agents/skills/write-docs/references/reference.md
+.agents/skills/write-docs/references/tutorial.md
+.agents/skills/write-docs/SKILL.md
+.claude/agents/bundle-weaver.md
+.claude/agents/event-analyzer.md
+.claude/agents/kmctl-auditor.md
+.claude/apm-hooks.json
+.claude/hooks/okf-skills/hooks/okf-stop-check.sh
+.claude/rules/diagrams-stay-current.md
+.claude/rules/docs-layout.md
+.claude/rules/manifesto-invariants.md
+.claude/rules/okf-bundle.md
+.claude/settings.json
+.claude/skills/architecture-review/SKILL.md
+.claude/skills/audit/evals/evals.json
+.claude/skills/audit/evals/results.md
+.claude/skills/audit/evals/sample-findings.json
+.claude/skills/audit/SKILL.md
+.claude/skills/backfill/scripts/okf_backfill_events.py
+.claude/skills/backfill/SKILL.md
+.claude/skills/continue/evals/evals.json
+.claude/skills/continue/evals/results.md
+.claude/skills/continue/SKILL.md
+.claude/skills/decision-log-review/SKILL.md
+.claude/skills/handoff/evals/evals.json
+.claude/skills/handoff/evals/results.md
+.claude/skills/handoff/SKILL.md
+.claude/skills/okf/agents/openai.yaml
+.claude/skills/okf/reference/APACHE-2.0.txt
+.claude/skills/okf/reference/SPEC.md
+.claude/skills/okf/scripts/okf_init.py
+.claude/skills/okf/SKILL.md
+.claude/skills/okf/templates/concept.md
+.claude/skills/okf/templates/index.md
+.claude/skills/okf/templates/log.md
+.claude/skills/practices-review/SKILL.md
+.claude/skills/validate/scripts/okf_validate.py
+.claude/skills/validate/SKILL.md
+.claude/skills/visualize/scripts/okf_visualize.py
+.claude/skills/visualize/SKILL.md
+.claude/skills/write-docs/evals/evals.json
+.claude/skills/write-docs/evals/grade.py
+.claude/skills/write-docs/evals/results.md
+.claude/skills/write-docs/references/explanation.md
+.claude/skills/write-docs/references/how-to.md
+.claude/skills/write-docs/references/reference.md
+.claude/skills/write-docs/references/tutorial.md
+.claude/skills/write-docs/SKILL.md
+--- apm.yml targets
+targets:
+  - claude
+  - antigravity
+dependencies:
+--- lock deployed_files under .agents/ and .claude/
+lock .agents/ entries: 51
+lock .claude/ entries: 54
+lock deployment targets: ['antigravity', 'claude', 'legacy']
+--- apm.yml after edit
+name: consumer-drop-antigravity
+version: 0.1.0
+targets:
+  - claude
+dependencies:
+  apm:
+    - git: http://127.0.0.1:39689/o/kmctl.git
+      path: apm
+      ref: v0.3.0
+      allow_insecure: true
+  |   Stop: runs 
+${CLAUDE_PROJECT_DIR}/.claude/hooks/okf-skills/hooks/okf-stop-check.sh 
+(hooks.json)
+  |-- Skill integrated -> .claude/skills/
+  |-- 4 skill(s) integrated -> .claude/skills/
+[i] Cleaned 4 stale files from 127.0.0.1/o/kmctl/apm
+  [!] 1 file(s) contain hidden characters
+    Run with --verbose to see details
+  [!] Transitive package 'okf' declares self-defined MCP server 'bundle' 
+(registry: false). Re-declare it in your apm.yml or use --trust-transitive-mcp.
+  [i] Skipped inactive experimental resolver for target 'copilot-cowork' during 
+lockfile reconciliation.
+  [i] Skipped inactive experimental resolver for target 'copilot-app' during 
+lockfile reconciliation.
+[*] Installed 2 APM dependencies (4 stale files cleaned) in 0.9s.
+--- files (after apm install --target claude)
+.agents/hooks.json
+.agents/hooks/okf-skills/hooks/okf-stop-check.sh
+.agents/plugins/kmctl/agents/bundle-weaver.md
+.agents/plugins/kmctl/agents/event-analyzer.md
+.agents/plugins/kmctl/agents/kmctl-auditor.md
+.agents/plugins/kmctl/hooks.json
+.agents/plugins/kmctl/mcp_config.json
+.agents/plugins/kmctl/plugin.json
+.claude/agents/bundle-weaver.md
+.claude/agents/event-analyzer.md
+.claude/agents/kmctl-auditor.md
+.claude/apm-hooks.json
+.claude/hooks/okf-skills/hooks/okf-stop-check.sh
+.claude/rules/diagrams-stay-current.md
+.claude/rules/docs-layout.md
+.claude/rules/manifesto-invariants.md
+.claude/rules/okf-bundle.md
+.claude/settings.json
+.claude/skills/architecture-review/SKILL.md
+.claude/skills/audit/evals/evals.json
+.claude/skills/audit/evals/results.md
+.claude/skills/audit/evals/sample-findings.json
+.claude/skills/audit/SKILL.md
+.claude/skills/backfill/scripts/okf_backfill_events.py
+.claude/skills/backfill/SKILL.md
+.claude/skills/continue/evals/evals.json
+.claude/skills/continue/evals/results.md
+.claude/skills/continue/SKILL.md
+.claude/skills/decision-log-review/SKILL.md
+.claude/skills/handoff/evals/evals.json
+.claude/skills/handoff/evals/results.md
+.claude/skills/handoff/SKILL.md
+.claude/skills/okf/agents/openai.yaml
+.claude/skills/okf/reference/APACHE-2.0.txt
+.claude/skills/okf/reference/SPEC.md
+.claude/skills/okf/scripts/okf_init.py
+.claude/skills/okf/SKILL.md
+.claude/skills/okf/templates/concept.md
+.claude/skills/okf/templates/index.md
+.claude/skills/okf/templates/log.md
+.claude/skills/practices-review/SKILL.md
+.claude/skills/validate/scripts/okf_validate.py
+.claude/skills/validate/SKILL.md
+.claude/skills/visualize/scripts/okf_visualize.py
+.claude/skills/visualize/SKILL.md
+.claude/skills/write-docs/evals/evals.json
+.claude/skills/write-docs/evals/grade.py
+.claude/skills/write-docs/evals/results.md
+.claude/skills/write-docs/references/explanation.md
+.claude/skills/write-docs/references/how-to.md
+.claude/skills/write-docs/references/reference.md
+.claude/skills/write-docs/references/tutorial.md
+.claude/skills/write-docs/SKILL.md
+--- apm.yml targets
+targets:
+  - claude
+dependencies:
+  apm:
+--- lock deployed_files under .agents/ and .claude/
+lock .agents/ entries: 1
+lock .claude/ entries: 54
+lock deployment targets: ['claude', 'legacy']
+RESULT drop=antigravity: .agents APM files before=42 after=2
+  left on disk: .agents/hooks.json
+  left on disk: .agents/hooks/okf-skills/hooks/okf-stop-check.sh
+  .agents/hooks.json content: {} 
+  .agents/hooks/okf-skills/hooks/okf-stop-check.sh content: #!/bin/bash # OKF Stop hook - dormant by default. # Fires only when BOTH hold: #   1. the repo's bundle opts in: `upkeep
+  lock deployment: legacy .agents/hooks/okf-skills/hooks/okf-stop-check.sh
+--- fallback: apm install --allow-insecure (targets from apm.yml)
+(registry: false). Re-declare it in your apm.yml or use --trust-transitive-mcp.
+  [i] Skipped inactive experimental resolver for target 'copilot-cowork' during 
+lockfile reconciliation.
+  [i] Skipped inactive experimental resolver for target 'copilot-app' during 
+lockfile reconciliation.
+[*] Installed 2 APM dependencies in 0.7s.
+FALLBACK install-no-target drop=antigravity: 2 left
+--- fallback: apm prune
+[>] Analyzing installed packages vs apm.yml...
+[+] No orphaned packages found. apm_modules/ is clean.
+FALLBACK prune drop=antigravity: 2 left
+  lock deployment: legacy .agents/hooks/okf-skills/hooks/okf-stop-check.sh
+--- apm targets
+  copilot      inactive   needs .github/copilot-instructions.md    .github/
+  cursor       inactive   needs .cursor/                           .cursor/
+  codex        inactive   needs .codex/                            .codex/
+  gemini       inactive   needs GEMINI.md                          .gemini/
+  grok-build   inactive   needs .grok/                             .grok/
+  opencode     inactive   needs .opencode/                         .opencode/
+  windsurf     inactive   needs .windsurf/                         .windsurf/
+  kiro         inactive   needs .kiro/                             .kiro/
+
+===== drop claude, keep antigravity
+note: the claude CLI is not on PATH, so kmctl did not look for the old kmctl@kmctl plugin
+note: declared okf's MCP server okf-bundle in .mcp.json; Claude Code asks you to approve it once
+note: wrote .agents/plugins/kmctl/ (the agents, the SessionStart hook and okf's MCP server bundle); Antigravity loads it once you trust this folder
+installed kmctl's package v0.3.0 for claude, antigravity (project scope)
+Next: start a new Claude Code session, then open this folder in Antigravity, trust it and start a new session, then kmctl doctor
+--- files (after install both)
+.agents/apm-hooks.json
+.agents/hooks.json
+.agents/hooks/okf-skills/hooks/okf-stop-check.sh
+.agents/plugins/kmctl/agents/bundle-weaver.md
+.agents/plugins/kmctl/agents/event-analyzer.md
+.agents/plugins/kmctl/agents/kmctl-auditor.md
+.agents/plugins/kmctl/hooks.json
+.agents/plugins/kmctl/mcp_config.json
+.agents/plugins/kmctl/plugin.json
+.agents/rules/diagrams-stay-current.md
+.agents/rules/docs-layout.md
+.agents/rules/manifesto-invariants.md
+.agents/rules/okf-bundle.md
+.agents/skills/architecture-review/SKILL.md
+.agents/skills/audit/evals/evals.json
+.agents/skills/audit/evals/results.md
+.agents/skills/audit/evals/sample-findings.json
+.agents/skills/audit/SKILL.md
+.agents/skills/backfill/scripts/okf_backfill_events.py
+.agents/skills/backfill/SKILL.md
+.agents/skills/continue/evals/evals.json
+.agents/skills/continue/evals/results.md
+.agents/skills/continue/SKILL.md
+.agents/skills/decision-log-review/SKILL.md
+.agents/skills/handoff/evals/evals.json
+.agents/skills/handoff/evals/results.md
+.agents/skills/handoff/SKILL.md
+.agents/skills/okf/agents/openai.yaml
+.agents/skills/okf/reference/APACHE-2.0.txt
+.agents/skills/okf/reference/SPEC.md
+.agents/skills/okf/scripts/okf_init.py
+.agents/skills/okf/SKILL.md
+.agents/skills/okf/templates/concept.md
+.agents/skills/okf/templates/index.md
+.agents/skills/okf/templates/log.md
+.agents/skills/practices-review/SKILL.md
+.agents/skills/validate/scripts/okf_validate.py
+.agents/skills/validate/SKILL.md
+.agents/skills/visualize/scripts/okf_visualize.py
+.agents/skills/visualize/SKILL.md
+.agents/skills/write-docs/evals/evals.json
+.agents/skills/write-docs/evals/grade.py
+.agents/skills/write-docs/evals/results.md
+.agents/skills/write-docs/references/explanation.md
+.agents/skills/write-docs/references/how-to.md
+.agents/skills/write-docs/references/reference.md
+.agents/skills/write-docs/references/tutorial.md
+.agents/skills/write-docs/SKILL.md
+.claude/agents/bundle-weaver.md
+.claude/agents/event-analyzer.md
+.claude/agents/kmctl-auditor.md
+.claude/apm-hooks.json
+.claude/hooks/okf-skills/hooks/okf-stop-check.sh
+.claude/rules/diagrams-stay-current.md
+.claude/rules/docs-layout.md
+.claude/rules/manifesto-invariants.md
+.claude/rules/okf-bundle.md
+.claude/settings.json
+.claude/skills/architecture-review/SKILL.md
+.claude/skills/audit/evals/evals.json
+.claude/skills/audit/evals/results.md
+.claude/skills/audit/evals/sample-findings.json
+.claude/skills/audit/SKILL.md
+.claude/skills/backfill/scripts/okf_backfill_events.py
+.claude/skills/backfill/SKILL.md
+.claude/skills/continue/evals/evals.json
+.claude/skills/continue/evals/results.md
+.claude/skills/continue/SKILL.md
+.claude/skills/decision-log-review/SKILL.md
+.claude/skills/handoff/evals/evals.json
+.claude/skills/handoff/evals/results.md
+.claude/skills/handoff/SKILL.md
+.claude/skills/okf/agents/openai.yaml
+.claude/skills/okf/reference/APACHE-2.0.txt
+.claude/skills/okf/reference/SPEC.md
+.claude/skills/okf/scripts/okf_init.py
+.claude/skills/okf/SKILL.md
+.claude/skills/okf/templates/concept.md
+.claude/skills/okf/templates/index.md
+.claude/skills/okf/templates/log.md
+.claude/skills/practices-review/SKILL.md
+.claude/skills/validate/scripts/okf_validate.py
+.claude/skills/validate/SKILL.md
+.claude/skills/visualize/scripts/okf_visualize.py
+.claude/skills/visualize/SKILL.md
+.claude/skills/write-docs/evals/evals.json
+.claude/skills/write-docs/evals/grade.py
+.claude/skills/write-docs/evals/results.md
+.claude/skills/write-docs/references/explanation.md
+.claude/skills/write-docs/references/how-to.md
+.claude/skills/write-docs/references/reference.md
+.claude/skills/write-docs/references/tutorial.md
+.claude/skills/write-docs/SKILL.md
+--- apm.yml targets
+targets:
+  - claude
+  - antigravity
+dependencies:
+--- lock deployed_files under .agents/ and .claude/
+lock .agents/ entries: 51
+lock .claude/ entries: 54
+lock deployment targets: ['antigravity', 'claude', 'legacy']
+--- apm.yml after edit
+name: consumer-drop-claude
+version: 0.1.0
+targets:
+  - antigravity
+dependencies:
+  apm:
+    - git: http://127.0.0.1:39689/o/kmctl.git
+      path: apm
+      ref: v0.3.0
+      allow_insecure: true
+  |-- 1 hook(s) integrated (1 adopted) -> .agents/hooks.json
+  |   Stop: runs .agents/hooks/okf-skills/hooks/okf-stop-check.sh (hooks.json)
+  |-- Skill integrated -> .agents/skills/
+  |-- 4 skill(s) integrated -> .agents/skills/
+[i] Cleaned 33 stale files from 127.0.0.1/o/kmctl/apm
+[i] Cleaned 21 stale files from scaccogatto/okf-skills
+  [!] 1 file(s) contain hidden characters
+    Run with --verbose to see details
+  [!] Transitive package 'okf' declares self-defined MCP server 'bundle' 
+(registry: false). Re-declare it in your apm.yml or use --trust-transitive-mcp.
+  [i] Skipped inactive experimental resolver for target 'copilot-cowork' during 
+lockfile reconciliation.
+  [i] Skipped inactive experimental resolver for target 'copilot-app' during 
+lockfile reconciliation.
+[*] Installed 2 APM dependencies (54 stale files cleaned) in 0.9s.
+--- files (after apm install --target antigravity)
+.agents/apm-hooks.json
+.agents/hooks.json
+.agents/hooks/okf-skills/hooks/okf-stop-check.sh
+.agents/plugins/kmctl/agents/bundle-weaver.md
+.agents/plugins/kmctl/agents/event-analyzer.md
+.agents/plugins/kmctl/agents/kmctl-auditor.md
+.agents/plugins/kmctl/hooks.json
+.agents/plugins/kmctl/mcp_config.json
+.agents/plugins/kmctl/plugin.json
+.agents/rules/diagrams-stay-current.md
+.agents/rules/docs-layout.md
+.agents/rules/manifesto-invariants.md
+.agents/rules/okf-bundle.md
+.agents/skills/architecture-review/SKILL.md
+.agents/skills/audit/evals/evals.json
+.agents/skills/audit/evals/results.md
+.agents/skills/audit/evals/sample-findings.json
+.agents/skills/audit/SKILL.md
+.agents/skills/backfill/scripts/okf_backfill_events.py
+.agents/skills/backfill/SKILL.md
+.agents/skills/continue/evals/evals.json
+.agents/skills/continue/evals/results.md
+.agents/skills/continue/SKILL.md
+.agents/skills/decision-log-review/SKILL.md
+.agents/skills/handoff/evals/evals.json
+.agents/skills/handoff/evals/results.md
+.agents/skills/handoff/SKILL.md
+.agents/skills/okf/agents/openai.yaml
+.agents/skills/okf/reference/APACHE-2.0.txt
+.agents/skills/okf/reference/SPEC.md
+.agents/skills/okf/scripts/okf_init.py
+.agents/skills/okf/SKILL.md
+.agents/skills/okf/templates/concept.md
+.agents/skills/okf/templates/index.md
+.agents/skills/okf/templates/log.md
+.agents/skills/practices-review/SKILL.md
+.agents/skills/validate/scripts/okf_validate.py
+.agents/skills/validate/SKILL.md
+.agents/skills/visualize/scripts/okf_visualize.py
+.agents/skills/visualize/SKILL.md
+.agents/skills/write-docs/evals/evals.json
+.agents/skills/write-docs/evals/grade.py
+.agents/skills/write-docs/evals/results.md
+.agents/skills/write-docs/references/explanation.md
+.agents/skills/write-docs/references/how-to.md
+.agents/skills/write-docs/references/reference.md
+.agents/skills/write-docs/references/tutorial.md
+.agents/skills/write-docs/SKILL.md
+.claude/settings.json
+--- apm.yml targets
+targets:
+  - antigravity
+dependencies:
+  apm:
+--- lock deployed_files under .agents/ and .claude/
+lock .agents/ entries: 51
+lock .claude/ entries: 0
+lock deployment targets: ['antigravity', 'legacy']
+RESULT drop=claude: .claude APM files before=44 after=0
+  settings.json hook events:
+  ['SessionStart']

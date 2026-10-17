@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "plugin-remove",
+  "n": 2,
+  "command": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/spike-remove-2/drop-target.sh",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/spike-remove-2/drop-target.sh",
+      "copy": "files/drop-target.sh"
+    }
+  ],
+  "where": "worktree",
+  "head": "a42f994cbeac13c10f72ab115eef3d5da4f865bc",
+  "fingerprint": "13d2ac68492705c39c68c882aa9db6c322106b00f7f390ba6f4337dbf525a090",
+  "started_at": "2026-10-17T06:07:58+00:00",
+  "finished_at": "2026-10-17T06:08:17+00:00",
+  "duration_seconds": 18.968,
+  "timeout_seconds": 600.0,
+  "exit": 1,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
+  "moved_from": null
+}
