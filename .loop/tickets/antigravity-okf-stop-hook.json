@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "antigravity-okf-stop-hook",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
@@ -98,8 +98,8 @@
     },
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "a5195df492775fa3699e0074010c8f79c76466b5f62422a96fdde5173b9a328c",
   "intent": {
@@ -131,8 +131,14 @@
       "to": "verifying",
       "at": "2026-10-17T07:25:02+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-17T07:43:06+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T07:29:06+00:00"
+  "at": "2026-10-17T07:43:06+00:00"
 }
