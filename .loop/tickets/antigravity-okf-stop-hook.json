@@ -1,14 +1,50 @@
 {
   "schema_version": "1.0",
   "slug": "antigravity-okf-stop-hook",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "f6e3b481c2f4979f2ba3c17b9c533461a1c13f0cd12273a6499d0504b9d9da63",
+    "tree": "6b3c49e43452fe9718155c409bce4b5e8f6eac62",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": "j-20261017T074747+0000-f7a13294",
+        "paths": [
+          "docs/how-to/install-the-plugin-and-the-ci-action.md",
+          "src/kmctl/doctor.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f2",
+        "outcome": "sent-back",
+        "by": "judgement",
+        "judgement": "j-20261017T074748+0000-50de6db8",
+        "paths": [
+          "src/kmctl/antigravity.py",
+          "tests/test_antigravity.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f3",
+        "outcome": "cleared-unreviewed",
+        "by": "fallback",
+        "judgement": "j-20261017T074748+0000-7f5cba1d",
+        "paths": [
+          "tests/test_antigravity.py"
+        ]
+      }
+    ],
+    "at": "2026-10-17T07:47:48+00:00"
+  },
   "ask": null,
   "split": "j-20261017T063651+0000-6587cd28",
   "split_plan_hash": "a5195df492775fa3699e0074010c8f79c76466b5f62422a96fdde5173b9a328c",
@@ -139,8 +175,14 @@
       "to": "fixing",
       "at": "2026-10-17T07:43:06+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-17T07:47:48+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T07:47:44+00:00"
+  "at": "2026-10-17T07:47:48+00:00"
 }
