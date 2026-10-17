@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017
-  at: '2026-10-17T14:32:08+00:00'
+  at: '2026-10-17T14:32:31+00:00'
 slug: real-audits
 n: 1
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike real-audits/1
@@ -24,7 +24,9 @@ The command exited 1:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note real-audits 1`.
+Not the measuring run: the prototype crashed after the agent finished, on a bug in the spike's own stats code (`result.usage()` is an attribute in PydanticAI 2.57, not a method), so no report or request count was saved.
+Before the crash the validator ran once and rejected 0 of 82 citations, so the run reached a final report in about 7 minutes with no retry.
+See spike 2 for the full numbers.
 
 ## Files
 
