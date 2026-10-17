@@ -78,5 +78,5 @@ def test_audit_paths_read_the_apm_package() -> None:
     script = texts["action/agent.py"]
     assert 'PACKAGE = HERE.parent / "apm" / ".apm"' in script
     assert 'DEFAULT_SKILLS = PACKAGE / "skills"' in script
-    assert 'AUDITOR = PACKAGE / "agents" / "kmctl-auditor.md"' in script
+    assert 'PROMPTS = HERE / "prompts"' in script
     assert (PACKAGE / "skills").is_dir() and AGENT.is_file()

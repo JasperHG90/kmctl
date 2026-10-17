@@ -236,8 +236,16 @@ Concepts that are due are reported, never failed.
 
 Audit mode sends your repository to a model, so it is off unless you add it.
 Per `action.yml`, it runs `action/agent.py`, a small agent built on
-[PydanticAI](https://ai.pydantic.dev). By default it audits the architecture
-pages, decisions and practices that are due, following kmctl's audit skill.
+[PydanticAI](https://ai.pydantic.dev). It ships three audits, which the
+`audit` input picks:
+
+- `okf-vs-code`, the default: every concept in `.okf/` (decisions,
+  architecture pages, practices, the manifesto) against the code, each
+  option, default and number on its own.
+- `docs-vs-code`: every page in `docs/` against the code it describes.
+- `okf-vs-docs`: `docs/` against `.okf/`, for places where the two say
+  different things.
+
 The report lists what the agent checked and what it compared each thing
 against, and has a finding only for a mismatch: the claim (`path:line`), the
 lines that contradict it and a suggested fix. The script checks every
@@ -270,11 +278,13 @@ vendor's own API, or your own server.
 | `model` | Required. Without `base_url`, PydanticAI's `provider:model`, such as `openai:gpt-5` (set the provider's own key variable, such as `OPENAI_API_KEY`). With `base_url`, the model name the endpoint serves |
 | `base_url` | an OpenAI-compatible endpoint's base URL, usually ending in `/v1` |
 | `api_key_env` | with `base_url`, the name of the variable that holds the key; leave it out for an endpoint that takes no key |
-| `prompt` or `prompt_file` | the agent's task; leave both out for the knowledge audit |
+| `audit` | the shipped audit to run: `okf-vs-code` (the default), `docs-vs-code` or `okf-vs-docs` |
+| `prompt` or `prompt_file` | a task of your own, instead of `audit` |
 | `system_prompt_file` | a file that replaces the shipped system prompt |
 | `context` | folders the agent can read besides the repository, one per line |
 | `skills` | skill folders (subfolders with a `SKILL.md`), one per line; default kmctl's own |
 | `timeout` | how long the agent may run; default `30m` |
+| `report_name` | the artifact's name, in audit and publish mode alike; default `agent-report` |
 
 Publish mode takes three more:
 
@@ -343,6 +353,29 @@ Publish mode takes three more:
 `timeout-minutes` on the step is a second limit after `timeout`, so a stuck
 run cannot hold the runner for GitHub's six-hour default.
 
+**All three audits.** To run every audit, give both jobs a matrix with
+`fail-fast: false`, and give each audit its own `report_name` and
+`issue_title` so their reports and issues stay apart. Add
+`if: ${{ !cancelled() }}` to the publish job, so one failed audit does not
+hold back the others' issues. Under the audit step's `with:`:
+
+```yaml
+             audit: ${{ matrix.audit }}
+             report_name: agent-report-${{ matrix.audit }}
+```
+
+and under the publish step's `with:`, with `title` in the matrix:
+
+```yaml
+             report_name: agent-report-${{ matrix.audit }}
+             issue_title: ${{ matrix.title }}
+```
+
+This repository's own workflow, described below, runs all three this way.
+The audits were tested with Gemini 3.8 Flash on copies of this repository
+with false claims planted in them, and caught each one; a weaker model may
+miss some.
+
 **Your own task.** To check the repository against something else, such as
 your enterprise architecture docs, fetch them in a step before the action's,
 such as `- run: ./scripts/fetch-ea-docs.sh context/`, and add a task, the
@@ -359,9 +392,10 @@ folder and any skills of your own under the action step's `with:`:
 takes, with its default.
 
 This repository's own `.github/workflows/knowledge-audit.yml` runs the same
-commands as separate steps instead of `uses:`: in the audit job, install
-kmctl, run `action/agent.py run` and upload the report; in the publish job,
-download it and run `action/agent.py publish`. Read it to see exactly what
+commands as separate steps instead of `uses:`, once per audit: in the audit
+job, install kmctl, run `action/agent.py run --audit NAME` and upload the
+report; in the publish job, download it and run `action/agent.py publish`
+with that audit's issue title. Read it to see exactly what
 the audit runs. `uv run --script action/agent.py publish --help` lists the
 publish options.
 

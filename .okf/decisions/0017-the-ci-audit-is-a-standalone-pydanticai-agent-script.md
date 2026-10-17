@@ -130,3 +130,19 @@ the report back to the agent while it cites any other line, or a line past
 the file's end. After five retries the run stops with exit 1, names the
 citations and writes no report. Lines seen only in `run_shell` output do
 not count, so a finding about a command cites the source that defines it.
+
+## Correction, 2026-10-17
+
+The default task is no longer kmctl's audit skill, which checked only the
+`.okf/` concepts that were due and never `docs/`. `action/agent.py` ships
+three audits as prompt files in `action/prompts/`, picked with `--audit`
+(the `audit` input of `action.yml`): `okf-vs-code` (the default) checks
+every concept in `.okf/` against the code, each option, default and number
+on its own; `docs-vs-code` checks every page in `docs/` against the code;
+`okf-vs-docs` checks `docs/` against `.okf/`. Run on copies of this
+repository with three false claims planted for each, Gemini 3.8 Flash
+caught all nine (spike:audit-prompts/1 to 3 in `.loop/`). kmctl's skills
+stay available to the agent. `.github/workflows/knowledge-audit.yml` runs
+all three as a matrix, each with its own `agent-report-NAME` artifact and
+issue; `action.yml`'s `report_name` input names the artifact so a workflow
+can do the same through the action.

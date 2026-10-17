@@ -58,7 +58,8 @@ flowchart LR
     subgraph action["action.yml (GitHub Action)"]
         ci["action/knowledge-ci.sh<br/>mode: checks"]
         agentPy["action/agent.py (PydanticAI)<br/>mode: audit; read_file, search_files,<br/>list_files, run_shell"]
-        artifact["agent-report artifact<br/>report.json, report.md,<br/>transcript.json"]
+        prompts["action/prompts/<br/>okf-vs-code (default), docs-vs-code,<br/>okf-vs-docs"]
+        artifact["report_name artifact, one per audit<br/>report.json, report.md,<br/>transcript.json"]
         publishPy["action/agent.py publish<br/>mode: publish, its own job,<br/>GH_TOKEN, issues: write"]
     end
 
@@ -122,8 +123,9 @@ flowchart LR
     rules -. "applyTo becomes paths:" .-> consumer
 
     ci -- "kmctl check,<br/>kmctl review due" --> app
-    agentPy -- "run_shell: kmctl review due --json" --> reviewDue
-    agentPy -. "lists the skills; reads the audit skill,<br/>review skills and auditor as it needs" .-> audit & reviews & auditor
+    agentPy -- "--audit NAME: the user message" --> prompts
+    agentPy -. "run_shell: kmctl as a task needs" .-> app
+    agentPy -. "lists the skills; reads the review<br/>skills as it needs" .-> audit & reviews & auditor
     agentPy -- "one run, typed Report (checked, findings),<br/>citations sent back unless read or a search hit,<br/>under --timeout" --> provider
     agentPy -. "reads, never commits or pushes" .-> repo & context
     agentPy -- "write: --out" --> artifact
@@ -287,7 +289,8 @@ tag a consumer's `apm.yml` names and a build from a download with no
   `okf.py`, `kinds.py`; `apm/.apm/skills/` (write-docs, handoff,
   continue, audit and the three review skills),
   `apm/.apm/agents/kmctl-auditor.md`, `apm/.apm/instructions/`; `action.yml`,
-  `action/knowledge-ci.sh`, `action/agent.py` (run and publish); `.github/workflows/knowledge-audit.yml`.
+  `action/knowledge-ci.sh`, `action/agent.py` (run and publish), `action/prompts/` (the three
+  audits); `.github/workflows/knowledge-audit.yml`.
 - Releases: `.github/workflows/release.yml`, `.github/workflows/release-tag.yml`,
   `scripts/release.py`, `scripts/next_release_version.py`,
   `scripts/check_wheel.py`, `scripts/smoke_wheel.py`, `apm/apm.yml`.

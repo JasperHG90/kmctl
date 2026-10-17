@@ -173,6 +173,7 @@ def test_action_and_workflow_wiring() -> None:
 
 
 WORKFLOW = ROOT / ".github" / "workflows" / "knowledge-audit.yml"
+AUDITS = ["docs-vs-code", "okf-vs-code", "okf-vs-docs"]
 TOKENS = ("GH_TOKEN", "GITHUB_TOKEN")
 OLD_AUDIT = (
     "action/knowledge-audit.sh",
@@ -252,10 +253,12 @@ def test_workflow_audit_job_runs_agent_without_token_or_cache() -> None:
     assert checkout["with"]["fetch-depth"] == 0
     assert "uv run --script action/agent.py run" in agent["run"]
     assert "--out ${{ runner.temp }}/agent-report" in agent["run"]
+    assert "--audit ${{ matrix.audit }}" in agent["run"]
+    assert job["strategy"] == {"fail-fast": False, "matrix": {"audit": AUDITS}}
     assert agent["env"]["AUDIT_API_KEY"] == "${{ secrets.AUDIT_API_KEY }}"
     _no_token(job)
     _no_cache(steps)
-    assert keep["with"]["name"] == "agent-report"
+    assert keep["with"]["name"] == "agent-report-${{ matrix.audit }}"
     assert keep["with"]["path"] == "${{ runner.temp }}/agent-report"
     assert keep["if"] == "always()"
 
@@ -267,14 +270,21 @@ def test_workflow_publish_job_posts_from_the_artifact() -> None:
     fetch, post = _publish_steps(steps)
 
     assert job["needs"] == "audit"
+    assert job["if"] == "${{ !cancelled() }}"
     assert job["permissions"] == {"contents": "read", "issues": "write"}
+    assert job["strategy"]["fail-fast"] is False
+    include = job["strategy"]["matrix"]["include"]
+    assert [row["audit"] for row in include] == AUDITS
+    titles = [row["title"] for row in include]
+    assert len(set(titles)) == len(titles) and all(titles)
     assert _uses(steps, "actions/checkout")[0]["with"]["persist-credentials"] is False
     _no_cache(steps)
     assert fetch["with"] == {
-        "name": "agent-report",
+        "name": "agent-report-${{ matrix.audit }}",
         "path": "${{ runner.temp }}/agent-report",
     }
     assert "uv run --script action/agent.py publish" in post["run"]
+    assert '--title "${{ matrix.title }}"' in post["run"]
     assert "${{ runner.temp }}/agent-report/report.json" in post["run"]
     assert post["env"]["GH_TOKEN"] == "${{ github.token }}"
     others = [s for s in steps if s is not post]
@@ -292,6 +302,7 @@ def test_action_audit_mode_runs_agent_without_token() -> None:
         "model",
         "base_url",
         "api_key_env",
+        "audit",
         "prompt",
         "prompt_file",
         "system_prompt_file",
@@ -305,11 +316,17 @@ def test_action_audit_mode_runs_agent_without_token() -> None:
     for step in (agent, keep):
         assert "inputs.mode == 'audit'" in step["if"], step
     assert "${{ github.action_path }}/action/agent.py" in agent["run"]
+    assert 'args+=(--audit "$AUDIT")' in agent["run"]
     _no_cache(steps)
     for step in steps:
         if "inputs.mode == 'audit'" in str(step.get("if", "")):
             _no_token(step)
-    assert keep["with"]["path"] == "${{ runner.temp }}/agent-report"
+    assert keep["with"] == {
+        "name": "${{ inputs.report_name }}",
+        "path": "${{ runner.temp }}/agent-report",
+        "if-no-files-found": "ignore",
+    }
+    assert action["inputs"]["report_name"]["default"] == "agent-report"
 
 
 def test_action_publish_mode_posts_from_the_artifact() -> None:
@@ -324,7 +341,7 @@ def test_action_publish_mode_posts_from_the_artifact() -> None:
     for step in (fetch, post):
         assert "inputs.mode == 'publish'" in step["if"], step
     assert fetch["with"] == {
-        "name": "agent-report",
+        "name": "${{ inputs.report_name }}",
         "path": "${{ runner.temp }}/agent-report",
     }
     assert "${{ github.action_path }}/action/agent.py" in post["run"]

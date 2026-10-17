@@ -25,14 +25,16 @@ note and the session goes on.
 Because the hook prints whatever the CLI prints, upgrading kmctl updates the
 briefing. The hook carries no copy of the briefing to drift out of date.
 
-**The audit.** A separate agent checks the knowledge that is due: architecture
-pages against the code, decisions against later decisions and the code,
-practices against the evidence they cite. You can ask for it in a session
-(`/audit`), or turn it on in CI as described in
-[Install the plugin and the CI action](../how-to/install-the-plugin-and-the-ci-action.md).
-The auditor has only read and search tools. In CI it runs with the same
-limit, and its findings go to the job summary and one "Knowledge audit" issue.
-It never edits `docs/` or `.okf/`, and it never marks a concept as verified.
+**The audit.** A separate agent checks the knowledge. In a session, `/audit`
+checks what is due: architecture pages against the code, decisions against
+later decisions and the code, practices against the evidence they cite. That
+auditor has only read and search tools. In CI, turned on as described in
+[Install the plugin and the CI action](../how-to/install-the-plugin-and-the-ci-action.md),
+an agent runs three audits: `.okf/` against the code, `docs/` against the
+code, and `docs/` against `.okf/`. It can also run shell commands, so it can
+use the scripts skills ship. Each audit's findings go to the job summary and
+to that audit's own issue. Neither edits `docs/` or `.okf/`, and neither
+marks a concept as verified.
 
 **The free checks.** What a script can check, `kmctl check` checks on every
 pull request: indexes agree with their folders, prototypes have a

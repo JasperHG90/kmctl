@@ -225,6 +225,10 @@ on it.
   you can check each citation with the file and the line number.
 - `--context` gives it more folders to read, such as rules or architecture
   documents your workflow fetches.
+- Instead of a task of your own, `--audit` runs one of the three shipped
+  audits: `okf-vs-code` (`.okf/` against the code, the default),
+  `docs-vs-code` (`docs/` against the code) or `okf-vs-docs` (`docs/`
+  against `.okf/`). Their prompts are in `action/prompts/`.
 
 `report.json` holds the same report as data, for a script to read:
 
