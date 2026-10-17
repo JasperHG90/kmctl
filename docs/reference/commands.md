@@ -6,7 +6,7 @@ description: "Every kmctl command, subcommand and option."
 
 ## Summary
 
-Every `kmctl` command, subcommand and option in kmctl 0.1.0, taken from
+Every `kmctl` command, subcommand and option in kmctl 0.3.0, taken from
 `kmctl --help` and each command's `--help`. Every command takes `--help` (or
 `-h`). Commands that read or write a repository take `--path` (default: the
 current directory, which must be an existing folder). `--json` prints one
@@ -19,7 +19,7 @@ for people. Warnings and refusals go to stderr.
 | `kmctl update` | Same as `kmctl init`. Run it after upgrading kmctl to refresh the `CLAUDE.md` block. |
 | `kmctl check` | Check indexes agree with their folders, docs front matter has its shape, prototypes have a `README.md`, and links resolve; `--fix` writes the generated docs folder indexes first. |
 | `kmctl handoffs` | List the live handoffs in `.okf/handoffs/`, newest first. |
-| `kmctl briefing` | Print the session briefing: where knowledge lives, what is due, and the skills. |
+| `kmctl briefing` | Print the session briefing: where knowledge lives, what is due, and the rules. |
 | `kmctl schema` | Print the JSON Schema of one document kind, or list the kinds there are. |
 | `kmctl review` | Find knowledge that is due for review. Verbs: `due`. |
 | `kmctl review due` | List concepts in `.okf/` due for review, with the reason for each. |
