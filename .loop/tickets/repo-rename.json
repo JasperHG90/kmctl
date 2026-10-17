@@ -19,7 +19,9 @@
   "archived": false,
   "worktree": "/home/vscode/kmctl.worktrees/repo-rename",
   "branch": "loop/repo-rename",
-  "stamps": [],
+  "stamps": [
+    "67c1df80a552b705fee7cbfcc020a974912c98ebb5b6628208237ce9d2bf1e01"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
     "hash": "76dc1730dc5ae20a12fa2102e2b47f94f35452f8f58e71a5fbb53351ad8933b0",
@@ -124,5 +126,5 @@
     }
   ],
   "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
-  "at": "2026-10-17T18:54:33+00:00"
+  "at": "2026-10-17T18:57:19+00:00"
 }
