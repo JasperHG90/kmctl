@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "slug": "repo-ci",
+  "n": 1,
+  "command": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/repo-ci/runner.sh uv run pytest -q -p no:cacheprovider 2>&1 | tail -15",
+  "scripts": [],
+  "where": "worktree",
+  "head": "216b274dad5a7194571c377964e5b2ac02ff9140",
+  "fingerprint": "75a93ecbbfbbf9f8d971c04b88125a4b0e86b0a31b90d65a53589f969f931bbd",
+  "started_at": "2026-10-17T17:37:08+00:00",
+  "finished_at": "2026-10-17T17:37:43+00:00",
+  "duration_seconds": 35.223,
+  "timeout_seconds": 1800.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
+  "moved_from": null
+}
