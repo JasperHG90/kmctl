@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "doctor's files checks missed the rules APM lists under the kmctl-claude and kmctl-antigravity lock entries",
+      "anchor": "src/kmctl/plugin.py:647",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "drop_old_hook removed a whole SessionStart group, including a user's own hook",
+      "anchor": "src/kmctl/plugin.py:838",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "r6 uninstall assertions did not check okf-bundle and the Stop wrapper were gone",
+      "anchor": "tests/test_doctor.py:1095",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "resolved",
+      "claim": "r1's selector missed the no-instructions-in-shared-package and Claude-rule assertions",
+      "anchor": "tests/test_apm_package.py:529",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f5",
+      "disposition": "resolved",
+      "claim": "help and overview gave the migration order backwards; doctor details said kmctl writes the hook and MCP server",
+      "anchor": "src/kmctl/__init__.py",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f6",
+      "disposition": "open",
+      "claim": "kmctl doctor --help still describes antigravity.hook as checking the plugin folder's hooks.json (\"its hooks.json\" after .agents/plugins/kmctl/) and okf-mcp as \"as this kmctl declares it\"; doctor now checks .agents/hooks.json and the package's declaration",
+      "anchor": "src/kmctl/__init__.py:988",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "ec4abe6c7293afec94fbd9884dec225fbd62d6f73a887dcae45c21ef4d5454e7",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
+  "at": "2026-10-17T15:13:09+00:00"
+}
