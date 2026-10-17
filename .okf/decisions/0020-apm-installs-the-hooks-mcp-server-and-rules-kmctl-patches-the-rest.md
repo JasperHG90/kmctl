@@ -67,7 +67,8 @@ kmctl's package is three APM packages in `apm/`:
   hook running `kmctl briefing`.
 - `apm/antigravity/` (`targets: [antigravity]`): the four rules, generated
   from the Claude copies by `scripts/sync_antigravity_rules.py` (a test fails
-  when a copy is stale); the SessionStart hook running
+  when a copy is stale; each copy opens with an HTML comment naming its
+  source, the script and this decision); the SessionStart hook running
   `kmctl briefing --format antigravity`; and ADR 0018's okf Stop wrapper,
   now running from `.agents/`.
 
