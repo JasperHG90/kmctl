@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "langfuse-traces",
+  "n": 1,
+  "command": "uv run -q --script /tmp/claude-1000/-home-vscode-kmctl/dff53b03-6dd4-4578-a2d3-39665316bb2b/scratchpad/spike-langfuse/spike.py",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/dff53b03-6dd4-4578-a2d3-39665316bb2b/scratchpad/spike-langfuse/spike.py",
+      "copy": "files/spike.py"
+    }
+  ],
+  "where": "worktree",
+  "head": "2d0250b873a492ef3c11ee46f89a14872f4d2e07",
+  "fingerprint": "cb0b2e6b54f93e054f5ae95b9b9f77fd56602c2a52643d358a0e52c88966b403",
+  "started_at": "2026-10-17T17:58:31+00:00",
+  "finished_at": "2026-10-17T17:58:32+00:00",
+  "duration_seconds": 1.017,
+  "timeout_seconds": 180.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
+  "moved_from": null
+}

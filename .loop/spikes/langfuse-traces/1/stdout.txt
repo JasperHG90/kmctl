@@ -1,0 +1,82 @@
+version pydantic-ai-slim=2.57.0
+version opentelemetry-sdk=1.45.1
+version opentelemetry-exporter-otlp-proto-http=1.45.1
+version logfire=not installed
+version logfire-api=5.2.0
+defaults: version=5 include_content=True
+output: Finding(claim='readme exists', ok=True)
+
+== span 'chat fake-model' parent='invoke_agent agent'
+   gen_ai.provider.name = function
+   gen_ai.system = function
+   gen_ai.request.model = fake-model
+   model_request_parameters = {"function_tools":[{"name":"read_file","parameters_json_schema":{"additionalProperties":false,"properties":{"path":{"typ
+   gen_ai.tool.definitions = [{"type":"function","name":"read_file","description":"Read a file.","parameters":{"additionalProperties":false,"properti
+   gen_ai.operation.name = chat
+   gen_ai.agent.name = agent
+   gen_ai.agent.call.id = 01a14b03-f19c-7220-b979-2edf44ac790c
+   gen_ai.conversation.id = 01a14b03-f19c-7220-b979-2ee0f331c249
+   gen_ai.input.messages = [{"role":"user","parts":[{"type":"text","content":"check the readme"}]}]
+   gen_ai.output.messages = [{"role":"assistant","parts":[{"type":"tool_call","id":"pyd_ai_62238ed51d8442fe99ea2eefffa3c009","name":"read_file","arg
+   logfire.json_schema = {"type":"object","properties":{"gen_ai.input.messages":{"type":"array"},"gen_ai.output.messages":{"type":"array"},"model
+   gen_ai.usage.input_tokens = 53
+   gen_ai.usage.output_tokens = 6
+   gen_ai.response.model = fake-model
+
+== span 'execute_tool read_file' parent='invoke_agent agent'
+   gen_ai.operation.name = execute_tool
+   gen_ai.tool.name = read_file
+   gen_ai.tool.call.id = pyd_ai_62238ed51d8442fe99ea2eefffa3c009
+   gen_ai.tool.call.arguments = {"path":"README.md"}
+   gen_ai.agent.name = agent
+   gen_ai.agent.call.id = 01a14b03-f19c-7220-b979-2edf44ac790c
+   gen_ai.conversation.id = 01a14b03-f19c-7220-b979-2ee0f331c249
+   logfire.msg = running tool: read_file
+   logfire.json_schema = {"type":"object","properties":{"gen_ai.tool.call.arguments":{"type":"object"},"gen_ai.tool.call.result":{"type":"object"
+   gen_ai.tool.call.result = contents of README.md
+
+== span 'chat fake-model' parent='invoke_agent agent'
+   gen_ai.provider.name = function
+   gen_ai.system = function
+   gen_ai.request.model = fake-model
+   model_request_parameters = {"function_tools":[{"name":"read_file","parameters_json_schema":{"additionalProperties":false,"properties":{"path":{"typ
+   gen_ai.tool.definitions = [{"type":"function","name":"read_file","description":"Read a file.","parameters":{"additionalProperties":false,"properti
+   gen_ai.operation.name = chat
+   gen_ai.agent.name = agent
+   gen_ai.agent.call.id = 01a14b03-f19c-7220-b979-2edf44ac790c
+   gen_ai.conversation.id = 01a14b03-f19c-7220-b979-2ee0f331c249
+   gen_ai.input.messages = [{"role":"user","parts":[{"type":"text","content":"check the readme"}]},{"role":"assistant","parts":[{"type":"tool_call"
+   gen_ai.output.messages = [{"role":"assistant","parts":[{"type":"tool_call","id":"pyd_ai_ec3ea7ada1114ab5bb12b8046831a486","name":"final_result","
+   logfire.json_schema = {"type":"object","properties":{"gen_ai.input.messages":{"type":"array"},"gen_ai.output.messages":{"type":"array"},"model
+   gen_ai.usage.input_tokens = 57
+   gen_ai.usage.output_tokens = 13
+   gen_ai.response.model = fake-model
+
+== span 'invoke_agent agent' parent=None
+   model_name = fake-model
+   agent_name = agent
+   gen_ai.agent.name = agent
+   gen_ai.agent.call.id = 01a14b03-f19c-7220-b979-2edf44ac790c
+   gen_ai.conversation.id = 01a14b03-f19c-7220-b979-2ee0f331c249
+   gen_ai.operation.name = invoke_agent
+   logfire.msg = agent run
+   final_result = {"claim":"readme exists","ok":true}
+   gen_ai.aggregated_usage.input_tokens = 110
+   gen_ai.aggregated_usage.output_tokens = 19
+   pydantic_ai.all_messages = [{"role":"user","parts":[{"type":"text","content":"check the readme"}]},{"role":"assistant","parts":[{"type":"tool_call"
+   logfire.json_schema = {"type":"object","properties":{"pydantic_ai.all_messages":{"type":"array"},"final_result":{"type":"object"}}}
+
+== checks
+   PASS agent root span (no parent)
+   PASS gen_ai.request.model on a chat span
+   PASS gen_ai.usage.input_tokens
+   PASS gen_ai.usage.output_tokens
+   PASS gen_ai.input.messages
+   PASS gen_ai.output.messages
+   PASS tool span with gen_ai.tool.name
+   PASS tool call arguments attribute
+   PASS tool call result attribute
+
+logfire in sys.modules: False; logfire_api in sys.modules: True
+otlp endpoint=https://cloud.langfuse.com/api/public/otel/v1/traces auth header set=True
+batch spans before shutdown=0 after=1 flushed=True
