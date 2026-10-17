@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "antigravity-okf-stop-hook-reviewer-f4",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 2,
@@ -39,7 +39,7 @@
   "split": "j-20261017T080618+0000-62559278",
   "split_plan_hash": "e2a956acc5829c769a4a803b938b6d5afd5bd9235d03a52b492883ef9f6e66df",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "3388183ce70bcad654922d92bad9df466fb30cbb",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -145,8 +145,14 @@
       "to": "verifying",
       "at": "2026-10-17T08:30:42+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-17T08:35:08+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T08:35:00+00:00"
+  "at": "2026-10-17T08:35:08+00:00"
 }
