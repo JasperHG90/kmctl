@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "slug": "standalone-agent",
-  "stage": "ready",
-  "attempts": 0,
+  "stage": "building",
+  "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
@@ -17,8 +17,8 @@
   "closed_outside": false,
   "dropped": false,
   "archived": false,
-  "worktree": null,
-  "branch": null,
+  "worktree": "/home/vscode/kmctl.worktrees/standalone-agent",
+  "branch": "loop/standalone-agent",
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude",
@@ -155,8 +155,14 @@
       "to": "ready",
       "at": "2026-10-17T07:06:44+00:00",
       "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-10-17T07:06:51+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T07:06:44+00:00"
+  "at": "2026-10-17T07:06:51+00:00"
 }
