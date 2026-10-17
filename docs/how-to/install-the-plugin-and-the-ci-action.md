@@ -22,7 +22,7 @@ How the commands below were run:
   are left out below. The `kmctl plugin patch` output is the text kmctl
   prints for the same install, with the same stand-ins.
 - The workflow files are quoted from this repository's `action.yml` and its
-  shipped workflows, `.github/workflows/knowledge.yml` and
+  shipped workflows, `.github/workflows/ci.yml` (its `knowledge` job) and
   `.github/workflows/knowledge-audit.yml`. Those steps run only on GitHub, so
   their output on GitHub is not shown. The job summary shown in step 4 comes
   from running the script the action runs, `action/knowledge-ci.sh`, locally,
@@ -175,9 +175,10 @@ install left and prints one `ok` or `fail` line each; see
 
 ### 4. Add the checks workflow
 
-Create `.github/workflows/knowledge.yml`. This is the shipped
-`.github/workflows/knowledge.yml`, with `uses: ./` (which only works inside
-kmctl's own repository) replaced by the action's repository and a ref:
+Create `.github/workflows/knowledge.yml`. This is the `knowledge` job of
+the shipped `.github/workflows/ci.yml`, with `uses: ./` (which only works
+inside kmctl's own repository) replaced by the action's repository and a
+ref, and `actions/checkout@v4` in place of the pinned commit SHA:
 
 ```yaml
 name: knowledge
