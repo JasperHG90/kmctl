@@ -774,7 +774,7 @@ def _read_answer(answer: str) -> list[str]:
     """The harnesses an answer names, by number or name; raises PluginError otherwise."""
     numbered = dict(enumerate(HARNESSES, 1))
     names = [
-        numbered.get(int(word), word) if word.isdigit() else word
+        numbered.get(int(word), word) if word.isdecimal() else word
         for word in (w.strip() for w in answer.split(","))
     ]
     try:

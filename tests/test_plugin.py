@@ -1179,3 +1179,16 @@ def test_harness_docs_pages_say_it_asks() -> None:
     reference = " ".join((root / pages[0]).read_text().split())
     assert "already installed" in reference
     assert "Default: claude" not in reference
+
+
+@pytest.mark.usefixtures("repo", "terminal")
+@pytest.mark.parametrize("answer", ["²", "①"])
+def test_prompt_non_decimal_digit_is_asked_again(
+    installs: list[list[str]], answer: str
+) -> None:
+    result = _ask("install", f"{answer}\n1\n")
+
+    assert result.exit_code == 0, result.output
+    assert result.exception is None
+    assert installs == [["claude"]]
+    assert "one of: 1 claude, 2 antigravity" in result.stderr
