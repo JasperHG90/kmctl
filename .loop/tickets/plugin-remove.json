@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "plugin-remove",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 3,
   "review_rounds": 1,
@@ -109,8 +109,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "1f1d9f25e1c0647eb4820fab3f24118ea134ec795566172d3b38fee16be434eb",
   "intent": {
@@ -142,8 +142,14 @@
       "to": "verifying",
       "at": "2026-10-17T08:05:54+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-17T08:24:47+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T08:05:55+00:00"
+  "at": "2026-10-17T08:24:47+00:00"
 }
