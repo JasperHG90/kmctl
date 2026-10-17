@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014
-  at: '2026-10-17T21:54:27+00:00'
+  at: '2026-10-17T21:54:45+00:00'
 slug: opencode-harness
 n: 6
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike opencode-harness/6
@@ -24,7 +24,8 @@ The command exited 0:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note opencode-harness 6`.
+Exit 0: all four parts hold with apm-cli 0.33.0 and `targets: [opencode]`, for a local package holding kmctl's skills, its auditor agent and the okf-bundle entry copied from apm/apm.yml. (a) A first install with no `.opencode/` wrote okf-bundle to opencode.json, because the agents step created `.opencode/agents/` before the MCP step ran; a second plain install left opencode.json byte for byte unchanged. (b) The entry is `{"type": "local", "enabled": true, "command": ["sh", "-c", LAUNCHER]}`, with the command equal to `[sh] + args` from apm.yml and no keys outside OpenCode's McpLocalConfig (packages/core/src/v1/config/mcp.ts, sst/opencode 9d97a5b). (c) After `instructions: [".opencode/rules/*.md"]` and `theme: "x"` were added, a reinstall kept both keys and the entry (APM reads opencode.json, merges into `mcp`, and writes the result back). (d) Running the entry's command in a repo with `.okf/` answered an MCP initialize in 0.4 s with serverInfo name "okf" (warm uv cache).
+Settles risk 4. Limit: `.opencode/` exists at MCP time only because APM deploys an agent there. If the plan stops deploying APM's agent to `.opencode/agents/`, a first install would skip the server (the adapter returns early with no `.opencode/`). APM also warned that kmctl-auditor's `tools` is a string, which OpenCode rejects; that matters for risk 2.
 
 ## Files
 
