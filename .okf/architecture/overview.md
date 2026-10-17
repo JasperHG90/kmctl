@@ -46,6 +46,7 @@ flowchart LR
         handoffs["handoffs.py<br/>handoffs"]
         concepts["concepts.py<br/>new decision|practice|<br/>proposal|prototype|handoff"]
         docs["docs.py<br/>new doc"]
+        docsIndex["docs_index.py<br/>docs folder indexes"]
         supersede["supersede.py<br/>decision supersede"]
         pluginPy["plugin.py<br/>plugin patch"]
         doctorPy["doctor.py<br/>doctor: reads the install,<br/>runs apm --version offline"]
@@ -99,12 +100,16 @@ flowchart LR
     briefing -- "skills_dir: names the package's skills" --> pluginPy
     concepts & handoffs & reviewDue & supersede --> okf
     docs & supersede --> concepts
+    checks & docs & scaffold -- "generate, compare" --> docsIndex
+    app -- "check --fix" --> docsIndex
+    docsIndex & checks --> okf
     scaffold & concepts & docs & supersede -- "skeletons, status values" --> kinds
     kinds -- "ALLOWED_FIELDS" --> okf
     scaffold -- "first decision" --> concepts
     scaffold & concepts & docs & supersede -- "write" --> repo
     scaffold -- "write: CLAUDE.md /<br/>AGENTS.md block" --> agentFiles
     checks & okf -. "read" .-> repo
+    docsIndex -- "write: docs/FOLDER/README.md" --> repo
     pluginPy -- "write: apm.yml entry and targets,<br/>settings.json hook, .mcp.json" --> consumer
     pluginPy -- "apm uninstall (old entry),<br/>apm install --target claude,antigravity" --> apmCli
     pluginPy -- "write_plugin, plugin_problems" --> antigravityPy
@@ -147,14 +152,14 @@ exit codes. Each verb calls one module:
 
 | Verb | Module | Writes |
 |---|---|---|
-| `kmctl init`, `kmctl update` (an alias) | `scaffold.py`, with `concepts.py` for the first decision | `docs/README.md`, a starter `.okf/`, the kmctl block in `CLAUDE.md` and `AGENTS.md`, and decision "Keep project knowledge in an OKF bundle"; it keeps every file that exists except for that block and the decision's index entry and log line (ADR 0011). It writes no rules: those come with the package (ADR 0014) |
-| `kmctl check` | `checks.py` | nothing |
+| `kmctl init`, `kmctl update` (an alias) | `scaffold.py`, with `concepts.py` for the first decision and `docs_index.py` for the docs folder indexes | `docs/README.md`, each docs folder's generated `README.md`, a starter `.okf/`, the kmctl block in `CLAUDE.md` and `AGENTS.md`, and decision "Keep project knowledge in an OKF bundle"; it keeps every file that exists except for that block, the decision's index entry and log line (ADR 0011), and a generated docs folder index (ADR 0022). It writes no rules: those come with the package (ADR 0014) |
+| `kmctl check` | `checks.py`, with `docs_index.py` | nothing; with `--fix`, each generated docs folder `README.md` that is missing or out of date (ADR 0022) |
 | `kmctl briefing` | `briefing.py`, with `review_due.py`, `handoffs.py` and `plugin.py` for the skills it names, which the wheel carries as `kmctl/_skills/`; the knowledge rules are in `.claude/rules/`, not the briefing | nothing |
 | `kmctl review due` | `review_due.py` | nothing |
 | `kmctl handoffs` | `handoffs.py` | nothing |
 | `kmctl schema` | `kinds.py`, with `okf.py` for the field names | nothing |
 | `kmctl new decision`, `practice`, `proposal`, `prototype`, `handoff` | `concepts.py`, with `okf.py` to find each `--source` the way `review_due.py` does | the concept, its section index entry and a log line; `--stale-after` and `--source` write its `stale_after` and `sources` |
-| `kmctl new doc` | `docs.py` | the page and its `docs/README.md` entry |
+| `kmctl new doc` | `docs.py`, with `docs_index.py` | the page with its front matter, its folder's generated `README.md`, and a `docs/README.md` link to the folder when missing (ADR 0022) |
 | `kmctl decision supersede` | `supersede.py` | both decision records and a log line |
 | `kmctl plugin patch` | `plugin.py`, with `antigravity.py` for the plugin folder | runs nothing: reads `apm.lock.yaml`; refuses an `apm.yml` that names the package the v0.3.0 way, naming the `apm uninstall`; for claude, removes the hook and `okf-bundle` an older kmctl wrote and the old claude plugin `kmctl@kmctl`; for antigravity, writes `.agents/plugins/kmctl/` with the translated agents and takes APM's broken okf Stop handler out of `.agents/hooks.json` (ADR 0018, ADR 0020, ADR 0021); `--undo` deletes the plugin folder |
 | `kmctl doctor` | `doctor.py`, with `plugin.py` for the hook, MCP entries and lock reader and `antigravity.py` for the folder comparison | nothing; it reads `apm.yml`, `apm.lock.yaml` and the files it lists, the settings files, `.mcp.json`, `.agents/plugins/kmctl/` and agy's trust list, and runs only `uv tool run --offline --from apm-cli==0.33.0 apm --version`; `--online` fetches okf's MCP script URL |
@@ -276,7 +281,7 @@ tag a consumer's `apm.yml` names and a build from a download with no
   `kmctl doctor`.
 - Modules: `src/kmctl/__init__.py`, `scaffold.py`, `checks.py`,
   `briefing.py`, `review_due.py`, `handoffs.py`, `concepts.py`,
-  `docs.py`, `supersede.py`, `src/kmctl/plugin.py` (the hook and MCP
+  `docs.py`, `docs_index.py`, `supersede.py`, `src/kmctl/plugin.py` (the hook and MCP
   writers), `src/kmctl/antigravity.py` (the Antigravity plugin folder),
   `src/kmctl/doctor.py` (the install checks),
   `okf.py`, `kinds.py`; `apm/.apm/skills/` (write-docs, handoff,

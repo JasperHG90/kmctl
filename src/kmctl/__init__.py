@@ -19,6 +19,7 @@ from kmctl.briefing import (
 from kmctl.checks import run_checks
 from kmctl.concepts import ConceptError, Kind, new_concept
 from kmctl.docs import DocType, new_doc
+from kmctl.docs_index import fix_folder_indexes
 from kmctl.doctor import as_json as doctor_json
 from kmctl.doctor import render as render_doctor
 from kmctl.doctor import run_doctor
@@ -116,9 +117,12 @@ def init(
     for rel in result.created:
         typer.echo(f"created {rel}")
     for rel in result.updated:
-        why = (
-            "kmctl block" if Path(rel).name in AGENT_FILES else "first decision's entry"
-        )
+        if Path(rel).name in AGENT_FILES:
+            why = "kmctl block"
+        elif rel.startswith("docs/"):
+            why = "generated index"
+        else:
+            why = "first decision's entry"
         typer.echo(f"updated {rel} ({why})")
     for rel in result.skipped:
         typer.echo(f"kept    {rel} (already there)")
@@ -151,9 +155,12 @@ app.command(
     epilog=(
         "Examples:\n\n"
         "  kmctl check\n\n"
+        "  kmctl check --fix\n\n"
         "  kmctl check --path ../other-repo --json\n\n"
-        "Exit 0 when nothing fails, 1 when a check fails. A missing docs/ or .okf/ "
-        "is reported as skipped, not failed."
+        "Exit 0 when nothing fails, 1 when a check fails. A warning (such as "
+        "docs/README.md not linking a docs/ folder) is printed but does not fail. "
+        "A missing docs/ or .okf/ is reported as skipped, not failed. The "
+        "kmctl-check pre-commit hook runs this command."
     ),
 )
 def check(
@@ -171,20 +178,41 @@ def check(
         bool,
         typer.Option(
             "--json",
-            help="Print a JSON list of findings (check, file, line, message, level), for scripts.",
+            help=(
+                "Print a JSON list of findings (check, file, line, message, level: "
+                "error, warning or skipped), for scripts."
+            ),
+        ),
+    ] = False,
+    fix: Annotated[
+        bool,
+        typer.Option(
+            "--fix",
+            help=(
+                "First write each docs/ folder README.md index kmctl generates that is "
+                "missing or out of date, then check. It changes no other file."
+            ),
         ),
     ] = False,
 ) -> None:
-    """Check indexes agree with their folders, prototypes have a README.md, and links resolve."""
+    """Check indexes agree with their folders, docs front matter, prototype READMEs and links."""
+    if fix:
+        created, updated = fix_folder_indexes(path)
+        for rel in created + updated:
+            typer.echo(f"fixed {rel}", err=as_json)
     findings = run_checks(path)
     errors = [f for f in findings if f.level == "error"]
+    warnings = [f for f in findings if f.level == "warning"]
     if as_json:
         typer.echo(json.dumps([asdict(f) for f in findings]))
     else:
         for f in findings:
             where = f.file if f.line is None else f"{f.file}:{f.line}"
             typer.echo(f"{f.level}  {f.check}  {where}  {f.message}")
-        typer.echo(f"{len(errors)} failed" if errors else "all checks passed")
+        summary = f"{len(errors)} failed" if errors else "all checks passed"
+        if warnings:
+            summary += f", {len(warnings)} warning{'s' if len(warnings) > 1 else ''}"
+        typer.echo(summary)
     if errors:
         raise typer.Exit(1)
 
@@ -425,7 +453,9 @@ for _kind, _example in _CONCEPT_VERBS:
         "Examples:\n\n"
         "  kmctl new doc how-to 'Install it'\n\n"
         "  kmctl new doc reference 'Config keys' --description 'Every key and its default.'\n\n"
-        "Writes the page skeleton and its docs/README.md entry; you write the prose."
+        "Writes the page with front matter (description, stale_after three months "
+        "ahead, empty sources) and its skeleton, then its folder's README.md index "
+        "and a docs/README.md link to the folder; you write the prose."
     ),
 )
 def new_doc_page(
@@ -448,18 +478,19 @@ def new_doc_page(
         typer.Option(
             "--description",
             metavar="'One line.'",
-            help="An optional line for the index entry.",
+            help="An optional line for the page's description front matter and its index entry.",
         ),
     ] = "",
     path: Annotated[Path, _PATH_OPTION] = Path("."),
     as_json: Annotated[
         bool,
         typer.Option(
-            "--json", help="Print one JSON object (path, created_folder), for scripts."
+            "--json",
+            help="Print one JSON object (path, created_folder, warnings), for scripts.",
         ),
     ] = False,
 ) -> None:
-    """Create a docs/ page in its Diataxis folder with a skeleton and its index entry."""
+    """Create a docs/ page in its Diataxis folder with front matter, a skeleton and its index entry."""
     try:
         result = new_doc(path, doc_type, title, description)
     except ConceptError as error:
@@ -468,6 +499,8 @@ def new_doc_page(
     if as_json:
         typer.echo(json.dumps(asdict(result)))
         return
+    for warning in result.warnings:
+        typer.echo(f"warning: {warning}", err=True)
     typer.echo(f"created {result.path}")
     typer.echo(next_step(f"write the sections of {result.path}", "kmctl check"))
 

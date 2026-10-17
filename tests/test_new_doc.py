@@ -39,7 +39,8 @@ def test_new_doc_creates_page_per_type(tmp_path: Path) -> None:
         page = root / "docs" / folder / f"first-{kind}.md"
 
         assert result.exit_code == 0, result.output
-        assert page.read_text().startswith(f"# First {kind}\n"), kind
+        assert page.read_text().startswith("---\n"), kind
+        assert f"\n# First {kind}\n" in page.read_text(), kind
         assert all(f"## {h}" in page.read_text() for h in headings), kind
 
 
@@ -48,7 +49,8 @@ def test_new_doc_indexes_page(tmp_path: Path) -> None:
 
     _new_doc(root, "how-to", "Install it")
 
-    assert "](how-to/install-it.md)" in (root / "docs/README.md").read_text()
+    assert "](install-it.md)" in (root / "docs/how-to/README.md").read_text()
+    assert "](how-to/README.md)" in (root / "docs/README.md").read_text()
     assert _invoke("check", "--path", str(root)).exit_code == 0
 
 
@@ -79,7 +81,7 @@ def test_new_doc_title_with_a_line_break_stays_listed(tmp_path: Path) -> None:
 
     assert result.exit_code == 0, result.output
     assert (
-        "- [Install it](how-to/install-it.md)" in (root / "docs/README.md").read_text()
+        "- [Install it](install-it.md)" in (root / "docs/how-to/README.md").read_text()
     )
     assert _invoke("check", "--path", str(root)).exit_code == 0
 

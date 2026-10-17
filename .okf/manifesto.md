@@ -32,7 +32,7 @@ this formalizes so every repository can have it.
 
 | Kind | Where | Reader |
 |---|---|---|
-| Docs for people who use the project | `docs/`, sorted by Diataxis: `tutorials/`, `how-to/`, `reference/`, `explanation/` | users |
+| Docs for people who use the project | `docs/`, sorted by Diataxis: `tutorials/`, `how-to/`, `reference/`, `explanation/`, each with a generated `README.md` index, and pages with optional OKF staleness fields (ADR 0022) | users |
 | Durable project knowledge | `.okf/`, an OKF v0.2 bundle | agents and people working on the project |
 | Repeatable tasks | skills | agents |
 | General maxims and strategies | rules | agents |
@@ -49,7 +49,10 @@ this formalizes so every repository can have it.
   script can do: scaffold `docs/` and `.okf/` with a `CLAUDE.md` block and a
   first decision (ADR 0011), create a new decision or practice with the next
   number and its index entry, supersede a decision, list what is due for
-  review, check indexes and links, and list live and expired handoffs.
+  review in `.okf/` and `docs/`, check indexes, docs front matter and links
+  (`kmctl check --fix` writes the generated `docs/` folder indexes, and the
+  `kmctl-check` pre-commit hook runs the check, ADR 0022), and list live
+  and expired handoffs.
 - **An APM package**, `apm/`, installed by the CLI (ADR 0014). It holds an
   audit agent with three review skills (architecture, decision log,
   practices), a skill for writing Diataxis docs, `/handoff` and `/continue`,
@@ -91,7 +94,9 @@ Each is `planned` until the test named for it passes, then `enforced`.
 - **I4. kmctl reads OKF as it is.** It uses the fields the OKF v0.2 spec
   defines (`stale_after`, `verified`, `sources`, `status`) plus the extension
   fields an ADR names. The only one is `handoff_key` (ADR 0009); a covers
-  field is out of scope (ADR 0006).
+  field is out of scope (ADR 0006). `docs/` pages may carry four of those
+  fields (`description`, `stale_after`, `verified`, `sources`) with their OKF
+  meaning, and nothing else of OKF: `docs/` is not a bundle (ADR 0022).
   Status: enforced by `tests/test_okf_fields.py` (written keys, and reads through
   `okf.field`).
 

@@ -117,6 +117,29 @@ def _page(where: str, purpose: str, sections: Body) -> DocumentKind:
     )
 
 
+#: The optional front matter of a docs/ page (ADR 0022).
+_DOC_FIELDS = ("description", "stale_after", "verified", "sources")
+
+
+def _doc_page(where: str, purpose: str, sections: Body) -> DocumentKind:
+    """A docs/ page, whose front matter is optional and has no type."""
+    return DocumentKind(
+        where=where,
+        purpose=purpose,
+        detail=(
+            "Its front matter is optional: kmctl new doc writes description, "
+            "stale_after three months ahead and an empty sources, never "
+            "verified. kmctl review due lists it once stale_after passes or a "
+            "source changes; it is not an OKF concept."
+        ),
+        fields=_DOC_FIELDS,
+        required=(),
+        type=None,
+        status=None,
+        sections=sections,
+    )
+
+
 KINDS: dict[str, DocumentKind] = {
     "decision": DocumentKind(
         where=".okf/decisions/NNNN-SLUG.md",
@@ -223,29 +246,36 @@ KINDS: dict[str, DocumentKind] = {
         status=None,
         sections=Last(DEPICTS),
     ),
-    "tutorial": _page(
+    "tutorial": _doc_page(
         "docs/tutorials/SLUG.md",
         "a docs/ lesson that builds something",
         ["What you will build", "Before you start", "Steps", "What you learned"],
     ),
-    "how-to": _page(
+    "how-to": _doc_page(
         "docs/how-to/SLUG.md",
         "a docs/ page for one task",
         ["Before you start", "Steps", "Check it worked"],
     ),
-    "reference": _page(
+    "reference": _doc_page(
         "docs/reference/SLUG.md",
         "a docs/ page of facts",
         ["Summary", "Details"],
     ),
-    "explanation": _page(
+    "explanation": _doc_page(
         "docs/explanation/SLUG.md",
         "a docs/ page on why",
         ["The question", "How it works", "Why it is this way"],
     ),
     "docs-index": _page(
         "docs/README.md",
-        "the docs/ index, one link per page",
+        "the docs/ root index, written by hand: a link to each Diataxis folder's "
+        "index and to any page outside those folders",
+        None,
+    ),
+    "docs-folder-index": _page(
+        "docs/FOLDER/README.md",
+        "a Diataxis folder's index, one link per page, which kmctl check --fix "
+        "generates from each page's title and description",
         None,
     ),
 }

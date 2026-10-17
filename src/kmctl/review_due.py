@@ -1,9 +1,16 @@
-"""Which concepts in .okf/ are due for review, and why (ADR 0006).
+"""Which concepts in .okf/ and pages in docs/ are due for review, and why (ADR 0006, ADR 0022).
 
 A concept is due when its ``stale_after`` has passed, when it has no
 ``verified`` entry, or when a tracked file in its ``sources`` changed in git
 after its last verified date. Handoffs are short-lived notes, never verified,
 so they are left out of those checks and listed only once expired.
+
+A docs/ page is due when its ``stale_after`` has passed, or when a tracked
+file in its ``sources`` changed after its last verified date or, with none,
+after the page's own last commit. A docs page without ``verified`` is not due
+for that alone. Its id is its path without ``.md``, such as
+``docs/how-to/install``, so it cannot clash with a concept id. README.md
+files in docs/ are indexes and are left out.
 """
 
 import dataclasses
@@ -118,8 +125,61 @@ def _sources(resources: list[object]) -> list[str]:
     return [r.strip() for r in resources if isinstance(r, str) and r.strip()]
 
 
+def _docs_pages(docs: Path) -> list[Path]:
+    return sorted(
+        p
+        for p in docs.rglob("*.md")
+        if p.name != "README.md"
+        and not any(part.startswith(".") for part in p.relative_to(docs).parts)
+    )
+
+
+def _docs_due(
+    root: Path, docs: Path, now: datetime, tracked: set[str], result: ReviewDue
+) -> None:
+    """Add each docs/ page that is due to ``result``, by the rules in the module docstring.
+
+    A source resolves from the page's folder, then the repository root; a
+    leading ``/`` is from the repository root.
+    """
+    for path in _docs_pages(docs):
+        rel = path.relative_to(root).as_posix()
+        pid = path.relative_to(root).with_suffix("").as_posix()
+        try:
+            meta = front_matter(path)
+        except BadFrontMatter as error:
+            result.notices.append(
+                Notice(pid, rel, "", f"front matter unreadable: {error}")
+            )
+            continue
+        reasons = []
+        if has_passed(field(meta, "stale_after"), now):
+            reasons.append("stale_after passed")
+        resources = [
+            r for r in _sources(field(meta, "sources[].resource")) if "://" not in r
+        ]
+        if resources and result.history_skipped is None:
+            baseline = _last_verified(field(meta, "verified[].at")) or as_datetime(
+                _git(root, "log", "-1", "--format=%cI", "--", rel)
+            )
+            for resource in resources:
+                source = _resolve(root, root, path, resource, tracked)
+                if source is None:
+                    result.notices.append(
+                        Notice(pid, rel, resource, "source not resolved")
+                    )
+                    continue
+                changed = as_datetime(
+                    _git(root, "log", "-1", "--format=%cI", "--", source)
+                )
+                if baseline is not None and changed is not None and changed > baseline:
+                    reasons.append(f"source changed: {resource}")
+        if reasons:
+            result.due.append(Due(pid, rel, reasons))
+
+
 def review_due(root: Path, now: datetime | None = None) -> ReviewDue:
-    """List what in ``root``'s .okf/ bundle is due for review.
+    """List what in ``root``'s .okf/ bundle and docs/ pages is due for review.
 
     Parameters
     ----------
@@ -136,13 +196,18 @@ def review_due(root: Path, now: datetime | None = None) -> ReviewDue:
     """
     result = ReviewDue()
     okf = root / ".okf"
-    if not okf.is_dir():
+    docs = root / "docs"
+    if not okf.is_dir() and not docs.is_dir():
         return result
     now = now or datetime.now(UTC)
     result.history_skipped = _history_skipped(root)
     # -z keeps paths unquoted, so non-ASCII names match.
     listed = _git(root, "ls-files", "-z") if result.history_skipped is None else None
     tracked = set(filter(None, listed.split("\0"))) if listed else set()
+    if docs.is_dir():
+        _docs_due(root, docs, now, tracked, result)
+    if not okf.is_dir():
+        return result
     for path in _concepts(okf):
         cid = path.relative_to(okf).with_suffix("").as_posix()
         rel = path.relative_to(root).as_posix()

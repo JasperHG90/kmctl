@@ -69,7 +69,8 @@ SKILL_NAMES = (
     "write-docs",
 )
 #: Each rule's ``paths:`` globs and the sha256 of its body as they were in
-#: src/kmctl/repo_rules/ before the move into the package.
+#: src/kmctl/repo_rules/ before the move into the package, or since a change
+#: an ADR names (docs-layout: ADR 0022).
 OLD_RULES = {
     "diagrams-stay-current": (
         [".okf/**", "src/**", "lib/**", "app/**", "pkg/**", "cmd/**"],
@@ -77,7 +78,7 @@ OLD_RULES = {
     ),
     "docs-layout": (
         ["docs/**", ".okf/**", "README.md"],
-        "1ef431044b15db9f35ff9cc71ca627fc42f8c7b1cce2f2ceba74b4c779a864e4",
+        "6d3f6246aa900001af989485dd252c8c8f4833bcdae7289c6051d8fdb762bf75",
     ),
     "manifesto-invariants": (
         [".okf/manifesto.md", "tests/**", "test/**"],

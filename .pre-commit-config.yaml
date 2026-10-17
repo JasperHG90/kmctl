@@ -14,3 +14,13 @@ repos:
         language: system
         files: ^(apm/(claude|antigravity)/\.apm/instructions/|scripts/sync_antigravity_rules\.py$)
         pass_filenames: false
+      # kmctl check on this repository's own docs/ and .okf/, as the
+      # kmctl-check hook in .pre-commit-hooks.yaml runs it elsewhere. --fix
+      # rewrites a stale docs folder index; the commit then stops so you can
+      # stage it.
+      - id: kmctl-check
+        name: kmctl check --fix
+        entry: uv run kmctl check --fix
+        language: system
+        files: ^(docs/|\.okf/|README\.md$)
+        pass_filenames: false

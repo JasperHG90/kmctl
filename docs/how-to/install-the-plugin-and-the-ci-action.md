@@ -1,3 +1,7 @@
+---
+description: "Add kmctl's skills, rules and session hook for Claude Code or Antigravity with APM and kmctl plugin patch, and the GitHub Action, with the opt-in audit."
+---
+
 # Install the plugin and the CI action
 
 This page adds kmctl to one repository: kmctl's skills, audit agent and

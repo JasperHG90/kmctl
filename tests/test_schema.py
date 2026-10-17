@@ -33,16 +33,15 @@ KINDS = (
     "reference",
     "explanation",
     "docs-index",
+    "docs-folder-index",
 )
 NO_FRONT_MATTER = (
     "section-index",
     "log",
-    "tutorial",
-    "how-to",
-    "reference",
-    "explanation",
     "docs-index",
+    "docs-folder-index",
 )
+DOC_PAGES = ("tutorial", "how-to", "reference", "explanation")
 
 
 def _invoke(*args: str) -> Result:
@@ -162,6 +161,19 @@ def test_schema_is_valid(kind: str) -> None:
     assert then is None or (isinstance(body, list) and set(then) == {"pattern"}), then
 
 
+@pytest.mark.parametrize("kind", DOC_PAGES)
+def test_doc_page_front_matter_is_optional(kind: str) -> None:
+    schema = _schema(kind)
+
+    assert set(schema["properties"]) == {
+        "description",
+        "stale_after",
+        "verified",
+        "sources",
+    }
+    assert schema["required"] == []
+
+
 @pytest.mark.parametrize("kind", NO_FRONT_MATTER)
 def test_schema_is_valid_with_no_front_matter(kind: str) -> None:
     validator = Draft202012Validator(_schema(kind))
@@ -210,6 +222,9 @@ def test_schema_matches_what_kmctl_writes(tmp_path: Path) -> None:
         result = _invoke("new", "doc", doc_type, "A page", "--path", str(tmp_path))
         assert result.exit_code == 0, result.output
         written[result.stdout.split()[1]] = doc_type
+        written[str(Path(result.stdout.split()[1]).parent / "README.md")] = (
+            "docs-folder-index"
+        )
 
     for rel, kind in written.items():
         _check(tmp_path / rel, kind)

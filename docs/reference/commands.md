@@ -1,3 +1,7 @@
+---
+description: "Every kmctl command, subcommand and option."
+---
+
 # Commands
 
 ## Summary
@@ -13,7 +17,7 @@ for people. Warnings and refusals go to stderr.
 |---|---|
 | `kmctl init` | Create `docs/`, a starter `.okf/` bundle and a `CLAUDE.md` block; re-run to refresh the block. |
 | `kmctl update` | Same as `kmctl init`. Run it after upgrading kmctl to refresh the `CLAUDE.md` block. |
-| `kmctl check` | Check indexes agree with their folders, prototypes have a `README.md`, and links resolve. |
+| `kmctl check` | Check indexes agree with their folders, docs front matter has its shape, prototypes have a `README.md`, and links resolve; `--fix` writes the generated docs folder indexes first. |
 | `kmctl handoffs` | List the live handoffs in `.okf/handoffs/`, newest first. |
 | `kmctl briefing` | Print the session briefing: where knowledge lives, what is due, and the skills. |
 | `kmctl schema` | Print the JSON Schema of one document kind, or list the kinds there are. |
@@ -49,15 +53,20 @@ With no command, `kmctl` prints its help.
 
 Set a repository up. It writes:
 
-- `docs/README.md`, the docs index;
+- `docs/README.md`, the docs root index, which you write and which links
+  each docs folder;
+- each Diataxis folder's `README.md` index under `docs/`, generated from its
+  pages, when the folder exists and the index is missing or generated and out
+  of date (see `kmctl check`);
 - a starter `.okf/` bundle: `index.md`, `log.md` and `manifesto.md`;
 - a kmctl block between `<!-- kmctl:start -->` and `<!-- kmctl:end -->` in
   each `CLAUDE.md` and `AGENTS.md` that exists. The block lists where each
-  kind of knowledge lives and gives the agent four duties: record each
+  kind of knowledge lives and gives the agent five duties: record each
   choice with `kmctl new decision`, name the code a concept describes with
   `--source` and give anything time-bound a `--stale-after`, keep
-  `.okf/architecture/` matching the code, and run `kmctl check` before
-  finishing. A `CLAUDE.md` that is a
+  `.okf/architecture/` matching the code, give `docs/` pages their front
+  matter and never edit a folder index by hand (run `kmctl check --fix`),
+  and run `kmctl check` before finishing. A `CLAUDE.md` that is a
   symlink to `AGENTS.md` gets one block, and stays a symlink;
 - a new `CLAUDE.md` when there is none. Beside an `AGENTS.md` it holds only
   `@AGENTS.md`, because Claude Code reads `AGENTS.md` only when there is no
@@ -74,12 +83,13 @@ It writes no rules: the four knowledge rules (`okf-bundle`, `docs-layout`,
 in kmctl's APM package, which `apm install` installs, and init never reads
 or writes `.claude/rules/`.
 
-A file that already exists is kept, so it is safe to run again, with two
+A file that already exists is kept, so it is safe to run again, with three
 exceptions. The kmctl block is added to an existing `CLAUDE.md` or
 `AGENTS.md`, or replaced when it is already there, and no other text in the
 file changes. Writing the first decision into a kept bundle adds its entry to
-the kept indexes and a line to the kept `log.md`. A second run changes
-nothing.
+the kept indexes and a line to the kept `log.md`. A docs folder index kmctl
+generated is rewritten when it is out of date; a hand-written one is kept. A
+second run changes nothing.
 
 A file counts as missing only when there is no directory entry for it, so a
 dangling symlink counts as there. A `CLAUDE.md` or `AGENTS.md` symlink that is
@@ -90,8 +100,9 @@ When `AGENTS.md` is such a link and there is no `CLAUDE.md`, init writes no
 Code, and one importing it would load no block. Fix the link and run init
 again. A symlink inside the repository is written through once.
 
-Output lists each file as `created`, `updated` (its kmctl block, or the first
-decision's index entry and log line) or `kept`, and ends with the next steps:
+Output lists each file as `created`, `updated` (its kmctl block, the first
+decision's index entry and log line, or a generated docs folder index) or
+`kept`, and ends with the next steps:
 install kmctl's package with APM for the skills and the knowledge rules
 (the README's install section: an `apm.yml` entry, `apm install`,
 `kmctl plugin patch`), fill the purpose and invariants in the manifesto (its values are the
@@ -107,22 +118,55 @@ choice with `kmctl new decision`.
 
 The same command as `kmctl init`, with the same options and output. Run it
 after upgrading kmctl: it replaces the kmctl block with this release's block,
-and keeps every other file. To refresh the skills and the knowledge rules,
+writes each docs folder index that is missing, and keeps every other file.
+It leaves your `docs/README.md` alone, so after upgrading from a kmctl that
+listed every page there, `kmctl check` warns until you link each folder's
+index from it. Bumping kmctl (or the CI action's ref) without running
+`kmctl update` or `kmctl check --fix` fails `kmctl check` once, on each
+missing folder index, with that fix in the message. To refresh the skills and the knowledge rules,
 set kmctl's `ref` in `apm.yml` to the new version, run `apm install` and
 then `kmctl plugin patch`.
 
 ### `kmctl check`
 
-Check that indexes agree with their folders, that each prototype has a
-`README.md`, and that links resolve. A missing `docs/` or `.okf/` is reported
-as skipped, not failed.
+Check that indexes agree with their folders, that `docs/` page front matter
+has its shape, that each prototype has a `README.md`, and that links resolve.
+A missing `docs/` or `.okf/` is reported as skipped, not failed.
+
+In `docs/`:
+
+- Each Diataxis folder (`tutorials/`, `how-to/`, `reference/`,
+  `explanation/`) has a `README.md` index that kmctl generates: a marker
+  line, a heading, then one entry per page with the page's `#` title and its
+  `description`. A missing index, or a generated one that does not match the
+  folder's pages, is an error; `kmctl check --fix` writes it. Never edit one
+  by hand.
+- A folder `README.md` without kmctl's marker is hand-written: kmctl leaves
+  it alone, warns, and checks it lists every page in its folder.
+- `docs/README.md` is yours to write. It must list each page outside the four
+  folders (an error otherwise), and should link each folder's index (a
+  warning otherwise).
+- A page may carry front matter with the OKF fields `description`,
+  `stale_after`, `verified` and `sources`. Each one present must have its OKF
+  shape (check `front-matter`): `description` a string, `stale_after` a date
+  or UTC timestamp, `verified` a list of `{by, at}`, `sources` a list of paths
+  or `{resource}` mappings. A page with none passes.
+
+Each finding has a `level`: `error` fails the check, `warning` is printed but
+does not fail it, and `skipped` names a part with nothing to check.
 
 | Option | Meaning | Default |
 |---|---|---|
 | `--path DIR` | The repository to check: an existing folder. | `.` |
+| `--fix` | First write each generated docs folder index that is missing or out of date, printing `fixed PATH` for each (on stderr with `--json`), then check. It changes no other file: not `docs/README.md`, not a hand-written folder index, not `.okf/`. | off |
 | `--json` | Print a JSON list of findings (`check`, `file`, `line`, `message`, `level`). | off |
 
-Exit codes: 0 when nothing fails, 1 when a check fails.
+Exit codes: 0 when nothing fails (warnings included), 1 when a check fails.
+
+As a pre-commit hook: kmctl's repository offers the hook `kmctl-check`,
+which runs `kmctl check` once per commit, without file names. Add
+`args: [--fix]` to rewrite the folder indexes as you commit; pre-commit then
+stops the commit so you can stage them.
 
 ### `kmctl handoffs`
 
@@ -195,9 +239,16 @@ Exit code: 1 for an unknown kind, with the list of kinds on stderr.
 
 ### `kmctl review due`
 
-List the concepts in `.okf/` that are due for review, with the reason for
-each. A source that resolves to no tracked file or folder is listed as a
-notice, not a reason.
+List the concepts in `.okf/` and the pages in `docs/` that are due for
+review, with the reason for each. A source that resolves to no tracked file
+or folder is listed as a notice, not a reason.
+
+A `docs/` page is due when its `stale_after` has passed, or when a commit
+changed one of its `sources` after its last `verified` date or, with none,
+after the page's own last commit. A page with no `verified` entry is not due
+for that alone. A docs page's id is its path without `.md`, such as
+`docs/how-to/install`; a source resolves from the page's folder, then the
+repository root. The `README.md` indexes are left out.
 
 | Option | Meaning | Default |
 |---|---|---|
@@ -230,17 +281,22 @@ Exit code: 1 when kmctl refuses, with the reason on stderr.
 
 `kmctl new doc TYPE 'Title'`
 
-Create a `docs/` page in its Diataxis folder with a heading skeleton, and add
-its entry to `docs/README.md`. It refuses when `docs/README.md` is missing
-(run `kmctl init` first) or the page already exists.
+Create a `docs/` page in its Diataxis folder with front matter and a heading
+skeleton, write the folder's generated `README.md` index again, and add a
+link to the folder to `docs/README.md` when it has none. The front matter is
+`description` (when given), `stale_after` three months ahead and an empty
+`sources`; it never writes `verified`. When the folder's `README.md` is
+hand-written, kmctl leaves it alone and warns that you must add the entry. It
+refuses when `docs/README.md` is missing (run `kmctl init` first) or the page
+already exists.
 
 | Argument or option | Meaning | Default |
 |---|---|---|
 | `TYPE` | The Diataxis type: `tutorial` (a lesson), `how-to` (one task), `reference` (facts) or `explanation` (why). Required. | |
 | `TITLE` | The page title; its kebab-case form names the file. Required. | |
-| `--description TEXT` | An optional line for the index entry. | none |
+| `--description TEXT` | An optional line for the page's `description` front matter and its index entry. | none |
 | `--path DIR` | The repository to write in: an existing folder. | `.` |
-| `--json` | Print one JSON object (`path`, `created_folder`). | off |
+| `--json` | Print one JSON object (`path`, `created_folder`, `warnings`). | off |
 
 Each type goes in its own folder: `tutorial` in `docs/tutorials/`, `how-to` in
 `docs/how-to/`, `reference` in `docs/reference/`, `explanation` in

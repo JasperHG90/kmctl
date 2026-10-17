@@ -7,6 +7,8 @@ from pathlib import Path
 
 import yaml
 
+from kmctl.docs_index import folder_index
+
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "action" / "knowledge-ci.sh"
 
@@ -87,6 +89,22 @@ def test_script_passes_and_writes_both_reports(tmp_path: Path) -> None:
     assert proc.returncode == 0, proc.stdout + proc.stderr
     assert "## kmctl check" in summary
     assert "## kmctl review due" in summary
+
+
+def test_script_passes_and_shows_root_missing_folder_link(tmp_path: Path) -> None:
+    repo = _repo(tmp_path / "r")
+    (repo / "docs/how-to").mkdir(parents=True)
+    (repo / "docs/README.md").write_text("# Docs\n")
+    (repo / "docs/how-to/install.md").write_text("# Install\n")
+    (repo / "docs/how-to/README.md").write_text(folder_index(repo / "docs/how-to"))
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "docs")
+
+    proc, summary = _run(repo, _kmctl_bin(tmp_path), tmp_path)
+
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert "warning  index  docs/README.md  does not link how-to/" in summary
+    assert "all checks passed, 1 warning" in summary
 
 
 def test_script_fails_when_check_fails(tmp_path: Path) -> None:

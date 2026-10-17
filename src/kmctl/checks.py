@@ -2,9 +2,18 @@
 
 The index format, which every kmctl verb that writes an index follows:
 
-- docs/README.md indexes every page under docs/; each .okf/ section's
-  index.md indexes the concepts in that section; .okf/index.md indexes the
-  sections and any concept at the bundle root.
+- Each Diataxis folder under docs/ (tutorials, how-to, reference,
+  explanation) has a README.md index that kmctl generates (see
+  ``kmctl.docs_index``); a missing or out-of-date one fails, and
+  ``kmctl check --fix`` writes it. A hand-written one, without the marker,
+  is left alone with a warning and checked like any index.
+  docs/README.md links each of those folders (a warning when it does not)
+  and indexes every other page under docs/. Each .okf/ section's index.md
+  indexes the concepts in that section; .okf/index.md indexes the sections
+  and any concept at the bundle root.
+- A docs/ page may carry front matter: ``description``, ``stale_after``,
+  ``verified`` and ``sources``, the OKF v0.2 fields of those names (check
+  name ``front-matter``). Each one present must have its OKF shape.
 - An entry is a markdown list item, outside a code fence, whose first link is
   a relative link to a page in that folder or below. In .okf/prototypes/ the
   concept is each prototype's README.md. External links, anchors and links
@@ -25,6 +34,15 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 from urllib.parse import unquote
+
+from kmctl.docs_index import (
+    FOLDER_TITLES,
+    diataxis_folders,
+    folder_index,
+    folder_pages,
+    is_generated,
+)
+from kmctl.okf import BadFrontMatter, as_datetime, field, front_matter
 
 RESERVED = {"index.md", "log.md"}
 _TARGET = r"(<[^<>\n]*>|[^<)\s][^)\s]*)(?:\s+(?:\"[^\"]*\"|'[^']*'))?"
@@ -50,16 +68,17 @@ class Finding:
         The line in ``file``, when the finding is about one line.
     message : str
         What is wrong, in one line.
-    level : Literal["error", "skipped"]
-        ``error`` for a failure; ``skipped`` for a part of the repository a
-        check had nothing to look at.
+    level : Literal["error", "warning", "skipped"]
+        ``error`` for a failure; ``warning`` for something to fix that does
+        not fail the check; ``skipped`` for a part of the repository a check
+        had nothing to look at.
     """
 
     check: str
     file: str
     line: int | None
     message: str
-    level: Literal["error", "skipped"] = "error"
+    level: Literal["error", "warning", "skipped"] = "error"
 
 
 class _Unreadable(Exception):
@@ -146,8 +165,17 @@ def _visible(folder: Path, path: Path) -> bool:
     return not any(part.startswith(".") for part in path.relative_to(folder).parts)
 
 
-def _check_index(root: Path, index: Path, members: list[Path]) -> list[Finding]:
-    """Findings for one index: members it does not list, and entries with no file."""
+def _check_index(
+    root: Path,
+    index: Path,
+    members: list[Path],
+    missing_ok: frozenset[Path] = frozenset(),
+) -> list[Finding]:
+    """Findings for one index: members it does not list, and entries with no file.
+
+    An entry linking a path in ``missing_ok`` (a folder index already reported
+    missing) is not reported again.
+    """
     try:
         entries = _entries(index)
     except _Unreadable:
@@ -157,7 +185,7 @@ def _check_index(root: Path, index: Path, members: list[Path]) -> list[Finding]:
     for line, target in entries:
         path = (index.parent / target).resolve()
         listed.add(path)
-        if not path.exists():
+        if not path.exists() and path not in missing_ok:
             findings.append(
                 Finding(
                     "index",
@@ -194,8 +222,126 @@ def _section_concepts(section: Path) -> list[Path]:
     )
 
 
+def entry_targets(index: Path) -> list[str]:
+    """The target of each entry in ``index``, or none when it is not UTF-8 text."""
+    try:
+        return [target for _, target in _entries(index)]
+    except _Unreadable:
+        return []
+
+
+def links_folder(root_index: Path, folder: Path) -> bool:
+    """True when docs/README.md has an entry linking ``folder`` or its README.md."""
+    targets = {folder.resolve(), (folder / "README.md").resolve()}
+    return any(
+        (root_index.parent / t).resolve() in targets for t in entry_targets(root_index)
+    )
+
+
+def _check_folder(root: Path, root_index: Path, folder: Path) -> list[Finding]:
+    """Findings for one Diataxis folder: its index, and its link from docs/README.md."""
+    index = folder / "README.md"
+    findings = []
+    if not links_folder(root_index, folder):
+        findings.append(
+            Finding(
+                "index",
+                _rel(root, root_index),
+                None,
+                f"does not link {folder.name}/; add "
+                f"'- [{FOLDER_TITLES[folder.name]}]({folder.name}/README.md)'",
+                "warning",
+            )
+        )
+    if not index.is_file():
+        findings.append(
+            Finding(
+                "index",
+                _rel(root, folder),
+                None,
+                "folder has no README.md index; run kmctl check --fix",
+            )
+        )
+    elif is_generated(index):
+        if _read(index) != folder_index(folder):
+            findings.append(
+                Finding(
+                    "index",
+                    _rel(root, index),
+                    None,
+                    "index does not match the pages in its folder; run kmctl check --fix",
+                )
+            )
+    else:
+        findings.append(
+            Finding(
+                "index",
+                _rel(root, index),
+                None,
+                "hand-written index: kmctl does not manage it, so kmctl check --fix "
+                "leaves it alone; delete it to have kmctl generate it",
+                "warning",
+            )
+        )
+        findings += _check_index(root, index, folder_pages(folder))
+    return findings
+
+
+def _bad_date(value: object) -> bool:
+    return as_datetime(value) is None
+
+
+def _field_problems(
+    description: object, stale_after: object, verified: object, sources: object
+) -> list[str]:
+    """What is wrong with each docs page front matter field present (not None), by its OKF shape."""
+    problems = []
+    if description is not None and not isinstance(description, str):
+        problems.append("description must be a string")
+    if stale_after is not None and _bad_date(stale_after):
+        problems.append("stale_after must be a date or a UTC timestamp")
+    if verified is not None:
+        items = [verified] if isinstance(verified, dict) else verified
+        if not isinstance(items, list) or not all(
+            isinstance(i, dict)
+            and isinstance(i.get("by"), str)
+            and not _bad_date(i.get("at"))
+            for i in items
+        ):
+            problems.append("verified must be a list of {by, at} with a date at")
+    if sources is not None and (
+        not isinstance(sources, list)
+        or not all(
+            isinstance(i, str)
+            or (isinstance(i, dict) and isinstance(i.get("resource"), str))
+            for i in sources
+        )
+    ):
+        problems.append("sources must be a list of paths, or of {resource} mappings")
+    return problems
+
+
+def _check_front_matter(root: Path, page: Path) -> list[Finding]:
+    """Findings for the front matter of one docs page; a page without any passes."""
+    try:
+        meta = front_matter(page)
+    except BadFrontMatter:
+        return [
+            Finding(
+                "front-matter", _rel(root, page), None, "front matter does not parse"
+            )
+        ]
+    problems = _field_problems(
+        field(meta, "description"),
+        field(meta, "stale_after"),
+        field(meta, "verified"),
+        field(meta, "sources"),
+    )
+    return [Finding("front-matter", _rel(root, page), None, p) for p in problems]
+
+
 def check_docs(root: Path) -> list[Finding]:
-    """Check that docs/README.md lists every visible page under docs/ and nothing missing."""
+    """Check docs/: each Diataxis folder's index, docs/README.md, and each page's front matter."""
     docs = root / "docs"
     if not docs.is_dir():
         return [
@@ -206,8 +352,20 @@ def check_docs(root: Path) -> list[Finding]:
         return [
             Finding("index", "docs/README.md", None, "docs/ has no README.md index")
         ]
-    pages = [p for p in docs.rglob("*.md") if p != index and _visible(docs, p)]
-    return _check_index(root, index, sorted(pages))
+    folders = diataxis_folders(root)
+    findings = []
+    for folder in folders:
+        findings += _check_folder(root, index, folder)
+    pages = sorted(p for p in docs.rglob("*.md") if p != index and _visible(docs, p))
+    others = [p for p in pages if not any(p.is_relative_to(f) for f in folders)]
+    missing = frozenset(
+        (f / "README.md").resolve() for f in folders if not (f / "README.md").is_file()
+    )
+    findings += _check_index(root, index, others, missing)
+    for page in pages:
+        if page.name != "README.md":
+            findings += _check_front_matter(root, page)
+    return findings
 
 
 def check_okf(root: Path) -> list[Finding]:
@@ -346,7 +504,7 @@ def run_checks(root: Path) -> list[Finding]:
     Returns
     -------
     list[Finding]
-        Every finding, errors and skipped parts alike, in check order.
+        Every finding, errors, warnings and skipped parts alike, in check order.
     """
     return (
         check_docs(root) + check_okf(root) + check_prototypes(root) + check_links(root)

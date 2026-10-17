@@ -8,7 +8,7 @@
       "files": [],
       "expectations": [
         "A page is created under docs/tutorials/",
-        "The page is listed in docs/README.md",
+        "The page is listed in its folder's README.md index",
         "kmctl check passes afterwards",
         "No page sits outside a Diataxis type folder",
         "The page's content fits its Diataxis type (judged by reading)",
@@ -23,7 +23,7 @@
       "files": [],
       "expectations": [
         "A page is created under docs/how-to/",
-        "The page is listed in docs/README.md",
+        "The page is listed in its folder's README.md index",
         "kmctl check passes afterwards",
         "No page sits outside a Diataxis type folder",
         "The page's content fits its Diataxis type (judged by reading)"
@@ -37,7 +37,7 @@
       "files": [],
       "expectations": [
         "A page is created under docs/reference/",
-        "The page is listed in docs/README.md",
+        "The page is listed in its folder's README.md index",
         "kmctl check passes afterwards",
         "No page sits outside a Diataxis type folder",
         "The page's content fits its Diataxis type (judged by reading)"
@@ -51,7 +51,7 @@
       "files": [],
       "expectations": [
         "A page is created under docs/explanation/",
-        "The page is listed in docs/README.md",
+        "The page is listed in its folder's README.md index",
         "kmctl check passes afterwards",
         "No page sits outside a Diataxis type folder",
         "The page's content fits its Diataxis type (judged by reading)"

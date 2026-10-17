@@ -41,7 +41,8 @@ RULES = [
 ROUTING = """\
 Knowledge in this repository:
 - docs/: pages for people who use the project, one folder per Diataxis type
-  (tutorials, how-to, reference, explanation), each page listed in docs/README.md.
+  (tutorials, how-to, reference, explanation), each with a generated README.md;
+  a page may carry stale_after and sources.
 - .okf/: an OKF v0.2 bundle for people and agents working on it. Start at
   .okf/index.md. manifesto.md is the design; decisions/ records each choice and
   what it rejected; architecture/ the design as diagrams; practices/ lessons
@@ -50,9 +51,10 @@ Knowledge in this repository:
 - Skills do repeatable tasks; .claude/rules/ holds the rules for writing knowledge.
 Verbs: kmctl new decision|practice|proposal|prototype|handoff to add a concept;
 kmctl new doc tutorial|how-to|reference|explanation for a docs/ page;
-kmctl check after editing an index; kmctl review due for what needs review;
+kmctl check when done (--fix writes docs indexes; never edit one);
+kmctl review due for what needs review;
 kmctl handoffs for live handoffs; kmctl schema KIND for a document's expected
-shape. Each takes --help and --json."""
+shape. All take --help and --json."""
 
 EMPTY = "No .okf/ bundle here. Run kmctl init to start docs/ and .okf/."
 
