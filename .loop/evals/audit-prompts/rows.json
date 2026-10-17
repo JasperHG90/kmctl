@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "action/prompts/ holds docs-vs-code.md, okf-vs-code.md and okf-vs-docs.md, and run --audit NAME sends that file's text as the user message for each of the three names.",
+      "fails_when": "a prompt file is missing or empty, or --audit NAME sends anything but that file's text",
+      "command": "uv run pytest tests/test_agent.py -k audit_option -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "run with no --audit, --prompt or --prompt-file sends okf-vs-code.md; --audit with --prompt or --prompt-file exits 2 naming both; an unknown --audit name exits 2; --help lists the three names.",
+      "fails_when": "the default is anything but okf-vs-code.md, a combination is accepted, an unknown name runs, or --help leaves out a name",
+      "command": "uv run pytest tests/test_agent.py -k \"default_prompt or audit_choices\" -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "action.yml's audit mode passes its audit input to --audit, and both its audit and publish modes use the report_name input (default agent-report) as the artifact name; .github/workflows/knowledge-audit.yml runs the audit and publish jobs as a matrix over docs-vs-code, okf-vs-code and okf-vs-docs with fail-fast off, each uploading and downloading its own agent-report-NAME artifact and publishing to its own issue title, publish running unless the run was cancelled, with the audit job still holding no token and no cache.",
+      "fails_when": "an audit is missing from either matrix, two audits share an artifact or an issue title, the action ignores report_name in either mode, one failed audit stops the other publishes, or the audit job gains a token or cache",
+      "command": "uv run pytest tests/test_action.py -q"
+    },
+    {
+      "id": "r4",
+      "behavior": "The how-to's section 5 names the three audits and the audit input, the tutorial points at --audit, ADR 0017 has a correction for the shipped audits, and the architecture overview shows the prompts.",
+      "fails_when": "a reader would still think the default audit checks only the .okf/ concepts that are due, or could not find how to pick an audit",
+      "judgment": true
+    }
+  ]
+}
