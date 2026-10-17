@@ -97,4 +97,5 @@ found`, go back to step 1. If you skipped step 3, `kmctl doctor` fails
 that adds it.
 
 To upgrade, install the CLI at the new tag with `uv tool install --force`,
-then run `kmctl plugin update`.
+then run `kmctl plugin update`. It asks which harnesses to update, and Enter
+takes the ones already installed; pass `--harness` in a script.

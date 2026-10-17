@@ -20,8 +20,8 @@ from kmctl.checks import run_checks
 from kmctl.concepts import ConceptError, Kind, new_concept
 from kmctl.docs import DocType, new_doc
 from kmctl.doctor import as_json as doctor_json
+from kmctl.doctor import harnesses_found, run_doctor
 from kmctl.doctor import render as render_doctor
-from kmctl.doctor import run_doctor
 from kmctl.handoffs import live_handoffs
 from kmctl.kinds import KINDS, schema
 from kmctl.plugin import (
@@ -686,9 +686,13 @@ _SCOPE_OPTION = typer.Option(
 _HARNESS_OPTION = typer.Option(
     "--harness",
     metavar="claude,antigravity",
+    show_default=False,
     help=(
         "The agent harnesses, as a comma list. Accepted: "
-        f"{', '.join(HARNESSES)}. Default: claude."
+        f"{', '.join(HARNESSES)}. Left out, the command asks which harnesses "
+        "to install for when stdin is a terminal (install suggests claude; "
+        "update suggests the harnesses already installed), and refuses when "
+        "it is not or with --json."
     ),
 )
 _SOURCE_OPTION = typer.Option(
@@ -716,6 +720,7 @@ _PLUGIN_JSON_OPTION = typer.Option(
 )
 _INSTALL_EPILOG = (
     "Examples:\n\n"
+    "  kmctl plugin {verb}    (at a terminal: asks which harnesses)\n\n"
     "  kmctl plugin {verb} --harness claude\n\n"
     "  kmctl plugin {verb} --harness claude,antigravity\n\n"
     "  kmctl plugin {verb} --harness claude --scope user --json\n\n"
@@ -756,20 +761,84 @@ def _report(result: InstallResult, as_json: bool) -> None:
     )
 
 
+#: How the question names each harness.
+_HARNESS_LABELS = {"claude": "Claude Code", "antigravity": "Antigravity"}
+
+
+def _at_terminal() -> bool:
+    """Whether a person can answer a question: stdin is a terminal."""
+    return sys.stdin.isatty()
+
+
+def _read_answer(answer: str) -> list[str]:
+    """The harnesses an answer names, by number or name; raises PluginError otherwise."""
+    numbered = dict(enumerate(HARNESSES, 1))
+    names = [
+        numbered.get(int(word), word) if word.isdigit() else word
+        for word in (w.strip() for w in answer.split(","))
+    ]
+    try:
+        return parse_harnesses(",".join(names))
+    except PluginError:
+        accepted = ", ".join(f"{n} {h}" for n, h in numbered.items())
+        raise PluginError(f"answer with one of: {accepted}") from None
+
+
+def _ask_harnesses(default: list[str]) -> list[str]:
+    """Ask on stderr which harnesses to install for, until the answer names some."""
+    typer.echo("Which harnesses should kmctl install for?", err=True)
+    for n, name in enumerate(HARNESSES, 1):
+        typer.echo(f"  {n}. {name} ({_HARNESS_LABELS[name]})", err=True)
+    while True:
+        answer = typer.prompt(
+            "Numbers or names, comma separated", default=",".join(default), err=True
+        )
+        try:
+            return _read_answer(answer)
+        except PluginError as error:
+            typer.echo(error, err=True)
+
+
+def _harnesses(
+    verb: str, harness: str | None, scope: Scope, as_json: bool
+) -> list[str]:
+    """The harnesses to install for: from --harness, or asked of a person at a terminal.
+
+    Raises
+    ------
+    PluginError
+        When --harness names an unknown harness, or is left out where no one
+        can answer: stdin is not a terminal, or --json asks for output a
+        script reads.
+    """
+    if harness is not None:
+        return parse_harnesses(harness)
+    if as_json or not _at_terminal():
+        raise PluginError(
+            "no --harness given and no terminal to ask at; give --harness "
+            f"with one or more of: {', '.join(HARNESSES)}"
+        )
+    default = harnesses_found(Path.cwd(), scope) if verb == "update" else []
+    return _ask_harnesses(default or ["claude"])
+
+
 def _install(
-    verb: str, harness: str, scope: Scope, source: str, force: bool, as_json: bool
+    verb: str,
+    harness: str | None,
+    scope: Scope,
+    source: str,
+    force: bool,
+    as_json: bool,
 ) -> None:
     """Run ``kmctl plugin install`` or ``update``: map a PluginError to a refusal."""
     try:
-        result = install_plugin(
-            Path.cwd(), parse_harnesses(harness), scope, source=source, force=force
-        )
+        names = _harnesses(verb, harness, scope, as_json)
+        result = install_plugin(Path.cwd(), names, scope, source=source, force=force)
     except PluginError as error:
         typer.echo(f"kmctl plugin {verb}: refused: {error}", err=True)
         raise typer.Exit(1) from error
     _report(result, as_json)
     if not as_json:
-        names = parse_harnesses(harness)
         steps = []
         if "claude" in names:
             steps.append("start a new Claude Code session")
@@ -783,7 +852,7 @@ def _install(
 
 @plugin_app.command("install", epilog=_INSTALL_EPILOG.format(verb="install"))
 def plugin_install(
-    harness: Annotated[str, _HARNESS_OPTION] = "claude",
+    harness: Annotated[str | None, _HARNESS_OPTION] = None,
     scope: Annotated[Scope, _SCOPE_OPTION] = "project",
     source: Annotated[str, _SOURCE_OPTION] = DEFAULT_SOURCE,
     force: Annotated[bool, _FORCE_OPTION] = False,
@@ -795,7 +864,7 @@ def plugin_install(
 
 @plugin_app.command("update", epilog=_INSTALL_EPILOG.format(verb="update"))
 def plugin_update(
-    harness: Annotated[str, _HARNESS_OPTION] = "claude",
+    harness: Annotated[str | None, _HARNESS_OPTION] = None,
     scope: Annotated[Scope, _SCOPE_OPTION] = "project",
     source: Annotated[str, _SOURCE_OPTION] = DEFAULT_SOURCE,
     force: Annotated[bool, _FORCE_OPTION] = False,
