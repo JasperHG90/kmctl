@@ -80,6 +80,7 @@ flowchart LR
     agConsumer[("the consumer's .agents/<br/>skills, rules, hooks.json,<br/>mcp_config.json okf-bundle (from APM),<br/>plugins/kmctl/: agents (from kmctl)")]
     claude["claude CLI<br/>old plugin removal,<br/>user-scope MCP server"]
     provider["any model provider<br/>or OpenAI-compatible endpoint"]
+    traces["Langfuse or another<br/>OTLP endpoint (optional)"]
     context[("--context and --skills folders")]
     summary["job summary and<br/>Knowledge audit issue"]
 
@@ -128,6 +129,7 @@ flowchart LR
     agentPy -. "lists the skills; reads the review<br/>skills as it needs" .-> audit & reviews & auditor
     agentPy -- "one run, typed Report (checked, findings),<br/>citations sent back unless read or a search hit,<br/>under --timeout" --> provider
     agentPy -. "reads, never commits or pushes" .-> repo & context
+    agentPy -. "OTLP traces, only with Langfuse keys<br/>or an OTLP endpoint set" .-> traces
     agentPy -- "write: --out" --> artifact
     agentPy -- "report.md" --> summary
     artifact -- "report.json, the only thing<br/>the two jobs share" --> publishPy

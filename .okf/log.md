@@ -124,3 +124,4 @@
 - Corrected `decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script`: the report lists what was checked, findings are mismatches only, and the script sends back citations of lines the agent did not see; updated `architecture/overview` to match.
 - Added `decisions/0022-docs-pages-carry-optional-okf-front-matter-and-generated-folder-indexes` with `kmctl new decision`.
 - Corrected `decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script`: three shipped audits replace the audit skill as the default task; updated `architecture/overview` to show `action/prompts/`.
+- Corrected `decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script`: optional OTLP traces to Langfuse or any OTLP backend; updated `architecture/overview` to show them.

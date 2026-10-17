@@ -27,6 +27,15 @@ agent = importlib.util.module_from_spec(_spec)
 sys.modules["ci_agent"] = agent
 _spec.loader.exec_module(agent)
 
+TRACE_VARS = (
+    "LANGFUSE_PUBLIC_KEY",
+    "LANGFUSE_SECRET_KEY",
+    "LANGFUSE_BASE_URL",
+    "OTEL_EXPORTER_OTLP_ENDPOINT",
+    "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT",
+    "OTEL_EXPORTER_OTLP_HEADERS",
+)
+
 #: Cites only README.md, which Recorder reads before it hands the report in.
 REPORT = {
     "summary": "One page drifted.",
@@ -118,7 +127,7 @@ def repo(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     path.mkdir()
     subprocess.run(["git", "init", "-q"], cwd=path, check=True)
     (path / "README.md").write_text("hello\nworld\n")
-    for name in agent.TOKEN_VARS:
+    for name in (*agent.TOKEN_VARS, *TRACE_VARS):
         monkeypatch.delenv(name, raising=False)
     monkeypatch.delenv("GITHUB_STEP_SUMMARY", raising=False)
     return path
@@ -903,3 +912,154 @@ def test_publish_fails_on_bad_report(
     assert _publish(repo, report) == 2
     assert "report" in capsys.readouterr().err
     assert _calls(calls) == []
+
+
+class Collector:
+    """A local OTLP/HTTP receiver that keeps each request's path, headers and span names."""
+
+    def __init__(self) -> None:
+        from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+        from threading import Thread
+
+        from opentelemetry.proto.collector.trace.v1.trace_service_pb2 import (
+            ExportTraceServiceRequest,
+        )
+
+        self.requests: list[tuple[str, dict, list[str]]] = []
+        collector = self
+
+        class Handler(BaseHTTPRequestHandler):
+            def do_POST(self) -> None:
+                body = self.rfile.read(int(self.headers["Content-Length"]))
+                message = ExportTraceServiceRequest.FromString(body)
+                names = [
+                    span.name
+                    for resource in message.resource_spans
+                    for scope in resource.scope_spans
+                    for span in scope.spans
+                ]
+                collector.requests.append(
+                    (self.path, {k.lower(): v for k, v in self.headers.items()}, names)
+                )
+                self.send_response(200)
+                self.end_headers()
+
+            def log_message(self, *args: object) -> None:
+                pass
+
+        self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        self.url = f"http://127.0.0.1:{self.server.server_port}"
+        Thread(target=self.server.serve_forever, daemon=True).start()
+
+    @property
+    def spans(self) -> list[str]:
+        return [name for _, _, names in self.requests for name in names]
+
+
+@pytest.fixture
+def collector():
+    found = Collector()
+    yield found
+    found.server.shutdown()
+
+
+def test_traces_langfuse_sends_run_model_and_tool_spans(
+    repo: Path, tmp_path: Path, collector: Collector, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "pk-lf-1")
+    monkeypatch.setenv("LANGFUSE_SECRET_KEY", "sk-lf-2")
+    monkeypatch.setenv("LANGFUSE_BASE_URL", collector.url + "/")
+
+    assert _main(repo, tmp_path, FunctionModel(Recorder())) == 0
+
+    path, headers, _ = collector.requests[0]
+    assert path == "/api/public/otel/v1/traces"
+    assert headers["authorization"] == "Basic cGstbGYtMTpzay1sZi0y"
+    spans = collector.spans
+    assert any(name.startswith("invoke_agent") for name in spans), spans
+    assert any(name.startswith("chat") for name in spans), spans
+    assert "execute_tool read_file" in spans
+
+
+def test_traces_langfuse_default_base_url(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "pk")
+    monkeypatch.setenv("LANGFUSE_SECRET_KEY", "sk")
+    monkeypatch.delenv("LANGFUSE_BASE_URL", raising=False)
+
+    provider = agent.tracer_provider()
+
+    assert provider is not None
+    exporter = provider._active_span_processor._span_processors[
+        0
+    ]._batch_processor._exporter
+    assert exporter._endpoint == "https://cloud.langfuse.com/api/public/otel/v1/traces"
+    provider.shutdown()
+
+
+def test_traces_optional_off_without_variables(repo: Path) -> None:
+    """No variables: no provider, and OpenTelemetry's SDK and exporter are never
+    imported (PydanticAI itself loads the small API package)."""
+    env = {k: v for k, v in os.environ.items() if k not in TRACE_VARS}
+    code = (
+        "import importlib.util, sys\n"
+        f"spec = importlib.util.spec_from_file_location('a', {str(SCRIPT)!r})\n"
+        "a = importlib.util.module_from_spec(spec); sys.modules['a'] = a\n"
+        "spec.loader.exec_module(a)\n"
+        "print(a.tracer_provider(), any(m.startswith(('opentelemetry.sdk', "
+        "'opentelemetry.exporter')) for m in sys.modules))"
+    )
+    proc = subprocess.run(
+        [sys.executable, "-c", code],
+        env=env,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+
+    assert proc.stdout.split() == ["None", "False"]
+
+
+def test_traces_optional_any_otlp_endpoint(
+    repo: Path, tmp_path: Path, collector: Collector, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv(
+        "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT", collector.url + "/v1/traces"
+    )
+
+    assert _main(repo, tmp_path, FunctionModel(Recorder())) == 0
+
+    assert collector.requests[0][0] == "/v1/traces"
+    assert "authorization" not in collector.requests[0][1]
+    assert any(name.startswith("invoke_agent") for name in collector.spans)
+
+
+def test_traces_safe_keys_stay_out_of_the_shell(
+    repo: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "pk-lf-secret")
+    monkeypatch.setenv("LANGFUSE_SECRET_KEY", "sk-lf-secret")
+    monkeypatch.setenv("OTEL_EXPORTER_OTLP_HEADERS", "Authorization=Basic secret")
+    ws = agent.Workspace(repo.resolve(), [repo.resolve()])
+    *_, run_shell = agent.make_tools(ws)
+
+    result = run_shell("env")
+
+    assert "secret" not in result and "LANGFUSE" not in result and "OTEL" not in result
+
+
+def test_traces_safe_flushed_on_timeout(
+    repo: Path, tmp_path: Path, collector: Collector, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "pk")
+    monkeypatch.setenv("LANGFUSE_SECRET_KEY", "sk")
+    monkeypatch.setenv("LANGFUSE_BASE_URL", collector.url)
+
+    async def stall(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
+        import asyncio
+
+        await asyncio.sleep(30)
+        raise AssertionError("not reached")
+
+    assert _main(repo, tmp_path, FunctionModel(stall), "--timeout", "1") == 1
+
+    assert any(name.startswith("invoke_agent") for name in collector.spans)

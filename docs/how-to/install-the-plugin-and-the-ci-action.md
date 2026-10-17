@@ -402,6 +402,27 @@ with that audit's issue title. Read it to see exactly what
 the audit runs. `uv run --script action/agent.py publish --help` lists the
 publish options.
 
+**Traces in Langfuse.** Tracing is optional and off by default. To see
+each run in [Langfuse](https://langfuse.com), with every model call's input,
+output and token use and every tool call, add your Langfuse project's keys
+as secrets and set them in the env of the audit step:
+
+```yaml
+           env:
+             AUDIT_API_KEY: ${{ secrets.AUDIT_API_KEY }}
+             LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+             LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+```
+
+The agent sends OpenTelemetry traces over OTLP to Langfuse's EU cloud; set
+`LANGFUSE_BASE_URL` too for another region or your own server, such as
+`https://us.cloud.langfuse.com`. For any other OpenTelemetry backend, set
+`OTEL_EXPORTER_OTLP_ENDPOINT` (and `OTEL_EXPORTER_OTLP_HEADERS`) instead.
+A trace holds everything the agent read and wrote, file contents included,
+so send it only to a project that the people who can read the repository
+may see. The keys never reach the agent's shell commands, and a trace that
+fails to send does not fail the run.
+
 **Ollama.** Ollama Cloud, as in the example, needs only the API key: its
 OpenAI-compatible endpoint is `https://ollama.com/v1`, and the model name has
 no `:cloud` suffix. For a server of your own, set the model's context size
