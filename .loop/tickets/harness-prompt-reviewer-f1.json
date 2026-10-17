@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "harness-prompt-reviewer-f1",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 1,
@@ -13,7 +13,7 @@
   "split": "j-20261017T061615+0000-c3663ae3",
   "split_plan_hash": "db12942c67bcae5eb41978b5a4212996bf3292299950b7a0c43233d1e59c2f49",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "01ca4c0efb4e17518bd464b18bf562fa1c84bef2",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -99,8 +99,14 @@
       "to": "verifying",
       "at": "2026-10-17T06:19:20+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-17T06:24:11+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T06:24:09+00:00"
+  "at": "2026-10-17T06:24:11+00:00"
 }
