@@ -43,11 +43,19 @@ action's checkout. It cannot be combined with `--prompt` or
 audit skill with the auditor's instructions inlined) goes; the skills stay
 available to the agent.
 
-`action.yml` gains an `audit` input passed as `--audit`.
+`action.yml` gains an `audit` input passed as `--audit`, and a
+`report_name` input (default `agent-report`) that names the artifact audit
+mode uploads and publish mode downloads, so a workflow can run several
+audits through the action without their artifacts colliding.
 `.github/workflows/knowledge-audit.yml` runs the audit and publish jobs as
-a matrix over the three, each with its own artifact (`agent-report-NAME`)
-and issue title ("Docs audit", "Knowledge audit", "Docs and knowledge
-audit"). Section 5 of `docs/how-to/install-the-plugin-and-the-ci-action.md`
+a matrix over the three (`fail-fast: false`), each with its own artifact
+(`agent-report-NAME`) and issue title ("Docs audit", "Knowledge audit",
+"Docs and knowledge audit"). The publish matrix runs unless the workflow
+was cancelled, so one failed audit does not stop the others' issues; a
+publish whose artifact is missing fails. The workflow keeps its model
+(qwen/qwen3-coder on OpenRouter); the spikes ran Gemini 3.8 Flash, and the
+how-to says a weaker model may miss drift. `--max-requests` stays 200: the
+largest spike run used 135. Section 5 of `docs/how-to/install-the-plugin-and-the-ci-action.md`
 names the three audits and stops saying the default checks only concepts
 that are due; the tutorial
 `docs/tutorials/audit-your-repository-with-the-agent.md` (landed, it
