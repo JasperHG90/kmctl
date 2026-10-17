@@ -98,7 +98,7 @@ kmctl plugin install --harness antigravity
 It prints:
 
 ```
-note: wrote .agents/plugins/kmctl/ (the agents, the rules, the SessionStart hook and okf's MCP server bundle); Antigravity loads it once you trust this folder
+note: wrote .agents/plugins/kmctl/ (the agents, the rules, the SessionStart hook, okf's Stop check and okf's MCP server bundle); Antigravity loads it once you trust this folder
 installed kmctl's package v0.3.0 for antigravity (project scope)
 Next: open this folder in Antigravity, trust it and start a new session, then kmctl doctor
 ```
@@ -429,6 +429,7 @@ ok   antigravity.files: 32 kmctl paths match apm.lock.yaml
 ok   antigravity.okf-skills: 19 okf-skills paths match apm.lock.yaml
 ok   antigravity.plugin: .agents/plugins/kmctl/ holds what this kmctl writes
 ok   antigravity.hook: .agents/plugins/kmctl/hooks.json holds the SessionStart hook and okf's Stop check this kmctl writes
+ok   antigravity.apm-hooks: .agents/hooks.json runs no okf Stop check
 ok   antigravity.okf-mcp: .agents/plugins/kmctl/mcp_config.json declares okf's MCP server bundle
 ok   antigravity.trust: …/repo is in trustedWorkspaces of ~/.gemini/antigravity-cli/settings.json
 ```

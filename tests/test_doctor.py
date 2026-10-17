@@ -1073,3 +1073,53 @@ def test_okf_stop_missing_from_plugin_hooks_fails_antigravity_hook(
     _, checks = _doctor()
 
     assert not _by_id(checks)["antigravity.hook"]["ok"]
+
+
+# antigravity-okf-stop-hook-reviewer-f4: doctor reads .agents/hooks.json as install does
+
+
+@pytest.mark.parametrize(
+    "content", [b"not json okf-stop-check.sh", b"[]", b"\xff\xfe okf-stop-check.sh"]
+)
+def test_apm_hooks_unparsable_names_the_file_and_the_repair(
+    complete: Setup, content: bytes
+) -> None:
+    (complete.repo / ".agents" / "hooks.json").write_bytes(content)
+
+    result, data = _doctor()
+
+    check = _by_id(data)["antigravity.apm-hooks"]
+    assert not check["ok"]
+    assert ".agents/hooks.json is not a JSON object" in check["detail"]
+    assert check["fix"] == f"repair .agents/hooks.json by hand, then {AG_FIX}"
+    assert result.exit_code == 1
+
+
+def test_apm_hooks_mention_outside_a_handler_passes(complete: Setup) -> None:
+    path = complete.repo / ".agents" / "hooks.json"
+    path.write_text(
+        json.dumps(
+            {"theirs": {"Stop": [{"command": "echo hi"}]}, "note": "okf-stop-check.sh"}
+        )
+    )
+
+    _, data = _doctor()
+
+    assert _by_id(data)["antigravity.apm-hooks"]["ok"]
+
+
+def test_apm_hooks_docs_show_the_check_and_the_note() -> None:
+    how_to = (
+        ROOT / "docs" / "how-to" / "install-the-plugin-and-the-ci-action.md"
+    ).read_text()
+    assert (
+        "ok   antigravity.apm-hooks: .agents/hooks.json runs no okf Stop check"
+        in how_to
+    )
+    note = next(
+        line
+        for line in how_to.splitlines()
+        if line.startswith("note: wrote .agents/plugins/kmctl/")
+    )
+    assert "okf's Stop check" in note
+    assert "not a JSON object" in COMMANDS.read_text()

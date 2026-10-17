@@ -273,12 +273,52 @@ def _runs_okf_stop(handler: object) -> bool:
     )
 
 
-def apm_okf_stop_present(cwd: Path) -> bool:
-    """Whether APM's hooks.json in ``cwd`` still runs okf's Stop check, which never works there."""
+def _apm_hooks_data(cwd: Path) -> dict[str, object] | None:
+    """APM's hooks.json in ``cwd``, parsed; None when the file is missing.
+
+    Raises
+    ------
+    PluginError
+        When the file is not a JSON object.
+    """
     path = cwd / APM_HOOKS
     if not path.is_file():
-        return False
-    return "okf-stop-check.sh" in path.read_text(encoding="utf-8")
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        data = None
+    if not isinstance(data, dict):
+        raise PluginError(f"{APM_HOOKS.as_posix()} is not a JSON object")
+    return data
+
+
+def _okf_handlers(data: dict[str, object]) -> bool:
+    """Whether any handler in a parsed hooks.json runs okf's Stop check script."""
+    return any(
+        _runs_okf_stop(handler)
+        for events in data.values()
+        if isinstance(events, dict)
+        for handlers in events.values()
+        if isinstance(handlers, list)
+        for handler in handlers
+    )
+
+
+def apm_okf_stop_present(cwd: Path) -> bool:
+    """Whether APM's hooks.json in ``cwd`` still runs okf's Stop check, which never works there.
+
+    It reads the file as ``drop_apm_okf_stop`` does, so only a handler whose
+    command runs the script counts.
+
+    Raises
+    ------
+    PluginError
+        When the file is not a JSON object, which install leaves alone and
+        agy cannot load either.
+    """
+    data = _apm_hooks_data(cwd)
+    return data is not None and _okf_handlers(data)
 
 
 def drop_apm_okf_stop(cwd: Path) -> bool:
@@ -291,13 +331,11 @@ def drop_apm_okf_stop(cwd: Path) -> bool:
     file that is missing or not a JSON object is left alone.
     """
     path = cwd / APM_HOOKS
-    if not path.is_file():
-        return False
     try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
+        data = _apm_hooks_data(cwd)
+    except PluginError:
         return False
-    if not isinstance(data, dict):
+    if data is None:
         return False
     changed = False
     for name, events in list(data.items()):
