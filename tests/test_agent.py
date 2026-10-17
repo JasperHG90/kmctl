@@ -276,12 +276,60 @@ def test_prompt_file_is_the_user_message(repo: Path, tmp_path: Path) -> None:
     assert rec.prompt == "From a file."
 
 
-def test_default_prompt_is_the_audit(repo: Path, tmp_path: Path) -> None:
+def test_default_prompt_is_okf_vs_code(repo: Path, tmp_path: Path) -> None:
     rec = Recorder()
 
     assert _main(repo, tmp_path, FunctionModel(rec)) == 0
-    assert rec.prompt and "audit skill" in rec.prompt
-    assert agent.AUDITOR.read_text() in rec.prompt
+    assert rec.prompt == (agent.PROMPTS / "okf-vs-code.md").read_text()
+
+
+@pytest.mark.parametrize("name", ["docs-vs-code", "okf-vs-code", "okf-vs-docs"])
+def test_audit_option_sends_its_prompt(repo: Path, tmp_path: Path, name: str) -> None:
+    text = (agent.PROMPTS / f"{name}.md").read_text()
+    assert text.strip()
+    rec = Recorder()
+
+    assert _main(repo, tmp_path, FunctionModel(rec), "--audit", name) == 0
+    assert rec.prompt == text
+
+
+@pytest.mark.parametrize("other", ["--prompt", "--prompt-file"])
+def test_audit_choices_refuse_a_second_prompt(
+    repo: Path, tmp_path: Path, capsys: pytest.CaptureFixture[str], other: str
+) -> None:
+    code = _main(
+        repo,
+        tmp_path,
+        FunctionModel(Recorder()),
+        "--audit",
+        "docs-vs-code",
+        other,
+        "x",
+    )
+
+    assert code == 2
+    err = capsys.readouterr().err
+    assert "--audit" in err and other in err
+
+
+def test_audit_choices_refuse_an_unknown_name(
+    repo: Path, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    with pytest.raises(SystemExit) as exit:
+        _main(repo, tmp_path, FunctionModel(Recorder()), "--audit", "nope")
+
+    assert exit.value.code == 2
+    assert "invalid choice: 'nope'" in capsys.readouterr().err
+
+
+def test_audit_choices_are_in_help(capsys: pytest.CaptureFixture[str]) -> None:
+    with pytest.raises(SystemExit):
+        agent.main(["run", "--help"])
+
+    help_text = " ".join(capsys.readouterr().out.split())
+    for name in agent.AUDITS:
+        assert name in help_text
+    assert "Default: okf-vs-code" in help_text
 
 
 def test_prompt_defaults_keep_holds_out_of_findings(repo: Path, tmp_path: Path) -> None:
@@ -293,7 +341,6 @@ def test_prompt_defaults_keep_holds_out_of_findings(repo: Path, tmp_path: Path) 
     assert "Something that holds goes here, never in findings" in system
     assert "The report is checked" in system
     assert "holds is info" not in rec.prompt
-    assert "a concept that holds gets no finding" in " ".join(rec.prompt.split())
 
 
 def test_system_prompt_file_replaces_the_default(repo: Path, tmp_path: Path) -> None:

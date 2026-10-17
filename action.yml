@@ -14,17 +14,17 @@ inputs:
   mode:
     description: >-
       checks (the default) runs kmctl check and kmctl review due. audit runs
-      the agent in action/agent.py (PydanticAI), which by default audits the
-      repository's knowledge with kmctl's skills; prompt changes its task. It
-      can read the repository, the context and skills folders, and run shell
-      commands, and it uploads its report as the agent-report artifact. It
+      the agent in action/agent.py (PydanticAI) on one of its shipped audits
+      (audit), or on the task prompt or prompt_file gives it. It can read the
+      repository, the context and skills folders, and run shell commands, and
+      it uploads its report as the report_name artifact. It
       needs model, runs only on workflow_dispatch or schedule, and refuses to
       start when it could read a GitHub token: check out with
       persist-credentials: false and fetch-depth: 0, and set no GH_TOKEN or
       GITHUB_TOKEN for the job. Also set timeout-minutes on the step, since a
       composite action cannot set it on its own steps. publish runs in a
       separate job (needs: the audit job, issues: write, a checkout for
-      CODEOWNERS): it downloads agent-report and posts it with
+      CODEOWNERS): it downloads report_name and posts it with
       action/agent.py publish. The agent's job and this one share nothing but
       the artifact, so nothing the agent changed runs with the token.
     required: false
@@ -53,15 +53,23 @@ inputs:
       that takes no key.
     required: false
     default: ""
+  audit:
+    description: >-
+      Audit mode: a shipped audit to run. docs-vs-code checks docs/ against
+      the code, okf-vs-code checks .okf/ against the code, and okf-vs-docs
+      checks docs/ against .okf/. Empty: okf-vs-code, unless prompt or
+      prompt_file gives a task of your own.
+    required: false
+    default: ""
   prompt:
     description: >-
-      Audit mode: the agent's task, as text. Empty: the kmctl knowledge audit.
+      Audit mode: the agent's task, as text, instead of audit.
     required: false
     default: ""
   prompt_file:
     description: >-
       Audit mode: a file holding the agent's task, relative to path, instead of
-      prompt.
+      audit.
     required: false
     default: ""
   system_prompt_file:
@@ -104,6 +112,13 @@ inputs:
     description: Publish mode, the issue's title.
     required: false
     default: Knowledge audit
+  report_name:
+    description: >-
+      Audit and publish modes: the artifact's name, which audit mode uploads
+      and publish mode downloads. Give each audit in one workflow its own,
+      such as agent-report-docs-vs-code.
+    required: false
+    default: agent-report
 runs:
   using: composite
   steps:
@@ -149,6 +164,7 @@ runs:
         MODEL: ${{ inputs.model }}
         BASE_URL: ${{ inputs.base_url }}
         API_KEY_ENV: ${{ inputs.api_key_env }}
+        AUDIT: ${{ inputs.audit }}
         PROMPT: ${{ inputs.prompt }}
         PROMPT_FILE: ${{ inputs.prompt_file }}
         SYSTEM_PROMPT_FILE: ${{ inputs.system_prompt_file }}
@@ -159,6 +175,7 @@ runs:
         args=(run --model "$MODEL" --out "$RUNNER_TEMP/agent-report" --timeout "$TIMEOUT")
         [ -n "$BASE_URL" ] && args+=(--base-url "$BASE_URL")
         [ -n "$API_KEY_ENV" ] && args+=(--api-key-env "$API_KEY_ENV")
+        [ -n "$AUDIT" ] && args+=(--audit "$AUDIT")
         [ -n "$PROMPT" ] && args+=(--prompt "$PROMPT")
         [ -n "$PROMPT_FILE" ] && args+=(--prompt-file "$PROMPT_FILE")
         [ -n "$SYSTEM_PROMPT_FILE" ] && args+=(--system-prompt-file "$SYSTEM_PROMPT_FILE")
@@ -169,7 +186,7 @@ runs:
       if: always() && inputs.mode == 'audit'
       uses: actions/upload-artifact@v4
       with:
-        name: agent-report
+        name: ${{ inputs.report_name }}
         path: ${{ runner.temp }}/agent-report
         if-no-files-found: ignore
     # A separate job: a fresh runner that gets only the artifact.
@@ -177,7 +194,7 @@ runs:
       if: inputs.mode == 'publish'
       uses: actions/download-artifact@v4
       with:
-        name: agent-report
+        name: ${{ inputs.report_name }}
         path: ${{ runner.temp }}/agent-report
     - name: Publish the report
       if: inputs.mode == 'publish'

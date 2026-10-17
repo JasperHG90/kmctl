@@ -14,9 +14,14 @@ permissions:
 # publish modes run, so a reader sees everything the audit does (ADR 0017).
 jobs:
   # The agent runs shell commands as the runner's user, so this job gets no
-  # GitHub token it could use and no cache it could leave behind.
+  # GitHub token it could use and no cache it could leave behind. It runs the
+  # three shipped audits side by side, each with its own report.
   audit:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        audit: [docs-vs-code, okf-vs-code, okf-vs-docs]
     steps:
       # No token left in git config for the agent to read; full history for review due.
       - uses: actions/checkout@v4
@@ -26,15 +31,16 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           enable-cache: false
-      # The default audit runs kmctl review due through the agent's shell.
+      # So the agent can run kmctl and its --help.
       - name: Install kmctl from this checkout
         run: uv tool install .
       # Any provider works. Change base_url and model to your own endpoint
       # (Ollama, Bifrost, OpenRouter, a vendor's API) and put its key in the
       # AUDIT_API_KEY secret, or drop --base-url and name a PydanticAI provider,
-      # such as --model openai:gpt-5 with OPENAI_API_KEY set. Add --prompt-file,
-      # --context and --skills to give the agent another task, more folders to
-      # read and more skills.
+      # such as --model openai:gpt-5 with OPENAI_API_KEY set. A weaker model
+      # may miss drift. Replace --audit with --prompt-file, and add --context
+      # and --skills, to give the agent another task, more folders to read and
+      # more skills.
       - name: Run the agent
         timeout-minutes: 40
         env:
@@ -44,6 +50,7 @@ jobs:
           --model qwen/qwen3-coder
           --base-url https://openrouter.ai/api/v1
           --api-key-env AUDIT_API_KEY
+          --audit ${{ matrix.audit }}
           --timeout 30m
           --out ${{ runner.temp }}/agent-report
       # The report, the findings as JSON and the full transcript.
@@ -51,17 +58,30 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: agent-report
+          name: agent-report-${{ matrix.audit }}
           path: ${{ runner.temp }}/agent-report
           if-no-files-found: ignore
 
   # A fresh runner that shares only the artifact with the agent's job, so
-  # nothing the agent changed runs with the token. It opens or updates the
-  # issue when a finding is high, mentioning the CODEOWNERS owners, and
-  # closes it when none is.
+  # nothing the agent changed runs with the token. For each audit it opens
+  # or updates that audit's issue when a finding is high, mentioning the
+  # CODEOWNERS owners, and closes it when none is. It runs unless the run
+  # was cancelled, so one failed audit does not hold back the others; a
+  # missing report fails that audit's publish.
   publish:
     needs: audit
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - audit: docs-vs-code
+            title: Docs audit
+          - audit: okf-vs-code
+            title: Knowledge audit
+          - audit: okf-vs-docs
+            title: Docs and knowledge audit
     permissions:
       contents: read
       issues: write
@@ -75,7 +95,7 @@ jobs:
           enable-cache: false
       - uses: actions/download-artifact@v4
         with:
-          name: agent-report
+          name: agent-report-${{ matrix.audit }}
           path: ${{ runner.temp }}/agent-report
       - name: Publish the report
         env:
@@ -85,3 +105,4 @@ jobs:
           uv run --script action/agent.py publish
           ${{ runner.temp }}/agent-report/report.json
           --min-severity high
+          --title "${{ matrix.title }}"

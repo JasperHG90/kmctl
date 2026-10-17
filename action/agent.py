@@ -4,9 +4,11 @@
 # ///
 """A small agent for CI: give it a task, a model, folders to read and skills to use.
 
-Run it with ``uv run action/agent.py run --help``. It needs nothing from kmctl:
-by default it audits a repository's knowledge with the skills that sit next to
-it in ``apm/.apm/skills``, but ``--prompt`` gives it any other task.
+Run it with ``uv run action/agent.py run --help``. It needs nothing from kmctl.
+It ships three audits, one prompt file each in ``action/prompts``, that
+``--audit`` picks: ``docs/`` against the code, ``.okf/`` against the code (the
+default) and ``docs/`` against ``.okf/``. ``--prompt`` gives it any other task,
+and kmctl's skills in ``apm/.apm/skills`` are there for it to use.
 
 The agent reads the repository, every ``--context`` folder and every
 ``--skills`` folder, and can run shell commands so it can use the scripts
@@ -50,7 +52,10 @@ HERE = Path(__file__).resolve().parent
 #: kmctl's skills and agents, in the action's own checkout.
 PACKAGE = HERE.parent / "apm" / ".apm"
 DEFAULT_SKILLS = PACKAGE / "skills"
-AUDITOR = PACKAGE / "agents" / "kmctl-auditor.md"
+#: The shipped audits, one prompt file each.
+PROMPTS = HERE / "prompts"
+AUDITS = ("docs-vs-code", "okf-vs-code", "okf-vs-docs")
+DEFAULT_AUDIT = "okf-vs-code"
 
 READ_BYTES = 100_000
 READ_LINES = 2000
@@ -110,24 +115,6 @@ Cite a line as path:line, or a range as path:first-last, with the path
 relative to the repository. The report is checked: a citation of a line you
 did not read with read_file or get as a search_files hit, or of a line past
 the file's end, is sent back.
-"""
-
-DEFAULT_PROMPT = """\
-Audit this repository's knowledge: follow the audit skill.
-
-There are no agents to dispatch: do the kmctl-auditor's work yourself, for
-every batch in turn, following its instructions below. Your tools stand in for
-the ones they name: read_file for Read, search_files for Grep and list_files
-for Glob, and run_shell to run kmctl.
-
-Put every concept you compared in checked. Turn each drifted verdict into a
-high finding and each unsure verdict into a medium one; a concept that holds
-gets no finding. Use the concept's id as the finding's title and its path as
-the path.
-
-=== The kmctl-auditor instructions ===
-
-{auditor}
 """
 
 
@@ -458,10 +445,9 @@ def system_prompt(ws: Workspace, skills: list[tuple[str, str, Path]]) -> str:
     )
 
 
-def default_prompt() -> str:
-    """Return the shipped user message: the kmctl knowledge audit."""
-    auditor = AUDITOR.read_text() if AUDITOR.is_file() else "(not found)"
-    return DEFAULT_PROMPT.format(auditor=auditor)
+def audit_prompt(name: str) -> str:
+    """Return the shipped audit ``name``'s prompt, from ``PROMPTS``."""
+    return (PROMPTS / f"{name}.md").read_text()
 
 
 def build_model(name: str, base_url: str, key_env: str) -> Model | str:
@@ -661,8 +647,17 @@ def run(args: argparse.Namespace, model: Model | str | None = None) -> int:
     for folder in contexts:
         if not folder.is_dir():
             raise UsageError(f"--context {folder}: no such folder.")
-    if args.prompt is not None and args.prompt_file is not None:
-        raise UsageError("give --prompt or --prompt-file, not both.")
+    given = [
+        flag
+        for flag, value in (
+            ("--audit", args.audit),
+            ("--prompt", args.prompt),
+            ("--prompt-file", args.prompt_file),
+        )
+        if value is not None
+    ]
+    if len(given) > 1:
+        raise UsageError(f"give one of {', '.join(given)}, not more.")
     refuse_tokens(repo)
     timeout = parse_duration(args.timeout)
     ws = Workspace(repo, [repo, *contexts, *skill_dirs], args.shell_timeout)
@@ -677,7 +672,7 @@ def run(args: argparse.Namespace, model: Model | str | None = None) -> int:
     elif args.prompt_file is not None:
         prompt = Path(args.prompt_file).read_text()
     else:
-        prompt = default_prompt()
+        prompt = audit_prompt(args.audit or DEFAULT_AUDIT)
     if model is None:
         model = build_model(args.model, args.base_url, args.api_key_env)
 
@@ -915,14 +910,25 @@ def parser() -> argparse.ArgumentParser:
         ),
     )
     r.add_argument(
+        "--audit",
+        default=None,
+        choices=AUDITS,
+        help=(
+            "A shipped audit to run: docs-vs-code (docs/ against the code), "
+            "okf-vs-code (.okf/ against the code) or okf-vs-docs (docs/ against "
+            f".okf/). Its prompt is in {PROMPTS}. Default: {DEFAULT_AUDIT}, when "
+            "neither --prompt nor --prompt-file is given."
+        ),
+    )
+    r.add_argument(
         "--prompt",
         default=None,
-        help="The task, as text. Default: the kmctl knowledge audit.",
+        help="The task, as text, instead of --audit. Default: none.",
     )
     r.add_argument(
         "--prompt-file",
         default=None,
-        help="A file holding the task, instead of --prompt. Default: none.",
+        help="A file holding the task, instead of --audit. Default: none.",
     )
     r.add_argument(
         "--system-prompt-file",
