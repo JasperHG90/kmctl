@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "antigravity-okf-stop-hook",
-  "stage": "planning",
+  "stage": "ready",
   "attempts": 0,
   "plan_rounds": 2,
   "review_rounds": 0,
@@ -60,8 +60,14 @@
       "to": "planning",
       "at": "2026-10-17T06:28:19+00:00",
       "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-10-17T06:38:00+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T06:37:59+00:00"
+  "at": "2026-10-17T06:38:00+00:00"
 }
