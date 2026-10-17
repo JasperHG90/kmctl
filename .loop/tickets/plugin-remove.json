@@ -19,7 +19,9 @@
   "archived": false,
   "worktree": "/home/vscode/kmctl.worktrees/plugin-remove",
   "branch": "loop/plugin-remove",
-  "stamps": [],
+  "stamps": [
+    "5aa500c0a4e4adb462b468197b44a985536b8063dfb21d6083aff85026fedc96"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
     "hash": "72e1b4d007d0ee0fe45e240d774e0de9d91f55d7a6d28ae9b51101af069933d0",
@@ -136,5 +138,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T07:55:06+00:00"
+  "at": "2026-10-17T08:03:25+00:00"
 }
