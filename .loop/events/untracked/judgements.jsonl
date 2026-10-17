@@ -26,3 +26,4 @@
 {"at": "2026-10-17T08:02:41+00:00", "evidence": "the operator said so", "judgement": "j-20261017T080241+0000-3f79893d", "kind": "judgement-label", "label": "loop", "schema_version": "1.0", "source": "relayed"}
 {"at": "2026-10-17T08:02:49+00:00", "judgement": "j-20261017T080241+0000-3f79893d", "kind": "judgement-link", "schema_version": "1.0", "ticket": "release-cache-off"}
 {"at": "2026-10-17T08:02:49+00:00", "evidence": "brought back as release-cache-off", "judgement": "j-20261017T080241+0000-3f79893d", "kind": "judgement-label", "label": "loop", "schema_version": "1.0", "source": "outcome"}
+{"at": "2026-10-17T08:32:24+00:00", "evidence": "2 review round(s), 0 block(s), 1120 changed line(s)", "judgement": "j-20261017T060349+0000-4f6d1fe6", "kind": "judgement-label", "label": "loop", "schema_version": "1.0", "source": "outcome"}
