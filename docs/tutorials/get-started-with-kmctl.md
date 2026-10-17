@@ -26,11 +26,8 @@ release this page ships with, and the output shown is what it printed.
   The kmctl repository is private for now, so this needs a GitHub account
   with access to it; uv clones it with your git credentials.
 
-  `kmctl --version` then prints:
-
-  ```
-  kmctl 0.1.0
-  ```
+  `kmctl --version` then prints `kmctl` followed by the version you
+  installed.
 
 You do not need Claude Code or the plugin for this tutorial.
 

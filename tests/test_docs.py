@@ -98,3 +98,36 @@ def test_bundle_valid_with_architecture() -> None:
 
     assert check.returncode == 0, check.stdout + check.stderr
     assert "architecture/index.md" in _links(index)
+
+
+def _summary_rows(text: str) -> dict[str, str]:
+    """The Summary table of the commands reference: command to its one-line text."""
+    rows = re.findall(r"^\| `(kmctl[^`]*)` \| (.+?) \|$", text, re.MULTILINE)
+    return {command: summary for command, summary in rows}
+
+
+def test_reference_rows_quote_the_help_they_summarize() -> None:
+    """The review due and briefing rows quote their help, which names what each covers."""
+    rows = _summary_rows(_reference())
+    helps = {
+        f"kmctl {' '.join(words)}": (command.help or "").strip().splitlines()[0]
+        for words, command in _commands(get_command(app))
+        if command.help
+    }
+
+    for name in ("kmctl review due", "kmctl briefing"):
+        assert rows[name].replace("`", "") == helps[name], name
+    assert "docs/" in helps["kmctl review due"]
+    assert "the rule for reading knowledge" in helps["kmctl briefing"]
+
+
+def test_reference_new_json_keys_match_the_help() -> None:
+    """kmctl new --json lists the same keys in the reference and in its help."""
+    keys = "(id, path, created_section, updated)"
+    [command] = [c for w, c in _commands(get_command(app)) if w == ("new", "decision")]
+    [json_help] = [p.help for p in command.params if "--json" in getattr(p, "opts", [])]
+
+    assert keys in (json_help or "")
+    assert (
+        keys.replace("(", "(`").replace(", ", "`, `").replace(")", "`)") in _reference()
+    )

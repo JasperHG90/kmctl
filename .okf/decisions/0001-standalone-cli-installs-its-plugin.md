@@ -68,3 +68,13 @@ correction, no longer exists: the `kmctl-doctor` ticket that
 `kmctl doctor`. Its `HARNESS.lock` check compares the kmctl ref in
 `apm.lock.yaml` with this kmctl's version (`src/kmctl/doctor.py`). The
 decision stands.
+
+## Correction, 2026-10-17
+
+`kmctl plugin install`, which the Consequences and the 2026-10-16 correction
+name, no longer exists ([ADR 0021](0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md)). The user adds kmctl's package to `apm.yml` at
+the CLI's tag and runs `apm install`; `kmctl plugin patch` then adds what
+APM cannot install yet and never runs APM. The CLI still pins the package to
+its own release: the `apm.yml` entry names `ref: v<cli version>`, and
+`kmctl doctor` compares it with the CLI. The decision stands: kmctl is a
+standalone CLI with thin skills.

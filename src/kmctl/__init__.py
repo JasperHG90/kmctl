@@ -297,7 +297,7 @@ def due(
         ),
     ] = False,
 ) -> None:
-    """List concepts in .okf/ due for review, with the reason for each."""
+    """List the concepts in .okf/ and the pages in docs/ that are due for review, with the reason for each."""
     result = review_due(path)
     if as_json:
         typer.echo(json.dumps(asdict(result)))
@@ -360,7 +360,7 @@ def _register_concept_verb(kind: Kind, example: str) -> None:
             bool,
             typer.Option(
                 "--json",
-                help="Print one JSON object (id, path, created_section), for scripts.",
+                help="Print one JSON object (id, path, created_section, updated), for scripts.",
             ),
         ] = False,
         key: Annotated[
@@ -552,7 +552,7 @@ def briefing(
         ),
     ] = "text",
 ) -> None:
-    """Print the session briefing: where knowledge lives, what is due, and the rules."""
+    """Print the session briefing: where knowledge lives, the skills, what is due, and the rule for reading knowledge."""
     if output_format == "antigravity":
         if as_json:
             raise typer.BadParameter(

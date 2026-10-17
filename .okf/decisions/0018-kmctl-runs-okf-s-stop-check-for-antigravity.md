@@ -85,3 +85,10 @@ Rejected:
 kmctl's package now ships the SessionStart hooks, okf's MCP server and the
 rules for each harness, and APM writes them; kmctl writes only the
 Antigravity agents and removes APM's broken okf Stop handler.
+
+## Correction, 2026-10-17
+
+The Consequences say a bare `apm install` puts APM's broken handler back
+until the next `kmctl plugin install`. That verb is gone ([ADR 0021](0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md)): the next
+`kmctl plugin patch` takes the handler out again (`src/kmctl/plugin.py`),
+and `kmctl doctor` still says when it is back.

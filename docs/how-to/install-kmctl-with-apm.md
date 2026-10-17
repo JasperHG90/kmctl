@@ -41,9 +41,10 @@ repository's files, and with okf-skills from GitHub.
   this page says `apm`. To put it on your PATH, run `uv tool install apm-cli`.
 - A git repository to install into.
 - GitHub access to the kmctl repository. It is private for now, so APM
-  needs a GitHub token with access to it. APM reads one from
-  `GITHUB_APM_PAT`, `GITHUB_TOKEN` or `GH_TOKEN`, then from `gh auth token`,
-  then from your git credential helper.
+  needs a GitHub token with access to it: set `GITHUB_APM_PAT`, or log in
+  with `gh auth login`, which APM asks after its environment variables.
+  [APM's authentication guide](https://microsoft.github.io/apm/consumer/authentication)
+  lists every source it reads.
 
 ## Steps
 

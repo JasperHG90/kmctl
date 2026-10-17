@@ -7,8 +7,8 @@
 kmctl keeps a repository's knowledge current: `docs/` for people who use the
 project and an `.okf/` knowledge bundle for people and agents working on it.
 At the start of every Claude Code session its plugin gives the agent a
-briefing on where knowledge lives, what is due for review and the rules for
-writing it. Its GitHub Action checks indexes and links on every pull request
+briefing on where knowledge lives, what is due for review and which skills
+to use; the rules for writing knowledge come with its package. Its GitHub Action checks indexes and links on every pull request
 at no model cost, and an opt-in audit agent reports knowledge that has drifted from the code
 without changing anything.
 
@@ -192,7 +192,7 @@ names the `apm uninstall` to run first. The steps with the CI action are in
 
 Install kmctl's package for Claude Code as in [Claude Code](#claude-code),
 then start a Claude Code session in the repository. The session opens with a `kmctl briefing`: where knowledge lives,
-what is due for review and the rules for writing it. In a repository with no
+what is due for review and which skills to use. In a repository with no
 `.okf/` yet, the briefing says so and points the agent at `kmctl init`. Ask:
 
 > Set this repository up with kmctl.

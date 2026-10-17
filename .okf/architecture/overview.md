@@ -1,7 +1,7 @@
 ---
 type: architecture
 title: "Architecture overview"
-description: "The parts of kmctl (the CLI modules, the APM package it installs and the GitHub Action) and how they connect."
+description: "The parts of kmctl (the CLI modules, the APM package and the GitHub Action) and how they connect."
 generated:
   by: claude-opus/5.5
   at: 2026-10-16
@@ -71,7 +71,7 @@ flowchart LR
         wheelChecks["scripts/check_wheel.py<br/>scripts/smoke_wheel.py"]
     end
 
-    apmCli["uvx --from apm-cli==0.33.0 apm<br/>in the consumer"]
+    apmCli["apm install, run by the user<br/>in the consumer (kmctl never runs it)"]
     okfSkills["scaccogatto/okf-skills<br/>pinned commit"]
     ghRelease["v* tag and GitHub Release<br/>wheel, sdist, SHA256SUMS"]
     repo[("docs/ and .okf/")]
@@ -112,12 +112,11 @@ flowchart LR
     scaffold -- "write: CLAUDE.md /<br/>AGENTS.md block" --> agentFiles
     checks & okf -. "read" .-> repo
     docsIndex -- "write: docs/FOLDER/README.md" --> repo
-    pluginPy -- "write: apm.yml entry and targets,<br/>settings.json hook, .mcp.json" --> consumer
-    pluginPy -- "apm uninstall (old entry),<br/>apm install --target claude,antigravity" --> apmCli
+    pluginPy -- "plugin patch removes: an older kmctl's<br/>hook, a stale okf-bundle entry" --> consumer
     pluginPy -- "write_plugin, plugin_problems" --> antigravityPy
     antigravityPy -- "write: plugins/kmctl/, translated<br/>from apm/.apm/agents and<br/>apm_modules okf agents" --> agConsumer
     apmCli -- "write: skills, rules" --> agConsumer
-    pluginPy -- "plugin uninstall, prune;<br/>mcp add-json at user scope" --> claude
+    pluginPy -- "plugin uninstall, prune, marketplace remove;<br/>mcp remove at user scope" --> claude
     apmCli -- "git: SOURCE, path: apm,<br/>ref: vVERSION" --> apmPkg
     apmCli -- "write: skills, agents,<br/>rules with paths:" --> consumer
     apmPkg --> okfSkills
@@ -165,7 +164,7 @@ exit codes. Each verb calls one module:
 | `kmctl new decision`, `practice`, `proposal`, `prototype`, `handoff` | `concepts.py`, with `okf.py` to find each `--source` the way `review_due.py` does | the concept, its section index entry and a log line; `--stale-after` and `--source` write its `stale_after` and `sources` |
 | `kmctl new doc` | `docs.py`, with `docs_index.py` | the page with its front matter, its folder's generated `README.md`, and a `docs/README.md` link to the folder when missing (ADR 0022) |
 | `kmctl decision supersede` | `supersede.py` | both decision records and a log line |
-| `kmctl plugin patch` | `plugin.py`, with `antigravity.py` for the plugin folder | runs nothing: reads `apm.lock.yaml`; refuses an `apm.yml` that names the package the v0.3.0 way, naming the `apm uninstall`; for claude, removes the hook and `okf-bundle` an older kmctl wrote and the old claude plugin `kmctl@kmctl`; for antigravity, writes `.agents/plugins/kmctl/` with the translated agents and takes APM's broken okf Stop handler out of `.agents/hooks.json` (ADR 0018, ADR 0020, ADR 0021); `--undo` deletes the plugin folder |
+| `kmctl plugin patch` | `plugin.py`, with `antigravity.py` for the plugin folder | never runs APM, only `claude` to remove the old plugin and a user-scope `okf-bundle`: reads `apm.lock.yaml`; refuses an `apm.yml` that names the package the v0.3.0 way, naming the `apm uninstall`; for claude, removes the hook and `okf-bundle` an older kmctl wrote and the old claude plugin `kmctl@kmctl`; for antigravity, writes `.agents/plugins/kmctl/` with the translated agents and takes APM's broken okf Stop handler out of `.agents/hooks.json` (ADR 0018, ADR 0020, ADR 0021); `--undo` deletes the plugin folder |
 | `kmctl doctor` | `doctor.py`, with `plugin.py` for the hook, MCP entries and lock reader and `antigravity.py` for the folder comparison | nothing; it reads `apm.yml`, `apm.lock.yaml` and the files it lists, the settings files, `.mcp.json`, `.agents/plugins/kmctl/` and agy's trust list, and runs only `uv tool run --offline --from apm-cli==0.33.0 apm --version`; `--online` fetches okf's MCP script URL |
 
 `kinds.py` holds the one table of document kinds: each kind's front matter
@@ -181,7 +180,8 @@ ADR 0009).
 
 ## The package and its install
 
-The skills, the audit agent and the knowledge rules live in `apm/.apm/`, and
+The skills and the audit agent live in `apm/.apm/`, the knowledge rules in
+`apm/claude/.apm/instructions/` (copied to `apm/antigravity/.apm/instructions/`), and
 `apm/apm.yml` names the package, carries the one release version and pins
 `scaccogatto/okf-skills` (ADR 0014). A consumer names it in `apm.yml` as
 `{git: SOURCE, path: apm, ref: v<cli version>}`, the ref of the CLI it
@@ -206,8 +206,9 @@ briefing, and `apm/.apm/agents/`, for the Antigravity translation.
   `scripts/sync_antigravity_rules.py` writes the Antigravity copies, with
   `**/` globs joined by escaped commas, which APM turns into the one
   `globs:` string agy reads.
-- **What kmctl adds.** `plugin.py` removes, before running APM, the hook and
-  `okf-bundle` an older kmctl wrote itself. For Antigravity, `antigravity.py`
+- **What kmctl adds.** `kmctl plugin patch`, run by the user after
+  `apm install`, removes the hook and `okf-bundle` an older kmctl wrote
+  itself; it never runs APM (ADR 0021). For Antigravity, `antigravity.py`
   writes `.agents/plugins/kmctl/` (`plugin.json` and the agents translated
   from Claude Code's format, which APM does not install there yet) and takes
   APM's broken okf Stop handler out of `.agents/hooks.json`.
@@ -230,8 +231,10 @@ install kmctl from the action's own checkout.
   or `kmctl review due` crashes, never because a concept is due.
 - **audit** (opt-in) runs `action/agent.py` with `uv run --script`: one
   standalone PydanticAI script that does not import kmctl (ADR 0017). Its
-  task is the `prompt` input, or by default the knowledge audit: follow the
-  audit skill and do the kmctl-auditor's work itself. Its system prompt,
+  task is one of three shipped audits, picked by the `audit` input
+  (`--audit`: `okf-vs-code`, the default, `docs-vs-code` or `okf-vs-docs`,
+  prompts in `action/prompts/`), or the `prompt` or `prompt_file` input. Its
+  system prompt,
   replaceable with `system_prompt_file`, lists the folders it can read and
   each skill's name and description; it reads a SKILL.md when the skill fits.
   `model` names any PydanticAI provider, or with `base_url` any
@@ -264,8 +267,9 @@ tag a consumer's `apm.yml` names and a build from a download with no
   `scripts/next_release_version.py`, refuses a real run off `main` or a tag
   that exists, runs the lint and the tests, and builds and checks the wheel
   with `scripts/check_wheel.py` and `scripts/smoke_wheel.py`. A real run
-  commits `scripts/release.py set` (the version in `apm/apm.yml` and its copy
-  in the root `apm.yml`, the docs' six install lines and the APM how-to's
+  commits `scripts/release.py set` (the version in `apm/apm.yml` and its
+  copies in the root `apm.yml`, `apm/claude/apm.yml` and
+  `apm/antigravity/apm.yml`, the docs' six install lines and the APM how-to's
   pin) on `release/vX.Y.Z` and opens the version pull request.
 - `.github/workflows/release-tag.yml` runs when a push to `main` changes
   `apm/apm.yml`. When `scripts/release.py compare` says the version went up, it
@@ -290,7 +294,8 @@ tag a consumer's `apm.yml` names and a build from a download with no
   `src/kmctl/doctor.py` (the install checks),
   `okf.py`, `kinds.py`; `apm/.apm/skills/` (write-docs, handoff,
   continue, audit and the three review skills),
-  `apm/.apm/agents/kmctl-auditor.md`, `apm/.apm/instructions/`; `action.yml`,
+  `apm/.apm/agents/kmctl-auditor.md`, `apm/claude/.apm/instructions/`,
+  `apm/antigravity/.apm/instructions/`; `action.yml`,
   `action/knowledge-ci.sh`, `action/agent.py` (run and publish), `action/prompts/` (the three
   audits); `.github/workflows/knowledge-audit.yml`.
 - Releases: `.github/workflows/release.yml`, `.github/workflows/release-tag.yml`,

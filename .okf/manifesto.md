@@ -1,7 +1,7 @@
 ---
 type: manifesto
 title: "Manifesto: kmctl"
-description: What kmctl is for, where each kind of knowledge lives, the parts (CLI, APM package installed by the CLI, CI action), the invariants, values, and what is out of scope for now.
+description: What kmctl is for, where each kind of knowledge lives, the parts (CLI, APM package installed by APM, CI action), the invariants, values, and what is out of scope for now.
 generated:
   by: claude-opus/5.5
   at: 2026-10-15
@@ -44,8 +44,9 @@ this formalizes so every repository can have it.
 ## Parts
 
 - **`kmctl`, a standalone CLI** (ADR 0001). It serves the briefing that is
-  injected into context, installs its package and checks the install
-  (`kmctl doctor`, which writes nothing), and does the bookkeeping a
+  injected into context, adds what APM cannot install yet for its package
+  (`kmctl plugin patch`, ADR 0021) and checks the install (`kmctl doctor`,
+  which writes nothing), and does the bookkeeping a
   script can do: scaffold `docs/` and `.okf/` with a `CLAUDE.md` block and a
   first decision (ADR 0011), create a new decision or practice with the next
   number and its index entry, supersede a decision, list what is due for
@@ -53,7 +54,8 @@ this formalizes so every repository can have it.
   (`kmctl check --fix` writes the generated `docs/` folder indexes, and the
   `kmctl-check` pre-commit hook runs the check, ADR 0022), and list live
   and expired handoffs.
-- **An APM package**, `apm/`, installed by the CLI (ADR 0014). It holds an
+- **An APM package**, `apm/`, which APM installs from the user's `apm.yml`
+  entry (ADR 0014, ADR 0021). It holds an
   audit agent with three review skills (architecture, decision log,
   practices), a skill for writing Diataxis docs, `/handoff` and `/continue`,
   which write and read back handoffs in `.okf/handoffs/` (ADR 0008), and the
