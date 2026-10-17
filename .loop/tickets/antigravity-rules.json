@@ -3,7 +3,7 @@
   "slug": "antigravity-rules",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "81563c3abe43076e4d91c1c4f5fa64169a061f9489a542c7360a658b513fbd23",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "12c302f7a42e05effc4892fa586ca873e9498547b925250f79bcedbc45f860e8",
+    "started_at": "2026-10-17T06:29:37+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "12c302f7a42e05effc4892fa586ca873e9498547b925250f79bcedbc45f860e8",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -44,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T06:29:36+00:00"
+  "at": "2026-10-17T06:29:37+00:00"
 }
