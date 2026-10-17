@@ -22,23 +22,23 @@
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
-    "hash": "0f7d9daba1235aad177511fc612742eb7aabfb3e1d5c7ef46df599d15be4636a",
-    "at": "2026-10-17T21:22:00+00:00"
+    "hash": "f8e51aae5029dcf209281ba911e0d371748fa9f50ec63065f29abbda486126c0",
+    "at": "2026-10-17T21:25:44+00:00"
   },
   "delegation": null,
   "budget_base": null,
   "signed_rows": [
     {
       "id": "r1",
-      "behavior": "kmctl verify ID --by human:ID appends a verified entry with today's date to an unverified .okf/ concept, appends a line to .okf/log.md, and kmctl review due no longer lists that id.",
-      "fails_when": "the concept still appears in kmctl review due after the verb exits 0, the entry lacks by or at, or log.md gains no line naming the concept",
+      "behavior": "kmctl verify ID --by human:ID appends a verified entry whose at is a full UTC timestamp to an unverified .okf/ concept, appends a line to .okf/log.md, and kmctl review due no longer lists that id, including when one of its sources was committed earlier the same day.",
+      "fails_when": "the concept still appears in kmctl review due after the verb exits 0 (with or without a same-day source commit), at is a bare date, the entry lacks by or at, or log.md gains no line naming the concept",
       "command": "uv run pytest tests/test_verify.py -k clears -q",
       "judgment": false
     },
     {
       "id": "r2",
-      "behavior": "kmctl verify takes a docs/ page id as kmctl review due prints it and writes the entry into that page's front matter.",
-      "fails_when": "a docs page id is refused, or the page's front matter has no verified entry afterwards",
+      "behavior": "kmctl verify takes a docs/ page id as kmctl review due prints it, writes the entry into that page's front matter, and a page listed for a source changed earlier the same day is no longer listed.",
+      "fails_when": "a docs page id is refused, the page has no verified entry afterwards, or kmctl review due still lists it",
       "command": "uv run pytest tests/test_verify.py -k docs_page -q",
       "judgment": false
     },
@@ -51,9 +51,16 @@
     },
     {
       "id": "r4",
-      "behavior": "kmctl verify refuses, with one line on stderr naming the fix and exit 1, when --by does not start with human:, the id matches no file, the id is a handoff, or the front matter cannot be read; it writes nothing then.",
+      "behavior": "kmctl verify refuses, with one line on stderr naming the fix and exit 1, when --by does not start with human:, the id matches no file, the id is a handoff, the front matter cannot be read, the file's stale_after has passed and no --stale-after is given, or --stale-after is not in the future; it writes nothing then.",
       "fails_when": "any of those cases exits 0, prints the refusal on stdout, gives no fix, or changes a file",
       "command": "uv run pytest tests/test_verify.py -k refuses -q",
+      "judgment": false
+    },
+    {
+      "id": "r4b",
+      "behavior": "kmctl verify ID --by human:ID --stale-after 6m on a concept listed as stale_after passed writes the new stale_after and the verified entry, and kmctl review due no longer lists it.",
+      "fails_when": "stale_after is unchanged or not the time --stale-after names, any other line changes, or kmctl review due still lists the id",
+      "command": "uv run pytest tests/test_verify.py -k stale -q",
       "judgment": false
     },
     {
@@ -65,7 +72,7 @@
     },
     {
       "id": "r6",
-      "behavior": "kmctl review due's text output ends with a Next: line naming kmctl verify when it lists anything due, prints no such line when nothing is due, and its --json output keeps its keys; the briefing tests still pass under TOKEN_BUDGET.",
+      "behavior": "kmctl review due's text output ends with a Next: line naming kmctl verify (and --stale-after) when it lists anything due, prints no such line when nothing is due, and its --json output keeps its keys; the briefing tests still pass under TOKEN_BUDGET.",
       "fails_when": "the due listing lacks a Next: line naming kmctl verify, the nothing-due output has one, the JSON gains or loses a key, or a briefing test fails",
       "command": "uv run pytest tests/test_review_due.py tests/test_briefing.py -q",
       "judgment": false
@@ -99,7 +106,35 @@
       "judgment": false
     }
   ],
-  "resigns": [],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+      "reason": "round 1 plan review: stamp at is a full UTC timestamp, and verify takes --stale-after so a stale concept can be cleared; rows r1, r2, r4, r6 updated and r4b added",
+      "diff": {
+        "added": [
+          "r4b"
+        ],
+        "removed": [],
+        "changed": {
+          "r1": [
+            "behavior",
+            "fails_when"
+          ],
+          "r2": [
+            "behavior",
+            "fails_when"
+          ],
+          "r4": [
+            "behavior"
+          ],
+          "r6": [
+            "behavior"
+          ]
+        }
+      },
+      "at": "2026-10-17T21:25:44+00:00"
+    }
+  ],
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
@@ -138,5 +173,5 @@
     }
   ],
   "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
-  "at": "2026-10-17T21:25:37+00:00"
+  "at": "2026-10-17T21:25:44+00:00"
 }
