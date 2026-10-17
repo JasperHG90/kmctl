@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "verify-verb",
-  "stage": "planning",
+  "stage": "ready",
   "attempts": 0,
   "plan_rounds": 2,
   "review_rounds": 0,
@@ -170,8 +170,14 @@
       "to": "planning",
       "at": "2026-10-17T21:18:58+00:00",
       "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-10-17T21:26:45+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
-  "at": "2026-10-17T21:26:44+00:00"
+  "at": "2026-10-17T21:26:45+00:00"
 }
