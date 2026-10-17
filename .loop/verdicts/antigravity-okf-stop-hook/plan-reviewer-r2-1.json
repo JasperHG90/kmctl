@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "Nothing showed executionNum goes back to 0 on a later turn of the same conversation. Spike 3 settles it: in one conversation (agy -p, then agy -c -p, same conversationId on all four Stop calls) the stops carried executionNum 0, 1 in turn 1 and 0, 1 in turn 2, and the hook continued once per turn. The guard on executionNum 0 means the first stop of each turn.",
+      "anchor": ".loop/plans/antigravity-okf-stop-hook.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "a5195df492775fa3699e0074010c8f79c76466b5f62422a96fdde5173b9a328c"
+  },
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
+  "at": "2026-10-17T06:37:41+00:00"
+}
