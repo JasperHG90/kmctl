@@ -1,0 +1,27 @@
+built-in tool names: edit, glob, grep, patch, question, read, shell, skill, subagent, webfetch, websearch, write
+OK   folder: agent/ and agents/ both globbed  | packages/core/src/config/plugin/agent.ts:22: { pattern: "{agent,agents}/**/*.md", primary: false },
+OK   name comes from file path  | packages/core/src/config/plugin/agent.ts:183: .replace(/^(agent|agents|mode|modes)\//, "")
+OK   any non-native key -> legacy V1 decode  | packages/core/src/config/plugin/agent.ts:186: const legacy = Object.keys(markdown.data).some((key) => !agentKeys.has(key))
+OK   decode failure drops the agent silently  | packages/core/src/config/plugin/agent.ts:204: if (!agent) return
+OK   native keys  | packages/schema/src/config/agent.ts:21: permissions: Permission.Ruleset.pipe(optional),
+OK   V1 tools = mapping name->bool, deprecated  | packages/core/src/v1/config/agent.ts:21: tools: Schema.optional(ConfigPermissionV1.Entries(Schema.Boolean)).annotate({
+OK   tools deprecated note  | packages/core/src/v1/config/agent.ts:22: description: "@deprecated Use 'permission' field instead",
+OK   V1 schema keeps unknown keys (StructWithRest)  | packages/core/src/v1/config/agent.ts:12: const AgentSchema = Schema.StructWithRest(
+OK   V1 'name' is a known key  | packages/core/src/v1/config/agent.ts:43: const KNOWN_KEYS = new Set(["name", ...Object.keys(AgentSchema.schema.fields)])
+OK   unknown keys -> options  | packages/core/src/v1/config/agent.ts:48: if (!KNOWN_KEYS.has(key)) options[key] = value
+OK   tools true/false -> allow/deny  | packages/core/src/v1/config/agent.ts:54: const action = enabled ? "allow" : "deny"
+OK   V1 permission accepts action string or object  | packages/core/src/v1/config/permission.ts:29: export const Info = Schema.Union([Action, Schema.ObjectKeyword])
+OK   options -> request.body (sent to provider)  | packages/core/src/v1/config/migrate.ts:45: request: Object.keys(body).length ? { body } : undefined,
+OK   model needs provider/model else dropped  | packages/core/src/v1/config/migrate.ts:70: if (input === undefined || !/^[^/#]+\/[^#]+$/.test(input)) return undefined
+OK   bash->shell, task->subagent, write/patch->edit  | packages/core/src/v1/config/migrate.ts:31: if (action === "bash") return "shell"
+OK   tool Read -> read exists  | packages/core/src/tool/plugin/read.ts
+OK   tool Grep -> grep exists  | packages/core/src/tool/plugin/grep.ts
+OK   tool Glob -> glob exists  | packages/core/src/tool/plugin/glob.ts
+OK   tool Write -> write exists  | packages/core/src/tool/plugin/write.ts
+OK   tool Edit -> edit exists  | packages/core/src/tool/plugin/edit.ts
+OK   tool Bash -> shell exists  | packages/core/src/tool/plugin/shell.ts
+NOTE V1 color = hex or theme literal only: packages/core/src/v1/config/agent.ts:9: Schema.Literals(["primary", "secondary", "accent", "success", "warning", "error", "info"]),
+NOTE no rule matched -> ask: packages/core/src/permission.ts:94: effect: "ask",
+NOTE permission rules: last match wins: packages/core/src/permission.ts:91: .findLast((rule) => Wildcard.match(action, rule.action) && Wildcard.match(resource, rule.resource)) ?? {
+NOTE tool 'list' exists: absent
+NOTE tool 'bash' exists (else via normalizeAction->shell): absent
