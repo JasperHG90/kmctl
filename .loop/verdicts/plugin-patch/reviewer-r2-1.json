@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "read_json's invalid-JSON message named the removed kmctl plugin install",
+      "anchor": "src/kmctl/plugin.py:425",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "tests for remove_old_plugin, drop_old_hook, drop_old_mcp and uninstall_name were deleted with the old verbs",
+      "anchor": "tests/test_plugin_patch.py:440",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "dead _apm_run and comments naming removed --harness/--source options",
+      "anchor": "src/kmctl/plugin.py:31",
+      "category": "nit",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "resolved",
+      "claim": "rule heading, constraint name and two test module docstrings said false things",
+      "anchor": ".claude/rules/cli-version-floor.md:5",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "685533460b0a0d7dc18477cc18f743b77784e9f896463a146a4ae7ce0246a844",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
+  "at": "2026-10-17T15:56:59+00:00"
+}
