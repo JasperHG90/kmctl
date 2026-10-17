@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The guard rests on executionNum 0 meaning \"the first stop of a turn\", but the spikes only show it for one turn. Both spikes ran `agy -p`, a single user turn; spike 2 shows a forced continue moves executionNum from 0 to 1, so the counter counts executor runs, and nothing shows it goes back to 0 when the user sends the next message. If it keeps counting through a conversation, the hook fires only on the first turn of an interactive session and is idle on every turn after that. Then the plan's contract (\"continues only on the first stop of a turn\") is false and the guard needs another design, such as state keyed by conversationId. The plan does not list this risk. It can be settled by running code: spike a two-turn conversation (a second message to the same conversation, by resume or an interactive run) with the logging Stop handler from spike 2, and record executionNum on the first stop of turn 2.",
+      "anchor": ".loop/plans/antigravity-okf-stop-hook.md (Intent, \"continues only on the first stop of a turn\")",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "8cdc1a2b7bff23fe2ce175c234bce364f736417f5444d88d980da8ed8fba64f1"
+  },
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
+  "at": "2026-10-17T06:35:04+00:00"
+}
