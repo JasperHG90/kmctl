@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016
-  at: '2026-10-17T06:06:39+00:00'
+  at: '2026-10-17T06:07:36+00:00'
 slug: plugin-remove
 n: 1
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike plugin-remove/1
@@ -24,7 +24,10 @@ The command exited 1:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note plugin-remove 1`.
+After `kmctl plugin install --harness claude,antigravity` from a local git server, `apm uninstall 127.0.0.1:PORT/o/kmctl/apm` (host/owner/repo/path, the apm.yml entry's identifier; the bare git URL is refused with "not found in apm.yml") exited 0. It removed kmctl and the transitive scaccogatto/okf-skills from apm_modules/, cleaned 65 + 40 deployed files, removed both integrated okf Stop hooks, deleted apm.lock.yaml outright and left apm.yml with `dependencies: apm: []` and `targets:` unchanged.
+Nothing under .claude/skills, .claude/agents, .claude/rules, .claude/hooks, .agents/skills, .agents/rules or .agents/hooks remained; .claude/apm-hooks.json and .agents/apm-hooks.json went too.
+The exit 1 comes from two leftovers: `.agents/hooks.json` emptied to `{}` rather than deleted, and `.agents/plugins/kmctl/` (written by kmctl, not APM; the plan already deletes it itself). Also left: an empty apm_modules/ folder and APM's `apm_modules/` line in .gitignore. kmctl's SessionStart hook in .claude/settings.json and okf-bundle in .mcp.json stay, as expected, since kmctl writes them.
+Settles risk 1 for APM's files: remove need not delete skills, agents, rules, okf files or lock entries itself; at most it removes an `{}` .agents/hooks.json. Limits: one run, project scope only, and the GitHub-form identifier (owner/repo/apm) and the `o/kmctl/apm` name shown by `apm deps list` were not tried.
 
 ## Files
 
