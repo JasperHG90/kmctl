@@ -1,0 +1,80 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.15, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/vscode/kmctl
+configfile: pyproject.toml
+plugins: respx-0.23.1, anyio-4.15.1
+collected 670 items / 7 deselected / 663 selected
+
+tests/scripts/test_check_wheel.py ....                                   [  0%]
+tests/scripts/test_next_release_version.py ........................      [  4%]
+tests/scripts/test_release.py .............................              [  8%]
+tests/scripts/test_release_docs.py ....F                                 [  9%]
+tests/scripts/test_smoke_wheel.py .........                              [ 10%]
+tests/scripts/test_workflows.py .............                            [ 12%]
+tests/test_action.py ............                                        [ 14%]
+tests/test_adr_audit_fixes.py ....                                       [ 15%]
+tests/test_agent.py ..........................................           [ 21%]
+tests/test_antigravity.py .............................................. [ 28%]
+...........                                                              [ 30%]
+tests/test_apm_package.py ........................................       [ 36%]
+tests/test_audit.py .....                                                [ 36%]
+tests/test_briefing.py ...........                                       [ 38%]
+tests/test_check.py .........................                            [ 42%]
+tests/test_cli.py ..                                                     [ 42%]
+tests/test_docs.py .F...                                                 [ 43%]
+tests/test_doctor.py ................................................... [ 50%]
+..............................                                           [ 55%]
+tests/test_handoff_key.py ........                                       [ 56%]
+tests/test_handoffs.py .........                                         [ 58%]
+tests/test_help.py ................................................      [ 65%]
+tests/test_init.py ..............................................        [ 72%]
+tests/test_network_retry.py ...............                              [ 74%]
+tests/test_new_concept.py ....................                           [ 77%]
+tests/test_new_doc.py .......                                            [ 78%]
+tests/test_okf_fields.py ......                                          [ 79%]
+tests/test_plugin.py ......                                              [ 80%]
+tests/test_plugin_error.py .......                                       [ 81%]
+tests/test_plugin_patch.py ................................              [ 86%]
+tests/test_repo_apm.py ..........                                        [ 87%]
+tests/test_review_due.py .........                                       [ 89%]
+tests/test_rules.py ...............................                      [ 93%]
+tests/test_schema.py ...............................                     [ 98%]
+tests/test_skills.py ...                                                 [ 98%]
+tests/test_supersede.py .......                                          [100%]
+
+=================================== FAILURES ===================================
+______________________ test_the_bundle_passes_kmctl_check ______________________
+
+    def test_the_bundle_passes_kmctl_check() -> None:
+        """``kmctl check`` passes on this repository with the new pages."""
+        result = CliRunner().invoke(app, ["check", "--path", str(ROOT)])
+    
+>       assert result.exit_code == 0, result.output
+E       AssertionError: error  link  docs/how-to/install-the-plugin-and-the-ci-action.md:243  link to ../tutorials/audit-your-repository-with-the-agent.md does not exist
+E         1 failed
+E         
+E       assert 1 == 0
+E        +  where 1 = <Result SystemExit(1)>.exit_code
+
+tests/scripts/test_release_docs.py:104: AssertionError
+___________________________ test_docs_pages_by_type ____________________________
+
+    def test_docs_pages_by_type() -> None:
+        for folder in ("tutorials", "how-to", "reference", "explanation"):
+            pages = [p for p in (DOCS / folder).glob("*.md") if p.name != "README.md"]
+            assert pages, folder
+    
+        result = CliRunner().invoke(app, ["check", "--path", str(ROOT)])
+    
+>       assert result.exit_code == 0, result.output
+E       AssertionError: error  link  docs/how-to/install-the-plugin-and-the-ci-action.md:243  link to ../tutorials/audit-your-repository-with-the-agent.md does not exist
+E         1 failed
+E         
+E       assert 1 == 0
+E        +  where 1 = <Result SystemExit(1)>.exit_code
+
+tests/test_docs.py:58: AssertionError
+=========================== short test summary info ============================
+FAILED tests/scripts/test_release_docs.py::test_the_bundle_passes_kmctl_check
+FAILED tests/test_docs.py::test_docs_pages_by_type - AssertionError: error  l...
+================= 2 failed, 661 passed, 7 deselected in 33.55s =================
