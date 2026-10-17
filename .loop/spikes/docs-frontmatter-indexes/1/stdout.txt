@@ -1,0 +1,33 @@
+hook repo /tmp/tmp.LLPFXT0tUe/kmctl at c998c170ff0ea44d797fe13375cc4fabde5158a3
+== run 1: plain hook (cold PREK_HOME) ==
+kmctl check..............................................................Passed
+- hook id: kmctl-check
+- duration: 0.25s
+
+  skipped  index  docs/  skipped docs/: no docs/ folder
+  skipped  index  .okf/  skipped .okf/: no .okf/ folder
+  all checks passed
+run 1 seconds: 2
+== run 2: plain hook again (warm) ==
+kmctl check..............................................................Passed
+- hook id: kmctl-check
+- duration: 0.09s
+
+  skipped  index  docs/  skipped docs/: no docs/ folder
+  skipped  index  .okf/  skipped .okf/: no .okf/ folder
+  all checks passed
+run 2 seconds: 0
+== run 3: entry kmctl, args: [--version] ==
+kmctl check..............................................................Passed
+- hook id: kmctl-check
+- duration: 0.10s
+
+  kmctl 0.3.0
+run 3 seconds: 0
+== run 4: args: [--json] appended to entry kmctl check ==
+kmctl check..............................................................Passed
+- hook id: kmctl-check
+- duration: 0.09s
+
+  [{"check": "index", "file": "docs/", "line": null, "message": "skipped docs/: no docs/ folder", "level": "skipped"}, {"check": "index", "file": ".okf/", "line": null, "message": "skipped .okf/: no .okf/ folder", "level": "skipped"}]
+ALL OK
