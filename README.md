@@ -63,7 +63,7 @@ still true; that takes judgment. So kmctl does two things instead:
 ### 1. Install the kmctl CLI
 
 ```
-uv tool install git+https://github.com/JasperHG90/Knowledge-management@v0.4.0
+uv tool install git+https://github.com/JasperHG90/kmctl@v0.4.0
 ```
 
 ### 2. Set up the repository
@@ -87,7 +87,7 @@ name: my-project
 version: 0.1.0
 dependencies:
   apm:
-    - git: https://github.com/JasperHG90/Knowledge-management.git
+    - git: https://github.com/JasperHG90/kmctl.git
       path: apm
       ref: vX.Y.Z
 ```
@@ -165,14 +165,14 @@ install; each `fail` line names its fix.
 ### Upgrade
 
 Install the new CLI with
-`uv tool install --force git+https://github.com/JasperHG90/Knowledge-management@vX.Y.Z`,
+`uv tool install --force git+https://github.com/JasperHG90/kmctl@vX.Y.Z`,
 set `ref` in `apm.yml` to the same tag, and run your `apm install` line and
 `kmctl plugin patch` again.
 
 ### Remove
 
 ```
-uvx --from apm-cli==0.33.0 apm uninstall github.com/JasperHG90/Knowledge-management/apm
+uvx --from apm-cli==0.33.0 apm uninstall github.com/JasperHG90/kmctl/apm
 kmctl plugin patch --undo
 ```
 
@@ -193,7 +193,9 @@ names the `apm uninstall` to run first. The steps with the CI action are in
 Install kmctl's package for Claude Code as in [Claude Code](#claude-code),
 then start a Claude Code session in the repository. The session opens with a `kmctl briefing`: where knowledge lives,
 what is due for review and which skills to use. In a repository with no
-`.okf/` yet, the briefing says so and points the agent at `kmctl init`. Ask:
+`.okf/` yet, the briefing says so and points the agent at `kmctl init`. Until
+the manifesto is written and `.okf/architecture/` has a page, the briefing
+tells the agent to fill them in with you before any other work. Ask:
 
 > Set this repository up with kmctl.
 
@@ -240,7 +242,7 @@ commit:
 
 ```yaml
 repos:
-  - repo: https://github.com/JasperHG90/Knowledge-management
+  - repo: https://github.com/JasperHG90/kmctl
     rev: vX.Y.Z  # the kmctl version you run; the hook needs a release after 0.3.0
     hooks:
       - id: kmctl-check

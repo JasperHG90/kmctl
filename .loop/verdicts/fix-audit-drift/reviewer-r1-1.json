@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "No test pins the help strings this ticket changed. Nothing asserts that `kmctl review due --help` names docs/ pages, or that the commands reference's summary rows match the help, so row r2's command passes with the old docstring too. The plan says the scope includes \"the tests that pin them\".",
+      "anchor": "tests/test_docs.py:65",
+      "category": "test-mismatch",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "Other places still say the briefing gives the rules for writing knowledge, which this change now says is false in docs/ and the CLI help. They are README.md:10 and README.md:195, the module docstring at src/kmctl/briefing.py:1, and the SessionStart hook description in apm/claude/.apm/hooks/hooks.json (\"what is due, the rules\").",
+      "anchor": "README.md:10",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "8572d82eff39615879b5c39c2facbb6dd64ddac1b6f419757447ab34657fb75f",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
+  "at": "2026-10-17T19:22:46+00:00"
+}

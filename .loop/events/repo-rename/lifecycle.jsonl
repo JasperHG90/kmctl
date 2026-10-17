@@ -19,3 +19,4 @@
 {"at": "2026-10-17T19:04:23+00:00", "binds": "3a08e3e21224ae2232c10816770822361790a9977687709da7990c10c6fb0a20", "kind": "round-start", "n": 2, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "d6a544bd0430aaa5bb8f648bbc1dbc7085e136c3"}
 {"at": "2026-10-17T19:06:16+00:00", "dispatched_at": "2026-10-17T19:04:23+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-17T19:06:01+00:00"}}
 {"at": "2026-10-17T19:06:23+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "b4d373accc13591427a16ae342c277a9e6c2a62e"}
+{"at": "2026-10-17T19:31:18+00:00", "branch": "loop/repo-rename", "kind": "land", "schema_version": "1.0", "sha": "e20b5bb3406f0dc97c2e49a30b990b5bda76fa2a"}

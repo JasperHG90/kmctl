@@ -46,7 +46,7 @@ How the commands below were run:
 ### 1. Install kmctl
 
 ```
-uv tool install git+https://github.com/JasperHG90/Knowledge-management@v0.4.0
+uv tool install git+https://github.com/JasperHG90/kmctl@v0.4.0
 ```
 
 The kmctl repository is private for now, so this needs a GitHub account
@@ -63,7 +63,7 @@ name: my-project
 version: 0.1.0
 dependencies:
   apm:
-    - git: https://github.com/JasperHG90/Knowledge-management.git
+    - git: https://github.com/JasperHG90/kmctl.git
       path: apm
       ref: vX.Y.Z
 ```
@@ -198,7 +198,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: JasperHG90/Knowledge-management@v0.4.0
+      - uses: JasperHG90/kmctl@v0.4.0
 ```
 
 While the kmctl repository is private, GitHub runs this action only in
@@ -326,7 +326,7 @@ Publish mode takes three more:
            with:
              fetch-depth: 0
              persist-credentials: false
-         - uses: JasperHG90/Knowledge-management@v0.4.0
+         - uses: JasperHG90/kmctl@v0.4.0
            timeout-minutes: 40
            env:
              AUDIT_API_KEY: ${{ secrets.AUDIT_API_KEY }}
@@ -349,7 +349,7 @@ Publish mode takes three more:
          - uses: actions/checkout@v4
            with:
              persist-credentials: false
-         - uses: JasperHG90/Knowledge-management@v0.4.0
+         - uses: JasperHG90/kmctl@v0.4.0
            with:
              mode: publish
    ```
@@ -476,7 +476,7 @@ its `vX.Y.Z` tag. To move to a newer one:
 1. Install kmctl at the new tag, replacing `vX.Y.Z` with it:
 
    ```
-   uv tool install --force git+https://github.com/JasperHG90/Knowledge-management@vX.Y.Z
+   uv tool install --force git+https://github.com/JasperHG90/kmctl@vX.Y.Z
    ```
 
    `--force` replaces the kmctl you have. `kmctl --version` then prints the
@@ -496,7 +496,7 @@ its `vX.Y.Z` tag. To move to a newer one:
    `kmctl doctor` then reports `claude.lock` (and `antigravity.lock`) as
    `ok` at the new version.
 
-3. Change the ref in each workflow's `uses: JasperHG90/Knowledge-management@`
+3. Change the ref in each workflow's `uses: JasperHG90/kmctl@`
    line to the same tag.
 
 ### 7. To remove kmctl
@@ -504,7 +504,7 @@ its `vX.Y.Z` tag. To move to a newer one:
 From the repository root:
 
 ```
-uvx --from apm-cli==0.33.0 apm uninstall github.com/JasperHG90/Knowledge-management/apm
+uvx --from apm-cli==0.33.0 apm uninstall github.com/JasperHG90/kmctl/apm
 kmctl plugin patch --undo
 ```
 

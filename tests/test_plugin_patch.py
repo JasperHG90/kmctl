@@ -263,7 +263,7 @@ def test_patch_refuses_the_adr_0013_string_entry(
 def test_patch_refuses_the_v030_layout(repo: Path, fakes: FakeTools) -> None:
     (repo / "apm.yml").write_text(
         "name: x\nversion: 0.1.0\ndependencies:\n  apm:\n"
-        "    - {git: https://github.com/JasperHG90/Knowledge-management.git, path: apm, ref: v0.3.0}\n"
+        "    - {git: https://github.com/JasperHG90/kmctl.git, path: apm, ref: v0.3.0}\n"
     )
     (repo / "apm.lock.yaml").write_text(
         yaml.safe_dump(
@@ -282,10 +282,7 @@ def test_patch_refuses_the_v030_layout(repo: Path, fakes: FakeTools) -> None:
     result = _kmctl("plugin", "patch")
 
     assert result.exit_code == 1
-    assert (
-        "run apm uninstall github.com/JasperHG90/Knowledge-management/apm,"
-        in result.stderr
-    )
+    assert "run apm uninstall github.com/JasperHG90/kmctl/apm," in result.stderr
 
 
 # r3: --undo --------------------------------------------------------------------------
@@ -593,10 +590,10 @@ def test_patch_claude_user_scope_keeps_a_current_server(
     [
         (
             {
-                "git": "https://github.com/JasperHG90/Knowledge-management.git",
+                "git": "https://github.com/JasperHG90/kmctl.git",
                 "path": "apm",
             },
-            "github.com/JasperHG90/Knowledge-management/apm",
+            "github.com/JasperHG90/kmctl/apm",
         ),
         (
             {"git": "http://127.0.0.1:18765/o/kmctl.git", "path": "apm"},
@@ -604,10 +601,10 @@ def test_patch_claude_user_scope_keeps_a_current_server(
         ),
         (
             {
-                "git": "git@github.com:JasperHG90/Knowledge-management.git",
+                "git": "git@github.com:JasperHG90/kmctl.git",
                 "path": "apm",
             },
-            "github.com/JasperHG90/Knowledge-management/apm",
+            "github.com/JasperHG90/kmctl/apm",
         ),
         (
             "JasperHG90/Knowledge-management/apm#v0.3.0",

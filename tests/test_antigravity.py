@@ -105,7 +105,7 @@ def _lock(harnesses: tuple[str, ...] = ("antigravity",)) -> str:
             "lockfile_version": "1",
             "dependencies": [
                 {
-                    "repo_url": "JasperHG90/Knowledge-management",
+                    "repo_url": "JasperHG90/kmctl",
                     "name": "kmctl",
                     "resolved_ref": REF,
                     "virtual_path": "apm",
@@ -496,7 +496,7 @@ def test_briefing_format_text_is_the_default(repo: Path) -> None:
 def test_briefing_format_json_keeps_its_meaning(repo: Path) -> None:
     data = json.loads(_kmctl("briefing", "--path", str(repo), "--json").stdout)
 
-    assert set(data) == {"routing", "state", "rules", "skills"}
+    assert set(data) == {"routing", "setup", "state", "rules", "skills"}
 
 
 def test_briefing_format_antigravity_with_json_is_refused(repo: Path) -> None:

@@ -1,25 +1,55 @@
 {
   "schema_version": "1.0",
   "slug": "fix-audit-drift",
-  "stage": "ready",
-  "attempts": 0,
+  "stage": "done",
+  "attempts": 1,
   "plan_rounds": 2,
-  "review_rounds": 0,
+  "review_rounds": 2,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "2bbe36b1f98da1b0c9a625db0e4705188bb8ff9ce25bfd8d885152b125212e95",
+    "tree": "ea8cdf0e0488ab6fc80b503e8f101de229aa8e4d",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "blocking",
+        "judgement": null,
+        "paths": [
+          "tests/test_docs.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f2",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": null,
+        "paths": [
+          "README.md",
+          "src/kmctl/briefing.py"
+        ]
+      }
+    ],
+    "at": "2026-10-17T19:25:59+00:00"
+  },
   "ask": "j-20261017T183608+0000-1a37eb69",
   "split": "j-20261017T184632+0000-caf681da",
   "split_plan_hash": "29ccfd4b6c5788f6cf9c98532b45e1f81fbd4bd436331141312e414d5a371686",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "ed5faadbae85f3a600829a6e4e9d47f0dfd9ce52",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
-  "worktree": null,
-  "branch": null,
-  "stamps": [],
+  "worktree": "/home/vscode/kmctl.worktrees/fix-audit-drift",
+  "branch": "loop/fix-audit-drift",
+  "stamps": [
+    "8572d82eff39615879b5c39c2facbb6dd64ddac1b6f419757447ab34657fb75f",
+    "2bbe36b1f98da1b0c9a625db0e4705188bb8ff9ce25bfd8d885152b125212e95",
+    "3d3885f21df26c89fb258454ced39c7732f58b6b0f545c69d51bfee007e4fcd6"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude",
     "hash": "dcb7fd4932a7370e89702a30cd7bb1896732809e376f84a03f8deaa241036be0",
@@ -62,16 +92,16 @@
   "waivers": [],
   "overrides": [],
   "round": {
-    "kind": "plan",
+    "kind": "review",
     "n": 2,
-    "binds": "29ccfd4b6c5788f6cf9c98532b45e1f81fbd4bd436331141312e414d5a371686",
-    "started_at": "2026-10-17T18:47:12+00:00",
+    "binds": "3d3885f21df26c89fb258454ced39c7732f58b6b0f545c69d51bfee007e4fcd6",
+    "started_at": "2026-10-17T19:33:06+00:00",
     "passes": [
-      "plan-reviewer"
+      "reviewer"
     ],
-    "tree": null,
-    "plan_hash": null,
-    "eval_hash": null,
+    "tree": "cafabaa4cfac119407977645b549fafcb2721266",
+    "plan_hash": "29ccfd4b6c5788f6cf9c98532b45e1f81fbd4bd436331141312e414d5a371686",
+    "eval_hash": "dcb7fd4932a7370e89702a30cd7bb1896732809e376f84a03f8deaa241036be0",
     "scope": "full",
     "sent_back": [],
     "since": null,
@@ -99,8 +129,38 @@
       "to": "ready",
       "at": "2026-10-17T18:48:18+00:00",
       "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-10-17T19:09:47+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-10-17T19:18:56+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-17T19:23:04+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-17T19:25:59+00:00",
+      "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-17T19:36:59+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
-  "at": "2026-10-17T18:48:20+00:00"
+  "at": "2026-10-17T19:36:59+00:00"
 }

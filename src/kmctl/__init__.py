@@ -535,7 +535,10 @@ def briefing(
         bool,
         typer.Option(
             "--json",
-            help="Print one JSON object (routing, state, rules, skills), for scripts.",
+            help=(
+                "Print one JSON object (routing, setup, state, rules, skills), "
+                "for scripts."
+            ),
         ),
     ] = False,
     output_format: Annotated[

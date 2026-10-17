@@ -32,7 +32,7 @@ wording varies from run to run, so yours will not match word for word.
 ### 1. Get the agent
 
 ```
-git clone https://github.com/JasperHG90/Knowledge-management kmctl
+git clone https://github.com/JasperHG90/kmctl kmctl
 cd kmctl
 ```
 

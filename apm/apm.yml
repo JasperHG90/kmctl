@@ -1,5 +1,5 @@
 # kmctl's APM package (ADR 0014, ADR 0020). A repository's apm.yml names it as
-# {git: https://github.com/JasperHG90/Knowledge-management.git, path: apm, ref: vVERSION}
+# {git: https://github.com/JasperHG90/kmctl.git, path: apm, ref: vVERSION}
 # and apm install brings, for every harness, the skills, the audit agent (Claude
 # Code only: APM writes no agents for Antigravity) and the okf skills, plus
 # okf's MCP server below; ./claude and ./antigravity add each harness's rules

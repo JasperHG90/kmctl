@@ -91,7 +91,7 @@ def test_the_how_to_has_an_upgrade_step() -> None:
 
     assert len(upgrade) == 1
     assert (
-        "uv tool install --force git+https://github.com/JasperHG90/Knowledge-management@v"
+        "uv tool install --force git+https://github.com/JasperHG90/kmctl@v"
         in upgrade[0]
     )
     assert "apm install" in upgrade[0] and "kmctl plugin patch" in upgrade[0]
