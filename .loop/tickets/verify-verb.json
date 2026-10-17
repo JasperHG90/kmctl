@@ -1,14 +1,50 @@
 {
   "schema_version": "1.0",
   "slug": "verify-verb",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "54a2cda2cc0e97300ce4a3648d524c64ed12208f446f0ca83d72768b79f9989f",
+    "tree": "32432208c91ccb43a4fb4d9f8d3fe55f582837f7",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "blocking",
+        "judgement": null,
+        "paths": [
+          "src/kmctl/verify.py",
+          "tests/test_verify.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f2",
+        "outcome": "sent-back",
+        "by": "blocking",
+        "judgement": null,
+        "paths": [
+          "src/kmctl/verify.py",
+          "tests/test_verify.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f3",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": null,
+        "paths": [
+          "docs/reference/commands.md"
+        ]
+      }
+    ],
+    "at": "2026-10-17T21:44:12+00:00"
+  },
   "ask": "j-20261017T211746+0000-1db5581f",
   "split": "j-20261017T212537+0000-1785db29",
   "split_plan_hash": "9b29ec64bb3d2b6ce4b3e78097e04021104bc4292fef0630c8e289f35e16d3a7",
@@ -197,8 +233,14 @@
       "to": "fixing",
       "at": "2026-10-17T21:40:07+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-17T21:44:12+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
-  "at": "2026-10-17T21:44:03+00:00"
+  "at": "2026-10-17T21:44:12+00:00"
 }
