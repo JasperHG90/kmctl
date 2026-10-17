@@ -5,3 +5,4 @@
 {"at": "2026-10-17T16:27:32+00:00", "dispatched_at": "2026-10-17T16:26:26+00:00", "kind": "round-close", "n": 1, "outcome": "pass", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-10-17T16:27:19+00:00"}}
 {"at": "2026-10-17T16:27:37+00:00", "by": "advance", "from": "planning", "kind": "transition", "schema_version": "1.0", "to": "ready"}
 {"at": "2026-10-17T16:27:38+00:00", "grant": "g3", "hash": "4696344537dd8e17a2d54dde631097af21ce9f7f9554895ab330132df73b10fd", "kind": "signoff", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/claude", "step": "eval-sign"}
+{"at": "2026-10-17T16:27:41+00:00", "by": "advance", "from": "ready", "kind": "transition", "schema_version": "1.0", "to": "building"}
