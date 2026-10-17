@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "CRLF files came back LF",
+      "anchor": "src/kmctl/verify.py:171",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "an id with a leading './' still verifies a handoff, because the handoff check tests the raw string while _target normalises the path",
+      "anchor": "src/kmctl/verify.py:156",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "commands.md refusal list and output line incomplete",
+      "anchor": "docs/reference/commands.md",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "open",
+      "claim": "a comment on the verified line gets a refusal with the wrong fix (deferred to ticket verify-verb-reviewer-f4)",
+      "anchor": "src/kmctl/verify.py:93",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f5",
+      "disposition": "open",
+      "claim": "an absolute id crashes with a ValueError traceback instead of a refusal, because the error message calls relative_to(root) on a path outside root",
+      "anchor": "src/kmctl/verify.py:52",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "54a2cda2cc0e97300ce4a3648d524c64ed12208f446f0ca83d72768b79f9989f",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
+  "at": "2026-10-17T21:47:17+00:00"
+}
