@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "antigravity-rules",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 3,
   "review_rounds": 2,
@@ -39,7 +39,7 @@
   "split": "j-20261017T063443+0000-3ca16a8b",
   "split_plan_hash": "be6e2fef921f38d22e7a932325f9b7e3a3e0a7616ece0c2a281ed034206472d9",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "deb5becfc72a75ecf9ba84504109aea7a36a716d",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -167,8 +167,14 @@
       "to": "verifying",
       "at": "2026-10-17T06:56:03+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-17T06:59:53+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T06:59:45+00:00"
+  "at": "2026-10-17T06:59:53+00:00"
 }
