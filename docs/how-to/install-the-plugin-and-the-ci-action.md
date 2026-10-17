@@ -65,8 +65,9 @@ dependencies:
 ```
 
 In an existing `apm.yml`, add only the entry under `dependencies.apm`. If
-it has an `allowExecutables` block, allow kmctl's package there; otherwise
-APM installs no hook or MCP server from it. Run `kmctl plugin patch` before
+it limits which packages may run hooks and MCP servers (an `executables:`
+block, or the older `allowExecutables:`), `apm approve --pending` lists
+kmctl's package; approve it with `apm approve`. Run `kmctl plugin patch` before
 adding the entry and it refuses, naming the exact entry for your kmctl.
 
 Then, from the repository root, install the package with APM and run

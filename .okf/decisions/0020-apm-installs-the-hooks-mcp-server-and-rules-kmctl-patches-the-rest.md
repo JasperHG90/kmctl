@@ -85,8 +85,8 @@ What APM cannot do yet, and what kmctl does meanwhile:
 | APM writes no agents for Antigravity (APM issue #2990, accepted, unreleased; it will not translate tool names either). | kmctl writes `.agents/plugins/kmctl/` with `plugin.json` and the agents translated from Claude Code's format. | APM ships agents for Antigravity and kmctl's package can ship an Antigravity-format agent file in `apm/antigravity/`. |
 | APM writes okf's Antigravity Stop hook as `bash ".agents/hooks/okf-skills/hooks/okf-stop-check.sh"`, a path from the repository root, but agy runs hooks in `.agents/`; okf also prints Claude Code's `"block"`. No APM issue is filed. | kmctl takes that handler out of `.agents/hooks.json`; the package's wrapper runs okf's check instead (ADR 0018). | APM writes Antigravity hook paths relative to `.agents/`, or okf ships target-specific hook files with agy's output. |
 | `apm uninstall -g` leaves `okf-bundle` in the user `.claude.json` (spike:apm-hands-back/5); at project scope uninstall removes it. | None; the install how-to gives `claude mcp remove okf-bundle --scope user`. | APM removes a user-scope MCP server on uninstall. |
-| A consumer whose `apm.yml` has an `allowExecutables` block gets no hook or MCP server from a package it does not allow. | None; the how-to says to allow kmctl's package. | Not an APM bug: the consumer's choice. |
-| A user with their own okf server under another name now gets `okf-bundle` as well; kmctl used to add none then. | None; doctor passes either way. | APM can skip a server another entry already provides. |
+| A consumer whose `apm.yml` limits executables (an `executables:` block, or the deprecated `allowExecutables:`) gets no hook or MCP server from a package it has not approved. | None; the docs say to run `apm approve --pending` and approve kmctl's package. | Not an APM bug: the consumer's choice. |
+| A user with their own okf server under another name now gets `okf-bundle` as well; kmctl used to add none then. | None; the README warns to uninstall the okf plugin (`okf@scaccogatto`), and doctor passes either way. | APM can skip a server another entry already provides. |
 
 Rejected:
 

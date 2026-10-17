@@ -77,9 +77,22 @@ dependencies:
 ```
 
 Set `ref` to `v` and your kmctl version (`kmctl --version` prints it), so
-the package matches the CLI. If `apm.yml` has an `allowExecutables` block,
-allow kmctl's package there, or APM installs no hook or MCP server from it.
-Commit `apm.yml` and `apm.lock.yaml`.
+the package matches the CLI. Commit `apm.yml` and `apm.lock.yaml`.
+
+APM installs the package's hooks and MCP server unless `apm.yml` limits
+which packages may run them, with an `executables:` block (or the older
+`allowExecutables:`). If yours does, `apm approve --pending` lists kmctl's
+package; approve it with `apm approve`.
+
+> **Warning: uninstall the okf plugin first.** kmctl's package brings okf's
+> skills and its MCP server, `okf-bundle`. If you also have the okf plugin
+> for Claude Code (`okf@scaccogatto`), you get okf twice: its skills and a
+> second okf MCP server. Remove it at each scope it is installed at:
+>
+> ```
+> claude plugin uninstall okf@scaccogatto --scope user
+> claude plugin uninstall okf@scaccogatto --scope project
+> ```
 
 ### Claude Code
 

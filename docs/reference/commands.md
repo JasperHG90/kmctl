@@ -387,8 +387,10 @@ okf's MCP server runs okf's `okf_mcp.py` at the pinned okf-skills commit
 with `uv run`, on the nearest `.okf/` folder above where it starts, so it
 needs `uv` on PATH. A server of your own that runs `okf_mcp.py` under
 another name stays, and `okf-bundle` is added beside it. When `apm.yml`
-has an `allowExecutables` block, APM writes the hooks and the MCP server
-only for packages it allows, so allow kmctl's package there.
+limits which packages may run hooks and MCP servers (an `executables:`
+block, or the older `allowExecutables:`), APM writes them only for packages
+it allows: `apm approve --pending` lists kmctl's package, and `apm approve`
+allows it.
 
 `apm uninstall NAME` (with `-g` at user scope) removes all of it, where
 `NAME` is `HOST/OWNER/REPO/apm` from the `git:` URL of kmctl's entry, for

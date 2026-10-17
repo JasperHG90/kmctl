@@ -15,9 +15,10 @@ in mind:
 
 - **The kmctl CLI.** Most of the skills and the hook run `kmctl` commands, so
   you install the CLI yourself, in step 1, at the same tag as the package.
-- **`allowExecutables`.** If your `apm.yml` has an `allowExecutables` block,
-  allow kmctl's package there; otherwise APM installs no hook or MCP server
-  from it.
+- **Approval.** APM installs the hooks and MCP server unless your `apm.yml`
+  limits which packages may run them (an `executables:` block, or the older
+  `allowExecutables:`). If it does, `apm approve --pending` lists kmctl's
+  package; approve it with `apm approve`.
 - **Antigravity.** APM does not install the agents for Antigravity yet, and
   writes okf's Antigravity Stop hook with a path that fails.
   `kmctl plugin patch` adds the agents and removes that hook.
@@ -104,7 +105,7 @@ kmctl briefing
 It prints the same briefing the hook prints. If it says `kmctl: command not
 found`, go back to step 1. `kmctl doctor` checks the hook (`claude.hook`)
 and okf's MCP server (`claude.okf-mcp`) along with the rest; when one is
-missing, check `allowExecutables` in `apm.yml`.
+missing, check whether `apm approve --pending` lists kmctl's package.
 
 To upgrade, install the CLI at the new tag with `uv tool install --force`,
 set `ref` to the same tag, and run `apm install` and `kmctl plugin patch`
