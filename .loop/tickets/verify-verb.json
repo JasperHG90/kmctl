@@ -1,19 +1,13 @@
 {
   "schema_version": "1.0",
   "slug": "verify-verb",
-  "stage": "blocked",
+  "stage": "ready",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
-  "blocker": {
-    "code": "finding-open-two-rounds",
-    "message": "finding reviewer:f2 stayed open across two rounds",
-    "plan_hash": "9b29ec64bb3d2b6ce4b3e78097e04021104bc4292fef0630c8e289f35e16d3a7",
-    "at": "2026-10-17T21:47:34+00:00",
-    "resign_eval": false
-  },
+  "blocker": null,
   "fix": {
     "round": 1,
     "fingerprint": "54a2cda2cc0e97300ce4a3648d524c64ed12208f446f0ca83d72768b79f9989f",
@@ -251,8 +245,14 @@
       "to": "blocked",
       "at": "2026-10-17T21:47:34+00:00",
       "by": "review close"
+    },
+    {
+      "from": "blocked",
+      "to": "ready",
+      "at": "2026-10-17T21:48:07+00:00",
+      "by": "unblock"
     }
   ],
   "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
-  "at": "2026-10-17T21:47:34+00:00"
+  "at": "2026-10-17T21:48:07+00:00"
 }
