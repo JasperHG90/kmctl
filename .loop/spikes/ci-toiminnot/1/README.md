@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017
-  at: '2026-10-17T17:57:53+00:00'
+  at: '2026-10-17T17:58:50+00:00'
 slug: ci-toiminnot
 n: 1
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike ci-toiminnot/1
@@ -24,7 +24,7 @@ The command exited 0:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note ci-toiminnot 1`.
+Holds. In a fresh clone with an empty HOME, no git identity and only uv, uvx, git and system tools on PATH, `pre-commit==4.2.0 run --show-diff-on-failure --files $(git ls-files)` (what toiminnot prek action v1.3.0 runs) ran both local hooks; both passed, exit 0, tree clean. The hooks call `uv run`, so the job must put uv on PATH before the action: the action installs only Python and pre-commit.
 
 ## Files
 
