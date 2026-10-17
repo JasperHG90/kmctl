@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "antigravity-okf-stop-hook-reviewer-f4",
-  "stage": "building",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 0,
@@ -100,8 +100,14 @@
       "to": "building",
       "at": "2026-10-17T08:09:31+00:00",
       "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-10-17T08:15:41+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T08:15:20+00:00"
+  "at": "2026-10-17T08:15:41+00:00"
 }
