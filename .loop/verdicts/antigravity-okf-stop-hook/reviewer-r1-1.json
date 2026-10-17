@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The new detail string went into the Claude check, not the Antigravity one. claude.hook now says it holds \"the SessionStart hook and okf's Stop check this kmctl writes\", which is false because kmctl writes no Stop hook for Claude Code. antigravity.hook (doctor.py:486) still says it holds only \"the SessionStart hook\". The sample doctor output in the install how-to (lines 359 and 366) no longer matches either.",
+      "anchor": "src/kmctl/doctor.py:395",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "drop_apm_okf_stop sets `changed` once for the whole file and then tests `if changed and not events`. Once any okf handler is removed, every later named hook that was already empty gets deleted too. Running it on {\"apm\":{\"Stop\":[okf]},\"keep\":{}} leaves no \"keep\" key, which breaks r2's \"keeps every other hook and key\". Track the change per named hook instead, and add a test case for a hook that was empty to begin with.",
+      "anchor": "src/kmctl/antigravity.py:284",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "Row r1's command (`-k okf_stop`) does not run test_plugin_folder_hooks_hold_one_flat_sessionstart_handler, the only test that checks the plugin folder's hooks.json has exactly the two named hooks with flat handlers. So r1's \"a hook is missing or extra, the handler is not flat\" goes unchecked by r1. The full test gate does cover it, and that test's name now describes only one of the two hooks. Rename it, or add an okf_stop test for the structure.",
+      "anchor": "tests/test_antigravity.py:343",
+      "category": "test-mismatch",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "10ed0192e608a4814f1d9a4056e987d8ed5fec79ed09e910781723d57fa1f8af",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
+  "at": "2026-10-17T07:29:06+00:00"
+}

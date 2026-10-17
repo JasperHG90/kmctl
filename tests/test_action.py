@@ -161,7 +161,7 @@ OLD_AUDIT = (
     "action/knowledge-audit.sh",
     "action/audit-batches.py",
     "action/audit-report.py",
-    "action/hermes",
+    "action/hermes/kmctl-read/__init__.py",
 )
 
 
