@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "Unverified docs pages had no baseline for \"a listed source changed\".",
+      "anchor": "src/kmctl/review_due.py:177",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r6"
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "The pre-commit hook test could not run offline and selected no test under the integration marker.",
+      "anchor": null,
+      "category": "test-mismatch",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r11"
+    },
+    {
+      "id": "p3",
+      "disposition": "resolved",
+      "claim": "A missing folder index as an error turns downstream CI red on upgrade, against the reason for the root warning.",
+      "anchor": null,
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r2"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "1b4fdba0cc6f355b2eb529fe82544b1a22ed40eda3e2d9d5caa683ecbe10b1aa"
+  },
+  "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
+  "at": "2026-10-17T16:47:31+00:00"
+}
