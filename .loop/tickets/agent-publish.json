@@ -19,7 +19,9 @@
   "archived": false,
   "worktree": "/home/vscode/kmctl.worktrees/agent-publish",
   "branch": "loop/agent-publish",
-  "stamps": [],
+  "stamps": [
+    "25f04f65ae90ac4c8e03fdaa021222322fa03168eab2dcd8c125f6563446148a"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude",
     "hash": "5ae28a63c22ef8a6b713c712b41f57e96bebcd1265e4ffff917ca2e5dd8bfe56",
@@ -186,5 +188,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T07:46:03+00:00"
+  "at": "2026-10-17T07:52:33+00:00"
 }
