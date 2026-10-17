@@ -322,7 +322,11 @@ def test_audit_choices_refuse_an_unknown_name(
     assert "invalid choice: 'nope'" in capsys.readouterr().err
 
 
-def test_audit_choices_are_in_help(capsys: pytest.CaptureFixture[str]) -> None:
+def test_audit_choices_are_in_help(
+    capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # argparse wraps at hyphens, so a narrow terminal splits okf-vs-code.
+    monkeypatch.setenv("COLUMNS", "500")
     with pytest.raises(SystemExit):
         agent.main(["run", "--help"])
 

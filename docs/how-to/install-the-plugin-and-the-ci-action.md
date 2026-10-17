@@ -297,8 +297,10 @@ Publish mode takes three more:
 
 1. Add a repository secret named `AUDIT_API_KEY` with your provider's API
    key. Skip this for an endpoint that takes no key.
-2. Create `.github/workflows/knowledge-audit.yml`. Change `model` and
-   `base_url` to your provider's:
+2. Create `.github/workflows/knowledge-audit.yml`. It uses DeepSeek V4.1
+   Flash on [Ollama Cloud](https://ollama.com/library/deepseek-v4.1-flash),
+   so `AUDIT_API_KEY` holds an Ollama API key; change `model` and
+   `base_url` for another provider:
 
    ```yaml
    name: knowledge audit
@@ -329,8 +331,8 @@ Publish mode takes three more:
              AUDIT_API_KEY: ${{ secrets.AUDIT_API_KEY }}
            with:
              mode: audit
-             base_url: https://openrouter.ai/api/v1
-             model: qwen/qwen3-coder
+             base_url: https://ollama.com/v1
+             model: deepseek-v4.1-flash
              api_key_env: AUDIT_API_KEY
 
      # A fresh runner that gets only the report, so nothing the agent
@@ -373,9 +375,9 @@ and under the publish step's `with:`, with `title` in the matrix:
 ```
 
 This repository's own workflow, described below, runs all three this way.
-The audits were tested with Gemini 3.8 Flash on copies of this repository
-with false claims planted in them, and caught each one; a weaker model may
-miss some.
+The audits were tested with DeepSeek V4.1 Flash on Ollama Cloud and with
+Gemini 3.8 Flash, on copies of this repository with false claims planted
+in them, and both caught each one; a weaker model may miss some.
 
 **Your own task.** To check the repository against something else, such as
 your enterprise architecture docs, fetch them in a step before the action's,
@@ -400,12 +402,14 @@ with that audit's issue title. Read it to see exactly what
 the audit runs. `uv run --script action/agent.py publish --help` lists the
 publish options.
 
-**Ollama.** Set the model's context size high enough for the audit, with
-`PARAMETER num_ctx 65536` in a Modelfile or `OLLAMA_CONTEXT_LENGTH=65536` for
-the server. Ollama serves a smaller context than the model reports unless you
-set it, so a long conversation is cut without warning. A GitHub-hosted runner
-cannot reach Ollama on your own machine; use a self-hosted runner or a URL
-the runner can reach.
+**Ollama.** Ollama Cloud, as in the example, needs only the API key: its
+OpenAI-compatible endpoint is `https://ollama.com/v1`, and the model name has
+no `:cloud` suffix. For a server of your own, set the model's context size
+high enough for the audit, with `PARAMETER num_ctx 65536` in a Modelfile or
+`OLLAMA_CONTEXT_LENGTH=65536` for the server. Ollama serves a smaller context
+than the model reports unless you set it, so a long conversation is cut
+without warning. A GitHub-hosted runner cannot reach Ollama on your own
+machine; use a self-hosted runner or a URL the runner can reach.
 
 Keep the `on:` block as it is. Audit mode runs only on `workflow_dispatch`
 or `schedule`, since on a pull request code from the pull request would run

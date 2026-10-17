@@ -34,7 +34,8 @@ jobs:
       # So the agent can run kmctl and its --help.
       - name: Install kmctl from this checkout
         run: uv tool install .
-      # Any provider works. Change base_url and model to your own endpoint
+      # DeepSeek V4.1 Flash on Ollama Cloud: AUDIT_API_KEY holds an Ollama API
+      # key. Any provider works. Change base_url and model to your own endpoint
       # (Ollama, Bifrost, OpenRouter, a vendor's API) and put its key in the
       # AUDIT_API_KEY secret, or drop --base-url and name a PydanticAI provider,
       # such as --model openai:gpt-5 with OPENAI_API_KEY set. A weaker model
@@ -47,8 +48,8 @@ jobs:
           AUDIT_API_KEY: ${{ secrets.AUDIT_API_KEY }}
         run: >-
           uv run --script action/agent.py run
-          --model qwen/qwen3-coder
-          --base-url https://openrouter.ai/api/v1
+          --model deepseek-v4.1-flash
+          --base-url https://ollama.com/v1
           --api-key-env AUDIT_API_KEY
           --audit ${{ matrix.audit }}
           --timeout 30m
