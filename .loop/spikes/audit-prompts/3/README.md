@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017
-  at: '2026-10-17T17:37:13+00:00'
+  at: '2026-10-17T17:37:21+00:00'
 slug: audit-prompts
 n: 3
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike audit-prompts/3
@@ -28,7 +28,7 @@ print(json.dumps(hit,indent=1)); sys.exit(0 if hit else 1)
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note audit-prompts 3`.
+Exit 0: spike 1's live docs-vs-code report has the planted flag rename (docs/reference/commands.md:262, --by renamed --with) as a high finding, contradicted by src/kmctl/__init__.py:623-628, the source lines that define the option. The evidence check did not stop the docs audit catching CLI drift: it cites source, not --help output. Settles risk 2.
 
 ## Files
 
