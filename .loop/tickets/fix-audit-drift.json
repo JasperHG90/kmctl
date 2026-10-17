@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "fix-audit-drift",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
@@ -39,7 +39,7 @@
   "split": "j-20261017T184632+0000-caf681da",
   "split_plan_hash": "29ccfd4b6c5788f6cf9c98532b45e1f81fbd4bd436331141312e414d5a371686",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "ed5faadbae85f3a600829a6e4e9d47f0dfd9ce52",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -153,8 +153,14 @@
       "to": "verifying",
       "at": "2026-10-17T19:25:59+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-17T19:36:59+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
-  "at": "2026-10-17T19:36:52+00:00"
+  "at": "2026-10-17T19:36:59+00:00"
 }
