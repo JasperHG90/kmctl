@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "doctor's files checks missed rules APM locks under sub-packages",
+      "anchor": "src/kmctl/plugin.py:647",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "drop_old_hook dropped a user's hook sharing a group with kmctl's",
+      "anchor": "src/kmctl/plugin.py:838",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "uninstall test did not check MCP and hooks were removed",
+      "anchor": "tests/test_doctor.py",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "resolved",
+      "claim": "r1 selector missed the shared-package and Claude-rule tests",
+      "anchor": "tests/test_doctor.py",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f5",
+      "disposition": "resolved",
+      "claim": "install order and wording disagreed with the code",
+      "anchor": "src/kmctl/__init__.py",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f6",
+      "disposition": "resolved",
+      "claim": "doctor help pointed antigravity.hook at the plugin folder's hooks.json and said okf-mcp compares with what this kmctl declares",
+      "anchor": "src/kmctl/__init__.py:988",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "1c5f288ffe124f181217239c15952e68598185f64a3f2f235c6455793e8594ea",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
+  "at": "2026-10-17T15:19:00+00:00"
+}
