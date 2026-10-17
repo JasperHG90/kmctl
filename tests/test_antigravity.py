@@ -23,7 +23,7 @@ from pathlib import Path
 
 import pytest
 import yaml
-from conftest import apm_install
+from conftest import apm_install, plain
 from fixtures.fake_tools import FakeTools
 from jsonschema import Draft202012Validator
 from typer.testing import CliRunner, Result
@@ -505,7 +505,8 @@ def test_briefing_format_antigravity_with_json_is_refused(repo: Path) -> None:
     )
 
     assert result.exit_code == 2
-    assert "--json" in result.output and "--format" in result.output
+    output = plain(result.output)
+    assert "--json" in output and "--format" in output
 
 
 # r4 and I1: the hook never blocks ---------------------------------------------
