@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "At the harness question, an answer that is a digit character but not a decimal number, such as '²', is asked again naming the accepted values, and the next valid answer installs; the command never ends with a traceback.",
+      "fails_when": "the answer '²' ends the command with an exception or a nonzero exit, or is not asked again",
+      "command": "uv run pytest tests/test_plugin.py -k prompt_non_decimal -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "The other tests still pass.",
+      "fails_when": "uv run pytest or uv run pytest -m integration fails",
+      "command": "uv run pytest -q -m \"not integration or integration\""
+    }
+  ]
+}
