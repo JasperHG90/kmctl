@@ -1,0 +1,6 @@
+# kmctl's rules and SessionStart hook for Claude Code (ADR 0020).
+name: kmctl-claude
+version: 0.3.0
+description: kmctl's knowledge rules and session briefing hook for Claude Code.
+targets:
+  - claude

@@ -18,6 +18,7 @@ import os
 import re
 import shutil
 import socket
+import subprocess
 from collections.abc import Callable
 from dataclasses import dataclass
 from importlib.metadata import version
@@ -113,11 +114,25 @@ def _lock(harnesses: tuple[str, ...], ref: str = REF) -> str:
         "virtual_path": "apm",
     }
     okf = {"repo_url": "scaccogatto/okf-skills", "name": "okf", "resolved_ref": "a8b9"}
+    files, folders = _package(harnesses)
+    # APM lists each sub-package's rules under its own entry (spike in review
+    # round 1 of apm-hands-back): kmctl-claude at apm/claude, and so on.
+    shared = {p: t for p, t in files.items() if "/rules/" not in p}
+    parts = [(kmctl, (shared, folders))]
+    for harness in harnesses:
+        sub = {
+            **kmctl,
+            "name": f"kmctl-{harness}",
+            "virtual_path": f"apm/{harness}",
+            "resolved_by": kmctl["repo_url"],
+        }
+        rules = {
+            p: t for p, t in files.items() if p.startswith(f"{FOLDERS[harness]}/rules/")
+        }
+        parts.append((sub, (rules, [])))
+    parts.append((okf, _okf(harnesses)))
     deps = []
-    for entry, (files, folders) in (
-        (kmctl, _package(harnesses)),
-        (okf, _okf(harnesses)),
-    ):
+    for entry, (files, folders) in parts:
         deps.append(
             {
                 **entry,
@@ -131,13 +146,36 @@ def _lock(harnesses: tuple[str, ...], ref: str = REF) -> str:
 def _apm_writes(harnesses: tuple[str, ...], scope: str) -> dict[str, str]:
     """What the fake ``apm install`` writes, relative to where APM runs."""
     lock = ".apm/apm.lock.yaml" if scope == "user" else "apm.lock.yaml"
-    return {
+    out = {
         **_package(harnesses)[0],
         **_okf(harnesses)[0],
         lock: _lock(harnesses),
         f"{OKF_AGENTS}/bundle-weaver.md": AGENT.format(name="bundle-weaver"),
         f"{OKF_AGENTS}/event-analyzer.md": AGENT.format(name="event-analyzer"),
     }
+    server = {"type": "stdio", **plugin.okf_mcp_server()}
+    if "claude" in harnesses:
+        # As APM 0.33.0 writes kmctl's package (spike:apm-hands-back/1, /5).
+        group = {"matcher": "*", "hooks": [plugin.hook_entry()]}
+        out[".claude/settings.json"] = json.dumps({"hooks": {"SessionStart": [group]}})
+        out[".claude/apm-hooks.json"] = json.dumps(
+            {"SessionStart": [{**group, "_apm_source": "kmctl/claude"}]}
+        )
+        mcp = ".claude/.claude.json" if scope == "user" else ".mcp.json"
+        out[mcp] = json.dumps({"mcpServers": {plugin.MCP_NAME: server}})
+    if "antigravity" in harnesses:
+        hook = {
+            event: [{"type": "command", "command": command, "timeout": 10}]
+            for event, command in (
+                ("SessionStart", antigravity.HOOK_COMMAND),
+                ("Stop", antigravity.STOP_COMMAND),
+            )
+        }
+        out[".agents/hooks.json"] = json.dumps({"apm": hook})
+        out[".agents/mcp_config.json"] = json.dumps(
+            {"mcpServers": {plugin.MCP_NAME: server}}
+        )
+    return out
 
 
 @dataclass(frozen=True)
@@ -322,7 +360,7 @@ BREAKS: dict[str, tuple[Callable[[Path], None], str, str, str]] = {
     "hook-changed": (
         lambda r: _edit(r / ".claude/settings.json", '"timeout": 10', '"timeout": 99'),
         "claude.hook",
-        "is not the one this kmctl writes",
+        "is not the one kmctl's package ships",
         "run kmctl plugin update --harness claude",
     ),
     "plugin-file-missing": (
@@ -350,16 +388,16 @@ BREAKS: dict[str, tuple[Callable[[Path], None], str, str, str]] = {
         AG_FIX,
     ),
     "antigravity-hook": (
-        lambda r: (r / PLUGIN / "hooks.json").write_text("{}\n"),
+        lambda r: (r / ".agents" / "hooks.json").write_text("{}\n"),
         "antigravity.hook",
-        f"{PLUGIN}/hooks.json",
-        AG_FIX,
+        ".agents/hooks.json lacks kmctl's SessionStart hook",
+        antigravity.APM_FIX,
     ),
     "antigravity-mcp": (
-        lambda r: (r / PLUGIN / "mcp_config.json").unlink(),
+        lambda r: (r / ".agents" / "mcp_config.json").unlink(),
         "antigravity.okf-mcp",
-        f"{PLUGIN}/mcp_config.json is missing",
-        AG_FIX,
+        ".agents/mcp_config.json is missing okf's MCP server",
+        antigravity.APM_FIX,
     ),
     "apm-modules": (
         lambda r: shutil.rmtree(r / "apm_modules"),
@@ -376,7 +414,7 @@ BREAKS: dict[str, tuple[Callable[[Path], None], str, str, str]] = {
     "mcp-changed": (
         lambda r: _edit(r / ".mcp.json", '"sh"', '"bash"'),
         "claude.okf-mcp",
-        "okf-bundle in .mcp.json is not the one this kmctl writes",
+        "okf-bundle in .mcp.json is not the one kmctl's package declares",
         "run kmctl plugin update --harness claude",
     ),
     "lock": (
@@ -996,37 +1034,87 @@ def test_doctor_after_a_real_install_exits_zero(
     assert antigravity.plugin_problems(consumer) == []
 
 
-# antigravity-rules r3: kmctl's rules live in the plugin folder -------------------
+@pytest.mark.integration
+def test_hands_back_real_install_over_an_old_one_then_uninstall(
+    consumer: Path, served: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Over a consumer an older kmctl set up, APM delivers one recorded hook and okf-bundle; uninstall leaves only kmctl's plugin folder."""
+    fakes = FakeTools(tmp_path / "fakes", tools=("claude",))
+    monkeypatch.setenv("PATH", f"{fakes.bin}:{os.environ['PATH']}")
+    settings = consumer / ".claude" / "settings.json"
+    settings.parent.mkdir(parents=True)
+    settings.write_text(
+        json.dumps({"hooks": {"SessionStart": [{"hooks": [plugin.hook_entry()]}]}})
+    )
+    stale = {
+        "command": "sh",
+        "args": ["-c", "exec uv run https://example.invalid/old.py"],
+    }
+    (consumer / ".mcp.json").write_text(
+        json.dumps({"mcpServers": {"okf-bundle": stale}})
+    )
+
+    install = _kmctl(
+        "plugin", "install", "--harness", "claude,antigravity", "--source", served
+    )
+
+    assert install.exit_code == 0, install.output
+    assert len(plugin.kmctl_hooks(settings)) == 1
+    recorded = json.loads((consumer / ".claude" / "apm-hooks.json").read_text())
+    assert any(
+        h["command"] == plugin.HOOK_COMMAND
+        for g in recorded["SessionStart"]
+        for h in g["hooks"]
+    )
+    lock = yaml.safe_load((consumer / "apm.lock.yaml").read_text())
+    assert plugin.MCP_NAME in lock["mcp_servers"]
+    assert plugin.okf_server_current(
+        json.loads((consumer / ".mcp.json").read_text())["mcpServers"]["okf-bundle"]
+    )
+    assert antigravity.hook_present(consumer)
+    assert antigravity.mcp_present(consumer)
+
+    entry = plugin.uninstall_name({"git": served, "path": "apm"})
+    proc = subprocess.run(
+        ["uvx", "--from", plugin.APM_CLI, "apm", "uninstall", entry],
+        cwd=consumer,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert proc.returncode == 0, proc.stderr + proc.stdout
+    left = sorted(
+        p.relative_to(consumer).as_posix()
+        for top in (".claude", ".agents")
+        for p in (consumer / top).rglob("*")
+        if p.is_file()
+    )
+    kept = [p for p in left if not p.startswith(".agents/plugins/kmctl/")]
+    assert plugin.kmctl_hooks(settings) == []
+    hooks = (consumer / ".agents" / "hooks.json").read_text()
+    assert "kmctl briefing" not in hooks and "executionNum" not in hooks
+    for mcp in (consumer / ".mcp.json", consumer / ".agents" / "mcp_config.json"):
+        assert plugin.MCP_NAME not in (mcp.read_text() if mcp.exists() else ""), mcp
+    assert all(
+        p in (".claude/settings.json", ".agents/hooks.json", ".agents/mcp_config.json")
+        for p in kept
+    ), kept
 
 
-def test_antigravity_rules_absent_from_agents_rules_pass(complete: Setup) -> None:
-    assert not (complete.repo / ".agents/rules/okf-bundle.md").exists()
+# apm-hands-back r5: kmctl's rules are APM's again ---------------------------------
+
+
+def test_antigravity_files_cover_kmctls_rules_again(complete: Setup) -> None:
+    rule = complete.repo / ".agents" / "rules" / "okf-bundle.md"
+    assert rule.is_file()
+    rule.unlink()
 
     _, data = _doctor()
 
-    assert _by_id(data)["antigravity.files"]["ok"], data
-
-
-@pytest.mark.parametrize(
-    ("change", "said"),
-    [
-        (lambda f: (f / "rules/okf-bundle.md").unlink(), "is missing"),
-        (lambda f: (f / "rules/okf-bundle.md").write_text("e\n"), "differs"),
-        (lambda f: (f / "rules/extra.md").write_text("e\n"), "is not one kmctl"),
-    ],
-)
-def test_antigravity_rule_changes_fail_the_plugin_check(
-    complete: Setup, change: Callable[[Path], object], said: str
-) -> None:
-    change(complete.repo / ".agents" / "plugins" / "kmctl")
-
-    result, data = _doctor()
-
-    check = _by_id(data)["antigravity.plugin"]
+    check = _by_id(data)["antigravity.files"]
     assert not check["ok"]
-    assert "rules/" in check["detail"] and said in check["detail"]
-    assert check["fix"] == AG_FIX
-    assert result.exit_code == 1
+    assert ".agents/rules/okf-bundle.md is missing" in check["detail"]
 
 
 # antigravity-okf-stop-hook r3: APM's okf Stop handler and kmctl's hooks -----------
@@ -1035,17 +1123,7 @@ def test_antigravity_rule_changes_fail_the_plugin_check(
 def test_okf_stop_apm_handler_fails_its_check(complete: Setup) -> None:
     path = complete.repo / ".agents" / "hooks.json"
     path.write_text(
-        json.dumps(
-            {
-                "apm": {
-                    "Stop": [
-                        {
-                            "command": "bash .agents/hooks/okf-skills/hooks/okf-stop-check.sh"
-                        }
-                    ]
-                }
-            }
-        )
+        json.dumps({"apm": {"Stop": [{"command": antigravity.APM_OKF_STOP}]}})
     )
 
     result, data = _doctor()
@@ -1069,9 +1147,9 @@ def test_okf_stop_apm_hooks_without_okf_pass(complete: Setup) -> None:
 def test_okf_stop_missing_from_plugin_hooks_fails_antigravity_hook(
     complete: Setup,
 ) -> None:
-    path = complete.repo / ".agents" / "plugins" / "kmctl" / "hooks.json"
+    path = complete.repo / ".agents" / "hooks.json"
     data = json.loads(path.read_text())
-    del data["kmctl-okf-stop"]
+    del data["apm"]["Stop"]
     path.write_text(json.dumps(data, indent=2) + "\n")
 
     _, checks = _doctor()
@@ -1125,5 +1203,5 @@ def test_apm_hooks_docs_show_the_check_and_the_note() -> None:
         for line in how_to.splitlines()
         if line.startswith("note: wrote .agents/plugins/kmctl/")
     )
-    assert "okf's Stop check" in note
+    assert "the agents" in note
     assert "not a JSON object" in COMMANDS.read_text()

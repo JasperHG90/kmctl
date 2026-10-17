@@ -78,3 +78,10 @@ Rejected:
   hook print `{}`, which is safe but silent.
 - A bare `apm install` puts APM's handler back until the next
   `kmctl plugin install`, and doctor says so.
+
+### Amended, 2026-10-17
+
+[ADR 0020](0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md):
+kmctl's package now ships the SessionStart hooks, okf's MCP server and the
+rules for each harness, and APM writes them; kmctl writes only the
+Antigravity agents and removes APM's broken okf Stop handler.

@@ -1,12 +1,13 @@
-"""Install kmctl's APM package for an agent harness, and the pieces APM leaves out (ADR 0014).
+"""Install kmctl's APM package for an agent harness, and the pieces APM leaves out (ADR 0014, ADR 0020).
 
-``install`` writes the kmctl entry into the repository's apm.yml, runs
-``apm install`` at the version pinned in ``APM_CLI``, and then writes what the
-package cannot carry: for Claude Code, the SessionStart hook in settings.json
-and okf's MCP server; for Antigravity, the plugin folder ``kmctl.antigravity``
-builds (ADR 0015). Before that it moves two kinds of older install over:
-the claude plugin ``kmctl@kmctl`` (ADR 0003) and an apm.yml entry naming the
-package another way (ADR 0013).
+``install`` writes the kmctl entry into the repository's apm.yml and runs
+``apm install`` at the version pinned in ``APM_CLI``. The package carries the
+skills, rules, SessionStart hooks and okf's MCP server for each harness, so
+kmctl adds only what APM cannot install yet: for Antigravity, the plugin
+folder of agents ``kmctl.antigravity`` builds, and the removal of APM's broken
+okf Stop handler. Before that it moves older installs over: the claude plugin
+``kmctl@kmctl`` (ADR 0003), an apm.yml entry naming the package another way
+(ADR 0013), and the hook and MCP entry an older kmctl wrote itself.
 
 Each step is its own function and prints nothing, so ``kmctl doctor`` and the
 Antigravity harness can reuse the hook entry, the MCP entry and its launcher.
@@ -643,6 +644,29 @@ def kmctl_package(lock: Lock | None) -> LockDependency | None:
     return None
 
 
+def kmctl_files(lock: Lock | None) -> LockDependency | None:
+    """kmctl's package with its sub-packages' deployed files folded in, or None.
+
+    APM records ``apm/claude`` and ``apm/antigravity`` as entries of their
+    own (named ``kmctl-claude`` and ``kmctl-antigravity``, from the same
+    repository), and the rules and hooks are listed there, not under
+    ``kmctl`` (ADR 0020).
+    """
+    package = kmctl_package(lock)
+    if package is None or lock is None:
+        return package
+    files = list(package.deployed_files)
+    hashes = dict(package.deployed_file_hashes)
+    for dep in lock.dependencies:
+        sub = (dep.virtual_path or "").startswith(PACKAGE_PATH + "/")
+        if sub and dep.repo_url == package.repo_url:
+            files += [f for f in dep.deployed_files if f not in files]
+            hashes.update(dep.deployed_file_hashes)
+    return package.model_copy(
+        update={"deployed_files": files, "deployed_file_hashes": hashes}
+    )
+
+
 def skipped_skills(
     cwd: Path, scope: Scope, harnesses: Sequence[str] = ("claude",)
 ) -> list[str]:
@@ -722,49 +746,6 @@ def _is_kmctl_hook(hook: object) -> bool:
     return isinstance(hook, dict) and HOOK_MARK in str(hook.get("command", ""))
 
 
-def merge_hook(path: Path) -> None:
-    """Put exactly one kmctl SessionStart hook into the settings.json at ``path``.
-
-    The first hook that runs ``kmctl briefing`` is replaced in place and any
-    other is removed, with a group it leaves empty; with none, a new
-    SessionStart group is appended. Every other key and hook is kept, and a
-    missing file is created.
-
-    Raises
-    ------
-    PluginError
-        When the file, or its ``hooks`` value, is not a JSON object.
-    """
-    data = read_json(path)
-    hooks = data.setdefault("hooks", {})
-    if not isinstance(hooks, dict):
-        raise PluginError(
-            f'{path} has a "hooks" value that is not an object; fix it, then run '
-            "kmctl plugin install again"
-        )
-    groups = hooks.get("SessionStart")
-    placed = False
-    merged: list[object] = []
-    for group in groups if isinstance(groups, list) else []:
-        inner = group.get("hooks") if isinstance(group, dict) else None
-        if not isinstance(inner, list) or not any(_is_kmctl_hook(h) for h in inner):
-            merged.append(group)
-            continue
-        kept = []
-        for hook in inner:
-            if not _is_kmctl_hook(hook):
-                kept.append(hook)
-            elif not placed:
-                kept.append(hook_entry())
-                placed = True
-        if kept:
-            merged.append({**group, "hooks": kept})
-    if not placed:
-        merged.append({"hooks": [hook_entry()]})
-    hooks["SessionStart"] = merged
-    _write_json(path, data)
-
-
 def kmctl_hooks(path: Path) -> list[dict[str, Any]]:
     """Every SessionStart hook in the settings.json at ``path`` that runs ``kmctl briefing``."""
     try:
@@ -838,98 +819,129 @@ def other_okf_server(servers: object) -> str | None:
     return None
 
 
-def merge_mcp(path: Path) -> str | None:
-    """Put kmctl's okf-bundle server into the .mcp.json at ``path``, keeping other servers.
+def _apm_recorded_groups(settings: Path) -> list[object]:
+    """The SessionStart groups APM records in the ``apm-hooks.json`` beside ``settings``, without its marker."""
+    try:
+        data = read_json(settings.parent / "apm-hooks.json")
+    except PluginError:
+        return []
+    groups = data.get("SessionStart")
+    if not isinstance(groups, list):
+        return []
+    return [
+        {k: v for k, v in group.items() if k != "_apm_source"}
+        for group in groups
+        if isinstance(group, dict)
+    ]
 
-    It replaces a server named ``okf-bundle``, so a new okf pin reaches it.
-    When another server already runs okf's script, it adds none and removes
-    its own, so one okf server is left.
+
+def drop_old_hook(settings: Path) -> bool:
+    """Take out the SessionStart hooks an older kmctl wrote into ``settings``; return whether any went.
+
+    Since ADR 0020 APM writes kmctl's hook from the package and records each
+    group it wrote in ``apm-hooks.json``. A group that runs ``kmctl briefing``
+    and is not recorded there holds kmctl's own hook, from before; left in
+    place, the briefing would print twice (spike:apm-hands-back/3, /5). Only
+    kmctl's hooks leave such a group, which goes when nothing else is left in
+    it. Every other key, group and hook stays; a missing file is left missing.
+    """
+    if not settings.is_file():
+        return False
+    data = read_json(settings)
+    hooks = data.get("hooks")
+    groups = hooks.get("SessionStart") if isinstance(hooks, dict) else None
+    if not isinstance(groups, list):
+        return False
+    recorded = _apm_recorded_groups(settings)
+    kept: list[object] = []
+    dropped = False
+    for group in groups:
+        inner = group.get("hooks") if isinstance(group, dict) else None
+        ours = isinstance(inner, list) and any(_is_kmctl_hook(h) for h in inner)
+        if not ours or group in recorded:
+            if ours:
+                recorded.remove(group)
+            kept.append(group)
+            continue
+        # An older kmctl put its hook in whatever group held one; keep the rest.
+        assert isinstance(group, dict) and isinstance(inner, list)
+        dropped = True
+        rest = [h for h in inner if not _is_kmctl_hook(h)]
+        if rest:
+            kept.append({**group, "hooks": rest})
+    if not dropped:
+        return False
+    assert isinstance(hooks, dict)
+    if kept:
+        hooks["SessionStart"] = kept
+    else:
+        del hooks["SessionStart"]
+    if not hooks:
+        del data["hooks"]
+    _write_json(settings, data)
+    return True
+
+
+def okf_server_current(server: object) -> bool:
+    """Whether an ``okf-bundle`` entry runs the command and args kmctl's package declares.
+
+    Only those two count: APM adds keys such as ``type`` of its own.
+    """
+    want = okf_mcp_server()
+    return isinstance(server, dict) and (server.get("command"), server.get("args")) == (
+        want["command"],
+        want["args"],
+    )
+
+
+def drop_old_mcp(cwd: Path, scope: Scope) -> list[str]:
+    """Take out an ``okf-bundle`` entry an older kmctl wrote that differs from the package's.
+
+    APM skips an MCP server that is already configured, so an entry at an
+    older okf pin would stay; once it is gone, ``apm install`` writes the
+    package's (spike:plugin-patch/1, spike:apm-hands-back/5). At user scope
+    it uses ``claude mcp remove``. Every other server stays.
 
     Returns
     -------
-    str | None
-        The name of the other okf server it kept, or None when it wrote its own.
-
-    Raises
-    ------
-    PluginError
-        When the file is not a JSON object.
-    """
-    data = read_json(path)
-    servers = data.get("mcpServers")
-    if not isinstance(servers, dict):
-        servers = {}
-        data["mcpServers"] = servers
-    other = other_okf_server(servers)
-    if other is not None:
-        if servers.pop(MCP_NAME, None) is not None:
-            _write_json(path, data)
-        return other
-    servers[MCP_NAME] = okf_mcp_server()
-    _write_json(path, data)
-    return None
-
-
-def install_mcp(cwd: Path, scope: Scope) -> list[str]:
-    """Declare okf's MCP server for Claude Code at ``scope``, and say what happened.
-
-    At project scope it merges the server into the repository's .mcp.json; at
-    user scope it runs ``claude mcp add-json --scope user``. Either way it
-    keeps an okf server that is already there under another name.
-
-    Raises
-    ------
-    PluginError
-        When .mcp.json is not a JSON object or ``claude mcp add-json`` fails.
+    list[str]
+        A note when the claude CLI is missing and the entry stays.
     """
     if scope == "project":
-        kept = merge_mcp(cwd / ".mcp.json")
-        if kept is not None:
-            return [
-                (
-                    f"kept the okf MCP server {kept!r} already in .mcp.json, so kmctl "
-                    f"added no {MCP_NAME}"
-                )
-            ]
-        return [
-            (
-                f"declared okf's MCP server {MCP_NAME} in .mcp.json; Claude Code asks "
-                "you to approve it once"
-            )
-        ]
-    config = user_mcp_file()
+        path = cwd / ".mcp.json"
+        if not path.is_file():
+            return []
+        data = read_json(path)
+        servers = data.get("mcpServers")
+        if (
+            isinstance(servers, dict)
+            and MCP_NAME in servers
+            and not okf_server_current(servers[MCP_NAME])
+        ):
+            del servers[MCP_NAME]
+            _write_json(path, data)
+        return []
     try:
-        servers = read_json(config).get("mcpServers")
+        servers = read_json(user_mcp_file()).get("mcpServers")
     except PluginError:
         servers = None
-    kept = other_okf_server(servers)
-    own = isinstance(servers, dict) and MCP_NAME in servers
-    has_claude = shutil.which("claude") is not None
-    if kept is not None:
-        if own and has_claude:
-            remove = ["mcp", "remove", MCP_NAME, "--scope", "user"]
-            _require(_run(["claude", *remove], cwd), f"claude {' '.join(remove)}")
+    if not (
+        isinstance(servers, dict)
+        and MCP_NAME in servers
+        and not okf_server_current(servers[MCP_NAME])
+    ):
+        return []
+    args = ["mcp", "remove", MCP_NAME, "--scope", "user"]
+    if shutil.which("claude") is None:
         return [
             (
-                f"kept the okf MCP server {kept!r} already in {config}, so kmctl "
-                f"added no {MCP_NAME}"
+                f"the claude CLI is not on PATH, so kmctl left an older {MCP_NAME} "
+                f"that APM will not replace; run claude {' '.join(args)}, then "
+                "kmctl plugin install again"
             )
         ]
-    server = json.dumps(okf_mcp_server())
-    add = ["mcp", "add-json", MCP_NAME, server, "--scope", "user"]
-    if not has_claude:
-        return [
-            (
-                "the claude CLI is not on PATH, so kmctl did not add okf's MCP server; "
-                f"run claude mcp add-json {MCP_NAME} '{server}' --scope user"
-            )
-        ]
-    # add-json refuses a name that exists, so drop kmctl's own entry first.
-    if own:
-        remove = ["mcp", "remove", MCP_NAME, "--scope", "user"]
-        _require(_run(["claude", *remove], cwd), f"claude {' '.join(remove)}")
-    _require(_run(["claude", *add], cwd), f"claude mcp add-json {MCP_NAME}")
-    return [f"declared okf's MCP server {MCP_NAME} at user scope"]
+    _require(_run(["claude", *args], cwd), f"claude {' '.join(args)}")
+    return []
 
 
 # Install -----------------------------------------------------------------------
@@ -943,19 +955,19 @@ def install(
     force: bool = False,
     ref: str | None = None,
 ) -> InstallResult:
-    """Install this CLI's package for ``harnesses`` with APM, then the hook and okf's MCP server.
+    """Install this CLI's package for ``harnesses`` with APM, then what APM cannot install yet.
 
     In order: refuse early when uvx is missing or a file it edits does not
-    parse; ``apm uninstall`` an old apm.yml entry; write kmctl's entry and the
-    targets into apm.yml; run ``apm install`` (``-g`` at user scope,
-    ``--force`` when asked); fail when APM left a skill folder in place; only
-    then remove the old claude plugin, so a failed install leaves it working;
-    then, for Claude Code, write the SessionStart hook and declare okf's MCP
-    server, and for Antigravity, rewrite its plugin folder
-    (``antigravity.write_plugin``) and delete APM's copies of kmctl's rules
-    there (``antigravity.drop_apm_rules``) and APM's okf Stop handler in
-    ``.agents/hooks.json`` (``antigravity.drop_apm_okf_stop``). ``kmctl
-    plugin update`` runs the same.
+    parse; ``apm uninstall`` an old apm.yml entry; for Claude Code, remove
+    what an older kmctl wrote that APM now writes (``drop_old_hook``,
+    ``drop_old_mcp``); write kmctl's entry and the targets into apm.yml; run
+    ``apm install`` (``-g`` at user scope, ``--force`` when asked), which
+    writes the skills, rules, hooks and okf's MCP server (ADR 0020); fail when
+    APM left a skill folder in place; only then remove the old claude plugin,
+    so a failed install leaves it working; and for Antigravity, write the
+    plugin folder of translated agents (``antigravity.write_plugin``) and take
+    APM's broken okf Stop handler out (``antigravity.drop_apm_okf_stop``).
+    ``kmctl plugin update`` runs the same.
 
     Parameters
     ----------
@@ -990,6 +1002,9 @@ def install(
 
     _preflight(cwd, scope, harnesses)
     notes = remove_old_apm_entry(cwd, scope, source)
+    if "claude" in harnesses:
+        drop_old_hook(settings_path(cwd, scope))
+        notes += drop_old_mcp(cwd, scope)
     notes += write_manifest(
         apm_dir(cwd, scope) / "apm.yml",
         source,
@@ -1011,17 +1026,14 @@ def install(
         )
     if "claude" in harnesses:
         notes = remove_old_plugin(cwd, scope) + notes
-        merge_hook(settings_path(cwd, scope))
-        notes += install_mcp(cwd, scope)
     package = kmctl_package(read_lock(cwd, scope))
     if "antigravity" in harnesses:
         folder = antigravity.write_plugin(cwd)
-        antigravity.drop_apm_rules(cwd, package.deployed_files if package else [])
         antigravity.drop_apm_okf_stop(cwd)
         notes.append(
-            f"wrote {shown_path(folder, cwd)}/ (the agents, the rules, the SessionStart "
-            f"hook, okf's Stop check and okf's MCP server {antigravity.MCP_NAME}); "
-            "Antigravity loads it once you trust this folder"
+            f"wrote {shown_path(folder, cwd)}/ (the agents, which APM does not "
+            "install for Antigravity yet); Antigravity loads it once you trust "
+            "this folder"
         )
     return InstallResult(
         scope, list(harnesses), package.resolved_ref if package else None, notes
@@ -1225,31 +1237,34 @@ def _remove_mcp(cwd: Path, scope: Scope) -> list[str]:
         return []
     data = read_json(path)
     servers = data.get("mcpServers")
-    if not (isinstance(servers, dict) and _is_okf_server(servers.get(MCP_NAME))):
-        return []
-    del servers[MCP_NAME]
-    if not servers and set(data) == {"mcpServers"}:
-        path.unlink()
-    else:
+    if isinstance(servers, dict) and _is_okf_server(servers.get(MCP_NAME)):
+        del servers[MCP_NAME]
         _write_json(path, data)
+    # APM's uninstall leaves the file with no servers; nothing else wrote it.
+    if servers == {} and set(data) == {"mcpServers"}:
+        path.unlink()
     return []
 
 
 def _remove_antigravity(cwd: Path) -> None:
-    """Delete kmctl's plugin folder, and APM's hooks.json when the uninstall left it empty."""
+    """Delete kmctl's plugin folder, and APM's hooks.json and mcp_config.json when the uninstall left them empty."""
     from kmctl import antigravity
 
     folder = antigravity.plugin_dir(cwd)
     if folder.exists():
         shutil.rmtree(folder)
-    hooks = cwd / antigravity.APM_HOOKS
-    if hooks.is_file():
+    for path, empty in (
+        (cwd / antigravity.APM_HOOKS, {}),
+        (cwd / ".agents" / "mcp_config.json", {"mcpServers": {}}),
+    ):
+        if not path.is_file():
+            continue
         try:
-            empty = read_json(hooks) == {}
+            left = read_json(path)
         except PluginError:
-            empty = False
-        if empty:
-            hooks.unlink()
+            continue
+        if left in ({}, empty):
+            path.unlink()
 
 
 def remove(cwd: Path, harnesses: list[str], scope: Scope = "project") -> RemoveResult:

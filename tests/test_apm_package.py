@@ -29,7 +29,7 @@ import yaml
 from jsonschema import Draft202012Validator
 from typer.testing import CliRunner, Result
 
-from kmctl import app
+from kmctl import antigravity, app, plugin
 from kmctl.doctor import run_doctor
 from kmctl.kinds import schema, skeleton
 from kmctl.okf import front_matter
@@ -40,7 +40,8 @@ PACKAGE = ROOT / "apm"
 DOT_APM = PACKAGE / ".apm"
 SKILLS = DOT_APM / "skills"
 AGENT = DOT_APM / "agents" / "kmctl-auditor.md"
-INSTRUCTIONS = DOT_APM / "instructions"
+INSTRUCTIONS = PACKAGE / "claude" / ".apm" / "instructions"
+AG_INSTRUCTIONS = PACKAGE / "antigravity" / ".apm" / "instructions"
 DECISIONS = ROOT / ".okf" / "decisions"
 DECISION = DECISIONS / "0014-apm-is-the-only-install-route.md"
 MANIFESTO = ROOT / ".okf" / "manifesto.md"
@@ -121,12 +122,13 @@ def test_package_names_itself_and_has_a_version() -> None:
 
 
 def test_package_depends_only_on_a_pinned_okf() -> None:
-    """The one dependency is okf-skills at a full commit; there is no git: parent."""
+    """The dependencies are okf-skills at a full commit and the two sub-packages; there is no git: parent."""
     deps = _load(PACKAGE / "apm.yml")["dependencies"]
 
-    assert list(deps) == ["apm"]
-    [okf] = deps["apm"]
+    assert sorted(deps) == ["apm", "mcp"]
+    okf, *subs = deps["apm"]
     assert isinstance(okf, str) and OKF_PIN.match(okf), okf
+    assert subs == ["./claude", "./antigravity"]
     assert "parent" not in (PACKAGE / "apm.yml").read_text()
 
 
@@ -137,11 +139,7 @@ def test_package_holds_the_skills_and_the_agent() -> None:
     assert sorted(p.name for p in (DOT_APM / "agents").iterdir()) == [
         "kmctl-auditor.md"
     ]
-    assert sorted(p.name for p in DOT_APM.iterdir()) == [
-        "agents",
-        "instructions",
-        "skills",
-    ]
+    assert sorted(p.name for p in DOT_APM.iterdir()) == ["agents", "skills"]
 
 
 def test_package_rules_apply_to_the_old_globs_with_the_old_bodies() -> None:
@@ -164,12 +162,13 @@ def test_package_old_layout_is_gone() -> None:
 
 
 def test_version_copies_equal_the_package() -> None:
-    """The root apm.yml carries apm/apm.yml's version, the one release version."""
+    """The root apm.yml and the two sub-packages carry apm/apm.yml's version, the one release version."""
     versions = {rel.as_posix(): str(_load(ROOT / rel)["version"]) for rel in APM_FILES}
 
     assert MANIFEST.as_posix() == "apm/apm.yml"
     assert versions == dict.fromkeys(
-        ("apm.yml", "apm/apm.yml"), versions["apm/apm.yml"]
+        ("apm.yml", "apm/apm.yml", "apm/claude/apm.yml", "apm/antigravity/apm.yml"),
+        versions["apm/apm.yml"],
     )
 
 
@@ -408,12 +407,13 @@ def test_docs_install_how_to_uses_the_harness_option() -> None:
     assert "(install-kmctl-with-apm.md)" in text
 
 
-def test_docs_apm_page_says_a_hand_added_entry_gets_no_hook() -> None:
-    """The APM how-to says what a hand entry leaves out and how to get it."""
+def test_docs_apm_page_says_what_a_hand_added_entry_gets() -> None:
+    """The APM how-to says a hand entry gets the hook and okf's server from APM, and what it leaves out (ADR 0020)."""
     text = _flat(PAGE.read_text())
     commands = "\n".join(FENCE.findall(PAGE.read_text()))
 
-    assert "no SessionStart hook" in text
+    assert "okf-bundle" in text
+    assert "SessionStart" in text
     assert "kmctl plugin install --harness claude" in text
     assert "- JasperHG90/Knowledge-management/apm#v" in commands
     assert "scaccogatto/okf-skills" not in commands
@@ -502,3 +502,141 @@ def test_consumer_gets_the_package_hook_and_okf_but_no_dev_items(
         assert checks[f"claude.{cid}"].ok, checks[f"claude.{cid}"]
     after = {rel: (REAL_CLAUDE / rel).exists() for rel in WATCHED}
     assert after == before, f"the install wrote into {REAL_CLAUDE}"
+
+
+# apm-hands-back r1: the package split by harness --------------------------------
+
+
+def _hooks(harness: str) -> dict:
+    return json.loads((PACKAGE / harness / ".apm" / "hooks" / "hooks.json").read_text())
+
+
+def test_split_package_declares_okf_mcp_at_the_pin() -> None:
+    [server] = _load(PACKAGE / "apm.yml")["dependencies"]["mcp"]
+
+    assert server == {
+        "name": plugin.MCP_NAME,
+        "registry": False,
+        "transport": "stdio",
+        "command": "sh",
+        "args": ["-c", plugin.okf_mcp_launcher()],
+    }
+    okf = _load(PACKAGE / "apm.yml")["dependencies"]["apm"][0]
+    assert plugin.OKF_COMMIT in okf
+    assert plugin.OKF_COMMIT in server["args"][1]
+
+
+def test_split_package_shared_part_has_no_rules_and_claude_rules_keep_their_globs() -> (
+    None
+):
+    assert not (DOT_APM / "instructions").exists()
+    for name, (globs, _) in OLD_RULES.items():
+        meta, _ = _split((INSTRUCTIONS / f"{name}.instructions.md").read_text())
+        assert meta == {"applyTo": ", ".join(globs)}, name
+
+
+@pytest.mark.parametrize("harness", ["claude", "antigravity"])
+def test_split_package_sub_package_targets_and_folders(harness: str) -> None:
+    data = _load(PACKAGE / harness / "apm.yml")
+
+    assert data["name"] == f"kmctl-{harness}"
+    assert data["targets"] == [harness]
+    assert sorted(p.name for p in (PACKAGE / harness / ".apm").iterdir()) == [
+        "hooks",
+        "instructions",
+    ]
+    assert sorted(
+        p.name for p in (PACKAGE / harness / ".apm" / "instructions").iterdir()
+    ) == sorted(f"{name}.instructions.md" for name in OLD_RULES)
+
+
+def test_split_package_hooks_ship_kmctls_commands() -> None:
+    claude, ag = _hooks("claude"), _hooks("antigravity")
+
+    assert claude == antigravity.package_hooks("claude")
+    [[start]] = [g["hooks"] for g in claude["hooks"]["SessionStart"]]
+    assert start == plugin.hook_entry()
+    assert ag == antigravity.package_hooks("antigravity")
+    [[ag_start]] = [g["hooks"] for g in ag["hooks"]["SessionStart"]]
+    [[ag_stop]] = [g["hooks"] for g in ag["hooks"]["Stop"]]
+    assert ag_start["command"] == antigravity.HOOK_COMMAND
+    assert ag_stop["command"] == antigravity.STOP_COMMAND
+    assert "cd .. " in antigravity.STOP_COMMAND
+
+
+# apm-hands-back r2: the Antigravity rules are generated ---------------------------
+
+
+def test_antigravity_rules_equal_the_generated_copies() -> None:
+    from scripts import sync_antigravity_rules as sync
+
+    assert sync.stale() == []
+    for name in OLD_RULES:
+        source = (INSTRUCTIONS / f"{name}.instructions.md").read_text()
+        copy = (AG_INSTRUCTIONS / f"{name}.instructions.md").read_text()
+        meta, body = _split(copy)
+        assert body == _split(source)[1], name
+        globs = meta["applyTo"].split("\\, ")
+        assert globs == [f"**/{g}" for g in OLD_RULES[name][0]], name
+        assert "\\," in copy or len(globs) == 1, name
+
+
+def test_antigravity_rules_check_names_a_stale_copy(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from scripts import sync_antigravity_rules as sync
+
+    target = tmp_path / "ag"
+    shutil.copytree(AG_INSTRUCTIONS, target)
+    (target / "docs-layout.instructions.md").write_text("stale\n")
+    monkeypatch.setattr(sync, "TARGET", target)
+    monkeypatch.setattr(sync, "ROOT", tmp_path)
+
+    assert sync.stale() == ["docs-layout.instructions.md"]
+    assert sync.main(["--check"]) == 1
+
+
+# apm-hands-back r7: the decision and the docs -------------------------------------
+
+
+HANDS_BACK = DECISIONS / (
+    "0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md"
+)
+
+
+def test_hands_back_docs_decision_lists_each_gap() -> None:
+    text = " ".join(HANDS_BACK.read_text().split())
+
+    for gap in (
+        "#2990",
+        'bash ".agents/hooks/okf-skills/hooks/okf-stop-check.sh"',
+        "apm uninstall -g",
+        "allowExecutables",
+        "okf server under another name",
+    ):
+        assert gap in text, gap
+    assert "Drop it when" in text
+
+
+def test_hands_back_docs_supersede_and_amend_links() -> None:
+    old = next(DECISIONS.glob("0016-*.md"))
+    assert front_matter(old)["status"] == "deprecated"
+    assert HANDS_BACK.name in old.read_text()
+    for number in ("0014", "0015", "0018"):
+        page = next(DECISIONS.glob(f"{number}-*.md"))
+        assert HANDS_BACK.name in page.read_text(), number
+
+
+@pytest.mark.parametrize("page", [COMMANDS, PAGE, INSTALL_HOW_TO, OVERVIEW])
+def test_hands_back_docs_pages_say_apm_writes_them(page: Path) -> None:
+    text = " ".join(page.read_text().split())
+
+    for stale in (
+        "Merges one SessionStart hook",
+        "merges one SessionStart hook",
+        "plugins/kmctl/rules",
+        "kmctl-okf-stop",
+        "okf's MCP server as `bundle`",
+        "declares `okf-bundle` in `.mcp.json`",
+    ):
+        assert stale not in text, (page.name, stale)

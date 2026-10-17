@@ -134,26 +134,25 @@ def _apm_calls(fakes: FakeTools, verb: str) -> list[Call]:
 # r3 and I1: the hook ----------------------------------------------------------
 
 
-def test_install_writes_one_sessionstart_hook(repo: Path, fakes: FakeTools) -> None:
-    """kmctl's only hook is one SessionStart entry relaying kmctl briefing (I1)."""
-    _install()
+def test_hook_the_package_ships_is_one_sessionstart_entry() -> None:
+    """kmctl's own hook is one SessionStart entry relaying kmctl briefing (I1), shipped in apm/claude/."""
+    shipped = json.loads((ROOT / "apm/claude/.apm/hooks/hooks.json").read_text())
 
-    settings = _settings(repo)
-    assert list(settings["hooks"]) == ["SessionStart"]
-    [hook] = _session_hooks(settings)
-    assert hook == {
-        "type": "command",
-        "description": plugin.HOOK_DESCRIPTION,
-        "command": plugin.HOOK_COMMAND,
-        "timeout": 10,
-    }
+    assert list(shipped["hooks"]) == ["SessionStart"]
+    [group] = shipped["hooks"]["SessionStart"]
+    assert group["hooks"] == [
+        {
+            "type": "command",
+            "description": plugin.HOOK_DESCRIPTION,
+            "command": plugin.HOOK_COMMAND,
+            "timeout": 10,
+        }
+    ]
 
 
 def _installed_hook_command(repo: Path) -> str:
-    """The command of the hook ``kmctl plugin install`` writes."""
-    _install()
-    [hook] = _kmctl_hooks(_settings(repo))
-    return hook["command"]
+    """The command of the SessionStart hook kmctl's package ships."""
+    return plugin.hook_entry()["command"]
 
 
 def _run_hook(command: str, cwd: Path, path: str) -> subprocess.CompletedProcess[str]:
@@ -191,68 +190,6 @@ def test_hook_exits_zero_when_kmctl_fails(
 
     assert result.returncode == 0
     assert "kmctl briefing failed" in result.stdout
-
-
-def test_hook_merge_keeps_other_keys_and_hooks(repo: Path, fakes: FakeTools) -> None:
-    other_start = {"hooks": [{"type": "command", "command": "echo hi"}]}
-    stop = [{"hooks": [{"type": "command", "command": "okf-stop-check.sh"}]}]
-    before = {
-        "permissions": {"allow": ["Bash(ls)"]},
-        "enabledPlugins": {"x@y": True},
-        "hooks": {"SessionStart": [other_start], "Stop": stop},
-    }
-    (repo / ".claude").mkdir()
-    (repo / ".claude" / "settings.json").write_text(json.dumps(before))
-
-    _install()
-
-    after = _settings(repo)
-    assert after["permissions"] == before["permissions"]
-    assert after["enabledPlugins"] == before["enabledPlugins"]
-    assert after["hooks"]["Stop"] == stop
-    assert after["hooks"]["SessionStart"][0] == other_start
-    assert _kmctl_hooks(after) == [plugin.hook_entry()]
-
-
-def test_hook_second_install_leaves_one_entry(repo: Path, fakes: FakeTools) -> None:
-    _install()
-    first = _settings(repo)
-
-    _install()
-
-    assert _settings(repo) == first
-    assert len(_kmctl_hooks(first)) == 1
-
-
-def test_hook_old_entry_replaced_in_place(repo: Path, fakes: FakeTools) -> None:
-    old = {"type": "command", "command": "kmctl briefing", "timeout": 5}
-    groups = [
-        {"hooks": [{"type": "command", "command": "echo first"}]},
-        {"matcher": "startup", "hooks": [old]},
-        {"hooks": [{"type": "command", "command": "echo last"}]},
-        {"hooks": [dict(old, command="old kmctl briefing again")]},
-    ]
-    (repo / ".claude").mkdir()
-    (repo / ".claude" / "settings.json").write_text(
-        json.dumps({"hooks": {"SessionStart": groups}})
-    )
-
-    _install()
-
-    after = _settings(repo)["hooks"]["SessionStart"]
-    assert after == [
-        groups[0],
-        {"matcher": "startup", "hooks": [plugin.hook_entry()]},
-        groups[2],
-    ]
-
-
-def test_hook_missing_settings_file_created(repo: Path, fakes: FakeTools) -> None:
-    assert not (repo / ".claude").exists()
-
-    _install()
-
-    assert _kmctl_hooks(_settings(repo)) == [plugin.hook_entry()]
 
 
 def test_hook_refuses_settings_that_are_not_json(repo: Path, fakes: FakeTools) -> None:
@@ -368,7 +305,6 @@ def test_install_update_runs_the_same_steps(repo: Path, fakes: FakeTools) -> Non
     assert result.exit_code == 0, result.output
     [call] = _apm_calls(fakes, "install")
     assert call.args == [*APM, "install", "--target", "claude"]
-    assert len(_kmctl_hooks(_settings(repo))) == 1
 
 
 @pytest.mark.parametrize("verb", ["install", "update"])
@@ -596,7 +532,6 @@ def test_old_plugin_skipped_without_claude(
     assert "claude CLI is not on PATH" in result.stdout
     assert "kmctl@kmctl" in result.stdout
     assert len(_apm_calls(tools, "install")) == 1
-    assert len(_kmctl_hooks(_settings(repo))) == 1
 
 
 @pytest.mark.parametrize(
@@ -783,74 +718,6 @@ def _mcp(root: Path) -> dict:
     return json.loads((root / ".mcp.json").read_text())["mcpServers"]
 
 
-def test_mcp_merged_keeping_other_servers(repo: Path, fakes: FakeTools) -> None:
-    other = {"command": "npx", "args": ["some-server"]}
-    (repo / ".mcp.json").write_text(json.dumps({"mcpServers": {"mine": other}}))
-
-    result = _install()
-
-    servers = _mcp(repo)
-    assert servers["mine"] == other
-    assert servers["okf-bundle"] == {
-        "type": "stdio",
-        "command": "sh",
-        "args": ["-c", plugin.okf_mcp_launcher()],
-    }
-    assert "approve" in result.stdout
-
-
-def test_mcp_one_entry_after_two_installs(repo: Path, fakes: FakeTools) -> None:
-    _install()
-    _install()
-
-    assert list(_mcp(repo)) == ["okf-bundle"]
-
-
-def test_mcp_sha_equals_apm_pin() -> None:
-    [okf] = yaml.safe_load((ROOT / "apm" / "apm.yml").read_text())["dependencies"][
-        "apm"
-    ]
-    pin = okf.partition("#")[2]
-
-    assert plugin.OKF_COMMIT == pin
-    assert plugin.okf_mcp_url() == (
-        f"https://raw.githubusercontent.com/scaccogatto/okf-skills/{pin}"
-        "/servers/okf_mcp.py"
-    )
-    assert plugin.okf_mcp_url() in plugin.okf_mcp_launcher()
-
-
-def test_mcp_changed_pin_replaces_entry(
-    repo: Path, fakes: FakeTools, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    old = plugin.OKF_COMMIT
-    _install()
-    monkeypatch.setattr(plugin, "OKF_COMMIT", "f" * 40)
-
-    _install()
-
-    [launcher] = _mcp(repo)["okf-bundle"]["args"][1:]
-    assert f"/okf-skills/{'f' * 40}/servers/okf_mcp.py" in launcher
-    assert old not in launcher
-
-
-@pytest.mark.parametrize("args", [["okf_mcp.py"], ["run", "x/servers/okf_mcp.py"]])
-def test_mcp_existing_okf_server_kept(
-    repo: Path, fakes: FakeTools, args: list[str]
-) -> None:
-    bundle = {"command": "uv", "args": args}
-    (repo / ".mcp.json").write_text(
-        json.dumps(
-            {"mcpServers": {"bundle": bundle, "okf-bundle": plugin.okf_mcp_server()}}
-        )
-    )
-
-    result = _install()
-
-    assert _mcp(repo) == {"bundle": bundle}
-    assert "kept the okf MCP server 'bundle'" in result.stdout
-
-
 def _launcher_args(script: str, cwd: Path, tmp_path: Path) -> list[str]:
     """Run an MCP launcher in ``cwd`` with a fake uv; return the args uv got."""
     tools = FakeTools(tmp_path / "launcher", tools=("uv",))
@@ -892,78 +759,6 @@ def test_mcp_launcher_tries_each_start_in_order(repo: Path, tmp_path: Path) -> N
     assert args == ["run", plugin.okf_mcp_url(), str((repo / ".okf").resolve())]
 
 
-def test_mcp_user_scope_uses_claude_mcp_add_json(repo: Path, fakes: FakeTools) -> None:
-    fakes.on("uvx", "apm install", write={".apm/apm.lock.yaml": _lock()})
-
-    _install("--scope", "user")
-
-    adds = [c.args for c in fakes.calls("claude") if c.args[:2] == ["mcp", "add-json"]]
-    assert adds == [
-        [
-            "mcp",
-            "add-json",
-            "okf-bundle",
-            json.dumps(plugin.okf_mcp_server()),
-            "--scope",
-            "user",
-        ]
-    ]
-    assert not (repo / ".mcp.json").exists()
-
-
-def test_mcp_user_scope_replaces_its_own_entry(
-    repo: Path, fakes: FakeTools, home: Path
-) -> None:
-    """A user-scope reinstall removes kmctl's okf-bundle, then adds it again."""
-    fakes.on("uvx", "apm install", write={".apm/apm.lock.yaml": _lock()})
-    (home / ".claude" / ".claude.json").write_text(
-        json.dumps({"mcpServers": {"okf-bundle": {"command": "sh", "args": []}}})
-    )
-
-    _install("--scope", "user")
-
-    mcp = [c.args[:3] for c in fakes.calls("claude") if c.args[0] == "mcp"]
-    assert mcp == [["mcp", "remove", "okf-bundle"], ["mcp", "add-json", "okf-bundle"]]
-
-
-def test_mcp_user_scope_drops_its_own_beside_another_okf_server(
-    repo: Path, fakes: FakeTools, home: Path
-) -> None:
-    """With another okf server at user scope, kmctl removes its own and adds none."""
-    fakes.on("uvx", "apm install", write={".apm/apm.lock.yaml": _lock()})
-    (home / ".claude" / ".claude.json").write_text(
-        json.dumps(
-            {
-                "mcpServers": {
-                    "bundle": {"command": "uv", "args": ["okf_mcp.py"]},
-                    "okf-bundle": {"command": "sh", "args": []},
-                }
-            }
-        )
-    )
-
-    _install("--scope", "user")
-
-    mcp = [c.args for c in fakes.calls("claude") if c.args[0] == "mcp"]
-    assert mcp == [["mcp", "remove", "okf-bundle", "--scope", "user"]]
-
-
-def test_mcp_user_scope_keeps_an_existing_okf_server(
-    repo: Path, fakes: FakeTools, home: Path
-) -> None:
-    fakes.on("uvx", "apm install", write={".apm/apm.lock.yaml": _lock()})
-    (home / ".claude" / ".claude.json").write_text(
-        json.dumps(
-            {"mcpServers": {"bundle": {"command": "uv", "args": ["okf_mcp.py"]}}}
-        )
-    )
-
-    result = _install("--scope", "user")
-
-    assert [c for c in fakes.calls("claude") if c.args[0] == "mcp"] == []
-    assert "kept the okf MCP server 'bundle'" in result.stdout
-
-
 # r7: user scope -----------------------------------------------------------------
 
 
@@ -981,33 +776,8 @@ def test_user_scope_runs_apm_global_and_writes_user_settings(
     assert manifest["dependencies"]["apm"] == [
         {"git": GITHUB, "path": "apm", "ref": REF}
     ]
-    assert len(_kmctl_hooks(_settings(home))) == 1
     assert not (repo / ".claude").exists()
     assert not (repo / "apm.yml").exists()
-
-
-def test_user_scope_follows_claude_config_dir(
-    repo: Path, fakes: FakeTools, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    config = tmp_path / "elsewhere"
-    monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(config))
-    fakes.on("uvx", "apm install", write={".apm/apm.lock.yaml": _lock()})
-
-    _install("--scope", "user")
-
-    assert len(_kmctl_hooks(json.loads((config / "settings.json").read_text()))) == 1
-    assert not (tmp_path / "home" / ".claude" / "settings.json").exists()
-
-
-def test_user_scope_defaults_to_home_claude(
-    repo: Path, fakes: FakeTools, home: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    monkeypatch.delenv("CLAUDE_CONFIG_DIR")
-    fakes.on("uvx", "apm install", write={".apm/apm.lock.yaml": _lock()})
-
-    _install("--scope", "user")
-
-    assert len(_kmctl_hooks(_settings(home))) == 1
 
 
 def test_user_scope_is_not_the_default(
@@ -1018,6 +788,128 @@ def test_user_scope_is_not_the_default(
     assert "-g" not in _apm_calls(fakes, "install")[0].args
     assert not (home / ".claude" / "settings.json").exists()
     assert not (home / ".apm").exists()
+
+
+# apm-hands-back r4: what an older kmctl wrote is taken out before APM runs -------
+
+
+OLD_GROUP = {"hooks": [plugin.hook_entry()]}
+APM_GROUP = {"matcher": "*", "hooks": [plugin.hook_entry()]}
+
+
+def _record(settings: Path, *groups: dict) -> None:
+    """Write APM's apm-hooks.json beside ``settings``, recording ``groups``."""
+    (settings.parent / "apm-hooks.json").write_text(
+        json.dumps(
+            {"SessionStart": [{**g, "_apm_source": "kmctl/claude"} for g in groups]}
+        )
+    )
+
+
+@pytest.mark.parametrize("scope", ["project", "user"])
+def test_migrate_drops_the_unrecorded_kmctl_group(
+    repo: Path, fakes: FakeTools, home: Path, scope: str
+) -> None:
+    root = home if scope == "user" else repo
+    settings = root / ".claude" / "settings.json"
+    settings.parent.mkdir(parents=True, exist_ok=True)
+    other = {"hooks": [{"type": "command", "command": "echo mine"}]}
+    settings.write_text(
+        json.dumps(
+            {"theme": "dark", "hooks": {"SessionStart": [OLD_GROUP, APM_GROUP, other]}}
+        )
+    )
+    _record(settings, APM_GROUP)
+    if scope == "user":
+        fakes.on("uvx", "apm install", write={".apm/apm.lock.yaml": _lock()})
+
+    _install(*(["--scope", "user"] if scope == "user" else []))
+
+    data = json.loads(settings.read_text())
+    assert data["theme"] == "dark"
+    assert data["hooks"]["SessionStart"] == [APM_GROUP, other]
+
+
+def test_migrate_keeps_other_hooks_in_a_shared_group(
+    repo: Path, fakes: FakeTools
+) -> None:
+    mine = {"type": "command", "command": "echo mine"}
+    settings = repo / ".claude" / "settings.json"
+    settings.parent.mkdir(parents=True)
+    shared = {"matcher": "x", "hooks": [mine, plugin.hook_entry()]}
+    settings.write_text(json.dumps({"hooks": {"SessionStart": [shared]}}))
+
+    _install()
+
+    assert json.loads(settings.read_text()) == {
+        "hooks": {"SessionStart": [{"matcher": "x", "hooks": [mine]}]}
+    }
+
+
+def test_migrate_with_nothing_recorded_drops_every_kmctl_group(
+    repo: Path, fakes: FakeTools
+) -> None:
+    settings = repo / ".claude" / "settings.json"
+    settings.parent.mkdir(parents=True)
+    settings.write_text(json.dumps({"hooks": {"SessionStart": [OLD_GROUP]}, "x": 1}))
+
+    _install()
+
+    assert json.loads(settings.read_text()) == {"x": 1}
+
+
+def test_migrate_drops_a_stale_okf_bundle_keeping_the_rest(
+    repo: Path, fakes: FakeTools
+) -> None:
+    stale = {
+        "command": "sh",
+        "args": ["-c", "exec uv run https://example.invalid/old.py"],
+    }
+    current = plugin.okf_mcp_server()
+    mine = {"command": "my-server"}
+    (repo / ".mcp.json").write_text(
+        json.dumps({"mcpServers": {"okf-bundle": stale, "mine": mine}})
+    )
+
+    _install()
+
+    assert json.loads((repo / ".mcp.json").read_text()) == {
+        "mcpServers": {"mine": mine}
+    }
+    (repo / ".mcp.json").write_text(json.dumps({"mcpServers": {"okf-bundle": current}}))
+    _install()
+    assert json.loads((repo / ".mcp.json").read_text()) == {
+        "mcpServers": {"okf-bundle": current}
+    }
+
+
+def test_migrate_user_scope_removes_a_stale_okf_bundle_with_claude(
+    repo: Path, fakes: FakeTools, home: Path
+) -> None:
+    fakes.on("uvx", "apm install", write={".apm/apm.lock.yaml": _lock()})
+    stale = {"command": "sh", "args": ["-c", "old"]}
+    (home / ".claude" / ".claude.json").write_text(
+        json.dumps({"mcpServers": {"okf-bundle": stale}})
+    )
+
+    _install("--scope", "user")
+
+    removes = [c.args for c in fakes.calls("claude") if c.args[:2] == ["mcp", "remove"]]
+    assert removes == [["mcp", "remove", "okf-bundle", "--scope", "user"]]
+
+
+def test_migrate_user_scope_keeps_a_current_okf_bundle(
+    repo: Path, fakes: FakeTools, home: Path
+) -> None:
+    fakes.on("uvx", "apm install", write={".apm/apm.lock.yaml": _lock()})
+    current = {**plugin.okf_mcp_server(), "type": "stdio"}
+    (home / ".claude" / ".claude.json").write_text(
+        json.dumps({"mcpServers": {"okf-bundle": current}})
+    )
+
+    _install("--scope", "user")
+
+    assert not [c for c in fakes.calls("claude") if c.args[:2] == ["mcp", "remove"]]
 
 
 # harness-prompt: the question when --harness is missing ---------------------------

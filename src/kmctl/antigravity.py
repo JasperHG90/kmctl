@@ -1,13 +1,16 @@
-"""The Antigravity plugin folder kmctl writes beside APM's install (ADR 0015).
+"""What kmctl adds to APM's Antigravity install, and the commands its package ships (ADR 0020).
 
-APM 0.33.0 installs skills for Antigravity into ``.agents/``, but no agents
-and no MCP server Antigravity reads, and rules agy cannot use: a YAML list of
-globs, which agy refuses, and globs relative to the repository, which agy
-matches against absolute paths. kmctl writes the agents, the rules, the MCP
-server and the SessionStart hook into one folder it alone owns,
-``.agents/plugins/kmctl/``, which Antigravity loads from a trusted workspace
-(spike:antigravity-harness/3, spike:antigravity-rules/3), and deletes APM's
-copies of its rules.
+APM 0.33.0 writes kmctl's skills, rules, SessionStart hook and okf's MCP
+server for Antigravity from the package's ``apm/antigravity/`` sub-package
+(spike:apm-hands-back/1, /2). Two things it cannot do yet, and kmctl does:
+
+- Agents: APM writes none for Antigravity (APM issue #2990). kmctl
+  translates its own and okf's Claude Code agents into ``.agents/plugins/kmctl/``,
+  a folder it alone owns, which Antigravity loads from a trusted workspace.
+- okf's Stop hook: APM writes it into ``.agents/hooks.json`` with a path from
+  the repository root, but agy runs hooks in ``.agents/``, so it fails at
+  the end of every turn. kmctl takes that handler out; the package's own
+  Stop wrapper (``STOP_COMMAND``) runs okf's check instead (ADR 0018).
 
 Every function here prints nothing. ``plugin_files`` says what the folder
 holds, ``write_plugin`` replaces the folder with it, and ``compare_plugin``
@@ -23,23 +26,14 @@ from pathlib import Path
 import yaml
 from pydantic import BaseModel, Field, ValidationError
 
-from kmctl.plugin import HOOK_TIMEOUT, PluginError, okf_mcp_launcher
+from kmctl.plugin import HOOK_TIMEOUT, MCP_NAME, PluginError, okf_server_current
 
 #: Where the folder sits, relative to the repository.
 PLUGIN_PATH = Path(".agents") / "plugins" / "kmctl"
 PLUGIN_NAME = "kmctl"
-#: The hook's name in hooks.json, which maps names to hooks.
-HOOK_NAME = "kmctl-briefing"
-#: The name Antigravity shows for okf's MCP server.
-MCP_NAME = "bundle"
 #: Where APM puts okf-skills' Claude-format agents, relative to the repository.
 OKF_AGENTS = Path("apm_modules") / "scaccogatto" / "okf-skills" / "agents"
-#: Where APM writes rules for Antigravity, relative to the repository.
-APM_RULES = ".agents/rules/"
-#: The prefix agy needs on a glob: it matches a glob holding a ``/`` against
-#: the file's absolute path (spike:antigravity-rules/3).
-ANY_FOLDER = "**/"
-#: The command the hook runs. Antigravity fails a hook whose stdout is not
+#: The command of the package's Antigravity SessionStart hook. Antigravity fails a hook whose stdout is not
 #: JSON, so it prints ``{}`` and exits 0 when kmctl is missing or fails (I1).
 HOOK_COMMAND = (
     "command -v kmctl >/dev/null 2>&1 || { echo '{}'; exit 0; }; "
@@ -51,10 +45,12 @@ HOOK_COMMAND = (
 OKF_STOP_SCRIPT = ".agents/hooks/okf-skills/hooks/okf-stop-check.sh"
 #: Where APM merges hooks for Antigravity, relative to the repository.
 APM_HOOKS = Path(".agents") / "hooks.json"
-#: The name in hooks.json of the hook that runs okf's Stop check.
-STOP_HOOK_NAME = "kmctl-okf-stop"
-#: The command of that hook. agy runs it in the plugin folder, three levels
-#: below the repository, and blocks a stop only on ``"decision": "continue"``,
+#: okf's own Stop handler as APM 0.33.0 writes it for Antigravity: a path from
+#: the repository root, which fails because agy runs hooks in ``.agents/``.
+APM_OKF_STOP = f'bash "{OKF_STOP_SCRIPT}"'
+#: The command of the package's Antigravity Stop hook, which runs okf's check
+#: in its place. agy runs it in ``.agents/``, one level below the repository
+#: (spike:apm-hands-back/3), and blocks a stop only on ``"decision": "continue"``,
 #: where okf prints Claude Code's ``"block"``. It continues only on the first
 #: stop of a turn (agy counts ``executionNum`` from 0, per turn;
 #: spike:antigravity-okf-stop-hook/3), as okf's own ``stop_hook_active``
@@ -63,16 +59,12 @@ STOP_COMMAND = (
     "in=$(cat); printf '%s' \"$in\" "
     "| grep -Eq '\"executionNum\"[[:space:]]*:[[:space:]]*0([^0-9]|$)' "
     "|| { echo '{}'; exit 0; }; "
-    f"cd ../../.. 2>/dev/null && [ -f {OKF_STOP_SCRIPT} ] || {{ echo '{{}}'; exit 0; }}; "
+    f"cd .. 2>/dev/null && [ -f {OKF_STOP_SCRIPT} ] || {{ echo '{{}}'; exit 0; }}; "
     f"out=$(printf '{{}}' | bash {OKF_STOP_SCRIPT} 2>/dev/null); "
     'case "$out" in *\'"decision":"block"\'*) printf \'%s\\n\' "$out" '
     '| sed \'s/"decision":"block"/"decision":"continue"/\';; '
     "*) echo '{}';; esac; exit 0"
 )
-#: Where the MCP launcher starts looking for ``.okf/``: the repository the
-#: plugin folder sits in, when Antigravity sets PLUGIN_ROOT, then the working
-#: folder.
-MCP_STARTS = ('"${PLUGIN_ROOT:+$PLUGIN_ROOT/../../..}"', '"$PWD"')
 #: Each Claude Code tool and the Antigravity tools that do its job.
 TOOLS: dict[str, tuple[str, ...]] = {
     "Read": ("view_file",),
@@ -83,6 +75,8 @@ TOOLS: dict[str, tuple[str, ...]] = {
     "Bash": ("run_command",),
 }
 FIX = "run kmctl plugin install --harness antigravity"
+#: The fix for a piece APM writes from kmctl's package.
+APM_FIX = "run apm install (or kmctl plugin install --harness antigravity)"
 
 
 def plugin_dir(cwd: Path) -> Path:
@@ -96,14 +90,6 @@ def agents_dir() -> Path:
     if (package / "_agents").is_dir():
         return package / "_agents"
     return Path(__file__).resolve().parents[2] / "apm" / ".apm" / "agents"
-
-
-def instructions_dir() -> Path:
-    """kmctl's APM instructions: package data in a wheel, the repository in a checkout."""
-    package = Path(str(files("kmctl")))
-    if (package / "_instructions").is_dir():
-        return package / "_instructions"
-    return Path(__file__).resolve().parents[2] / "apm" / ".apm" / "instructions"
 
 
 class _ClaudeAgent(BaseModel):
@@ -182,94 +168,29 @@ def translate_agent(text: str, source: str) -> str:
     return f"---\n{head}---\n{text[end + 5 :]}"
 
 
-class _Instruction(BaseModel):
-    """An APM instruction's front matter: the globs it applies to, if any."""
+def package_hooks(harness: str) -> dict[str, object]:
+    """The hooks.json kmctl's ``apm/HARNESS/`` sub-package ships, in Claude Code's format APM reads.
 
-    apply_to: str | list[str] | None = Field(
-        default=None,
-        alias="applyTo",
-        description="A comma-separated string or a list of globs, relative to the repository.",
-    )
-
-
-def _globs(apply_to: str | list[str] | None) -> list[str]:
-    """The globs of an ``applyTo`` value, each with the ``**/`` prefix agy needs."""
-    items = apply_to.split(",") if isinstance(apply_to, str) else apply_to or []
-    globs = [g.strip() for g in items if g.strip()]
-    return [g if g.startswith(ANY_FOLDER) else ANY_FOLDER + g for g in globs]
-
-
-def translate_rule(text: str, source: str) -> str:
-    """An APM instruction file rewritten as an Antigravity rule.
-
-    ``applyTo`` becomes ``trigger: glob`` and ``globs:`` as one
-    comma-separated string, the only form agy reads, with each glob given a
-    leading ``**/``. An instruction without ``applyTo`` becomes
-    ``trigger: always_on``. The body is copied unchanged.
-
-    Parameters
-    ----------
-    text :
-        The instruction file.
-    source :
-        Where it came from, for error messages.
-
-    Raises
-    ------
-    PluginError
-        When the front matter is not YAML or ``applyTo`` is not a string or
-        a list of strings.
+    Claude Code gets the briefing's SessionStart hook; Antigravity gets
+    ``HOOK_COMMAND`` at SessionStart and ``STOP_COMMAND`` at Stop. The files
+    in the package must equal these (the tests check it).
     """
-    body = text
-    meta: object = {}
-    end = text.find("\n---\n", 4)
-    if text.startswith("---\n") and end != -1:
-        body = text[end + 5 :]
-        try:
-            meta = yaml.safe_load(text[4:end]) or {}
-        except yaml.YAMLError as error:
-            raise PluginError(
-                f"the instruction {source} has front matter that is not YAML ({error})"
-            ) from error
-    try:
-        instruction = _Instruction.model_validate(meta)
-    except ValidationError as error:
-        raise PluginError(
-            f"the instruction {source} has an applyTo kmctl cannot read ({error}); "
-            "it must be a comma-separated string of globs"
-        ) from error
-    globs = _globs(instruction.apply_to)
-    if not globs:
-        return f"---\ntrigger: always_on\n---\n{body}"
-    return f"---\ntrigger: glob\nglobs: {json.dumps(', '.join(globs))}\n---\n{body}"
+    from kmctl.plugin import hook_entry
 
+    def group(handler: dict[str, object]) -> list[dict[str, object]]:
+        return [{"matcher": "*", "hooks": [handler]}]
 
-def drop_apm_rules(cwd: Path, deployed: list[str]) -> list[str]:
-    """Delete the rule files APM wrote for kmctl's package in ``cwd``, and return their paths.
-
-    ``deployed`` is the lock's ``deployed_files`` for kmctl's package; only
-    those under ``APM_RULES`` go, so every other package's rules stay.
-    """
-    gone = []
-    for rel in deployed:
-        path = cwd / rel
-        if rel.startswith(APM_RULES) and path.is_file():
-            path.unlink()
-            gone.append(rel)
-    return gone
-
-
-def hooks() -> dict[str, object]:
-    """hooks.json: the briefing's SessionStart handler and okf's Stop check, one named hook each."""
+    if harness == "claude":
+        return {"hooks": {"SessionStart": group(hook_entry())}}
     start = {"type": "command", "command": HOOK_COMMAND, "timeout": HOOK_TIMEOUT}
     stop = {"type": "command", "command": STOP_COMMAND, "timeout": HOOK_TIMEOUT}
-    return {HOOK_NAME: {"SessionStart": [start]}, STOP_HOOK_NAME: {"Stop": [stop]}}
+    return {"hooks": {"SessionStart": group(start), "Stop": group(stop)}}
 
 
 def _runs_okf_stop(handler: object) -> bool:
-    """Whether a hooks.json handler runs okf's Stop check script."""
-    return isinstance(handler, dict) and "okf-stop-check.sh" in str(
-        handler.get("command", "")
+    """Whether a hooks.json handler is okf's own Stop handler as APM writes it, not kmctl's wrapper."""
+    return isinstance(handler, dict) and str(handler.get("command", "")).strip() == (
+        APM_OKF_STOP
     )
 
 
@@ -326,7 +247,8 @@ def drop_apm_okf_stop(cwd: Path) -> bool:
 
     APM writes okf's handler with a path from the repository root, but agy
     runs it in ``.agents/``, so it fails at the end of every turn; the
-    plugin folder's ``kmctl-okf-stop`` hook runs it instead. A named hook
+    package's Stop wrapper, which names the script too, stays and runs it
+    instead. A named hook
     left with no handlers is dropped; every other hook and key stays. A
     file that is missing or not a JSON object is left alone.
     """
@@ -360,12 +282,6 @@ def drop_apm_okf_stop(cwd: Path) -> bool:
     return changed
 
 
-def mcp_config() -> dict[str, object]:
-    """mcp_config.json: okf's MCP server, run by the launcher Claude Code's entry uses."""
-    launcher = okf_mcp_launcher(starts=MCP_STARTS)
-    return {"mcpServers": {MCP_NAME: {"command": "sh", "args": ["-c", launcher]}}}
-
-
 def _json(data: dict[str, object]) -> str:
     return json.dumps(data, indent=2) + "\n"
 
@@ -373,8 +289,9 @@ def _json(data: dict[str, object]) -> str:
 def plugin_files(cwd: Path) -> dict[str, str]:
     """Every file the plugin folder holds, by its path inside the folder, as this kmctl writes it.
 
-    kmctl's agents and rules come with the CLI; okf's agents come from where
-    APM put okf-skills in ``cwd``.
+    It holds ``plugin.json`` and the agents, translated from Claude Code's
+    format: kmctl's come with the CLI, okf's from where APM put okf-skills in
+    ``cwd``.
 
     Raises
     ------
@@ -386,19 +303,11 @@ def plugin_files(cwd: Path) -> dict[str, str]:
     okf = cwd / OKF_AGENTS
     if not okf.is_dir():
         raise PluginError(f"apm_modules/ is missing; {FIX}")
-    out = {
-        "plugin.json": _json({"name": PLUGIN_NAME}),
-        "hooks.json": _json(hooks()),
-        "mcp_config.json": _json(mcp_config()),
-    }
+    out = {"plugin.json": _json({"name": PLUGIN_NAME})}
     for folder in (agents_dir(), okf):
         for path in sorted(folder.glob("*.md")):
             text = path.read_text(encoding="utf-8")
             out[f"agents/{path.name}"] = translate_agent(text, str(path))
-    for path in sorted(instructions_dir().glob("*.instructions.md")):
-        name = path.name.removesuffix(".instructions.md")
-        text = path.read_text(encoding="utf-8")
-        out[f"rules/{name}.md"] = translate_rule(text, str(path))
     return out
 
 
@@ -465,7 +374,35 @@ def plugin_problems(cwd: Path) -> list[str]:
     ]
 
 
+def _flat_commands(data: dict[str, object], event: str) -> list[str]:
+    """The commands of every ``event`` handler in a parsed Antigravity hooks.json."""
+    return [
+        str(handler.get("command", ""))
+        for events in data.values()
+        if isinstance(events, dict)
+        for handler in events.get(event, [])
+        if isinstance(handler, dict)
+    ]
+
+
 def hook_present(cwd: Path) -> bool:
-    """Whether the plugin folder's hooks.json is exactly the one this kmctl writes, both hooks included."""
-    path = plugin_dir(cwd) / "hooks.json"
-    return path.is_file() and path.read_text(encoding="utf-8") == _json(hooks())
+    """Whether APM's ``.agents/hooks.json`` in ``cwd`` holds the package's SessionStart and Stop hooks."""
+    try:
+        data = _apm_hooks_data(cwd)
+    except PluginError:
+        return False
+    if data is None:
+        return False
+    return HOOK_COMMAND in _flat_commands(data, "SessionStart") and (
+        STOP_COMMAND in _flat_commands(data, "Stop")
+    )
+
+
+def mcp_present(cwd: Path) -> bool:
+    """Whether ``.agents/mcp_config.json`` in ``cwd`` declares okf's server as kmctl's package does."""
+    path = cwd / ".agents" / "mcp_config.json"
+    try:
+        servers = json.loads(path.read_text(encoding="utf-8")).get("mcpServers")
+    except (OSError, ValueError, AttributeError):
+        return False
+    return isinstance(servers, dict) and okf_server_current(servers.get(MCP_NAME))

@@ -117,3 +117,5 @@
 - Corrected `decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script`: `action/agent.py publish` posts the report from its own job; updated `architecture/overview` to match.
 - Corrected `decisions/0012-releases-come-from-ci`: six install lines, since the CI how-to's audit workflow has a publish job.
 - Added `decisions/0019-kmctl-plugin-remove-uninstalls-the-package-and-reinstalls-the-harnesses-kept` with `kmctl new decision`.
+- Added `decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest` with `kmctl new decision`.
+- Superseded `decisions/0016-antigravity-rules-come-from-the-kmctl-plugin-folder` with `decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest`.

@@ -40,10 +40,11 @@ from kmctl.plugin import (
     apm_root,
     cli_version,
     hook_entry,
+    kmctl_files,
     kmctl_hooks,
     kmctl_package,
-    okf_mcp_server,
     okf_mcp_url,
+    okf_server_current,
     other_okf_server,
     package_ref,
     read_json,
@@ -335,23 +336,14 @@ def _deployed(
     cid: str,
     what: str,
     package: LockDependency | None,
-    moved: str | None = None,
 ) -> Check:
-    """Whether every file the lock lists for ``package`` under ``harness``'s folder is there unchanged.
-
-    Paths under ``moved`` are left out: kmctl deletes them after APM writes
-    them, as it does kmctl's Antigravity rules (``antigravity.APM_RULES``).
-    """
+    """Whether every file the lock lists for ``package`` under ``harness``'s folder is there unchanged."""
     install = _install_fix(harness, scope)
     folder = FOLDERS[harness]
     if package is None:
         return _fail(cid, harness, f"apm.lock.yaml does not list {what}", install)
     root = apm_root(cwd, scope)
-    paths = [
-        p
-        for p in package.deployed_files
-        if _harness_of(p) == harness and not (moved and p.startswith(moved))
-    ]
+    paths = [p for p in package.deployed_files if _harness_of(p) == harness]
     if not paths:
         detail = f"apm.lock.yaml lists no {what} files under {folder}/"
         return _fail(cid, harness, detail, install)
@@ -386,7 +378,7 @@ def _okf_package(lock: Lock | None) -> LockDependency | None:
 
 
 def _claude_hook(cwd: Path, scope: Scope) -> Check:
-    """Whether settings.json holds exactly the SessionStart hook this kmctl writes."""
+    """Whether settings.json holds exactly the SessionStart hook kmctl's package ships."""
     path = settings_path(cwd, scope)
     shown = shown_path(path, cwd)
     install = _install_fix("claude", scope)
@@ -395,12 +387,14 @@ def _claude_hook(cwd: Path, scope: Scope) -> Check:
         return _fail("claude.hook", "claude", f"{shown} {broken}", f"fix {shown}")
     hooks = kmctl_hooks(path)
     if hooks == [hook_entry()]:
-        detail = f"{shown} holds the SessionStart hook this kmctl writes"
+        detail = f"{shown} holds the SessionStart hook kmctl's package ships"
         return _pass("claude.hook", "claude", detail)
     if not hooks:
         detail = f"the kmctl SessionStart hook is missing from {shown}"
         return _fail("claude.hook", "claude", detail, install)
-    detail = f"the kmctl SessionStart hook in {shown} is not the one this kmctl writes"
+    detail = (
+        f"the kmctl SessionStart hook in {shown} is not the one kmctl's package ships"
+    )
     return _fail("claude.hook", "claude", detail, _update_fix("claude", scope))
 
 
@@ -413,7 +407,7 @@ def _claude_mcp(cwd: Path, scope: Scope) -> Check:
         return _fail("claude.okf-mcp", "claude", f"{shown} {broken}", f"fix {shown}")
     servers = data.get("mcpServers")
     own = servers.get(MCP_NAME) if isinstance(servers, dict) else None
-    if own == okf_mcp_server():
+    if okf_server_current(own):
         detail = f"{shown} declares okf's MCP server {MCP_NAME}"
         return _pass("claude.okf-mcp", "claude", detail)
     other = other_okf_server(servers)
@@ -421,9 +415,7 @@ def _claude_mcp(cwd: Path, scope: Scope) -> Check:
         detail = f"{shown} declares okf's MCP server as {other!r}"
         return _pass("claude.okf-mcp", "claude", detail)
     if own is not None:
-        detail = (
-            f"okf's MCP server {MCP_NAME} in {shown} is not the one this kmctl writes"
-        )
+        detail = f"okf's MCP server {MCP_NAME} in {shown} is not the one kmctl's package declares"
         return _fail("claude.okf-mcp", "claude", detail, _update_fix("claude", scope))
     detail = f"okf's MCP server {MCP_NAME} is missing from {shown}"
     return _fail("claude.okf-mcp", "claude", detail, _install_fix("claude", scope))
@@ -483,16 +475,13 @@ def _antigravity_plugin(cwd: Path) -> Check:
 
 
 def _antigravity_hook(cwd: Path) -> Check:
-    """Whether the plugin folder's hooks.json is the hook this kmctl writes."""
-    shown = (antigravity.PLUGIN_PATH / "hooks.json").as_posix()
+    """Whether APM's .agents/hooks.json holds the SessionStart hook and okf Stop check kmctl's package ships."""
+    shown = antigravity.APM_HOOKS.as_posix()
     if antigravity.hook_present(cwd):
-        detail = (
-            f"{shown} holds the SessionStart hook and okf's Stop check this kmctl "
-            "writes"
-        )
+        detail = f"{shown} holds kmctl's SessionStart hook and okf's Stop check"
         return _pass("antigravity.hook", "antigravity", detail)
-    detail = f"{shown} is missing or is not the hook this kmctl writes"
-    return _fail("antigravity.hook", "antigravity", detail, antigravity.FIX)
+    detail = f"{shown} lacks kmctl's SessionStart hook or okf's Stop check"
+    return _fail("antigravity.hook", "antigravity", detail, antigravity.APM_FIX)
 
 
 def _antigravity_apm_hooks(cwd: Path) -> Check:
@@ -515,15 +504,15 @@ def _antigravity_apm_hooks(cwd: Path) -> Check:
 
 
 def _antigravity_mcp(cwd: Path) -> Check:
-    """Whether the plugin folder's mcp_config.json declares okf's MCP server as this kmctl writes it."""
-    path = antigravity.plugin_dir(cwd) / "mcp_config.json"
-    shown = (antigravity.PLUGIN_PATH / "mcp_config.json").as_posix()
-    data, _ = _load(path)
-    if data == antigravity.mcp_config():
-        detail = f"{shown} declares okf's MCP server {antigravity.MCP_NAME}"
+    """Whether APM's .agents/mcp_config.json declares okf's MCP server as kmctl's package does."""
+    shown = ".agents/mcp_config.json"
+    if antigravity.mcp_present(cwd):
+        detail = f"{shown} declares okf's MCP server {MCP_NAME}"
         return _pass("antigravity.okf-mcp", "antigravity", detail)
-    detail = f"{shown} is missing or is not the MCP server this kmctl writes"
-    return _fail("antigravity.okf-mcp", "antigravity", detail, antigravity.FIX)
+    detail = (
+        f"{shown} is missing okf's MCP server {MCP_NAME} as kmctl's package declares it"
+    )
+    return _fail("antigravity.okf-mcp", "antigravity", detail, antigravity.APM_FIX)
 
 
 def _antigravity_trust(cwd: Path) -> Check | None:
@@ -577,8 +566,7 @@ def _harness(cwd: Path, scope: Scope, harness: str, online: bool) -> list[Check]
             harness,
             f"{harness}.files",
             "kmctl",
-            kmctl_package(lock),
-            antigravity.APM_RULES if harness == "antigravity" else None,
+            kmctl_files(lock),
         ),
         _deployed(
             cwd,

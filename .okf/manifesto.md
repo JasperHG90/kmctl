@@ -56,16 +56,15 @@ this formalizes so every repository can have it.
   which write and read back handoffs in `.okf/handoffs/` (ADR 0008), and the
   four knowledge rules, and it depends on the okf skills for OKF authoring and
   validation. Skills route; `kmctl` decides and writes.
-  `kmctl plugin install --harness claude` writes the package into the
-  repository's `apm.yml` at the CLI's own version and installs it with APM
-  (Agent Package Manager), then writes what APM does not carry: one
-  SessionStart hook that relays `kmctl`'s briefing (ADR 0004) and okf's MCP
-  server. `kmctl plugin install --harness antigravity` does the same for
-  Antigravity: APM writes the skills into `.agents/`, and kmctl writes the
-  folder `.agents/plugins/kmctl/` with the agents translated to
-  Antigravity's format, the knowledge rules in the form Antigravity reads,
-  the SessionStart hook, okf's Stop check and okf's MCP server (ADR 0015,
-  ADR 0016, ADR 0018). The harnesses are Claude Code and Antigravity.
+  The package also ships, per harness, the SessionStart hook that relays
+  `kmctl`'s briefing (ADR 0004), okf's MCP server and, for Antigravity, okf's
+  Stop check (ADR 0018), so APM (Agent Package Manager) installs all of it
+  (ADR 0020). `kmctl plugin install --harness claude` (or
+  `--harness antigravity`) writes the package into the repository's
+  `apm.yml` at the CLI's own version, runs APM, and adds only what APM
+  cannot install yet: the agents translated to
+  Antigravity's format, in `.agents/plugins/kmctl/` (ADR 0015). The harnesses
+  are Claude Code and Antigravity.
 - **A reusable GitHub Action** (ADR 0005). On every pull request it runs the
   deterministic checks for free. The LLM audit is opt-in and reports only.
 
@@ -78,8 +77,8 @@ Each is `planned` until the test named for it passes, then `enforced`.
   fails. In Antigravity kmctl also relays okf's opt-in Stop check, which
   APM's copy cannot run there (ADR 0018); it exits 0 and prints `{}` when
   okf's script is missing or fails. Status: enforced by
-  `tests/test_plugin.py` (`kmctl plugin install` writes one SessionStart
-  hook; it exits 0 without `kmctl` and when it fails) and
+  `tests/test_plugin.py` (the package ships one SessionStart hook; it exits
+  0 without `kmctl` and when it fails) and
   `tests/test_antigravity.py` (Antigravity's SessionStart hook prints `{}`
   and exits 0 in both cases; the okf Stop relay prints `{}` and exits 0
   without a working script).

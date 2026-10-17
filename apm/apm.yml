@@ -1,11 +1,27 @@
-# kmctl's APM package (ADR 0014). kmctl plugin install writes it into a
-# repository's apm.yml and runs apm install, which brings the skills, the
-# audit agent and the knowledge rules under .apm/, plus the okf skills. The
-# version below is the one release version (ADR 0012): scripts/release.py set
-# writes it, and pyproject.toml reads it.
+# kmctl's APM package (ADR 0014, ADR 0020). A repository's apm.yml names it as
+# {git: https://github.com/JasperHG90/Knowledge-management.git, path: apm, ref: vVERSION}
+# and apm install brings, for every harness, the skills, the audit agent (Claude
+# Code only: APM writes no agents for Antigravity) and the okf skills, plus
+# okf's MCP server below; ./claude and ./antigravity add each harness's rules
+# and hooks. The version below is the one release version (ADR 0012):
+# scripts/release.py set writes it into every kmctl apm.yml, and pyproject.toml
+# reads it.
 name: kmctl
 version: 0.3.0
-description: kmctl's skills, audit agent and knowledge rules, with the okf skills they use.
+description: kmctl's skills, audit agent, knowledge rules and session hooks, with the okf skills and MCP server they use.
 dependencies:
   apm:
     - scaccogatto/okf-skills#a8b96420de90d102c43cda1693d01ec4f925f2ab
+    - ./claude
+    - ./antigravity
+  mcp:
+    # okf's MCP server, declared here because APM skips a transitive
+    # dependency's server; the launcher runs okf_mcp.py at the okf-skills
+    # commit above for the nearest .okf/ (kmctl.plugin.okf_mcp_launcher).
+    - name: okf-bundle
+      registry: false
+      transport: stdio
+      command: sh
+      args:
+        - "-c"
+        - "for d in \"$PWD\"; do [ -n \"$d\" ] || continue; d=$(cd \"$d\" 2>/dev/null && pwd -P) || continue; while :; do if [ -d \"$d/.okf\" ]; then exec uv run https://raw.githubusercontent.com/scaccogatto/okf-skills/a8b96420de90d102c43cda1693d01ec4f925f2ab/servers/okf_mcp.py \"$d/.okf\"; fi; [ \"$d\" = / ] && break; d=$(dirname \"$d\"); done; done; exec uv run https://raw.githubusercontent.com/scaccogatto/okf-skills/a8b96420de90d102c43cda1693d01ec4f925f2ab/servers/okf_mcp.py .okf"

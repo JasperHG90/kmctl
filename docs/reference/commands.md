@@ -138,9 +138,10 @@ List the live handoffs in `.okf/handoffs/`, newest first. Handoffs past their
 Print the session briefing: where knowledge lives, what is due, and the
 package's skills, in under 500 tokens. The rules for writing knowledge are not
 in it: `kmctl plugin install` puts them in `.claude/rules/`, and the briefing
-adds only the one they lack. The SessionStart hook `kmctl plugin install`
-writes prints this: Claude Code's runs `kmctl briefing`, Antigravity's runs
-`kmctl briefing --format antigravity`. It reads and never writes.
+adds only the one they lack. The SessionStart hook in kmctl's APM package,
+which APM writes, prints this: Claude Code's runs `kmctl briefing`,
+Antigravity's runs `kmctl briefing --format antigravity`. It reads and never
+writes.
 
 With `--format antigravity` it prints
 `{"injectSteps": [{"systemMessage": {"systemMessage": "TEXT"}}]}`, where
@@ -265,16 +266,18 @@ Exit code: 1 when kmctl refuses, with the reason on stderr.
 
 ### `kmctl plugin install`
 
-Install kmctl's APM package (the skills, the audit agent and the four
-knowledge rules, with the okf skills they use), its session hook and okf's
-MCP server for a harness: `claude` (Claude Code), `antigravity` or both.
+Install kmctl's APM package (the skills, the audit agent, the four
+knowledge rules, the session hook and okf's MCP server, with the okf skills
+they use) for a harness: `claude` (Claude Code), `antigravity` or both. APM
+writes all of these; kmctl adds only what APM cannot install yet: the agents
+for Antigravity, and a fix for okf's Antigravity Stop hook.
 Without `--harness`, it asks which harnesses to install for, listing each
 with a number; answer with numbers or names as a comma list, or press Enter
 for `claude`. The question goes to stderr. When stdin is not a terminal, or
 with `--json`, it asks nothing and refuses, naming `--harness`, so a script
 or an agent must pass it.
 
-Steps 5 to 7 are for `claude`; step 8 is for `antigravity`. It runs, in
+Steps 3 and 6 are for `claude`; step 7 is for `antigravity`. It runs, in
 order:
 
 1. Refuses before changing anything when `uvx` is not on PATH, when
@@ -284,61 +287,73 @@ order:
    the string `JasperHG90/Knowledge-management/apm#…`, or a `path: apm`
    entry when `apm.lock.yaml` shows that old layout, so the old package's
    hook goes with it.
-3. Writes the entry `{git: SOURCE, path: apm, ref: vVERSION}`, where
+3. Removes what an older kmctl wrote itself that APM now writes, so APM
+   does not leave a second copy: a SessionStart group in
+   `.claude/settings.json` that runs `kmctl briefing` and is not recorded in
+   the `apm-hooks.json` APM keeps beside it, and an `okf-bundle` server in `.mcp.json`
+   whose command or args differ from the one kmctl's package declares. At
+   user scope it reads the `settings.json` in `$CLAUDE_CONFIG_DIR` and the
+   user `.claude.json`, and removes the server with
+   `claude mcp remove okf-bundle --scope user`; when the `claude` CLI is not
+   on PATH it leaves the server and prints a note naming that command. Every
+   other hook and server stays.
+4. Writes the entry `{git: SOURCE, path: apm, ref: vVERSION}`, where
    `VERSION` is this kmctl's, and the harnesses as `targets:` into `apm.yml`
    (`~/.apm/apm.yml` with `--scope user`). It replaces an earlier kmctl
    entry in place, also one from another `--source` (the lock says where
    kmctl came from), removes any second one, and says which it replaced.
    Other entries and comments are kept; a missing file is created.
-4. Runs `uvx --from apm-cli==0.33.0 apm install --target HARNESSES` (with
-   `-g` at user scope). For `claude`, APM writes the skills to
-   `.claude/skills/`, the agent to `.claude/agents/` and the rules, with
-   their `paths:`, to `.claude/rules/`. For `antigravity`, it writes the
-   skills to `.agents/skills/` (and copies of the rules in `.agents/rules/`, in a form
-   Antigravity cannot use; step 8 replaces them).
-5. Once APM has succeeded, removes the old claude plugin `kmctl@kmctl`
+5. Runs `uvx --from apm-cli==0.33.0 apm install --target HARNESSES` (with
+   `-g` at user scope). APM writes every piece of kmctl's package, merging
+   hooks and MCP servers into the files that already hold yours:
+   - For `claude`: the skills to `.claude/skills/`, the agent to
+     `.claude/agents/`, the rules, with their `paths:`, to `.claude/rules/`,
+     one SessionStart hook that runs `kmctl briefing` into
+     `.claude/settings.json` (recorded in `.claude/apm-hooks.json`), and
+     okf's MCP server as `okf-bundle` into `.mcp.json`. At user scope the
+     hook goes into the `settings.json` in `$CLAUDE_CONFIG_DIR` (by default
+     `~/.claude/`) and the server into the user `.claude.json`. The hook
+     prints how to install kmctl and exits 0 when kmctl is missing or fails.
+     Claude Code asks you to approve a project `.mcp.json` server once.
+   - For `antigravity`: the skills to `.agents/skills/`; the four rules to
+     `.agents/rules/`, each with its globs as one `globs:` string, every
+     glob starting with `**/` (Antigravity matches globs against absolute
+     paths); and, in `.agents/hooks.json`, one SessionStart hook that runs
+     `kmctl briefing --format antigravity` and prints `{}` and exits 0 when
+     kmctl is missing or fails, and one Stop hook that runs okf's Stop check
+     from the repository root on the first stop of each turn and turns
+     okf's `block` into Antigravity's `continue` (it does anything only when
+     `.okf/index.md` sets `upkeep: enforced`, and prints `{}` and exits 0
+     otherwise); and okf's MCP server as `okf-bundle` in
+     `.agents/mcp_config.json`.
+
+   okf's MCP server runs okf's `okf_mcp.py` at the pinned okf-skills commit
+   with `uv run`, on the nearest `.okf/` folder above where it starts, so it
+   needs `uv` on PATH. A server of your own that runs `okf_mcp.py` under
+   another name stays, and `okf-bundle` is added beside it. When `apm.yml`
+   has an `allowExecutables` block, APM writes the hooks and the MCP server
+   only for packages it allows, so allow kmctl's package there.
+6. Once APM has succeeded, removes the old claude plugin `kmctl@kmctl`
    installed for this repository (or, with `--scope user`, for the user):
    `claude plugin uninstall`, then `claude plugin prune`, which also removes
    an okf plugin only kmctl needed, then
    `claude plugin marketplace remove kmctl`, each at the plugin's scope.
    When the `claude` CLI is not on PATH it skips this and says so.
-6. Merges one SessionStart hook that runs `kmctl briefing` into
-   `.claude/settings.json` (at user scope, the `settings.json` in
-   `$CLAUDE_CONFIG_DIR`, by default `~/.claude/`). It finds its own entry by
-   that command and replaces it in place; every other key and hook stays.
-   The hook prints how to install kmctl and exits 0 when kmctl is missing or
-   fails.
-7. Declares okf's MCP server as `okf-bundle` in `.mcp.json` (at user scope,
-   with `claude mcp add-json --scope user`). It runs okf's `okf_mcp.py` at
-   the pinned okf-skills commit with `uv run`, on the nearest `.okf/` folder
-   above where it starts. When there is already a server that runs
-   `okf_mcp.py` under another name, kmctl adds none, removes its own, and
-   says which it kept. Claude Code asks you to approve a project `.mcp.json`
-   server once.
-8. Replaces the folder `.agents/plugins/kmctl/`, which kmctl alone owns,
-   with what this kmctl writes: `plugin.json`; `hooks.json` with two named
-   hooks: `kmctl-briefing`, whose one SessionStart handler runs
-   `kmctl briefing --format antigravity` and prints `{}` and exits 0 when
-   kmctl is missing or fails, and `kmctl-okf-stop`, whose one Stop handler
-   runs okf's Stop check from the repository root on the first stop of each
-   turn and turns okf's `block` into Antigravity's `continue` (it does
-   anything only when `.okf/index.md` sets `upkeep: enforced`, and prints
-   `{}` and exits 0 otherwise); `agents/kmctl-auditor.md` and okf's
+7. Replaces the folder `.agents/plugins/kmctl/`, which kmctl alone owns,
+   with `plugin.json` and the agents, which APM does not install for
+   Antigravity yet: `agents/kmctl-auditor.md` and okf's
    `agents/bundle-weaver.md` and `agents/event-analyzer.md`, translated
    from Claude Code's format (okf's are read from
-   `apm_modules/scaccogatto/okf-skills/agents/`); the four knowledge rules
-   in `.agents/plugins/kmctl/rules/`, each with `trigger: glob` and its
-   globs as one comma-separated string, every glob starting with `**/`
-   (Antigravity matches globs against absolute paths); and `mcp_config.json`
-   declaring okf's MCP server as `bundle`, the same `uv run` launcher as
-   step 7, which also looks above the plugin folder. It then deletes the
-   copies of kmctl's rules APM wrote to `.agents/rules/`, other files there
-   staying, and takes okf's Stop handler out of `.agents/hooks.json`, where
-   APM's path to the script fails, keeping every other hook. Antigravity loads the folder only once you trust the repository
-   folder, and the MCP server needs `uv` on PATH.
+   `apm_modules/scaccogatto/okf-skills/agents/`). It then takes okf's own
+   Stop handler, `bash ".agents/hooks/okf-skills/hooks/okf-stop-check.sh"`,
+   out of `.agents/hooks.json`. APM writes that path from the repository
+   root, but Antigravity runs hooks in `.agents/`, so it would fail at the
+   end of every turn; the Stop hook from step 5 runs okf's check instead.
+   Only that exact command goes; every other hook stays. Antigravity loads
+   `.agents/` only once you trust the repository folder.
 
 When APM reports that it left in place files it did not write, the install
-stops before step 5, names the skill folders and exits 1; run it again with
+stops before step 6, names the skill folders and exits 1; run it again with
 `--force` to replace them. Running it again at the same version changes
 nothing. Output: a `note:` line for each old install removed or step
 skipped, then a line naming the package ref `apm.lock.yaml` records, the
@@ -378,19 +393,22 @@ In order:
    scope), where `NAME` is `HOST[:PORT]/OWNER/REPO/apm` built from the
    `git:` URL of kmctl's `apm.yml` entry, for example
    `github.com/JasperHG90/Knowledge-management/apm`. APM removes kmctl's and
-   okf's skills, agent, rules, hooks and lock entries for every harness.
+   okf's skills, agent, rules, hooks, okf's MCP server `okf-bundle` and the
+   lock entries for every harness. At user scope it leaves `okf-bundle` in
+   the user `.claude.json`; step 3 removes it.
 2. Takes each removed harness out of `targets:` in `apm.yml`, but only when
    no other `dependencies.apm` entry is left there. Otherwise it keeps the
    target, because your other packages may use it, and says that a bare
    `apm install` (without `--target`) would deploy kmctl to it again.
-3. For `claude`, takes kmctl's SessionStart hook out of `.claude/settings.json`
-   (at user scope, the one in `$CLAUDE_CONFIG_DIR`) and kmctl's `okf-bundle`
-   server out of `.mcp.json` (at user scope, with
-   `claude mcp remove okf-bundle --scope user`), keeping every other hook and
-   server, an okf server kmctl did not write included. A `.mcp.json` left
-   empty is deleted.
-4. For `antigravity`, deletes `.agents/plugins/kmctl/` and a
-   `.agents/hooks.json` that APM's uninstall left as `{}`.
+3. For `claude`, takes any kmctl SessionStart hook APM's uninstall left out
+   of `.claude/settings.json` (at user scope, the one in
+   `$CLAUDE_CONFIG_DIR`) and any `okf-bundle` server left out of `.mcp.json`
+   (at user scope, with `claude mcp remove okf-bundle --scope user`),
+   keeping every other hook and server, an okf server under another name
+   included. A `.mcp.json` left empty is deleted.
+4. For `antigravity`, deletes `.agents/plugins/kmctl/`, and
+   `.agents/hooks.json` and `.agents/mcp_config.json` when APM's uninstall
+   left them empty.
 5. When harnesses stay installed, installs them again with the steps of
    `kmctl plugin install`, from the removed entry's `git:` source at its
    `ref`, so they keep their version. APM cannot drop one target cleanly:
@@ -445,15 +463,15 @@ installed gets no checks.
 | `kmctl.harness` | all | A harness is installed; the detail names them. | `kmctl plugin install --harness claude` |
 | `claude.scope` | claude | Passes, at project scope, when Claude Code is installed at user scope but not here; it says to run `kmctl doctor --scope user`. | none |
 | `claude.lock`, `antigravity.lock` | each | `apm.lock.yaml` names kmctl's package at `v<this version>`. | `kmctl plugin install --harness H` when the lock or the package is missing, `kmctl plugin update --harness H` for another version |
-| `claude.files`, `antigravity.files` | each | Every path the lock lists for kmctl's package under `.claude/` or `.agents/` exists, and each file matches the sha256 the lock records. This covers the skills, the agent and, for `claude`, the rules; kmctl's own rules under `.agents/rules/` are left out, because the install deletes them. | `kmctl plugin install --harness H` |
+| `claude.files`, `antigravity.files` | each | Every path the lock lists for kmctl's package under `.claude/` or `.agents/` exists, and each file matches the sha256 the lock records. This covers the skills, the rules and, for `claude`, the agent. | `kmctl plugin install --harness H` |
 | `claude.okf-skills`, `antigravity.okf-skills` | each | The same for okf's skills. | `kmctl plugin install --harness H` |
-| `claude.hook` | claude | `.claude/settings.json` holds exactly the SessionStart hook this kmctl writes. | `kmctl plugin install --harness claude` when missing, `kmctl plugin update --harness claude` when changed |
-| `claude.okf-mcp` | claude | `.mcp.json` (at user scope, `.claude.json` in `$CLAUDE_CONFIG_DIR`, by default `~/.claude.json`) declares `okf-bundle` as this kmctl writes it, or another server that runs `okf_mcp.py`. | `kmctl plugin install --harness claude` when missing, `kmctl plugin update --harness claude` when changed |
+| `claude.hook` | claude | `.claude/settings.json` (at user scope, the one in `$CLAUDE_CONFIG_DIR`) holds exactly the SessionStart hook kmctl's package ships, which APM writes. | `kmctl plugin install --harness claude` when missing, `kmctl plugin update --harness claude` when changed |
+| `claude.okf-mcp` | claude | `.mcp.json` (at user scope, `.claude.json` in `$CLAUDE_CONFIG_DIR`, by default `~/.claude.json`) declares `okf-bundle` with the command and args kmctl's package declares (keys APM adds, such as `type`, are not compared), or another server that runs `okf_mcp.py`. | `kmctl plugin install --harness claude` when missing, `kmctl plugin update --harness claude` when changed |
 | `claude.old-plugin` | claude | No settings file (`.claude/settings.json` or `.claude/settings.local.json`; at user scope, `settings.json` in `$CLAUDE_CONFIG_DIR`) enables `kmctl@kmctl` or `okf@scaccogatto`. | `kmctl plugin install --harness claude` when `kmctl@kmctl` is enabled (it removes okf too when okf came as its dependency); otherwise `claude plugin uninstall okf@scaccogatto --scope SCOPE`, the scope of the file that enables it |
-| `antigravity.plugin` | antigravity | Every file under `.agents/plugins/kmctl/` is what this kmctl writes, with none missing or extra. Fails with `apm_modules/ is missing` when okf's agents cannot be read to compare. | `kmctl plugin install --harness antigravity` |
-| `antigravity.hook` | antigravity | `.agents/plugins/kmctl/hooks.json` holds the two hooks this kmctl writes, `kmctl-briefing` and `kmctl-okf-stop`. | `kmctl plugin install --harness antigravity` |
+| `antigravity.plugin` | antigravity | Every file under `.agents/plugins/kmctl/` is what this kmctl writes, `plugin.json` and the translated agents, with none missing or extra. Fails with `apm_modules/ is missing` when okf's agents cannot be read to compare. | `kmctl plugin install --harness antigravity` |
+| `antigravity.hook` | antigravity | `.agents/hooks.json` holds the SessionStart hook (`kmctl briefing --format antigravity`) and the okf Stop check that kmctl's package ships, which APM writes. | `apm install` (or `kmctl plugin install --harness antigravity`) |
 | `antigravity.apm-hooks` | antigravity | `.agents/hooks.json` does not run `okf-stop-check.sh`. APM writes okf's Stop handler there with a path agy cannot find, so it fails at the end of every turn; a bare `apm install` puts it back. It also fails when the file is not a JSON object, which install leaves alone and agy cannot load. | `kmctl plugin install --harness antigravity`; for a file that is not a JSON object, repair it by hand first |
-| `antigravity.okf-mcp` | antigravity | `.agents/plugins/kmctl/mcp_config.json` declares okf's MCP server as this kmctl writes it. | `kmctl plugin install --harness antigravity` |
+| `antigravity.okf-mcp` | antigravity | `.agents/mcp_config.json` declares okf's MCP server `okf-bundle` with the command and args kmctl's package declares, which APM writes. | `apm install` (or `kmctl plugin install --harness antigravity`) |
 | `antigravity.trust` | antigravity | Checked only when `agy` is on PATH: the repository is in `trustedWorkspaces` of `~/.gemini/antigravity-cli/settings.json`. Antigravity loads `.agents/` only from a trusted folder. | open the folder in Antigravity and trust it |
 | `antigravity.okf-mcp-url` | antigravity | With `--online` only: okf's MCP script URL, which the MCP server runs with `uv run`, answers HTTP 200. | check the network, then run it again |
 
