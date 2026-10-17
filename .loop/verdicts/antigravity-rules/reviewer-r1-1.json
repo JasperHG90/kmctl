@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The design docs still describe the old route. .okf/manifesto.md:64 says APM writes the skills and rules into .agents/ and the plugin folder holds the agents, hook and MCP server, with no rules. .okf/architecture/overview.md:176-201 says the wheel carries only skills/ and agents/ (it now also carries instructions/), the plugin-folder bullet lists no rules/, the rules bullet names only .claude/rules/, and the commands table row (line 160) does not mention deleting kmctl's rules from .agents/rules/. None of them cites ADR 0016.",
+      "anchor": ".okf/manifesto.md:64",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "Row r4's command (-k 'validate or consumer') runs only the agy validate test and test_consumer_gets_skills_rules_and_the_plugin_folder. Neither runs kmctl doctor, so the row's 'doctor exits nonzero' case is not checked by its own command. test_doctor_after_a_real_install_exits_zero covers it, but only under r6 and the integration gate. Assert doctor's exit code in the consumer test, or widen r4's -k to include that test.",
+      "anchor": "tests/test_antigravity.py:815",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "fe5c53a914450a754d0243ab7e543c7684e9e7695e3aadc7cf7f276442318959",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
+  "at": "2026-10-17T06:51:46+00:00"
+}
