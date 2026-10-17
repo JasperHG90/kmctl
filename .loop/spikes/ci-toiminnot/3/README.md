@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017
-  at: '2026-10-17T18:03:30+00:00'
+  at: '2026-10-17T18:03:46+00:00'
 slug: ci-toiminnot
 n: 3
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike ci-toiminnot/3
@@ -24,7 +24,7 @@ The command exited 0:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note ci-toiminnot 3`.
+Holds. In a bare clone (empty HOME, no git identity, only uv, git and system tools on PATH), prek 0.5.5 installed with pip into a Python 3.12 venv ran `prek run --show-diff-on-failure --files $(git ls-files)`, the command toiminnot pre_commit action v1.3.0 runs: both hooks passed, exit 0, tree clean.
 
 ## Files
 
