@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014
-  at: '2026-10-17T21:49:36+00:00'
+  at: '2026-10-17T21:50:16+00:00'
 slug: opencode-harness
 n: 3
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike opencode-harness/3
@@ -24,7 +24,8 @@ The command exited 1:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note opencode-harness 3`.
+Same check as spike 4, with the same results for install (plain, --frozen and --force each exit 0 and rewrite the edited agents), audit (exit 0, drift on 2 files) and uninstall (exit 1, keeps the edited agents, the apm.yml entry and the lock entries, but deletes apm_modules/ and the skill). Reverting with `apm install` and then uninstalling exited 0 and left nothing.
+The "delete the edited files, then uninstall" check did not test anything: the script never put the dependency back into apm.yml, so uninstall found no entry. Spike 4 fixes that; cite 4, not this run.
 
 ## Files
 
