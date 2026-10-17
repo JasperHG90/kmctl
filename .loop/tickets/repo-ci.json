@@ -1,14 +1,30 @@
 {
   "schema_version": "1.0",
   "slug": "repo-ci",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "ffe0bb0cb708ebd700c5e7df8d9639c7c667d0f561c2fe5a57c81bfdaab6aef3",
+    "tree": "6154efec6021f24935d2e4558bf9457a793f276b",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": null,
+        "paths": [
+          "docs/how-to/install-the-plugin-and-the-ci-action.md"
+        ]
+      }
+    ],
+    "at": "2026-10-17T17:48:01+00:00"
+  },
   "ask": "j-20261017T173641+0000-314ac9a1",
   "split": "j-20261017T173949+0000-326e48f6",
   "split_plan_hash": "bebfa7e56797188b48191a88a96214c4ade103ccec8f825b3dbfc0616c8956b8",
@@ -141,8 +157,14 @@
       "to": "fixing",
       "at": "2026-10-17T17:46:05+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-17T17:48:01+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
-  "at": "2026-10-17T17:47:53+00:00"
+  "at": "2026-10-17T17:48:01+00:00"
 }
