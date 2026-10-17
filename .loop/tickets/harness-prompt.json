@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "harness-prompt",
-  "stage": "planning",
+  "stage": "ready",
   "attempts": 0,
   "plan_rounds": 1,
   "review_rounds": 0,
@@ -60,6 +60,12 @@
       "to": "planning",
       "at": "2026-10-17T05:54:45+00:00",
       "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-10-17T05:57:01+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
