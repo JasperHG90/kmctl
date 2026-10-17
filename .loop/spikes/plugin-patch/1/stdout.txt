@@ -1,0 +1,12 @@
+install rc=0
+  okf-bundle already configured, skipping
+  [i] Skipped inactive experimental resolver for target 'copilot-cowork' during 
+  [i] Skipped inactive experimental resolver for target 'copilot-app' during 
+first: 1 stale lines in .mcp.json
+second install rc=0
+[i] Trusting direct dependency MCP 'okf-bundle' from 'pkg'
+|  [>]  okf-bundle (self-defined, stdio)
+Successfully configured MCP server 'okf-bundle' for Claude Code
+.mcp.json okf-bundle back with the package launcher: True
+.agents/mcp_config.json okf-bundle back with the package launcher: True
+mine kept: True
