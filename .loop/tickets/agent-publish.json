@@ -1,19 +1,13 @@
 {
   "schema_version": "1.0",
   "slug": "agent-publish",
-  "stage": "blocked",
+  "stage": "ready",
   "attempts": 0,
   "plan_rounds": 3,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
-  "blocker": {
-    "code": "finding-open-two-rounds",
-    "message": "finding plan-reviewer:p1 stayed open across two rounds",
-    "plan_hash": "cb4baca190dced1c6f1ca1ddd62bd2b8fe7c41bb02cb2a07a32796da84a94542",
-    "at": "2026-10-17T07:44:38+00:00",
-    "resign_eval": false
-  },
+  "blocker": null,
   "fix": null,
   "ask": null,
   "split": "j-20261017T074440+0000-5844e7ec",
@@ -177,8 +171,14 @@
       "to": "blocked",
       "at": "2026-10-17T07:44:38+00:00",
       "by": "review close"
+    },
+    {
+      "from": "blocked",
+      "to": "ready",
+      "at": "2026-10-17T07:46:02+00:00",
+      "by": "unblock"
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T07:46:01+00:00"
+  "at": "2026-10-17T07:46:02+00:00"
 }
