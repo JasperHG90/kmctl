@@ -27,8 +27,8 @@
     },
     {
       "id": "r5",
-      "behavior": "action/knowledge-audit-issue.sh is gone. .github/workflows/knowledge-audit.yml has an audit job (no issues: write, no token) that runs the agent and uploads agent-report, and a publish job (needs: audit, issues: write) that downloads it and runs agent.py publish with GH_TOKEN. action.yml's audit mode runs the agent and uploads the artifact with no token; its publish mode downloads the artifact and runs publish with min_severity, mention and issue_title.",
-      "fails_when": "the shell script remains, a job or mode that runs the agent can see a token or has issues: write, publish runs in the agent's job, or an input is missing or not passed",
+      "behavior": "action/knowledge-audit-issue.sh is gone. .github/workflows/knowledge-audit.yml has an audit job (no issues: write, no token) that runs the agent and uploads agent-report, and a publish job (needs: audit, issues: write) that downloads it and runs agent.py publish with GH_TOKEN. action.yml's audit mode runs the agent and uploads the artifact with no token; its publish mode downloads the artifact and runs publish with min_severity, mention and issue_title. Every astral-sh/setup-uv step in the workflow and in action.yml sets enable-cache: false, and no actions/cache step is used, so nothing the agent wrote reaches the publish job but the artifact.",
+      "fails_when": "the shell script remains, a job or mode that runs the agent can see a token or has issues: write, publish runs in the agent's job, or an input is missing or not passed, or a setup-uv step leaves its cache on or an actions/cache step appears",
       "command": "uv run pytest tests/test_action.py -q"
     },
     {

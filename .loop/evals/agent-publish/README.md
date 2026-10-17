@@ -6,12 +6,12 @@ tags:
 - eval
 generated:
   by: process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016
-  at: '2026-10-17T07:43:09+00:00'
+  at: '2026-10-17T07:44:41+00:00'
 slug: agent-publish
 signoff:
   signer: delegated:jasperginn@gmail.com/claude
-  hash: 291eac8cc17be6daa59a8f9e213baae6fafef184e6b86546e9cff03bd9faac28
-  at: '2026-10-17T07:43:09+00:00'
+  hash: 5ae28a63c22ef8a6b713c712b41f57e96bebcd1265e4ffff917ca2e5dd8bfe56
+  at: '2026-10-17T07:44:41+00:00'
 verified: null
 ---
 
@@ -25,8 +25,8 @@ Rows: rows.json; the fields each row takes: loopctl schema eval-rows.
   Fails when: owners from another rule or file are mentioned, --mention does not replace them, or a mention line appears with no owners
 - r4: publish exits 1 when gh fails and writes no issue, and exits 2 with a message for a missing or invalid report.json.
   Fails when: a gh failure exits 0, or a bad report is posted or crashes with a traceback
-- r5: action/knowledge-audit-issue.sh is gone. .github/workflows/knowledge-audit.yml has an audit job (no issues: write, no token) that runs the agent and uploads agent-report, and a publish job (needs: audit, issues: write) that downloads it and runs agent.py publish with GH_TOKEN. action.yml's audit mode runs the agent and uploads the artifact with no token; its publish mode downloads the artifact and runs publish with min_severity, mention and issue_title.
-  Fails when: the shell script remains, a job or mode that runs the agent can see a token or has issues: write, publish runs in the agent's job, or an input is missing or not passed
+- r5: action/knowledge-audit-issue.sh is gone. .github/workflows/knowledge-audit.yml has an audit job (no issues: write, no token) that runs the agent and uploads agent-report, and a publish job (needs: audit, issues: write) that downloads it and runs agent.py publish with GH_TOKEN. action.yml's audit mode runs the agent and uploads the artifact with no token; its publish mode downloads the artifact and runs publish with min_severity, mention and issue_title. Every astral-sh/setup-uv step in the workflow and in action.yml sets enable-cache: false, and no actions/cache step is used, so nothing the agent wrote reaches the publish job but the artifact.
+  Fails when: the shell script remains, a job or mode that runs the agent can see a token or has issues: write, publish runs in the agent's job, or an input is missing or not passed, or a setup-uv step leaves its cache on or an actions/cache step appears
 - r6: ADR 0017 gets a correction (separate job, GitHub-hosted runners only), and the how-to and architecture overview describe publish, the two jobs, its threshold, closing and the mentions; the bundle and docs check clean.
   Fails when: a page still names knowledge-audit-issue.sh or kmctl check fails
 - r7: All of the repository's gates pass.
