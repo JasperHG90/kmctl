@@ -1,0 +1,12 @@
+unformatted: File would be reformatted
+    --> tests/test_doctor.py:1014:26
+     |
+1013 |     assert "trustedWorkspaces" in line
+     -     assert line.endswith('; run agy in this folder and choose "Yes, I trust this folder"')
+1014 +     assert line.endswith(
+1015 +         '; run agy in this folder and choose "Yes, I trust this folder"'
+1016 +     )
+1017 |
+     |
+
+1 file would be reformatted, 93 files already formatted
