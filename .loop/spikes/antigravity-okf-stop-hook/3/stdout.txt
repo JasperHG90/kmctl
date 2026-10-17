@@ -1,0 +1,11 @@
+stop hook calls: 5
+{"artifactDirectoryPath":"/home/vscode/.gemini/antigravity-cli/brain/4ca33a15-2b11-45e8-b208-f5f94b1dba9d","conversationId":"4ca33a15-2b11-45e8-b208-f5f94b1dba9d","error":"","executionNum":0,"fullyIdle":true,"modelName":"gemini-3.8-flash-high","terminationReason":"NO_TOOL_CALL","transcriptPath":"/ho
+{"artifactDirectoryPath":"/home/vscode/.gemini/antigravity-cli/brain/4ca33a15-2b11-45e8-b208-f5f94b1dba9d","conversationId":"4ca33a15-2b11-45e8-b208-f5f94b1dba9d","error":"","executionNum":1,"fullyIdle":true,"modelName":"gemini-3.8-flash-high","terminationReason":"NO_TOOL_CALL","transcriptPath":"/ho
+--- turn 2
+{"artifactDirectoryPath":"/home/vscode/.gemini/antigravity-cli/brain/4ca33a15-2b11-45e8-b208-f5f94b1dba9d","conversationId":"4ca33a15-2b11-45e8-b208-f5f94b1dba9d","error":"","executionNum":0,"fullyIdle":true,"modelName":"gemini-3.8-flash-high","terminationReason":"NO_TOOL_CALL","transcriptPath":"/ho
+{"artifactDirectoryPath":"/home/vscode/.gemini/antigravity-cli/brain/4ca33a15-2b11-45e8-b208-f5f94b1dba9d","conversationId":"4ca33a15-2b11-45e8-b208-f5f94b1dba9d","error":"","executionNum":1,"fullyIdle":true,"modelName":"gemini-3.8-flash-high","terminationReason":"NO_TOOL_CALL","transcriptPath":"/ho
+{'conversation_id': '4ca33a15-2b11-45e8-b208-f5f94b1dba9d', 'step_index': 21, 'state': 'DONE', 'step_type': 'user_input'}
+{'conversation_id': '4ca33a15-2b11-45e8-b208-f5f94b1dba9d', 'step_index': 22, 'state': 'DONE', 'step_type': 'system_message', 'duration_seconds': 2.9417e-05}
+{'conversation_id': '4ca33a15-2b11-45e8-b208-f5f94b1dba9d', 'step_index': 24, 'state': 'DONE', 'step_type': 'tool', 'tool_name': 'run_command', 'duration_seconds': 0.026296908, 'tool_info': {'name': 'run_command', 'parameters': {'CommandLine': 'cat /tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4
+{'conversation_id': '4ca33a15-2b11-45e8-b208-f5f94b1dba9d', 'step_index': 26, 'state': 'DONE', 'step_type': 'system_message', 'duration_seconds': 0}
+{'event': 'result', 'result': {'conversation_id': '4ca33a15-2b11-45e8-b208-f5f94b1dba9d', 'status': 'SUCCESS', 'response': 'again\nagain\n', 'duration_seconds': 46.883776711, 'num_turns': 2, 'usage': {'input_tokens': 89990, 'output_tokens': 3733, 'thinking_tokens': 2598, 'cache_read_tokens': 169696,
