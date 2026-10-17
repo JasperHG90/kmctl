@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017
-  at: '2026-10-17T16:51:12+00:00'
+  at: '2026-10-17T16:52:03+00:00'
 slug: audit-prompts
 n: 1
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike audit-prompts/1
@@ -24,7 +24,11 @@ python3 /tmp/claude-1000/-home-vscode-kmctl/dff53b03-6dd4-4578-a2d3-39665316bb2b
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note audit-prompts 1`.
+Exit 1: one live Gemini 3.8 Flash run per draft prompt caught 8 of 9 planted false claims. docs-vs-code 3/3 (78 requests, 1 output retry, 7/7 pages checked), okf-vs-docs 3/3 (47 requests, 0 retries, 7/7 pages), okf-vs-code 2/3 (111 requests, 0 retries, all 23 concepts checked; the 3 indexes were not). All three exited 0 within 9 minutes.
+okf-vs-code missed the default changed in ADR 0017's Correction (`--min-severity` default high -> medium at line 113): it read lines 101-120 but checked that ADR with only 3 evidence lines. So risk 1 is real for okf-vs-code with this prompt: a whole-folder pass skims numbers in long concepts.
+Risk 2 does not hold: the renamed flag (`--by` -> `--with` in docs/reference/commands.md:262) was caught, citing src/kmctl/__init__.py:623-628; the agent also ran `kmctl decision supersede --help` but cited the source.
+The 8 findings that were not plants all look like real drift in main (sampled each against the code): stale `kmctl 0.1.0` in docs, briefing help text, `apm/.apm/instructions/` in the architecture page, pluginPy shown running APM, ADR 0011's old init line, and docs saying the CI auditor has only read and search tools. 0 false positives.
+Limits: one run per prompt, one model, one repo; plants and the line lists are in the runner and in run1/plants-*.json.
 
 ## Files
 
