@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The agent's token refusal still says \"Give it only to the step that posts the report\", and the how-to quotes it. Since this change no step in the agent's job gets the token; only the separate publish job does, so the message now sends the reader toward the setup the ticket removed.",
+      "anchor": "action/agent.py:481",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "25f04f65ae90ac4c8e03fdaa021222322fa03168eab2dcd8c125f6563446148a",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
+  "at": "2026-10-17T07:56:04+00:00"
+}

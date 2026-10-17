@@ -4,8 +4,8 @@ description: >-
   write both to the job summary, and fail when kmctl check fails or kmctl review due crashes.
   Concepts that are due for review are reported, never failed. With
   mode: audit, run the agent in action/agent.py instead, against any model
-  provider, keep its report as an artifact, and post it to one
-  "Knowledge audit" issue.
+  provider, and keep its report as an artifact; with mode: publish, in a
+  later job, post that report to one GitHub issue.
 inputs:
   path:
     description: The repository folder to check, relative to the workspace.
@@ -17,13 +17,16 @@ inputs:
       the agent in action/agent.py (PydanticAI), which by default audits the
       repository's knowledge with kmctl's skills; prompt changes its task. It
       can read the repository, the context and skills folders, and run shell
-      commands. It needs model, and the calling workflow must grant
-      issues: write. Check out with persist-credentials: false and
-      fetch-depth: 0, and set no GH_TOKEN or GITHUB_TOKEN for the job: the
-      agent refuses to start when it could read a GitHub token. Only the later
-      issue step gets the token. It runs only on workflow_dispatch or
-      schedule and refuses any other event. Also set timeout-minutes on the
-      step, since a composite action cannot set it on its own steps.
+      commands, and it uploads its report as the agent-report artifact. It
+      needs model, runs only on workflow_dispatch or schedule, and refuses to
+      start when it could read a GitHub token: check out with
+      persist-credentials: false and fetch-depth: 0, and set no GH_TOKEN or
+      GITHUB_TOKEN for the job. Also set timeout-minutes on the step, since a
+      composite action cannot set it on its own steps. publish runs in a
+      separate job (needs: the audit job, issues: write, a checkout for
+      CODEOWNERS): it downloads agent-report and posts it with
+      action/agent.py publish. The agent's job and this one share nothing but
+      the artifact, so nothing the agent changed runs with the token.
     required: false
     default: checks
   model:
@@ -85,6 +88,22 @@ inputs:
       Audit mode: how long the agent may run, in seconds or with s, m, h or d.
     required: false
     default: 30m
+  min_severity:
+    description: >-
+      Publish mode: the lowest severity (info, low, medium or high) that opens
+      or updates the issue; below it, an open issue is closed.
+    required: false
+    default: high
+  mention:
+    description: >-
+      Publish mode: users or teams to mention, such as @alice or @org/team,
+      one per line. Empty: the owners of the last * rule in CODEOWNERS.
+    required: false
+    default: ""
+  issue_title:
+    description: Publish mode, the issue's title.
+    required: false
+    default: Knowledge audit
 runs:
   using: composite
   steps:
@@ -94,11 +113,16 @@ runs:
         MODE: ${{ inputs.mode }}
       run: |
         case "$MODE" in
-          checks | audit) ;;
-          *) echo "kmctl action: mode must be checks or audit, not '$MODE'." >&2; exit 1 ;;
+          checks | audit | publish) ;;
+          *) echo "kmctl action: mode must be checks, audit or publish, not '$MODE'." >&2; exit 1 ;;
         esac
+    # No cache: a cache saved after the agent ran would carry what it wrote
+    # into the publish job.
     - uses: astral-sh/setup-uv@v6
+      with:
+        enable-cache: false
     - name: Install kmctl from this action's checkout
+      if: inputs.mode != 'publish'
       shell: bash
       run: uv tool install "${{ github.action_path }}"
     - name: Check knowledge
@@ -148,11 +172,24 @@ runs:
         name: agent-report
         path: ${{ runner.temp }}/agent-report
         if-no-files-found: ignore
-    - name: Post the audit issue
-      if: inputs.mode == 'audit'
+    # A separate job: a fresh runner that gets only the artifact.
+    - name: Download the report
+      if: inputs.mode == 'publish'
+      uses: actions/download-artifact@v4
+      with:
+        name: agent-report
+        path: ${{ runner.temp }}/agent-report
+    - name: Publish the report
+      if: inputs.mode == 'publish'
       shell: bash
       working-directory: ${{ inputs.path }}
       env:
         GH_TOKEN: ${{ github.token }}
         GH_REPO: ${{ github.repository }}
-      run: bash "${{ github.action_path }}/action/knowledge-audit-issue.sh" "$RUNNER_TEMP/agent-report/report.md"
+        MIN_SEVERITY: ${{ inputs.min_severity }}
+        MENTION: ${{ inputs.mention }}
+        ISSUE_TITLE: ${{ inputs.issue_title }}
+      run: |
+        args=(publish "$RUNNER_TEMP/agent-report/report.json" --min-severity "$MIN_SEVERITY" --title "$ISSUE_TITLE")
+        while IFS= read -r who; do [ -n "$who" ] && args+=(--mention "$who"); done <<< "$MENTION"
+        uv run --script "${{ github.action_path }}/action/agent.py" "${args[@]}"

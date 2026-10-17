@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "The token refusal told the user to give the token to \"the step that posts the report\", but under this change a separate publish job posts it.",
+      "anchor": "action/agent.py:481",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "e994288c4c5ed8ce71f1b252a41ce0d7696ae5eca4c09e367f583c02a2d9d7bd",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
+  "at": "2026-10-17T07:59:50+00:00"
+}

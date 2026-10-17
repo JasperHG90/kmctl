@@ -15,7 +15,7 @@
   "split_hold": false,
   "commit_sha": null,
   "closed_outside": false,
-  "dropped": false,
+  "dropped": true,
   "archived": false,
   "worktree": null,
   "branch": null,
@@ -38,6 +38,6 @@
     "priority": null
   },
   "history": [],
-  "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
-  "at": "2026-10-16T20:24:05+00:00"
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
+  "at": "2026-10-17T08:09:10+00:00"
 }

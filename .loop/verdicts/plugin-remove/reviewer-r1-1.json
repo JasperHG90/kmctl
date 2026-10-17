@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "When none of the named harnesses is installed but another one is, the summary line says kmctl is not installed here. With claude installed, remove --harness antigravity prints 'kmctl is not installed here (project scope); removed nothing', which is false.",
+      "anchor": "src/kmctl/__init__.py:938",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "If apm uninstall fails during remove, or uvx is missing, the error comes from _require/_apm_run and ends with 'then kmctl plugin install again'. That is the wrong next step for remove: a human or agent who follows it puts kmctl back.",
+      "anchor": "src/kmctl/plugin.py:1290",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "The `kmctl plugin` row of the commands table in docs/reference/commands.md still lists 'Verbs: install, update'. The help text now says install, update, remove.",
+      "anchor": "docs/reference/commands.md:31",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "open",
+      "claim": "The r3 test installs from DEFAULT_SOURCE, so a reinstall that ignored the entry's git: URL and used DEFAULT_SOURCE would still pass. Only the ref is pinned down. Use a non-default source, such as an http URL with a port, and assert the reinstalled entry's git.",
+      "anchor": "tests/test_plugin_remove.py:242",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r3"
+    }
+  ],
+  "binds": {
+    "fingerprint": "0023e63a350eae26202f4404f8ecf6ecb4d0e98bd10bca78a951d5203a9b3509",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
+  "at": "2026-10-17T08:24:24+00:00"
+}

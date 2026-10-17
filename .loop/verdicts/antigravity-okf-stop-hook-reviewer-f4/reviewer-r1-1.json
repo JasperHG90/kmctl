@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The fix column of antigravity.apm-hooks says 'for a file that is not JSON', but the check also fails for valid JSON that is not an object (a list, say), where a bare install does not help either; it should say 'not a JSON object' like the condition column and doctor's detail.",
+      "anchor": "docs/reference/commands.md:408",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "_apm_hooks_data catches only JSONDecodeError, so a .agents/hooks.json that is not valid UTF-8 raises UnicodeDecodeError and crashes kmctl doctor and kmctl plugin install instead of taking the 'not a JSON object' repair path. This was already true before the change.",
+      "anchor": "src/kmctl/antigravity.py:289",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "0697fbc03e8f3f3199089f380bd9216905ec226767448c8a06628021aab2fec4",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
+  "at": "2026-10-17T08:24:45+00:00"
+}

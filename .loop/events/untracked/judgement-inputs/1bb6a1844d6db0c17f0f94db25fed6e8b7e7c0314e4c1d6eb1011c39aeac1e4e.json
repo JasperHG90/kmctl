@@ -1,0 +1,1 @@
+{"ask":"Harden the release workflows against cache poisoning: release.yml and release-tag.yml use setup-uv with enable-cache: true, and an agent job (which has a shell and could steal the runtime token) can write cache entries on main that a release then restores. Turn the cache off in release jobs or record the risk."}
