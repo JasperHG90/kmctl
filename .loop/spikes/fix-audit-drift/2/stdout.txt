@@ -1,0 +1,84 @@
+[
+ {
+  "severity": "high",
+  "title": "Tutorial prints \"kmctl 0.1.0\" for the v0.3.0 release it installs",
+  "path": "docs/tutorials/get-started-with-kmctl.md",
+  "claim": "docs/tutorials/get-started-with-kmctl.md:32",
+  "contradicted_by": [
+   "apm/apm.yml:10",
+   "pyproject.toml:27-30",
+   "src/kmctl/__init__.py:47-50",
+   "docs/tutorials/get-started-with-kmctl.md:23"
+  ],
+  "fix": "Change the sample output to `kmctl 0.3.0` (the tag installed two lines above), or drop the version from the sample."
+ },
+ {
+  "severity": "medium",
+  "title": "Checks mode is said to fail only when kmctl check fails",
+  "path": "docs/how-to/install-the-plugin-and-the-ci-action.md",
+  "claim": "docs/how-to/install-the-plugin-and-the-ci-action.md:212",
+  "contradicted_by": [
+   "action.yml:4",
+   "action/knowledge-ci.sh:4",
+   "action/knowledge-ci.sh:36-43"
+  ],
+  "fix": "Say the checks mode fails when `kmctl check` fails or `kmctl review due` crashes, and never because concepts are due (matching the wording already agreed for ADR 0005)."
+ },
+ {
+  "severity": "medium",
+  "title": "The explanation page still says kmctl has one hook that never stops anything",
+  "path": "docs/explanation/why-one-hook-and-report-only-audits.md",
+  "claim": "docs/explanation/why-one-hook-and-report-only-audits.md:11",
+  "contradicted_by": [
+   "apm/antigravity/.apm/hooks/hooks.json:15-26",
+   "src/kmctl/antigravity.py:58-67",
+   ".okf/decisions/0004-sessionstart-is-the-only-hook.md:47-52",
+   "docs/reference/commands.md:434-438"
+  ],
+  "fix": "Say kmctl's own hook is the SessionStart briefing, and that for Antigravity the package also relays okf's opt-in Stop check (the one thing that can keep the agent working); reword the \"Why there is only one hook\" section at line 65 the same way, naming ADR 0018."
+ },
+ {
+  "severity": "medium",
+  "title": "APM's GitHub-token lookup order cannot be checked from this repository",
+  "path": "docs/how-to/install-kmctl-with-apm.md",
+  "claim": "docs/how-to/install-kmctl-with-apm.md:45",
+  "contradicted_by": [
+   "apm/apm.yml:12-16"
+  ],
+  "fix": "Either cite APM's own documentation for the order (a link next to the claim), or soften it to \"APM needs a GitHub token with access to the kmctl repository; see APM's docs for where it reads one\"."
+ },
+ {
+  "severity": "low",
+  "title": "Schema kind list omits docs-folder-index",
+  "path": "docs/reference/commands.md",
+  "claim": "docs/reference/commands.md:224",
+  "contradicted_by": [
+   "src/kmctl/kinds.py:275-280",
+   "src/kmctl/__init__.py:589-598"
+  ],
+  "fix": "Add `docs-folder-index` (the Diataxis folder index, `docs/FOLDER/README.md`) to the KIND list, and make the `docs-index` parenthetical say it is the hand-written root index only."
+ },
+ {
+  "severity": "low",
+  "title": "`kmctl new --json` key list omits `updated`",
+  "path": "docs/reference/commands.md",
+  "claim": "docs/reference/commands.md:273",
+  "contradicted_by": [
+   "src/kmctl/concepts.py:51-58",
+   "src/kmctl/concepts.py:362-367",
+   "src/kmctl/__init__.py:419-421"
+  ],
+  "fix": "Say the object is (`id`, `path`, `created_section`, `updated`) and fix the same list in the `--json` help text of the concept verbs."
+ },
+ {
+  "severity": "low",
+  "title": "The briefing is said to lack two rules",
+  "path": "docs/explanation/why-one-hook-and-report-only-audits.md",
+  "claim": "docs/explanation/why-one-hook-and-report-only-audits.md:61",
+  "contradicted_by": [
+   "src/kmctl/briefing.py:26-39",
+   ".okf/decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md:117-124"
+  ],
+  "fix": "Drop the count, e.g. \"and the knowledge rules reach the agent from `.claude/rules/` by APM; the briefing carries only the one rule those files lack\"."
+ }
+]

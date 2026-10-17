@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "slug": "fix-audit-drift",
+  "n": 2,
+  "command": "python3 -c \nimport json\nr=json.load(open('/tmp/claude-1000/-home-vscode-kmctl/dff53b03-6dd4-4578-a2d3-39665316bb2b/scratchpad/real-audits-main/out-docs-vs-code/report.json'))\nprint(json.dumps([{k:f[k] for k in ('severity','title','path','claim','contradicted_by','fix')} for f in r['findings']],indent=1))\n",
+  "scripts": [],
+  "where": "worktree",
+  "head": "5fed0bc51a60fcd686e5b67ea87ceb0bc495e972",
+  "fingerprint": "44fbb60e797ae2c5f050e7e8bbb693b7d9ef73ab32819f174b0d716ba944d1d3",
+  "started_at": "2026-10-17T18:46:06+00:00",
+  "finished_at": "2026-10-17T18:46:06+00:00",
+  "duration_seconds": 0.021,
+  "timeout_seconds": 1800.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
+  "moved_from": null
+}
