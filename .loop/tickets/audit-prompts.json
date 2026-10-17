@@ -3,7 +3,7 @@
   "slug": "audit-prompts",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "6c9ab07d71fc76dacbfbbebc59da42eb6b4e0f2825707e6e681e95afc98d96df",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "657d02c667865f0977a557fb16f31de4b3130dc0755f07682cefcb70b146f4dc",
+    "started_at": "2026-10-17T17:37:28+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "657d02c667865f0977a557fb16f31de4b3130dc0755f07682cefcb70b146f4dc",
   "intent": {
     "epic": null,
     "depends_on": [
@@ -46,5 +65,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
-  "at": "2026-10-17T17:37:23+00:00"
+  "at": "2026-10-17T17:37:28+00:00"
 }
