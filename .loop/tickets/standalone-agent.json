@@ -1,14 +1,53 @@
 {
   "schema_version": "1.0",
   "slug": "standalone-agent",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "c4cb94e0eab58ea079e52c0699b074972b86bb881802470a5303cc6d488eb867",
+    "tree": "2f733f79d7c7046395a7e6b9916d076f12ae4975",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "blocking",
+        "judgement": null,
+        "paths": [
+          ".okf/decisions/0005-audits-report-only.md",
+          "action.yml",
+          "docs/how-to/install-the-plugin-and-the-ci-action.md",
+          "tests/test_action.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f2",
+        "outcome": "sent-back",
+        "by": "judgement",
+        "judgement": "j-20261017T072930+0000-eacba9db",
+        "paths": [
+          "action/agent.py",
+          "tests/test_agent.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f3",
+        "outcome": "sent-back",
+        "by": "judgement",
+        "judgement": "j-20261017T072931+0000-4f594161",
+        "paths": [
+          "action/agent.py",
+          "tests/test_agent.py"
+        ]
+      }
+    ],
+    "at": "2026-10-17T07:29:31+00:00"
+  },
   "ask": "j-20261017T065743+0000-2c5d5938",
   "split": "j-20261017T070209+0000-4cf3f72d",
   "split_plan_hash": "6339b03dc5d7860c0a9bbc76d8c499fc0b60d976d29a0b5408fffb4558cdd73d",
@@ -176,8 +215,14 @@
       "to": "fixing",
       "at": "2026-10-17T07:25:44+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-17T07:29:31+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T07:29:14+00:00"
+  "at": "2026-10-17T07:29:31+00:00"
 }
