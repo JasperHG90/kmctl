@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "Trace size: a full-length audit's trace (tens of MB, chat spans near 1 MB) might be rejected or cut by Langfuse. Settled by spike:langfuse-traces/2, and Done when now requires a full-length live audit.",
+      "anchor": ".loop/plans/langfuse-traces.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "d2c5f3efb1062a150ba934dc10a8d5c4512604cba421a9d658917ce41d3e0af8"
+  },
+  "by": "process:loopctl/2.2.1.dev10+g138a8c2ed.d20261017",
+  "at": "2026-10-17T18:23:45+00:00"
+}
