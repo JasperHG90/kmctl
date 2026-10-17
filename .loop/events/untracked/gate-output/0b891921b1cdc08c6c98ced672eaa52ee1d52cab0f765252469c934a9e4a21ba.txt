@@ -1,0 +1,61 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.15, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/vscode/kmctl
+configfile: pyproject.toml
+plugins: respx-0.23.1, anyio-4.15.1
+collected 742 items / 8 deselected / 734 selected
+
+tests/scripts/test_check_wheel.py ....                                   [  0%]
+tests/scripts/test_next_release_version.py ........................      [  3%]
+tests/scripts/test_release.py .............................              [  7%]
+tests/scripts/test_release_docs.py .....                                 [  8%]
+tests/scripts/test_smoke_wheel.py .........                              [  9%]
+tests/scripts/test_workflows.py .............                            [ 11%]
+tests/test_action.py .............                                       [ 13%]
+tests/test_adr_audit_fixes.py ....                                       [ 13%]
+tests/test_agent.py .................................................... [ 20%]
+...                                                                      [ 21%]
+tests/test_antigravity.py .............................................. [ 27%]
+...........                                                              [ 29%]
+tests/test_apm_package.py ........................................       [ 34%]
+tests/test_audit.py .....                                                [ 35%]
+tests/test_briefing.py .................                                 [ 37%]
+tests/test_check.py .........................                            [ 40%]
+tests/test_ci.py .........                                               [ 42%]
+tests/test_cli.py ..                                                     [ 42%]
+tests/test_docs.py .....                                                 [ 43%]
+tests/test_docs_frontmatter.py ..........................                [ 46%]
+tests/test_doctor.py ................................................... [ 53%]
+..............................                                           [ 57%]
+tests/test_handoff_key.py ........                                       [ 58%]
+tests/test_handoffs.py .........                                         [ 59%]
+tests/test_help.py ................................................      [ 66%]
+tests/test_init.py ..............................................        [ 72%]
+tests/test_network_retry.py ..F............                              [ 74%]
+tests/test_new_concept.py ....................                           [ 77%]
+tests/test_new_doc.py .......                                            [ 78%]
+tests/test_okf_fields.py ......                                          [ 79%]
+tests/test_plugin.py ......                                              [ 80%]
+tests/test_plugin_error.py .......                                       [ 81%]
+tests/test_plugin_patch.py ................................              [ 85%]
+tests/test_repo_apm.py ..........                                        [ 86%]
+tests/test_repo_name.py ..........                                       [ 88%]
+tests/test_review_due.py .............                                   [ 89%]
+tests/test_rules.py ...............................                      [ 94%]
+tests/test_schema.py .................................                   [ 98%]
+tests/test_skills.py ...                                                 [ 99%]
+tests/test_supersede.py .......                                          [100%]
+
+=================================== FAILURES ===================================
+______________________ test_tier_integration_gate_runs_it ______________________
+
+    def test_tier_integration_gate_runs_it() -> None:
+        gates = tomllib.loads((ROOT / ".loop" / "config.toml").read_text())["gates"]
+    
+>       assert {"name": "integration", "command": "uv run pytest -m integration"} in gates
+E       AssertionError: assert {'name': 'integration', 'command': 'uv run pytest -m integration'} in [{'name': 'lint', 'command': 'uv run ruff check'}, {'name': 'format', 'command': 'uv run ruff format --check'}, {'name': 'tests', 'command': 'uv run pytest'}]
+
+tests/test_network_retry.py:82: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_network_retry.py::test_tier_integration_gate_runs_it - Asse...
+============ 1 failed, 733 passed, 8 deselected in 68.62s (0:01:08) ============
