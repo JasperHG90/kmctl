@@ -239,6 +239,7 @@ kmctl new doc how-to 'Back up the database' --description 'Copy the SQLite file 
 kmctl check                      # indexes agree with their folders, links resolve
 kmctl check --fix                # also rewrite the generated docs/ folder indexes
 kmctl review due                 # what is unverified or stale
+kmctl verify manifesto --by human:you  # you read it and it holds: drop it from review due
 ```
 
 `kmctl init` keeps files that already exist, except the kmctl block, which it

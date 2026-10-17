@@ -31,6 +31,7 @@ from kmctl.plugin import unpatch as unpatch_plugin
 from kmctl.review_due import review_due
 from kmctl.scaffold import AGENT_FILES, scaffold
 from kmctl.supersede import supersede
+from kmctl.verify import verify as verify_concept
 
 app = typer.Typer(
     help="kmctl: keep a repository's docs/ and .okf/ knowledge current.",
@@ -275,7 +276,11 @@ app.add_typer(review_app, name="review")
         "  kmctl review due\n\n"
         "  kmctl review due --path ../other-repo --json\n\n"
         "Always exits 0: being due is a report, not a failure. A source that "
-        "resolves to no tracked file or folder is listed as a notice, not a reason."
+        "resolves to no tracked file or folder is listed as a notice, not a reason.\n\n"
+        "An id leaves the list once a person has read it and confirms it: "
+        "kmctl verify ID --by human:<id> records that. A verified entry does not "
+        "clear stale_after passed, so add --stale-after for those. Fix a drifted "
+        "concept's body before verifying it."
     ),
 )
 def due(
@@ -316,6 +321,14 @@ def due(
         )
     if not (result.due or result.expired_handoffs):
         typer.echo("nothing is due for review")
+    if result.due:
+        typer.echo(
+            next_step(
+                "once a person has read one and confirms it, "
+                "kmctl verify ID --by human:<their id> (add --stale-after 6m "
+                "for stale_after passed)"
+            )
+        )
 
 
 new_app = typer.Typer(
@@ -334,6 +347,85 @@ _PATH_OPTION = typer.Option(
     file_okay=False,
     help="The repository to write in: an existing folder. Default: the current directory.",
 )
+
+
+@app.command(
+    "verify",
+    epilog=(
+        "Examples:\n\n"
+        "  kmctl verify decisions/0001-keep-project-knowledge-in-an-okf-bundle "
+        "--by human:jasper\n\n"
+        "  kmctl verify manifesto --by human:jasper --stale-after 6m --json\n\n"
+        "  kmctl verify docs/how-to/install --by human:jasper\n\n"
+        "It appends {by, at} to the file's verified list, with at the current "
+        "UTC time, changes no other line, and logs a concept in .okf/log.md. The "
+        "id then stays off kmctl review due until its stale_after passes or one "
+        "of its sources is committed again. A verified entry does not clear "
+        "stale_after passed: when it has passed, give --stale-after, or the verb "
+        "refuses.\n\n"
+        "Only a person verifies (ADR 0023). An agent runs this only when the "
+        "person named in --by has read the content and asked for it, never on an "
+        "audit verdict alone (ADR 0005). Handoffs are never verified."
+    ),
+)
+def verify(
+    concept: Annotated[
+        str,
+        typer.Argument(
+            metavar="decisions/0001-x",
+            help=(
+                "The id to mark checked, as kmctl review due prints it: a concept "
+                "under .okf/ without .md (decisions/0001-x, manifesto) or a docs "
+                "page (docs/how-to/install)."
+            ),
+        ),
+    ],
+    by: Annotated[
+        str,
+        typer.Option(
+            "--by",
+            metavar="human:jasper",
+            help=(
+                "The person who read it and confirms it, as human:<id>: a name or "
+                "email address. Written as the entry's by; anything not starting "
+                "human: is refused."
+            ),
+        ),
+    ],
+    stale_after: Annotated[
+        str | None,
+        typer.Option(
+            "--stale-after",
+            metavar="6m",
+            help=(
+                "A new stale_after for the file: a duration from now (30d, 12w, "
+                "6m, 1y), a date (2027-01-15) or a UTC timestamp. Required when "
+                "its stale_after has passed; optional otherwise."
+            ),
+        ),
+    ] = None,
+    path: Annotated[Path, _PATH_OPTION] = Path("."),
+    as_json: Annotated[
+        bool,
+        typer.Option(
+            "--json",
+            help="Print one JSON object (id, path, by, at, stale_after), for scripts.",
+        ),
+    ] = False,
+) -> None:
+    """Record that a person checked a concept or docs page, so kmctl review due drops it."""
+    try:
+        result = verify_concept(path, concept, by, stale_after)
+    except ConceptError as error:
+        typer.echo(f"kmctl verify: refused: {error}", err=True)
+        raise typer.Exit(1) from error
+    if as_json:
+        typer.echo(json.dumps(asdict(result)))
+        return
+    typer.echo(f"verified {result.id} by {result.by} at {result.at} ({result.path})")
+    if result.stale_after:
+        typer.echo(f"stale_after is now {result.stale_after}")
+    typer.echo(next_step("kmctl review due"))
 
 
 def _register_concept_verb(kind: Kind, example: str) -> None:

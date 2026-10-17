@@ -132,3 +132,5 @@
 - Updated `manifesto`: APM installs kmctl's package and `kmctl plugin patch` adds the rest; the CLI no longer installs it.
 - Updated `architecture/overview`: what `kmctl plugin patch` writes and runs, where the rules live, the audit's task and the four apm.yml files a release sets; updated `architecture/index` to match its description.
 - Updated `index`: dropped the concept and record counts, which nothing keeps true.
+- Added `decisions/0023-kmctl-verify-records-a-person-s-check` with `kmctl new decision`.
+- Updated `manifesto` and `architecture/overview`: `kmctl verify` and `verify.py` record a person's check (ADR 0023).
