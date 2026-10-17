@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "slug": "verify-verb",
-  "stage": "ready",
-  "attempts": 1,
+  "stage": "building",
+  "attempts": 2,
   "plan_rounds": 2,
   "review_rounds": 2,
   "extra_plan_rounds": 0,
@@ -251,8 +251,14 @@
       "to": "ready",
       "at": "2026-10-17T21:48:07+00:00",
       "by": "unblock"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-10-17T21:48:08+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
-  "at": "2026-10-17T21:48:07+00:00"
+  "at": "2026-10-17T21:48:08+00:00"
 }

@@ -20,3 +20,4 @@
 {"at": "2026-10-17T21:47:34+00:00", "code": "finding-open-two-rounds", "from": "verifying", "kind": "block", "message": "finding reviewer:f2 stayed open across two rounds", "notified": false, "schema_version": "1.0"}
 {"at": "2026-10-17T21:47:34+00:00", "dispatched_at": "2026-10-17T21:44:25+00:00", "kind": "round-close", "n": 2, "outcome": "blocked", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-17T21:47:17+00:00"}}
 {"at": "2026-10-17T21:48:07+00:00", "kind": "unblock", "schema_version": "1.0"}
+{"at": "2026-10-17T21:48:08+00:00", "by": "advance", "from": "ready", "kind": "transition", "schema_version": "1.0", "to": "building"}
