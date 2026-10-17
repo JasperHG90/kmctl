@@ -486,3 +486,259 @@ def test_help_shows_no_empty_defaults() -> None:
     ):
         block = options.split(f"  {option} ", 1)[1].split("\n  --", 1)[0]
         assert "Default" in block or "default" in block, option
+
+
+# publish ------------------------------------------------------------------
+
+
+def _gh(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    issues: str = "[]",
+    fail: bool = False,
+) -> Path:
+    """Put a gh on PATH that records each call (and any body file) to calls.jsonl."""
+    bin_dir = tmp_path / "gh-bin"
+    bin_dir.mkdir()
+    calls = tmp_path / "calls.jsonl"
+    (tmp_path / "issues.json").write_text(issues)
+    (bin_dir / "gh").write_text(
+        f"#!{sys.executable}\n"
+        "import json, sys\n"
+        "args = sys.argv[1:]\n"
+        "body = None\n"
+        "if '--body-file' in args:\n"
+        "    body = open(args[args.index('--body-file') + 1]).read()\n"
+        f"open({str(calls)!r}, 'a').write(json.dumps({{'args': args, 'body': body}}) + '\\n')\n"
+        + ("sys.exit(4)\n" if fail else "")
+        + "if args[:2] == ['issue', 'list']:\n"
+        f"    print(open({str(tmp_path / 'issues.json')!r}).read())\n"
+    )
+    (bin_dir / "gh").chmod(0o755)
+    monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
+    return calls
+
+
+def _calls(calls: Path) -> list[dict]:
+    if not calls.exists():
+        return []
+    return [json.loads(line) for line in calls.read_text().splitlines()]
+
+
+def _report_file(tmp_path: Path, severities: list[str]) -> Path:
+    report = {
+        "summary": "Audit done.",
+        "findings": [
+            {
+                "title": f"concept/{n}",
+                "severity": s,
+                "path": f".okf/c{n}.md",
+                "summary": f"Finding {n}.",
+                "evidence": [f".okf/c{n}.md:1"],
+            }
+            for n, s in enumerate(severities)
+        ],
+    }
+    path = tmp_path / "report.json"
+    path.write_text(json.dumps(report))
+    return path
+
+
+def _publish(repo: Path, report: Path, *extra: str) -> int:
+    return agent.main(["publish", str(report), "--repo", str(repo), *extra])
+
+
+OPEN = '[{"number": 7, "title": "Knowledge audit"}, {"number": 8, "title": "Knowledge audit 2"}]'
+
+
+def test_publish_below_threshold_posts_nothing(
+    repo: Path,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    calls = _gh(tmp_path, monkeypatch)
+
+    assert _publish(repo, _report_file(tmp_path, ["medium", "info"])) == 0
+    made = [c["args"][:2] for c in _calls(calls)]
+    assert ["issue", "create"] not in made and ["issue", "edit"] not in made
+    assert ["issue", "comment"] not in made and ["issue", "close"] not in made
+    assert "no issue" in capsys.readouterr().err
+
+
+def test_publish_below_threshold_closes_open_issue(
+    repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls = _gh(tmp_path, monkeypatch, OPEN)
+
+    assert (
+        _publish(repo, _report_file(tmp_path, ["low"]), "--min-severity", "medium") == 0
+    )
+    made = _calls(calls)
+    comment = next(c for c in made if c["args"][:3] == ["issue", "comment", "7"])
+    close = next(c for c in made if c["args"][:3] == ["issue", "close", "7"])
+    assert made.index(comment) < made.index(close)
+    assert "medium" in " ".join(comment["args"])
+    assert not any(
+        c["args"][:2] in (["issue", "create"], ["issue", "edit"]) for c in made
+    )
+
+
+def test_publish_posts_new_issue_with_run_link(
+    repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls = _gh(tmp_path, monkeypatch)
+    monkeypatch.setenv("GITHUB_SERVER_URL", "https://github.com")
+    monkeypatch.setenv("GITHUB_REPOSITORY", "o/r")
+    monkeypatch.setenv("GITHUB_RUN_ID", "42")
+
+    assert _publish(repo, _report_file(tmp_path, ["high", "info"])) == 0
+    create = next(c for c in _calls(calls) if c["args"][:2] == ["issue", "create"])
+    assert create["args"][create["args"].index("--title") + 1] == "Knowledge audit"
+    assert "concept/0" in create["body"] and "concept/1" in create["body"]
+    assert "https://github.com/o/r/actions/runs/42" in create["body"]
+
+
+def test_publish_posts_edit_and_comment_on_open_issue(
+    repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls = _gh(tmp_path, monkeypatch, OPEN)
+
+    assert (
+        _publish(
+            repo, _report_file(tmp_path, ["high", "high", "low"]), "--mention", "@alice"
+        )
+        == 0
+    )
+    made = _calls(calls)
+    edit = next(c for c in made if c["args"][:3] == ["issue", "edit", "7"])
+    comment = next(c for c in made if c["args"][:3] == ["issue", "comment", "7"])
+    assert "concept/0" in edit["body"]
+    text = " ".join(comment["args"])
+    assert "@alice" in text and "2 high" in text
+    assert not any(c["args"][:2] == ["issue", "create"] for c in made)
+
+
+def test_publish_posts_custom_title(
+    repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls = _gh(tmp_path, monkeypatch, OPEN)
+
+    assert (
+        _publish(
+            repo,
+            _report_file(tmp_path, ["info"]),
+            "--min-severity",
+            "info",
+            "--title",
+            "EA review",
+        )
+        == 0
+    )
+    create = next(c for c in _calls(calls) if c["args"][:2] == ["issue", "create"])
+    assert create["args"][create["args"].index("--title") + 1] == "EA review"
+
+
+def _codeowners(repo: Path, rel: str, text: str) -> None:
+    path = repo / rel
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text)
+
+
+def _created_body(calls: Path) -> str:
+    return next(c for c in _calls(calls) if c["args"][:2] == ["issue", "create"])[
+        "body"
+    ]
+
+
+def test_mention_codeowners_last_star_rule(
+    repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _codeowners(
+        repo,
+        ".github/CODEOWNERS",
+        "# owners\n* @old\n/docs/ @docs-team\n*   @alice @org/core  # leads\n",
+    )
+    _codeowners(repo, "CODEOWNERS", "* @root-file\n")
+    calls = _gh(tmp_path, monkeypatch)
+
+    assert _publish(repo, _report_file(tmp_path, ["high"])) == 0
+    body = _created_body(calls)
+    assert "@alice" in body and "@org/core" in body
+    for other in ("@old", "@docs-team", "@root-file"):
+        assert other not in body
+
+
+def test_mention_codeowners_order(
+    repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _codeowners(repo, "CODEOWNERS", "* @root-file\n")
+    _codeowners(repo, "docs/CODEOWNERS", "* @docs-file\n")
+    calls = _gh(tmp_path, monkeypatch)
+
+    assert _publish(repo, _report_file(tmp_path, ["high"])) == 0
+    body = _created_body(calls)
+    assert "@root-file" in body and "@docs-file" not in body
+
+
+def test_mention_option_replaces_codeowners(
+    repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _codeowners(repo, ".github/CODEOWNERS", "* @alice\n")
+    calls = _gh(tmp_path, monkeypatch)
+
+    assert (
+        _publish(
+            repo,
+            _report_file(tmp_path, ["high"]),
+            "--mention",
+            "bob",
+            "--mention",
+            "@org/team",
+        )
+        == 0
+    )
+    body = _created_body(calls)
+    assert "@bob" in body and "@org/team" in body and "@alice" not in body
+
+
+def test_mention_none_without_owners(
+    repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls = _gh(tmp_path, monkeypatch)
+
+    assert _publish(repo, _report_file(tmp_path, ["high"])) == 0
+    body = _created_body(calls)
+    assert "cc" not in body.lower().split("## agent report")[0]
+    assert "@" not in body.split("## Agent report")[0]
+
+
+def test_publish_fails_when_gh_fails(
+    repo: Path,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    calls = _gh(tmp_path, monkeypatch, fail=True)
+
+    assert _publish(repo, _report_file(tmp_path, ["high"])) == 1
+    assert not any(c["args"][:2] == ["issue", "create"] for c in _calls(calls))
+    assert "gh" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("content", [None, "not json", '{"summary": "x"}'])
+def test_publish_fails_on_bad_report(
+    repo: Path,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    content: str | None,
+) -> None:
+    calls = _gh(tmp_path, monkeypatch)
+    report = tmp_path / "report.json"
+    if content is not None:
+        report.write_text(content)
+
+    assert _publish(repo, report) == 2
+    assert "report" in capsys.readouterr().err
+    assert _calls(calls) == []

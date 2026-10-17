@@ -14,6 +14,10 @@ skills ship. Commands get a clean environment without the API key or a GitHub
 token, but run as the same user, so a command could still read the key from
 ``/proc`` (ADR 0017). It returns a typed report, which ``run`` writes to
 ``--out`` as ``report.json``, ``report.md`` and ``transcript.json``.
+
+``publish`` posts that report to one GitHub issue with ``gh``. Run it in a
+job of its own, which gets the report as an artifact and nothing else from
+the agent's job, so nothing the agent changed runs with the token.
 """
 
 from __future__ import annotations
@@ -27,6 +31,7 @@ import re
 import signal
 import subprocess
 import sys
+import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
@@ -473,7 +478,7 @@ def refuse_tokens(repo: Path) -> None:
         if os.environ.get(name):
             raise UsageError(
                 f"refused: {name} is set, and the agent could read the token. "
-                "Give it only to the step that posts the report."
+                "Give it only to the publish job, which runs no agent."
             )
     held = subprocess.run(
         ["git", "config", "--get-regexp", r"^http\..*\.extraheader$"],
@@ -599,12 +604,161 @@ def run(args: argparse.Namespace, model: Model | str | None = None) -> int:
     return 0
 
 
+#: Where GitHub looks for CODEOWNERS, in its order: the first one found is used.
+CODEOWNERS = (".github/CODEOWNERS", "CODEOWNERS", "docs/CODEOWNERS")
+
+
+class GhFailed(Exception):
+    """A gh call that failed; its text says which."""
+
+
+def gh(*args: str) -> str:
+    """Run ``gh`` and return its stdout.
+
+    Raises
+    ------
+    GhFailed
+        If gh is missing or exits nonzero.
+    """
+    try:
+        proc = subprocess.run(
+            ["gh", *args], capture_output=True, text=True, check=False
+        )
+    except FileNotFoundError as err:
+        raise GhFailed("gh is not on PATH.") from err
+    if proc.returncode != 0:
+        raise GhFailed(
+            f"gh {' '.join(args[:2])} exited {proc.returncode}: {proc.stderr.strip()}"
+        )
+    return proc.stdout
+
+
+def find_owners(repo: Path) -> list[str]:
+    """Return the owners of the last ``*`` rule in the repository's CODEOWNERS, or none."""
+    for rel in CODEOWNERS:
+        path = repo / rel
+        if path.is_file():
+            owners: list[str] = []
+            for line in path.read_text().splitlines():
+                rule = line.split("#", 1)[0].split()
+                if rule and rule[0] == "*":
+                    owners = rule[1:]
+            return [o for o in owners if o.startswith("@")]
+    return []
+
+
+def run_link() -> str:
+    """Return the workflow run's URL, where its artifacts are, or empty outside Actions."""
+    repo, run_id = os.environ.get("GITHUB_REPOSITORY"), os.environ.get("GITHUB_RUN_ID")
+    if not repo or not run_id:
+        return ""
+    server = os.environ.get("GITHUB_SERVER_URL", "https://github.com")
+    return f"{server}/{repo}/actions/runs/{run_id}"
+
+
+def publish(args: argparse.Namespace) -> int:
+    """Run the ``publish`` command: post the report to one issue, or close it."""
+    try:
+        report = Report.model_validate_json(Path(args.report).read_text())
+    except (OSError, ValueError) as err:
+        raise UsageError(f"cannot read the report {args.report}: {err}") from err
+    repo = Path(args.repo)
+    floor = SEVERITIES.index(args.min_severity)
+    over = [f for f in report.findings if SEVERITIES.index(f.severity) >= floor]
+    owners = (
+        [m if m.startswith("@") else f"@{m}" for m in args.mention]
+        if args.mention
+        else find_owners(repo)
+    )
+    cc = " ".join(owners)
+    link = run_link()
+    try:
+        listed = json.loads(
+            gh(
+                "issue",
+                "list",
+                "--state",
+                "open",
+                "--search",
+                f'"{args.title}" in:title',
+                "--json",
+                "number,title",
+            )
+        )
+        number = next(
+            (str(i["number"]) for i in listed if i["title"] == args.title), ""
+        )
+        if not over:
+            if number:
+                gh(
+                    "issue",
+                    "comment",
+                    number,
+                    "--body",
+                    f"The latest run found nothing at or above {args.min_severity}; closing."
+                    + (f" Run: {link}" if link else ""),
+                )
+                gh("issue", "close", number)
+                print(
+                    f"agent: nothing at or above {args.min_severity}; closed issue #{number}.",
+                    file=sys.stderr,
+                )
+            else:
+                print(
+                    f"agent: nothing at or above {args.min_severity}; no issue was written.",
+                    file=sys.stderr,
+                )
+            return 0
+        body = render(report)
+        if link:
+            body += f"\nRun and its `agent-report` artifact: {link}\n"
+        if cc:
+            body = f"cc {cc}\n\n" + body
+        counts = ", ".join(
+            f"{sum(f.severity == s for f in over)} {s}"
+            for s in reversed(SEVERITIES[floor:])
+        )
+        with tempfile.NamedTemporaryFile("w", suffix=".md", delete=False) as handle:
+            handle.write(body)
+        try:
+            if number:
+                gh("issue", "edit", number, "--body-file", handle.name)
+                gh(
+                    "issue",
+                    "comment",
+                    number,
+                    "--body",
+                    (f"{cc} " if cc else "")
+                    + f"The latest run found {counts} at or above {args.min_severity}; the issue body has the report."
+                    + (f" Run: {link}" if link else ""),
+                )
+                print(f"agent: updated issue #{number}.", file=sys.stderr)
+            else:
+                print(
+                    gh(
+                        "issue",
+                        "create",
+                        "--title",
+                        args.title,
+                        "--body-file",
+                        handle.name,
+                    ).strip()
+                )
+        finally:
+            os.unlink(handle.name)
+    except GhFailed as err:
+        print(f"agent: {err}", file=sys.stderr)
+        return 1
+    return 0
+
+
 def parser() -> argparse.ArgumentParser:
     """Return the command-line parser."""
     top = argparse.ArgumentParser(
         prog="agent.py",
         description=(
-            "A small agent for CI. `run` gives it a task and writes its report. "
+            "A small agent for CI. `run` gives it a task and writes its report; "
+            "`publish` posts that report to a GitHub issue. "
             "Exit codes: 0 the report was written, 1 the run failed, 2 a bad option."
         ),
     )
@@ -708,6 +862,45 @@ def parser() -> argparse.ArgumentParser:
         default=200,
         help="How many model requests the run may make. Default: 200.",
     )
+    p = sub.add_parser(
+        "publish",
+        help="Post a report to one GitHub issue.",
+        description=(
+            "Post report.json to the open issue titled --title with gh, when a "
+            "finding is at or above --min-severity: create it, or replace its "
+            "body and add a comment that mentions the owners. Below the "
+            "threshold, close that issue with a comment. Needs gh and GH_TOKEN; "
+            "run it in a job of its own, not the agent's. Exit codes: 0 done, "
+            "1 gh failed, 2 a bad option or report."
+        ),
+    )
+    p.add_argument("report", help="The report.json that run wrote.")
+    p.add_argument(
+        "--min-severity",
+        choices=SEVERITIES,
+        default="high",
+        help="The lowest severity that opens or updates the issue. Default: high.",
+    )
+    p.add_argument(
+        "--title",
+        default="Knowledge audit",
+        help="The issue's title. Default: Knowledge audit.",
+    )
+    p.add_argument(
+        "--mention",
+        action="append",
+        default=[],
+        metavar="USER",
+        help=(
+            "A user or team to mention, such as @alice or @org/team. Repeatable; "
+            "replaces the owners of the last * rule in CODEOWNERS. Default: those owners."
+        ),
+    )
+    p.add_argument(
+        "--repo",
+        default=".",
+        help="The repository whose CODEOWNERS names the owners. Default: the current folder.",
+    )
     return top
 
 
@@ -715,6 +908,8 @@ def main(argv: list[str] | None = None, model: Model | str | None = None) -> int
     """Parse ``argv`` and run the command; return the exit code."""
     args = parser().parse_args(argv)
     try:
+        if args.command == "publish":
+            return publish(args)
         return run(args, model)
     except UsageError as err:
         print(f"agent: {err}", file=sys.stderr)

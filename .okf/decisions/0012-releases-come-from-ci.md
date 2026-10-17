@@ -91,3 +91,10 @@ hatchling `regex` source reads its `version:` line, `scripts/release.py set`
 writes it and copies it to the root `apm.yml`, `current` refuses when the two
 differ, and `release.yml` and `release-tag.yml` stage and watch `apm/apm.yml`
 instead of the manifest. The rest of the release flow is unchanged.
+
+## Correction, 2026-10-17
+
+The docs hold six install lines for `scripts/release.py set` to point at
+the release tag, not five: the CI how-to's audit workflow now has a second
+job, which uses the action in `mode: publish`
+([ADR 0017](0017-the-ci-audit-is-a-standalone-pydanticai-agent-script.md)).

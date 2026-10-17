@@ -7,14 +7,14 @@ on:
   schedule:
     - cron: "0 6 * * 1"
 
-# The issue step needs issues: write; nothing else writes.
 permissions:
   contents: read
-  issues: write
 
-# Each step below is one command, the same ones action.yml's audit mode runs,
-# so a reader sees everything the audit does (ADR 0017).
+# Each step below is one command, the same ones action.yml's audit and
+# publish modes run, so a reader sees everything the audit does (ADR 0017).
 jobs:
+  # The agent runs shell commands as the runner's user, so this job gets no
+  # GitHub token it could use and no cache it could leave behind.
   audit:
     runs-on: ubuntu-latest
     steps:
@@ -24,6 +24,8 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: false
       # The default audit runs kmctl review due through the agent's shell.
       - name: Install kmctl from this checkout
         run: uv tool install .
@@ -32,8 +34,7 @@ jobs:
       # AUDIT_API_KEY secret, or drop --base-url and name a PydanticAI provider,
       # such as --model openai:gpt-5 with OPENAI_API_KEY set. Add --prompt-file,
       # --context and --skills to give the agent another task, more folders to
-      # read and more skills. No GitHub token is set here: the agent runs shell
-      # commands and must not be able to read one.
+      # read and more skills.
       - name: Run the agent
         timeout-minutes: 40
         env:
@@ -53,9 +54,34 @@ jobs:
           name: agent-report
           path: ${{ runner.temp }}/agent-report
           if-no-files-found: ignore
-      # Only this step gets the token; it posts the report the agent wrote.
-      - name: Post the audit issue
+
+  # A fresh runner that shares only the artifact with the agent's job, so
+  # nothing the agent changed runs with the token. It opens or updates the
+  # issue when a finding is high, mentioning the CODEOWNERS owners, and
+  # closes it when none is.
+  publish:
+    needs: audit
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      # Only to read CODEOWNERS and the script.
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: agent-report
+          path: ${{ runner.temp }}/agent-report
+      - name: Publish the report
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: bash action/knowledge-audit-issue.sh ${{ runner.temp }}/agent-report/report.md
+        run: >-
+          uv run --script action/agent.py publish
+          ${{ runner.temp }}/agent-report/report.json
+          --min-severity high

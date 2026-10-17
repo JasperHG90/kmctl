@@ -96,3 +96,23 @@ Rejected:
   `agent-publish` ticket.
 
 Supersedes [ADR 0010](0010-the-ci-audit-runs-hermes-agent-against-any-openai-compatible-provider.md).
+
+## Correction, 2026-10-17
+
+`action/knowledge-audit-issue.sh` is gone. `action/agent.py publish` posts
+the report, and it runs in a separate job: `mode: publish` in `action.yml`,
+and the `publish` job in `.github/workflows/knowledge-audit.yml`. The
+agent's shell runs as the runner's user, so any later step in the same job
+could run code it changed. A GitHub-hosted runner gives each job a fresh
+machine, and setup-uv's cache is off in both jobs, so the publish job gets
+nothing from the agent's job but the `agent-report` artifact, which it
+validates as a `Report`. That holds only on GitHub-hosted runners; a
+self-hosted runner that reuses its machine between jobs does not give it.
+
+`publish` opens or updates one issue when a finding is at or above
+`--min-severity` (default high). On an update it replaces the body and adds
+a comment, since GitHub notifies a mention when it is posted, not when a
+body is edited. It @-mentions the owners of the last `*` rule in CODEOWNERS
+or the `--mention` names, and below the threshold it closes the open issue
+with a comment. When the audit job fails, the publish job is skipped and the
+issue stays as it was.

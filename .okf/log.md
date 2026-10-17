@@ -114,3 +114,5 @@
 - Corrected `decisions/0001-standalone-cli-installs-its-plugin` and `decisions/0015-antigravity-gets-skills-and-rules-from-apm-and-a-kmctl-plugin-folder`: `kmctl plugin status` became `kmctl doctor`. Found by the first live run of action/agent.py.
 - Corrected `decisions/0002-briefing-and-rules-injected-by-the-cli`: `kmctl init` writes no rules since ADR 0014. Found by the same run.
 - Added `decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity` with `kmctl new decision`.
+- Corrected `decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script`: `action/agent.py publish` posts the report from its own job; updated `architecture/overview` to match.
+- Corrected `decisions/0012-releases-come-from-ci`: six install lines, since the CI how-to's audit workflow has a publish job.
