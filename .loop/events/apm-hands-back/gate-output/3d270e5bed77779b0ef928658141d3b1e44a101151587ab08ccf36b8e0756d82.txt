@@ -1,0 +1,166 @@
+warning: `VIRTUAL_ENV=/home/vscode/kmctl/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+============================= test session starts ==============================
+platform linux -- Python 3.12.15, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/vscode/kmctl.worktrees/apm-hands-back
+configfile: pyproject.toml
+plugins: respx-0.23.1, anyio-4.15.1
+collected 737 items / 7 deselected / 730 selected
+
+tests/scripts/test_check_wheel.py ....                                   [  0%]
+tests/scripts/test_next_release_version.py ........................      [  3%]
+tests/scripts/test_release.py .............................              [  7%]
+tests/scripts/test_release_docs.py .....                                 [  8%]
+tests/scripts/test_smoke_wheel.py .........                              [  9%]
+tests/scripts/test_workflows.py .............                            [ 11%]
+tests/test_action.py ............                                        [ 13%]
+tests/test_adr_audit_fixes.py ....                                       [ 13%]
+tests/test_agent.py ......................................               [ 18%]
+tests/test_antigravity.py .......................................F.F...F [ 25%]
+..........F..                                                            [ 26%]
+tests/test_apm_package.py .........F..............F.............         [ 32%]
+tests/test_audit.py .....                                                [ 32%]
+tests/test_briefing.py ...........                                       [ 34%]
+tests/test_check.py .........................                            [ 37%]
+tests/test_cli.py ..                                                     [ 38%]
+tests/test_docs.py .....                                                 [ 38%]
+tests/test_doctor.py ................................................... [ 45%]
+............................F                                            [ 49%]
+tests/test_handoff_key.py ........                                       [ 50%]
+tests/test_handoffs.py .........                                         [ 52%]
+tests/test_help.py ..................................................... [ 59%]
+.                                                                        [ 59%]
+tests/test_init.py ..............................................        [ 65%]
+tests/test_network_retry.py ...............                              [ 67%]
+tests/test_new_concept.py ....................                           [ 70%]
+tests/test_new_doc.py .......                                            [ 71%]
+tests/test_okf_fields.py ......                                          [ 72%]
+tests/test_plugin.py ................................................... [ 79%]
+..................                                                       [ 81%]
+tests/test_plugin_error.py .......                                       [ 82%]
+tests/test_plugin_remove.py ...................................          [ 87%]
+tests/test_repo_apm.py ..........                                        [ 88%]
+tests/test_review_due.py .........                                       [ 90%]
+tests/test_rules.py ...............................                      [ 94%]
+tests/test_schema.py ...............................                     [ 98%]
+tests/test_skills.py ...                                                 [ 99%]
+tests/test_supersede.py .......                                          [100%]
+
+=================================== FAILURES ===================================
+________________ test_docs_decision_matches_the_decision_schema ________________
+
+    def test_docs_decision_matches_the_decision_schema() -> None:
+        meta = json.loads(json.dumps(front_matter(_decision()), default=str))
+    
+        errors = [
+            e.message for e in Draft202012Validator(schema("decision")).iter_errors(meta)
+        ]
+    
+        assert errors == []
+        # Later corrections are appended, never written into the skeleton's sections.
+        sections = [
+            s
+            for s in _sections(_decision().read_text())
+            if not s.startswith("Correction, ")
+        ]
+>       assert sections == skeleton("decision")
+E       AssertionError: assert ['Context', '..., 2026-10-17'] == ['Context', '...Consequences']
+E         
+E         Left contains one more item: 'Amended, 2026-10-17'
+E         Use -v to get more diff
+
+tests/test_antigravity.py:723: AssertionError
+____________________ test_docs_manifesto_names_antigravity _____________________
+
+    def test_docs_manifesto_names_antigravity() -> None:
+        text = MANIFESTO.read_text()
+        parts = text.split("## Parts", 1)[1].split("\n## ", 1)[0]
+        out_of_scope = text.split("## Out of scope for now", 1)[1]
+    
+        assert "Antigravity" in parts
+>       assert "--harness antigravity" in _flat(parts)
+E       AssertionError: assert '--harness antigravity' in '- **`kmctl`, a standalone CLI** (ADR 0001). It serves the briefing that is injected into context, installs its packag...(ADR 0005). On every pull request it runs the deterministic checks for free. The LLM audit is opt-in and reports only.'
+E        +  where '- **`kmctl`, a standalone CLI** (ADR 0001). It serves the briefing that is injected into context, installs its packag...(ADR 0005). On every pull request it runs the deterministic checks for free. The LLM audit is opt-in and reports only.' = _flat('\n\n- **`kmctl`, a standalone CLI** (ADR 0001). It serves the briefing that is\n  injected into context, installs its...0005). On every pull request it runs the\n  deterministic checks for free. The LLM audit is opt-in and reports only.\n')
+
+tests/test_antigravity.py:755: AssertionError
+_________________ test_rules_docs_name_the_plugin_folder_rules _________________
+
+    def test_rules_docs_name_the_plugin_folder_rules() -> None:
+        for path in (RULES_DECISION, COMMANDS, INSTALL_HOW_TO):
+            text = _flat(path.read_text())
+>           assert ".agents/plugins/kmctl/rules/" in text, path.name
+E           AssertionError: commands.md
+E           assert '.agents/plugins/kmctl/rules/' in "# Commands ## Summary Every `kmctl` command, subcommand and option in kmctl 0.1.0, taken from `kmctl --help` and each...er folder, where the hook's `settings.json` and APM's user-scope skills, agent and rules go; by default `~/.claude`. |"
+
+tests/test_antigravity.py:792: AssertionError
+________________ test_okf_stop_docs_name_the_hook_and_the_check ________________
+
+    def test_okf_stop_docs_name_the_hook_and_the_check() -> None:
+        decision = DECISIONS / "0018-kmctl-runs-okf-s-stop-check-for-antigravity.md"
+        text = _flat(decision.read_text())
+        for term in ("executionNum", "continue", "block", "repository root", "hooks.json"):
+            assert term in text, term
+        assert "0018" in _decision().read_text()
+        for path in (COMMANDS, INSTALL_HOW_TO):
+            assert "Stop" in path.read_text(), path.name
+        commands = COMMANDS.read_text()
+>       assert "kmctl-okf-stop" in commands
+E       assert 'kmctl-okf-stop' in "# Commands\n\n## Summary\n\nEvery `kmctl` command, subcommand and option in kmctl 0.1.0, taken from\n`kmctl --help` a... folder, where the hook's `settings.json` and APM's user-scope skills, agent and rules go; by default `~/.claude`. |\n"
+
+tests/test_antigravity.py:982: AssertionError
+________________ test_docs_decision_matches_the_decision_schema ________________
+
+    def test_docs_decision_matches_the_decision_schema() -> None:
+        """The new decision's front matter validates and its sections are the decision skeleton."""
+        validator = Draft202012Validator(schema("decision"))
+    
+        errors = [
+            e.message for e in validator.iter_errors(_json_ready(front_matter(DECISION)))
+        ]
+    
+        assert errors == []
+>       assert list(_sections(DECISION.read_text())) == skeleton("decision")
+E       AssertionError: assert ['Context', '..., 2026-10-17'] == ['Context', '...Consequences']
+E         
+E         Left contains one more item: 'Amended, 2026-10-17'
+E         Use -v to get more diff
+
+tests/test_apm_package.py:285: AssertionError
+___________ test_docs_apm_page_says_a_hand_added_entry_gets_no_hook ____________
+
+    def test_docs_apm_page_says_a_hand_added_entry_gets_no_hook() -> None:
+        """The APM how-to says what a hand entry leaves out and how to get it."""
+        text = _flat(PAGE.read_text())
+        commands = "\n".join(FENCE.findall(PAGE.read_text()))
+    
+>       assert "no SessionStart hook" in text
+E       assert 'no SessionStart hook' in "# Install kmctl with APM This page adds kmctl's APM package to a repository's `apm.yml` by hand, for a repository tha...APM leaves `okf-bundle` in your user `.claude.json`; remove it with: ``` claude mcp remove okf-bundle --scope user ```"
+
+tests/test_apm_package.py:415: AssertionError
+_______________ test_apm_hooks_docs_show_the_check_and_the_note ________________
+
+    def test_apm_hooks_docs_show_the_check_and_the_note() -> None:
+        how_to = (
+            ROOT / "docs" / "how-to" / "install-the-plugin-and-the-ci-action.md"
+        ).read_text()
+        assert (
+            "ok   antigravity.apm-hooks: .agents/hooks.json runs no okf Stop check"
+            in how_to
+        )
+        note = next(
+            line
+            for line in how_to.splitlines()
+            if line.startswith("note: wrote .agents/plugins/kmctl/")
+        )
+>       assert "okf's Stop check" in note
+E       assert "okf's Stop check" in 'note: wrote .agents/plugins/kmctl/ (the agents, which APM does not install for Antigravity yet); Antigravity loads it once you trust this folder'
+
+tests/test_doctor.py:1189: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_antigravity.py::test_docs_decision_matches_the_decision_schema
+FAILED tests/test_antigravity.py::test_docs_manifesto_names_antigravity - Ass...
+FAILED tests/test_antigravity.py::test_rules_docs_name_the_plugin_folder_rules
+FAILED tests/test_antigravity.py::test_okf_stop_docs_name_the_hook_and_the_check
+FAILED tests/test_apm_package.py::test_docs_decision_matches_the_decision_schema
+FAILED tests/test_apm_package.py::test_docs_apm_page_says_a_hand_added_entry_gets_no_hook
+FAILED tests/test_doctor.py::test_apm_hooks_docs_show_the_check_and_the_note
+============ 7 failed, 723 passed, 7 deselected in 90.13s (0:01:30) ============

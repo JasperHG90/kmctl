@@ -1,0 +1,26 @@
+warning: `VIRTUAL_ENV=/home/vscode/kmctl/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+........................................................................ [ 90%]
+.......F                                                                 [100%]
+=================================== FAILURES ===================================
+_______________ test_apm_hooks_docs_show_the_check_and_the_note ________________
+
+    def test_apm_hooks_docs_show_the_check_and_the_note() -> None:
+        how_to = (
+            ROOT / "docs" / "how-to" / "install-the-plugin-and-the-ci-action.md"
+        ).read_text()
+        assert (
+            "ok   antigravity.apm-hooks: .agents/hooks.json runs no okf Stop check"
+            in how_to
+        )
+        note = next(
+            line
+            for line in how_to.splitlines()
+            if line.startswith("note: wrote .agents/plugins/kmctl/")
+        )
+>       assert "okf's Stop check" in note
+E       assert "okf's Stop check" in 'note: wrote .agents/plugins/kmctl/ (the agents, which APM does not install for Antigravity yet); Antigravity loads it once you trust this folder'
+
+tests/test_doctor.py:1189: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_doctor.py::test_apm_hooks_docs_show_the_check_and_the_note
+1 failed, 79 passed, 2 deselected in 24.07s
