@@ -81,3 +81,8 @@ with input, output and usage on its model calls.
   a FunctionModel into a live Langfuse project, then read the trace back
   through Langfuse's API and count its observations, input, output and
   usage; if it fails, find the setting that fixes it.
+  Settled by spike:langfuse-traces/2: replaying the 64-request DeepSeek
+  okf-vs-code audit with the defaults sent 166 spans (32.66 MB) in one
+  request; Langfuse cloud returned 200 and its API gave back all 166, every
+  chat span a generation with model, full input (up to 819 kB), output and
+  usage. No batch or content setting is needed.
