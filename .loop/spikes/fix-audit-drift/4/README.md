@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017
-  at: '2026-10-17T18:46:09+00:00'
+  at: '2026-10-17T18:46:23+00:00'
 slug: fix-audit-drift
 n: 4
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike fix-audit-drift/4
@@ -28,7 +28,7 @@ print(json.dumps([{k:f[k] for k in ('severity','title','path','claim','contradic
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note fix-audit-drift 4`.
+Exit 0: the full finding list of one audit (spike 2 docs-vs-code, 3 okf-vs-code, 4 okf-vs-docs), not cut: severity, title, path, claim, contradicted_by and fix for each. Together 35 findings, the ticket's input.
 
 ## Files
 
