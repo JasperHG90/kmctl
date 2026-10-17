@@ -6,7 +6,7 @@ tags: [adr, decision, install, remove]
 generated:
   by: process:kmctl/0.3.0
   at: 2026-10-17T08:00:22Z
-status: stable
+status: deprecated
 sources:
   - resource: "src/kmctl/plugin.py"
   - resource: "src/kmctl/doctor.py"
@@ -73,3 +73,7 @@ Rejected:
 - After a partial remove, a bare `apm install` without `--target` can
   deploy kmctl to a harness whose target was kept; remove says so.
 - `kmctl plugin remove` with nothing installed changes nothing and exits 0.
+
+## Correction, 2026-10-17
+
+Superseded by [ADR 0021](0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md).

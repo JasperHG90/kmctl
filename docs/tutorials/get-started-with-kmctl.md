@@ -59,7 +59,7 @@ created .okf/manifesto.md
 created CLAUDE.md
 created .okf/decisions/index.md
 created .okf/decisions/0001-keep-project-knowledge-in-an-okf-bundle.md
-Next: kmctl plugin install --harness claude for the skills and the knowledge rules, then fill the purpose and invariants in .okf/manifesto.md (its values are the operator's to write), then add a diagram page to .okf/architecture/ once there is code, then record each choice as you make it with kmctl new decision
+Next: install kmctl's package with APM for the skills and the knowledge rules (the kmctl README's install section: an apm.yml entry, apm install, kmctl plugin patch), then fill the purpose and invariants in .okf/manifesto.md (its values are the operator's to write), then add a diagram page to .okf/architecture/ once there is code, then record each choice as you make it with kmctl new decision
 ```
 
 `docs/README.md` is the index of pages for people who use your project.
@@ -71,8 +71,8 @@ manifesto later; this tutorial leaves it as kmctl wrote it.
 The rest is for an agent such as Claude Code working in the repository.
 `CLAUDE.md` holds a block that says where each kind of knowledge lives and
 what the agent should do as it works. The rules for writing knowledge come
-with kmctl's skills from `kmctl plugin install`, the first step the `Next:`
-line names; this tutorial does not need them. Decision 0001 records the first choice: keep the
+with kmctl's skills in its APM package, the first step the `Next:` line
+names; this tutorial does not need them. Decision 0001 records the first choice: keep the
 project's knowledge in `.okf/`.
 
 ### 3. Check it

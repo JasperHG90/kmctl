@@ -119,3 +119,5 @@
 - Added `decisions/0019-kmctl-plugin-remove-uninstalls-the-package-and-reinstalls-the-harnesses-kept` with `kmctl new decision`.
 - Added `decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest` with `kmctl new decision`.
 - Superseded `decisions/0016-antigravity-rules-come-from-the-kmctl-plugin-folder` with `decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest`.
+- Added `decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest` with `kmctl new decision`.
+- Superseded `decisions/0019-kmctl-plugin-remove-uninstalls-the-package-and-reinstalls-the-harnesses-kept` with `decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest`.

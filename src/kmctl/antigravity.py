@@ -74,9 +74,12 @@ TOOLS: dict[str, tuple[str, ...]] = {
     "Edit": ("replace_file_content",),
     "Bash": ("run_command",),
 }
-FIX = "run kmctl plugin install --harness antigravity"
+FIX = "run kmctl plugin patch"
 #: The fix for a piece APM writes from kmctl's package.
-APM_FIX = "run apm install (or kmctl plugin install --harness antigravity)"
+APM_FIX = (
+    "run apm install --target antigravity (kmctl's package must be in apm.yml), "
+    "then kmctl plugin patch"
+)
 
 
 def plugin_dir(cwd: Path) -> Path:
@@ -302,7 +305,7 @@ def plugin_files(cwd: Path) -> dict[str, str]:
     """
     okf = cwd / OKF_AGENTS
     if not okf.is_dir():
-        raise PluginError(f"apm_modules/ is missing; {FIX}")
+        raise PluginError(f"apm_modules/ is missing; {APM_FIX}")
     out = {"plugin.json": _json({"name": PLUGIN_NAME})}
     for folder in (agents_dir(), okf):
         for path in sorted(folder.glob("*.md")):

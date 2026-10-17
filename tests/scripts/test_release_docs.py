@@ -85,7 +85,7 @@ def test_the_overview_shows_the_release_path() -> None:
 
 
 def test_the_how_to_has_an_upgrade_step() -> None:
-    """A step of the how-to says how to move to a newer release tag and refresh the plugin."""
+    """A step of the how-to says how to move to a newer release tag and install the package again."""
     steps = _sections(_sections(HOW_TO.read_text())["Steps"], "###")
     upgrade = [body for heading, body in steps.items() if "upgrade" in heading.lower()]
 
@@ -94,7 +94,7 @@ def test_the_how_to_has_an_upgrade_step() -> None:
         "uv tool install --force git+https://github.com/JasperHG90/Knowledge-management@v"
         in upgrade[0]
     )
-    assert "kmctl plugin update" in upgrade[0]
+    assert "apm install" in upgrade[0] and "kmctl plugin patch" in upgrade[0]
 
 
 def test_the_bundle_passes_kmctl_check() -> None:

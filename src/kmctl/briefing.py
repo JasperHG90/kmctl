@@ -1,6 +1,6 @@
 """The session briefing: where knowledge lives, which skill to use, what is due, and the rules (ADR 0002).
 
-The SessionStart hook ``kmctl plugin install`` writes relays it, so it is read
+The SessionStart hook in kmctl's APM package relays it, so it is read
 at the start of every session in every harness. It reads state and writes
 nothing, and stays within ``TOKEN_BUDGET`` (invariant I3). The rules for
 writing knowledge are not in it: kmctl's APM package installs them in

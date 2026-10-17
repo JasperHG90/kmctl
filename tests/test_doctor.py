@@ -28,7 +28,7 @@ import httpx
 import pytest
 import respx
 import yaml
-from conftest import plain
+from conftest import apm_install, plain
 from fixtures.fake_tools import FakeTools
 from typer.main import get_command
 from typer.testing import CliRunner, Result
@@ -44,8 +44,24 @@ REF = f"v{version('kmctl')}"
 OKF_AGENTS = "apm_modules/scaccogatto/okf-skills/agents"
 FOLDERS = {"claude": ".claude", "antigravity": ".agents"}
 AGENT = "---\nname: {name}\ndescription: d\ntools: Read, Bash\n---\n\nYou {name}.\n"
-AG_FIX = "run kmctl plugin install --harness antigravity"
-CLAUDE_FIX = "run kmctl plugin install --harness claude"
+AG_FIX = (
+    "run apm install --target antigravity (kmctl's package must be in apm.yml), "
+    "then kmctl plugin patch"
+)
+CLAUDE_FIX = (
+    "run apm install --target claude (kmctl's package must be in apm.yml), "
+    "then kmctl plugin patch"
+)
+PATCH_FIX = "run kmctl plugin patch"
+
+
+def _update_fix(harness: str) -> str:
+    return (
+        f"set kmctl's ref in apm.yml to {REF}, run apm install --target {harness}, "
+        "then kmctl plugin patch"
+    )
+
+
 #: Every id a complete install for both harnesses reports, in order.
 ALL_IDS = [
     "kmctl.version",
@@ -223,10 +239,26 @@ def _kmctl(*args: str) -> Result:
 def _install(
     s: Setup, harnesses: tuple[str, ...] = ("claude", "antigravity"), *flags: str
 ) -> Result:
-    """Run ``kmctl plugin install`` for ``harnesses``; fail the test unless it exits 0."""
+    """Write what ``apm install`` leaves for ``harnesses``, then run ``kmctl plugin patch``; fail unless it exits 0."""
     scope = "user" if "user" in flags else "project"
-    s.fakes.on("uvx", "apm install", write=_apm_writes(harnesses, scope))
-    result = _kmctl("plugin", "install", "--harness", ",".join(harnesses), *flags)
+    root = s.home if scope == "user" else s.repo
+    manifest = root / ".apm" / "apm.yml" if scope == "user" else root / "apm.yml"
+    manifest.parent.mkdir(parents=True, exist_ok=True)
+    manifest.write_text(
+        yaml.safe_dump(
+            {
+                "name": "repo",
+                "version": "0.1.0",
+                "dependencies": {"apm": [plugin.new_entry()]},
+                "targets": list(harnesses),
+            }
+        )
+    )
+    for rel, text in _apm_writes(harnesses, scope).items():
+        path = root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text)
+    result = _kmctl("plugin", "patch", *flags)
     assert result.exit_code == 0, result.output
     return result
 
@@ -361,31 +393,31 @@ BREAKS: dict[str, tuple[Callable[[Path], None], str, str, str]] = {
         lambda r: _edit(r / ".claude/settings.json", '"timeout": 10', '"timeout": 99'),
         "claude.hook",
         "is not the one kmctl's package ships",
-        "run kmctl plugin update --harness claude",
+        _update_fix("claude"),
     ),
     "plugin-file-missing": (
         lambda r: (r / PLUGIN / "plugin.json").unlink(),
         "antigravity.plugin",
         f"{PLUGIN}/plugin.json is missing",
-        AG_FIX,
+        PATCH_FIX,
     ),
     "plugin-file-extra": (
         lambda r: (r / PLUGIN / "agents" / "extra.md").write_text("x\n"),
         "antigravity.plugin",
         f"{PLUGIN}/agents/extra.md is not one kmctl writes",
-        AG_FIX,
+        PATCH_FIX,
     ),
     "plugin-file-edited": (
         lambda r: (r / PLUGIN / "agents" / "kmctl-auditor.md").write_text("x\n"),
         "antigravity.plugin",
         f"{PLUGIN}/agents/kmctl-auditor.md differs from what this kmctl writes",
-        AG_FIX,
+        PATCH_FIX,
     ),
     "plugin-folder": (
         lambda r: shutil.rmtree(r / PLUGIN),
         "antigravity.plugin",
         f"{PLUGIN}/ is missing",
-        AG_FIX,
+        PATCH_FIX,
     ),
     "antigravity-hook": (
         lambda r: (r / ".agents" / "hooks.json").write_text("{}\n"),
@@ -415,7 +447,7 @@ BREAKS: dict[str, tuple[Callable[[Path], None], str, str, str]] = {
         lambda r: _edit(r / ".mcp.json", '"sh"', '"bash"'),
         "claude.okf-mcp",
         "okf-bundle in .mcp.json is not the one kmctl's package declares",
-        "run kmctl plugin update --harness claude",
+        _update_fix("claude"),
     ),
     "lock": (
         lambda r: (r / "apm.lock.yaml").unlink(),
@@ -433,13 +465,13 @@ BREAKS: dict[str, tuple[Callable[[Path], None], str, str, str]] = {
         lambda r: _edit(r / "apm.lock.yaml", REF, "v0.0.1"),
         "claude.lock",
         f"apm.lock.yaml has kmctl's package at v0.0.1, this kmctl is {REF[1:]}",
-        "run kmctl plugin update --harness claude",
+        _update_fix("claude"),
     ),
     "ref-antigravity": (
         lambda r: _edit(r / "apm.lock.yaml", REF, "v0.0.1"),
         "antigravity.lock",
         "at v0.0.1",
-        "run kmctl plugin update --harness antigravity",
+        _update_fix("antigravity"),
     ),
     "okf": (
         lambda r: shutil.rmtree(r / ".okf"),
@@ -579,10 +611,7 @@ def test_dependency_no_harness_fails_once_with_install(setup: Setup) -> None:
     assert result.exit_code == 1
     fails = [line for line in result.stdout.splitlines() if line.startswith("fail")]
     assert fails == [
-        (
-            "fail kmctl.harness: no kmctl harness in this repository; run kmctl "
-            "plugin install --harness claude"
-        )
+        ("fail kmctl.harness: no kmctl harness in this repository; " + CLAUDE_FIX)
     ]
 
 
@@ -629,7 +658,7 @@ def test_user_scope_broken_fails_with_scope_fix(
     result = _kmctl("doctor", "--scope", "user")
 
     assert result.exit_code == 1
-    assert _fail_line(result.stdout, cid).endswith("--harness claude --scope user")
+    assert _fail_line(result.stdout, cid).endswith("kmctl plugin patch --scope user")
 
 
 def test_user_scope_seen_from_a_project_is_ok(setup: Setup) -> None:
@@ -651,7 +680,8 @@ def test_user_scope_none_fails_with_user_install(setup: Setup) -> None:
 
     assert result.exit_code == 1
     assert _fail_line(result.stdout, "kmctl.harness").endswith(
-        "; run kmctl plugin install --harness claude --scope user"
+        "; run apm install -g --target claude (kmctl's package must be in "
+        "apm.yml), then kmctl plugin patch --scope user"
     )
 
 
@@ -834,14 +864,11 @@ def test_doctor_help_names_checks_exit_codes_and_flags() -> None:
         assert words in text, words
 
 
-def test_doctor_install_and_update_end_with_next_doctor(setup: Setup) -> None:
-    install = _install(setup)
-    update = _kmctl("plugin", "update", "--harness", "claude,antigravity")
+def test_doctor_patch_ends_with_next_doctor(setup: Setup) -> None:
+    result = _install(setup)
 
-    assert update.exit_code == 0, update.output
-    for result in (install, update):
-        last = result.stdout.strip().splitlines()[-1]
-        assert last.startswith("Next: ") and last.endswith(", then kmctl doctor")
+    last = result.stdout.strip().splitlines()[-1]
+    assert last.startswith("Next: ") and last.endswith(", then kmctl doctor")
 
 
 def test_doctor_user_install_next_names_the_scope(setup: Setup) -> None:
@@ -855,11 +882,7 @@ def test_doctor_replaces_plugin_status() -> None:
 
     assert result.exit_code == 2
     assert "No such command" in plain(result.output)
-    assert sorted(get_command(app).commands["plugin"].commands) == [
-        "install",
-        "remove",
-        "update",
-    ]
+    assert sorted(get_command(app).commands["plugin"].commands) == ["patch"]
 
 
 def test_docs_name_doctor_and_not_plugin_status() -> None:
@@ -886,12 +909,12 @@ def test_docs_install_how_to_ends_with_doctor() -> None:
 @pytest.mark.parametrize(
     ("enabled", "file", "fix"),
     [
-        ([plugin.OLD_PLUGIN], "settings.json", CLAUDE_FIX),
-        ([plugin.OLD_PLUGIN], "settings.local.json", CLAUDE_FIX),
+        ([plugin.OLD_PLUGIN], "settings.json", PATCH_FIX),
+        ([plugin.OLD_PLUGIN], "settings.local.json", PATCH_FIX),
         (
             [plugin.OLD_PLUGIN, "okf@scaccogatto"],
             "settings.json",
-            CLAUDE_FIX,
+            PATCH_FIX,
         ),
         (
             ["okf@scaccogatto"],
@@ -1020,13 +1043,10 @@ def test_doctor_after_a_real_install_exits_zero(
     trust.parent.mkdir(parents=True)
     trust.write_text(json.dumps({"trustedWorkspaces": [str(consumer.resolve())]}))
 
-    install = _kmctl(
-        "plugin", "install", "--harness", "claude,antigravity", "--source", served
-    )
+    apm_install(consumer, served, "claude,antigravity")
     init = _kmctl("init")
     result = _kmctl("doctor")
 
-    assert install.exit_code == 0, install.output
     assert init.exit_code == 0, init.output
     assert result.exit_code == 0, result.output
     assert re.findall(r"^\S+\s+([\w.-]+):", result.stdout, re.MULTILINE) == ALL_IDS
@@ -1054,11 +1074,10 @@ def test_hands_back_real_install_over_an_old_one_then_uninstall(
         json.dumps({"mcpServers": {"okf-bundle": stale}})
     )
 
-    install = _kmctl(
-        "plugin", "install", "--harness", "claude,antigravity", "--source", served
-    )
+    first = apm_install(consumer, served, "claude,antigravity")
+    assert "run apm install again, so APM writes okf-bundle" in first
+    apm_install(consumer, served, "claude,antigravity")
 
-    assert install.exit_code == 0, install.output
     assert len(plugin.kmctl_hooks(settings)) == 1
     recorded = json.loads((consumer / ".claude" / "apm-hooks.json").read_text())
     assert any(
@@ -1131,7 +1150,7 @@ def test_okf_stop_apm_handler_fails_its_check(complete: Setup) -> None:
     check = _by_id(data)["antigravity.apm-hooks"]
     assert not check["ok"]
     assert ".agents/hooks.json" in check["detail"]
-    assert check["fix"] == AG_FIX
+    assert check["fix"] == PATCH_FIX
     assert result.exit_code == 1
 
 
@@ -1173,7 +1192,7 @@ def test_apm_hooks_unparsable_names_the_file_and_the_repair(
     check = _by_id(data)["antigravity.apm-hooks"]
     assert not check["ok"]
     assert ".agents/hooks.json is not a JSON object" in check["detail"]
-    assert check["fix"] == f"repair .agents/hooks.json by hand, then {AG_FIX}"
+    assert check["fix"] == f"repair .agents/hooks.json by hand, then {PATCH_FIX}"
     assert result.exit_code == 1
 
 
@@ -1205,3 +1224,16 @@ def test_apm_hooks_docs_show_the_check_and_the_note() -> None:
     )
     assert "the agents" in note
     assert "not a JSON object" in COMMANDS.read_text()
+
+
+# plugin-patch r4: every fix names apm install, the apm.yml ref or kmctl plugin patch
+
+
+def test_fix_names_no_old_verb(setup: Setup) -> None:
+    for name, (breaks, _cid, _said, _fix) in BREAKS.items():
+        _complete(setup)
+        breaks(setup.repo)
+        _, data = _doctor()
+        for check in data["checks"]:
+            fix = check.get("fix") or ""
+            assert not re.search(r"plugin (install|update|remove)", fix), (name, fix)

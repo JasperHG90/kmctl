@@ -1,15 +1,17 @@
 # Install kmctl with APM
 
-This page adds kmctl's APM package to a repository's `apm.yml` by hand, for a
+This page adds kmctl's APM package to a repository's `apm.yml`, for a
 repository that already manages its agent files with
-[APM](https://microsoft.github.io/apm), the Agent Package Manager. The
-package holds kmctl's skills, its audit agent, its four knowledge rules, the
-SessionStart hook that prints the kmctl briefing and okf's MCP server,
-`okf-bundle`, and brings the okf skills they use.
+[APM](https://microsoft.github.io/apm), the Agent Package Manager, or one
+that will. The package holds kmctl's skills, its audit agent, its four
+knowledge rules, the SessionStart hook that prints the kmctl briefing and
+okf's MCP server, `okf-bundle`, and brings the okf skills they use. APM
+installs, upgrades and removes it; `kmctl plugin patch` then adds what APM
+cannot install yet.
 
-`kmctl plugin install --harness claude` does all of this for you;
-see [Install the plugin and the CI action](install-the-plugin-and-the-ci-action.md).
-With a hand-added entry, keep in mind:
+[Install the plugin and the CI action](install-the-plugin-and-the-ci-action.md)
+walks through the same install with sample output and the CI action. Keep
+in mind:
 
 - **The kmctl CLI.** Most of the skills and the hook run `kmctl` commands, so
   you install the CLI yourself, in step 1, at the same tag as the package.
@@ -18,19 +20,20 @@ With a hand-added entry, keep in mind:
   from it.
 - **Antigravity.** APM does not install the agents for Antigravity yet, and
   writes okf's Antigravity Stop hook with a path that fails.
-  `kmctl plugin install --harness antigravity` adds the agents and removes
-  that hook.
+  `kmctl plugin patch` adds the agents and removes that hook.
 
-How the commands below were run: with APM 0.33.0 in a scratch repository,
-installing the package from a local git server that held this repository's
-files, and with okf-skills from GitHub. `tests/test_apm_package.py` runs the
-same install through `kmctl plugin install`.
+How the APM install below was run: with APM 0.33.0 in a scratch
+repository, installing the package from a local git server that held this
+repository's files, and with okf-skills from GitHub.
+`tests/test_plugin_patch.py` runs the same install, then
+`kmctl plugin patch`.
 
 ## Before you start
 
 - [uv](https://docs.astral.sh/uv/) and `git` on your PATH.
-- APM 0.33.0 or later on your PATH, for example from
-  `uv tool install apm-cli`.
+- APM 0.33.0 or later. Without it on your PATH,
+  `uvx --from apm-cli==0.33.0 apm` runs it through uv; write that wherever
+  this page says `apm`. To put it on your PATH, run `uv tool install apm-cli`.
 - A git repository to install into.
 - GitHub access to the kmctl repository. It is private for now, so APM
   needs a GitHub token with access to it. APM reads one from
@@ -47,41 +50,44 @@ uv tool install git+https://github.com/JasperHG90/Knowledge-management@v0.3.0
 
 ### 2. Add the kmctl package
 
-Add the package to the repository's `apm.yml`, at the same tag as the CLI:
+Add the package to `dependencies.apm` in the repository's `apm.yml`, with
+`ref` set to the tag of the CLI, `v` and what `kmctl --version` prints:
 
 ```yaml
 dependencies:
   apm:
-    - JasperHG90/Knowledge-management/apm#v0.3.0
+    - git: https://github.com/JasperHG90/Knowledge-management.git
+      path: apm
+      ref: vX.Y.Z
 ```
 
-and then, from the repository root:
+and then, from the repository root, install it for your harnesses and patch:
 
 ```
 apm install --target claude
+kmctl plugin patch
 ```
 
-APM writes the SessionStart hook into `.claude/settings.json` and okf's MCP
-server, `okf-bundle`, into `.mcp.json`, along with the skills, agent and
-rules.
+Use `--target antigravity` for Antigravity, or
+`--target claude,antigravity` for both. APM writes the SessionStart hook
+into `.claude/settings.json` and okf's MCP server, `okf-bundle`, into
+`.mcp.json`, along with the skills, agent and rules; for Antigravity it
+writes the same into `.agents/`. `kmctl plugin patch` reads `apm.lock.yaml`
+to see which harnesses APM installed kmctl for, and never runs APM itself.
 
-### 3. Optional: hand the entry to kmctl
+For Claude Code at user scope, for every repository, put the entry in
+`~/.apm/apm.yml` and run `apm install -g --target claude`, then
+`kmctl plugin patch --scope user`. Antigravity installs per repository
+only.
 
-Skip this step to keep your own entry. To let kmctl manage it instead, run:
-
-```
-kmctl plugin install --harness claude
-```
-
-This replaces your entry with the one kmctl writes,
-`{git: ..., path: apm, ref: v0.3.0}`, after running `apm uninstall` on
-yours, so the two never install the package twice.
-
-### 4. Start a new session
+### 3. Start a new session
 
 Start a new Claude Code session in the repository. Claude Code asks once
 whether to use the `okf-bundle` server from `.mcp.json`. The SessionStart
 hook prints the kmctl briefing at the start of each session.
+
+For Antigravity, open the repository folder in Antigravity and trust it;
+Antigravity loads `.agents/` only from a trusted folder.
 
 ## Check it worked
 
@@ -101,13 +107,37 @@ and okf's MCP server (`claude.okf-mcp`) along with the rest; when one is
 missing, check `allowExecutables` in `apm.yml`.
 
 To upgrade, install the CLI at the new tag with `uv tool install --force`,
-then run `kmctl plugin update`. It asks which harnesses to update, and Enter
-takes the ones already installed; pass `--harness` in a script.
-
-To remove the package, run `apm uninstall` on your entry; APM takes out the
-hook and okf's MCP server with the rest. After `apm uninstall -g`, APM
-leaves `okf-bundle` in your user `.claude.json`; remove it with:
+set `ref` to the same tag, and run `apm install` and `kmctl plugin patch`
+again. To remove the package, run `apm uninstall` on kmctl's entry, then
+`kmctl plugin patch --undo`; the steps, with the name `apm uninstall` takes,
+are in
+[Install the plugin and the CI action](install-the-plugin-and-the-ci-action.md#7-to-remove-kmctl).
+After `apm uninstall -g`, APM leaves `okf-bundle` in your user
+`.claude.json`; remove it with:
 
 ```
 claude mcp remove okf-bundle --scope user
 ```
+
+## Older installs
+
+kmctl 0.3.0 and older named the package with a string entry, such as:
+
+```yaml
+dependencies:
+  apm:
+    - JasperHG90/Knowledge-management/apm#v0.3.0
+```
+
+That package's SessionStart hook goes only with `apm uninstall`, so
+`kmctl plugin patch` refuses while such an entry is there, or while
+`apm.lock.yaml` shows kmctl installed in that old layout. The refusal names
+the `apm uninstall` to run, the `git:` entry to add in its place and the
+`apm install` to run after it; then run `kmctl plugin patch` again. The
+version in the old entry does not matter.
+
+A repository installed with `kmctl plugin install`, which kmctl 0.3.0 had,
+needs no extra step: after `apm install`, `kmctl plugin patch` removes the
+SessionStart hook and the `okf-bundle` server that older kmctl wrote itself,
+and the old claude plugin `kmctl@kmctl`. When it removes `okf-bundle`, it
+says to run `apm install` again, so APM writes the package's server.

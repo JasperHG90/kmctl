@@ -1,8 +1,9 @@
-"""kmctl plugin install --harness antigravity and kmctl briefing --format antigravity (ADR 0015).
+"""kmctl's Antigravity pieces and kmctl briefing --format antigravity (ADR 0015, ADR 0020).
 
-APM installs kmctl's and okf's skills and the rules into .agents/; kmctl
-writes the rest into a folder it alone owns, .agents/plugins/kmctl/: the
-translated agents, the SessionStart hook and okf's MCP server. No test here
+APM installs kmctl's and okf's skills, the rules, the hooks and okf's MCP
+server into .agents/; kmctl plugin patch writes the translated agents into
+a folder it alone owns, .agents/plugins/kmctl/, and takes APM's broken okf
+Stop handler out of .agents/hooks.json. No test here
 without a marker runs the real APM: ``FakeTools`` stands in for uvx and
 writes okf's agents where APM puts them. HOME, CLAUDE_CONFIG_DIR and
 XDG_DATA_HOME point at scratch folders. The ``integration`` tests run the real
@@ -22,6 +23,7 @@ from pathlib import Path
 
 import pytest
 import yaml
+from conftest import apm_install
 from fixtures.fake_tools import FakeTools
 from jsonschema import Draft202012Validator
 from typer.testing import CliRunner, Result
@@ -95,8 +97,9 @@ def _split(text: str) -> tuple[dict, str]:
     return yaml.safe_load(text[4:end]), text[end + 5 :]
 
 
-def _lock() -> str:
-    """An apm.lock.yaml holding the kmctl package at this CLI's ref."""
+def _lock(harnesses: tuple[str, ...] = ("antigravity",)) -> str:
+    """An apm.lock.yaml holding the kmctl package at this CLI's ref, deployed for ``harnesses``."""
+    tops = {"claude": ".claude", "antigravity": ".agents"}
     return yaml.safe_dump(
         {
             "lockfile_version": "1",
@@ -106,7 +109,7 @@ def _lock() -> str:
                     "name": "kmctl",
                     "resolved_ref": REF,
                     "virtual_path": "apm",
-                    "deployed_files": [],
+                    "deployed_files": [f"{tops[h]}/skills/audit" for h in harnesses],
                 }
             ],
         }
@@ -135,19 +138,19 @@ def repo(tmp_path: Path, home: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
 
 @pytest.fixture
 def fakes(tmp_path: Path, home: Path, monkeypatch: pytest.MonkeyPatch) -> FakeTools:
-    """Fake uvx and claude on PATH; ``apm install`` writes a lock and okf's two agents."""
+    """Fake uvx and claude alone on PATH; kmctl plugin patch runs neither APM nor uvx."""
     tools = FakeTools(tmp_path, tools=("uvx", "claude"))
     monkeypatch.setenv("PATH", tools.path)
-    tools.on(
-        "uvx",
-        "apm install",
-        write={
-            "apm.lock.yaml": _lock(),
-            f"{OKF_AGENTS}/bundle-weaver.md": BUNDLE_WEAVER,
-            f"{OKF_AGENTS}/event-analyzer.md": EVENT_ANALYZER,
-        },
-    )
     return tools
+
+
+def _apm_install(harnesses: tuple[str, ...] = ("antigravity",)) -> None:
+    """Write what ``apm install`` of kmctl's entry leaves: the lock and okf's two agents."""
+    cwd = Path.cwd()
+    (cwd / OKF_AGENTS).mkdir(parents=True, exist_ok=True)
+    (cwd / OKF_AGENTS / "bundle-weaver.md").write_text(BUNDLE_WEAVER)
+    (cwd / OKF_AGENTS / "event-analyzer.md").write_text(EVENT_ANALYZER)
+    (cwd / "apm.lock.yaml").write_text(_lock(harnesses))
 
 
 def _kmctl(*args: str, stdin: str | None = None) -> Result:
@@ -155,9 +158,10 @@ def _kmctl(*args: str, stdin: str | None = None) -> Result:
     return CliRunner().invoke(app, list(args), input=stdin)
 
 
-def _install(*args: str) -> Result:
-    """Run ``kmctl plugin install --harness antigravity``; fail the test unless it exits 0."""
-    result = _kmctl("plugin", "install", "--harness", "antigravity", *args)
+def _install(*args: str, harnesses: tuple[str, ...] = ("antigravity",)) -> Result:
+    """Install kmctl's package with the fake APM, then run ``kmctl plugin patch``; fail unless it exits 0."""
+    _apm_install(harnesses)
+    result = _kmctl("plugin", "patch", *args)
     assert result.exit_code == 0, result.output
     return result
 
@@ -328,50 +332,33 @@ def test_plugin_folder_needs_okf_agents_from_apm(repo: Path, fakes: FakeTools) -
         antigravity.plugin_files(repo)
 
 
-def test_plugin_folder_install_skips_claude_steps(repo: Path, fakes: FakeTools) -> None:
-    """An Antigravity-only install writes no Claude settings, .mcp.json or claude runs."""
+def test_plugin_folder_patch_for_antigravity_alone_skips_claude(
+    repo: Path, fakes: FakeTools
+) -> None:
     _install()
 
     assert not (repo / ".claude").exists()
     assert not (repo / ".mcp.json").exists()
-    assert fakes.calls("claude") == []
-    [apm] = [c for c in fakes.calls("uvx") if "install" in c.args]
-    assert apm.args[apm.args.index("--target") + 1] == "antigravity"
-    assert yaml.safe_load((repo / "apm.yml").read_text())["targets"] == ["antigravity"]
+    assert fakes.calls() == []
 
 
-def test_plugin_folder_install_for_both_harnesses(repo: Path, fakes: FakeTools) -> None:
-    result = _kmctl("plugin", "install", "--harness", "claude,antigravity", "--json")
+def test_plugin_folder_patch_for_both_harnesses(repo: Path, fakes: FakeTools) -> None:
+    result = _install("--json", harnesses=("claude", "antigravity"))
 
-    assert result.exit_code == 0, result.output
     assert sorted(_files(_folder(repo))) == PLUGIN_FILES
-    assert not (repo / ".claude" / "settings.json").exists()
     assert json.loads(result.stdout)["harnesses"] == ["claude", "antigravity"]
 
 
-def test_plugin_folder_skipped_skills_named_under_agents(
-    repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+def test_plugin_folder_not_written_at_user_scope(
+    repo: Path, fakes: FakeTools, home: Path
 ) -> None:
-    """When APM leaves a skill folder in place, the refusal names it under .agents/."""
-    tools = FakeTools(tmp_path / "skip", tools=("uvx",))
-    monkeypatch.setenv("PATH", tools.path)
-    tools.on("uvx", "apm install", stdout=f"1 file {plugin.SKIP_LINE}\n")
-    (repo / ".agents" / "skills" / "audit").mkdir(parents=True)
+    (home / ".apm").mkdir()
+    (home / ".apm" / "apm.lock.yaml").write_text(_lock(("claude", "antigravity")))
 
-    result = _kmctl("plugin", "install", "--harness", "antigravity")
+    result = _kmctl("plugin", "patch", "--scope", "user")
 
-    assert result.exit_code == 1
-    assert ".agents/skills/audit" in result.stderr
-    assert ".claude/" not in result.stderr
+    assert result.exit_code == 0, result.output
     assert not _folder(repo).exists()
-
-
-def test_plugin_folder_user_scope_refused(repo: Path, fakes: FakeTools) -> None:
-    result = _kmctl("plugin", "install", "--harness", "antigravity", "--scope", "user")
-
-    assert result.exit_code == 1
-    assert "--scope user" in result.stderr and "antigravity" in result.stderr
-    assert fakes.calls() == []
 
 
 def test_plugin_folder_install_ends_with_trust_step(
@@ -605,7 +592,7 @@ def test_plugin_problems_without_apm_modules_raise_the_fix(
 
     with pytest.raises(
         plugin.PluginError,
-        match=r"^apm_modules/ is missing; run kmctl plugin install --harness antigravity$",
+        match=r"^apm_modules/ is missing; run apm install --target antigravity \(kmctl's package must be in apm.yml\), then kmctl plugin patch$",
     ):
         antigravity.plugin_problems(repo)
 
@@ -650,9 +637,8 @@ def test_agy_validate_counts_three_agents(
 def test_consumer_gets_skills_rules_and_the_plugin_folder(
     consumer: Path, served: str
 ) -> None:
-    result = _kmctl("plugin", "install", "--harness", "antigravity", "--source", served)
+    apm_install(consumer, served, "antigravity")
 
-    assert result.exit_code == 0, result.output
     agents = consumer / ".agents"
     for skill in sorted(p.name for p in SKILLS.iterdir() if p.is_dir()):
         assert (agents / "skills" / skill / "SKILL.md").read_bytes() == (
@@ -752,7 +738,7 @@ def test_docs_manifesto_names_antigravity() -> None:
     out_of_scope = text.split("## Out of scope for now", 1)[1]
 
     assert "Antigravity" in parts
-    assert "--harness antigravity" in _flat(parts)
+    assert "--target antigravity" in _flat(parts)
     assert "Antigravity" not in out_of_scope
 
 
@@ -763,7 +749,7 @@ def test_docs_adr_0003_points_to_the_new_decision() -> None:
 def test_docs_commands_reference_documents_harness_and_format() -> None:
     text = _flat(COMMANDS.read_text())
 
-    assert "`--harness LIST`" in text and "`antigravity`" in text
+    assert "kmctl plugin patch" in text and "`--undo`" in text
     assert "--format" in text and "injectSteps" in text
     assert ".agents/plugins/kmctl/" in text
 
@@ -771,7 +757,8 @@ def test_docs_commands_reference_documents_harness_and_format() -> None:
 def test_docs_install_how_to_covers_antigravity() -> None:
     text = _flat(INSTALL_HOW_TO.read_text())
 
-    assert "kmctl plugin install --harness antigravity" in text
+    assert "apm install --target antigravity" in text
+    assert "kmctl plugin patch" in text
     assert "trust" in text.lower()
     assert re.search(r"okf's MCP server[^.]*needs `?uv`?", text), (
         "uv for the MCP server"
@@ -967,18 +954,17 @@ def test_okf_stop_docs_name_the_hook_and_the_check() -> None:
 # apm-hands-back r3: install writes only the agents and the okf Stop fix -------------
 
 
-def test_hands_back_install_writes_no_hook_mcp_or_rules(
+def test_hands_back_patch_writes_no_hook_mcp_or_rules(
     repo: Path, fakes: FakeTools
 ) -> None:
-    result = _kmctl("plugin", "install", "--harness", "claude,antigravity")
+    _install(harnesses=("claude", "antigravity"))
 
-    assert result.exit_code == 0, result.output
     assert not (repo / ".claude" / "settings.json").exists()
     assert not (repo / ".mcp.json").exists()
     assert sorted(_files(repo / ".agents")) == [
         f"plugins/kmctl/{name}" for name in PLUGIN_FILES
     ]
-    assert not [c for c in fakes.calls("claude") if c.args[:2] == ["mcp", "add-json"]]
+    assert fakes.calls("uvx") == []
 
 
 def test_hands_back_okf_handler_dropped_wrapper_kept(

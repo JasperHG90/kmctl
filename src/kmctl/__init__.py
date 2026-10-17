@@ -20,22 +20,13 @@ from kmctl.checks import run_checks
 from kmctl.concepts import ConceptError, Kind, new_concept
 from kmctl.docs import DocType, new_doc
 from kmctl.doctor import as_json as doctor_json
-from kmctl.doctor import harnesses_found, run_doctor
 from kmctl.doctor import render as render_doctor
+from kmctl.doctor import run_doctor
 from kmctl.handoffs import live_handoffs
 from kmctl.kinds import KINDS, schema
-from kmctl.plugin import (
-    APM_CLI,
-    DEFAULT_SOURCE,
-    HARNESSES,
-    InstallResult,
-    PluginError,
-    RemoveResult,
-    Scope,
-    parse_harnesses,
-)
-from kmctl.plugin import install as install_plugin
-from kmctl.plugin import remove as remove_plugin
+from kmctl.plugin import APM_CLI, PatchResult, PluginError, Scope
+from kmctl.plugin import patch as patch_plugin
+from kmctl.plugin import unpatch as unpatch_plugin
 from kmctl.review_due import review_due
 from kmctl.scaffold import AGENT_FILES, scaffold
 from kmctl.supersede import supersede
@@ -82,8 +73,8 @@ _INIT_EPILOG = (
     "when AGENTS.md exists (Claude Code then reads AGENTS.md and its block "
     "once) and the block otherwise; and the first decision, Keep project "
     "knowledge in an OKF bundle, when no record has that title. It writes no "
-    "rules: the knowledge rules come with kmctl's skills from kmctl plugin "
-    "install.\n\n"
+    "rules: the knowledge rules come with kmctl's skills in its APM package, "
+    "which apm install installs (then kmctl plugin patch).\n\n"
     "A CLAUDE.md with an @AGENTS.md line, beside an AGENTS.md, gets no block. "
     "A CLAUDE.md or AGENTS.md symlink that is dangling or points outside the "
     "repository is left alone with a warning naming it and its target; when "
@@ -136,8 +127,9 @@ def init(
     if result.created or result.updated:
         typer.echo(
             next_step(
-                "kmctl plugin install --harness claude for the skills and the "
-                "knowledge rules",
+                "install kmctl's package with APM for the skills and the knowledge "
+                "rules (the kmctl README's install section: an apm.yml entry, apm "
+                "install, kmctl plugin patch)",
                 "fill the purpose and invariants in .okf/manifesto.md (its values "
                 "are the operator's to write)",
                 "add a diagram page to .okf/architecture/ once there is code",
@@ -667,301 +659,115 @@ def decision_supersede(
 
 plugin_app = typer.Typer(
     help=(
-        "Install kmctl's skills, audit agent, knowledge rules and session hook for an "
-        "agent harness, through APM (Agent Package Manager). Verbs: install, update, "
-        "remove. "
-        "Needs uv on PATH: kmctl runs APM with uvx. kmctl doctor checks the install."
+        "Finish installing kmctl's APM package for an agent harness. APM (Agent "
+        "Package Manager) installs the package from apm.yml: the skills, audit "
+        "agent, knowledge rules, session hooks and okf's MCP server. Verb: "
+        "patch, which adds what APM cannot install yet. kmctl doctor checks the "
+        "install."
     ),
     no_args_is_help=True,
 )
 app.add_typer(plugin_app, name="plugin")
 
-_SCOPE_OPTION = typer.Option(
-    "--scope",
-    metavar="project",
-    help=(
-        "project (this repository: apm.yml, .claude/, .mcp.json and .agents/ "
-        "here; the default) or user (every repository: ~/.apm/apm.yml, and "
-        "Claude Code's folder, $CLAUDE_CONFIG_DIR or ~/.claude). antigravity "
-        "is project only."
-    ),
-)
-_HARNESS_OPTION = typer.Option(
-    "--harness",
-    metavar="claude,antigravity",
-    show_default=False,
-    help=(
-        "The agent harnesses, as a comma list. Accepted: "
-        f"{', '.join(HARNESSES)}. Left out, the command asks which harnesses "
-        "to install for when stdin is a terminal (install suggests claude; "
-        "update suggests the harnesses already installed), and refuses when "
-        "it is not or with --json."
-    ),
-)
-_SOURCE_OPTION = typer.Option(
-    "--source",
-    metavar="https://host/owner/repo.git",
-    show_default=False,
-    help=(
-        "The git URL of the repository holding the kmctl package (its apm/ folder, "
-        "at the tag v<this kmctl's version>). Default: kmctl's GitHub repository, "
-        "named below. Set it for a fork or a local git server; an http:// URL is "
-        "allowed as insecure."
-    ),
-)
-_FORCE_OPTION = typer.Option(
-    "--force",
-    help=(
-        "Let APM replace skill folders it did not write. It replaces each folder "
-        "whole, deleting any file you added there. Use it when the install says "
-        "APM left files in place."
-    ),
-)
-_PLUGIN_JSON_OPTION = typer.Option(
-    "--json",
-    help=("Print one JSON object (scope, harnesses, package_ref, notes), for scripts."),
-)
-_INSTALL_EPILOG = (
+_PATCH_EPILOG = (
     "Examples:\n\n"
-    "  kmctl plugin {verb}    (at a terminal: asks which harnesses)\n\n"
-    "  kmctl plugin {verb} --harness claude\n\n"
-    "  kmctl plugin {verb} --harness claude,antigravity\n\n"
-    "  kmctl plugin {verb} --harness claude --scope user --json\n\n"
-    "  kmctl plugin {verb} --source http://127.0.0.1:8080/o/kmctl.git\n\n"
-    f"The default --source is {DEFAULT_SOURCE}\n\n"
-    "In order: runs apm uninstall on an apm.yml entry that names "
-    "JasperHG90/Knowledge-management/apm another way; for claude, removes the "
-    "SessionStart hook and okf-bundle MCP server an older kmctl wrote itself, "
-    "which the package now ships; writes the kmctl entry "
-    "{{git: SOURCE, path: apm, ref: vVERSION}} and the harnesses as targets "
-    "into apm.yml, keeping its other entries; runs "
-    f"uvx --from {APM_CLI} apm install --target HARNESSES, which writes the "
-    "package's skills, rules, SessionStart hook and okf's MCP server "
-    "okf-bundle (which needs uv) for each harness; once that worked, removes "
-    "the old claude plugin kmctl@kmctl from this repository (skipped when the "
-    "claude CLI is not on PATH). For antigravity, kmctl then replaces the "
-    "folder .agents/plugins/kmctl/ with plugin.json and the agents translated "
-    "from Claude Code's format (kmctl-auditor and okf's two, read from "
-    "apm_modules/), which APM does not install there yet, and takes APM's "
-    "broken okf Stop handler out of .agents/hooks.json. Antigravity loads "
-    ".agents/ only once you "
-    "trust the repository. Running it again changes nothing. It refuses, and "
-    "names the fix, when APM leaves in place a skill folder it did not write."
+    "  kmctl plugin patch\n\n"
+    "  kmctl plugin patch --scope user\n\n"
+    "  kmctl plugin patch --json\n\n"
+    "  kmctl plugin patch --undo\n\n"
+    "Run it after apm install (and after apm update). It reads apm.lock.yaml "
+    "(~/.apm/apm.lock.yaml with --scope user) to see which harnesses APM "
+    "installed kmctl's package for, and never runs APM, so it needs neither uv "
+    "nor APM on PATH. For claude it removes the SessionStart hook and okf-bundle "
+    "MCP server an older kmctl wrote itself (the package ships them now; when "
+    "it removes okf-bundle, run apm install again so APM writes it) and the old "
+    "claude plugin kmctl@kmctl. For antigravity (project scope only) it writes "
+    ".agents/plugins/kmctl/ with plugin.json and the agents translated from "
+    "Claude Code's format (kmctl-auditor and okf's two, read from "
+    "apm_modules/), which APM does not install for Antigravity yet, and takes "
+    "APM's okf Stop handler, which cannot run there, out of .agents/hooks.json. "
+    "Antigravity loads .agents/ only once you trust the repository folder. "
+    "Running it again changes nothing.\n\n"
+    "It refuses, naming the fix, when apm.lock.yaml lists no kmctl package "
+    "(add the entry to apm.yml and run apm install), or when apm.yml still names "
+    "the package the way kmctl v0.3.0 and older did (it names the apm uninstall "
+    "to run first). --undo deletes .agents/plugins/kmctl/ and nothing else; to "
+    "remove kmctl, run apm uninstall on its entry and kmctl plugin patch --undo. "
+    "Installing is in the README's install section."
 )
 
 
-def _report(result: InstallResult, as_json: bool) -> None:
-    """Print what an install did: one JSON object, or its notes and a summary line."""
+def _report(result: PatchResult, as_json: bool) -> None:
+    """Print what a patch did: one JSON object, or its notes and a summary line."""
     if as_json:
         typer.echo(json.dumps(asdict(result)))
         return
     for note in result.notes:
         typer.echo(f"note: {note}")
-    typer.echo(
-        f"installed kmctl's package {result.package_ref or '(not in apm.lock.yaml)'} "
-        f"for {', '.join(result.harnesses)} ({result.scope} scope)"
-    )
-
-
-#: How the question names each harness.
-_HARNESS_LABELS = {"claude": "Claude Code", "antigravity": "Antigravity"}
-
-
-def _at_terminal() -> bool:
-    """Whether a person can answer a question: stdin is a terminal."""
-    return sys.stdin.isatty()
-
-
-def _read_answer(answer: str) -> list[str]:
-    """The harnesses an answer names, by number or name; raises PluginError otherwise."""
-    numbered = dict(enumerate(HARNESSES, 1))
-    names = [
-        numbered.get(int(word), word) if word.isdecimal() else word
-        for word in (w.strip() for w in answer.split(","))
-    ]
-    try:
-        return parse_harnesses(",".join(names))
-    except PluginError:
-        accepted = ", ".join(f"{n} {h}" for n, h in numbered.items())
-        raise PluginError(f"answer with one of: {accepted}") from None
-
-
-def _ask_harnesses(
-    default: list[str], question: str = "Which harnesses should kmctl install for?"
-) -> list[str]:
-    """Ask ``question`` on stderr, listing the harnesses, until the answer names some."""
-    typer.echo(question, err=True)
-    for n, name in enumerate(HARNESSES, 1):
-        typer.echo(f"  {n}. {name} ({_HARNESS_LABELS[name]})", err=True)
-    while True:
-        answer = typer.prompt(
-            "Numbers or names, comma separated", default=",".join(default), err=True
+    if result.harnesses:
+        typer.echo(
+            f"patched kmctl's package {result.package_ref or ''} for "
+            f"{', '.join(result.harnesses)} ({result.scope} scope)".replace("  ", " ")
         )
-        try:
-            return _read_answer(answer)
-        except PluginError as error:
-            typer.echo(error, err=True)
 
 
-def _harnesses(
-    verb: str, harness: str | None, scope: Scope, as_json: bool
-) -> list[str]:
-    """The harnesses to install for: from --harness, or asked of a person at a terminal.
-
-    Raises
-    ------
-    PluginError
-        When --harness names an unknown harness, or is left out where no one
-        can answer: stdin is not a terminal, or --json asks for output a
-        script reads.
-    """
-    if harness is not None:
-        return parse_harnesses(harness)
-    if as_json or not _at_terminal():
-        raise PluginError(
-            "no --harness given and no terminal to ask at; give --harness "
-            f"with one or more of: {', '.join(HARNESSES)}"
-        )
-    if verb == "remove":
-        question = "Which harnesses should kmctl be removed from?"
-        return _ask_harnesses(harnesses_found(Path.cwd(), scope), question)
-    default = harnesses_found(Path.cwd(), scope) if verb == "update" else []
-    return _ask_harnesses(default or ["claude"])
-
-
-def _install(
-    verb: str,
-    harness: str | None,
-    scope: Scope,
-    source: str,
-    force: bool,
-    as_json: bool,
+@plugin_app.command("patch", epilog=_PATCH_EPILOG)
+def plugin_patch(
+    scope: Annotated[
+        Scope,
+        typer.Option(
+            "--scope",
+            metavar="project",
+            help=(
+                "project (this repository's apm.lock.yaml, .claude/, .mcp.json and "
+                ".agents/; the default) or user (~/.apm/apm.lock.yaml and Claude "
+                "Code's folder, $CLAUDE_CONFIG_DIR or ~/.claude, for a package "
+                "installed with apm install -g). Antigravity is patched at "
+                "project scope only."
+            ),
+        ),
+    ] = "project",
+    undo: Annotated[
+        bool,
+        typer.Option(
+            "--undo",
+            help=(
+                "Delete what patch wrote, .agents/plugins/kmctl/, and nothing "
+                "else. apm uninstall removes the rest."
+            ),
+        ),
+    ] = False,
+    as_json: Annotated[
+        bool,
+        typer.Option(
+            "--json",
+            help="Print one JSON object (scope, harnesses, package_ref, notes), for scripts.",
+        ),
+    ] = False,
 ) -> None:
-    """Run ``kmctl plugin install`` or ``update``: map a PluginError to a refusal."""
+    """Add what APM cannot install yet for kmctl's package; run it after apm install."""
     try:
-        names = _harnesses(verb, harness, scope, as_json)
-        result = install_plugin(Path.cwd(), names, scope, source=source, force=force)
+        result = (
+            unpatch_plugin(Path.cwd(), scope)
+            if undo
+            else patch_plugin(Path.cwd(), scope)
+        )
     except PluginError as error:
-        typer.echo(f"kmctl plugin {verb}: refused: {error}", err=True)
+        typer.echo(f"kmctl plugin patch: refused: {error}", err=True)
         raise typer.Exit(1) from error
     _report(result, as_json)
+    if undo and not as_json and not result.notes:
+        typer.echo("nothing to undo: .agents/plugins/kmctl/ is not there")
     if not as_json:
         steps = []
-        if "claude" in names:
+        if "claude" in result.harnesses:
             steps.append("start a new Claude Code session")
-        if "antigravity" in names:
+        if "antigravity" in result.harnesses and scope == "project":
             steps.append(
                 "open this folder in Antigravity, trust it and start a new session"
             )
         flags = " --scope user" if scope == "user" else ""
         typer.echo(next_step(*steps, f"kmctl doctor{flags}"))
-
-
-@plugin_app.command("install", epilog=_INSTALL_EPILOG.format(verb="install"))
-def plugin_install(
-    harness: Annotated[str | None, _HARNESS_OPTION] = None,
-    scope: Annotated[Scope, _SCOPE_OPTION] = "project",
-    source: Annotated[str, _SOURCE_OPTION] = DEFAULT_SOURCE,
-    force: Annotated[bool, _FORCE_OPTION] = False,
-    as_json: Annotated[bool, _PLUGIN_JSON_OPTION] = False,
-) -> None:
-    """Install kmctl's APM package, its session hook and okf's MCP server for a harness."""
-    _install("install", harness, scope, source, force, as_json)
-
-
-@plugin_app.command("update", epilog=_INSTALL_EPILOG.format(verb="update"))
-def plugin_update(
-    harness: Annotated[str | None, _HARNESS_OPTION] = None,
-    scope: Annotated[Scope, _SCOPE_OPTION] = "project",
-    source: Annotated[str, _SOURCE_OPTION] = DEFAULT_SOURCE,
-    force: Annotated[bool, _FORCE_OPTION] = False,
-    as_json: Annotated[bool, _PLUGIN_JSON_OPTION] = False,
-) -> None:
-    """Reinstall kmctl's APM package at this kmctl's version; run it after upgrading kmctl."""
-    _install("update", harness, scope, source, force, as_json)
-
-
-_REMOVE_HARNESS_OPTION = typer.Option(
-    "--harness",
-    metavar="claude,antigravity",
-    show_default=False,
-    help=(
-        "The agent harnesses to remove kmctl from, as a comma list. Accepted: "
-        f"{', '.join(HARNESSES)}. Left out, the command asks which when stdin is "
-        "a terminal, suggesting the harnesses installed here, and refuses when "
-        "it is not or with --json."
-    ),
-)
-_REMOVE_JSON_OPTION = typer.Option(
-    "--json",
-    help="Print one JSON object (scope, removed, kept, notes), for scripts.",
-)
-_REMOVE_EPILOG = (
-    "Examples:\n\n"
-    "  kmctl plugin remove    (at a terminal: asks which harnesses)\n\n"
-    "  kmctl plugin remove --harness antigravity\n\n"
-    "  kmctl plugin remove --harness claude,antigravity --json\n\n"
-    "  kmctl plugin remove --harness claude --scope user\n\n"
-    "In order: runs uvx --from "
-    f"{APM_CLI} apm uninstall on kmctl's apm.yml entry (named HOST/OWNER/REPO/apm "
-    "from its git: URL; -g with --scope user), which takes kmctl's and okf's "
-    "skills, agent, rules, hooks and lock entries; takes each removed harness "
-    "out of apm.yml's targets when no other dependency is left there (otherwise "
-    "it keeps the target and says so); for claude, takes kmctl's SessionStart "
-    "hook out of the settings file and kmctl's okf-bundle MCP server out of "
-    ".mcp.json (with claude mcp remove at user scope), keeping every other hook "
-    "and server; for antigravity, deletes .agents/plugins/kmctl/ and an empty "
-    ".agents/hooks.json. When harnesses stay installed it then installs them "
-    "again from the same source at the same ref, because APM cannot drop one "
-    "target cleanly; if that fails, it names the command that puts them back. "
-    "A harness kmctl is not installed for is skipped with a note. Needs uv on "
-    "PATH."
-)
-
-
-def _report_remove(result: RemoveResult, as_json: bool) -> None:
-    """Print what a remove did: one JSON object, or its notes and a summary line."""
-    if as_json:
-        typer.echo(json.dumps(asdict(result)))
-        return
-    for note in result.notes:
-        typer.echo(f"note: {note}")
-    if result.removed:
-        line = f"removed kmctl from {', '.join(result.removed)} ({result.scope} scope)"
-        if result.kept:
-            line += f"; still installed for {', '.join(result.kept)}"
-        typer.echo(line)
-    elif result.kept:
-        typer.echo(
-            f"removed nothing; kmctl is installed for {', '.join(result.kept)} "
-            f"({result.scope} scope)"
-        )
-    else:
-        typer.echo(
-            f"kmctl is not installed here ({result.scope} scope); removed nothing"
-        )
-
-
-@plugin_app.command("remove", epilog=_REMOVE_EPILOG)
-def plugin_remove(
-    harness: Annotated[str | None, _REMOVE_HARNESS_OPTION] = None,
-    scope: Annotated[Scope, _SCOPE_OPTION] = "project",
-    as_json: Annotated[bool, _REMOVE_JSON_OPTION] = False,
-) -> None:
-    """Remove kmctl's APM package, its session hook and okf's MCP server from harnesses."""
-    try:
-        if harness is None and not harnesses_found(Path.cwd(), scope):
-            names: list[str] = []
-        else:
-            names = _harnesses("remove", harness, scope, as_json)
-        result = remove_plugin(Path.cwd(), names, scope)
-    except PluginError as error:
-        typer.echo(f"kmctl plugin remove: refused: {error}", err=True)
-        raise typer.Exit(1) from error
-    _report_remove(result, as_json)
-    if not as_json:
-        flags = " --scope user" if scope == "user" else ""
-        typer.echo(next_step(f"kmctl doctor{flags}"))
 
 
 _DOCTOR_EPILOG = (
@@ -1021,7 +827,7 @@ def doctor_cmd(
             metavar="project",
             help=(
                 "project (the install in this repository; the default) or user "
-                "(the install kmctl plugin install --scope user made: "
+                "(the install apm install -g made: "
                 "~/.apm/ and $CLAUDE_CONFIG_DIR, by default ~/.claude)."
             ),
         ),

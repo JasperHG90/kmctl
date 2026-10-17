@@ -1,14 +1,13 @@
-"""What kmctl says when the APM install it runs fails.
+"""What kmctl says when a command it runs fails (``plugin._require``).
 
-A stub ``uvx`` on PATH prints a recorded stderr and exits 1, so these tests
-need no network and never run the real APM. The SSH-fallback stderr is what
+Each test hands ``_require`` the recorded stderr of a failed run, so these
+tests need no network and run nothing. The SSH-fallback stderr is what
 claude 2.1.300 printed with github.com unresolvable, kept because a git clone
 fails the same way under APM: HTTPS fails with git's network line, then SSH
 ends on an access-rights line that hides the cause.
 """
 
-import os
-import stat
+import subprocess
 import time
 from pathlib import Path
 
@@ -37,32 +36,28 @@ and the repository exists.
 
 
 PREFIX = "uvx --from apm-cli==0.33.0 apm install --target claude failed: "
-SUFFIX = "; run it by hand to see why, then kmctl plugin install again"
+SUFFIX = "; run it by hand to see why, then kmctl plugin patch again"
 
 
 @pytest.fixture
-def stub_uvx(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
-    """Put a ``uvx`` on PATH, alone with the system folders, that prints ``stderr`` and exits 1."""
-    monkeypatch.setenv("HOME", str(tmp_path / "home"))
-    monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(tmp_path / "home" / ".claude"))
+def stub_uvx(tmp_path: Path):
+    """Record the stderr the failed run printed."""
 
-    def install(stderr: str) -> None:
-        bin_dir = tmp_path / "bin"
-        bin_dir.mkdir(exist_ok=True)
+    def record(stderr: str) -> None:
         (tmp_path / "stderr.txt").write_text(stderr, encoding="utf-8")
-        uvx = bin_dir / "uvx"
-        uvx.write_text(f"#!/bin/sh\ncat '{tmp_path / 'stderr.txt'}' >&2\nexit 1\n")
-        uvx.chmod(uvx.stat().st_mode | stat.S_IEXEC)
-        monkeypatch.setenv("PATH", f"{bin_dir}{os.pathsep}/usr/bin:/bin")
 
-    return install
+    return record
 
 
 def _message(tmp_path: Path) -> str:
-    repo = tmp_path / "repo"
-    repo.mkdir(exist_ok=True)
+    proc = subprocess.CompletedProcess(
+        args=["uvx"],
+        returncode=1,
+        stdout="",
+        stderr=(tmp_path / "stderr.txt").read_text(encoding="utf-8"),
+    )
     with pytest.raises(PluginError) as caught:
-        plugin.install(repo, ["claude"])
+        plugin._require(proc, PREFIX.removesuffix(" failed: "))
     return str(caught.value)
 
 
@@ -118,7 +113,7 @@ def test_last_line_and_cap_long_stderr(stub_uvx, tmp_path: Path) -> None:
     assert len(cause) <= plugin.CAUSE_CAP, len(cause)
     assert cause.startswith("fatal: line 0 ")
     assert cause.endswith("…")
-    assert message.endswith("then kmctl plugin install again")
+    assert message.endswith("then kmctl plugin patch again")
 
 
 GENERATED = """

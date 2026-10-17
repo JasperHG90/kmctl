@@ -131,13 +131,21 @@ def _suffix(scope: Scope) -> str:
 
 
 def _install_fix(harness: str, scope: Scope) -> str:
-    """The install command that puts back a missing piece of ``harness``."""
-    return f"run kmctl plugin install --harness {harness}{_suffix(scope)}"
+    """The commands that put back a missing piece APM installs for ``harness`` (ADR 0021)."""
+    g = " -g" if scope == "user" else ""
+    return (
+        f"run apm install{g} --target {harness} (kmctl's package must be in "
+        f"apm.yml), then kmctl plugin patch{_suffix(scope)}"
+    )
 
 
 def _update_fix(harness: str, scope: Scope) -> str:
-    """The update command that brings ``harness`` to this kmctl's version."""
-    return f"run kmctl plugin update --harness {harness}{_suffix(scope)}"
+    """The steps that bring ``harness``'s install to this kmctl's version."""
+    g = " -g" if scope == "user" else ""
+    return (
+        f"set kmctl's ref in apm.yml to {package_ref()}, run apm install{g} "
+        f"--target {harness}, then kmctl plugin patch{_suffix(scope)}"
+    )
 
 
 def _load(path: Path) -> tuple[dict[str, Any], str | None]:
@@ -205,9 +213,9 @@ def harnesses_found(cwd: Path, scope: Scope = "project") -> list[str]:
 
     Antigravity installs per repository only, so at user scope only
     ``claude`` can be found. apm.yml's ``targets`` count only when the lock
-    lists no kmctl package: ``kmctl plugin remove`` keeps a target other
-    packages may use, so once the lock exists it is the record of where
-    kmctl's package went.
+    lists no kmctl package: a target in apm.yml may be one other packages
+    use, so once the lock exists it is the record of where kmctl's package
+    went.
     """
     package = kmctl_package(read_lock(cwd, scope))
     targets = _manifest_targets(cwd, scope) if package is None else []
@@ -429,7 +437,7 @@ def _claude_old_plugin(cwd: Path, scope: Scope) -> Check:
         return _pass("claude.old-plugin", "claude", detail)
     named = ", ".join(f"{name} in {shown_path(path, cwd)}" for path, name in found)
     if any(name == OLD_PLUGIN for _, name in found):
-        fix = _install_fix("claude", scope)
+        fix = f"run kmctl plugin patch{_suffix(scope)}"
     else:
         # The install removes okf only as kmctl@kmctl's dependency; on its own it
         # needs its own uninstall, at the scope of the file that enables it.

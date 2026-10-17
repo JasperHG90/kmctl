@@ -3,7 +3,7 @@
 It never touches a file that exists, with two exceptions: the kmctl block in
 CLAUDE.md and AGENTS.md, and the first decision's index entry and log line
 (ADR 0011). The knowledge rules come with kmctl's APM package, which
-``kmctl plugin install`` installs (ADR 0014).
+APM installs (ADR 0014, ADR 0020).
 """
 
 import os
