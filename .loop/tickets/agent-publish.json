@@ -3,7 +3,7 @@
   "slug": "agent-publish",
   "stage": "blocked",
   "attempts": 0,
-  "plan_rounds": 2,
+  "plan_rounds": 3,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -139,9 +139,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 2,
-    "binds": "cb4baca190dced1c6f1ca1ddd62bd2b8fe7c41bb02cb2a07a32796da84a94542",
-    "started_at": "2026-10-17T07:43:10+00:00",
+    "n": 3,
+    "binds": "e87ca4430fed9c7b80a9ac8195aa7c2f27b2ce88e22d18b4004342a24a49f96f",
+    "started_at": "2026-10-17T07:44:42+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -154,10 +154,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "blocked"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "cb4baca190dced1c6f1ca1ddd62bd2b8fe7c41bb02cb2a07a32796da84a94542",
+  "plan_hash": "e87ca4430fed9c7b80a9ac8195aa7c2f27b2ce88e22d18b4004342a24a49f96f",
   "intent": {
     "epic": null,
     "depends_on": [
@@ -180,5 +180,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T07:44:41+00:00"
+  "at": "2026-10-17T07:44:42+00:00"
 }

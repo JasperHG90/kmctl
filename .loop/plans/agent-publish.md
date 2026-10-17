@@ -28,7 +28,14 @@ runs as the runner's user, so any later step in the same job can run code
 the agent changed: the checkout, the uv cache, anything on PATH. A
 GitHub-hosted runner gives each job a fresh machine, so the publish job
 starts from a clean checkout of the action and gets only the `agent-report`
-artifact, which it treats as data and validates as a `Report`.
+artifact, which it treats as data and validates as a `Report`. Nothing else
+may carry over between the jobs (plan round 2, p1): setup-uv caches by
+default, saving the uv cache after the agent ran and restoring it in the
+next job, so every setup-uv in the audit job and audit mode sets
+`enable-cache: false`, and so does the publish job and publish mode. Neither
+job uses any other cache. The publish job checks out the repository (with
+`persist-credentials: false`) only to read CODEOWNERS. When the audit job
+fails, the publish job is skipped and an open issue stays as it was.
 
 `publish`:
 
