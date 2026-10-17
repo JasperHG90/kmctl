@@ -8,3 +8,4 @@
 {"at": "2026-10-17T12:58:37+00:00", "kind": "spike-note", "n": 5, "replaced": false, "schema_version": "1.0"}
 {"at": "2026-10-17T12:59:16+00:00", "binds": "a9f64be6ed4660e077f8b5c78761155d1918d255234214c6ba860d7eebdad77e", "kind": "round-start", "n": 2, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
 {"at": "2026-10-17T13:00:49+00:00", "dispatched_at": "2026-10-17T12:59:16+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-10-17T13:00:02+00:00"}}
+{"at": "2026-10-17T13:00:50+00:00", "by": "advance", "from": "planning", "kind": "transition", "schema_version": "1.0", "to": "ready"}
