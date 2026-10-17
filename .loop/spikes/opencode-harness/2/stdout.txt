@@ -1,0 +1,54 @@
+opencode source: 9d97a5beec54fab093644db9408c405459e065a4 2026-10-17 14:37:05 -0700
+== plugin folders are plugin/ and plugins/
+packages/core/src/plugin/source-directory.ts:7:export const names = ["plugin", "plugins"] as const
+== only .ts/.js files (or directories) load
+packages/core/src/plugin/source-directory.ts:23:      const source = entry.target.endsWith(".ts") || entry.target.endsWith(".js")
+packages/core/src/plugin/source-directory.ts:25:      if (entry.type === "directory") return Option.some(entry.target)
+== project walk looks for .opencode dirs
+packages/core/src/config/discovery.ts:85:      return yield* Effect.forEach([".claude", ".agents", ".opencode", ...names.toReversed()], (name) =>
+packages/core/src/config/discovery.ts:126:      visible.filter((item) => path.basename(item) === ".opencode").toReversed(),
+== each present .opencode dir becomes a Directory entry
+packages/core/src/config.ts:216:          new Directory({ type: "directory", path: directory }),
+packages/core/src/config.ts:275:          sources.project.filter((root) => root.present),
+== Directory entries are scanned for plugins
+packages/core/src/config/plugin/source.ts:130:      PluginSourceDirectory.discover(fs, entry.path).pipe(
+== module shape: default export {id, setup} (or {id, effect})
+packages/core/src/plugin/module.ts:79:  default: Schema.Union([
+packages/core/src/plugin/module.ts:81:      id: Schema.String,
+packages/core/src/plugin/module.ts:85:      id: Schema.String,
+packages/core/src/plugin/module.ts:86:      setup: Schema.declare<Parameters<typeof PluginPromise.fromPromise>[0]["setup"]>(
+packages/core/src/plugin/module.ts:129:          message: "Plugin must export a default definition with an id and an effect or setup function.",
+== setup gets ctx; may return cleanup
+packages/plugin/src/promise/plugin.ts:28:  readonly location: Location.Info
+packages/plugin/src/promise/plugin.ts:34:  readonly event: EventDomain
+packages/plugin/src/promise/plugin.ts:47:  readonly session: SessionDomain
+packages/plugin/src/promise/plugin.ts:61:  readonly setup: (context: Context) => Promise<Cleanup | void> | Cleanup | void
+== session hook 'context' exposes a mutable system prompt
+packages/plugin/src/promise/session.ts:28:  system: Array<SystemPart>
+packages/plugin/src/promise/session.ts:140:  readonly context: SessionContext
+packages/plugin/src/promise/session.ts:165:  | "synthetic"
+packages/plugin/src/promise/session.ts:172:  readonly hook: ModelHooks<SessionHooks>
+== SystemPart is {type:'text', text}
+packages/ai/src/schema/messages.ts:23:  type: Schema.Literal("text"),
+packages/ai/src/schema/messages.ts:24:  text: Schema.String,
+packages/ai/src/schema/messages.ts:41:  type: Schema.Literal("text"),
+packages/ai/src/schema/messages.ts:42:  text: Schema.String,
+packages/ai/src/schema/messages.ts:65:    type: Schema.Literal("text"),
+packages/ai/src/schema/messages.ts:184:  text: Schema.String,
+== 'context' fires before every primary model request
+packages/core/src/session/model-request.ts:427:      primary: (input) => prepare("primary", input, agentHook("context", input.agent)),
+== built-in plugin adds a system part in 'context'
+packages/core/src/plugin/identity.ts:27:        event.system.splice(1, 0, SystemPart.make(identity({ name: model.name, ref: event.model })))
+packages/core/src/plugin/identity.ts:29:    yield* ctx.session.hook("context", hook)
+== alternative: session.created event + session.synthetic message
+packages/core/src/plugin/plan.ts:67:        .synthetic({ sessionID: event.sessionID, text, resume: false })
+packages/core/src/plugin/plan.ts:78:          event.type === "session.created" || event.type === "session.agent.selected",
+packages/core/src/plugin/plan.ts:84:          .synthetic({
+packages/core/src/plugin/plan.ts:104:  if (event.type === "session.created") {
+== promise hook rejection is not caught (Effect.promise = defect)
+packages/plugin/src/promise/adapter.ts:594:                host.session.hook(name, (event) => Effect.promise(() => Promise.resolve(callback(event))), options),
+== setup rejection is not caught either
+packages/plugin/src/promise/adapter.ts:620:          Effect.promise(() => Promise.resolve(plugin.setup(context2))),
+== plugins run in-process under Bun (node builtins importable)
+packages/plugin/src/source.bun.ts:29:        return new Bun.Transpiler({
+packages/plugin/src/source.bun.ts:45:          Bun.resolveSync(item.path, path.dirname(file))
