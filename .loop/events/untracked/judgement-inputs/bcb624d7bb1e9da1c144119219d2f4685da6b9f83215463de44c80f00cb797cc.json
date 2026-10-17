@@ -1,0 +1,1 @@
+{"ask":"Fix three stale test comments left from plugin-patch: tests/test_network_retry.py PLUGIN_TESTS comment names kmctl plugin install, tests/test_init.py section comment says rules come from kmctl plugin install, tests/test_plugin_patch.py section comment names a review round instead of what the tests cover."}
