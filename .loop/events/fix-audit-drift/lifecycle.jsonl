@@ -1,2 +1,3 @@
 {"at": "2026-10-17T18:42:52+00:00", "kind": "register", "schema_version": "1.0", "stage": "planning"}
 {"at": "2026-10-17T18:43:03+00:00", "kind": "spike-note", "n": 1, "replaced": false, "schema_version": "1.0"}
+{"at": "2026-10-17T18:43:32+00:00", "binds": "fd034a8b35e5434d0d90799c520bdc48931e83eb9a5d4ca872b0807529c2f17c", "kind": "round-start", "n": 1, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
