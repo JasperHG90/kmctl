@@ -1,0 +1,57 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.15, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/vscode/kmctl
+configfile: pyproject.toml
+plugins: respx-0.23.1, anyio-4.15.1
+collected 839 items / 4 errors / 5 deselected / 834 selected
+
+==================================== ERRORS ====================================
+_ ERROR collecting apm_modules/scaccogatto/okf-skills/benchmark/trust/tests/test_grade_analyze.py _
+ImportError while importing test module '/home/vscode/kmctl/apm_modules/scaccogatto/okf-skills/benchmark/trust/tests/test_grade_analyze.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../.local/share/uv/python/cpython-3.12.15-linux-aarch64-gnu/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+apm_modules/scaccogatto/okf-skills/benchmark/trust/tests/test_grade_analyze.py:19: in <module>
+    from analyze import (
+E   ImportError: cannot import name 'MissingTrials' from 'analyze' (/home/vscode/kmctl/apm_modules/scaccogatto/okf-skills/benchmark/gate/analyze.py)
+_ ERROR collecting apm_modules/scaccogatto/okf-skills/benchmark/trust/tests/test_power.py _
+ImportError while importing test module '/home/vscode/kmctl/apm_modules/scaccogatto/okf-skills/benchmark/trust/tests/test_power.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../.local/share/uv/python/cpython-3.12.15-linux-aarch64-gnu/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+apm_modules/scaccogatto/okf-skills/benchmark/trust/tests/test_power.py:19: in <module>
+    from power import (
+apm_modules/scaccogatto/okf-skills/benchmark/trust/power.py:35: in <module>
+    from analyze import per_item_rates, select_n_and_k
+E   ImportError: cannot import name 'per_item_rates' from 'analyze' (/home/vscode/kmctl/apm_modules/scaccogatto/okf-skills/benchmark/gate/analyze.py)
+__ ERROR collecting apm_modules/scaccogatto/okf-skills/tests/test_okf_mcp.py ___
+ImportError while importing test module '/home/vscode/kmctl/apm_modules/scaccogatto/okf-skills/tests/test_okf_mcp.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../.local/share/uv/python/cpython-3.12.15-linux-aarch64-gnu/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+apm_modules/scaccogatto/okf-skills/tests/test_okf_mcp.py:22: in <module>
+    from mcp.server.mcpserver.exceptions import ToolError
+E   ModuleNotFoundError: No module named 'mcp'
+_ ERROR collecting apm_modules/scaccogatto/okf-skills/tests/test_okf_mcp_e2e.py _
+ImportError while importing test module '/home/vscode/kmctl/apm_modules/scaccogatto/okf-skills/tests/test_okf_mcp_e2e.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../.local/share/uv/python/cpython-3.12.15-linux-aarch64-gnu/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+apm_modules/scaccogatto/okf-skills/tests/test_okf_mcp_e2e.py:26: in <module>
+    from mcp import ClientSession, StdioServerParameters
+E   ModuleNotFoundError: No module named 'mcp'
+=========================== short test summary info ============================
+ERROR apm_modules/scaccogatto/okf-skills/benchmark/trust/tests/test_grade_analyze.py
+ERROR apm_modules/scaccogatto/okf-skills/benchmark/trust/tests/test_power.py
+ERROR apm_modules/scaccogatto/okf-skills/tests/test_okf_mcp.py
+ERROR apm_modules/scaccogatto/okf-skills/tests/test_okf_mcp_e2e.py
+!!!!!!!!!!!!!!!!!!! Interrupted: 4 errors during collection !!!!!!!!!!!!!!!!!!!!
+======================= 5 deselected, 4 errors in 1.01s ========================
