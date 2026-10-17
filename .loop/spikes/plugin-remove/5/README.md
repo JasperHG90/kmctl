@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016
-  at: '2026-10-17T06:52:32+00:00'
+  at: '2026-10-17T06:52:47+00:00'
 slug: plugin-remove
 n: 5
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike plugin-remove/5
@@ -24,7 +24,7 @@ The command exited 0:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note plugin-remove 5`.
+Exit 0: the GitHub form works. After an APM 0.33.0 install of kmctl's entry from https://github.com/JasperHG90/Knowledge-management.git (path apm), apm uninstall github.com/JasperHG90/Knowledge-management/apm exited 0, emptied dependencies.apm in apm.yml, removed its packages from apm_modules/ and left no file under .claude/ but settings.json, which kmctl edits itself; the dry run accepted JasperHG90/Knowledge-management/apm as well. So HOST/OWNER/REPO/apm, with host github.com when the lock names it, is the name to pass.
 
 ## Files
 
