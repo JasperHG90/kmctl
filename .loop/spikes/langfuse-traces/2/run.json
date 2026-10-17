@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "slug": "langfuse-traces",
+  "n": 2,
+  "command": "/tmp/claude-1000/-home-vscode-kmctl/dff53b03-6dd4-4578-a2d3-39665316bb2b/scratchpad/spike-langfuse-live/run.sh /tmp/claude-1000/-home-vscode-kmctl/dff53b03-6dd4-4578-a2d3-39665316bb2b/scratchpad/spike-langfuse-live/okf-vs-code-transcript.json",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/dff53b03-6dd4-4578-a2d3-39665316bb2b/scratchpad/spike-langfuse-live/replay.py",
+      "copy": "files/replay.py"
+    },
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/dff53b03-6dd4-4578-a2d3-39665316bb2b/scratchpad/spike-langfuse-live/run.sh",
+      "copy": "files/run.sh"
+    },
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/dff53b03-6dd4-4578-a2d3-39665316bb2b/scratchpad/spike-langfuse-live/okf-vs-code-transcript.json",
+      "copy": "files/okf-vs-code-transcript.json"
+    }
+  ],
+  "where": "worktree",
+  "head": "15d10fa96e379811a33bff1d5930b2d2e3fe30d2",
+  "fingerprint": "78dd034d99433904d2a2bc57825cd83f83be8e846663bad6eecc5d1ea9f24488",
+  "started_at": "2026-10-17T18:21:05+00:00",
+  "finished_at": "2026-10-17T18:22:36+00:00",
+  "duration_seconds": 91.552,
+  "timeout_seconds": 600.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.2.1.dev10+g138a8c2ed.d20261017",
+  "moved_from": null
+}

@@ -1,0 +1,14 @@
+transcript: 129 messages, 64 model requests, 102 tool returns, 1 final_result retries, model=deepseek-v4.1-flash
+replayed 64 model turns; output keys=['checked', 'findings', 'summary']
+export: 166 spans in 1 requests, 32.66 MB protobuf, flush 3.0s
+largest request 32.66 MB; failed requests: []
+trace_id=abf43df87ea9ac2dfea6872d2d05300a marker=kmctl-spike-0b12ea46 spans=166 chat=64 largest input attr=0.81 MB, sum chat input attrs=29.94 MB
+observations found=166 of 166 spans after 44s
+readback 429 on /api/public/traces/abf43df87ea9ac2dfea6872d2d05300a, waiting 37s
+trace GET 200; name=kmctl-spike-0b12ea46 run
+missing spans: 0 []
+top chat 34c2b90f30ee08e1: sent 807 kB; type=GENERATION model=deepseek-v4.1-flash input=819 kB output=yes usageDetails={'input': 722, 'output': 8463, 'input_cached_tokens': 234564, 'total': 243749}
+top chat 3c2ff944945bb178: sent 805 kB; type=GENERATION model=deepseek-v4.1-flash input=816 kB output=yes usageDetails={'input': 7323, 'output': 193, 'input_cached_tokens': 227178, 'total': 234694}
+top chat 61405ad6f4836a54: sent 781 kB; type=GENERATION model=deepseek-v4.1-flash input=793 kB output=yes usageDetails={'input': 538, 'output': 7133, 'input_cached_tokens': 226770, 'total': 234441}
+chat spans with a problem: 0
+URL https://cloud.langfuse.com/trace/abf43df87ea9ac2dfea6872d2d05300a  (project url: open via the Langfuse UI; trace id abf43df87ea9ac2dfea6872d2d05300a)
