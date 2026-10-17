@@ -1,0 +1,7 @@
+install -g rc=1
+[x] Installation failed with 1 error(s) in 0.3s. No install transaction changes 
+over old kmctl | kmctl hooks: 2 | recorded by APM: True | okf-bundle: stale | mine: True | skill: True
+second install -g rc=1
+after kmctl cleanup + reinstall | kmctl hooks: 1 | recorded by APM: True | okf-bundle: none | mine: True | skill: True
+uninstall -g rc=0
+after uninstall -g | kmctl hooks: 0 | recorded by APM: False | okf-bundle: none | mine: True | skill: False
