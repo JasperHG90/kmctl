@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017
-  at: '2026-10-17T12:57:42+00:00'
+  at: '2026-10-17T12:58:36+00:00'
 slug: apm-hands-back
 n: 4
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike apm-hands-back/4
@@ -24,7 +24,7 @@ The command exited 0:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note apm-hands-back 4`.
+Exit 0 but not a result: the install failed (rc 1) because the spike's antigravity sub-package had an apm.yml and no .apm/ folder, which APM refuses ('missing the required .apm/ directory'). It shows APM resolves every sub-package even with --target claude, so each must be a valid package. Spike 5 reruns it with a valid one.
 
 ## Files
 
