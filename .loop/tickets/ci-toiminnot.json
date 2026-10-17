@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "ci-toiminnot",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
@@ -13,7 +13,7 @@
   "split": "j-20261017T180350+0000-8ccb6005",
   "split_plan_hash": "336789223e6b0afa25ecffb8834ef3e4741b5caed4e40f2df38cc41a3df8fe91",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "426a4871a4d148ea67b7af8d679b31e063236ee7",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -113,8 +113,14 @@
       "to": "verifying",
       "at": "2026-10-17T18:09:24+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-17T18:14:10+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.2.1.dev8+g8b371c2b0.d20261017",
-  "at": "2026-10-17T18:14:02+00:00"
+  "at": "2026-10-17T18:14:10+00:00"
 }
