@@ -9,8 +9,8 @@
     },
     {
       "id": "r2",
-      "behavior": "the apm.yml entry kmctl suggests, the Claude hook's install lines (the Antigravity hook names no repository) and the release script's install and uses: patterns name JasperHG90/kmctl",
-      "fails_when": "new_entry()'s git is not https://github.com/JasperHG90/kmctl.git, the Claude hook command or apm/claude/.apm/hooks/hooks.json lacks git+https://github.com/JasperHG90/kmctl, or release.py set does not move a uv tool install or uses: line naming JasperHG90/kmctl",
+      "behavior": "the apm.yml entry kmctl suggests, the hooks' install lines and the release script's install and uses: patterns name JasperHG90/kmctl",
+      "fails_when": "new_entry()'s git is not https://github.com/JasperHG90/kmctl.git, either harness's hook command lacks git+https://github.com/JasperHG90/kmctl, or release.py set does not move a uv tool install or uses: line naming JasperHG90/kmctl",
       "command": "uv run pytest tests/test_repo_name.py -k new_name -q"
     },
     {
