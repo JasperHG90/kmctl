@@ -1,14 +1,31 @@
 {
   "schema_version": "1.0",
   "slug": "apm-hands-back",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 2,
+    "fingerprint": "1c5f288ffe124f181217239c15952e68598185f64a3f2f235c6455793e8594ea",
+    "tree": "faf0d71a63b91026034a81549a61f2da20e5cc5c",
+    "decisions": [
+      {
+        "finding": "reviewer:f6",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": "j-20261017T151651+0000-0c0aeab9",
+        "paths": [
+          "docs/how-to/install-the-plugin-and-the-ci-action.md",
+          "src/kmctl/__init__.py"
+        ]
+      }
+    ],
+    "at": "2026-10-17T15:16:51+00:00"
+  },
   "ask": "j-20261017T124129+0000-bc0b3831",
   "split": "j-20261017T125839+0000-48a318c2",
   "split_plan_hash": "a9f64be6ed4660e077f8b5c78761155d1918d255234214c6ba860d7eebdad77e",
@@ -162,8 +179,14 @@
       "to": "fixing",
       "at": "2026-10-17T15:13:30+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-17T15:16:51+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
-  "at": "2026-10-17T15:16:42+00:00"
+  "at": "2026-10-17T15:16:51+00:00"
 }
