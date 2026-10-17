@@ -1,0 +1,119 @@
+{
+  "schema_version": "1.0",
+  "fingerprint": "71ac86a244d49aa29aed350f258e73a3f2d14a3d61bf96289491fefca3aa68f7",
+  "slug": "harness-prompt",
+  "results": [
+    {
+      "name": "lint",
+      "kind": "gate",
+      "command": "uv run ruff check",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "format",
+      "kind": "gate",
+      "command": "uv run ruff format --check",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "tests",
+      "kind": "gate",
+      "command": "uv run pytest",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "integration",
+      "kind": "gate",
+      "command": "uv run pytest -m integration",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r1",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_plugin.py -k prompt -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 11,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r2",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_plugin.py -k update_default -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 3,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r3",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_plugin.py -k \"no_terminal or json_no_harness or harness_given\" -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 6,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r4",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_plugin.py -k harness_docs -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 3,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r5",
+      "kind": "eval-row",
+      "command": "uv run pytest -q -m \"not integration or integration\"",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 669,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    }
+  ],
+  "green": true,
+  "at": "2026-10-17T06:03:26+00:00",
+  "commit": null,
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016"
+}
