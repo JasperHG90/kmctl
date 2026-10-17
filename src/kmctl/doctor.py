@@ -332,14 +332,23 @@ def _deployed(
     cid: str,
     what: str,
     package: LockDependency | None,
+    moved: str | None = None,
 ) -> Check:
-    """Whether every file the lock lists for ``package`` under ``harness``'s folder is there unchanged."""
+    """Whether every file the lock lists for ``package`` under ``harness``'s folder is there unchanged.
+
+    Paths under ``moved`` are left out: kmctl deletes them after APM writes
+    them, as it does kmctl's Antigravity rules (``antigravity.APM_RULES``).
+    """
     install = _install_fix(harness, scope)
     folder = FOLDERS[harness]
     if package is None:
         return _fail(cid, harness, f"apm.lock.yaml does not list {what}", install)
     root = apm_root(cwd, scope)
-    paths = [p for p in package.deployed_files if _harness_of(p) == harness]
+    paths = [
+        p
+        for p in package.deployed_files
+        if _harness_of(p) == harness and not (moved and p.startswith(moved))
+    ]
     if not paths:
         detail = f"apm.lock.yaml lists no {what} files under {folder}/"
         return _fail(cid, harness, detail, install)
@@ -538,7 +547,13 @@ def _harness(cwd: Path, scope: Scope, harness: str, online: bool) -> list[Check]
     checks = [
         lock_check,
         _deployed(
-            cwd, scope, harness, f"{harness}.files", "kmctl", kmctl_package(lock)
+            cwd,
+            scope,
+            harness,
+            f"{harness}.files",
+            "kmctl",
+            kmctl_package(lock),
+            antigravity.APM_RULES if harness == "antigravity" else None,
         ),
         _deployed(
             cwd,

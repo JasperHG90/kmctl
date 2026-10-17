@@ -16,6 +16,10 @@ sources:
 
 ## Context
 
+[ADR 0016](0016-antigravity-rules-come-from-the-kmctl-plugin-folder.md)
+moves the rules into kmctl's plugin folder: APM's copies in `.agents/rules/`
+never reach an Antigravity session.
+
 [ADR 0014](0014-apm-is-the-only-install-route.md) made APM (`apm-cli`
 0.33.0) the one install route and served Claude Code only. The operator asked
 (2026-10-16) for kmctl's skills, rules, agent and hook to reach Antigravity

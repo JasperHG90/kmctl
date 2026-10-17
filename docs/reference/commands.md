@@ -293,7 +293,8 @@ order:
    `-g` at user scope). For `claude`, APM writes the skills to
    `.claude/skills/`, the agent to `.claude/agents/` and the rules, with
    their `paths:`, to `.claude/rules/`. For `antigravity`, it writes the
-   skills to `.agents/skills/` and the rules to `.agents/rules/`.
+   skills to `.agents/skills/` (and copies of the rules in `.agents/rules/`, in a form
+   Antigravity cannot use; step 8 replaces them).
 5. Once APM has succeeded, removes the old claude plugin `kmctl@kmctl`
    installed for this repository (or, with `--scope user`, for the user):
    `claude plugin uninstall`, then `claude plugin prune`, which also removes
@@ -320,11 +321,15 @@ order:
    kmctl is missing or fails; `agents/kmctl-auditor.md` and okf's
    `agents/bundle-weaver.md` and `agents/event-analyzer.md`, translated
    from Claude Code's format (okf's are read from
-   `apm_modules/scaccogatto/okf-skills/agents/`); and `mcp_config.json`
+   `apm_modules/scaccogatto/okf-skills/agents/`); the four knowledge rules
+   in `.agents/plugins/kmctl/rules/`, each with `trigger: glob` and its
+   globs as one comma-separated string, every glob starting with `**/`
+   (Antigravity matches globs against absolute paths); and `mcp_config.json`
    declaring okf's MCP server as `bundle`, the same `uv run` launcher as
-   step 7, which also looks above the plugin folder. Antigravity loads the
-   folder only once you trust the repository folder, and the MCP server
-   needs `uv` on PATH.
+   step 7, which also looks above the plugin folder. It then deletes the
+   copies of kmctl's rules APM wrote to `.agents/rules/`; other files there
+   stay. Antigravity loads the folder only once you trust the repository
+   folder, and the MCP server needs `uv` on PATH.
 
 When APM reports that it left in place files it did not write, the install
 stops before step 5, names the skill folders and exits 1; run it again with
@@ -388,7 +393,7 @@ installed gets no checks.
 | `kmctl.harness` | all | A harness is installed; the detail names them. | `kmctl plugin install --harness claude` |
 | `claude.scope` | claude | Passes, at project scope, when Claude Code is installed at user scope but not here; it says to run `kmctl doctor --scope user`. | none |
 | `claude.lock`, `antigravity.lock` | each | `apm.lock.yaml` names kmctl's package at `v<this version>`. | `kmctl plugin install --harness H` when the lock or the package is missing, `kmctl plugin update --harness H` for another version |
-| `claude.files`, `antigravity.files` | each | Every path the lock lists for kmctl's package under `.claude/` or `.agents/` exists, and each file matches the sha256 the lock records. This covers the skills, the agent and the rules. | `kmctl plugin install --harness H` |
+| `claude.files`, `antigravity.files` | each | Every path the lock lists for kmctl's package under `.claude/` or `.agents/` exists, and each file matches the sha256 the lock records. This covers the skills, the agent and, for `claude`, the rules; kmctl's own rules under `.agents/rules/` are left out, because the install deletes them. | `kmctl plugin install --harness H` |
 | `claude.okf-skills`, `antigravity.okf-skills` | each | The same for okf's skills. | `kmctl plugin install --harness H` |
 | `claude.hook` | claude | `.claude/settings.json` holds exactly the SessionStart hook this kmctl writes. | `kmctl plugin install --harness claude` when missing, `kmctl plugin update --harness claude` when changed |
 | `claude.okf-mcp` | claude | `.mcp.json` (at user scope, `.claude.json` in `$CLAUDE_CONFIG_DIR`, by default `~/.claude.json`) declares `okf-bundle` as this kmctl writes it, or another server that runs `okf_mcp.py`. | `kmctl plugin install --harness claude` when missing, `kmctl plugin update --harness claude` when changed |

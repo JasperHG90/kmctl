@@ -76,14 +76,21 @@ color: blue
 
 You analyze one event.
 """
-PLUGIN_FILES = [
-    "agents/bundle-weaver.md",
-    "agents/event-analyzer.md",
-    "agents/kmctl-auditor.md",
-    "hooks.json",
-    "mcp_config.json",
-    "plugin.json",
-]
+RULE_NAMES = sorted(
+    p.name.removesuffix(".instructions.md")
+    for p in INSTRUCTIONS.glob("*.instructions.md")
+)
+PLUGIN_FILES = sorted(
+    [
+        "agents/bundle-weaver.md",
+        "agents/event-analyzer.md",
+        "agents/kmctl-auditor.md",
+        "hooks.json",
+        "mcp_config.json",
+        "plugin.json",
+        *(f"rules/{name}.md" for name in RULE_NAMES),
+    ]
+)
 
 
 def _split(text: str) -> tuple[dict, str]:
@@ -257,10 +264,56 @@ def test_translate_refuses_an_agent_without_tools() -> None:
         antigravity.translate_agent("---\nname: a\ndescription: d\n---\nb\n", "a.md")
 
 
+# antigravity-rules r1: the rule translator ---------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("apply_to", "globs"),
+    [
+        ('".okf/**"', "**/.okf/**"),
+        ('"docs/**, .okf/**, README.md"', "**/docs/**, **/.okf/**, **/README.md"),
+        ('"**/src/**,lib/**"', "**/src/**, **/lib/**"),
+        ('["tests/**", "**/test/**"]', "**/tests/**, **/test/**"),
+    ],
+)
+def test_translate_rule_writes_one_prefixed_glob_string(
+    apply_to: str, globs: str
+) -> None:
+    body = "\n# A rule\n\nIts body, with --- inside.\n"
+    text = antigravity.translate_rule(f"---\napplyTo: {apply_to}\n---\n{body}", "x")
+
+    meta, rest = _split(text)
+    assert meta == {"trigger": "glob", "globs": globs}
+    assert isinstance(meta["globs"], str)
+    assert rest == body
+
+
+@pytest.mark.parametrize("text", ["---\ndescription: d\n---\nbody\n", "body\n"])
+def test_translate_rule_without_apply_to_is_always_on(text: str) -> None:
+    meta, rest = _split(antigravity.translate_rule(text, "x"))
+
+    assert meta == {"trigger": "always_on"}
+    assert rest == "body\n"
+
+
+def test_translate_rule_refuses_an_unreadable_apply_to() -> None:
+    with pytest.raises(plugin.PluginError, match="x.instructions.md"):
+        antigravity.translate_rule("---\napplyTo: 3\n---\nb\n", "x.instructions.md")
+
+
+def test_translate_rule_keeps_each_shipped_body() -> None:
+    for path in sorted(INSTRUCTIONS.glob("*.instructions.md")):
+        source = path.read_text()
+        meta, rest = _split(antigravity.translate_rule(source, str(path)))
+        assert meta["trigger"] == "glob", path.name
+        assert all(g.startswith("**/") for g in meta["globs"].split(", ")), path.name
+        assert rest == _split(source)[1], path.name
+
+
 # r2: the plugin folder --------------------------------------------------------
 
 
-def test_plugin_folder_holds_exactly_the_six_files(
+def test_plugin_folder_holds_exactly_the_agents_rules_and_three_files(
     repo: Path, fakes: FakeTools
 ) -> None:
     _install()
@@ -339,6 +392,44 @@ def test_plugin_folder_mcp_runs_okf_at_the_apm_pin(
         f"uv run https://raw.githubusercontent.com/scaccogatto/okf-skills/{sha}"
         "/servers/okf_mcp.py" in launcher
     )
+
+
+def test_plugin_folder_rules_are_the_translations(repo: Path, fakes: FakeTools) -> None:
+    _install()
+
+    for name in RULE_NAMES:
+        source = INSTRUCTIONS / f"{name}.instructions.md"
+        want = antigravity.translate_rule(source.read_text(), str(source))
+        assert (_folder(repo) / "rules" / f"{name}.md").read_text() == want, name
+
+
+def test_plugin_folder_rules_moved_out_of_agents_rules(
+    repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    deployed = [f".agents/rules/{name}.md" for name in RULE_NAMES]
+    lock = yaml.safe_load(_lock())
+    lock["dependencies"][0]["deployed_files"] = [*deployed, ".agents/skills/audit"]
+    tools = FakeTools(tmp_path / "own", tools=("uvx", "claude"))
+    monkeypatch.setenv("PATH", tools.path)
+    tools.on(
+        "uvx",
+        "apm install",
+        write={
+            "apm.lock.yaml": yaml.safe_dump(lock),
+            f"{OKF_AGENTS}/bundle-weaver.md": BUNDLE_WEAVER,
+            f"{OKF_AGENTS}/event-analyzer.md": EVENT_ANALYZER,
+            ".agents/skills/audit/SKILL.md": "a skill\n",
+            ".agents/rules/someone-elses.md": "kept\n",
+            **{rel: "APM's copy\n" for rel in deployed},
+        },
+    )
+
+    _install()
+
+    rules = repo / ".agents" / "rules"
+    assert sorted(p.name for p in rules.iterdir()) == ["someone-elses.md"]
+    assert (repo / ".agents/skills/audit/SKILL.md").is_file()
+    assert sorted(_files(_folder(repo) / "rules")) == [f"{n}.md" for n in RULE_NAMES]
 
 
 def test_plugin_folder_second_install_changes_nothing(
@@ -714,6 +805,7 @@ def test_agy_validate_counts_three_agents_one_hook_one_server(
     assert report["components"]["agents"] == 3
     assert report["components"]["hooks"] == 1
     assert report["components"]["mcpServers"] == 1
+    assert report["components"]["rules"] == len(RULE_NAMES)
     assert report["findings"] == []
 
 
@@ -737,9 +829,11 @@ def test_consumer_gets_skills_rules_and_the_plugin_folder(
     rules = sorted(
         p.name.removesuffix(".instructions.md") for p in INSTRUCTIONS.iterdir()
     )
+    assert rules == RULE_NAMES
     assert len(rules) == 4
     for rule in rules:
-        assert (agents / "rules" / f"{rule}.md").is_file(), rule
+        assert not (agents / "rules" / f"{rule}.md").exists(), rule
+        assert (agents / "plugins" / "kmctl" / "rules" / f"{rule}.md").is_file(), rule
     folder = agents / "plugins" / "kmctl"
     assert sorted(_files(folder)) == PLUGIN_FILES
     assert {k: v.decode() for k, v in _files(folder).items()} == (
@@ -747,6 +841,12 @@ def test_consumer_gets_skills_rules_and_the_plugin_folder(
     )
     assert antigravity.plugin_problems(consumer) == []
     assert antigravity.hook_present(consumer)
+    (consumer / ".okf").mkdir(exist_ok=True)
+    assert _kmctl("init").exit_code == 0
+    doctor = _kmctl("doctor", "--json")
+    checks = {c["id"]: c for c in json.loads(doctor.stdout)["checks"]}
+    for cid in ("antigravity.files", "antigravity.plugin", "antigravity.okf-skills"):
+        assert checks[cid]["ok"], checks[cid]
 
 
 # r8: the decision and the docs ------------------------------------------------
@@ -829,3 +929,22 @@ def test_docs_install_how_to_covers_antigravity() -> None:
     assert re.search(r"okf's MCP server[^.]*needs `?uv`?", text), (
         "uv for the MCP server"
     )
+
+
+# antigravity-rules r5: the decision and the docs name the plugin's rules --------
+
+
+RULES_DECISION = (
+    DECISIONS / "0016-antigravity-rules-come-from-the-kmctl-plugin-folder.md"
+)
+
+
+def test_rules_docs_name_the_plugin_folder_rules() -> None:
+    for path in (RULES_DECISION, COMMANDS, INSTALL_HOW_TO):
+        text = _flat(path.read_text())
+        assert ".agents/plugins/kmctl/rules/" in text, path.name
+        assert "rules to `.agents/rules/`" not in text, path.name
+    assert "0016" in _decision().read_text()
+    decision = _flat(RULES_DECISION.read_text())
+    for term in ("**/", "comma", "absolute path", "list"):
+        assert term in decision, term

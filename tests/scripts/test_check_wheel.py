@@ -16,6 +16,7 @@ SCRIPT = ROOT / "scripts" / "check_wheel.py"
 COMPLETE = [
     "kmctl/__init__.py",
     "kmctl/_agents/kmctl-auditor.md",
+    "kmctl/_instructions/okf-bundle.instructions.md",
     "kmctl/_skills/audit/SKILL.md",
     "kmctl/_skills/handoff/SKILL.md",
 ]
@@ -46,23 +47,26 @@ def _check(wheel: Path) -> subprocess.CompletedProcess[str]:
 
 
 def test_expected_entries_follow_pyproject() -> None:
-    """The package's skills and agents folders, as pyproject force-includes them."""
+    """The package's skills, agents and instructions folders, as pyproject force-includes them."""
     assert expected_entries(ROOT / "pyproject.toml") == [
         "kmctl/_skills/",
         "kmctl/_agents/",
+        "kmctl/_instructions/",
     ]
 
 
 def test_a_complete_wheel_passes(tmp_path: Path) -> None:
-    """A wheel holding the skills and the agents passes."""
+    """A wheel holding the skills, the agents and the instructions passes."""
     res = _check(_wheel(tmp_path / "kmctl-0.1.0-py3-none-any.whl", COMPLETE))
 
     assert res.returncode == 0, res.stderr
 
 
-@pytest.mark.parametrize("dropped", ["kmctl/_skills/", "kmctl/_agents/"])
+@pytest.mark.parametrize(
+    "dropped", ["kmctl/_skills/", "kmctl/_agents/", "kmctl/_instructions/"]
+)
 def test_a_wheel_without_an_entry_fails(tmp_path: Path, dropped: str) -> None:
-    """A wheel without the skills or the agents is named, and the script exits 1."""
+    """A wheel without the skills, the agents or the instructions is named, and the script exits 1."""
     names = [n for n in COMPLETE if not n.startswith(dropped)]
     wheel = _wheel(tmp_path / "kmctl-0.1.0-py3-none-any.whl", names)
 
