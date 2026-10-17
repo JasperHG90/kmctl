@@ -56,12 +56,18 @@ the translated agents. It still takes APM's broken okf Stop handler out of
 .agents/hooks.json (only that exact command, so kmctl's wrapper stays). For
 repositories kmctl installed before, it first removes what kmctl wrote that
 APM now writes: a kmctl SessionStart group APM does not record in
-.claude/apm-hooks.json, and an `okf-bundle` entry that differs from the
-server APM records in the lock. doctor checks the same files with the new
+`apm-hooks.json`, and an `okf-bundle` entry that differs from the server
+the package declares. This holds at both scopes: at user scope the files
+are settings.json and .claude.json in the Claude config folder,
+and `apm install -g` writes the hook and okf-bundle there too. Each
+sub-package keeps an `.apm/` folder, since APM resolves both whatever the
+target. doctor checks the same files with the new
 fixes. A new decision supersedes ADR 0016, amends ADR 0014, 0015 and 0018,
 and lists what APM cannot do yet, each with its upstream issue (or a draft
 of one, for the operator to file) and the condition for dropping kmctl's
-stopgap.
+stopgap, plus one APM gap that needs no stopgap: `apm uninstall -g` leaves
+okf-bundle in the user `.claude.json` (the docs give the `claude mcp remove`
+line).
 
 It worked when a scratch consumer installed from a local git server with
 `kmctl plugin install --harness claude,antigravity` gets every hook, rule
@@ -86,3 +92,9 @@ consumer set up by today's kmctl leaves one SessionStart hook.
   (spike:apm-hands-back/3), but leaves two SessionStart groups and skips an
   existing okf-bundle, which is why install removes kmctl's old entries
   first.
+- APM may not deliver the hook and server at user scope, where kmctl
+  writes them today. It does (spike:apm-hands-back/5; spike:apm-hands-back/4
+  failed on the spike's own invalid sub-package): `apm install -g --target
+  claude` wrote the recorded hook and okf-bundle into the Claude config folder,
+  with the same migration facts as at project scope; only `apm uninstall
+  -g` leaves okf-bundle behind.
