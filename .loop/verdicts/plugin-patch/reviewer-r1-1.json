@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "read_json still tells the user to run `kmctl plugin install again`, a command this change deletes. patch reaches it through drop_old_hook and drop_old_mcp, so a settings.json or .mcp.json that does not parse makes `kmctl plugin patch` refuse with a fix that answers 'No such command'. Reproduced in a scratch repo: `refused: .../.claude/settings.json is not valid JSON (...); fix it, then run kmctl plugin install again`.",
+      "anchor": "src/kmctl/plugin.py:443",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "Tests for code that is still live went with the old verbs. remove_old_plugin keeps only its happy path (lost: plugin of another repository left alone, user scope, marketplace already gone, uninstall failure stops, claude missing skips). drop_old_hook lost its shared-group and nothing-recorded tests. drop_old_mcp lost 'user scope keeps a current okf-bundle'. uninstall_name, which the refusal message now depends on, lost its parametrized forms (scp URL, port, string). The invalid-settings refusal test went too; it would have caught f1. Port these to call patch, or the functions directly.",
+      "anchor": "tests/test_plugin.py",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "This change left orphans and stale comments. _apm_run has no caller now that patch never runs APM. The comment on HARNESSES says '--harness accepts', and the one on DEFAULT_SOURCE says 'unless --source names another'. Neither option exists any more.",
+      "anchor": "src/kmctl/plugin.py:214",
+      "category": "nit",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "open",
+      "claim": "Text that is now false: .claude/rules/cli-version-floor.md keeps the heading 'The CLI installs its package' and the constraint name 'the-package-is-installed-by-the-cli', but its body (rightly) says the user installs with apm install. The module docstrings of tests/test_apm_package.py (line 7, 'runs kmctl plugin install --harness claude --source') and tests/test_antigravity.py (line 1, 'kmctl plugin install --harness antigravity') describe a command that is gone.",
+      "anchor": ".claude/rules/cli-version-floor.md:5",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "e73c649e1f35ca614d202f67dbe5034ad70d4f48d259f871e3e81c09a8cdedd9",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
+  "at": "2026-10-17T15:49:46+00:00"
+}
