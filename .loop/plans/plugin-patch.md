@@ -48,6 +48,12 @@ which harnesses APM installed kmctl's package for, and refuses, naming the
   differs from APM's) and the old claude plugin `kmctl@kmctl`, as install
   did, saying to run `apm install` again when it removed something APM
   should now write.
+- For a repository still on an older entry form (the ADR 0013 string
+  `JasperHG90/Knowledge-management/apm#...`, or the v0.3.0 layout the lock
+  shows as `virtual_path: plugin`), whose old SessionStart hook only `apm
+  uninstall` removes: it refuses, naming the exact `apm uninstall` for that
+  entry, the `{git: ..., path: apm, ref: vVERSION}` entry to write, and
+  `apm install`, so the user never ends up with two entries and two hooks.
 - Running it again changes nothing; it ends with `Next: kmctl doctor`.
 
 `--undo` deletes `.agents/plugins/kmctl/` and nothing else. `install`,
@@ -72,4 +78,8 @@ kmctl file; and `kmctl plugin install` no longer exists.
 
 ## Could invalidate this plan
 
-- none
+- Patch now runs after `apm install`, so a stale `okf-bundle` APM skipped
+  can only be fixed by deleting it and installing again; if APM did not
+  write it back, the harnesses would lose okf's server. It does
+  (spike:plugin-patch/1): after deleting the stale entry, a second plain
+  `apm install` wrote the package's server to both MCP files.
