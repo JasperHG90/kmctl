@@ -1,0 +1,3 @@
+generate the Antigravity rules...........................................Passed
+kmctl check --fix........................................................Passed
+exit=0

@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "slug": "ci-toiminnot",
+  "n": 1,
+  "command": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/repo-ci/runner.sh uvx --python 3.12 pre-commit==4.2.0 run --show-diff-on-failure --files $(git ls-files); echo exit=$?; git status --short",
+  "scripts": [],
+  "where": "worktree",
+  "head": "9a1ac90b5139a82f042f66a3d0c19a95f51de692",
+  "fingerprint": "cb0b2e6b54f93e054f5ae95b9b9f77fd56602c2a52643d358a0e52c88966b403",
+  "started_at": "2026-10-17T17:57:48+00:00",
+  "finished_at": "2026-10-17T17:57:53+00:00",
+  "duration_seconds": 5.33,
+  "timeout_seconds": 1800.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
+  "moved_from": null
+}
