@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "A CRLF file is rewritten with LF on every line. verify reads with path.read_text (universal newlines, so \\r\\n becomes \\n) and writes with path.write_text, so every line of the file changes, against the plan's 'leaves every other line of the file as it was' and the docs' 'changes no other line'. Probe: '---\\r\\ntype: note\\r\\n...---\\r\\n\\r\\n# a\\r\\n' comes back all-LF. No test covers a CRLF file.",
+      "anchor": "src/kmctl/verify.py:157",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "_target accepts '..' segments as long as the resolved path stays under its base, and the handoff check runs on the raw id, not the resolved path. 'decisions/../handoffs/h' and 'docs/../.okf/handoffs/h' both verify a handoff (exit 0, verified entry written), and 'docs/../README' writes a verified entry into README.md, since the docs base is the whole repository root. The id and the log line then carry the '..' form. Check the handoff case and the docs/ prefix on the resolved path (or refuse '..' and absolute parts), and add a refuses case for it.",
+      "anchor": "src/kmctl/verify.py:37",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "docs/reference/commands.md's exit-code list omits two refusals the verb has: a --stale-after that is not in the future, and a verified field in a form it cannot extend. The text output line also omits the 'stale_after is now ...' line printed with --stale-after.",
+      "anchor": "docs/reference/commands.md:298",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "open",
+      "claim": "A trailing comment on the verified line ('verified:  # checks' over a block list, or 'verified: []  # none') makes _with_entry refuse, telling the person to rewrite it as a block list it already is. Strip a trailing ' #...' comment from rest before classifying it, or name the comment in the refusal.",
+      "anchor": "src/kmctl/verify.py:66",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "49450a38c2e6c49484df0a32f90a11aa933463adf64d6f5edc30ab27e95584df",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
+  "at": "2026-10-17T21:38:38+00:00"
+}
