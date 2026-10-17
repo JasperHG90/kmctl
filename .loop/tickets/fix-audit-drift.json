@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "fix-audit-drift",
-  "stage": "planning",
+  "stage": "ready",
   "attempts": 0,
   "plan_rounds": 2,
   "review_rounds": 0,
@@ -60,6 +60,12 @@
       "to": "planning",
       "at": "2026-10-17T18:42:52+00:00",
       "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-10-17T18:48:18+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
