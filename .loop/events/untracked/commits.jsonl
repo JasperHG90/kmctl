@@ -35,3 +35,4 @@
 {"at": "2026-10-17T19:44:10+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "8b5d840c92e86582e2321774ab49c32e3337c766", "subject": "chore; manual commits"}
 {"at": "2026-10-17T19:44:18+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "12ad03d008b6b7f6b6ec9fdbfc62a3219c9a8648", "subject": "chore; manual commits"}
 {"at": "2026-10-17T19:51:24+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "195764e3076386fa7d39f6e018e41ac976a5e425", "subject": "chore; manual commits"}
+{"ask": "j-20261017T200018+0000-a16bcf2b", "at": "2026-10-17T20:03:14+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "bc6f0ebe66ed946f275fc2aca12fab0fcd2ce240", "subject": "docs: link kmctl-starter from the README's install section"}
