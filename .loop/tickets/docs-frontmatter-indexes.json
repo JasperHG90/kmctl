@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "docs-frontmatter-indexes",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 3,
@@ -29,7 +29,7 @@
   "split": "j-20261017T164640+0000-e5e9c69a",
   "split_plan_hash": "1b4fdba0cc6f355b2eb529fe82544b1a22ed40eda3e2d9d5caa683ecbe10b1aa",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "73b59a9207112aa1a5571d4ef5d79ae89977e2d1",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -275,8 +275,14 @@
       "to": "verifying",
       "at": "2026-10-17T17:18:55+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-17T17:22:03+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
-  "at": "2026-10-17T17:21:45+00:00"
+  "at": "2026-10-17T17:22:03+00:00"
 }
