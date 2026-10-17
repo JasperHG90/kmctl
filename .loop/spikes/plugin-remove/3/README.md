@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016
-  at: '2026-10-17T06:49:13+00:00'
+  at: '2026-10-17T06:49:29+00:00'
 slug: plugin-remove
 n: 3
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike plugin-remove/3
@@ -24,7 +24,7 @@ The command exited 0:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note plugin-remove 3`.
+Exit 0: the remove route works. In a scratch consumer installed for claude,antigravity (83 APM files), apm uninstall 127.0.0.1:PORT/o/kmctl/apm exited 0 and left no APM file under .claude/ or .agents/ and no lock; .agents/hooks.json stayed as {}. kmctl plugin install --harness claude from the same source then left no APM file under .agents/, all 11 skills under .claude/skills/, and no .agents/ path in the lock. One gap: apm.yml kept targets [claude, antigravity], because install adds targets and never drops one, so remove must take the removed harnesses out of targets: itself.
 
 ## Files
 
