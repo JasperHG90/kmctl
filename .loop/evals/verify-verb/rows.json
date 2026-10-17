@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "kmctl verify ID --by human:ID appends a verified entry with today's date to an unverified .okf/ concept, appends a line to .okf/log.md, and kmctl review due no longer lists that id.",
+      "fails_when": "the concept still appears in kmctl review due after the verb exits 0, the entry lacks by or at, or log.md gains no line naming the concept",
+      "command": "uv run pytest tests/test_verify.py -k clears -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "kmctl verify takes a docs/ page id as kmctl review due prints it and writes the entry into that page's front matter.",
+      "fails_when": "a docs page id is refused, or the page's front matter has no verified entry afterwards",
+      "command": "uv run pytest tests/test_verify.py -k docs_page -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "kmctl verify changes only the verified list: every other line of the file stays byte for byte, and an existing verified list keeps its entries with the new one appended.",
+      "fails_when": "any line outside the verified list differs, or an earlier verified entry is lost or reordered",
+      "command": "uv run pytest tests/test_verify.py -k keeps -q"
+    },
+    {
+      "id": "r4",
+      "behavior": "kmctl verify refuses, with one line on stderr naming the fix and exit 1, when --by does not start with human:, the id matches no file, the id is a handoff, or the front matter cannot be read; it writes nothing then.",
+      "fails_when": "any of those cases exits 0, prints the refusal on stdout, gives no fix, or changes a file",
+      "command": "uv run pytest tests/test_verify.py -k refuses -q"
+    },
+    {
+      "id": "r5",
+      "behavior": "kmctl verify --json prints one JSON object with id, path, by and at; the text output ends with a Next: kmctl review due line.",
+      "fails_when": "the JSON lacks a key or is not one object, or the text output has no Next: line naming kmctl review due",
+      "command": "uv run pytest tests/test_verify.py -k output -q"
+    },
+    {
+      "id": "r6",
+      "behavior": "kmctl review due's text output ends with a Next: line naming kmctl verify when it lists anything due, prints no such line when nothing is due, and its --json output keeps its keys; the briefing tests still pass under TOKEN_BUDGET.",
+      "fails_when": "the due listing lacks a Next: line naming kmctl verify, the nothing-due output has one, the JSON gains or loses a key, or a briefing test fails",
+      "command": "uv run pytest tests/test_review_due.py tests/test_briefing.py -q"
+    },
+    {
+      "id": "r7",
+      "behavior": "The audit skill and both okf-bundle rules (Claude and Antigravity) name kmctl verify and say an agent runs it only after the named person confirmed the concept.",
+      "fails_when": "any of the three files does not mention kmctl verify",
+      "command": "uv run pytest tests/test_verify.py -k package -q"
+    },
+    {
+      "id": "r8",
+      "behavior": "kmctl verify --help passes the repository's help tests: one-line docstring, an example for every input, renders at 80 columns.",
+      "fails_when": "any help test fails",
+      "command": "uv run pytest tests/test_help.py -q"
+    },
+    {
+      "id": "r9",
+      "behavior": "A new ADR records that kmctl verify writes a person's check and an agent may run it only on that person's confirmation, without changing ADR 0005 or I2; docs/reference/commands.md and the architecture overview's Depicts list name the verb.",
+      "fails_when": "no ADR covers the verb, the wording lets an audit verdict alone trigger it, or the reference or Depicts list omits it",
+      "judgment": true
+    },
+    {
+      "id": "r10",
+      "behavior": "The full lint and test gates pass, including the APM package body-hash test the rule edit changes.",
+      "fails_when": "just lint or just test exits nonzero",
+      "command": "just lint && just test"
+    }
+  ]
+}
