@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "real-audits",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 3,
@@ -50,7 +50,7 @@
   "split": "j-20261017T144331+0000-3d173fb8",
   "split_plan_hash": "fb072e2071fb2a4b688c67ee9035865780be170964150adfba34f3a8543410e5",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "077e782a6feb34b4793762f0ff4db3a53f76860f",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -172,8 +172,14 @@
       "to": "verifying",
       "at": "2026-10-17T16:38:42+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-17T16:45:30+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
-  "at": "2026-10-17T16:45:23+00:00"
+  "at": "2026-10-17T16:45:30+00:00"
 }
