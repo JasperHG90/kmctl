@@ -1,17 +1,31 @@
 ---
 type: eval
 title: 'Eval: antigravity-rules'
-description: 'Definition of done for antigravity-rules: 0 row(s).'
+description: 'Definition of done for antigravity-rules: 6 row(s).'
 tags:
 - eval
 generated:
   by: process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016
-  at: '2026-10-17T06:28:18+00:00'
+  at: '2026-10-17T06:37:20+00:00'
 slug: antigravity-rules
-signoff: null
+signoff:
+  signer: delegated:jasperginn@gmail.com/claude-opus-5-5
+  hash: aeb72ce77f2496c255a0bd85e56a66d7f70eccc74baa520f9804a7feacffa1d1
+  at: '2026-10-17T06:37:20+00:00'
 verified: null
 ---
 
 Rows: rows.json; the fields each row takes: loopctl schema eval-rows.
 
-No rows yet.
+- r1: The rule translator turns each apm/.apm/instructions/NAME.instructions.md into rules/NAME.md with front matter trigger: glob and globs: one comma-separated string of the applyTo globs, each starting with **/ (one that already does is kept as is), and the body unchanged; an instruction without applyTo becomes trigger: always_on with no globs.
+  Fails when: globs is a list, a glob lacks the **/ prefix or gets it twice, the order or set of globs differs from applyTo, the body changes, or a rule without applyTo is not always_on
+- r2: kmctl plugin install --harness antigravity writes rules/okf-bundle.md, rules/docs-layout.md, rules/diagrams-stay-current.md and rules/manifesto-invariants.md into .agents/plugins/kmctl/ (from the instructions shipped in the wheel, as _instructions beside _agents), and afterwards no rule file the lock lists for kmctl's package remains under .agents/rules/; any other file in .agents/rules/ is kept; a second install leaves every file the same.
+  Fails when: a rule is missing from the plugin folder or differs from the translation, a kmctl rule file is left in .agents/rules/, another file there is deleted, the wheel lacks the instructions, or a second install changes a file
+- r3: kmctl doctor passes antigravity.files when kmctl's rule files are absent from .agents/rules/ and fails antigravity.plugin, naming the file and kmctl plugin install --harness antigravity, when a rule under .agents/plugins/kmctl/rules/ is missing, edited or extra.
+  Fails when: antigravity.files fails because kmctl's rules are not in .agents/rules/, or a missing, edited or extra plugin rule goes unreported or names no fix
+- r4: With agy on PATH, agy plugin validate --strict --json on the written plugin folder reports no findings and counts the rules; in a scratch consumer installed from a local git server (APM 0.33.0) for antigravity, .agents/rules/ holds none of kmctl's four rules, the plugin folder holds all four, and kmctl doctor exits 0. The validate test skips when agy is absent.
+  Fails when: validate reports a finding, the install leaves a kmctl rule in .agents/rules/ or lacks one in the plugin folder, or doctor exits nonzero
+- r5: ADR 0015 (or a decision that amends it) records that kmctl writes the Antigravity rules into its plugin folder and why (APM's list globs, agy's absolute-path matching, the **/ prefix and comma string), and docs/reference/commands.md and the install how-to say the rules for Antigravity live in .agents/plugins/kmctl/rules/.
+  Fails when: the decision or either page still says APM writes kmctl's Antigravity rules to .agents/rules/, or does not name the plugin folder's rules/
+- r6: The other tests still pass.
+  Fails when: uv run pytest or uv run pytest -m integration fails
