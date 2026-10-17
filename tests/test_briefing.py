@@ -67,7 +67,9 @@ def test_briefing_token_budget(tmp_path: Path) -> None:
 
 def test_briefing_rules_are_not_in_the_rule_files() -> None:
     """The briefing repeats no constraint the package's rules already put in .claude/rules/."""
-    instructions = Path(__file__).resolve().parents[1] / "apm" / ".apm" / "instructions"
+    instructions = (
+        Path(__file__).resolve().parents[1] / "apm" / "claude" / ".apm" / "instructions"
+    )
     written = " ".join(
         " ".join(p.read_text().split()) for p in sorted(instructions.glob("*.md"))
     )

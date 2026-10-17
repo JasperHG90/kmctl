@@ -35,7 +35,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DOT_APM = ROOT / "apm" / ".apm"
 SKILLS = DOT_APM / "skills"
 AUDITOR = DOT_APM / "agents" / "kmctl-auditor.md"
-INSTRUCTIONS = DOT_APM / "instructions"
+INSTRUCTIONS = ROOT / "apm" / "claude" / ".apm" / "instructions"
 DECISIONS = ROOT / ".okf" / "decisions"
 MANIFESTO = ROOT / ".okf" / "manifesto.md"
 ADR_0003 = DECISIONS / "0003-claude-code-plugin-first-depends-on-okf.md"
@@ -80,17 +80,12 @@ RULE_NAMES = sorted(
     p.name.removesuffix(".instructions.md")
     for p in INSTRUCTIONS.glob("*.instructions.md")
 )
-PLUGIN_FILES = sorted(
-    [
-        "agents/bundle-weaver.md",
-        "agents/event-analyzer.md",
-        "agents/kmctl-auditor.md",
-        "hooks.json",
-        "mcp_config.json",
-        "plugin.json",
-        *(f"rules/{name}.md" for name in RULE_NAMES),
-    ]
-)
+PLUGIN_FILES = [
+    "agents/bundle-weaver.md",
+    "agents/event-analyzer.md",
+    "agents/kmctl-auditor.md",
+    "plugin.json",
+]
 
 
 def _split(text: str) -> tuple[dict, str]:
@@ -264,56 +259,10 @@ def test_translate_refuses_an_agent_without_tools() -> None:
         antigravity.translate_agent("---\nname: a\ndescription: d\n---\nb\n", "a.md")
 
 
-# antigravity-rules r1: the rule translator ---------------------------------------
-
-
-@pytest.mark.parametrize(
-    ("apply_to", "globs"),
-    [
-        ('".okf/**"', "**/.okf/**"),
-        ('"docs/**, .okf/**, README.md"', "**/docs/**, **/.okf/**, **/README.md"),
-        ('"**/src/**,lib/**"', "**/src/**, **/lib/**"),
-        ('["tests/**", "**/test/**"]', "**/tests/**, **/test/**"),
-    ],
-)
-def test_translate_rule_writes_one_prefixed_glob_string(
-    apply_to: str, globs: str
-) -> None:
-    body = "\n# A rule\n\nIts body, with --- inside.\n"
-    text = antigravity.translate_rule(f"---\napplyTo: {apply_to}\n---\n{body}", "x")
-
-    meta, rest = _split(text)
-    assert meta == {"trigger": "glob", "globs": globs}
-    assert isinstance(meta["globs"], str)
-    assert rest == body
-
-
-@pytest.mark.parametrize("text", ["---\ndescription: d\n---\nbody\n", "body\n"])
-def test_translate_rule_without_apply_to_is_always_on(text: str) -> None:
-    meta, rest = _split(antigravity.translate_rule(text, "x"))
-
-    assert meta == {"trigger": "always_on"}
-    assert rest == "body\n"
-
-
-def test_translate_rule_refuses_an_unreadable_apply_to() -> None:
-    with pytest.raises(plugin.PluginError, match="x.instructions.md"):
-        antigravity.translate_rule("---\napplyTo: 3\n---\nb\n", "x.instructions.md")
-
-
-def test_translate_rule_keeps_each_shipped_body() -> None:
-    for path in sorted(INSTRUCTIONS.glob("*.instructions.md")):
-        source = path.read_text()
-        meta, rest = _split(antigravity.translate_rule(source, str(path)))
-        assert meta["trigger"] == "glob", path.name
-        assert all(g.startswith("**/") for g in meta["globs"].split(", ")), path.name
-        assert rest == _split(source)[1], path.name
-
-
 # r2: the plugin folder --------------------------------------------------------
 
 
-def test_plugin_folder_holds_exactly_the_agents_rules_and_three_files(
+def test_plugin_folder_holds_exactly_the_agents_and_the_manifest(
     repo: Path, fakes: FakeTools
 ) -> None:
     _install()
@@ -325,36 +274,6 @@ def test_plugin_folder_manifest_names_kmctl(repo: Path, fakes: FakeTools) -> Non
     _install()
 
     assert json.loads((_folder(repo) / "plugin.json").read_text()) == {"name": "kmctl"}
-
-
-def test_plugin_folder_hooks_hold_the_briefing_and_okf_stop_flat(
-    repo: Path, fakes: FakeTools
-) -> None:
-    _install()
-
-    hooks = json.loads((_folder(repo) / "hooks.json").read_text())
-
-    assert hooks == {
-        "kmctl-briefing": {
-            "SessionStart": [
-                {
-                    "type": "command",
-                    "command": antigravity.HOOK_COMMAND,
-                    "timeout": 10,
-                }
-            ]
-        },
-        "kmctl-okf-stop": {
-            "Stop": [
-                {
-                    "type": "command",
-                    "command": antigravity.STOP_COMMAND,
-                    "timeout": 10,
-                }
-            ]
-        },
-    }
-    assert "kmctl briefing --format antigravity" in antigravity.HOOK_COMMAND
 
 
 def test_plugin_folder_agents_are_the_translations(
@@ -378,69 +297,6 @@ def test_plugin_folder_agents_are_the_translations(
         assert (agents / name).read_text() == antigravity.translate_agent(text, name)
 
 
-def test_plugin_folder_mcp_runs_okf_at_the_apm_pin(
-    repo: Path, fakes: FakeTools
-) -> None:
-    _install()
-
-    config = json.loads((_folder(repo) / "mcp_config.json").read_text())
-
-    assert list(config) == ["mcpServers"]
-    assert list(config["mcpServers"]) == ["bundle"]
-    server = config["mcpServers"]["bundle"]
-    assert server["command"] == "sh" and server["args"][0] == "-c"
-    [launcher] = server["args"][1:]
-    assert launcher == plugin.okf_mcp_launcher(
-        starts=('"${PLUGIN_ROOT:+$PLUGIN_ROOT/../../..}"', '"$PWD"')
-    )
-    [pin] = yaml.safe_load((ROOT / "apm" / "apm.yml").read_text())["dependencies"][
-        "apm"
-    ]
-    sha = pin.rpartition("#")[2]
-    assert (
-        f"uv run https://raw.githubusercontent.com/scaccogatto/okf-skills/{sha}"
-        "/servers/okf_mcp.py" in launcher
-    )
-
-
-def test_plugin_folder_rules_are_the_translations(repo: Path, fakes: FakeTools) -> None:
-    _install()
-
-    for name in RULE_NAMES:
-        source = INSTRUCTIONS / f"{name}.instructions.md"
-        want = antigravity.translate_rule(source.read_text(), str(source))
-        assert (_folder(repo) / "rules" / f"{name}.md").read_text() == want, name
-
-
-def test_plugin_folder_rules_moved_out_of_agents_rules(
-    repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    deployed = [f".agents/rules/{name}.md" for name in RULE_NAMES]
-    lock = yaml.safe_load(_lock())
-    lock["dependencies"][0]["deployed_files"] = [*deployed, ".agents/skills/audit"]
-    tools = FakeTools(tmp_path / "own", tools=("uvx", "claude"))
-    monkeypatch.setenv("PATH", tools.path)
-    tools.on(
-        "uvx",
-        "apm install",
-        write={
-            "apm.lock.yaml": yaml.safe_dump(lock),
-            f"{OKF_AGENTS}/bundle-weaver.md": BUNDLE_WEAVER,
-            f"{OKF_AGENTS}/event-analyzer.md": EVENT_ANALYZER,
-            ".agents/skills/audit/SKILL.md": "a skill\n",
-            ".agents/rules/someone-elses.md": "kept\n",
-            **{rel: "APM's copy\n" for rel in deployed},
-        },
-    )
-
-    _install()
-
-    rules = repo / ".agents" / "rules"
-    assert sorted(p.name for p in rules.iterdir()) == ["someone-elses.md"]
-    assert (repo / ".agents/skills/audit/SKILL.md").is_file()
-    assert sorted(_files(_folder(repo) / "rules")) == [f"{n}.md" for n in RULE_NAMES]
-
-
 def test_plugin_folder_second_install_changes_nothing(
     repo: Path, fakes: FakeTools
 ) -> None:
@@ -458,42 +314,12 @@ def test_plugin_folder_install_replaces_the_whole_folder(
     _install()
     (_folder(repo) / "agents" / "old.md").write_text("stale")
     (_folder(repo) / "hooks.json").write_text("{}")
+    (_folder(repo) / "plugin.json").write_text("{}")
 
     _install()
 
     assert sorted(_files(_folder(repo))) == PLUGIN_FILES
-    assert json.loads((_folder(repo) / "hooks.json").read_text()) != {}
-
-
-def _launcher_uv_args(
-    repo: Path, tmp_path: Path, cwd: Path, plugin_root: str | None
-) -> list[str]:
-    """Run the written MCP launcher in ``cwd`` with a fake uv; return uv's args."""
-    config = json.loads((_folder(repo) / "mcp_config.json").read_text())
-    server = config["mcpServers"]["bundle"]
-    tools = FakeTools(tmp_path / f"uv-{len(list(tmp_path.iterdir()))}", tools=("uv",))
-    env = {"PATH": tools.path}
-    if plugin_root is not None:
-        env["PLUGIN_ROOT"] = plugin_root
-    subprocess.run([server["command"], *server["args"]], cwd=cwd, env=env, check=True)
-    [call] = tools.calls("uv")
-    return call.args
-
-
-def test_plugin_folder_launcher_finds_the_repository_okf(
-    repo: Path, fakes: FakeTools, tmp_path: Path
-) -> None:
-    _install()
-    okf = str((repo / ".okf").resolve())
-    deep = repo / "src" / "pkg"
-    deep.mkdir(parents=True)
-    elsewhere = tmp_path / "elsewhere"
-    elsewhere.mkdir()
-    want = ["run", plugin.okf_mcp_url(), okf]
-
-    assert _launcher_uv_args(repo, tmp_path, _folder(repo), None) == want
-    assert _launcher_uv_args(repo, tmp_path, deep, None) == want
-    assert _launcher_uv_args(repo, tmp_path, elsewhere, str(_folder(repo))) == want
+    assert json.loads((_folder(repo) / "plugin.json").read_text()) == {"name": "kmctl"}
 
 
 def test_plugin_folder_needs_okf_agents_from_apm(repo: Path, fakes: FakeTools) -> None:
@@ -519,7 +345,7 @@ def test_plugin_folder_install_for_both_harnesses(repo: Path, fakes: FakeTools) 
 
     assert result.exit_code == 0, result.output
     assert sorted(_files(_folder(repo))) == PLUGIN_FILES
-    assert (repo / ".claude" / "settings.json").is_file()
+    assert not (repo / ".claude" / "settings.json").exists()
     assert json.loads(result.stdout)["harnesses"] == ["claude", "antigravity"]
 
 
@@ -759,17 +585,16 @@ def test_plugin_problems_name_each_file_without_the_cli(
 ) -> None:
     _install()
     (_folder(repo) / "plugin.json").write_text("{}")
-    (_folder(repo) / "hooks.json").unlink()
+    (_folder(repo) / "agents" / "kmctl-auditor.md").unlink()
     (_folder(repo) / "agents" / "extra.md").write_text("x\n")
 
     problems = antigravity.plugin_problems(repo)
 
     assert problems == [
         ".agents/plugins/kmctl/agents/extra.md is not one kmctl writes",
-        ".agents/plugins/kmctl/hooks.json is missing",
+        ".agents/plugins/kmctl/agents/kmctl-auditor.md is missing",
         ".agents/plugins/kmctl/plugin.json differs from what this kmctl writes",
     ]
-    assert not antigravity.hook_present(repo)
 
 
 def test_plugin_problems_without_apm_modules_raise_the_fix(
@@ -789,7 +614,7 @@ def test_plugin_problems_without_apm_modules_raise_the_fix(
 
 
 @pytest.mark.integration
-def test_agy_validate_counts_three_agents_two_hooks_one_server(
+def test_agy_validate_counts_three_agents(
     repo: Path, fakes: FakeTools, home: Path
 ) -> None:
     if AGY is None:
@@ -812,9 +637,9 @@ def test_agy_validate_counts_three_agents_two_hooks_one_server(
     assert proc.returncode == 0, proc.stderr + proc.stdout
     report = json.loads(proc.stdout)
     assert report["components"]["agents"] == 3
-    assert report["components"]["hooks"] == 2
-    assert report["components"]["mcpServers"] == 1
-    assert report["components"]["rules"] == len(RULE_NAMES)
+    assert report["components"]["hooks"] == 0
+    assert report["components"]["mcpServers"] == 0
+    assert report["components"]["rules"] == 0
     assert report["findings"] == []
 
 
@@ -835,14 +660,13 @@ def test_consumer_gets_skills_rules_and_the_plugin_folder(
         ).read_bytes(), skill
     for skill in ("okf", "validate", "backfill", "visualize"):
         assert (agents / "skills" / skill / "SKILL.md").is_file(), skill
-    rules = sorted(
-        p.name.removesuffix(".instructions.md") for p in INSTRUCTIONS.iterdir()
-    )
-    assert rules == RULE_NAMES
-    assert len(rules) == 4
-    for rule in rules:
-        assert not (agents / "rules" / f"{rule}.md").exists(), rule
-        assert (agents / "plugins" / "kmctl" / "rules" / f"{rule}.md").is_file(), rule
+    assert len(RULE_NAMES) == 4
+    for rule in RULE_NAMES:
+        meta, _ = _split((agents / "rules" / f"{rule}.md").read_text())
+        assert meta["trigger"] == "glob", rule
+        assert isinstance(meta["globs"], str), rule
+        assert all(g.startswith("**/") for g in meta["globs"].split(", ")), rule
+    assert antigravity.mcp_present(consumer)
     folder = agents / "plugins" / "kmctl"
     assert sorted(_files(folder)) == PLUGIN_FILES
     assert {k: v.decode() for k, v in _files(folder).items()} == (
@@ -860,9 +684,10 @@ def test_consumer_gets_skills_rules_and_the_plugin_folder(
         "antigravity.okf-skills",
         "antigravity.hook",
         "antigravity.apm-hooks",
+        "antigravity.okf-mcp",
     ):
         assert checks[cid]["ok"], checks[cid]
-    assert "okf-stop-check.sh" not in (agents / "hooks.json").read_text()
+    assert not antigravity.apm_okf_stop_present(consumer)
 
 
 # r8: the decision and the docs ------------------------------------------------
@@ -953,25 +778,6 @@ def test_docs_install_how_to_covers_antigravity() -> None:
     )
 
 
-# antigravity-rules r5: the decision and the docs name the plugin's rules --------
-
-
-RULES_DECISION = (
-    DECISIONS / "0016-antigravity-rules-come-from-the-kmctl-plugin-folder.md"
-)
-
-
-def test_rules_docs_name_the_plugin_folder_rules() -> None:
-    for path in (RULES_DECISION, COMMANDS, INSTALL_HOW_TO):
-        text = _flat(path.read_text())
-        assert ".agents/plugins/kmctl/rules/" in text, path.name
-        assert "rules to `.agents/rules/`" not in text, path.name
-    assert "0016" in _decision().read_text()
-    decision = _flat(RULES_DECISION.read_text())
-    for term in ("**/", "comma", "absolute path", "list"):
-        assert term in decision, term
-
-
 # antigravity-okf-stop-hook: okf's Stop check, run by kmctl ----------------------
 
 OKF_STOP = ROOT / "tests" / "fixtures" / "okf-stop-check.sh"
@@ -1004,7 +810,7 @@ def _stop_repo(tmp_path: Path, *, enforced: bool = True, script: bool = True) ->
         target = repo / antigravity.OKF_STOP_SCRIPT
         target.parent.mkdir(parents=True)
         shutil.copy(OKF_STOP, target)
-    (repo / antigravity.PLUGIN_PATH).mkdir(parents=True)
+    (repo / ".agents").mkdir(exist_ok=True)
     _git(repo, "init", "-q")
     _git(repo, "add", "-A")
     _git(repo, "commit", "-qm", "init")
@@ -1012,10 +818,10 @@ def _stop_repo(tmp_path: Path, *, enforced: bool = True, script: bool = True) ->
 
 
 def _run_stop(repo: Path, stdin: str) -> subprocess.CompletedProcess[str]:
-    """Run the plugin's Stop handler as agy does: sh -c, in the plugin folder."""
+    """Run the package's Stop handler as agy does: sh -c, in .agents/, which holds the hooks.json."""
     return subprocess.run(
         ["sh", "-c", antigravity.STOP_COMMAND],
-        cwd=repo / antigravity.PLUGIN_PATH,
+        cwd=repo / ".agents",
         input=stdin,
         capture_output=True,
         text=True,
@@ -1154,22 +960,44 @@ def test_okf_stop_docs_name_the_hook_and_the_check() -> None:
     for path in (COMMANDS, INSTALL_HOW_TO):
         assert "Stop" in path.read_text(), path.name
     commands = COMMANDS.read_text()
-    assert "kmctl-okf-stop" in commands
+    assert ".agents/hooks.json" in commands
     assert "antigravity.apm-hooks" in commands
 
 
-def test_okf_stop_plugin_hooks_hold_both_flat_handlers(
+# apm-hands-back r3: install writes only the agents and the okf Stop fix -------------
+
+
+def test_hands_back_install_writes_no_hook_mcp_or_rules(
     repo: Path, fakes: FakeTools
 ) -> None:
+    result = _kmctl("plugin", "install", "--harness", "claude,antigravity")
+
+    assert result.exit_code == 0, result.output
+    assert not (repo / ".claude" / "settings.json").exists()
+    assert not (repo / ".mcp.json").exists()
+    assert sorted(_files(repo / ".agents")) == [
+        f"plugins/kmctl/{name}" for name in PLUGIN_FILES
+    ]
+    assert not [c for c in fakes.calls("claude") if c.args[:2] == ["mcp", "add-json"]]
+
+
+def test_hands_back_okf_handler_dropped_wrapper_kept(
+    repo: Path, fakes: FakeTools
+) -> None:
+    wrapper = {"type": "command", "command": antigravity.STOP_COMMAND, "timeout": 10}
+    start = {"type": "command", "command": antigravity.HOOK_COMMAND, "timeout": 10}
+    path = _apm_hooks(repo)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(
+            {"apm": {"SessionStart": [start], "Stop": [APM_OKF_HANDLER, wrapper]}}
+        )
+    )
+
     _install()
 
-    hooks = json.loads((_folder(repo) / "hooks.json").read_text())
-
-    assert sorted(hooks) == ["kmctl-briefing", "kmctl-okf-stop"]
-    assert list(hooks["kmctl-okf-stop"]) == ["Stop"]
-    [handler] = hooks["kmctl-okf-stop"]["Stop"]
-    assert handler == {
-        "type": "command",
-        "command": antigravity.STOP_COMMAND,
-        "timeout": 10,
+    assert json.loads(path.read_text()) == {
+        "apm": {"SessionStart": [start], "Stop": [wrapper]}
     }
+    assert antigravity.hook_present(repo)
+    assert not antigravity.apm_okf_stop_present(repo)

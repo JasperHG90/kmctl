@@ -119,3 +119,10 @@ Consequences, no longer exists; `kmctl doctor` took over its checks. Its
 `antigravity.plugin` check compares the files in `.agents/plugins/kmctl/`
 with what this kmctl writes, through `antigravity.plugin_problems`
 (`src/kmctl/doctor.py`). The decision stands.
+
+### Amended, 2026-10-17
+
+[ADR 0020](0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md):
+kmctl's package now ships the SessionStart hooks, okf's MCP server and the
+rules for each harness, and APM writes them; kmctl writes only the
+Antigravity agents and removes APM's broken okf Stop handler.

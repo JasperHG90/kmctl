@@ -155,3 +155,10 @@ Rejected:
 Supersedes [ADR 0013](0013-kmctl-installs-through-apm-too.md).
 
 Supersedes [ADR 0003](0003-claude-code-plugin-first-depends-on-okf.md).
+
+### Amended, 2026-10-17
+
+[ADR 0020](0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md):
+kmctl's package now ships the SessionStart hooks, okf's MCP server and the
+rules for each harness, and APM writes them; kmctl writes only the
+Antigravity agents and removes APM's broken okf Stop handler.

@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "command -v kmctl >/dev/null 2>&1 || { echo '{}'; exit 0; }; out=$(kmctl briefing --format antigravity 2>/dev/null) && printf '%s\\n' \"$out\" || echo '{}'; exit 0",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "in=$(cat); printf '%s' \"$in\" | grep -Eq '\"executionNum\"[[:space:]]*:[[:space:]]*0([^0-9]|$)' || { echo '{}'; exit 0; }; cd .. 2>/dev/null && [ -f .agents/hooks/okf-skills/hooks/okf-stop-check.sh ] || { echo '{}'; exit 0; }; out=$(printf '{}' | bash .agents/hooks/okf-skills/hooks/okf-stop-check.sh 2>/dev/null); case \"$out\" in *'\"decision\":\"block\"'*) printf '%s\\n' \"$out\" | sed 's/\"decision\":\"block\"/\"decision\":\"continue\"/';; *) echo '{}';; esac; exit 0",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

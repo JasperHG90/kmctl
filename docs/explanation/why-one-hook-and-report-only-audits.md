@@ -9,8 +9,9 @@ This page explains why kmctl stops there.
 
 ## How it works
 
-**The briefing.** When a Claude Code session starts, the only hook
-`kmctl plugin install` writes runs `kmctl briefing` and passes its output into the session. The briefing
+**The briefing.** When a Claude Code session starts, the only hook in
+kmctl's package, which `kmctl plugin install` installs with APM, runs
+`kmctl briefing` and passes its output into the session. The briefing
 says where each kind of knowledge lives (`docs/` for people who use the
 project, `.okf/` for people and agents working on it), lists what is due for
 review and which handoffs are live, and gives the rules for writing knowledge.

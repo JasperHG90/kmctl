@@ -188,7 +188,7 @@ def test_release_py_set_writes_the_version_and_the_six_doc_lines(
 def test_release_py_set_writes_the_apm_version_into_both_apm_yml_files(
     tmp_path: Path,
 ) -> None:
-    """``set 0.2.0`` leaves both apm.yml files at 0.2.0, the rest as it was."""
+    """``set 0.2.0`` leaves every kmctl apm.yml file at 0.2.0, the rest as it was."""
     root = _repo(tmp_path)
     before = {rel: (root / rel).read_text() for rel in APM_FILES}
 
@@ -199,6 +199,8 @@ def test_release_py_set_writes_the_apm_version_into_both_apm_yml_files(
     assert {rel.as_posix(): _apm_version(root / rel) for rel in APM_FILES} == {
         "apm.yml": "0.2.0",
         "apm/apm.yml": "0.2.0",
+        "apm/claude/apm.yml": "0.2.0",
+        "apm/antigravity/apm.yml": "0.2.0",
     }
     for rel, text in before.items():
         changed = set((root / rel).read_text().splitlines()) ^ set(text.splitlines())

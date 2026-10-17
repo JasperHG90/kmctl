@@ -6,7 +6,7 @@ tags: [adr, decision, install, antigravity]
 generated:
   by: process:kmctl/0.3.0
   at: 2026-10-17T06:40:44Z
-status: stable
+status: deprecated
 sources:
   - resource: "src/kmctl/antigravity.py"
   - resource: "src/kmctl/plugin.py"
@@ -69,3 +69,7 @@ Rejected:
   harmless.
 - A bare `apm install` puts APM's broken copies back until the next
   `kmctl plugin install`.
+
+## Correction, 2026-10-17
+
+Superseded by [ADR 0020](0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md).

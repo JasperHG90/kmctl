@@ -39,8 +39,14 @@ DOC_FILES = (
 )
 #: How many install lines ``DOC_FILES`` hold between them.
 DOC_LINES = 6
-#: The apm.yml files ``set`` writes the version into: the package and its root copy.
-APM_FILES = (Path("apm.yml"), MANIFEST)
+#: The apm.yml files ``set`` writes the version into: the root copy, the
+#: package and its two per-harness sub-packages (ADR 0020).
+APM_FILES = (
+    Path("apm.yml"),
+    MANIFEST,
+    Path("apm/claude/apm.yml"),
+    Path("apm/antigravity/apm.yml"),
+)
 #: The how-to whose ``JasperHG90/Knowledge-management/apm`` pins ``set`` moves.
 APM_DOC = Path("docs/how-to/install-kmctl-with-apm.md")
 _INSTALL = re.compile(

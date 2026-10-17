@@ -64,8 +64,8 @@ Then, in a repository:
 kmctl plugin install --harness claude
 ```
 
-This installs kmctl's skills, audit agent and knowledge rules with APM (it
-needs uv, which runs APM), and writes the session hook. For Antigravity, use
+This installs kmctl's skills, audit agent, knowledge rules, session hook and
+okf's MCP server with APM (it needs uv, which runs APM). For Antigravity, use
 `--harness antigravity`. The steps, with the CI action, are in
 [Install the plugin and the CI action](docs/how-to/install-the-plugin-and-the-ci-action.md).
 
