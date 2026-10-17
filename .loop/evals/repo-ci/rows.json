@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "ci.yml runs on every pull request and on every push to main",
+      "fails_when": "ci.yml is missing, or its on: block lacks pull_request or a push trigger limited to main",
+      "command": "uv run pytest tests/test_ci.py -k triggers -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "ci.yml's knowledge job runs kmctl's own check with uses: ./ after a full-history checkout",
+      "fails_when": "no job has a uses: ./ step, or its checkout lacks fetch-depth: 0",
+      "command": "uv run pytest tests/test_ci.py -k knowledge -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "ci.yml's prek job runs uvx prek at the version justfile pins, on all files",
+      "fails_when": "no job runs uvx prek@<the justfile's version> run --all-files",
+      "command": "uv run pytest tests/test_ci.py -k prek -q"
+    },
+    {
+      "id": "r4",
+      "behavior": "ci.yml's tests job runs the default test suite with uv run pytest",
+      "fails_when": "no job runs uv run pytest, or it passes a -m that changes the default tier",
+      "command": "uv run pytest tests/test_ci.py -k pytest -q"
+    },
+    {
+      "id": "r5",
+      "behavior": "every action in ci.yml is pinned by commit SHA and setup-uv runs with its cache off",
+      "fails_when": "a uses: other than ./ is not a 40-character SHA, or a setup-uv step lacks enable-cache: false",
+      "command": "uv run pytest tests/test_ci.py -k pinned -q"
+    },
+    {
+      "id": "r6",
+      "behavior": "knowledge.yml is gone, so kmctl check runs once per pull request",
+      "fails_when": ".github/workflows/knowledge.yml exists",
+      "command": "uv run pytest tests/test_ci.py -k knowledge_yml -q"
+    },
+    {
+      "id": "r7",
+      "behavior": "the install how-to quotes only workflows this repository ships, naming ci.yml's knowledge job instead of knowledge.yml",
+      "fails_when": "a .github/workflows/ path in the how-to's 'quoted from' note or its step 4 'shipped' sentence does not exist in the repository",
+      "command": "uv run pytest tests/test_ci.py -k quoted -q"
+    }
+  ]
+}
