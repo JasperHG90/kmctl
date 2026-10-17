@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "slug": "audit-prompts",
+  "stage": "stub",
+  "attempts": 0,
+  "plan_rounds": 0,
+  "review_rounds": 0,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": null,
+  "ask": "j-20261017T142103+0000-fa3c9bcb",
+  "split": null,
+  "split_plan_hash": null,
+  "split_hold": false,
+  "commit_sha": null,
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": null,
+  "branch": null,
+  "stamps": [],
+  "signoff": null,
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [],
+  "resigns": [],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [],
+  "round": null,
+  "plan_hash": "6c9ab07d71fc76dacbfbbebc59da42eb6b4e0f2825707e6e681e95afc98d96df",
+  "intent": {
+    "epic": null,
+    "depends_on": [
+      "real-audits"
+    ],
+    "priority": null
+  },
+  "history": [],
+  "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
+  "at": "2026-10-17T14:22:38+00:00"
+}
