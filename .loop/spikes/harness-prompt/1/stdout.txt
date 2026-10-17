@@ -1,0 +1,78 @@
+.claude/rules/cli-version-floor.md:8:`apm/`, and `kmctl plugin install` installs that package at the tag of the
+.claude/rules/cli-version-floor.md:17:Docs and skills install the package only with `kmctl plugin install`. The
+.okf/architecture/overview.md:19:`kmctl plugin install` installs the package with APM and writes the
+.okf/architecture/overview.md:245:tag `kmctl plugin install` asks for and a build from a download with no
+.okf/architecture/overview.md:269:  `kmctl new doc`, `kmctl schema`, `kmctl decision supersede`, `kmctl plugin install`,
+.okf/architecture/overview.md:270:  `kmctl plugin update`, `kmctl doctor`.
+.okf/decisions/0001-standalone-cli-installs-its-plugin.md:43:  `kmctl plugin install` stages it stamped with the CLI's version, so
+.okf/decisions/0001-standalone-cli-installs-its-plugin.md:51:The Consequences said the plugin is package data that `kmctl plugin install`
+.okf/decisions/0003-claude-code-plugin-first-depends-on-okf.md:49:- `kmctl plugin install` adds the scaccogatto marketplace before
+.okf/decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md:152:bodies and their `paths:` written as `applyTo:`, and `kmctl plugin install`
+.okf/decisions/0012-releases-come-from-ci.md:26:and `kmctl plugin install` stamps the CLI's version into the plugin it stages,
+.okf/decisions/0013-kmctl-installs-through-apm-too.md:4:description: "APM installs kmctl's skills, agent and hook from the apm subfolder package as a second route beside kmctl plugin install; the CLI is still installed with uv tool install."
+.okf/decisions/0013-kmctl-installs-through-apm-too.md:20:`kmctl plugin install`, which stages `plugin/` stamped with the CLI's version
+.okf/decisions/0013-kmctl-installs-through-apm-too.md:52:- APM is a second route beside `kmctl plugin install`, the operator's choice
+.okf/decisions/0013-kmctl-installs-through-apm-too.md:53:  on 2026-10-16. `kmctl plugin install` stays the main route.
+.okf/decisions/0013-kmctl-installs-through-apm-too.md:57:- Replace `kmctl plugin install` with APM. APM installs the files but not the
+.okf/decisions/0014-apm-is-the-only-install-route.md:23:three routes, each with part of them. `kmctl plugin install` staged
+.okf/decisions/0014-apm-is-the-only-install-route.md:35:`kmctl plugin install` kept as a thin wrapper around it, and hooks, rules,
+.okf/decisions/0014-apm-is-the-only-install-route.md:83:  over an environment variable. `kmctl plugin update` runs the same steps.
+.okf/decisions/0014-apm-is-the-only-install-route.md:98:  `kmctl plugin install --force`, which passes `--force` to APM and replaces
+.okf/decisions/0014-apm-is-the-only-install-route.md:110:  next step names `kmctl plugin install`. This replaces ADR 0011's first
+.okf/decisions/0015-antigravity-gets-skills-and-rules-from-apm-and-a-kmctl-plugin-folder.md:23:`kmctl plugin install` a thin wrapper that takes the harness.
+.okf/decisions/index.md:26:- [ADR 0013: kmctl installs through APM too](0013-kmctl-installs-through-apm-too.md): APM installs kmctl's skills, agent and hook from the apm subfolder package as a second route beside kmctl plugin install; the CLI is still installed with uv tool install. (superseded by ADR 0014)
+.okf/log.md:88:  install route beside `kmctl plugin install`, through the `apm/apm.yml`
+.okf/log.md:91:  `kmctl plugin install` or through APM.
+.okf/log.md:104:- Updated `manifesto` and `architecture/overview`, and corrected `decisions/0003-claude-code-plugin-first-depends-on-okf`, for ADR 0015: Antigravity is a harness `kmctl plugin install` serves, through APM and the plugin folder `antigravity.py` writes.
+.okf/manifesto.md:77:  Status: enforced by `tests/test_plugin.py` (`kmctl plugin install` writes
+README.md:43:  `kmctl plugin install` installs with [APM](https://microsoft.github.io/apm):
+README.md:116:knowledge rules come with `kmctl plugin install`. Every command takes `--help`,
+apm/apm.yml:1:# kmctl's APM package (ADR 0014). kmctl plugin install writes it into a
+docs/explanation/why-one-hook-and-report-only-audits.md:13:`kmctl plugin install` writes runs `kmctl briefing` and passes its output into the session. The briefing
+docs/explanation/why-one-hook-and-report-only-audits.md:51:(through `kmctl plugin install`, [ADR 0014](../../.okf/decisions/0014-apm-is-the-only-install-route.md))
+docs/how-to/install-kmctl-with-apm.md:26:same install through `kmctl plugin install`.
+docs/how-to/install-kmctl-with-apm.md:100:then run `kmctl plugin update`.
+docs/how-to/install-the-plugin-and-the-ci-action.md:11:- `kmctl plugin install` and `kmctl doctor` were run with kmctl 0.3.0
+docs/how-to/install-the-plugin-and-the-ci-action.md:30:  `kmctl plugin install` runs APM (Agent Package Manager) with `uvx`, so it
+docs/how-to/install-the-plugin-and-the-ci-action.md:307:2. In each repository where you ran `kmctl plugin install`, update it to
+docs/how-to/install-the-plugin-and-the-ci-action.md:311:   kmctl plugin update
+docs/how-to/install-the-plugin-and-the-ci-action.md:379:After you upgrade kmctl, run `kmctl plugin update`.
+docs/reference/commands.md:32:| `kmctl plugin install` | Install kmctl's APM package, its session hook and okf's MCP server for a harness. |
+docs/reference/commands.md:33:| `kmctl plugin update` | Reinstall kmctl's APM package at this kmctl's version; run it after upgrading kmctl. |
+docs/reference/commands.md:75:from `kmctl plugin install`, and init never reads or writes `.claude/rules/`.
+docs/reference/commands.md:109:and keeps every other file. `kmctl plugin update` refreshes the skills and
+docs/reference/commands.md:139:in it: `kmctl plugin install` puts them in `.claude/rules/`, and the briefing
+docs/reference/commands.md:140:adds only the one they lack. The SessionStart hook `kmctl plugin install`
+docs/reference/commands.md:265:### `kmctl plugin install`
+docs/reference/commands.md:342:### `kmctl plugin update`
+docs/reference/commands.md:344:The same steps and options as `kmctl plugin install`. Run it after upgrading
+docs/reference/commands.md:400:| `--scope SCOPE` | `project` (the install in this repository) or `user` (the install `kmctl plugin install --scope user` made: `~/.apm/` and `$CLAUDE_CONFIG_DIR`, by default `~/.claude`). | `project` |
+docs/tutorials/get-started-with-kmctl.md:74:with kmctl's skills from `kmctl plugin install`, the first step the `Next:`
+src/kmctl/__init__.py:488:        "The SessionStart hook kmctl plugin install writes prints this: Claude "
+src/kmctl/__init__.py:762:    """Run ``kmctl plugin install`` or ``update``: map a PluginError to a refusal."""
+src/kmctl/__init__.py:862:                "(the install kmctl plugin install --scope user made: "
+src/kmctl/briefing.py:3:The SessionStart hook ``kmctl plugin install`` writes relays it, so it is read
+src/kmctl/plugin.py:252:            "kmctl plugin install again"
+src/kmctl/plugin.py:278:            "(https://docs.astral.sh/uv/), then run kmctl plugin install again"
+src/kmctl/plugin.py:326:            "upgrade Claude Code, then run kmctl plugin install again"
+src/kmctl/plugin.py:463:            f"{path} is not a YAML mapping; fix it, then run kmctl plugin install again"
+src/kmctl/plugin.py:510:            "by hand, then kmctl plugin install again"
+src/kmctl/plugin.py:695:            f"{path} is not a JSON object; fix it, then run kmctl plugin install again"
+src/kmctl/plugin.py:729:            "kmctl plugin install again"
+src/kmctl/plugin.py:940:    (``antigravity.write_plugin``). ``kmctl plugin update`` runs the same.
+src/kmctl/plugin.py:1020:            "(https://docs.astral.sh/uv/), then run kmctl plugin install again"
+src/kmctl/scaffold.py:6:``kmctl plugin install`` installs (ADR 0014).
+tests/scripts/test_release_docs.py:97:    assert "kmctl plugin update" in upgrade[0]
+tests/test_apm_package.py:331:            "kmctl plugin install",
+tests/test_apm_package.py:349:    """The manifesto's Parts describe the APM package installed by kmctl plugin install."""
+tests/test_docs.py:46:    assert "kmctl plugin install" in text
+tests/test_doctor.py:187:    """Run ``kmctl plugin install`` for ``harnesses``; fail the test unless it exits 0."""
+tests/test_init.py:170:# Rules come from kmctl plugin install, not init (apm-only-install r8)
+tests/test_init.py:201:    """init's Next: line starts with kmctl plugin install, which brings the rules."""
+tests/test_init.py:213:    assert "kmctl plugin install" in flat
+tests/test_network_retry.py:17:#: The tests that run the real kmctl plugin install, which reaches GitHub through APM.
+tests/test_network_retry.py:55:    """Tests in test_apm_package.py that run kmctl plugin install or update."""
+tests/test_plugin.py:1:"""kmctl plugin install and update, with fake uvx, claude and uv on PATH (ADR 0014).
+tests/test_plugin.py:152:    """The command of the hook ``kmctl plugin install`` writes."""
+tests/test_plugin_error.py:40:SUFFIX = "; run it by hand to see why, then kmctl plugin install again"
+tests/test_plugin_error.py:121:    assert message.endswith("then kmctl plugin install again")
