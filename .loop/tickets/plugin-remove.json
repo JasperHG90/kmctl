@@ -21,7 +21,8 @@
   "branch": "loop/plugin-remove",
   "stamps": [
     "5aa500c0a4e4adb462b468197b44a985536b8063dfb21d6083aff85026fedc96",
-    "0023e63a350eae26202f4404f8ecf6ecb4d0e98bd10bca78a951d5203a9b3509"
+    "0023e63a350eae26202f4404f8ecf6ecb4d0e98bd10bca78a951d5203a9b3509",
+    "ed722537e68a95ebfb2c7872a26d27fcd1407797b633f37b2f75dc6c500c0979"
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
@@ -151,5 +152,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T08:24:47+00:00"
+  "at": "2026-10-17T08:27:55+00:00"
 }
