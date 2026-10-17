@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "slug": "harness-prompt-reviewer-f1",
-  "stage": "ready",
-  "attempts": 0,
+  "stage": "building",
+  "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
@@ -17,8 +17,8 @@
   "closed_outside": false,
   "dropped": false,
   "archived": false,
-  "worktree": null,
-  "branch": null,
+  "worktree": "/home/vscode/kmctl.worktrees/harness-prompt-reviewer-f1",
+  "branch": "loop/harness-prompt-reviewer-f1",
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
@@ -85,8 +85,14 @@
       "to": "ready",
       "at": "2026-10-17T06:17:12+00:00",
       "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-10-17T06:17:14+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T06:17:13+00:00"
+  "at": "2026-10-17T06:17:14+00:00"
 }
