@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The separate job does not fully cut the path from the agent to the token step. astral-sh/setup-uv@v6 defaults to enable-cache auto (on for GitHub-hosted runners) and save-cache true, so its post step in the audit job uploads the uv cache after the agent ran, and the publish job's setup-uv restores it before `uv run --script action/agent.py publish`. The agent's shell runs as the runner user and can write that cache folder (under RUNNER_TEMP), including the cached script environment and wheels, so poisoned code can run in the step that holds GH_TOKEN, in this run or a later one that restores the same key. The plan's claim that the publish job \"gets only the agent-report artifact\" is false while the cache is shared. The same holds for action.yml, whose composite steps use setup-uv@v6 with the defaults. Fix by turning the uv cache off (or off for saving) in the audit job and audit mode, and have r5 check it. Spike question if wanted: after a run_shell command writes into the setup-uv cache folder, does the post step save it (after prune --ci), and does the next job's `uv run --script` import from it?",
+      "anchor": ".github/workflows/knowledge-audit.yml",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r5"
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "An update now adds a comment that names the owners, which GitHub notifies.",
+      "anchor": null,
+      "category": "contract",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "resolved",
+      "claim": "Below the threshold, publish now closes an open issue with a comment (operator-delegated call).",
+      "anchor": null,
+      "category": "design",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "cb4baca190dced1c6f1ca1ddd62bd2b8fe7c41bb02cb2a07a32796da84a94542"
+  },
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
+  "at": "2026-10-17T07:44:15+00:00"
+}
