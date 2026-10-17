@@ -20,7 +20,8 @@
   "worktree": "/home/vscode/kmctl.worktrees/agent-publish",
   "branch": "loop/agent-publish",
   "stamps": [
-    "25f04f65ae90ac4c8e03fdaa021222322fa03168eab2dcd8c125f6563446148a"
+    "25f04f65ae90ac4c8e03fdaa021222322fa03168eab2dcd8c125f6563446148a",
+    "e994288c4c5ed8ce71f1b252a41ce0d7696ae5eca4c09e367f583c02a2d9d7bd"
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude",
@@ -200,5 +201,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T07:56:19+00:00"
+  "at": "2026-10-17T07:57:43+00:00"
 }
