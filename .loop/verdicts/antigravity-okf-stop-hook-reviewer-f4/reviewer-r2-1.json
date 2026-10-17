@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "commands.md's fix column said \"not JSON\" while the check fails for any non-object",
+      "anchor": "docs/reference/commands.md:408",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "a non-UTF-8 hooks.json crashed doctor and install with UnicodeDecodeError",
+      "anchor": "src/kmctl/antigravity.py:290",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "d952252e2b4bbb4b0bd643de1baac9a53fa161b201fddc6afb852ca15bd9b07c",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
+  "at": "2026-10-17T08:33:18+00:00"
+}
