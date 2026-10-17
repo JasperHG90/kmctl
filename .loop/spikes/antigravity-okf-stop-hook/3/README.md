@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016
-  at: '2026-10-17T06:36:35+00:00'
+  at: '2026-10-17T06:36:49+00:00'
 slug: antigravity-okf-stop-hook
 n: 3
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike antigravity-okf-stop-hook/3
@@ -24,7 +24,7 @@ The command exited 0:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note antigravity-okf-stop-hook 3`.
+Exit 0: executionNum counts within one turn, not across a conversation. In one conversation (turn 1 with agy -p, turn 2 with agy -c -p, same conversationId on all four Stop calls), the stops carried executionNum 0, 1 in turn 1 and 0, 1 again in turn 2; the hook continued once per turn and each turn then ended. So a guard on executionNum 0 means the first stop of each turn.
 
 ## Files
 
