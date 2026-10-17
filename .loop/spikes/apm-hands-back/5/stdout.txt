@@ -1,0 +1,9 @@
+install -g rc=0
+[i] Trusting direct dependency MCP 'okf-bundle' from 'pkg'
+|  [+] okf-bundle (already configured)
+overlap authorized active targets; skipping
+over old kmctl | kmctl hooks: 2 | recorded by APM: True | okf-bundle: stale | mine: True | skill: True
+second install -g rc=0
+after kmctl cleanup + reinstall | kmctl hooks: 1 | recorded by APM: True | okf-bundle: package | mine: True | skill: True
+uninstall -g rc=0
+after uninstall -g | kmctl hooks: 0 | recorded by APM: False | okf-bundle: package | mine: True | skill: False
