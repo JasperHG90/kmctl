@@ -1,0 +1,17 @@
+---
+type: eval
+title: 'Eval: harness-prompt'
+description: 'Definition of done for harness-prompt: 0 row(s).'
+tags:
+- eval
+generated:
+  by: process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016
+  at: '2026-10-17T05:54:45+00:00'
+slug: harness-prompt
+signoff: null
+verified: null
+---
+
+Rows: rows.json; the fields each row takes: loopctl schema eval-rows.
+
+No rows yet.
