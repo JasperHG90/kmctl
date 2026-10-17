@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "opencode-harness",
+  "n": 3,
+  "command": "/tmp/claude-1000/-home-vscode-kmctl/efac4bda-9c30-41af-bec2-10265f82b0d7/scratchpad/spikes/3/spike.sh",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/efac4bda-9c30-41af-bec2-10265f82b0d7/scratchpad/spikes/3/spike.sh",
+      "copy": "files/spike.sh"
+    }
+  ],
+  "where": "worktree",
+  "head": "c86c0e9d53eaeb98e6e6aa9fd9ef4f4039cb3c7c",
+  "fingerprint": "5604d09a6d708298ebeea2bea6117f5d1a6dc80b3eac597b218f60e667ce8417",
+  "started_at": "2026-10-17T21:49:31+00:00",
+  "finished_at": "2026-10-17T21:49:36+00:00",
+  "duration_seconds": 4.72,
+  "timeout_seconds": 240.0,
+  "exit": 1,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "moved_from": null
+}

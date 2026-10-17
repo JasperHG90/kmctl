@@ -1,0 +1,322 @@
+scratch: /tmp/claude-1000/-home-vscode-kmctl/efac4bda-9c30-41af-bec2-10265f82b0d7/scratchpad/spikes/3/tmp.Ivr6ZzdUH8
+Agent Package Manager (APM) CLI version 0.33.0
+
+=== install1: /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-apm/venv/bin/apm install --allow-insecure
+[>] Installing dependencies from apm.yml...
+[>] Resolving pkg-apm...
+[!] Insecure HTTP fetch (unencrypted): http://127.0.0.1:39805/o/pkg#v0.1.0
+[i] Targets: opencode  (source: apm.yml)
+  [+] 127.0.0.1:39805/o/pkg/apm#v0.1.0 #v0.1.0 @c98d1e8d
+  |-- 2 agents integrated -> .opencode/agents/
+  |-- 1 skill(s) integrated -> .agents/skills/
+[i] Added apm_modules/ to .gitignore
+  [!] [pkg] OpenCode agent 'pkg/kmctl-auditor.md' has tools as str; OpenCode 
+requires a mapping of tool-name to boolean. OpenCode will reject this agent at 
+load time. Fix: rewrite the frontmatter as 'tools: {Read: true, Grep: true}'.
+  [!] [pkg] OpenCode agent 'pkg/other.md' has tools as str; OpenCode requires a 
+mapping of tool-name to boolean. OpenCode will reject this agent at load time. 
+Fix: rewrite the frontmatter as 'tools: {Read: true, Grep: true}'.
+[*] Installed 1 APM dependency in 0.2s.
+=== install1 exit 0
+--- state after install1
+.opencode/agents/kmctl-auditor.md: present, marker=0, tools=[tools: Read, Grep, Glob|---|] sha=0535bfc2dd74
+.opencode/agents/other.md: present, marker=0, tools=[tools: Read|---|] sha=86ce97a6e547
+lock hashes:
+    .opencode/agents/kmctl-auditor.md: sha256:0535bfc2dd74
+    .opencode/agents/other.md: sha256:86ce97a6e547
+--- state after edit1
+.opencode/agents/kmctl-auditor.md: present, marker=1, tools=[tools:|  read: true|] sha=d32982bc8df2
+.opencode/agents/other.md: present, marker=1, tools=[tools:|  read: true|] sha=444461d1cc95
+lock hashes:
+    .opencode/agents/kmctl-auditor.md: sha256:0535bfc2dd74
+    .opencode/agents/other.md: sha256:86ce97a6e547
+
+=== install2-plain: /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-apm/venv/bin/apm install --allow-insecure
+[>] Installing dependencies from apm.yml...
+[!] Insecure HTTP fetch (unencrypted): http://127.0.0.1:39805/o/pkg#v0.1.0
+[i] Targets: opencode  (source: apm.yml)
+  [+] 127.0.0.1:39805/o/pkg/apm#v0.1.0 #v0.1.0 @c98d1e8d (cached)
+  |-- 2 agents integrated -> .opencode/agents/
+  |-- 1 skill(s) integrated -> .agents/skills/
+  [!] [pkg] OpenCode agent 'pkg/kmctl-auditor.md' has tools as str; OpenCode 
+requires a mapping of tool-name to boolean. OpenCode will reject this agent at 
+load time. Fix: rewrite the frontmatter as 'tools: {Read: true, Grep: true}'.
+  [!] [pkg] OpenCode agent 'pkg/other.md' has tools as str; OpenCode requires a 
+mapping of tool-name to boolean. OpenCode will reject this agent at load time. 
+Fix: rewrite the frontmatter as 'tools: {Read: true, Grep: true}'.
+[*] Installed 1 APM dependency in 0.1s.
+=== install2-plain exit 0
+--- state after install2-plain
+.opencode/agents/kmctl-auditor.md: present, marker=0, tools=[tools: Read, Grep, Glob|---|] sha=0535bfc2dd74
+.opencode/agents/other.md: present, marker=0, tools=[tools: Read|---|] sha=86ce97a6e547
+lock hashes:
+    .opencode/agents/kmctl-auditor.md: sha256:0535bfc2dd74
+    .opencode/agents/other.md: sha256:86ce97a6e547
+--- state after edit2
+.opencode/agents/kmctl-auditor.md: present, marker=1, tools=[tools:|  read: true|] sha=d32982bc8df2
+.opencode/agents/other.md: present, marker=1, tools=[tools:|  read: true|] sha=444461d1cc95
+lock hashes:
+    .opencode/agents/kmctl-auditor.md: sha256:0535bfc2dd74
+    .opencode/agents/other.md: sha256:86ce97a6e547
+
+=== install3-frozen: /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-apm/venv/bin/apm install --frozen --allow-insecure
+[>] Installing dependencies from apm.yml...
+[!] Insecure HTTP fetch (unencrypted): http://127.0.0.1:39805/o/pkg#v0.1.0
+[i] Targets: opencode  (source: apm.yml)
+  [+] 127.0.0.1:39805/o/pkg/apm#v0.1.0 #v0.1.0 @c98d1e8d (cached)
+  |-- 2 agents integrated -> .opencode/agents/
+  |-- 1 skill(s) integrated -> .agents/skills/
+  [!] [pkg] OpenCode agent 'pkg/kmctl-auditor.md' has tools as str; OpenCode 
+requires a mapping of tool-name to boolean. OpenCode will reject this agent at 
+load time. Fix: rewrite the frontmatter as 'tools: {Read: true, Grep: true}'.
+  [!] [pkg] OpenCode agent 'pkg/other.md' has tools as str; OpenCode requires a 
+mapping of tool-name to boolean. OpenCode will reject this agent at load time. 
+Fix: rewrite the frontmatter as 'tools: {Read: true, Grep: true}'.
+[*] Installed 1 APM dependency in 0.1s.
+[i] Lockfile presence verified. Run 'apm audit' for on-disk content integrity.
+=== install3-frozen exit 0
+--- state after install3-frozen
+.opencode/agents/kmctl-auditor.md: present, marker=0, tools=[tools: Read, Grep, Glob|---|] sha=0535bfc2dd74
+.opencode/agents/other.md: present, marker=0, tools=[tools: Read|---|] sha=86ce97a6e547
+lock hashes:
+    .opencode/agents/kmctl-auditor.md: sha256:0535bfc2dd74
+    .opencode/agents/other.md: sha256:86ce97a6e547
+--- state after edit3
+.opencode/agents/kmctl-auditor.md: present, marker=1, tools=[tools:|  read: true|] sha=d32982bc8df2
+.opencode/agents/other.md: present, marker=1, tools=[tools:|  read: true|] sha=444461d1cc95
+lock hashes:
+    .opencode/agents/kmctl-auditor.md: sha256:0535bfc2dd74
+    .opencode/agents/other.md: sha256:86ce97a6e547
+
+=== install4-force: /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-apm/venv/bin/apm install --force --allow-insecure
+[>] Installing dependencies from apm.yml...
+[!] Insecure HTTP fetch (unencrypted): http://127.0.0.1:39805/o/pkg#v0.1.0
+[i] Targets: opencode  (source: apm.yml)
+  [+] 127.0.0.1:39805/o/pkg/apm#v0.1.0 #v0.1.0 @c98d1e8d (cached)
+  |-- 2 agents integrated -> .opencode/agents/
+  |-- 1 skill(s) integrated -> .agents/skills/
+  [!] [pkg] OpenCode agent 'pkg/kmctl-auditor.md' has tools as str; OpenCode 
+requires a mapping of tool-name to boolean. OpenCode will reject this agent at 
+load time. Fix: rewrite the frontmatter as 'tools: {Read: true, Grep: true}'.
+  [!] [pkg] OpenCode agent 'pkg/other.md' has tools as str; OpenCode requires a 
+mapping of tool-name to boolean. OpenCode will reject this agent at load time. 
+Fix: rewrite the frontmatter as 'tools: {Read: true, Grep: true}'.
+[*] Installed 1 APM dependency in 0.0s.
+=== install4-force exit 0
+--- state after install4-force
+.opencode/agents/kmctl-auditor.md: present, marker=0, tools=[tools: Read, Grep, Glob|---|] sha=0535bfc2dd74
+.opencode/agents/other.md: present, marker=0, tools=[tools: Read|---|] sha=86ce97a6e547
+lock hashes:
+    .opencode/agents/kmctl-auditor.md: sha256:0535bfc2dd74
+    .opencode/agents/other.md: sha256:86ce97a6e547
+--- state after edit4
+.opencode/agents/kmctl-auditor.md: present, marker=1, tools=[tools:|  read: true|] sha=d32982bc8df2
+.opencode/agents/other.md: present, marker=1, tools=[tools:|  read: true|] sha=444461d1cc95
+lock hashes:
+    .opencode/agents/kmctl-auditor.md: sha256:0535bfc2dd74
+    .opencode/agents/other.md: sha256:86ce97a6e547
+
+=== audit: /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-apm/venv/bin/apm audit
+[>] Scanning installed packages and deployed files...
+[>] Replaying install (cache-only)...
+[+] Replayed 1 package(s)
+[>] Diffing scratch vs working tree...
+[!] Drift detected: 2 file(s)
+
+[*] 3 file(s) scanned -- no issues found
+
+[x] Drift detected: 2 file(s)
+
+  modified (2):
+    - .opencode/agents/kmctl-auditor.md  [127.0.0.1/o/pkg/apm]
+    - .opencode/agents/other.md  [127.0.0.1/o/pkg/apm]
+
+  [i] Run 'apm install' to re-sync deployed files with the lockfile.
+
+=== audit exit 0
+
+=== apm deps list
+                             APM Dependencies (Project)                            
+┏━━━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━┳━━━━━━━┓
+┃ Package   ┃ Version ┃ Source ┃ Prompts ┃ Instructions ┃ Agents ┃ Skills ┃ Hooks ┃
+┡━━━━━━━━━━━╇━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━╇━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━╇━━━━━━━┩
+│ o/pkg/apm │ 0.1.0   │ github │    -    │      -       │   2    │   1    │   -   │
+└───────────┴─────────┴────────┴─────────┴──────────────┴────────┴────────┴───────┘
+
+=== uninstall: /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-apm/venv/bin/apm uninstall 127.0.0.1:39805/o/pkg/apm
+[>] Uninstalling 1 package(s)...
+[+] 127.0.0.1:39805/o/pkg/apm - found in apm.yml
+[i] Removed 127.0.0.1:39805/o/pkg/apm from apm_modules/
+Retained user-edited file .opencode/agents/kmctl-auditor.md from 
+127.0.0.1/o/pkg/apm; resolve it and retry.
+Retained user-edited file .opencode/agents/other.md from 127.0.0.1/o/pkg/apm; 
+resolve it and retry.
+[i] Cleaned 2 stale files from 127.0.0.1/o/pkg/apm
+[x] Uninstall could not remove tracked target files; manifest and lockfile 
+ownership were preserved. Package directories may already have been removed.
+[x]   - .opencode/agents/kmctl-auditor.md
+[x]   - .opencode/agents/other.md
+[x] Resolve or remove the listed files, then retry uninstall.
+=== uninstall exit 1
+--- state after uninstall
+.opencode/agents/kmctl-auditor.md: present, marker=1, tools=[tools:|  read: true|] sha=d32982bc8df2
+.opencode/agents/other.md: present, marker=1, tools=[tools:|  read: true|] sha=444461d1cc95
+lock hashes:
+    .opencode/agents/kmctl-auditor.md: sha256:0535bfc2dd74
+    .opencode/agents/other.md: sha256:86ce97a6e547
+=== apm.yml after uninstall
+name: consumer
+version: 0.0.1
+targets: [opencode]
+dependencies:
+  apm:
+    - git: http://127.0.0.1:39805/o/pkg.git
+      path: apm
+      ref: v0.1.0
+      allow_insecure: true
+=== lock after uninstall
+lockfile_version: '1'
+apm_version: 0.33.0
+dependencies:
+- repo_url: o/pkg
+  name: pkg
+  host: 127.0.0.1
+  port: 39805
+  resolved_commit: c98d1e8d7b59e9c65c9df21e3eb2c53825cd0a20
+  resolved_ref: v0.1.0
+  version: 0.1.0
+  virtual_path: apm
+  is_virtual: true
+  package_type: apm_package
+  deployed_files:
+  - .agents/skills/s1
+  - .agents/skills/s1/SKILL.md
+  - .opencode/agents/kmctl-auditor.md
+  - .opencode/agents/other.md
+  deployed_file_hashes:
+    .agents/skills/s1/SKILL.md: sha256:8a7744b115a3a866172031d2932147c67f177a2ecef53130a171ff0fa9da944f
+    .opencode/agents/kmctl-auditor.md: sha256:0535bfc2dd74ee376aa206691a2378084aed55859c6b0450dd3aa7f9dc139b7e
+    .opencode/agents/other.md: sha256:86ce97a6e547594f66f3496912a11bd17478bee3d993565ca88cd6e83ba6dadc
+  content_hash: sha256:e6da2f7619cd7294682c0facad917b38fb9b255b80b713bf143704ca277d4e5c
+  is_insecure: true
+  allow_insecure: true
+deployments:
+- kind: project-relative
+  target: opencode
+  value: .agents/skills/s1
+  runtime: null
+  scope: project
+  owners:
+  - 127.0.0.1/o/pkg/apm
+  active_owner: 127.0.0.1/o/pkg/apm
+  content_hash: null
+- kind: project-relative
+  target: opencode
+  value: .agents/skills/s1/SKILL.md
+  runtime: null
+  scope: project
+  owners:
+  - 127.0.0.1/o/pkg/apm
+  active_owner: 127.0.0.1/o/pkg/apm
+  content_hash: sha256:8a7744b115a3a866172031d2932147c67f177a2ecef53130a171ff0fa9da944f
+- kind: project-relative
+  target: opencode
+  value: .opencode/agents/kmctl-auditor.md
+  runtime: null
+  scope: project
+  owners:
+  - 127.0.0.1/o/pkg/apm
+  active_owner: 127.0.0.1/o/pkg/apm
+  content_hash: sha256:0535bfc2dd74ee376aa206691a2378084aed55859c6b0450dd3aa7f9dc139b7e
+- kind: project-relative
+  target: opencode
+  value: .opencode/agents/other.md
+  runtime: null
+  scope: project
+  owners:
+  - 127.0.0.1/o/pkg/apm
+  active_owner: 127.0.0.1/o/pkg/apm
+  content_hash: sha256:86ce97a6e547594f66f3496912a11bd17478bee3d993565ca88cd6e83ba6dadc
+=== files left under .opencode/ and .agents/
+.opencode/agents/kmctl-auditor.md
+.opencode/agents/other.md
+LEFTOVER agent files
+LEFTOVER lock entries
+
+##### recovery A: plain apm install (reverts edits), then uninstall
+
+=== recA-install: /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-apm/venv/bin/apm install --allow-insecure
+[>] Installing dependencies from apm.yml...
+[>] Resolving pkg-apm...
+[!] Insecure HTTP fetch (unencrypted): http://127.0.0.1:39805/o/pkg#v0.1.0
+[i] Targets: opencode  (source: apm.yml)
+  [+] 127.0.0.1:39805/o/pkg/apm#v0.1.0 #c98d1e8d7b59e9c65c9df21e3eb2c53825cd0a20
+@c98d1e8d
+  |-- 2 agents integrated -> .opencode/agents/
+  |-- 1 skill(s) integrated -> .agents/skills/
+  [!] [pkg] OpenCode agent 'pkg/kmctl-auditor.md' has tools as str; OpenCode 
+requires a mapping of tool-name to boolean. OpenCode will reject this agent at 
+load time. Fix: rewrite the frontmatter as 'tools: {Read: true, Grep: true}'.
+  [!] [pkg] OpenCode agent 'pkg/other.md' has tools as str; OpenCode requires a 
+mapping of tool-name to boolean. OpenCode will reject this agent at load time. 
+Fix: rewrite the frontmatter as 'tools: {Read: true, Grep: true}'.
+[*] Installed 1 APM dependency in 0.1s.
+=== recA-install exit 0
+--- state after recA-install
+.opencode/agents/kmctl-auditor.md: present, marker=0, tools=[tools: Read, Grep, Glob|---|] sha=0535bfc2dd74
+.opencode/agents/other.md: present, marker=0, tools=[tools: Read|---|] sha=86ce97a6e547
+lock hashes:
+    .opencode/agents/kmctl-auditor.md: sha256:0535bfc2dd74
+    .opencode/agents/other.md: sha256:86ce97a6e547
+
+=== recA-uninstall: /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-apm/venv/bin/apm uninstall 127.0.0.1:39805/o/pkg/apm
+[>] Uninstalling 1 package(s)...
+[+] 127.0.0.1:39805/o/pkg/apm - found in apm.yml
+[i] Removed 127.0.0.1:39805/o/pkg/apm from apm_modules/
+[i] Cleaned 4 stale files from 127.0.0.1/o/pkg/apm
+[i] Removed 127.0.0.1:39805/o/pkg/apm from dependencies.apm in apm.yml
+[*] Updated 
+/tmp/claude-1000/-home-vscode-kmctl/efac4bda-9c30-41af-bec2-10265f82b0d7/scratch
+pad/spikes/3/tmp.Ivr6ZzdUH8/consumer/apm.yml (removed 1 package(s))
+[*] Uninstall complete: Removed 1 package(s) from apm.yml, Removed 1 package(s) 
+from apm_modules/
+=== recA-uninstall exit 0
+--- state after recA-uninstall
+.opencode/agents/kmctl-auditor.md: ABSENT
+.opencode/agents/other.md: ABSENT
+lock hashes:
+apm.yml deps:
+dependencies:
+  apm: []
+files left:
+(no apm.lock.yaml)
+
+##### recovery B: fresh install, edit, delete the edited agent files, then uninstall
+
+=== recB-install: /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-apm/venv/bin/apm install --allow-insecure
+[>] Installing dependencies from apm.yml...
+
+[i] No changes -- install state already up to date in 0.0s.
+=== recB-install exit 0
+--- state after recB-edit
+.opencode/agents/kmctl-auditor.md: ABSENT
+.opencode/agents/other.md: ABSENT
+lock hashes:
+
+=== recB-uninstall: /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-apm/venv/bin/apm uninstall 127.0.0.1:39805/o/pkg/apm
+[>] Uninstalling 1 package(s)...
+[x] 127.0.0.1:39805/o/pkg/apm was not found in apm.yml. Run 'apm deps list' and 
+retry with an installed package identifier.
+[x] Uninstall aborted: 1 requested package(s) could not be selected. Resolve the
+errors above and retry; no changes were made.
+=== recB-uninstall exit 1
+--- state after recB-uninstall
+.opencode/agents/kmctl-auditor.md: ABSENT
+.opencode/agents/other.md: ABSENT
+lock hashes:
+apm.yml deps:
+dependencies:
+  apm: []
+files left:
+(no apm.lock.yaml)
+RESULT (main path) FAIL=1
