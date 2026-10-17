@@ -3,7 +3,7 @@
   "slug": "ci-toiminnot",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 1,
+  "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -30,9 +30,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 1,
-    "binds": "9cd0d3aff20fe03cd81155593b99643186be4874fe3d90c9a76ef33741d0c981",
-    "started_at": "2026-10-17T17:59:02+00:00",
+    "n": 2,
+    "binds": "336789223e6b0afa25ecffb8834ef3e4741b5caed4e40f2df38cc41a3df8fe91",
+    "started_at": "2026-10-17T18:03:53+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -45,10 +45,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "9cd0d3aff20fe03cd81155593b99643186be4874fe3d90c9a76ef33741d0c981",
+  "plan_hash": "336789223e6b0afa25ecffb8834ef3e4741b5caed4e40f2df38cc41a3df8fe91",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -63,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
-  "at": "2026-10-17T18:03:50+00:00"
+  "at": "2026-10-17T18:03:53+00:00"
 }

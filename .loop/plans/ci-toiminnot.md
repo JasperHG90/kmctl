@@ -33,8 +33,13 @@ and wants `.github/workflows/ci.yml` to use them. Its `prek` and `tests` jobs
 change to:
 
 - `prek`: setup-uv (cache off), then
-  `JasperHG90/toiminnot/actions/prek` with `python_version: "3.12"`. That
-  action runs pre-commit 4.2.0 and installs no uv, while this repository's
+  `JasperHG90/toiminnot/actions/pre_commit` with `prek_version: "0.5.5"`
+  (the version `justfile` pins) and `python_version: "3.12"`. In v1.3.0
+  the names of two actions are swapped: `actions/pre_commit` runs prek and
+  `actions/prek` runs pre-commit, so this uses `actions/pre_commit`, and a
+  comment in `ci.yml` says why. A toiminnot release that fixes the swap
+  changes what runs on a SHA bump, and the test catches it only through the
+  `prek_version` input. The action installs no uv, while this repository's
   hooks call `uv run`, so uv goes on PATH first.
 - `tests`: `JasperHG90/toiminnot/actions/pytest` with `directory: tests`,
   `markers: not integration` and `python_version: "3.12"`. Its empty
@@ -44,7 +49,9 @@ Both pin v1.3.0 by its commit SHA with the tag as a comment, as the other
 actions in `ci.yml` are pinned. Each action checks out the repository
 itself, so those jobs drop their own checkout. The `knowledge` job keeps
 `uses: ./`. `tests/test_ci.py` changes to check the two actions, their
-inputs and the pins in place of the inline commands. The toiminnot pytest
+inputs and the pins in place of the inline commands. The toiminnot
+actions pin their own inner actions by tag and cache prek's and uv's
+files; that is the operator's to change in toiminnot. The toiminnot pytest
 action turns setup-uv's cache on inside itself; this repository cannot
 change that, and the release workflows' cache is the release-cache-off
 ticket's.
@@ -54,8 +61,10 @@ the toiminnot actions.
 
 ## Could invalidate this plan
 
-- toiminnot's prek action (pre-commit 4.2.0) cannot run this repository's
-  hooks on a runner. Holds with uv on PATH: spike:ci-toiminnot/1.
+- toiminnot's hook action cannot run this repository's hooks on a runner.
+  Holds with uv on PATH: prek 0.5.5 through `actions/pre_commit`,
+  spike:ci-toiminnot/3 (pre-commit 4.2.0 through `actions/prek` also
+  passes, spike:ci-toiminnot/1).
 - toiminnot's pytest action fails on this repository or runs the
   integration tier. Holds with `markers: not integration`:
   spike:ci-toiminnot/2.
