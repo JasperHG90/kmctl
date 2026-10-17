@@ -9,7 +9,7 @@ from typing import Any
 import pytest
 import yaml
 
-from scripts.release import DOC_FILES, MANIFEST
+from scripts.release import APM_DOC, APM_FILES, DOC_FILES, MANIFEST
 
 ROOT = Path(__file__).resolve().parents[2]
 WORKFLOWS = ROOT / ".github" / "workflows"
@@ -123,7 +123,8 @@ def test_release_bump_opens_the_version_pull_request() -> None:
         if line.strip().startswith("git add")
     ]
     staged = {path for add in adds for path in add}
-    assert {MANIFEST.as_posix(), *(p.as_posix() for p in DOC_FILES)} <= staged
+    written = {MANIFEST, *APM_FILES, *DOC_FILES, APM_DOC}
+    assert {p.as_posix() for p in written} <= staged
     assert "gh pr create --base main" in runs
     assert "Allow GitHub Actions to create and approve pull requests" in runs
     assert 'git push origin --delete "$BRANCH"' in runs
