@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "docs-frontmatter-indexes",
-  "stage": "planning",
+  "stage": "ready",
   "attempts": 0,
   "plan_rounds": 2,
   "review_rounds": 0,
@@ -212,6 +212,12 @@
       "to": "planning",
       "at": "2026-10-17T14:36:10+00:00",
       "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-10-17T16:47:44+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
