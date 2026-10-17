@@ -85,3 +85,5 @@ their source repository; change them there, not here.
 
 The gates are the `gates` list in `.loop/config.toml`; `loopctl gate stamp`
 runs them. `just lint`, `just test` and `just integration` run them by hand.
+`just hooks` installs the pre-commit hooks in `.pre-commit-config.yaml`, which
+regenerate the Antigravity rules from the Claude ones.

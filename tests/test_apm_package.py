@@ -647,3 +647,21 @@ def test_hands_back_docs_pages_say_apm_writes_them(page: Path) -> None:
         "declares `okf-bundle` in `.mcp.json`",
     ):
         assert stale not in text, (page.name, stale)
+
+
+def test_antigravity_rules_pre_commit_hook_regenerates_them() -> None:
+    """A pre-commit hook runs the generator when a rule or the script is staged."""
+    config = yaml.safe_load((ROOT / ".pre-commit-config.yaml").read_text())
+    hooks = [h for repo in config["repos"] for h in repo["hooks"]]
+    [hook] = [h for h in hooks if h["id"] == "sync-antigravity-rules"]
+
+    assert hook["entry"] == "uv run python -m scripts.sync_antigravity_rules"
+    assert hook["pass_filenames"] is False
+    pattern = re.compile(hook["files"])
+    for path in (
+        "apm/claude/.apm/instructions/okf-bundle.instructions.md",
+        "apm/antigravity/.apm/instructions/okf-bundle.instructions.md",
+        "scripts/sync_antigravity_rules.py",
+    ):
+        assert pattern.search(path), path
+    assert not pattern.search("apm/.apm/skills/audit/SKILL.md")

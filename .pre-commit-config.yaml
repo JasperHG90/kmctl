@@ -1,0 +1,16 @@
+# Hooks for this repository, run by prek (`just hooks` installs them behind
+# loopctl's git hook). Each hook here generates or checks something a test
+# also checks, so a commit fixes it before the gates refuse it.
+repos:
+  - repo: local
+    hooks:
+      # apm/antigravity/.apm/instructions/ is generated from the Claude rules
+      # (ADR 0020). When a staged change touches either side or the script,
+      # this writes the copies again; if that changed them, the commit stops
+      # so you can stage the new copies.
+      - id: sync-antigravity-rules
+        name: generate the Antigravity rules
+        entry: uv run python -m scripts.sync_antigravity_rules
+        language: system
+        files: ^(apm/(claude|antigravity)/\.apm/instructions/|scripts/sync_antigravity_rules\.py$)
+        pass_filenames: false
