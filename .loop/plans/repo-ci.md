@@ -45,6 +45,12 @@ Actions are pinned by commit SHA with the version as a comment, as in
 `new:tests/test_ci.py` reads the workflow and checks the triggers, the
 three jobs and their commands, and that `knowledge.yml` is gone.
 
+`docs/how-to/install-the-plugin-and-the-ci-action.md` quotes the shipped
+`knowledge.yml` (its sources note and step 4). It changes to name the
+`knowledge` job of the shipped `ci.yml` instead; the workflow it tells
+users to create in their own repository keeps its name and content. A test
+checks that every workflow the page says it quotes exists.
+
 The outcome: a pull request to main runs kmctl check, prek and pytest.
 
 ## Could invalidate this plan

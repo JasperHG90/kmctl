@@ -3,7 +3,7 @@
   "slug": "repo-ci",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 1,
+  "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -30,9 +30,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 1,
-    "binds": "b834800766c7caffc6490ccb8b8942df588e72e1388d26259eec0dd009d3bb5e",
-    "started_at": "2026-10-17T17:38:20+00:00",
+    "n": 2,
+    "binds": "bebfa7e56797188b48191a88a96214c4ade103ccec8f825b3dbfc0616c8956b8",
+    "started_at": "2026-10-17T17:39:51+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -45,10 +45,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "b834800766c7caffc6490ccb8b8942df588e72e1388d26259eec0dd009d3bb5e",
+  "plan_hash": "bebfa7e56797188b48191a88a96214c4ade103ccec8f825b3dbfc0616c8956b8",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -63,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
-  "at": "2026-10-17T17:39:49+00:00"
+  "at": "2026-10-17T17:39:51+00:00"
 }
