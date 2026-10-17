@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017
-  at: '2026-10-17T12:55:46+00:00'
+  at: '2026-10-17T12:55:59+00:00'
 slug: plugin-patch
 n: 1
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike plugin-patch/1
@@ -24,7 +24,7 @@ The command exited 0:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note plugin-patch 1`.
+Exit 0: the remove-then-reinstall order works. Over a consumer whose .mcp.json held okf-bundle at an older pin, apm 0.33.0 installing kmctl's package skipped it (the stale entry stayed); after deleting okf-bundle from .mcp.json and .agents/mcp_config.json, a second plain apm install --target claude,antigravity printed 'Trusting direct dependency MCP okf-bundle' and 'Successfully configured MCP server okf-bundle for Claude Code', and both files held the package's launcher again; another server in .mcp.json stayed.
 
 ## Files
 
