@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "the explanation page said the CI audit checks only what is due, has read and search tools only, and posts to one issue",
+      "anchor": "docs/explanation/why-one-hook-and-report-only-audits.md:28",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "eb70b731dc5f6619c5842fb30611cae4d223de51fe0a62f8d86d6188224f57e9",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
+  "at": "2026-10-17T17:53:15+00:00"
+}
