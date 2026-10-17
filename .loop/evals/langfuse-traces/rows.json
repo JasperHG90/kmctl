@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "With LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY set, a run sends spans for the agent run, each model request and each tool call to LANGFUSE_BASE_URL (default https://cloud.langfuse.com) plus /api/public/otel/v1/traces, with the header Authorization: Basic base64(public:secret).",
+      "fails_when": "no spans are exported, the endpoint or header is wrong, or the model-request or tool-call spans are missing",
+      "command": "uv run pytest tests/test_agent.py -k traces_langfuse -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "Tracing is optional: with no Langfuse keys and no OTEL_EXPORTER_OTLP_ENDPOINT or OTEL_EXPORTER_OTLP_TRACES_ENDPOINT, no exporter is built and OpenTelemetry is not imported; with only an OTLP endpoint set, spans go to that endpoint.",
+      "fails_when": "a run without the variables builds an exporter or imports opentelemetry, or a run with only the OTLP endpoint sends nothing",
+      "command": "uv run pytest tests/test_agent.py -k traces_optional -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "The shell tool's environment holds none of the Langfuse keys or OTLP headers, and spans are flushed when the run times out or fails.",
+      "fails_when": "a Langfuse or OTEL variable reaches run_shell's environment, or spans of a timed-out run are never exported",
+      "command": "uv run pytest tests/test_agent.py -k traces_safe -q"
+    },
+    {
+      "id": "r4",
+      "behavior": "A live, full-length audit run with Langfuse keys shows its whole trace in a Langfuse project, with input, output and usage on its model calls; the how-to's section 5 says how to turn tracing on and that traces hold what the agent read, and ADR 0017 has a correction.",
+      "fails_when": "the live trace is missing spans or the generations lack input, output or usage, or the docs leave out how to turn it on or what it sends",
+      "judgment": true
+    }
+  ]
+}
