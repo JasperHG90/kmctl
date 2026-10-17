@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "apm-hands-back",
-  "stage": "building",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 0,
@@ -136,8 +136,14 @@
       "to": "building",
       "at": "2026-10-17T13:01:23+00:00",
       "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-10-17T14:47:45+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
-  "at": "2026-10-17T14:47:31+00:00"
+  "at": "2026-10-17T14:47:45+00:00"
 }
