@@ -65,7 +65,7 @@ OKF_REPO = "scaccogatto/okf-skills"
 FOLDERS = {"claude": ".claude", "antigravity": ".agents"}
 #: The agy CLI settings file under HOME that lists the trusted folders.
 AGY_SETTINGS = Path(".gemini") / "antigravity-cli" / "settings.json"
-TRUST_FIX = "open this folder in Antigravity and trust it"
+TRUST_FIX = 'run agy in this folder and choose "Yes, I trust this folder"'
 UV_FIX = "install uv (https://docs.astral.sh/uv/)"
 #: The most problems one check line names before it counts the rest.
 SHOWN_PROBLEMS = 5

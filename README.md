@@ -50,18 +50,34 @@ still true; that takes judgment. So kmctl does two things instead:
 
 ## Install
 
+### You need
+
+- [uv](https://docs.astral.sh/uv/) and `git`. uv installs the kmctl CLI and
+  runs APM (Agent Package Manager), so you need not install APM. Keep uv
+  installed: okf's MCP server, which the package adds, runs with `uv run`.
+- Claude Code, Antigravity (the IDE or the `agy` CLI), or both.
+- While the kmctl repository is private: a GitHub account with access to it,
+  and a GitHub token APM can use; see
+  [Install kmctl with APM](docs/how-to/install-kmctl-with-apm.md#before-you-start).
+
+### 1. Install the kmctl CLI
+
 ```
 uv tool install git+https://github.com/JasperHG90/Knowledge-management@v0.3.0
 ```
 
-The kmctl repository is private for now, so this needs a GitHub account
-with access to it; uv clones it with your git credentials.
+### 2. Set up the repository
 
-Then install kmctl's package in a repository with APM (Agent Package
-Manager). You do not need to install APM: `uvx --from apm-cli==0.33.0 apm`
-runs it through uv. If you have APM on your PATH, write `apm` instead. APM
-needs a GitHub token with access to the kmctl repository; see
-[Install kmctl with APM](docs/how-to/install-kmctl-with-apm.md#before-you-start).
+In the repository root:
+
+```
+kmctl init
+```
+
+It writes `docs/`, a starter `.okf/` bundle and a short block in `AGENTS.md`
+or `CLAUDE.md`, and keeps any file that already exists.
+
+### 3. Add kmctl's package to `apm.yml`
 
 Add kmctl's entry to `apm.yml` in the repository root. A new `apm.yml`
 looks like this:
@@ -94,7 +110,15 @@ package; approve it with `apm approve`.
 > claude plugin uninstall okf@scaccogatto --scope project
 > ```
 
-### Claude Code
+### 4. Install it for your harness
+
+APM installs kmctl's skills and the okf skills, the knowledge rules, a
+session hook that prints kmctl's briefing at the start of every session,
+and okf's MCP server (`okf-bundle`), which lets the agent search `.okf/`.
+`kmctl plugin patch` then adds what APM cannot install yet. Run it after
+every `apm install`.
+
+#### Claude Code
 
 ```
 uvx --from apm-cli==0.33.0 apm install --target claude
@@ -106,18 +130,29 @@ put the entry in `~/.apm/apm.yml` and run
 `uvx --from apm-cli==0.33.0 apm install -g --target claude`, then
 `kmctl plugin patch --scope user`.
 
-### Antigravity
+#### Antigravity
 
 ```
 uvx --from apm-cli==0.33.0 apm install --target antigravity
 kmctl plugin patch
 ```
 
-Then open the repository folder in Antigravity and trust it: Antigravity
-loads `.agents/` only from a trusted folder. Run `kmctl plugin patch` again
-after every `apm install`, since APM rewrites `.agents/hooks.json`.
+APM writes the skills, rules, hook and MCP server into `.agents/`.
+`kmctl plugin patch` adds kmctl's audit agent and okf's two agents in
+`.agents/plugins/kmctl/` (APM does not install agents for Antigravity yet)
+and removes a copy of okf's Stop hook that APM writes but Antigravity cannot
+run.
 
-### Both
+Antigravity loads `.agents/` only from a folder you trust, so trust the
+repository root once:
+
+- In the IDE, open the repository folder and accept the trust prompt.
+- With the CLI, run `agy` in the repository root and choose
+  "Yes, I trust this folder".
+
+Antigravity installs per repository only; there is no user-scope install.
+
+#### Both
 
 ```
 uvx --from apm-cli==0.33.0 apm install --target claude,antigravity

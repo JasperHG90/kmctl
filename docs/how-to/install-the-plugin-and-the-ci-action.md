@@ -151,9 +151,9 @@ kmctl plugin patch
 ```
 
 Antigravity loads a repository's `.agents/` only once you trust the
-folder: open the repository folder in Antigravity and accept its trust
-prompt. Trust matches the exact folder, so trust the repository root, the
-folder you open.
+folder. In the IDE, open the repository folder and accept its trust prompt.
+With the CLI, run `agy` in the repository root and choose "Yes, I trust
+this folder". Trust matches the exact folder, so trust the repository root.
 
 ### 3. Start a new session
 

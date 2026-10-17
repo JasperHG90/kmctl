@@ -1011,7 +1011,9 @@ def test_trust_missing_fails_with_trust_fix(
     assert result.exit_code == 1
     line = _fail_line(result.stdout, "antigravity.trust")
     assert "trustedWorkspaces" in line
-    assert line.endswith("; open this folder in Antigravity and trust it")
+    assert line.endswith(
+        '; run agy in this folder and choose "Yes, I trust this folder"'
+    )
 
 
 def test_trust_not_checked_without_agy(complete: Setup) -> None:

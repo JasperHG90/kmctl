@@ -87,7 +87,8 @@ Start a new Claude Code session in the repository. Claude Code asks once
 whether to use the `okf-bundle` server from `.mcp.json`. The SessionStart
 hook prints the kmctl briefing at the start of each session.
 
-For Antigravity, open the repository folder in Antigravity and trust it;
+For Antigravity, trust the repository root: open it in the IDE and accept
+the trust prompt, or run `agy` there and choose "Yes, I trust this folder".
 Antigravity loads `.agents/` only from a trusted folder.
 
 ## Check it worked
