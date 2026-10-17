@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "standalone-agent",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 2,
@@ -52,7 +52,7 @@
   "split": "j-20261017T070209+0000-4cf3f72d",
   "split_plan_hash": "6339b03dc5d7860c0a9bbc76d8c499fc0b60d976d29a0b5408fffb4558cdd73d",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "81656b536f23b29181e47bf17cd52299e1580d4d",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -221,8 +221,14 @@
       "to": "verifying",
       "at": "2026-10-17T07:29:31+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-17T07:32:29+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T07:32:18+00:00"
+  "at": "2026-10-17T07:32:29+00:00"
 }
