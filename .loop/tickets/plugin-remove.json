@@ -3,7 +3,7 @@
   "slug": "plugin-remove",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 1,
+  "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -30,9 +30,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 1,
-    "binds": "da7d196785067f855e18d794b8915cd257861bc6d49083f7d007b30c47ec4914",
-    "started_at": "2026-10-17T06:49:37+00:00",
+    "n": 2,
+    "binds": "c5739a31e8eb8e2a92eebd419e7b11a32f18353a65ae46c51c67d593d536efbc",
+    "started_at": "2026-10-17T06:56:47+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -45,10 +45,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "da7d196785067f855e18d794b8915cd257861bc6d49083f7d007b30c47ec4914",
+  "plan_hash": "c5739a31e8eb8e2a92eebd419e7b11a32f18353a65ae46c51c67d593d536efbc",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -63,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T06:56:38+00:00"
+  "at": "2026-10-17T06:56:47+00:00"
 }

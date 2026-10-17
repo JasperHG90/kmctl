@@ -39,15 +39,26 @@ the default, and refuses without a terminal or with `--json`.
 For the harnesses named, it removes:
 
 - APM's files. It runs `apm uninstall` (`-g` at user scope) on kmctl's
-  `apm.yml` entry, named as APM names it: `HOST/OWNER/REPO/apm` built from
-  the lock's host, port and repo_url, which takes kmctl's and okf's skills,
-  agent, rules, hooks and lock entries with it (spike:plugin-remove/1). When
-  harnesses stay installed, it then runs the normal install for them alone,
-  from the `git:` source the removed entry named, because dropping one
-  target from `targets:` leaves okf's Antigravity hook script behind, listed
-  in the lock (spike:plugin-remove/2). Either way it takes the removed
-  harnesses out of `targets:` in `apm.yml`, which install only adds to
-  (spike:plugin-remove/3).
+  `apm.yml` entry, named as APM names it: `HOST/OWNER/REPO/apm`, from the
+  lock's host (with its port) and repo_url, `github.com` when the lock names
+  it (spike:plugin-remove/5). That takes kmctl's and okf's skills, agent,
+  rules, hooks and lock entries with it (spike:plugin-remove/3).
+- The harnesses kept. When some stay installed, it reinstalls them alone
+  with the normal install, from the `git:` source and at the `ref` the
+  removed entry named, so a partial remove never changes their version.
+  Dropping one target and reinstalling instead leaves okf's Antigravity hook
+  script behind, listed in the lock (spike:plugin-remove/2). If that
+  reinstall fails (offline, say), remove refuses with exit 1, names APM's
+  cause, says the kept harnesses were uninstalled, and names the exact
+  `kmctl plugin install --harness KEPT --source SOURCE` that puts them back.
+- `targets:` in `apm.yml`. Install only adds targets, so remove cannot tell
+  whether a target was there before kmctl. It takes a removed harness out of
+  `targets:` only when no other `dependencies.apm` entry is left after the
+  uninstall, and otherwise keeps it and says so in a note, so the
+  repository's own APM packages keep their target. doctor's
+  `harnesses_found` counts `apm.yml` targets only when the lock lists no
+  kmctl package, so a kept target no longer marks a removed harness as
+  installed.
 - For claude, kmctl's SessionStart hook in `.claude/settings.json` (found by
   its command, every other key and hook kept) and kmctl's `okf-bundle` MCP
   entry in `.mcp.json` (at user scope, `claude mcp remove --scope user`).
@@ -77,3 +88,8 @@ other files, `apm.yml` entries, hooks and MCP servers untouched.
   left nothing under .agents/ and claude whole. Dropping a target and
   reinstalling instead leaves okf's Antigravity hook script behind
   (spike:plugin-remove/2), which is why remove does not do that.
+- The uninstall name might differ for the real GitHub source, whose lock
+  has no port. It does not (spike:plugin-remove/5; spike:plugin-remove/4
+  ran the same check but counted settings.json): `apm uninstall
+  github.com/JasperHG90/Knowledge-management/apm` removed a GitHub-sourced
+  entry and its files, and the dry run took the short form too.
