@@ -35,9 +35,10 @@ for what patch wrote; installing, upgrading and removing the package
 become APM's (`apm install`, `apm uninstall`).
 
 `kmctl plugin patch [--scope project|user] [--json] [--undo]` never runs
-APM and needs neither uv nor APM on PATH. It reads `apm.lock.yaml` to see
-which harnesses APM installed kmctl's package for, and refuses, naming the
-`apm install` to run, when the lock lists no kmctl package. Then:
+APM and needs neither uv nor APM on PATH. It reads `apm.lock.yaml` (at user
+scope `~/.apm/`) to see which harnesses APM installed kmctl's package for.
+It first checks for an older entry form (below), and then refuses, naming
+the `apm install` to run, when the lock lists no kmctl package. Then:
 
 - For antigravity: writes `.agents/plugins/kmctl/` (`plugin.json` and the
   agents translated from Claude Code's format, kmctl-auditor from the CLI
@@ -45,7 +46,8 @@ which harnesses APM installed kmctl's package for, and refuses, naming the
   handler out of .agents/hooks.json.
 - For claude: removes what an older kmctl wrote that APM now writes (a
   kmctl SessionStart group APM does not record, an `okf-bundle` entry that
-  differs from APM's) and the old claude plugin `kmctl@kmctl`, as install
+  differs from APM's), in the project files or, at user scope, in
+  the user settings.json and .claude.json under the Claude config folder and the old claude plugin `kmctl@kmctl`, as install
   did, saying to run `apm install` again when it removed something APM
   should now write.
 - For a repository still on an older entry form (the ADR 0013 string
@@ -83,3 +85,7 @@ kmctl file; and `kmctl plugin install` no longer exists.
   write it back, the harnesses would lose okf's server. It does
   (spike:plugin-patch/1): after deleting the stale entry, a second plain
   `apm install` wrote the package's server to both MCP files.
+- At user scope APM may not write the hook and okf-bundle that patch's
+  cleanup leaves to it. It does (spike:apm-hands-back/5): after removing
+  kmctl's old hook and a stale okf-bundle, `apm install -g` wrote one
+  recorded hook and the package's okf-bundle into `$CLAUDE_CONFIG_DIR`.

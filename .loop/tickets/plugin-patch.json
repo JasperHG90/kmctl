@@ -3,7 +3,7 @@
   "slug": "plugin-patch",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 2,
+  "plan_rounds": 3,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -30,9 +30,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 2,
-    "binds": "057031be260a2e78c1983c5ce114597eede40acff8c26c383b5011a382219dd0",
-    "started_at": "2026-10-17T12:56:02+00:00",
+    "n": 3,
+    "binds": "d2ada53a24742b8dbc3c7014be2a9f576b55e162acca5cf388edbbc8542650cd",
+    "started_at": "2026-10-17T12:59:17+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -45,10 +45,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "057031be260a2e78c1983c5ce114597eede40acff8c26c383b5011a382219dd0",
+  "plan_hash": "d2ada53a24742b8dbc3c7014be2a9f576b55e162acca5cf388edbbc8542650cd",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -63,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
-  "at": "2026-10-17T12:58:56+00:00"
+  "at": "2026-10-17T12:59:17+00:00"
 }
