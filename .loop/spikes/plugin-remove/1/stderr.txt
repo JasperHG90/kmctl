@@ -1,0 +1,6 @@
+Downloading cpython-3.12.15-linux-aarch64-gnu (download) (27.9MiB)
+ Downloaded cpython-3.12.15-linux-aarch64-gnu (download)
+Using CPython 3.12.15
+Removed virtual environment at: /home/vscode/kmctl/.venv
+Creating virtual environment at: /home/vscode/kmctl/.venv
+Installed 32 packages in 1.16s
