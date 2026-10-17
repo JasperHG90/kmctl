@@ -50,7 +50,7 @@ repository's files, and with okf-skills from GitHub.
 ### 1. Install the kmctl CLI
 
 ```
-uv tool install git+https://github.com/JasperHG90/Knowledge-management@v0.3.0
+uv tool install git+https://github.com/JasperHG90/Knowledge-management@v0.4.0
 ```
 
 ### 2. Add the kmctl package
@@ -132,7 +132,7 @@ kmctl 0.3.0 and older named the package with a string entry, such as:
 ```yaml
 dependencies:
   apm:
-    - JasperHG90/Knowledge-management/apm#v0.3.0
+    - JasperHG90/Knowledge-management/apm#v0.4.0
 ```
 
 That package's SessionStart hook goes only with `apm uninstall`, so
