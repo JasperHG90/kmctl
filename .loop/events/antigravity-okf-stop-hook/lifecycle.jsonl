@@ -22,3 +22,4 @@
 {"at": "2026-10-17T07:47:52+00:00", "binds": "f6e3b481c2f4979f2ba3c17b9c533461a1c13f0cd12273a6499d0504b9d9da63", "kind": "round-start", "n": 2, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "6b3c49e43452fe9718155c409bce4b5e8f6eac62"}
 {"at": "2026-10-17T07:51:25+00:00", "dispatched_at": "2026-10-17T07:47:52+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-17T07:50:50+00:00"}}
 {"at": "2026-10-17T07:51:27+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "5ce7041e1eba44560546471897964129a7c45656"}
+{"at": "2026-10-17T07:54:58+00:00", "branch": "loop/antigravity-okf-stop-hook", "kind": "land", "schema_version": "1.0", "sha": "ff737bcd099b51e20488fb78db52d9ce66a21282"}
