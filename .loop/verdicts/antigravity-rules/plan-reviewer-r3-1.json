@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "agy matching `**/.okf/**` inside the hidden .okf/ folder is now shown by spike:antigravity-rules/3: a plugin rule with that glob fired when agy read .okf/index.md, and `.okf/**` did not.",
+      "anchor": ".loop/plans/antigravity-rules.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "be6e2fef921f38d22e7a932325f9b7e3a3e0a7616ece0c2a281ed034206472d9"
+  },
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
+  "at": "2026-10-17T06:35:51+00:00"
+}
