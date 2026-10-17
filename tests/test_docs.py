@@ -12,7 +12,7 @@ from kmctl import app
 
 ROOT = Path(__file__).resolve().parents[1]
 DOCS = ROOT / "docs"
-INSTALL = "uv tool install git+https://github.com/JasperHG90/Knowledge-management"
+INSTALL = "uv tool install git+https://github.com/JasperHG90/kmctl"
 
 
 def _commands(

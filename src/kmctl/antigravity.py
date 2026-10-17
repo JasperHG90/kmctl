@@ -154,7 +154,7 @@ def translate_agent(text: str, source: str) -> str:
             raise PluginError(
                 f"the agent {source} uses the Claude tool {name!r}, which kmctl "
                 "has no Antigravity tool for; upgrade kmctl, or report it at "
-                "https://github.com/JasperHG90/Knowledge-management/issues"
+                "https://github.com/JasperHG90/kmctl/issues"
             )
         tools += [t for t in TOOLS[name] if t not in tools]
     out: dict[str, object] = {

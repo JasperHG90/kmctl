@@ -124,7 +124,7 @@ def _okf(harnesses: tuple[str, ...]) -> tuple[dict[str, str], list[str]]:
 def _lock(harnesses: tuple[str, ...], ref: str = REF) -> str:
     """An apm.lock.yaml as APM 0.33.0 writes it for kmctl's package and okf-skills."""
     kmctl = {
-        "repo_url": "JasperHG90/Knowledge-management",
+        "repo_url": "JasperHG90/kmctl",
         "name": "kmctl",
         "resolved_ref": ref,
         "virtual_path": "apm",

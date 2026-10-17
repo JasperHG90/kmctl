@@ -25,12 +25,10 @@ SCRIPT = ROOT / "scripts" / "release.py"
 GIT = ["git", "-c", "user.email=o@e.com", "-c", "user.name=O"]
 # The six lines `set` points at the release tag, as they start in the docs.
 INSTALL_RE = re.compile(
-    r"^\s*uv tool install git\+https://github\.com/JasperHG90/Knowledge-management(@\S+)?$",
+    r"^\s*uv tool install git\+https://github\.com/JasperHG90/kmctl(@\S+)?$",
     re.MULTILINE,
 )
-USES_RE = re.compile(
-    r"^\s*- uses: JasperHG90/Knowledge-management@(\S+)$", re.MULTILINE
-)
+USES_RE = re.compile(r"^\s*- uses: JasperHG90/kmctl@(\S+)$", re.MULTILINE)
 
 
 def _manifest_version(root: Path) -> str:

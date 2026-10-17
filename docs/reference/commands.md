@@ -338,11 +338,12 @@ It runs, in order:
 
 1. Refuses when `apm.yml` (`~/.apm/apm.yml` with `--scope user`) still
    names kmctl's package the way kmctl v0.3.0 and older did: the string
-   `JasperHG90/Knowledge-management/apm#…`, or any kmctl entry when
+   `JasperHG90/Knowledge-management/apm#…` (or `JasperHG90/kmctl/apm#…`,
+   the repository's new name), or any kmctl entry when
    `apm.lock.yaml` shows the old layout (`virtual_path: plugin`). That old
    package's SessionStart hook goes only with `apm uninstall`, so the
    refusal names the `apm uninstall` to run first (with `-g` at user
-   scope), the `{"git": "https://github.com/JasperHG90/Knowledge-management.git", "path": "apm", "ref": "vVERSION"}`
+   scope), the `{"git": "https://github.com/JasperHG90/kmctl.git", "path": "apm", "ref": "vVERSION"}`
    entry to add, where `VERSION` is this kmctl's, and the `apm install` to
    run after it.
 2. Refuses when `apm.lock.yaml` (`~/.apm/apm.lock.yaml` with
@@ -454,7 +455,7 @@ allows it.
 
 `apm uninstall NAME` (with `-g` at user scope) removes all of it, where
 `NAME` is `HOST/OWNER/REPO/apm` from the `git:` URL of kmctl's entry, for
-example `github.com/JasperHG90/Knowledge-management/apm`. At user scope it
+example `github.com/JasperHG90/kmctl/apm`. At user scope it
 leaves `okf-bundle` in the user `.claude.json`; remove it with
 `claude mcp remove okf-bundle --scope user`.
 
