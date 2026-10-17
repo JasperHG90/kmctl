@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "docs-frontmatter-indexes",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
@@ -200,8 +200,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "1b4fdba0cc6f355b2eb529fe82544b1a22ed40eda3e2d9d5caa683ecbe10b1aa",
   "intent": {
@@ -233,8 +233,14 @@
       "to": "verifying",
       "at": "2026-10-17T17:05:38+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-17T17:09:36+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
-  "at": "2026-10-17T17:05:39+00:00"
+  "at": "2026-10-17T17:09:36+00:00"
 }
