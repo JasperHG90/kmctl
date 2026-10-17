@@ -1,0 +1,131 @@
+{
+  "schema_version": "1.0",
+  "fingerprint": "fe5c53a914450a754d0243ab7e543c7684e9e7695e3aadc7cf7f276442318959",
+  "slug": "antigravity-rules",
+  "results": [
+    {
+      "name": "lint",
+      "kind": "gate",
+      "command": "uv run ruff check",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "format",
+      "kind": "gate",
+      "command": "uv run ruff format --check",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "tests",
+      "kind": "gate",
+      "command": "uv run pytest",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "integration",
+      "kind": "gate",
+      "command": "uv run pytest -m integration",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r1",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_antigravity.py -k translate_rule -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 8,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r2",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_antigravity.py tests/test_apm_package.py -k \"plugin_folder or rules_moved or wheel\" -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 18,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r3",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_doctor.py -k \"antigravity and rule\" -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 4,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r4",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_antigravity.py tests/test_doctor.py -m integration -k \"validate or consumer\" -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 2,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r5",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_antigravity.py -k rules_docs -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 1,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r6",
+      "kind": "eval-row",
+      "command": "uv run pytest -q -m \"not integration or integration\"",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 687,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    }
+  ],
+  "green": true,
+  "at": "2026-10-17T06:47:25+00:00",
+  "commit": null,
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016"
+}
