@@ -43,3 +43,10 @@ The record had no Consequences section; this adds it.
   fails (I1, `tests/test_plugin.py`).
 - Nothing reminds the agent after a code edit; stale knowledge surfaces only
   at session start, in `kmctl review due`, and in CI.
+
+## Amended, 2026-10-17
+
+[ADR 0017](0017-kmctl-runs-okf-s-stop-check-for-antigravity.md): in
+Antigravity kmctl's plugin folder also relays okf's opt-in Stop check,
+because APM's copy cannot run there. kmctl's own hook is still SessionStart
+only; the operator chose this, and I1 says so.

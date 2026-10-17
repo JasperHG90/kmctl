@@ -315,10 +315,14 @@ order:
    says which it kept. Claude Code asks you to approve a project `.mcp.json`
    server once.
 8. Replaces the folder `.agents/plugins/kmctl/`, which kmctl alone owns,
-   with what this kmctl writes: `plugin.json`; `hooks.json` with one named
-   hook, `kmctl-briefing`, whose one SessionStart handler runs
+   with what this kmctl writes: `plugin.json`; `hooks.json` with two named
+   hooks: `kmctl-briefing`, whose one SessionStart handler runs
    `kmctl briefing --format antigravity` and prints `{}` and exits 0 when
-   kmctl is missing or fails; `agents/kmctl-auditor.md` and okf's
+   kmctl is missing or fails, and `kmctl-okf-stop`, whose one Stop handler
+   runs okf's Stop check from the repository root on the first stop of each
+   turn and turns okf's `block` into Antigravity's `continue` (it does
+   anything only when `.okf/index.md` sets `upkeep: enforced`, and prints
+   `{}` and exits 0 otherwise); `agents/kmctl-auditor.md` and okf's
    `agents/bundle-weaver.md` and `agents/event-analyzer.md`, translated
    from Claude Code's format (okf's are read from
    `apm_modules/scaccogatto/okf-skills/agents/`); the four knowledge rules
@@ -327,8 +331,9 @@ order:
    (Antigravity matches globs against absolute paths); and `mcp_config.json`
    declaring okf's MCP server as `bundle`, the same `uv run` launcher as
    step 7, which also looks above the plugin folder. It then deletes the
-   copies of kmctl's rules APM wrote to `.agents/rules/`; other files there
-   stay. Antigravity loads the folder only once you trust the repository
+   copies of kmctl's rules APM wrote to `.agents/rules/`, other files there
+   staying, and takes okf's Stop handler out of `.agents/hooks.json`, where
+   APM's path to the script fails, keeping every other hook. Antigravity loads the folder only once you trust the repository
    folder, and the MCP server needs `uv` on PATH.
 
 When APM reports that it left in place files it did not write, the install
@@ -399,7 +404,8 @@ installed gets no checks.
 | `claude.okf-mcp` | claude | `.mcp.json` (at user scope, `.claude.json` in `$CLAUDE_CONFIG_DIR`, by default `~/.claude.json`) declares `okf-bundle` as this kmctl writes it, or another server that runs `okf_mcp.py`. | `kmctl plugin install --harness claude` when missing, `kmctl plugin update --harness claude` when changed |
 | `claude.old-plugin` | claude | No settings file (`.claude/settings.json` or `.claude/settings.local.json`; at user scope, `settings.json` in `$CLAUDE_CONFIG_DIR`) enables `kmctl@kmctl` or `okf@scaccogatto`. | `kmctl plugin install --harness claude` when `kmctl@kmctl` is enabled (it removes okf too when okf came as its dependency); otherwise `claude plugin uninstall okf@scaccogatto --scope SCOPE`, the scope of the file that enables it |
 | `antigravity.plugin` | antigravity | Every file under `.agents/plugins/kmctl/` is what this kmctl writes, with none missing or extra. Fails with `apm_modules/ is missing` when okf's agents cannot be read to compare. | `kmctl plugin install --harness antigravity` |
-| `antigravity.hook` | antigravity | `.agents/plugins/kmctl/hooks.json` is the hook this kmctl writes. | `kmctl plugin install --harness antigravity` |
+| `antigravity.hook` | antigravity | `.agents/plugins/kmctl/hooks.json` holds the two hooks this kmctl writes, `kmctl-briefing` and `kmctl-okf-stop`. | `kmctl plugin install --harness antigravity` |
+| `antigravity.apm-hooks` | antigravity | `.agents/hooks.json` does not run `okf-stop-check.sh`. APM writes okf's Stop handler there with a path agy cannot find, so it fails at the end of every turn; a bare `apm install` puts it back. | `kmctl plugin install --harness antigravity` |
 | `antigravity.okf-mcp` | antigravity | `.agents/plugins/kmctl/mcp_config.json` declares okf's MCP server as this kmctl writes it. | `kmctl plugin install --harness antigravity` |
 | `antigravity.trust` | antigravity | Checked only when `agy` is on PATH: the repository is in `trustedWorkspaces` of `~/.gemini/antigravity-cli/settings.json`. Antigravity loads `.agents/` only from a trusted folder. | open the folder in Antigravity and trust it |
 | `antigravity.okf-mcp-url` | antigravity | With `--online` only: okf's MCP script URL, which the MCP server runs with `uv run`, answers HTTP 200. | check the network, then run it again |

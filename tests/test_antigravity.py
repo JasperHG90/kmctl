@@ -327,7 +327,7 @@ def test_plugin_folder_manifest_names_kmctl(repo: Path, fakes: FakeTools) -> Non
     assert json.loads((_folder(repo) / "plugin.json").read_text()) == {"name": "kmctl"}
 
 
-def test_plugin_folder_hooks_hold_one_flat_sessionstart_handler(
+def test_plugin_folder_hooks_hold_the_briefing_and_okf_stop_flat(
     repo: Path, fakes: FakeTools
 ) -> None:
     _install()
@@ -343,7 +343,16 @@ def test_plugin_folder_hooks_hold_one_flat_sessionstart_handler(
                     "timeout": 10,
                 }
             ]
-        }
+        },
+        "kmctl-okf-stop": {
+            "Stop": [
+                {
+                    "type": "command",
+                    "command": antigravity.STOP_COMMAND,
+                    "timeout": 10,
+                }
+            ]
+        },
     }
     assert "kmctl briefing --format antigravity" in antigravity.HOOK_COMMAND
 
@@ -780,7 +789,7 @@ def test_plugin_problems_without_apm_modules_raise_the_fix(
 
 
 @pytest.mark.integration
-def test_agy_validate_counts_three_agents_one_hook_one_server(
+def test_agy_validate_counts_three_agents_two_hooks_one_server(
     repo: Path, fakes: FakeTools, home: Path
 ) -> None:
     if AGY is None:
@@ -803,7 +812,7 @@ def test_agy_validate_counts_three_agents_one_hook_one_server(
     assert proc.returncode == 0, proc.stderr + proc.stdout
     report = json.loads(proc.stdout)
     assert report["components"]["agents"] == 3
-    assert report["components"]["hooks"] == 1
+    assert report["components"]["hooks"] == 2
     assert report["components"]["mcpServers"] == 1
     assert report["components"]["rules"] == len(RULE_NAMES)
     assert report["findings"] == []
@@ -845,8 +854,15 @@ def test_consumer_gets_skills_rules_and_the_plugin_folder(
     assert _kmctl("init").exit_code == 0
     doctor = _kmctl("doctor", "--json")
     checks = {c["id"]: c for c in json.loads(doctor.stdout)["checks"]}
-    for cid in ("antigravity.files", "antigravity.plugin", "antigravity.okf-skills"):
+    for cid in (
+        "antigravity.files",
+        "antigravity.plugin",
+        "antigravity.okf-skills",
+        "antigravity.hook",
+        "antigravity.apm-hooks",
+    ):
         assert checks[cid]["ok"], checks[cid]
+    assert "okf-stop-check.sh" not in (agents / "hooks.json").read_text()
 
 
 # r8: the decision and the docs ------------------------------------------------
@@ -948,3 +964,206 @@ def test_rules_docs_name_the_plugin_folder_rules() -> None:
     decision = _flat(RULES_DECISION.read_text())
     for term in ("**/", "comma", "absolute path", "list"):
         assert term in decision, term
+
+
+# antigravity-okf-stop-hook: okf's Stop check, run by kmctl ----------------------
+
+OKF_STOP = ROOT / "tests" / "fixtures" / "okf-stop-check.sh"
+APM_OKF_HANDLER = {
+    "type": "command",
+    "statusMessage": "Checking OKF bundle...",
+    "command": 'bash ".agents/hooks/okf-skills/hooks/okf-stop-check.sh"',
+    "timeout": 15,
+}
+
+
+def _git(cwd: Path, *args: str) -> None:
+    """Run git quietly in ``cwd``; fail the test when it fails."""
+    subprocess.run(
+        ["git", "-c", "user.email=t@e.invalid", "-c", "user.name=t", *args],
+        cwd=cwd,
+        check=True,
+        capture_output=True,
+    )
+
+
+def _stop_repo(tmp_path: Path, *, enforced: bool = True, script: bool = True) -> Path:
+    """A git repository with a bundle, okf's script where APM puts it and the plugin folder."""
+    repo = tmp_path / "stop-repo"
+    (repo / ".okf").mkdir(parents=True)
+    upkeep = "upkeep: enforced\n" if enforced else ""
+    (repo / ".okf" / "index.md").write_text(f"---\ntype: index\n{upkeep}---\n\n# B\n")
+    (repo / "README.md").write_text("# r\n")
+    if script:
+        target = repo / antigravity.OKF_STOP_SCRIPT
+        target.parent.mkdir(parents=True)
+        shutil.copy(OKF_STOP, target)
+    (repo / antigravity.PLUGIN_PATH).mkdir(parents=True)
+    _git(repo, "init", "-q")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-qm", "init")
+    return repo
+
+
+def _run_stop(repo: Path, stdin: str) -> subprocess.CompletedProcess[str]:
+    """Run the plugin's Stop handler as agy does: sh -c, in the plugin folder."""
+    return subprocess.run(
+        ["sh", "-c", antigravity.STOP_COMMAND],
+        cwd=repo / antigravity.PLUGIN_PATH,
+        input=stdin,
+        capture_output=True,
+        text=True,
+        check=False,
+        env={"PATH": "/usr/bin:/bin", "HOME": str(repo)},
+    )
+
+
+def _stop_input(execution: int) -> str:
+    """The JSON agy sends a Stop hook, as spike:antigravity-okf-stop-hook/2 logged it."""
+    return json.dumps(
+        {"conversationId": "c", "executionNum": execution, "fullyIdle": True}
+    )
+
+
+def _okf_reason() -> str:
+    """The reason okf's script gives when it blocks."""
+    text = OKF_STOP.read_text()
+    block = json.loads(text[text.index('{"decision"') : text.rindex("}") + 1])
+    return block["reason"]
+
+
+def test_okf_stop_continues_on_the_first_stop_with_okf_reason(tmp_path: Path) -> None:
+    repo = _stop_repo(tmp_path)
+    (repo / "README.md").write_text("# changed\n")
+
+    proc = _run_stop(repo, _stop_input(0))
+
+    assert proc.returncode == 0
+    assert json.loads(proc.stdout) == {"decision": "continue", "reason": _okf_reason()}
+
+
+@pytest.mark.parametrize(
+    ("enforced", "change", "execution"),
+    [
+        (True, True, 1),
+        (True, False, 0),
+        (False, True, 0),
+    ],
+)
+def test_okf_stop_prints_nothing_to_do_otherwise(
+    tmp_path: Path, enforced: bool, change: bool, execution: int
+) -> None:
+    repo = _stop_repo(tmp_path, enforced=enforced)
+    if change:
+        (repo / "README.md").write_text("# changed\n")
+
+    proc = _run_stop(repo, _stop_input(execution))
+
+    assert proc.returncode == 0
+    assert json.loads(proc.stdout) == {}
+
+
+def test_okf_stop_with_bundle_change_lets_it_stop(tmp_path: Path) -> None:
+    repo = _stop_repo(tmp_path)
+    (repo / "README.md").write_text("# changed\n")
+    (repo / ".okf" / "index.md").write_text(
+        "---\ntype: index\nupkeep: enforced\n---\n\n# C\n"
+    )
+
+    proc = _run_stop(repo, _stop_input(0))
+
+    assert (proc.returncode, json.loads(proc.stdout)) == (0, {})
+
+
+@pytest.mark.parametrize("broken", ["missing", "fails"])
+def test_okf_stop_never_blocks_without_a_working_script(
+    tmp_path: Path, broken: str
+) -> None:
+    repo = _stop_repo(tmp_path, script=broken != "missing")
+    if broken == "fails":
+        (repo / antigravity.OKF_STOP_SCRIPT).write_text("echo not json; exit 3\n")
+    (repo / "README.md").write_text("# changed\n")
+
+    proc = _run_stop(repo, _stop_input(0))
+
+    assert (proc.returncode, json.loads(proc.stdout)) == (0, {})
+
+
+def _apm_hooks(repo: Path) -> Path:
+    return repo / antigravity.APM_HOOKS
+
+
+def test_apm_okf_hook_removed_keeping_every_other_hook(
+    repo: Path, fakes: FakeTools
+) -> None:
+    other = {"type": "command", "command": "echo other", "timeout": 5}
+    grouped = {"matcher": "*", "hooks": [other]}
+    path = _apm_hooks(repo)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(
+            {
+                "apm": {"Stop": [APM_OKF_HANDLER]},
+                "mixed": {"Stop": [APM_OKF_HANDLER, other], "PreToolUse": [grouped]},
+                "theirs": {"SessionStart": [other]},
+                "empty": {},
+            }
+        )
+    )
+
+    _install()
+
+    assert json.loads(path.read_text()) == {
+        "mixed": {"Stop": [other], "PreToolUse": [grouped]},
+        "theirs": {"SessionStart": [other]},
+        "empty": {},
+    }
+    before = path.read_bytes()
+    _install()
+    assert path.read_bytes() == before
+
+
+def test_apm_okf_hook_missing_file_stays_missing(repo: Path, fakes: FakeTools) -> None:
+    _install()
+
+    assert not _apm_hooks(repo).exists()
+
+
+def test_apm_okf_hook_unparsable_file_left_alone(repo: Path, fakes: FakeTools) -> None:
+    path = _apm_hooks(repo)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("not json okf-stop-check.sh")
+
+    _install()
+
+    assert path.read_text() == "not json okf-stop-check.sh"
+
+
+def test_okf_stop_docs_name_the_hook_and_the_check() -> None:
+    decision = DECISIONS / "0017-kmctl-runs-okf-s-stop-check-for-antigravity.md"
+    text = _flat(decision.read_text())
+    for term in ("executionNum", "continue", "block", "repository root", "hooks.json"):
+        assert term in text, term
+    assert "0017" in _decision().read_text()
+    for path in (COMMANDS, INSTALL_HOW_TO):
+        assert "Stop" in path.read_text(), path.name
+    commands = COMMANDS.read_text()
+    assert "kmctl-okf-stop" in commands
+    assert "antigravity.apm-hooks" in commands
+
+
+def test_okf_stop_plugin_hooks_hold_both_flat_handlers(
+    repo: Path, fakes: FakeTools
+) -> None:
+    _install()
+
+    hooks = json.loads((_folder(repo) / "hooks.json").read_text())
+
+    assert sorted(hooks) == ["kmctl-briefing", "kmctl-okf-stop"]
+    assert list(hooks["kmctl-okf-stop"]) == ["Stop"]
+    [handler] = hooks["kmctl-okf-stop"]["Stop"]
+    assert handler == {
+        "type": "command",
+        "command": antigravity.STOP_COMMAND,
+        "timeout": 10,
+    }

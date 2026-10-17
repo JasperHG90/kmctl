@@ -107,3 +107,4 @@
 ## 2026-10-17
 
 - Added `decisions/0016-antigravity-rules-come-from-the-kmctl-plugin-folder` with `kmctl new decision`.
+- Added `decisions/0017-kmctl-runs-okf-s-stop-check-for-antigravity` with `kmctl new decision`.
