@@ -19,3 +19,4 @@
 {"at": "2026-10-16T22:18:30+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "ea094ab38707cdcde8ea7da80179ae156ae7967e", "subject": "loop: register antigravity-live-check stub"}
 {"at": "2026-10-17T07:33:45+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "cd5a1cbdfaf6d10f13f9b2956c5243be30c90d5d", "subject": "operator: manual commit"}
 {"ask": "j-20261017T073605+0000-9d7b243d", "at": "2026-10-17T07:39:21+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "c440c4424f55bfce9b42c3d5e73f6ed604caffab", "subject": "Correct ADRs 0001, 0002 and 0015 where the code moved on"}
+{"ask": "j-20261017T160336+0000-33f9ff36", "at": "2026-10-17T16:04:51+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "e3e06c7723568cb6ed455df63ecce834110deaf6", "subject": "Fix three test comments left from kmctl plugin install"}

@@ -3,7 +3,7 @@
   "slug": "real-audits",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "7c66b0fa18b690025184ce948723a8cd247d74c1bcbcbe27c5d484c87a06d562",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "fb072e2071fb2a4b688c67ee9035865780be170964150adfba34f3a8543410e5",
+    "started_at": "2026-10-17T16:26:26+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "fb072e2071fb2a4b688c67ee9035865780be170964150adfba34f3a8543410e5",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -44,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
-  "at": "2026-10-17T14:43:31+00:00"
+  "at": "2026-10-17T16:26:26+00:00"
 }
