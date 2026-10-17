@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017
-  at: '2026-10-17T17:37:44+00:00'
+  at: '2026-10-17T17:38:08+00:00'
 slug: repo-ci
 n: 1
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike repo-ci/1
@@ -24,7 +24,7 @@ The command exited 0:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note repo-ci 1`.
+Holds. In a fresh clone of HEAD with an empty HOME, no git identity (GIT_CONFIG_GLOBAL=/dev/null) and only uv, uvx, git and system tools on PATH, `uv run pytest` passed: 696 passed, 8 deselected. The default suite needs no kmctl, agy, claude or APM install and no git identity, so a plain ubuntu runner with setup-uv runs it.
 
 ## Files
 
