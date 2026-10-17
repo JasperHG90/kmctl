@@ -1,0 +1,10 @@
+installed: 83 APM files
+uninstall rc=0
+APM files left: none
+.agents/hooks.json: {}
+no lock
+after reinstall for claude: .agents APM files: none; claude skills: 11
+targets:
+  - claude
+  - antigravity
+lock .agents paths: 0
