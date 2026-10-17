@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The new TRACE_VARS tuple sits between REPORT and its doc comment, so the comment \"Cites only README.md, which Recorder reads before it hands the report in.\" now documents TRACE_VARS instead of REPORT.",
+      "anchor": "tests/test_agent.py:30",
+      "category": "nit",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "12895a1eb3eec8ddd393c770d9db8d9a877cb45f6a498f1f1a9b7ebdcefb6c99",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
+  "at": "2026-10-17T18:38:58+00:00"
+}
