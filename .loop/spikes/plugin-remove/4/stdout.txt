@@ -1,0 +1,28 @@
+lock entry:
+- repo_url: jasperhg90/knowledge-management
+  materialization_repo_url: JasperHG90/Knowledge-management
+  host: github.com
+  resolved_ref: v0.3.0
+  virtual_path: apm
+- repo_url: jasperhg90/knowledge-management
+  materialization_repo_url: JasperHG90/Knowledge-management
+  host: github.com
+  resolved_ref: v0.3.0
+  virtual_path: plugin
+- repo_url: scaccogatto/okf-skills
+  host: github.com
+deps list:
+│ JasperHG90/Knowledge-management/apm    │ 0.3.0   │ github   │    -    │      -       │   -    │   -    │   -   │
+│ JasperHG90/Knowledge-management/plugin │ 0.3.0   │ orphaned │    -    │      -       │   1    │   7    │   2   │
+[!]   - JasperHG90/Knowledge-management/plugin
+== github.com/JasperHG90/Knowledge-management/apm: dry-run rc=0
+[i] Dry run: Would remove 1 package(s):
+[i]   Transitive dependencies that would be removed:
+== JasperHG90/Knowledge-management/apm: dry-run rc=0
+[i] Dry run: Would remove 1 package(s):
+[i]   Transitive dependencies that would be removed:
+real uninstall rc=0
+[+] Cleaned up 1 integrated hooks
+[*] Uninstall complete: Removed 1 package(s) from apm.yml, Removed 3 package(s) 
+from apm_modules/
+files left: 1
