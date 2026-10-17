@@ -20,10 +20,43 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "2e698b52ccee749a0c9faefcc9cda852f451c1c87b30479a5ab2823f1850c543",
+    "at": "2026-10-17T18:53:02+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "outside .okf/decisions/ and .loop/, the old repository name appears only in src/kmctl/plugin.py, tests, and as the old package name JasperHG90/Knowledge-management/apm in docs/how-to/install-kmctl-with-apm.md and docs/reference/commands.md",
+      "fails_when": "git ls-files lists another file whose text contains jasperhg90/knowledge-management in any case, or one of those two docs pages names it other than as JasperHG90/Knowledge-management/apm",
+      "command": "uv run pytest tests/test_repo_name.py -k old_name -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "the apm.yml entry kmctl suggests, the hooks' install lines and the release script's install and uses: patterns name JasperHG90/kmctl",
+      "fails_when": "new_entry()'s git is not https://github.com/JasperHG90/kmctl.git, either harness's hook command lacks git+https://github.com/JasperHG90/kmctl, or release.py set does not move a uv tool install or uses: line naming JasperHG90/kmctl",
+      "command": "uv run pytest tests/test_repo_name.py -k new_name -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "kmctl plugin patch still recognises an install made from the old name: a v0.3.0-layout lock and a hand-written JasperHG90/Knowledge-management/apm entry are refused with the apm uninstall to run, as they are from the new name",
+      "fails_when": "patch on a v0.3.0-layout lock, or on an apm.yml string entry, from either repository name does not raise PluginError naming apm uninstall",
+      "command": "uv run pytest tests/test_repo_name.py -k old_install -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "release.py set leaves the Older installs example's JasperHG90/Knowledge-management/apm#v0.3.0 entry as it is and does not refuse for want of an APM pin",
+      "fails_when": "after set_version on a copy of the repository, docs/how-to/install-kmctl-with-apm.md no longer holds JasperHG90/Knowledge-management/apm#v0.3.0, or set_version raises ReleaseRefused",
+      "command": "uv run pytest tests/test_repo_name.py -k older_example -q",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -69,5 +102,5 @@
     }
   ],
   "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
-  "at": "2026-10-17T18:53:01+00:00"
+  "at": "2026-10-17T18:53:02+00:00"
 }
