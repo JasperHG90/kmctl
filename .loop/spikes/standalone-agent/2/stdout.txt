@@ -1,0 +1,39 @@
+pydantic-ai-slim 2.57.0
+model gemini-3.8-flash
+tool calls in order: ['read_file', 'run_shell', 'final_result']
+output type: Report
+{
+  "summary": "The version specified in docs/install.md (1.0) does not match the repository's VERSION file (2.3.0).",
+  "findings": [
+    {
+      "title": "Documentation version mismatch with VERSION",
+      "severity": "low",
+      "path": "docs/install.md",
+      "evidence": [
+        "docs/install.md: Run `pip install widget==1.0` to install.",
+        "VERSION: 2.3.0"
+      ]
+    }
+  ]
+}
+usage: RunUsage(cost=Decimal('0.00149100'), input_tokens=1258, output_tokens=146, requests=3, tool_calls=2)
+pydantic-ai-slim 2.57.0
+model gemini-2.5-flash
+tool calls in order: ['read_file', 'run_shell', 'final_result']
+output type: Report
+{
+  "summary": "The version mentioned in `docs/install.md` does not match the version in `VERSION`.",
+  "findings": [
+    {
+      "title": "Version mismatch between install documentation and VERSION file",
+      "severity": "high",
+      "path": "docs/install.md",
+      "evidence": [
+        "Install documentation states: `pip install widget==1.0`",
+        "VERSION file contains: `2.3.0`"
+      ]
+    }
+  ]
+}
+usage: RunUsage(cost=Decimal('0.0005292'), input_tokens=664, output_tokens=132, requests=2, tool_calls=2)
+PASS
