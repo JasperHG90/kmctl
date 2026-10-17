@@ -105,7 +105,7 @@ def _lock(harnesses: tuple[str, ...] = ("antigravity",)) -> str:
             "lockfile_version": "1",
             "dependencies": [
                 {
-                    "repo_url": "JasperHG90/Knowledge-management",
+                    "repo_url": "JasperHG90/kmctl",
                     "name": "kmctl",
                     "resolved_ref": REF,
                     "virtual_path": "apm",

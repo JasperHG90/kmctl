@@ -15,7 +15,7 @@ Usage::
 ``pyproject.toml`` reads it from there (ADR 0014). APM needs a ``version:`` in
 each apm.yml, so ``set`` writes it and copies it into the root ``apm.yml``;
 ``current`` refuses when the copy differs. ``set`` also points the six install lines in the docs, and the
-APM how-to's package pins and CLI install line, at the tag ``vVERSION``. This script never
+APM how-to's CLI install line, at the tag ``vVERSION``. This script never
 commits or tags: ``.github/workflows/release.yml`` opens the version pull
 request and ``release-tag.yml`` tags the merge, so there is one release path.
 """
@@ -47,20 +47,16 @@ APM_FILES = (
     Path("apm/claude/apm.yml"),
     Path("apm/antigravity/apm.yml"),
 )
-#: The how-to whose ``JasperHG90/Knowledge-management/apm`` pins ``set`` moves.
+#: The APM how-to, whose install line ``set`` pins with the others.
 APM_DOC = Path("docs/how-to/install-kmctl-with-apm.md")
 _INSTALL = re.compile(
-    r"^(\s*uv tool install git\+https://github\.com/JasperHG90/Knowledge-management)(@\S+)?$",
+    r"^(\s*uv tool install git\+https://github\.com/JasperHG90/kmctl)(@\S+)?$",
     re.MULTILINE,
 )
-_USES = re.compile(r"^(\s*- uses: JasperHG90/Knowledge-management)@\S+$", re.MULTILINE)
+_USES = re.compile(r"^(\s*- uses: JasperHG90/kmctl)@\S+$", re.MULTILINE)
 # One top-level ``version:`` line, rewritten as text so comments and layout stay;
 # pyproject.toml's [tool.hatch.version] reads the same line.
 _APM_VERSION = re.compile(r"^(version: )(.*)$", re.MULTILINE)
-# The APM package with an optional #ref; not apm.yml or a longer path.
-_APM_PIN = re.compile(
-    r"(JasperHG90/Knowledge-management/apm)(?:#[\w.+-]+)?(?![\w/]|\.\w)"
-)
 
 
 class ReleaseRefused(Exception):
@@ -136,22 +132,12 @@ def pin_docs(text: str, version: str) -> tuple[str, int]:
     return text, installs + uses
 
 
-def pin_apm_doc(text: str, version: str) -> tuple[str, int]:
-    """Point each ``JasperHG90/Knowledge-management/apm`` in ``text`` at ``#v<version>``.
-
-    Returns
-    -------
-    tuple[str, int]
-        The new text and how many pins it moved.
-    """
-    return _APM_PIN.subn(rf"\g<1>#v{version}", text)
-
-
 def set_version(repo: Path, version_text: str) -> list[Path]:
     """Write the version into both apm.yml files and pin the docs.
 
-    Nothing is written unless the version is valid, all six install lines and
-    an APM pin in ``APM_DOC`` are found, and each apm.yml has a ``version:`` line.
+    Nothing is written unless the version is valid, all six install lines are
+    found, and each apm.yml has a ``version:`` line. ``APM_DOC``'s install line
+    is pinned too; its "Older installs" example keeps the version it shows.
 
     Returns
     -------
@@ -162,7 +148,7 @@ def set_version(repo: Path, version_text: str) -> list[Path]:
     ------
     ReleaseRefused
         When the version is malformed, the docs hold fewer than six install
-        lines, ``APM_DOC`` has no APM pin, or an apm.yml has no ``version:``.
+        lines, or an apm.yml has no ``version:``.
     """
     version = str(parse_release(version_text))
     docs: dict[Path, str] = {}
@@ -175,12 +161,7 @@ def set_version(repo: Path, version_text: str) -> list[Path]:
             f"found {found} of the {DOC_LINES} install lines in {', '.join(map(str, DOC_FILES))}; "
             "restore the missing uv tool install or uses: line"
         )
-    apm_doc, _ = pin_docs((repo / APM_DOC).read_text(), version)
-    docs[APM_DOC], count = pin_apm_doc(apm_doc, version)
-    if count == 0:
-        raise ReleaseRefused(
-            f"{APM_DOC} has no JasperHG90/Knowledge-management/apm pin; restore it"
-        )
+    docs[APM_DOC], _ = pin_docs((repo / APM_DOC).read_text(), version)
     apm: dict[Path, str] = {}
     for rel in APM_FILES:
         apm[rel], count = _APM_VERSION.subn(

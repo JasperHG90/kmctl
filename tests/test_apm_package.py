@@ -422,14 +422,12 @@ def test_docs_apm_page_says_what_a_hand_added_entry_gets() -> None:
     assert "- JasperHG90/Knowledge-management/apm#v" in commands
     assert "scaccogatto/okf-skills" not in commands
     assert "--trust-transitive-mcp" not in commands
-    cli = commands.index(
-        "uv tool install git+https://github.com/JasperHG90/Knowledge-management"
-    )
+    cli = commands.index("uv tool install git+https://github.com/JasperHG90/kmctl")
     assert cli < commands.index("apm install")
 
 
-def test_docs_release_set_moves_the_page_pins(tmp_path: Path) -> None:
-    """``scripts/release.py set`` points the page's package and CLI lines at the new tag."""
+def test_docs_release_set_moves_the_page_cli_pin(tmp_path: Path) -> None:
+    """``scripts/release.py set`` points the page's CLI line at the new tag; the old-install example keeps its own."""
     for rel in (*APM_FILES, APM_DOC, *DOC_FILES):
         (tmp_path / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(ROOT / rel, tmp_path / rel)
@@ -437,9 +435,8 @@ def test_docs_release_set_moves_the_page_pins(tmp_path: Path) -> None:
     set_version(tmp_path, "9.8.7")
 
     text = (tmp_path / APM_DOC).read_text()
-    pins = re.findall(r"JasperHG90/Knowledge-management/apm(#\S*)?", text)
-    assert pins and set(pins) == {"#v9.8.7"}
-    assert "Knowledge-management@v9.8.7\n" in text
+    assert "JasperHG90/kmctl@v9.8.7\n" in text
+    assert "JasperHG90/Knowledge-management/apm#v0.3.0" in text
 
 
 # r9: a real consumer ----------------------------------------------------------

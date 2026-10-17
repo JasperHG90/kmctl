@@ -50,7 +50,7 @@ repository's files, and with okf-skills from GitHub.
 ### 1. Install the kmctl CLI
 
 ```
-uv tool install git+https://github.com/JasperHG90/Knowledge-management@v0.3.0
+uv tool install git+https://github.com/JasperHG90/kmctl@v0.3.0
 ```
 
 ### 2. Add the kmctl package
@@ -61,7 +61,7 @@ Add the package to `dependencies.apm` in the repository's `apm.yml`, with
 ```yaml
 dependencies:
   apm:
-    - git: https://github.com/JasperHG90/Knowledge-management.git
+    - git: https://github.com/JasperHG90/kmctl.git
       path: apm
       ref: vX.Y.Z
 ```

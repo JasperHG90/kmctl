@@ -32,12 +32,16 @@ Scope = Literal["project", "user"]
 HARNESSES = ("claude", "antigravity")
 #: The APM release kmctl's docs and doctor name, run through uvx.
 APM_CLI = "apm-cli==0.33.0"
+#: kmctl's GitHub repository.
+REPO = "JasperHG90/kmctl"
+#: The repository's name until it was renamed; installs made then still carry it.
+OLD_REPO = "JasperHG90/Knowledge-management"
 #: Where kmctl's package comes from: the git URL of the apm.yml entry it suggests.
-DEFAULT_SOURCE = "https://github.com/JasperHG90/Knowledge-management.git"
+DEFAULT_SOURCE = f"https://github.com/{REPO}.git"
 #: The package's folder inside the source repository.
 PACKAGE_PATH = "apm"
 #: How an apm.yml written by hand (ADR 0013) names the package.
-OLD_PACKAGE = "JasperHG90/Knowledge-management/apm"
+OLD_PACKAGE = f"{OLD_REPO}/apm"
 #: The claude plugin and marketplace the install route before ADR 0014 added.
 OLD_PLUGIN = "kmctl@kmctl"
 OLD_MARKETPLACE = "kmctl"
@@ -52,10 +56,10 @@ HOOK_MARK = "kmctl briefing"
 HOOK_COMMAND = (
     "command -v kmctl >/dev/null 2>&1 || { echo '[kmctl] kmctl is not installed, "
     "so there is no knowledge briefing. Install it with: uv tool install "
-    "git+https://github.com/JasperHG90/Knowledge-management'; exit 0; }; "
+    f"git+https://github.com/{REPO}'; exit 0; }}; "
     "kmctl briefing || echo '[kmctl] kmctl briefing failed; run kmctl briefing in "
     "a terminal to see why, or upgrade with uv tool install --force "
-    "git+https://github.com/JasperHG90/Knowledge-management.'; exit 0"
+    f"git+https://github.com/{REPO}.'; exit 0"
 )
 HOOK_DESCRIPTION = (
     "kmctl: print the knowledge briefing (where knowledge lives, what is due, "
@@ -291,16 +295,25 @@ def remove_old_plugin(cwd: Path, scope: Scope) -> list[str]:
     return notes
 
 
-def _old_layout(lock: Lock | None) -> bool:
-    """Whether the lock holds kmctl v0.3.0 or older, whose hook APM installed from plugin/."""
-    return any(
-        "jasperhg90/knowledge-management" in (dep.repo_url or "").lower()
-        and dep.virtual_path == "plugin"
-        for dep in (lock.dependencies if lock else [])
-    )
+def _repo_of(text: str) -> str | None:
+    """The kmctl repository ``text`` names, under its current or old name, or None."""
+    lowered = text.lower()
+    for repo in (REPO, OLD_REPO):
+        if repo.lower() in lowered:
+            return repo
+    return None
 
 
-def _names_old_package(entry: object, old_layout: bool) -> bool:
+def _old_layout(lock: Lock | None) -> str | None:
+    """The repository of a kmctl v0.3.0-or-older package in the lock, whose hook APM installed from plugin/, or None."""
+    for dep in lock.dependencies if lock else []:
+        repo = _repo_of(dep.repo_url or "")
+        if repo and dep.virtual_path == "plugin":
+            return repo
+    return None
+
+
+def _names_old_package(entry: object, old_layout: str | None) -> bool:
     """Whether an apm.yml dependency entry is the hand-written form ADR 0013 users added.
 
     The string form (the only one ADR 0013's docs gave) always is. kmctl's own
@@ -309,12 +322,12 @@ def _names_old_package(entry: object, old_layout: bool) -> bool:
     (spike:apm-only-install/6); otherwise ``write_manifest`` replaces it.
     """
     if isinstance(entry, str):
-        return OLD_PACKAGE.lower() in entry.lower()
+        repo = _repo_of(entry)
+        return repo is not None and f"{repo}/apm".lower() in entry.lower()
     if isinstance(entry, dict):
-        repo = str(entry.get("git", "")).lower()
         return (
-            old_layout
-            and "jasperhg90/knowledge-management" in repo
+            old_layout is not None
+            and _repo_of(str(entry.get("git", ""))) is not None
             and entry.get("path") == PACKAGE_PATH
         )
     return False
@@ -693,7 +706,7 @@ def _old_entry(cwd: Path, scope: Scope, lock: Lock | None) -> object | None:
         if _names_old_package(entry, old_layout):
             return entry
     if old_layout:
-        return OLD_PACKAGE
+        return f"{old_layout}/{PACKAGE_PATH}"
     return None
 
 
@@ -733,7 +746,7 @@ def patch(cwd: Path, scope: Scope = "project") -> PatchResult:
         raise PluginError(
             f"apm.yml names kmctl's package the old way ({old}), whose hook only "
             f"apm uninstall removes; run apm uninstall{g} "
-            f"{OLD_PACKAGE if isinstance(old, str) else uninstall_name(old)}, "
+            f"{old.partition('#')[0] if isinstance(old, str) else uninstall_name(old)}, "
             f"add {json.dumps(new_entry())} to apm.yml's dependencies.apm, run "
             f"apm install{g}, then kmctl plugin patch again"
         )

@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SKILLS = ROOT / "apm" / ".apm" / "skills"
 REF = f"v{version('kmctl')}"
 APM = ["--from", "apm-cli==0.33.0", "apm"]
-GITHUB = "https://github.com/JasperHG90/Knowledge-management.git"
+GITHUB = "https://github.com/JasperHG90/kmctl.git"
 
 
 @pytest.fixture
