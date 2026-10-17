@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The upgrade path for a repository kmctl installed before rests on an unchecked APM behaviour. Under this plan, apm install runs first. Spike apm-hands-back/3 shows APM then prints 'okf-bundle already configured, skipping' but still records okf-bundle in the lock's mcp_servers and mcp_configs. Patch then deletes the stale okf-bundle and tells the user to run apm install again. Nothing shows that a second plain apm install writes the server back once the lock already records it as configured. If APM treats it as up to date, Claude Code (and agy) lose okf's MCP server, and the plan's fix loop never closes. apm-hands-back avoided this by removing old entries before APM ran; this plan reverses that order and lists no risk.",
+      "anchor": ".loop/plans/plugin-patch.md:47",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "Today's install also migrates old apm.yml entries: the ADR 0013 string entry and the v0.3.0 layout (remove_old_apm_entry, src/kmctl/plugin.py:484). Their old SessionStart hook can only be removed with apm uninstall (spike:apm-only-install/6). Patch never runs APM, and the README's upgrade step ('change the ref') assumes the {git, path: apm} entry. The plan does not say what happens to such a consumer. kmctl_package matches only name kmctl with virtual_path apm, so patch would either refuse with a generic 'run apm install', or the user would add a second entry next to the old one and end up with duplicate hooks. The plan has to name this case: what patch detects and which apm uninstall command it tells the user to run.",
+      "anchor": "src/kmctl/plugin.py:484",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "2db4397b7d518d91e6c7978fa99c2dbac21ec11f7b5199412adcb97a5f08d6df"
+  },
+  "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
+  "at": "2026-10-17T12:55:09+00:00"
+}
