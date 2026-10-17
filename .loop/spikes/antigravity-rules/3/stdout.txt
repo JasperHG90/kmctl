@@ -1,0 +1,3 @@
+.okf/index.md -> OKFSTAR
+docs/guide/intro.md -> DOCSLIST
+README.md -> DOCSLIST
