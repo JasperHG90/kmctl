@@ -1,0 +1,149 @@
+warning: `VIRTUAL_ENV=/home/vscode/kmctl/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+........................................................................ [ 11%]
+........................................................................ [ 22%]
+..................................F..................................... [ 33%]
+........F............................................................... [ 44%]
+.....................................................................FF. [ 55%]
+........................................................................ [ 66%]
+........................................................................ [ 77%]
+........................................................................ [ 88%]
+........................................................................ [ 99%]
+...                                                                      [100%]
+=================================== FAILURES ===================================
+____________ test_consumer_gets_skills_rules_and_the_plugin_folder _____________
+
+consumer = PosixPath('/tmp/pytest-of-vscode/pytest-3864/test_consumer_gets_skills_rule0/consumer')
+served = 'http://127.0.0.1:59613/o/kmctl.git'
+
+    @pytest.mark.integration
+    def test_consumer_gets_skills_rules_and_the_plugin_folder(
+        consumer: Path, served: str
+    ) -> None:
+        result = _kmctl("plugin", "install", "--harness", "antigravity", "--source", served)
+    
+>       assert result.exit_code == 0, result.output
+E       AssertionError: Usage: root plugin [OPTIONS] COMMAND [ARGS]...
+E         Try 'root plugin -h' for help.
+E         ╭─ Error ──────────────────────────────────────────────────────────────────────╮
+E         │ No such command 'install'.                                                   │
+E         ╰──────────────────────────────────────────────────────────────────────────────╯
+E         
+E       assert 2 == 0
+E        +  where 2 = <Result SystemExit(2)>.exit_code
+
+/home/vscode/kmctl.worktrees/plugin-patch/tests/test_antigravity.py:640: AssertionError
+_________ test_consumer_gets_the_package_hook_and_okf_but_no_dev_items _________
+
+consumer = PosixPath('/tmp/pytest-of-vscode/pytest-3864/test_consumer_gets_the_package0/consumer')
+served = 'http://127.0.0.1:37553/o/kmctl.git'
+tmp_path = PosixPath('/tmp/pytest-of-vscode/pytest-3864/test_consumer_gets_the_package0')
+
+    @pytest.mark.integration
+    def test_consumer_gets_the_package_hook_and_okf_but_no_dev_items(
+        consumer: Path, served: str, tmp_path: Path
+    ) -> None:
+        """``kmctl plugin install --harness claude`` against the served tree installs everything once."""
+        before = {rel: (REAL_CLAUDE / rel).exists() for rel in WATCHED}
+    
+        result = _kmctl("plugin", "install", "--harness", "claude", "--source", served)
+        again = _kmctl("plugin", "install", "--harness", "claude", "--source", served)
+    
+>       assert result.exit_code == 0, result.output
+E       AssertionError: Usage: root plugin [OPTIONS] COMMAND [ARGS]...
+E         Try 'root plugin -h' for help.
+E         ╭─ Error ──────────────────────────────────────────────────────────────────────╮
+E         │ No such command 'install'.                                                   │
+E         ╰──────────────────────────────────────────────────────────────────────────────╯
+E         
+E       assert 2 == 0
+E        +  where 2 = <Result SystemExit(2)>.exit_code
+
+/home/vscode/kmctl.worktrees/plugin-patch/tests/test_apm_package.py:469: AssertionError
+_________________ test_doctor_after_a_real_install_exits_zero __________________
+
+consumer = PosixPath('/tmp/pytest-of-vscode/pytest-3864/test_doctor_after_a_real_insta0/consumer')
+served = 'http://127.0.0.1:52803/o/kmctl.git'
+tmp_path = PosixPath('/tmp/pytest-of-vscode/pytest-3864/test_doctor_after_a_real_insta0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0xffff8cf5a9f0>
+
+    @pytest.mark.integration
+    def test_doctor_after_a_real_install_exits_zero(
+        consumer: Path, served: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """The real APM 0.33.0 installs both harnesses; doctor then passes, offline.
+    
+        claude and agy are fakes on PATH: doctor only looks them up, and the
+        install's claude plugin list must not reach the real claude.
+        """
+        fakes = FakeTools(tmp_path / "fakes", tools=("claude", "agy"))
+        monkeypatch.setenv("PATH", f"{fakes.bin}:{os.environ['PATH']}")
+        home = Path(os.environ["HOME"])
+        trust = home / ".gemini" / "antigravity-cli" / "settings.json"
+        trust.parent.mkdir(parents=True)
+        trust.write_text(json.dumps({"trustedWorkspaces": [str(consumer.resolve())]}))
+    
+        install = _kmctl(
+            "plugin", "install", "--harness", "claude,antigravity", "--source", served
+        )
+        init = _kmctl("init")
+        result = _kmctl("doctor")
+    
+>       assert install.exit_code == 0, install.output
+E       AssertionError: Usage: root plugin [OPTIONS] COMMAND [ARGS]...
+E         Try 'root plugin -h' for help.
+E         ╭─ Error ──────────────────────────────────────────────────────────────────────╮
+E         │ No such command 'install'.                                                   │
+E         ╰──────────────────────────────────────────────────────────────────────────────╯
+E         
+E       assert 2 == 0
+E        +  where 2 = <Result SystemExit(2)>.exit_code
+
+/home/vscode/kmctl.worktrees/plugin-patch/tests/test_doctor.py:1052: AssertionError
+_________ test_hands_back_real_install_over_an_old_one_then_uninstall __________
+
+consumer = PosixPath('/tmp/pytest-of-vscode/pytest-3864/test_hands_back_real_install_o0/consumer')
+served = 'http://127.0.0.1:39329/o/kmctl.git'
+tmp_path = PosixPath('/tmp/pytest-of-vscode/pytest-3864/test_hands_back_real_install_o0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0xffff8cd29fd0>
+
+    @pytest.mark.integration
+    def test_hands_back_real_install_over_an_old_one_then_uninstall(
+        consumer: Path, served: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Over a consumer an older kmctl set up, APM delivers one recorded hook and okf-bundle; uninstall leaves only kmctl's plugin folder."""
+        fakes = FakeTools(tmp_path / "fakes", tools=("claude",))
+        monkeypatch.setenv("PATH", f"{fakes.bin}:{os.environ['PATH']}")
+        settings = consumer / ".claude" / "settings.json"
+        settings.parent.mkdir(parents=True)
+        settings.write_text(
+            json.dumps({"hooks": {"SessionStart": [{"hooks": [plugin.hook_entry()]}]}})
+        )
+        stale = {
+            "command": "sh",
+            "args": ["-c", "exec uv run https://example.invalid/old.py"],
+        }
+        (consumer / ".mcp.json").write_text(
+            json.dumps({"mcpServers": {"okf-bundle": stale}})
+        )
+    
+        install = _kmctl(
+            "plugin", "install", "--harness", "claude,antigravity", "--source", served
+        )
+    
+>       assert install.exit_code == 0, install.output
+E       AssertionError: Usage: root plugin [OPTIONS] COMMAND [ARGS]...
+E         Try 'root plugin -h' for help.
+E         ╭─ Error ──────────────────────────────────────────────────────────────────────╮
+E         │ No such command 'install'.                                                   │
+E         ╰──────────────────────────────────────────────────────────────────────────────╯
+E         
+E       assert 2 == 0
+E        +  where 2 = <Result SystemExit(2)>.exit_code
+
+/home/vscode/kmctl.worktrees/plugin-patch/tests/test_doctor.py:1084: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_antigravity.py::test_consumer_gets_skills_rules_and_the_plugin_folder
+FAILED tests/test_apm_package.py::test_consumer_gets_the_package_hook_and_okf_but_no_dev_items
+FAILED tests/test_doctor.py::test_doctor_after_a_real_install_exits_zero - As...
+FAILED tests/test_doctor.py::test_hands_back_real_install_over_an_old_one_then_uninstall
+4 failed, 647 passed in 27.61s
