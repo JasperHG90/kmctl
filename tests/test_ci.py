@@ -24,11 +24,6 @@ def _steps() -> list[dict[str, Any]]:
     return [step for job in _ci()["jobs"].values() for step in job["steps"]]
 
 
-def _runs() -> list[str]:
-    """The ``run:`` commands of every step in ci.yml, one line each."""
-    return [" ".join(s["run"].split()) for s in _steps() if "run" in s]
-
-
 def test_ci_triggers_on_pull_request_and_push_to_main() -> None:
     on = _ci()["on"]
 
@@ -43,17 +38,43 @@ def test_ci_knowledge_job_runs_own_check_with_full_history() -> None:
     assert checkout["with"]["fetch-depth"] == 0
 
 
-def test_ci_prek_job_runs_all_files_at_justfile_version() -> None:
+def _job_steps(name: str) -> list[dict[str, Any]]:
+    """The steps of job ``name`` in ci.yml."""
+    steps: list[dict[str, Any]] = _ci()["jobs"][name]["steps"]
+    return steps
+
+
+def _uses(steps: list[dict[str, Any]], action: str) -> int:
+    """The index of the step in ``steps`` that uses ``action`` at a pinned ref."""
+    [index] = [
+        i for i, s in enumerate(steps) if s.get("uses", "").startswith(f"{action}@")
+    ]
+    return index
+
+
+def test_ci_prek_job_runs_justfile_version_after_uv() -> None:
+    """toiminnot v1.3.0's pre_commit action runs prek; its prek action runs pre-commit."""
     pinned = re.search(r"prek@([\d.]+)", (ROOT / "justfile").read_text())
+    steps = _job_steps("prek")
+    hooks = _uses(steps, "JasperHG90/toiminnot/actions/pre_commit")
 
     assert pinned
-    assert f"uvx prek@{pinned.group(1)} run --all-files" in _runs()
+    assert _uses(steps, "astral-sh/setup-uv") < hooks
+    assert steps[hooks]["with"] == {
+        "prek_version": pinned.group(1),
+        "python_version": "3.12",
+    }
 
 
-def test_ci_pytest_job_runs_default_suite() -> None:
-    tests = [r for r in _runs() if r.startswith("uv run pytest")]
+def test_ci_pytest_job_runs_default_tier() -> None:
+    steps = _job_steps("tests")
+    tests = steps[_uses(steps, "JasperHG90/toiminnot/actions/pytest")]
 
-    assert tests == ["uv run pytest"]
+    assert tests["with"] == {
+        "directory": "tests",
+        "markers": "not integration",
+        "python_version": "3.12",
+    }
 
 
 def test_ci_actions_pinned_and_uv_cache_off() -> None:
@@ -61,7 +82,9 @@ def test_ci_actions_pinned_and_uv_cache_off() -> None:
     setup_uv = [s for s in _steps() if "setup-uv" in s.get("uses", "")]
 
     assert uses
-    assert all(re.fullmatch(r"[\w-]+/[\w-]+@[0-9a-f]{40}", u) for u in uses), uses
+    assert all(
+        re.fullmatch(r"[\w-]+/[\w-]+(/[\w-]+)*@[0-9a-f]{40}", u) for u in uses
+    ), uses
     assert setup_uv
     assert all(s["with"]["enable-cache"] is False for s in setup_uv)
 
