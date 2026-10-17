@@ -9,8 +9,8 @@
     },
     {
       "id": "r2",
-      "behavior": "Tracing is optional: with no Langfuse keys and no OTEL_EXPORTER_OTLP_ENDPOINT or OTEL_EXPORTER_OTLP_TRACES_ENDPOINT, no exporter is built and OpenTelemetry is not imported; with only an OTLP endpoint set, spans go to that endpoint.",
-      "fails_when": "a run without the variables builds an exporter or imports opentelemetry, or a run with only the OTLP endpoint sends nothing",
+      "behavior": "Tracing is optional: with no Langfuse keys and no OTEL_EXPORTER_OTLP_ENDPOINT or OTEL_EXPORTER_OTLP_TRACES_ENDPOINT, no exporter is built and OpenTelemetry's SDK and exporter are not imported; with only an OTLP endpoint set, spans go to that endpoint.",
+      "fails_when": "a run without the variables builds an exporter or imports OpenTelemetry's SDK or exporter, or a run with only the OTLP endpoint sends nothing",
       "command": "uv run pytest tests/test_agent.py -k traces_optional -q"
     },
     {
