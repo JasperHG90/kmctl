@@ -1,0 +1,247 @@
+[
+ {
+  "severity": "medium",
+  "title": "Bundle index states a concept count that is wrong",
+  "path": ".okf/index.md",
+  "claim": ".okf/index.md:10",
+  "contradicted_by": [
+   ".okf/decisions/index.md:3-34",
+   ".okf/architecture/index.md:1-4"
+  ],
+  "fix": "Update the count to the real numbers, or drop the count so it cannot drift again."
+ },
+ {
+  "severity": "medium",
+  "title": "Decisions index says 10 records; there are 22",
+  "path": ".okf/index.md",
+  "claim": ".okf/index.md:14",
+  "contradicted_by": [
+   ".okf/decisions/index.md:26-34"
+  ],
+  "fix": "Say 22 records, naming the last one (ADR 0022), or drop the number."
+ },
+ {
+  "severity": "medium",
+  "title": "Manifesto says the CLI installs its package",
+  "path": ".okf/manifesto.md",
+  "claim": ".okf/manifesto.md:46",
+  "contradicted_by": [
+   ".okf/decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md:33-37",
+   "src/kmctl/__init__.py:693-703",
+   "tests/test_plugin_patch.py:319-325"
+  ],
+  "fix": "Say the CLI patches what APM cannot install yet (kmctl plugin patch) and checks the install; drop \"installs its package\"."
+ },
+ {
+  "severity": "medium",
+  "title": "Manifesto says the APM package is installed by the CLI",
+  "path": ".okf/manifesto.md",
+  "claim": ".okf/manifesto.md:56",
+  "contradicted_by": [
+   ".okf/decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md:33-37",
+   ".okf/decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md:52",
+   "src/kmctl/__init__.py:747"
+  ],
+  "fix": "Say APM installs the package from the user's apm.yml entry, and point at ADR 0021 as well as ADR 0014."
+ },
+ {
+  "severity": "medium",
+  "title": "Architecture says the knowledge rules live in apm/.apm/",
+  "path": ".okf/architecture/overview.md",
+  "claim": ".okf/architecture/overview.md:182-183",
+  "contradicted_by": [
+   ".okf/architecture/overview.md:201-203",
+   "apm/claude/apm.yml:1-6",
+   "apm/apm.yml:12-16"
+  ],
+  "fix": "Say the skills and the auditor live in apm/.apm/, and the four rules in apm/claude/.apm/instructions/, copied to apm/antigravity/.apm/instructions/."
+ },
+ {
+  "severity": "medium",
+  "title": "Depicts list names a folder that does not exist",
+  "path": ".okf/architecture/overview.md",
+  "claim": ".okf/architecture/overview.md:291",
+  "contradicted_by": [
+   ".okf/architecture/overview.md:201-203",
+   ".okf/decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md:66-73"
+  ],
+  "fix": "Replace `apm/.apm/instructions/` with `apm/claude/.apm/instructions/` and `apm/antigravity/.apm/instructions/` in the Depicts list."
+ },
+ {
+  "severity": "medium",
+  "title": "Architecture says the audit's default task is the audit skill",
+  "path": ".okf/architecture/overview.md",
+  "claim": ".okf/architecture/overview.md:231-232",
+  "contradicted_by": [
+   "action/agent.py:57-58",
+   "action/agent.py:670-675",
+   ".okf/architecture/overview.md:61",
+   ".okf/decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script.md:136-140"
+  ],
+  "fix": "Say the task is `--audit NAME` (the okf-vs-code prompt by default), or `prompt`/`prompt_file` when the workflow gives one."
+ },
+ {
+  "severity": "medium",
+  "title": "Diagram says plugin patch writes the apm.yml entry, hook and .mcp.json",
+  "path": ".okf/architecture/overview.md",
+  "claim": ".okf/architecture/overview.md:114",
+  "contradicted_by": [
+   "src/kmctl/plugin.py:710-724",
+   ".okf/decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md:33-49",
+   ".okf/decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md:75-79"
+  ],
+  "fix": "Drop that arrow or relabel it: APM writes the entry, hook and MCP server; plugin patch only removes an older kmctl's hook and a stale okf-bundle entry."
+ },
+ {
+  "severity": "medium",
+  "title": "Diagram says plugin patch runs apm uninstall/install",
+  "path": ".okf/architecture/overview.md",
+  "claim": ".okf/architecture/overview.md:115",
+  "contradicted_by": [
+   "src/kmctl/plugin.py:729-739",
+   "src/kmctl/__init__.py:711-713",
+   ".okf/decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md:39-41"
+  ],
+  "fix": "Delete that arrow; APM's verbs are run by the user, as ADR 0021 says."
+ },
+ {
+  "severity": "low",
+  "title": "Diagram says plugin patch runs claude mcp add-json",
+  "path": ".okf/architecture/overview.md",
+  "claim": ".okf/architecture/overview.md:119",
+  "contradicted_by": [
+   "src/kmctl/plugin.py:593-642",
+   "src/kmctl/plugin.py:276-286"
+  ],
+  "fix": "Say \"plugin uninstall, prune; mcp remove at user scope\"."
+ },
+ {
+  "severity": "low",
+  "title": "Release steps omit the two sub-package apm.yml files",
+  "path": ".okf/architecture/overview.md",
+  "claim": ".okf/architecture/overview.md:266-267",
+  "contradicted_by": [
+   "scripts/release.py:44-49",
+   "scripts/release.py:184-193",
+   "scripts/release.py:116-122"
+  ],
+  "fix": "Name all four apm.yml files, or say \"the version in each kmctl apm.yml\"."
+ },
+ {
+  "severity": "low",
+  "title": "Architecture index still describes a Claude Code plugin",
+  "path": ".okf/architecture/index.md",
+  "claim": ".okf/architecture/index.md:3-4",
+  "contradicted_by": [
+   ".okf/architecture/overview.md:14-25",
+   ".okf/decisions/0014-apm-is-the-only-install-route.md:65-73",
+   ".okf/decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md:52"
+  ],
+  "fix": "Say \"the CLI modules, the APM package it installs and the GitHub Action\", matching the overview's description."
+ },
+ {
+  "severity": "medium",
+  "title": "ADR 0001 still claims kmctl plugin install and plugin status exist",
+  "path": ".okf/decisions/0001-standalone-cli-installs-its-plugin.md",
+  "claim": ".okf/decisions/0001-standalone-cli-installs-its-plugin.md:55-61",
+  "contradicted_by": [
+   ".okf/decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md:52",
+   "tests/test_plugin_patch.py:319-325",
+   "src/kmctl/__init__.py:693-703"
+  ],
+  "fix": "Add a Correction, 2026-10-17 or later, naming ADR 0021: kmctl plugin install/update/remove are gone; the user adds the apm.yml entry and runs apm install, and kmctl plugin patch adds the rest."
+ },
+ {
+  "severity": "low",
+  "title": "ADR 0002's correction names a removed verb",
+  "path": ".okf/decisions/0002-briefing-and-rules-injected-by-the-cli.md",
+  "claim": ".okf/decisions/0002-briefing-and-rules-injected-by-the-cli.md:81",
+  "contradicted_by": [
+   ".okf/decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md:52",
+   "tests/test_plugin_patch.py:319-325",
+   "src/kmctl/__init__.py:693-703"
+  ],
+  "fix": "Add a Correction naming ADR 0021: the rules reach .claude/rules/ through `apm install`, not `kmctl plugin install`. The rest of the correction still holds."
+ },
+ {
+  "severity": "medium",
+  "title": "ADR 0011 says init's last line names kmctl plugin install",
+  "path": ".okf/decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md",
+  "claim": ".okf/decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md:152-155",
+  "contradicted_by": [
+   "src/kmctl/__init__.py:131-142",
+   ".okf/decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md:52",
+   "tests/test_plugin_patch.py:319-325"
+  ],
+  "fix": "Add a Correction naming ADR 0021 and quoting init's current next-step line."
+ },
+ {
+  "severity": "low",
+  "title": "ADR 0011 says the kmctl block holds four duties; it holds five",
+  "path": ".okf/decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md",
+  "claim": ".okf/decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md:112",
+  "contradicted_by": [
+   "src/kmctl/scaffold.py:45-49"
+  ],
+  "fix": "Add a Correction saying the block now holds five duties, the docs front-matter duty coming with ADR 0022."
+ },
+ {
+  "severity": "low",
+  "title": "ADR 0012's description still names the plugin manifest as the version source",
+  "path": ".okf/decisions/0012-releases-come-from-ci.md",
+  "claim": ".okf/decisions/0012-releases-come-from-ci.md:4",
+  "contradicted_by": [
+   "pyproject.toml:27-30",
+   ".okf/decisions/0012-releases-come-from-ci.md:85-93",
+   ".okf/decisions/index.md:25"
+  ],
+  "fix": "Update the description (and the index line) to say apm/apm.yml is the one version source, or note the supersession in the Correction."
+ },
+ {
+  "severity": "low",
+  "title": "ADR 0015 still names kmctl plugin install --harness antigravity",
+  "path": ".okf/decisions/0015-antigravity-gets-skills-and-rules-from-apm-and-a-kmctl-plugin-folder.md",
+  "claim": ".okf/decisions/0015-antigravity-gets-skills-and-rules-from-apm-and-a-kmctl-plugin-folder.md:56",
+  "contradicted_by": [
+   ".okf/decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md:52",
+   "tests/test_plugin_patch.py:319-325",
+   ".okf/decisions/0015-antigravity-gets-skills-and-rules-from-apm-and-a-kmctl-plugin-folder.md:107-109"
+  ],
+  "fix": "Add an amendment naming ADR 0021: the user runs `apm install --target antigravity` and then `kmctl plugin patch`."
+ },
+ {
+  "severity": "low",
+  "title": "ADR 0018 says a bare apm install is fixed by kmctl plugin install",
+  "path": ".okf/decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity.md",
+  "claim": ".okf/decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity.md:80",
+  "contradicted_by": [
+   "src/kmctl/plugin.py:761-772",
+   ".okf/decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md:69-70"
+  ],
+  "fix": "Add an amendment naming ADR 0021 and saying the next `kmctl plugin patch` takes the handler out again."
+ },
+ {
+  "severity": "low",
+  "title": "ADR 0020 says kmctl plugin install writes none of the package pieces",
+  "path": ".okf/decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md",
+  "claim": ".okf/decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md:75-78",
+  "contradicted_by": [
+   "src/kmctl/plugin.py:710-724",
+   ".okf/decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md:39-44",
+   "tests/test_plugin_patch.py:319-325"
+  ],
+  "fix": "Add an amendment naming ADR 0021: the removing is `kmctl plugin patch`, and it never runs APM."
+ },
+ {
+  "severity": "medium",
+  "title": "Decisions index's ADR 0014 summary is two revisions out of date",
+  "path": ".okf/decisions/index.md",
+  "claim": ".okf/decisions/index.md:27",
+  "contradicted_by": [
+   ".okf/decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md:61-79",
+   ".okf/decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md:33-37",
+   "src/kmctl/plugin.py:710-724"
+  ],
+  "fix": "Rewrite the entry: APM installs the package (skills, agent, rules, hooks and okf's MCP server) from the apm.yml entry; kmctl plugin patch adds what APM cannot."
+ }
+]
