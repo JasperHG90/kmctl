@@ -67,6 +67,7 @@ ALL_IDS = [
     "antigravity.okf-skills",
     "antigravity.plugin",
     "antigravity.hook",
+    "antigravity.apm-hooks",
     "antigravity.okf-mcp",
     "antigravity.trust",
 ]
@@ -1022,3 +1023,53 @@ def test_antigravity_rule_changes_fail_the_plugin_check(
     assert "rules/" in check["detail"] and said in check["detail"]
     assert check["fix"] == AG_FIX
     assert result.exit_code == 1
+
+
+# antigravity-okf-stop-hook r3: APM's okf Stop handler and kmctl's hooks -----------
+
+
+def test_okf_stop_apm_handler_fails_its_check(complete: Setup) -> None:
+    path = complete.repo / ".agents" / "hooks.json"
+    path.write_text(
+        json.dumps(
+            {
+                "apm": {
+                    "Stop": [
+                        {
+                            "command": "bash .agents/hooks/okf-skills/hooks/okf-stop-check.sh"
+                        }
+                    ]
+                }
+            }
+        )
+    )
+
+    result, data = _doctor()
+
+    check = _by_id(data)["antigravity.apm-hooks"]
+    assert not check["ok"]
+    assert ".agents/hooks.json" in check["detail"]
+    assert check["fix"] == AG_FIX
+    assert result.exit_code == 1
+
+
+def test_okf_stop_apm_hooks_without_okf_pass(complete: Setup) -> None:
+    path = complete.repo / ".agents" / "hooks.json"
+    path.write_text(json.dumps({"theirs": {"Stop": [{"command": "echo hi"}]}}))
+
+    _, data = _doctor()
+
+    assert _by_id(data)["antigravity.apm-hooks"]["ok"]
+
+
+def test_okf_stop_missing_from_plugin_hooks_fails_antigravity_hook(
+    complete: Setup,
+) -> None:
+    path = complete.repo / ".agents" / "plugins" / "kmctl" / "hooks.json"
+    data = json.loads(path.read_text())
+    del data["kmctl-okf-stop"]
+    path.write_text(json.dumps(data, indent=2) + "\n")
+
+    _, checks = _doctor()
+
+    assert not _by_id(checks)["antigravity.hook"]["ok"]

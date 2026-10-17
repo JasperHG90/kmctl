@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "The new pass wording landed in claude.hook instead of antigravity.hook.",
+      "anchor": "src/kmctl/doctor.py:486",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "drop_apm_okf_stop's single changed flag deleted named hooks that were already empty.",
+      "anchor": "src/kmctl/antigravity.py:302",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "Row r1's command ran no test of the plugin folder's two named hooks and their flat handlers.",
+      "anchor": "tests/test_antigravity.py:1155",
+      "category": "test-mismatch",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "open",
+      "claim": "apm_okf_stop_present reads the raw text of .agents/hooks.json, but drop_apm_okf_stop skips a file that is not valid JSON. For such a file, doctor names a fix that changes nothing. Deferred to the stub antigravity-okf-stop-hook-reviewer-f4.",
+      "anchor": "src/kmctl/antigravity.py:244",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "f6e3b481c2f4979f2ba3c17b9c533461a1c13f0cd12273a6499d0504b9d9da63",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
+  "at": "2026-10-17T07:50:50+00:00"
+}

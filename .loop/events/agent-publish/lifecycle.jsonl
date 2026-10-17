@@ -11,3 +11,14 @@
 {"at": "2026-10-17T07:44:42+00:00", "binds": "e87ca4430fed9c7b80a9ac8195aa7c2f27b2ce88e22d18b4004342a24a49f96f", "kind": "round-start", "n": 3, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
 {"at": "2026-10-17T07:46:01+00:00", "dispatched_at": "2026-10-17T07:44:42+00:00", "kind": "round-close", "n": 3, "outcome": "pass", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-10-17T07:45:45+00:00"}}
 {"at": "2026-10-17T07:46:02+00:00", "kind": "unblock", "schema_version": "1.0"}
+{"at": "2026-10-17T07:46:03+00:00", "by": "advance", "from": "ready", "kind": "transition", "schema_version": "1.0", "to": "building"}
+{"at": "2026-10-17T07:52:33+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "building"}
+{"at": "2026-10-17T07:52:37+00:00", "by": "advance", "from": "building", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
+{"at": "2026-10-17T07:52:39+00:00", "binds": "25f04f65ae90ac4c8e03fdaa021222322fa03168eab2dcd8c125f6563446148a", "kind": "round-start", "n": 1, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "e159a7e23ab462f6917680b8cab2129226aa61a0"}
+{"at": "2026-10-17T07:56:19+00:00", "by": "review close", "from": "verifying", "kind": "transition", "schema_version": "1.0", "to": "fixing"}
+{"at": "2026-10-17T07:56:19+00:00", "dispatched_at": "2026-10-17T07:52:39+00:00", "kind": "round-close", "n": 1, "outcome": "fail", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-17T07:56:04+00:00"}}
+{"at": "2026-10-17T07:57:43+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "fixing"}
+{"at": "2026-10-17T07:57:54+00:00", "by": "review fixed", "from": "fixing", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
+{"at": "2026-10-17T07:57:57+00:00", "binds": "e994288c4c5ed8ce71f1b252a41ce0d7696ae5eca4c09e367f583c02a2d9d7bd", "kind": "round-start", "n": 2, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "f679aafd3bbc829735ef749899255da1382e2425"}
+{"at": "2026-10-17T08:00:07+00:00", "dispatched_at": "2026-10-17T07:57:57+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-17T07:59:50+00:00"}}
+{"at": "2026-10-17T08:00:13+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "71c63e78b52677613b1ac978578f0598c22647ac"}

@@ -483,10 +483,26 @@ def _antigravity_hook(cwd: Path) -> Check:
     """Whether the plugin folder's hooks.json is the hook this kmctl writes."""
     shown = (antigravity.PLUGIN_PATH / "hooks.json").as_posix()
     if antigravity.hook_present(cwd):
-        detail = f"{shown} holds the SessionStart hook this kmctl writes"
+        detail = (
+            f"{shown} holds the SessionStart hook and okf's Stop check this kmctl "
+            "writes"
+        )
         return _pass("antigravity.hook", "antigravity", detail)
     detail = f"{shown} is missing or is not the hook this kmctl writes"
     return _fail("antigravity.hook", "antigravity", detail, antigravity.FIX)
+
+
+def _antigravity_apm_hooks(cwd: Path) -> Check:
+    """Whether APM's hooks.json no longer runs okf's Stop check, which fails in agy."""
+    shown = antigravity.APM_HOOKS.as_posix()
+    cid = "antigravity.apm-hooks"
+    if antigravity.apm_okf_stop_present(cwd):
+        detail = (
+            f"{shown} still runs okf-stop-check.sh, which fails at the end of every "
+            "turn in Antigravity"
+        )
+        return _fail(cid, "antigravity", detail, antigravity.FIX)
+    return _pass(cid, "antigravity", f"{shown} runs no okf Stop check")
 
 
 def _antigravity_mcp(cwd: Path) -> Check:
@@ -571,7 +587,12 @@ def _harness(cwd: Path, scope: Scope, harness: str, online: bool) -> list[Check]
             _claude_old_plugin(cwd, scope),
         ]
         return checks
-    checks += [_antigravity_plugin(cwd), _antigravity_hook(cwd), _antigravity_mcp(cwd)]
+    checks += [
+        _antigravity_plugin(cwd),
+        _antigravity_hook(cwd),
+        _antigravity_apm_hooks(cwd),
+        _antigravity_mcp(cwd),
+    ]
     trust = _antigravity_trust(cwd)
     if trust is not None:
         checks.append(trust)

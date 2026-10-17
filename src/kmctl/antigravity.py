@@ -46,6 +46,29 @@ HOOK_COMMAND = (
     "out=$(kmctl briefing --format antigravity 2>/dev/null) "
     "&& printf '%s\\n' \"$out\" || echo '{}'; exit 0"
 )
+#: okf's Stop hook script as APM deploys it for Antigravity, relative to the
+#: repository.
+OKF_STOP_SCRIPT = ".agents/hooks/okf-skills/hooks/okf-stop-check.sh"
+#: Where APM merges hooks for Antigravity, relative to the repository.
+APM_HOOKS = Path(".agents") / "hooks.json"
+#: The name in hooks.json of the hook that runs okf's Stop check.
+STOP_HOOK_NAME = "kmctl-okf-stop"
+#: The command of that hook. agy runs it in the plugin folder, three levels
+#: below the repository, and blocks a stop only on ``"decision": "continue"``,
+#: where okf prints Claude Code's ``"block"``. It continues only on the first
+#: stop of a turn (agy counts ``executionNum`` from 0, per turn;
+#: spike:antigravity-okf-stop-hook/3), as okf's own ``stop_hook_active``
+#: guard does in Claude Code, and prints ``{}`` and exits 0 otherwise (I1).
+STOP_COMMAND = (
+    "in=$(cat); printf '%s' \"$in\" "
+    "| grep -Eq '\"executionNum\"[[:space:]]*:[[:space:]]*0([^0-9]|$)' "
+    "|| { echo '{}'; exit 0; }; "
+    f"cd ../../.. 2>/dev/null && [ -f {OKF_STOP_SCRIPT} ] || {{ echo '{{}}'; exit 0; }}; "
+    f"out=$(printf '{{}}' | bash {OKF_STOP_SCRIPT} 2>/dev/null); "
+    'case "$out" in *\'"decision":"block"\'*) printf \'%s\\n\' "$out" '
+    '| sed \'s/"decision":"block"/"decision":"continue"/\';; '
+    "*) echo '{}';; esac; exit 0"
+)
 #: Where the MCP launcher starts looking for ``.okf/``: the repository the
 #: plugin folder sits in, when Antigravity sets PLUGIN_ROOT, then the working
 #: folder.
@@ -237,9 +260,66 @@ def drop_apm_rules(cwd: Path, deployed: list[str]) -> list[str]:
 
 
 def hooks() -> dict[str, object]:
-    """hooks.json: one named hook with one SessionStart handler."""
-    handler = {"type": "command", "command": HOOK_COMMAND, "timeout": HOOK_TIMEOUT}
-    return {HOOK_NAME: {"SessionStart": [handler]}}
+    """hooks.json: the briefing's SessionStart handler and okf's Stop check, one named hook each."""
+    start = {"type": "command", "command": HOOK_COMMAND, "timeout": HOOK_TIMEOUT}
+    stop = {"type": "command", "command": STOP_COMMAND, "timeout": HOOK_TIMEOUT}
+    return {HOOK_NAME: {"SessionStart": [start]}, STOP_HOOK_NAME: {"Stop": [stop]}}
+
+
+def _runs_okf_stop(handler: object) -> bool:
+    """Whether a hooks.json handler runs okf's Stop check script."""
+    return isinstance(handler, dict) and "okf-stop-check.sh" in str(
+        handler.get("command", "")
+    )
+
+
+def apm_okf_stop_present(cwd: Path) -> bool:
+    """Whether APM's hooks.json in ``cwd`` still runs okf's Stop check, which never works there."""
+    path = cwd / APM_HOOKS
+    if not path.is_file():
+        return False
+    return "okf-stop-check.sh" in path.read_text(encoding="utf-8")
+
+
+def drop_apm_okf_stop(cwd: Path) -> bool:
+    """Take okf's Stop handlers out of APM's hooks.json in ``cwd``; return whether any went.
+
+    APM writes okf's handler with a path from the repository root, but agy
+    runs it in ``.agents/``, so it fails at the end of every turn; the
+    plugin folder's ``kmctl-okf-stop`` hook runs it instead. A named hook
+    left with no handlers is dropped; every other hook and key stays. A
+    file that is missing or not a JSON object is left alone.
+    """
+    path = cwd / APM_HOOKS
+    if not path.is_file():
+        return False
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return False
+    if not isinstance(data, dict):
+        return False
+    changed = False
+    for name, events in list(data.items()):
+        if not isinstance(events, dict):
+            continue
+        dropped = False
+        for event, handlers in list(events.items()):
+            if not isinstance(handlers, list):
+                continue
+            kept = [h for h in handlers if not _runs_okf_stop(h)]
+            if len(kept) != len(handlers):
+                dropped = True
+                if kept:
+                    events[event] = kept
+                else:
+                    del events[event]
+        if dropped and not events:
+            del data[name]
+        changed = changed or dropped
+    if changed:
+        path.write_text(_json(data), encoding="utf-8")
+    return changed
 
 
 def mcp_config() -> dict[str, object]:
@@ -348,6 +428,6 @@ def plugin_problems(cwd: Path) -> list[str]:
 
 
 def hook_present(cwd: Path) -> bool:
-    """Whether the plugin folder's hooks.json is exactly the one this kmctl writes."""
+    """Whether the plugin folder's hooks.json is exactly the one this kmctl writes, both hooks included."""
     path = plugin_dir(cwd) / "hooks.json"
     return path.is_file() and path.read_text(encoding="utf-8") == _json(hooks())

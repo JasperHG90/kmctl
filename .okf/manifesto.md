@@ -64,7 +64,8 @@ this formalizes so every repository can have it.
   Antigravity: APM writes the skills into `.agents/`, and kmctl writes the
   folder `.agents/plugins/kmctl/` with the agents translated to
   Antigravity's format, the knowledge rules in the form Antigravity reads,
-  the SessionStart hook and okf's MCP server (ADR 0015, ADR 0016). The harnesses are Claude Code and Antigravity.
+  the SessionStart hook, okf's Stop check and okf's MCP server (ADR 0015,
+  ADR 0016, ADR 0018). The harnesses are Claude Code and Antigravity.
 - **A reusable GitHub Action** (ADR 0005). On every pull request it runs the
   deterministic checks for free. The LLM audit is opt-in and reports only.
 
@@ -72,12 +73,16 @@ this formalizes so every repository can have it.
 
 Each is `planned` until the test named for it passes, then `enforced`.
 
-- **I1. One hook, and it never blocks.** The only hook kmctl installs is
-  SessionStart, and it exits 0 even when `kmctl` is missing or fails.
-  Status: enforced by `tests/test_plugin.py` (`kmctl plugin install` writes
-  one SessionStart hook; it exits 0 without `kmctl` and when it fails) and
-  `tests/test_antigravity.py` (Antigravity's one SessionStart hook prints
-  `{}` and exits 0 in both cases).
+- **I1. One hook of its own, and it never breaks a session.** kmctl's own
+  hook is SessionStart, and it exits 0 even when `kmctl` is missing or
+  fails. In Antigravity kmctl also relays okf's opt-in Stop check, which
+  APM's copy cannot run there (ADR 0018); it exits 0 and prints `{}` when
+  okf's script is missing or fails. Status: enforced by
+  `tests/test_plugin.py` (`kmctl plugin install` writes one SessionStart
+  hook; it exits 0 without `kmctl` and when it fails) and
+  `tests/test_antigravity.py` (Antigravity's SessionStart hook prints `{}`
+  and exits 0 in both cases; the okf Stop relay prints `{}` and exits 0
+  without a working script).
 - **I2. Audits never write knowledge.** The audit agent, its skills and the
   CI action report findings; they never edit `.okf/` or `docs/` and never
   write a `verified` stamp. Status: planned.
