@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "apm-hands-back",
+  "n": 1,
+  "command": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/spike-subpkg.sh rel",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/spike-subpkg.sh",
+      "copy": "files/spike-subpkg.sh"
+    }
+  ],
+  "where": "here",
+  "head": "3103c739f9042b9f7a90c4a764691ff1181e82f9",
+  "fingerprint": "06c73c6cd3b46e575f21a7b4017ff93a06122fcbc3cd3c864559421cbf7abaa4",
+  "started_at": "2026-10-17T12:42:32+00:00",
+  "finished_at": "2026-10-17T12:42:39+00:00",
+  "duration_seconds": 7.151,
+  "timeout_seconds": 600.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
+  "moved_from": null
+}

@@ -1,0 +1,41 @@
+---
+applyTo: '**/docs/**\, **/.okf/**'
+---
+AG rule.
+install rc=0
+--- files
+.agents/apm-hooks.json
+.agents/hooks.json
+.agents/mcp_config.json
+.agents/rules/r.md
+.agents/skills/demo/SKILL.md
+.claude/apm-hooks.json
+.claude/rules/r.md
+.claude/settings.json
+.claude/skills/demo/SKILL.md
+--- .claude rule
+---
+paths:
+  - "docs/**"
+  - ".okf/**"
+---
+
+Claude rule.
+--- .agents rule
+---
+trigger: glob
+globs: "**/docs/**, **/.okf/**"
+---
+
+AG rule.
+--- hooks
+.claude/settings.json:echo claude-start
+.agents/hooks.json:echo ag-start
+--- mcp
+.mcp.json
+.agents/mcp_config.json
+uninstall rc=0
+left after uninstall: 0
+{}
+0
+ok=1
