@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "Step 4 of the how-to says the quoted workflow is ci.yml's knowledge job with actions/checkout 'at its version tag instead of a commit SHA'. ci.yml pins checkout at v7.0.1, but the quoted block uses actions/checkout@v4, so a reader takes v4 to be the tag of the shipped pin, which is false. Say what the block actually uses (for example 'actions/checkout@v4 instead of the pinned commit SHA'), and keep the block's content unchanged as the plan asks.",
+      "anchor": "docs/how-to/install-the-plugin-and-the-ci-action.md:181",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "b906426ff5ba39ed32b3f9e8a38010f620038eddd8a233e7985e25f0107cfeaf",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
+  "at": "2026-10-17T17:45:46+00:00"
+}
