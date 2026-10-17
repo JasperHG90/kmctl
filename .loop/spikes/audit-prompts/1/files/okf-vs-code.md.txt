@@ -1,0 +1,26 @@
+Audit this repository's knowledge bundle, .okf/, against its code: every
+concept in it (the manifesto, decisions, architecture pages, practices and
+any other section), but not handoffs or the log.
+
+For each concept:
+
+1. Read the whole concept, including any Correction sections, which amend
+   it; a decision that is deprecated or superseded only claims that its
+   successor exists and links back.
+2. List its concrete claims about the code: files and folders that exist,
+   what a command or function does, defaults, the steps a workflow runs,
+   which test enforces an invariant, how parts connect.
+3. Check each claim against the code: find it with search_files or
+   list_files, then read the lines that decide it. Skills may help: read a
+   matching review skill's SKILL.md before you start, but do the checking
+   yourself.
+4. Put the concept in checked, saying what you compared it against. Make a
+   finding for each claim the code contradicts: the claim is the concept's
+   line, contradicted_by the code's lines, and the fix says what the
+   concept should say (a decision gets a Correction section, never an edit
+   to its body).
+
+Judge only what a concept claims. A claim you could not find the code for
+is a medium finding that says what you searched for. Every concept gets a
+checked entry, and the summary says how many concepts and claims you
+checked.

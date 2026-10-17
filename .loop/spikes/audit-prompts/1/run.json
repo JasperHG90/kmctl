@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0",
+  "slug": "audit-prompts",
+  "n": 1,
+  "command": "python3 /tmp/claude-1000/-home-vscode-kmctl/dff53b03-6dd4-4578-a2d3-39665316bb2b/scratchpad/spike-audit-prompts/runner.py /tmp/claude-1000/-home-vscode-kmctl/dff53b03-6dd4-4578-a2d3-39665316bb2b/scratchpad/spike-audit-prompts/run1",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/dff53b03-6dd4-4578-a2d3-39665316bb2b/scratchpad/spike-audit-prompts/runner.py",
+      "copy": "files/runner.py"
+    },
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/dff53b03-6dd4-4578-a2d3-39665316bb2b/scratchpad/spike-audit-prompts/agent.py",
+      "copy": "files/agent.py"
+    },
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/dff53b03-6dd4-4578-a2d3-39665316bb2b/scratchpad/spike-audit-prompts/prompts/docs-vs-code.md",
+      "copy": "files/docs-vs-code.md.txt"
+    },
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/dff53b03-6dd4-4578-a2d3-39665316bb2b/scratchpad/spike-audit-prompts/prompts/okf-vs-code.md",
+      "copy": "files/okf-vs-code.md.txt"
+    },
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/dff53b03-6dd4-4578-a2d3-39665316bb2b/scratchpad/spike-audit-prompts/prompts/okf-vs-docs.md",
+      "copy": "files/okf-vs-docs.md.txt"
+    }
+  ],
+  "where": "worktree",
+  "head": "e92a8240cb923a321c9e49c4a1d82610396ff0bf",
+  "fingerprint": "f6feef79caeb0719e9e76fa20c3e75a2b1bf06990296832d5a26335d2587f7d6",
+  "started_at": "2026-10-17T16:42:11+00:00",
+  "finished_at": "2026-10-17T16:51:11+00:00",
+  "duration_seconds": 540.591,
+  "timeout_seconds": 1800.0,
+  "exit": 1,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
+  "moved_from": null
+}
