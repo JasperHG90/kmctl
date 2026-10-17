@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "verify-verb",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 2,
   "plan_rounds": 2,
   "review_rounds": 3,
@@ -49,7 +49,7 @@
   "split": "j-20261017T212537+0000-1785db29",
   "split_plan_hash": "9b29ec64bb3d2b6ce4b3e78097e04021104bc4292fef0630c8e289f35e16d3a7",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "39e435dcf2c57323c08e88bce78f043c03c8ac87",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -264,8 +264,14 @@
       "to": "verifying",
       "at": "2026-10-17T21:50:15+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-17T21:57:32+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.2.1.dev16+g27435b040.d20261017",
-  "at": "2026-10-17T21:57:15+00:00"
+  "at": "2026-10-17T21:57:32+00:00"
 }
