@@ -19,7 +19,9 @@
   "archived": false,
   "worktree": "/home/vscode/kmctl.worktrees/standalone-agent",
   "branch": "loop/standalone-agent",
-  "stamps": [],
+  "stamps": [
+    "3a210c4d5a75252e3b70ef50bd2473abe3ec83050b37b8f293972c5837bbc420"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude",
     "hash": "232147a3d95cf49a3ad332ada29a23ad019bfd3ef632ba8f610ab5bae2ffb75f",
@@ -164,5 +166,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T07:06:51+00:00"
+  "at": "2026-10-17T07:15:33+00:00"
 }
