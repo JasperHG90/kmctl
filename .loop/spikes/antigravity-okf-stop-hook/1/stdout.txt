@@ -1,0 +1,5 @@
+stop hook calls: 1
+{"artifactDirectoryPath":"/home/vscode/.gemini/antigravity-cli/brain/43080403-2dd9-46ca-9652-e19c5834bfa9","conversationId":"43080403-2dd9-46ca-9652-e19c5834bfa9","error":"","executionNum":0,"fullyIdle":true,"modelName":"gemini-3.8-flash-high","terminationReason":"NO_TOOL_CALL","transcriptPath":"/ho
+{'conversation_id': '43080403-2dd9-46ca-9652-e19c5834bfa9', 'step_index': 0, 'state': 'DONE', 'step_type': 'user_input'}
+{'conversation_id': '43080403-2dd9-46ca-9652-e19c5834bfa9', 'step_index': 1, 'state': 'DONE', 'step_type': 'system_message', 'duration_seconds': 0.000896671}
+{'event': 'result', 'result': {'conversation_id': '43080403-2dd9-46ca-9652-e19c5834bfa9', 'status': 'SUCCESS', 'response': 'ready\n', 'duration_seconds': 3.429245317, 'num_turns': 1, 'usage': {'input_tokens': 15271, 'output_tokens': 33, 'thinking_tokens': 32, 'cache_read_tokens': 0, 'total_tokens': 

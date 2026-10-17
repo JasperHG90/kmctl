@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "antigravity-okf-stop-hook",
+  "n": 1,
+  "command": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/spike-stop.sh",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/spike-stop.sh",
+      "copy": "files/spike-stop.sh"
+    }
+  ],
+  "where": "here",
+  "head": "8377c7cbd8decb70b6523da89fc0bd03f3a79982",
+  "fingerprint": "310b6c5b525026dbd60509fcd8ac3f21bf55bc411273ed98b75bc742dfdf50a0",
+  "started_at": "2026-10-17T06:30:53+00:00",
+  "finished_at": "2026-10-17T06:30:58+00:00",
+  "duration_seconds": 5.637,
+  "timeout_seconds": 600.0,
+  "exit": 1,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
+  "moved_from": null
+}
