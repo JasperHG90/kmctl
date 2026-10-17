@@ -1,0 +1,1 @@
+{"ask":"In repos without a loop, the agent should have included in its briefing whether: kmctl has been initialized; manifesto is written; architecture is detailed. If it hasn't (or it's still only the scaffold), the agent should ask the user to fill these in with the agent first. Populating these is of the highest priority"}
