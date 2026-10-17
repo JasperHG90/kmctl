@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016
-  at: '2026-10-17T06:29:59+00:00'
+  at: '2026-10-17T06:30:07+00:00'
 slug: antigravity-rules
 n: 2
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike antigravity-rules/2
@@ -24,7 +24,7 @@ The command exited 0:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note antigravity-rules 2`.
+The risk does not hold (exit 0). After deleting the four kmctl rule files APM deployed under .agents/rules/, apm install --target claude,antigravity exited 0 with no "local files exist" skip and wrote all four back; after deleting them again, apm uninstall of the kmctl entry exited 0 and left no file under .claude/skills, .claude/rules, .agents/skills or .agents/rules, and no lock. Spike 1 ran the same steps but its check also counted unrelated APM info lines as skips.
 
 ## Files
 
