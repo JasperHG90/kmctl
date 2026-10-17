@@ -1,0 +1,301 @@
+eases-come-from-ci.md:4",
+   "contradicted_by": [
+    "pyproject.toml:27-30",
+    ".okf/decisions/0012-releases-come-from-ci.md:85-93",
+    ".okf/decisions/index.md:25"
+   ],
+   "fix": "Update the description (and the index line) to say apm/apm.yml is the one version source, or note the supersession in the Correction."
+  },
+  {
+   "title": "ADR 0015 still names kmctl plugin install --harness antigravity",
+   "severity": "low",
+   "path": ".okf/decisions/0015-antigravity-gets-skills-and-rules-from-apm-and-a-kmctl-plugin-folder.md",
+   "summary": "The Decision says `kmctl plugin install --harness antigravity` runs the APM install and writes the plugin folder, and the Consequences say a fresh clone needs it before status is current. The verb is gone (ADR 0021); ADR 0015 is amended to ADR 0020 but not to ADR 0021.",
+   "claim": ".okf/decisions/0015-antigravity-gets-skills-and-rules-from-apm-and-a-kmctl-plugin-folder.md:56",
+   "contradicted_by": [
+    ".okf/decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md:52",
+    "tests/test_plugin_patch.py:319-325",
+    ".okf/decisions/0015-antigravity-gets-skills-and-rules-from-apm-and-a-kmctl-plugin-folder.md:107-109"
+   ],
+   "fix": "Add an amendment naming ADR 0021: the user runs `apm install --target antigravity` and then `kmctl plugin patch`."
+  },
+  {
+   "title": "ADR 0018 says a bare apm install is fixed by kmctl plugin install",
+   "severity": "low",
+   "path": ".okf/decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity.md",
+   "summary": "The Consequences say a bare `apm install` puts APM's handler back \"until the next `kmctl plugin install`\". That verb is gone; the fix is `kmctl plugin patch`, which removes the handler.",
+   "claim": ".okf/decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity.md:80",
+   "contradicted_by": [
+    "src/kmctl/plugin.py:761-772",
+    ".okf/decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md:69-70"
+   ],
+   "fix": "Add an amendment naming ADR 0021 and saying the next `kmctl plugin patch` takes the handler out again."
+  },
+  {
+   "title": "ADR 0020 says kmctl plugin install writes none of the package pieces",
+   "severity": "low",
+   "path": ".okf/decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md",
+   "summary": "The Decision says \"`kmctl plugin install` writes none of these\" and that it removes, before running APM, an older hook group and a stale okf-bundle entry. That verb no longer exists: kmctl plugin patch removes those and never runs APM, and doctor reports the files APM writes.",
+   "claim": ".okf/decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md:75-78",
+   "contradicted_by": [
+    "src/kmctl/plugin.py:710-724",
+    ".okf/decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md:39-44",
+    "tests/test_plugin_patch.py:319-325"
+   ],
+   "fix": "Add an amendment naming ADR 0021: the removing is `kmctl plugin patch`, and it never runs APM."
+  },
+  {
+   "title": "Decisions index's ADR 0014 summary is two revisions out of date",
+   "severity": "medium",
+   "path": ".okf/decisions/index.md",
+   "summary": "The index line for ADR 0014 says the package is what \"kmctl plugin install --harness writes into apm.yml and installs with APM; kmctl writes the SessionStart hook and okf's MCP server itself\". ADR 0020 moved the hook and MCP server into the package (APM writes them), and ADR 0021 removed the install verb.",
+   "claim": ".okf/decisions/index.md:27",
+   "contradicted_by": [
+    ".okf/decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md:61-79",
+    ".okf/decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md:33-37",
+    "src/kmctl/plugin.py:710-724"
+   ],
+   "fix": "Rewrite the entry: APM installs the package (skills, agent, rules, hooks and okf's MCP server) from the apm.yml entry; kmctl plugin patch adds what APM cannot."
+  }
+ ]
+}
+=== okf-vs-docs
+{
+ "summary": "I read all 12 pages under docs/ (docs/README.md and the four folder indexes included) and the whole audited bundle (.okf/manifesto.md, .okf/architecture/index.md + overview.md, and all 22 decisions, applying each Correction and treating superseded records as replaced). I compared ~75 subjects: what each part does, why each design is the way it is, defaults, names, counts, steps and what is out of scope. Most hold: the install/removal routes (ADR 0014/0019-0021), docs front matter and generated indexes (ADR 0022), staleness and review due (ADR 0006/0022), handoffs (ADR 0008/0009), the three CI audits and the report-only rule (ADR 0005/0017), the briefing's budget and that it takes its text from the CLI (I3/ADR 0002), and the rules/agent/hook split (ADR 0020). I found 7 disagreements, all where the docs page has not caught up with a corrected decision or a later one; none of the .okf/ side looks out of date. Two of them (the briefing row and the review-due row of the commands summary) are cases where the docs copied a stale CLI help string that .okf/ has moved past. Docs-vs-code matters (e.g. docs/reference/commands.md:224's kind list omits the docs-folder-index kind) are outside this audit and are not reported.",
+ "checked": [
+  {
+   "subject": "docs/README.md (docs root index)",
+   "against": "ADR 0022 (generated folder indexes, docs/ is not a bundle) and the manifesto's knowledge table",
+   "evidence": [
+    "docs/README.md:3-5",
+    ".okf/decisions/0022-docs-pages-carry-optional-okf-front-matter-and-generated-folder-indexes.md:50-56",
+    ".okf/manifesto.md:35"
+   ]
+  },
+  {
+   "subject": "docs/explanation/README.md (folder index)",
+   "against": "ADR 0022 generated-index shape and the two pages it lists",
+   "evidence": [
+    "docs/explanation/README.md:1-5",
+    ".okf/decisions/0022-docs-pages-carry-optional-okf-front-matter-and-generated-folder-indexes.md:50-53"
+   ]
+  },
+  {
+   "subject": "docs/explanation/where-kmctl-fits-in-knowledge-management.md",
+   "against": "manifesto (Where knowledge lives, Parts, Invariants, Out of scope), ADR 0002, 0005, 0006, 0008, 0020; one disagreement (F6)",
+   "evidence": [
+    "docs/explanation/where-kmctl-fits-in-knowledge-management.md:34-42",
+    "docs/explanation/where-kmctl-fits-in-knowledge-management.md:78-89",
+    "docs/explanation/where-kmctl-fits-in-knowledge-management.md:129-132",
+    ".okf/manifesto.md:31-42",
+    ".okf/manifesto.md:74-101",
+    ".okf/manifesto.md:114-121",
+    ".okf/decisions/0005-audits-report-only.md:25-33"
+   ]
+  },
+  {
+   "subject": "docs/explanation/why-one-hook-and-report-only-audits.md",
+   "against": "ADR 0002, 0004, 0005, 0011, 0014, 0017, 0018, 0021, manifesto I1-I3; one disagreement (F3)",
+   "evidence": [
+    "docs/explanation/why-one-hook-and-report-only-audits.md:25-42",
+    "docs/explanation/why-one-hook-and-report-only-audits.md:52-63",
+    "docs/explanation/why-one-hook-and-report-only-audits.md:78-90",
+    ".okf/decisions/0005-audits-report-only.md:70-82",
+    ".okf/decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script.md:120-148",
+    ".okf/decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity.md:44-58",
+    ".okf/manifesto.md:78-93"
+   ]
+  },
+  {
+   "subject": "docs/how-to/README.md (folder index)",
+   "against": "ADR 0022 and the two how-to pages' titles/descriptions",
+   "evidence": [
+    "docs/how-to/README.md:1-5",
+    ".okf/decisions/0022-docs-pages-carry-optional-okf-front-matter-and-generated-folder-indexes.md:50-53"
+   ]
+  },
+  {
+   "subject": "docs/how-to/install-kmctl-with-apm.md",
+   "against": "ADR 0014, 0015, 0018, 0020, 0021, 0022 (package contents, approval, Antigravity gap, scopes, removal, older entries)",
+   "evidence": [
+    "docs/how-to/install-kmctl-with-apm.md:8-14",
+    "docs/how-to/install-kmctl-with-apm.md:22-28",
+    "docs/how-to/install-kmctl-with-apm.md:69-86",
+    "docs/how-to/install-kmctl-with-apm.md:128-149",
+    ".okf/decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md:61-73",
+    ".okf/decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md:81-90",
+    ".okf/decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md:31-55"
+   ]
+  },
+  {
+   "subject": "docs/how-to/install-the-plugin-and-the-ci-action.md",
+   "against": "ADR 0005, 0015, 0017, 0018, 0020, 0021 (install per harness, checks mode, audit inputs, publish job, upgrade, removal); one disagreement (F4)",
+   "evidence": [
+    "docs/how-to/install-the-plugin-and-the-ci-action.md:85-97",
+    "docs/how-to/install-the-plugin-and-the-ci-action.md:118-148",
+    "docs/how-to/install-the-plugin-and-the-ci-action.md:236-261",
+    "docs/how-to/install-the-plugin-and-the-ci-action.md:277-296",
+    "docs/how-to/install-the-plugin-and-the-ci-action.md:505-517",
+    ".okf/decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md:39-50",
+    ".okf/decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md:66-73",
+    ".okf/decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script.md:134-148"
+   ]
+  },
+  {
+   "subject": "docs/reference/README.md (folder index)",
+   "against": "ADR 0022 and the one page it lists",
+   "evidence": [
+    "docs/reference/README.md:1-4",
+    ".okf/decisions/0022-docs-pages-carry-optional-okf-front-matter-and-generated-folder-indexes.md:50-53"
+   ]
+  },
+  {
+   "subject": "docs/reference/commands.md",
+   "against": "ADR 0001, 0002, 0006, 0008, 0009, 0011, 0012, 0014, 0017, 0018, 0019, 0020, 0021, 0022, architecture overview (CLI table, package, action) and the manifesto Parts; three disagreements (F1, F2, F7)",
+   "evidence": [
+    "docs/reference/commands.md:9-14",
+    "docs/reference/commands.md:62-96",
+    "docs/reference/commands.md:130-169",
+    "docs/reference/commands.md:181-209",
+    "docs/reference/commands.md:240-258",
+    "docs/reference/commands.md:324-412",
+    "docs/reference/commands.md:414-455",
+    "docs/reference/commands.md:457-517",
+    ".okf/architecture/overview.md:150-167",
+    ".okf/architecture/overview.md:180-219",
+    ".okf/decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md:39-55",
+    ".okf/decisions/0022-docs-pages-carry-optional-okf-front-matter-and-generated-folder-indexes.md:38-56"
+   ]
+  },
+  {
+   "subject": "docs/tutorials/README.md (folder index)",
+   "against": "ADR 0022 and the two tutorial pages' titles/descriptions",
+   "evidence": [
+    "docs/tutorials/README.md:1-5",
+    ".okf/decisions/0022-docs-pages-carry-optional-okf-front-matter-and-generated-folder-indexes.md:50-53"
+   ]
+  },
+  {
+   "subject": "docs/tutorials/get-started-with-kmctl.md",
+   "against": "ADR 0006, 0008, 0011, 0012, 0021, 0022 and architecture overview (one version source); one disagreement (F5)",
+   "evidence": [
+    "docs/tutorials/get-started-with-kmctl.md:19-33",
+    "docs/tutorials/get-started-with-kmctl.md:50-82",
+    "docs/tutorials/get-started-with-kmctl.md:109-124",
+    "docs/tutorials/get-started-with-kmctl.md:204-215",
+    ".okf/decisions/0022-docs-pages-carry-optional-okf-front-matter-and-generated-folder-indexes.md:50-56",
+    ".okf/decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md:146-156",
+    ".okf/architecture/overview.md:256-259"
+   ]
+  },
+  {
+   "subject": "docs/tutorials/audit-your-repository-with-the-agent.md",
+   "against": "ADR 0005 and 0017 (agent tools, citation checking, three audits, report shape)",
+   "evidence": [
+    "docs/tutorials/audit-your-repository-with-the-agent.md:39-51",
+    "docs/tutorials/audit-your-repository-with-the-agent.md:115-132",
+    "docs/tutorials/audit-your-repository-with-the-agent.md:228-243",
+    ".okf/decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script.md:100-148",
+    ".okf/decisions/0005-audits-report-only.md:70-82"
+   ]
+  }
+ ],
+ "findings": [
+  {
+   "title": "The explanation page says kmctl has one hook that never stops anything",
+   "severity": "medium",
+   "path": "docs/explanation/why-one-hook-and-report-only-audits.md",
+   "summary": "The page's whole premise is that what kmctl installs is only the SessionStart briefing and that nothing it installs ever affects stopping. Since ADR 0018, kmctl's Antigravity package also ships okf's opt-in Stop check (amending ADR 0004 and invariant I1); it runs okf's check and returns \"continue\", which keeps the agent working, so kmctl does take part in a Stop. The page never mentions Antigravity or the Stop hook, while docs/how-to/install-the-plugin-and-the-ci-action.md:136-141 and docs/reference/commands.md:434-437 both describe it. The docs side is out of date.",
+   "claim": "docs/explanation/why-one-hook-and-report-only-audits.md:10-11",
+   "contradicted_by": [
+    ".okf/manifesto.md:78-87",
+    ".okf/decisions/0004-sessionstart-is-the-only-hook.md:47-52",
+    ".okf/decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity.md:44-58",
+    ".okf/architecture/overview.md:195-200"
+   ],
+   "fix": "Keep the page's point (kmctl's own hook is SessionStart only and never blocks a session) but add the Antigravity case: the package also ships okf's opt-in Stop check (ADR 0018), which can send the agent back to work while `.okf/index.md` sets `upkeep: enforced`. Adjust line 10-11, line 16-17 (\"the only hook in kmctl's package\") and the \"Why there is only one hook\" heading at line 65 so they say \"kmctl's own hook\" rather than \"one hook\"."
+  },
+  {
+   "title": "Tutorial prints kmctl 0.1.0 after installing the v0.3.0 tag",
+   "severity": "medium",
+   "path": "docs/tutorials/get-started-with-kmctl.md",
+   "summary": "The tutorial installs the CLI at tag v0.3.0 (line 23) and then shows `kmctl --version` printing `kmctl 0.1.0`. The version is written once in apm/apm.yml (0.3.0) and pyproject reads it, and .okf/architecture says `kmctl --version`, the package tag and a tagless build all agree; the docs reference already says 0.3.0 in three places (docs/reference/commands.md:9, :393, :521). The docs line is a leftover (the same class of error was fixed in the reference but not here).",
+   "claim": "docs/tutorials/get-started-with-kmctl.md:32",
+   "contradicted_by": [
+    ".okf/architecture/overview.md:256-259",
+    ".okf/architecture/overview.md:139-140",
+    ".okf/decisions/0012-releases-come-from-ci.md:95-99",
+    "apm/apm.yml:10",
+    "docs/reference/commands.md:9"
+   ],
+   "fix": "Make line 32 print `kmctl 0.3.0`, matching the install at line 23 and docs/reference/commands.md:9. (docs/how-to/install-the-plugin-and-the-ci-action.md:63's `version: 0.1.0` is the example project's own version and stays.)"
+  },
+  {
+   "title": "Commands summary says the briefing prints \"the rules\"",
+   "severity": "low",
+   "path": "docs/reference/commands.md",
+   "summary": "The summary row for `kmctl briefing` says it prints \"where knowledge lives, what is due, and the rules\", but the same page's detail (lines 184-186) says the rules for writing knowledge are not in the briefing: they live in `.claude/rules/` and the briefing adds only the one they lack. ADR 0002's 2026-10-16 correction removed the knowledge rules from the briefing and the architecture page says so explicitly. The row copied the CLI help text `src/kmctl/__init__.py:555`, which is itself the stale side.",
+   "claim": "docs/reference/commands.md:22",
+   "contradicted_by": [
+    ".okf/decisions/0002-briefing-and-rules-injected-by-the-cli.md:69-74",
+    ".okf/architecture/overview.md:159",
+    "docs/reference/commands.md:184-186",
+    "src/kmctl/__init__.py:555"
+   ],
+   "fix": "Change the row to match line 184-186 and .okf/: \"Print the session briefing: where knowledge lives, what is due, its one rule and the package's skills.\" The CLI docstring at src/kmctl/__init__.py:555, which the row is copied from, should be reworded with it."
+  },
+  {
+   "title": "Schema section says docs/ pages allow no front matter properties",
+   "severity": "low",
+   "path": "docs/reference/commands.md",
+   "summary": "The schema section groups \"the `docs/` pages\" with the kinds that \"allow no properties\". ADR 0022 gave docs pages four optional OKF fields (`description`, `stale_after`, `verified`, `sources`), the manifesto's I4 says the same, the code gives the doc-page kinds exactly those fields, and the same page says it at lines 149-153. Only the section indexes, the log and the docs root/folder indexes have no properties.",
+   "claim": "docs/reference/commands.md:233-235",
+   "contradicted_by": [
+    ".okf/decisions/0022-docs-pages-carry-optional-okf-front-matter-and-generated-folder-indexes.md:38-42",
+    ".okf/manifesto.md:97-99",
+    "docs/reference/commands.md:149-153",
+    "src/kmctl/kinds.py:120-121"
+   ],
+   "fix": "Say that the kinds with no front matter are the indexes below the root, the docs folder indexes and the log, and that the `tutorial`/`how-to`/`reference`/`explanation` kinds allow the four optional docs fields (ADR 0022)."
+  },
+  {
+   "title": "Commands summary says review due lists only .okf/ concepts",
+   "severity": "low",
+   "path": "docs/reference/commands.md",
+   "summary": "The summary row for `kmctl review due` says it lists concepts in `.okf/` due for review. ADR 0022 extended the verb to docs pages, the manifesto's Parts list says it reports what is due in `.okf/` and `docs/`, and the same page's detail (lines 242-251) describes the docs rules. The row copied the CLI help text `src/kmctl/__init__.py:300`, which ADR 0022 has overtaken.",
+   "claim": "docs/reference/commands.md:25",
+   "contradicted_by": [
+    ".okf/manifesto.md:51-53",
+    ".okf/decisions/0022-docs-pages-carry-optional-okf-front-matter-and-generated-folder-indexes.md:43-49",
+    "docs/reference/commands.md:242-243",
+    "src/kmctl/__init__.py:300"
+   ],
+   "fix": "Change the row to \"List the concepts in `.okf/` and the pages in `docs/` that are due for review, with the reason for each\", as at line 242. The CLI docstring at src/kmctl/__init__.py:300 should be reworded with it."
+  },
+  {
+   "title": "CI checks mode said to fail only when kmctl check fails",
+   "severity": "low",
+   "path": "docs/how-to/install-the-plugin-and-the-ci-action.md",
+   "summary": "The how-to says the default `checks` mode \"fails only when `kmctl check` fails\". ADR 0005 and the architecture page say the job also fails when `kmctl review due` crashes, and action/knowledge-ci.sh does exactly that. The docs sentence is too narrow; the next line (\"Concepts that are due are reported, never failed\") is the correct point.",
+   "claim": "docs/how-to/install-the-plugin-and-the-ci-action.md:212-213",
+   "contradicted_by": [
+    ".okf/decisions/0005-audits-report-only.md:50-52",
+    ".okf/architecture/overview.md:226-228",
+    "action/knowledge-ci.sh:4"
+   ],
+   "fix": "Write \"fails when `kmctl check` fails or `kmctl review due` crashes, never because a concept is due\", matching ADR 0005 and action/knowledge-ci.sh."
+  },
+  {
+   "title": "Explanation page calls kmctl's packaging one APM package",
+   "severity": "low",
+   "path": "docs/explanation/where-kmctl-fits-in-knowledge-management.md",
+   "summary": "The page says kmctl ships its rules and skills \"as one APM package, which APM installs for Claude Code and Antigravity\". ADR 0020 and the architecture page say kmctl's package is three APM packages in `apm/`: the shared one plus the `./claude` and `./antigravity` sub-packages that carry each harness's rules and hooks. A consumer adds one `apm.yml` entry, but the shipped bundle is not one package.",
+   "claim": "docs/explanation/where-kmctl-fits-in-knowledge-management.md:113",
+   "contradicted_by": [
+    ".okf/decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md:61-73",
+    ".okf/architecture/overview.md:189-194"
+   ],
+   "fix": "Say \"as an APM package (three packages in one folder: the shared one and a sub-package per harness, ADR 0020)\", or drop the count and say \"as an APM package\"."
+  }
+ ]
+}
