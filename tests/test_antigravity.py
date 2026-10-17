@@ -873,7 +873,13 @@ def test_docs_decision_matches_the_decision_schema() -> None:
     ]
 
     assert errors == []
-    assert _sections(_decision().read_text()) == skeleton("decision")
+    # Later corrections are appended, never written into the skeleton's sections.
+    sections = [
+        s
+        for s in _sections(_decision().read_text())
+        if not s.startswith("Correction, ")
+    ]
+    assert sections == skeleton("decision")
 
 
 def test_docs_decision_records_the_route() -> None:

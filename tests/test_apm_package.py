@@ -337,14 +337,16 @@ def test_docs_superseded_records_point_at_the_new_one() -> None:
     ],
 )
 def test_docs_changed_records_name_what_changed(record: str, words: str) -> None:
-    """ADR 0001, 0011 and 0012 each end with a Correction that names the new record."""
+    """ADR 0001, 0011 and 0012 each carry a 2026-10-16 Correction that names the new record."""
     path = DECISIONS / record
     sections = _sections(path.read_text())
-    last_heading = list(sections)[-1]
+    heading = next(
+        (h for h in sections if h.startswith("Correction, 2026-10-16")), None
+    )
 
-    assert last_heading.startswith("Correction, 2026-10-16"), record
-    assert DECISION.name in sections[last_heading], record
-    assert words in _flat(sections[last_heading]), record
+    assert heading is not None, record
+    assert DECISION.name in sections[heading], record
+    assert words in _flat(sections[heading]), record
     assert front_matter(path)["status"] == "stable", record
 
 

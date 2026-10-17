@@ -110,3 +110,11 @@ Rejected:
   unseen; the ticket antigravity-live-check is for checking it on an
   eligible account.
 - The manifesto names Antigravity as a harness kmctl installs for.
+
+## Correction, 2026-10-17
+
+`kmctl plugin status --harness antigravity`, named in the Decision and the
+Consequences, no longer exists; `kmctl doctor` took over its checks. Its
+`antigravity.plugin` check compares the files in `.agents/plugins/kmctl/`
+with what this kmctl writes, through `antigravity.plugin_problems`
+(`src/kmctl/doctor.py`). The decision stands.
