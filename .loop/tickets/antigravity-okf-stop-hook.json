@@ -93,7 +93,9 @@
     "scope": "full",
     "sent_back": [],
     "since": null,
-    "returned": {},
+    "returned": {
+      "reviewer": "j-20261017T072906+0000-f7e7d61d"
+    },
     "chosen": {},
     "skipped": [],
     "closed": false,
@@ -132,5 +134,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T07:25:03+00:00"
+  "at": "2026-10-17T07:29:06+00:00"
 }
