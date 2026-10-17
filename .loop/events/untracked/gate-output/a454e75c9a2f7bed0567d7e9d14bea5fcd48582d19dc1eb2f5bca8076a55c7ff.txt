@@ -1,0 +1,94 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.15, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/vscode/kmctl
+configfile: pyproject.toml
+plugins: respx-0.23.1, anyio-4.15.1
+collected 680 items / 5 deselected / 675 selected
+
+tests/scripts/test_check_wheel.py .....                                  [  0%]
+tests/scripts/test_next_release_version.py ........................      [  4%]
+tests/scripts/test_release.py .............................              [  8%]
+tests/scripts/test_release_docs.py .....                                 [  9%]
+tests/scripts/test_smoke_wheel.py .........                              [ 10%]
+tests/scripts/test_workflows.py .............                            [ 12%]
+tests/test_action.py ..............                                      [ 14%]
+tests/test_adr_audit_fixes.py ....                                       [ 15%]
+tests/test_agent.py .........................                            [ 18%]
+tests/test_antigravity.py .............................................. [ 25%]
+......F......                                                            [ 27%]
+tests/test_apm_package.py ............F.............                     [ 31%]
+tests/test_audit.py .....                                                [ 32%]
+tests/test_briefing.py ...........                                       [ 33%]
+tests/test_check.py .........................                            [ 37%]
+tests/test_cli.py ..                                                     [ 37%]
+tests/test_docs.py .....                                                 [ 38%]
+tests/test_doctor.py ................................................... [ 46%]
+........................                                                 [ 49%]
+tests/test_handoff_key.py ........                                       [ 50%]
+tests/test_handoffs.py .........                                         [ 52%]
+tests/test_help.py ...................................................   [ 59%]
+tests/test_init.py ..............................................        [ 66%]
+tests/test_network_retry.py ...............                              [ 68%]
+tests/test_new_concept.py ....................                           [ 71%]
+tests/test_new_doc.py .......                                            [ 72%]
+tests/test_okf_fields.py ......                                          [ 73%]
+tests/test_plugin.py ................................................... [ 81%]
+............................                                             [ 85%]
+tests/test_plugin_error.py .......                                       [ 86%]
+tests/test_repo_apm.py ..........                                        [ 88%]
+tests/test_review_due.py .........                                       [ 89%]
+tests/test_rules.py ...............................                      [ 93%]
+tests/test_schema.py ...............................                     [ 98%]
+tests/test_skills.py ...                                                 [ 98%]
+tests/test_supersede.py .......                                          [100%]
+
+=================================== FAILURES ===================================
+________________ test_docs_decision_matches_the_decision_schema ________________
+
+    def test_docs_decision_matches_the_decision_schema() -> None:
+        meta = json.loads(json.dumps(front_matter(_decision()), default=str))
+    
+        errors = [
+            e.message for e in Draft202012Validator(schema("decision")).iter_errors(meta)
+        ]
+    
+        assert errors == []
+>       assert _sections(_decision().read_text()) == skeleton("decision")
+E       AssertionError: assert ['Context', '..., 2026-10-17'] == ['Context', '...Consequences']
+E         
+E         Left contains one more item: 'Correction, 2026-10-17'
+E         Use -v to get more diff
+
+tests/test_antigravity.py:876: AssertionError
+_ test_docs_changed_records_name_what_changed[0001-standalone-cli-installs-its-plugin.md-apm/apm.yml] _
+
+record = '0001-standalone-cli-installs-its-plugin.md', words = 'apm/apm.yml'
+
+    @pytest.mark.parametrize(
+        ("record", "words"),
+        [
+            ("0001-standalone-cli-installs-its-plugin.md", "apm/apm.yml"),
+            (
+                "0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md",
+                "kmctl plugin install",
+            ),
+            ("0012-releases-come-from-ci.md", "apm/apm.yml"),
+        ],
+    )
+    def test_docs_changed_records_name_what_changed(record: str, words: str) -> None:
+        """ADR 0001, 0011 and 0012 each end with a Correction that names the new record."""
+        path = DECISIONS / record
+        sections = _sections(path.read_text())
+        last_heading = list(sections)[-1]
+    
+>       assert last_heading.startswith("Correction, 2026-10-16"), record
+E       AssertionError: 0001-standalone-cli-installs-its-plugin.md
+E       assert False
+E        +  where False = <built-in method startswith of str object at 0xffffb82fc270>('Correction, 2026-10-16')
+E        +    where <built-in method startswith of str object at 0xffffb82fc270> = 'Correction, 2026-10-17'.startswith
+
+tests/test_apm_package.py:345: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_antigravity.py::test_docs_decision_matches_the_decision_schema
+FAILED tests/test_apm_package.py::test_docs_changed_records_name_what_changed[0001-standalone-cli-installs-its-plugin.md-apm/apm.yml]
+================= 2 failed, 673 passed, 5 deselected in 22.93s =================
