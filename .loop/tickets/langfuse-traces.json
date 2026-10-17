@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "langfuse-traces",
-  "stage": "building",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 0,
@@ -125,8 +125,14 @@
       "to": "building",
       "at": "2026-10-17T18:24:02+00:00",
       "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-10-17T18:34:45+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.2.1.dev12+gf9e67e6b6.d20261017",
-  "at": "2026-10-17T18:27:57+00:00"
+  "at": "2026-10-17T18:34:45+00:00"
 }
