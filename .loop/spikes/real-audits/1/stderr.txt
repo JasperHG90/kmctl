@@ -1,0 +1,12 @@
+spike: validator call 1: 0/82 rejected
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-home-vscode-kmctl/dff53b03-6dd4-4578-a2d3-39665316bb2b/scratchpad/spike-real-audits/agent.py", line 1033, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/tmp/claude-1000/-home-vscode-kmctl/dff53b03-6dd4-4578-a2d3-39665316bb2b/scratchpad/spike-real-audits/agent.py", line 1026, in main
+    return run(args, model)
+           ^^^^^^^^^^^^^^^^
+  File "/tmp/claude-1000/-home-vscode-kmctl/dff53b03-6dd4-4578-a2d3-39665316bb2b/scratchpad/spike-real-audits/agent.py", line 699, in run
+    STATS["requests"] = result.usage().requests
+                        ^^^^^^^^^^^^^^
+TypeError: 'RunUsage' object is not callable
