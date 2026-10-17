@@ -154,7 +154,6 @@ def test_action_and_workflow_wiring() -> None:
     assert any("uses: ./" in w.read_text() for w in workflows)
 
 
-ISSUE_SCRIPT = ROOT / "action" / "knowledge-audit-issue.sh"
 WORKFLOW = ROOT / ".github" / "workflows" / "knowledge-audit.yml"
 TOKENS = ("GH_TOKEN", "GITHUB_TOKEN")
 OLD_AUDIT = (
@@ -162,77 +161,8 @@ OLD_AUDIT = (
     "action/audit-batches.py",
     "action/audit-report.py",
     "action/hermes/kmctl-read/__init__.py",
+    "action/knowledge-audit-issue.sh",
 )
-
-
-def _gh_bin(tmp_path: Path, issues: str = "[]", list_fails: bool = False) -> Path:
-    """A bin folder with a gh that records its calls and the body file it is given."""
-    bin_dir = tmp_path / "bin"
-    bin_dir.mkdir(exist_ok=True)
-    (tmp_path / "issues.json").write_text(issues)
-    (bin_dir / "gh").write_text(
-        "#!/bin/sh\n"
-        f'echo "$@" >> "{tmp_path}/gh-calls"\n'
-        + ('[ "$1 $2" = "issue list" ] && exit 4\n' if list_fails else "")
-        + 'for a in "$@"; do case "$a" in --body-file) next=1 ;; *) '
-        f'[ -n "$next" ] && cp "$a" "{tmp_path}/issue-body" && next= ;; esac; done\n'
-        f'[ "$1 $2" = "issue list" ] && cat "{tmp_path}/issues.json"\n'
-        "exit 0\n"
-    )
-    (bin_dir / "gh").chmod(0o755)
-    return bin_dir
-
-
-def _issue(
-    tmp_path: Path, bin_dir: Path, body: str | None
-) -> subprocess.CompletedProcess[str]:
-    report = tmp_path / "agent-report" / "report.md"
-    if body is not None:
-        report.parent.mkdir()
-        report.write_text(body)
-    env = os.environ | {"PATH": f"{bin_dir}:{os.environ['PATH']}", "GH_TOKEN": "t"}
-    return subprocess.run(
-        ["bash", str(ISSUE_SCRIPT), str(report)],
-        cwd=tmp_path,
-        env=env,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-
-
-def test_issue_script_creates_the_issue(tmp_path: Path) -> None:
-    proc = _issue(tmp_path, _gh_bin(tmp_path), "## Agent report\n")
-    calls = (tmp_path / "gh-calls").read_text()
-
-    assert proc.returncode == 0, proc.stdout + proc.stderr
-    assert "issue create --title Knowledge audit" in calls
-    assert (tmp_path / "issue-body").read_text() == "## Agent report\n"
-
-
-def test_issue_script_updates_the_open_issue(tmp_path: Path) -> None:
-    issues = '[{"number": 7, "title": "Knowledge audit"}]'
-    proc = _issue(tmp_path, _gh_bin(tmp_path, issues), "## Agent report\n")
-    calls = (tmp_path / "gh-calls").read_text()
-
-    assert proc.returncode == 0, proc.stdout + proc.stderr
-    assert "issue edit 7" in calls
-    assert "issue create" not in calls
-
-
-def test_issue_script_skips_without_a_report(tmp_path: Path) -> None:
-    proc = _issue(tmp_path, _gh_bin(tmp_path), None)
-
-    assert proc.returncode == 0, proc.stdout + proc.stderr
-    assert not (tmp_path / "gh-calls").exists()
-
-
-def test_failed_issue_lookup_fails(tmp_path: Path) -> None:
-    proc = _issue(tmp_path, _gh_bin(tmp_path, list_fails=True), "## Agent report\n")
-    calls = (tmp_path / "gh-calls").read_text()
-
-    assert proc.returncode != 0
-    assert "issue create" not in calls and "issue edit" not in calls
 
 
 def test_old_audit_is_gone() -> None:
@@ -246,50 +176,98 @@ def test_old_audit_is_gone() -> None:
         assert not (ROOT / rel).exists(), rel
     for text in texts:
         assert "hermes" not in text.lower()
+        assert "knowledge-audit-issue" not in text
 
 
-def _steps(steps: list[dict]) -> tuple[dict, dict, dict]:
-    """The agent, artifact and issue steps, in that order in ``steps``."""
-    agent = next(s for s in steps if "action/agent.py" in str(s.get("run", "")))
-    keep = next(
-        s for s in steps if str(s.get("uses", "")).startswith("actions/upload-artifact")
+def _uses(steps: list[dict], prefix: str) -> list[dict]:
+    return [s for s in steps if str(s.get("uses", "")).startswith(prefix)]
+
+
+def _no_token(step_or_job: dict) -> None:
+    text = yaml.safe_dump(step_or_job)
+    for name in (*TOKENS, "github.token"):
+        assert name not in text, name
+
+
+def _no_cache(steps: list[dict]) -> None:
+    """Every setup-uv turns its cache off, and no step uses actions/cache."""
+    uvs = _uses(steps, "astral-sh/setup-uv")
+    assert uvs
+    for step in uvs:
+        assert step.get("with", {}).get("enable-cache") is False, step
+    assert _uses(steps, "actions/cache") == []
+
+
+def _agent_steps(steps: list[dict]) -> tuple[dict, dict]:
+    """The agent step and the upload after it."""
+    agent = next(s for s in steps if "--model" in str(s.get("run", "")))
+    keep = _uses(steps, "actions/upload-artifact")[0]
+    assert steps.index(agent) < steps.index(keep)
+    return agent, keep
+
+
+def _publish_steps(steps: list[dict]) -> tuple[dict, dict]:
+    """The artifact download and the publish step after it."""
+    fetch = _uses(steps, "actions/download-artifact")[0]
+    post = next(
+        s
+        for s in steps
+        if "agent.py" in str(s.get("run", "")) and "publish" in str(s.get("run", ""))
     )
-    issue = next(
-        s for s in steps if "knowledge-audit-issue.sh" in str(s.get("run", ""))
-    )
-    assert steps.index(agent) < steps.index(keep) < steps.index(issue)
-    return agent, keep, issue
+    assert steps.index(fetch) < steps.index(post)
+    return fetch, post
 
 
-def test_workflow_runs_agent_keeps_report_then_posts() -> None:
+def test_workflow_audit_job_runs_agent_without_token_or_cache() -> None:
     workflow = yaml.safe_load(WORKFLOW.read_text())
     triggers = workflow[True]  # YAML 1.1 reads the key "on" as True
-    steps = workflow["jobs"]["audit"]["steps"]
-    checkout = next(
-        s for s in steps if str(s.get("uses", "")).startswith("actions/checkout")
-    )
-    agent, keep, issue = _steps(steps)
+    job = workflow["jobs"]["audit"]
+    steps = job["steps"]
+    checkout = _uses(steps, "actions/checkout")[0]
+    agent, keep = _agent_steps(steps)
 
     assert set(triggers) == {"workflow_dispatch", "schedule"}
-    assert workflow["permissions"] == {"contents": "read", "issues": "write"}
+    assert workflow["permissions"] == {"contents": "read"}
+    assert "permissions" not in job
     assert not any(str(s.get("uses", "")).startswith("./") for s in steps)
     assert checkout["with"]["persist-credentials"] is False
     assert checkout["with"]["fetch-depth"] == 0
     assert "uv run --script action/agent.py run" in agent["run"]
     assert "--out ${{ runner.temp }}/agent-report" in agent["run"]
     assert agent["env"]["AUDIT_API_KEY"] == "${{ secrets.AUDIT_API_KEY }}"
-    for name in (*TOKENS, "github.token"):
-        assert name not in yaml.safe_dump(agent), name
+    _no_token(job)
+    _no_cache(steps)
+    assert keep["with"]["name"] == "agent-report"
     assert keep["with"]["path"] == "${{ runner.temp }}/agent-report"
     assert keep["if"] == "always()"
-    assert issue["env"]["GH_TOKEN"] == "${{ github.token }}"
-    assert "${{ runner.temp }}/agent-report/report.md" in issue["run"]
 
 
-def test_action_audit_mode_runs_agent_keeps_report_then_posts() -> None:
+def test_workflow_publish_job_posts_from_the_artifact() -> None:
+    workflow = yaml.safe_load(WORKFLOW.read_text())
+    job = workflow["jobs"]["publish"]
+    steps = job["steps"]
+    fetch, post = _publish_steps(steps)
+
+    assert job["needs"] == "audit"
+    assert job["permissions"] == {"contents": "read", "issues": "write"}
+    assert _uses(steps, "actions/checkout")[0]["with"]["persist-credentials"] is False
+    _no_cache(steps)
+    assert fetch["with"] == {
+        "name": "agent-report",
+        "path": "${{ runner.temp }}/agent-report",
+    }
+    assert "uv run --script action/agent.py publish" in post["run"]
+    assert "${{ runner.temp }}/agent-report/report.json" in post["run"]
+    assert post["env"]["GH_TOKEN"] == "${{ github.token }}"
+    others = [s for s in steps if s is not post]
+    for step in others:
+        _no_token(step)
+
+
+def test_action_audit_mode_runs_agent_without_token() -> None:
     action = yaml.safe_load((ROOT / "action.yml").read_text())
     steps = action["runs"]["steps"]
-    agent, keep, issue = _steps(steps)
+    agent, keep = _agent_steps(steps)
 
     assert action["inputs"]["mode"]["default"] == "checks"
     for name in (
@@ -306,15 +284,38 @@ def test_action_audit_mode_runs_agent_keeps_report_then_posts() -> None:
         assert action["inputs"][name]["description"], name
         assert f"${{{{ inputs.{name} }}}}" in agent["env"].values(), name
     assert "provider" not in action["inputs"]
-    for step in (agent, keep, issue):
+    for step in (agent, keep):
         assert "inputs.mode == 'audit'" in step["if"], step
     assert "${{ github.action_path }}/action/agent.py" in agent["run"]
-    for name in (*TOKENS, "github.token"):
-        assert name not in yaml.safe_dump(agent), name
+    _no_cache(steps)
+    for step in steps:
+        if "inputs.mode == 'audit'" in str(step.get("if", "")):
+            _no_token(step)
     assert keep["with"]["path"] == "${{ runner.temp }}/agent-report"
-    assert issue["env"]["GH_TOKEN"] == "${{ github.token }}"
-    assert issue["working-directory"] == agent["working-directory"]
-    assert '"$RUNNER_TEMP/agent-report/report.md"' in issue["run"]
+
+
+def test_action_publish_mode_posts_from_the_artifact() -> None:
+    action = yaml.safe_load((ROOT / "action.yml").read_text())
+    steps = action["runs"]["steps"]
+    fetch, post = _publish_steps(steps)
+
+    for name in ("min_severity", "mention", "issue_title"):
+        assert action["inputs"][name]["description"], name
+        assert f"${{{{ inputs.{name} }}}}" in post["env"].values(), name
+    assert action["inputs"]["min_severity"]["default"] == "high"
+    for step in (fetch, post):
+        assert "inputs.mode == 'publish'" in step["if"], step
+    assert fetch["with"] == {
+        "name": "agent-report",
+        "path": "${{ runner.temp }}/agent-report",
+    }
+    assert "${{ github.action_path }}/action/agent.py" in post["run"]
+    assert '"$RUNNER_TEMP/agent-report/report.json"' in post["run"]
+    assert post["env"]["GH_TOKEN"] == "${{ github.token }}"
+    for step in steps:
+        if step is not post:
+            _no_token(step)
+    assert "publish" in action["inputs"]["mode"]["description"]
 
 
 def _event_check(steps: list[dict]) -> dict:
@@ -336,7 +337,7 @@ def _run_check(step: dict, event: str) -> subprocess.CompletedProcess[str]:
 def test_action_audit_refuses_other_events() -> None:
     steps = yaml.safe_load((ROOT / "action.yml").read_text())["runs"]["steps"]
     check = _event_check(steps)
-    agent, _, _ = _steps(steps)
+    agent, _ = _agent_steps(steps)
 
     assert "inputs.mode == 'audit'" in check["if"]
     assert steps.index(check) < steps.index(agent)

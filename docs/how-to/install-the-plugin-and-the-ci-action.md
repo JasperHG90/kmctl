@@ -199,15 +199,20 @@ Audit mode sends your repository to a model, so it is off unless you add it.
 Per `action.yml`, it runs `action/agent.py`, a small agent built on
 [PydanticAI](https://ai.pydantic.dev). By default it audits the architecture
 pages, decisions and practices that are due, following kmctl's audit skill.
-It writes its report to the job summary, keeps it as an `agent-report`
-artifact (`report.json`, `report.md` and the full `transcript.json`), and
-posts `report.md` to one open issue titled "Knowledge audit".
+It writes its report to the job summary and keeps it as an `agent-report`
+artifact (`report.json`, `report.md` and the full `transcript.json`). A
+second job, with `mode: publish`, posts it to one issue titled "Knowledge
+audit" when a finding is high (or the severity you choose): it opens the
+issue, or updates it and adds a comment, @-mentioning the owners of the
+last `*` rule in your CODEOWNERS. When a later run finds nothing at that
+severity, it closes the issue.
 
 The agent can read, search and list files in your repository and in any
 folders you add, and run shell commands, so it can use the scripts skills
 ship. It is told never to change, commit or push a file, and nothing it
-changes is committed: the checkout keeps no credentials, and only the later
-issue step gets a GitHub token.
+changes is committed: the checkout keeps no credentials, and only the
+publish job gets a GitHub token that can write. That job runs on a fresh
+runner and gets nothing from the agent's job but the artifact.
 
 It works with any provider. Name a PydanticAI provider in `model`, or give
 `base_url` for any OpenAI-compatible endpoint: Ollama, Bifrost, OpenRouter, a
@@ -223,6 +228,14 @@ vendor's own API, or your own server.
 | `context` | folders the agent can read besides the repository, one per line |
 | `skills` | skill folders (subfolders with a `SKILL.md`), one per line; default kmctl's own |
 | `timeout` | how long the agent may run; default `30m` |
+
+Publish mode takes three more:
+
+| Input | What it is |
+|---|---|
+| `min_severity` | the lowest severity (`info`, `low`, `medium` or `high`) that opens or updates the issue; default `high` |
+| `mention` | users or teams to @-mention, one per line; default the owners of the last `*` rule in CODEOWNERS |
+| `issue_title` | the issue's title; default `Knowledge audit` |
 
 1. Add a repository secret named `AUDIT_API_KEY` with your provider's API
    key. Skip this for an endpoint that takes no key.
@@ -242,7 +255,6 @@ vendor's own API, or your own server.
    # A composite action cannot set token permissions; the calling workflow does.
    permissions:
      contents: read
-     issues: write
 
    jobs:
      audit:
@@ -262,6 +274,23 @@ vendor's own API, or your own server.
              base_url: https://openrouter.ai/api/v1
              model: qwen/qwen3-coder
              api_key_env: AUDIT_API_KEY
+
+     # A fresh runner that gets only the report, so nothing the agent
+     # changed runs with the token.
+     publish:
+       needs: audit
+       runs-on: ubuntu-latest
+       permissions:
+         contents: read
+         issues: write
+       steps:
+         # Only to read CODEOWNERS.
+         - uses: actions/checkout@v4
+           with:
+             persist-credentials: false
+         - uses: JasperHG90/Knowledge-management@v0.3.0
+           with:
+             mode: publish
    ```
 
 `timeout-minutes` on the step is a second limit after `timeout`, so a stuck
@@ -283,9 +312,11 @@ folder and any skills of your own under the action step's `with:`:
 takes, with its default.
 
 This repository's own `.github/workflows/knowledge-audit.yml` runs the same
-commands as separate steps instead of `uses:`: install kmctl, run
-`action/agent.py`, upload the report, then run
-`action/knowledge-audit-issue.sh`. Read it to see exactly what the audit runs.
+commands as separate steps instead of `uses:`: in the audit job, install
+kmctl, run `action/agent.py run` and upload the report; in the publish job,
+download it and run `action/agent.py publish`. Read it to see exactly what
+the audit runs. `uv run --script action/agent.py publish --help` lists the
+publish options.
 
 **Ollama.** Set the model's context size high enough for the audit, with
 `PARAMETER num_ctx 65536` in a Modelfile or `OLLAMA_CONTEXT_LENGTH=65536` for
@@ -308,11 +339,13 @@ to start when it finds either. Run locally with `GH_TOKEN` set, it prints
 this and exits 2:
 
 ```
-agent: refused: GH_TOKEN is set, and the agent could read the token. Give it only to the step that posts the report.
+agent: refused: GH_TOKEN is set, and the agent could read the token. Give it only to the publish job, which runs no agent.
 ```
 
-The action hands the token only to its own later step, which posts the
-report.
+Only the publish job gets `issues: write` and the token, and it runs no
+agent. Keep the two jobs apart: on a self-hosted runner that reuses its
+machine between jobs, the agent could leave behind code that the publish
+job then runs with the token.
 
 The agent's shell commands run without the API key in their environment, but
 as the same user, so a determined command could still read the key from the
@@ -322,7 +355,10 @@ The agent reads your repository's files, so anything checked into it,
 secrets included, is in its view, and its findings quote what it read into
 the "Knowledge audit" issue in the same repository.
 
-`issues: write` lets that step open or update the "Knowledge audit" issue.
+`issues: write` lets the publish job open, update and close the
+"Knowledge audit" issue. Without a CODEOWNERS file and `mention`, it
+mentions no one. When the audit job fails, the publish job is skipped and
+the issue stays as it was.
 
 ### 6. Later: upgrade to a newer release
 

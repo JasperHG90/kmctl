@@ -58,7 +58,7 @@ flowchart LR
         ci["action/knowledge-ci.sh<br/>mode: checks"]
         agentPy["action/agent.py (PydanticAI)<br/>mode: audit; read_file, search_files,<br/>list_files, run_shell"]
         artifact["agent-report artifact<br/>report.json, report.md,<br/>transcript.json"]
-        issueSh["action/knowledge-audit-issue.sh<br/>own step, GH_TOKEN"]
+        publishPy["action/agent.py publish<br/>mode: publish, its own job,<br/>GH_TOKEN, issues: write"]
     end
 
     subgraph release["releases (ADR 0012)"]
@@ -123,8 +123,9 @@ flowchart LR
     agentPy -. "reads, never commits or pushes" .-> repo & context
     agentPy -- "write: --out" --> artifact
     agentPy -- "report.md" --> summary
-    artifact -- "report.md" --> issueSh
-    issueSh -- "gh issue create or edit" --> summary
+    artifact -- "report.json, the only thing<br/>the two jobs share" --> publishPy
+    publishPy -- "gh issue create, or edit and comment;<br/>close below the threshold" --> summary
+    publishPy -. "reads CODEOWNERS" .-> repo
     ci --> summary
 
     releaseYml -- "next version from v* tags" --> nextVersion
@@ -216,8 +217,8 @@ Antigravity translation.
 
 ## The action
 
-`action.yml` is a composite action with two modes. Both install kmctl from the
-action's own checkout.
+`action.yml` is a composite action with three modes. checks and audit
+install kmctl from the action's own checkout.
 
 - **checks** (the default) runs `action/knowledge-ci.sh`: `kmctl check` and
   `kmctl review due` into the job summary, failing when `kmctl check` fails
@@ -237,9 +238,15 @@ action's own checkout.
   `transcript.json` to the `agent-report` artifact and `report.md` to the
   job summary. It never commits or pushes (I2), and it refuses to start
   when a GitHub token is reachable (`GH_TOKEN` or `GITHUB_TOKEN` set, or
-  checkout's credentials in git config). A later step of its own,
-  `action/knowledge-audit-issue.sh`, is the only one that gets `GH_TOKEN`; it
-  posts `report.md` to the one "Knowledge audit" issue.
+  checkout's credentials in git config). setup-uv's cache is off, so
+  nothing the agent wrote outlives its job but the artifact.
+- **publish** runs in a separate job on a fresh runner, the only one with
+  `GH_TOKEN` and `issues: write`. It downloads the artifact and runs
+  `action/agent.py publish`: when a finding is at or above `min_severity`
+  (default high), it creates the one issue titled `issue_title`, or replaces
+  its body and adds a comment, @-mentioning the owners of the last `*` rule
+  in CODEOWNERS or the `mention` input; below the threshold it closes an
+  open issue with a comment.
 
 ## Releases
 
@@ -253,7 +260,7 @@ tag `kmctl plugin install` asks for and a build from a download with no
   that exists, runs the lint and the tests, and builds and checks the wheel
   with `scripts/check_wheel.py` and `scripts/smoke_wheel.py`. A real run
   commits `scripts/release.py set` (the version in `apm/apm.yml` and its copy
-  in the root `apm.yml`, the docs' five install lines and the APM how-to's
+  in the root `apm.yml`, the docs' six install lines and the APM how-to's
   pin) on `release/vX.Y.Z` and opens the version pull request.
 - `.github/workflows/release-tag.yml` runs when a push to `main` changes
   `apm/apm.yml`. When `scripts/release.py compare` says the version went up, it
@@ -279,8 +286,7 @@ tag `kmctl plugin install` asks for and a build from a download with no
   `okf.py`, `kinds.py`; `apm/.apm/skills/` (write-docs, handoff,
   continue, audit and the three review skills),
   `apm/.apm/agents/kmctl-auditor.md`, `apm/.apm/instructions/`; `action.yml`,
-  `action/knowledge-ci.sh`, `action/agent.py`,
-  `action/knowledge-audit-issue.sh`; `.github/workflows/knowledge-audit.yml`.
+  `action/knowledge-ci.sh`, `action/agent.py` (run and publish); `.github/workflows/knowledge-audit.yml`.
 - Releases: `.github/workflows/release.yml`, `.github/workflows/release-tag.yml`,
   `scripts/release.py`, `scripts/next_release_version.py`,
   `scripts/check_wheel.py`, `scripts/smoke_wheel.py`, `apm/apm.yml`.

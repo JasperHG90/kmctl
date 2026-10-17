@@ -14,7 +14,7 @@ Usage::
 ``apm/apm.yml``, kmctl's APM package, carries the one version, and
 ``pyproject.toml`` reads it from there (ADR 0014). APM needs a ``version:`` in
 each apm.yml, so ``set`` writes it and copies it into the root ``apm.yml``;
-``current`` refuses when the copy differs. ``set`` also points the five install lines in the docs, and the
+``current`` refuses when the copy differs. ``set`` also points the six install lines in the docs, and the
 APM how-to's package pins and CLI install line, at the tag ``vVERSION``. This script never
 commits or tags: ``.github/workflows/release.yml`` opens the version pull
 request and ``release-tag.yml`` tags the merge, so there is one release path.
@@ -38,7 +38,7 @@ DOC_FILES = (
     Path("docs/how-to/install-the-plugin-and-the-ci-action.md"),
 )
 #: How many install lines ``DOC_FILES`` hold between them.
-DOC_LINES = 5
+DOC_LINES = 6
 #: The apm.yml files ``set`` writes the version into: the package and its root copy.
 APM_FILES = (Path("apm.yml"), MANIFEST)
 #: The how-to whose ``JasperHG90/Knowledge-management/apm`` pins ``set`` moves.
@@ -144,7 +144,7 @@ def pin_apm_doc(text: str, version: str) -> tuple[str, int]:
 def set_version(repo: Path, version_text: str) -> list[Path]:
     """Write the version into both apm.yml files and pin the docs.
 
-    Nothing is written unless the version is valid, all five install lines and
+    Nothing is written unless the version is valid, all six install lines and
     an APM pin in ``APM_DOC`` are found, and each apm.yml has a ``version:`` line.
 
     Returns
@@ -155,7 +155,7 @@ def set_version(repo: Path, version_text: str) -> list[Path]:
     Raises
     ------
     ReleaseRefused
-        When the version is malformed, the docs hold fewer than five install
+        When the version is malformed, the docs hold fewer than six install
         lines, ``APM_DOC`` has no APM pin, or an apm.yml has no ``version:``.
     """
     version = str(parse_release(version_text))
