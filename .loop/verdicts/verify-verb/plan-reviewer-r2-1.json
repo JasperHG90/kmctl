@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "A bare-date verified at reads as midnight UTC, so a source committed earlier the same day kept the id due. The plan now writes a full UTC timestamp in the _STAMP form (seconds, Z), and r1 and r2 test the same-day case.",
+      "anchor": "src/kmctl/review_due.py",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "A verified entry never clears stale_after passed. The plan now adds --stale-after (the stale_after_time forms), requires it when stale_after has passed, and the review due Next: line names it for that reason; r4 and r4b test both sides.",
+      "anchor": "src/kmctl/review_due.py",
+      "category": "contract",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r4b"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "9b29ec64bb3d2b6ce4b3e78097e04021104bc4292fef0630c8e289f35e16d3a7"
+  },
+  "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
+  "at": "2026-10-17T21:26:32+00:00"
+}
