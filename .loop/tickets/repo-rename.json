@@ -22,8 +22,8 @@
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
-    "hash": "2e698b52ccee749a0c9faefcc9cda852f451c1c87b30479a5ab2823f1850c543",
-    "at": "2026-10-17T18:53:02+00:00"
+    "hash": "76dc1730dc5ae20a12fa2102e2b47f94f35452f8f58e71a5fbb53351ad8933b0",
+    "at": "2026-10-17T18:54:33+00:00"
   },
   "delegation": null,
   "budget_base": null,
@@ -37,8 +37,8 @@
     },
     {
       "id": "r2",
-      "behavior": "the apm.yml entry kmctl suggests, the hooks' install lines and the release script's install and uses: patterns name JasperHG90/kmctl",
-      "fails_when": "new_entry()'s git is not https://github.com/JasperHG90/kmctl.git, either harness's hook command lacks git+https://github.com/JasperHG90/kmctl, or release.py set does not move a uv tool install or uses: line naming JasperHG90/kmctl",
+      "behavior": "the apm.yml entry kmctl suggests, the Claude hook's install lines (the Antigravity hook names no repository) and the release script's install and uses: patterns name JasperHG90/kmctl",
+      "fails_when": "new_entry()'s git is not https://github.com/JasperHG90/kmctl.git, the Claude hook command or apm/claude/.apm/hooks/hooks.json lacks git+https://github.com/JasperHG90/kmctl, or release.py set does not move a uv tool install or uses: line naming JasperHG90/kmctl",
       "command": "uv run pytest tests/test_repo_name.py -k new_name -q",
       "judgment": false
     },
@@ -57,7 +57,23 @@
       "judgment": false
     }
   ],
-  "resigns": [],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+      "reason": "r2 required a repository URL in the Antigravity hook, which prints an empty JSON object and names no repository; r2 now covers the Claude hook",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r2": [
+            "behavior",
+            "fails_when"
+          ]
+        }
+      },
+      "at": "2026-10-17T18:54:33+00:00"
+    }
+  ],
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
@@ -108,5 +124,5 @@
     }
   ],
   "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
-  "at": "2026-10-17T18:53:03+00:00"
+  "at": "2026-10-17T18:54:33+00:00"
 }
