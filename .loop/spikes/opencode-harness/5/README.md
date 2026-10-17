@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014
-  at: '2026-10-17T21:53:22+00:00'
+  at: '2026-10-17T21:54:47+00:00'
 slug: opencode-harness
 n: 5
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike opencode-harness/5
@@ -24,7 +24,7 @@ The command timed out:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note opencode-harness 5`.
+Timed out at 300 s, which says nothing about the risk. Parts (a) to (c) printed the same results as spike 6. The check script then hung reading the server's stderr after kill, because uv's child process kept the pipe open. The script was fixed and rerun as spike 6, which is the one to cite.
 
 ## Files
 
