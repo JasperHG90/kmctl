@@ -261,6 +261,7 @@ and syncing to a central place are left to other tools. See
 The [docs index](docs/README.md) links each folder's index. The pages:
 
 - Tutorial: [Get started with kmctl](docs/tutorials/get-started-with-kmctl.md)
+- Tutorial: [Audit your repository with the agent](docs/tutorials/audit-your-repository-with-the-agent.md)
 - How-to: [Install the plugin and the CI action](docs/how-to/install-the-plugin-and-the-ci-action.md)
 - How-to: [Install kmctl with APM](docs/how-to/install-kmctl-with-apm.md)
 - Reference: [Commands](docs/reference/commands.md)

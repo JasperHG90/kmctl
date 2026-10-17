@@ -251,6 +251,9 @@ issue, or updates it and adds a comment, @-mentioning the owners of the
 last `*` rule in your CODEOWNERS. When a later run finds nothing at that
 severity, it closes the issue.
 
+To try the agent on your machine first and learn to read its report, follow
+[Audit your repository with the agent](../tutorials/audit-your-repository-with-the-agent.md).
+
 The agent can read, search and list files in your repository and in any
 folders you add, and run shell commands, so it can use the scripts skills
 ship. It is told never to change, commit or push a file, and nothing it
