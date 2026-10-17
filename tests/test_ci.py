@@ -31,6 +31,15 @@ def test_ci_triggers_on_pull_request_and_push_to_main() -> None:
     assert on["push"]["branches"] == ["main"]
 
 
+def test_ci_jobs_run_prek_then_knowledge_then_pytest() -> None:
+    jobs = _ci()["jobs"]
+
+    assert list(jobs) == ["prek", "knowledge", "tests"]
+    assert "needs" not in jobs["prek"]
+    assert jobs["knowledge"]["needs"] == "prek"
+    assert jobs["tests"]["needs"] == "knowledge"
+
+
 def test_ci_knowledge_job_runs_own_check_with_full_history() -> None:
     [job] = [j for j in _ci()["jobs"].values() if {"uses": "./"} in j["steps"]]
     [checkout] = [s for s in job["steps"] if "checkout" in s.get("uses", "")]

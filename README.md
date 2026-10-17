@@ -249,6 +249,28 @@ repos:
         args: [--fix]
 ```
 
+## Works better with an adversarial reviewer
+
+kmctl works better when an adversarial reviewer checks the agent's work
+before you accept it. A second agent, starting fresh, reads the change
+against what was asked, the repository's rules and its `.okf/` knowledge, and
+catches what the first agent missed: a decision it never recorded, a diagram
+it left stale, a test that proves nothing.
+
+For example, add
+[`adversarial-reviewer`](https://github.com/JasperHG90/skills/blob/main/agents/adversarial-reviewer.md)
+and the rule that tells the agent to call it after each task to `apm.yml`:
+
+```yaml
+dependencies:
+  apm:
+    - jasperhg90/skills/agents/adversarial-reviewer.md
+    - jasperhg90/skills/rules/adversarial-reviews.instructions.md
+```
+
+Then run `apm install`. The agent lands in `.claude/agents/` and the rule
+in `.claude/rules/`.
+
 ## What it does not do
 
 kmctl cannot force knowledge to stay true. An agent can read the briefing and

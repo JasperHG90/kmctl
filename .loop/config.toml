@@ -49,10 +49,6 @@ command = "uv run ruff format --check"
 name = "tests"
 command = "uv run pytest"
 
-[[gates]]
-name = "integration"
-command = "uv run pytest -m integration"
-
 # The passes that must give a verdict before a ticket's commit, and the most
 # review rounds a ticket gets (ADR 0023).
 [review]
