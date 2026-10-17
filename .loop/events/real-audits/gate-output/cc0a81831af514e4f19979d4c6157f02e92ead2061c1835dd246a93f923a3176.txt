@@ -1,0 +1,13 @@
+warning: `VIRTUAL_ENV=/home/vscode/kmctl/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+unformatted: File would be reformatted
+   --> action/agent.py:599:24
+    |
+598 |         if unseen:
+    -             bad.append(
+    -                 f"{cite}: line {unseen[0]} was neither read nor a search hit"
+    -             )
+599 +             bad.append(f"{cite}: line {unseen[0]} was neither read nor a search hit")
+600 |     return bad
+    |
+
+1 file would be reformatted, 92 files already formatted
