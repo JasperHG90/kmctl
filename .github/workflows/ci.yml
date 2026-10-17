@@ -20,27 +20,26 @@ jobs:
       - uses: ./
 
   # The hooks in .pre-commit-config.yaml, at the prek version the justfile
-  # pins. In toiminnot v1.3.0 the pre_commit action runs prek and the prek
-  # action runs pre-commit. The hooks call uv run, which the action does not
-  # install, so uv goes on PATH first. The action checks out the repository.
+  # pins. The hooks call uv run, which the action does not install, so uv
+  # goes on PATH first. The action checks out the repository.
   prek:
     runs-on: ubuntu-latest
     steps:
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: false
-      - uses: JasperHG90/toiminnot/actions/pre_commit@4763b90706d1f689664a7b100f1924c34d15f040 # v1.3.0
+      - uses: JasperHG90/toiminnot/actions/prek@dc32088cfc239bd550283512de713872370280c2 # v2.0.0
         with:
           prek_version: "0.5.5"
           python_version: "3.12"
 
   # The default test suite. The integration tier reaches GitHub and runs in
-  # the loop's gate instead (.loop/config.toml); the action's empty default
-  # markers would run it too. The action checks out the repository.
+  # the loop's gate instead (.loop/config.toml). The action checks out the
+  # repository.
   tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: JasperHG90/toiminnot/actions/pytest@4763b90706d1f689664a7b100f1924c34d15f040 # v1.3.0
+      - uses: JasperHG90/toiminnot/actions/pytest@dc32088cfc239bd550283512de713872370280c2 # v2.0.0
         with:
           directory: tests
           markers: not integration

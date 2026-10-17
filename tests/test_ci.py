@@ -53,10 +53,9 @@ def _uses(steps: list[dict[str, Any]], action: str) -> int:
 
 
 def test_ci_prek_job_runs_justfile_version_after_uv() -> None:
-    """toiminnot v1.3.0's pre_commit action runs prek; its prek action runs pre-commit."""
     pinned = re.search(r"prek@([\d.]+)", (ROOT / "justfile").read_text())
     steps = _job_steps("prek")
-    hooks = _uses(steps, "JasperHG90/toiminnot/actions/pre_commit")
+    hooks = _uses(steps, "JasperHG90/toiminnot/actions/prek")
 
     assert pinned
     assert _uses(steps, "astral-sh/setup-uv") < hooks
