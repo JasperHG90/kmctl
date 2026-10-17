@@ -30,10 +30,12 @@ from kmctl.plugin import (
     HARNESSES,
     InstallResult,
     PluginError,
+    RemoveResult,
     Scope,
     parse_harnesses,
 )
 from kmctl.plugin import install as install_plugin
+from kmctl.plugin import remove as remove_plugin
 from kmctl.review_due import review_due
 from kmctl.scaffold import AGENT_FILES, scaffold
 from kmctl.supersede import supersede
@@ -666,7 +668,8 @@ def decision_supersede(
 plugin_app = typer.Typer(
     help=(
         "Install kmctl's skills, audit agent, knowledge rules and session hook for an "
-        "agent harness, through APM (Agent Package Manager). Verbs: install, update. "
+        "agent harness, through APM (Agent Package Manager). Verbs: install, update, "
+        "remove. "
         "Needs uv on PATH: kmctl runs APM with uvx. kmctl doctor checks the install."
     ),
     no_args_is_help=True,
@@ -785,9 +788,11 @@ def _read_answer(answer: str) -> list[str]:
         raise PluginError(f"answer with one of: {accepted}") from None
 
 
-def _ask_harnesses(default: list[str]) -> list[str]:
-    """Ask on stderr which harnesses to install for, until the answer names some."""
-    typer.echo("Which harnesses should kmctl install for?", err=True)
+def _ask_harnesses(
+    default: list[str], question: str = "Which harnesses should kmctl install for?"
+) -> list[str]:
+    """Ask ``question`` on stderr, listing the harnesses, until the answer names some."""
+    typer.echo(question, err=True)
     for n, name in enumerate(HARNESSES, 1):
         typer.echo(f"  {n}. {name} ({_HARNESS_LABELS[name]})", err=True)
     while True:
@@ -819,6 +824,9 @@ def _harnesses(
             "no --harness given and no terminal to ask at; give --harness "
             f"with one or more of: {', '.join(HARNESSES)}"
         )
+    if verb == "remove":
+        question = "Which harnesses should kmctl be removed from?"
+        return _ask_harnesses(harnesses_found(Path.cwd(), scope), question)
     default = harnesses_found(Path.cwd(), scope) if verb == "update" else []
     return _ask_harnesses(default or ["claude"])
 
@@ -873,6 +881,89 @@ def plugin_update(
 ) -> None:
     """Reinstall kmctl's APM package at this kmctl's version; run it after upgrading kmctl."""
     _install("update", harness, scope, source, force, as_json)
+
+
+_REMOVE_HARNESS_OPTION = typer.Option(
+    "--harness",
+    metavar="claude,antigravity",
+    show_default=False,
+    help=(
+        "The agent harnesses to remove kmctl from, as a comma list. Accepted: "
+        f"{', '.join(HARNESSES)}. Left out, the command asks which when stdin is "
+        "a terminal, suggesting the harnesses installed here, and refuses when "
+        "it is not or with --json."
+    ),
+)
+_REMOVE_JSON_OPTION = typer.Option(
+    "--json",
+    help="Print one JSON object (scope, removed, kept, notes), for scripts.",
+)
+_REMOVE_EPILOG = (
+    "Examples:\n\n"
+    "  kmctl plugin remove    (at a terminal: asks which harnesses)\n\n"
+    "  kmctl plugin remove --harness antigravity\n\n"
+    "  kmctl plugin remove --harness claude,antigravity --json\n\n"
+    "  kmctl plugin remove --harness claude --scope user\n\n"
+    "In order: runs uvx --from "
+    f"{APM_CLI} apm uninstall on kmctl's apm.yml entry (named HOST/OWNER/REPO/apm "
+    "from its git: URL; -g with --scope user), which takes kmctl's and okf's "
+    "skills, agent, rules, hooks and lock entries; takes each removed harness "
+    "out of apm.yml's targets when no other dependency is left there (otherwise "
+    "it keeps the target and says so); for claude, takes kmctl's SessionStart "
+    "hook out of the settings file and kmctl's okf-bundle MCP server out of "
+    ".mcp.json (with claude mcp remove at user scope), keeping every other hook "
+    "and server; for antigravity, deletes .agents/plugins/kmctl/ and an empty "
+    ".agents/hooks.json. When harnesses stay installed it then installs them "
+    "again from the same source at the same ref, because APM cannot drop one "
+    "target cleanly; if that fails, it names the command that puts them back. "
+    "A harness kmctl is not installed for is skipped with a note. Needs uv on "
+    "PATH."
+)
+
+
+def _report_remove(result: RemoveResult, as_json: bool) -> None:
+    """Print what a remove did: one JSON object, or its notes and a summary line."""
+    if as_json:
+        typer.echo(json.dumps(asdict(result)))
+        return
+    for note in result.notes:
+        typer.echo(f"note: {note}")
+    if result.removed:
+        line = f"removed kmctl from {', '.join(result.removed)} ({result.scope} scope)"
+        if result.kept:
+            line += f"; still installed for {', '.join(result.kept)}"
+        typer.echo(line)
+    elif result.kept:
+        typer.echo(
+            f"removed nothing; kmctl is installed for {', '.join(result.kept)} "
+            f"({result.scope} scope)"
+        )
+    else:
+        typer.echo(
+            f"kmctl is not installed here ({result.scope} scope); removed nothing"
+        )
+
+
+@plugin_app.command("remove", epilog=_REMOVE_EPILOG)
+def plugin_remove(
+    harness: Annotated[str | None, _REMOVE_HARNESS_OPTION] = None,
+    scope: Annotated[Scope, _SCOPE_OPTION] = "project",
+    as_json: Annotated[bool, _REMOVE_JSON_OPTION] = False,
+) -> None:
+    """Remove kmctl's APM package, its session hook and okf's MCP server from harnesses."""
+    try:
+        if harness is None and not harnesses_found(Path.cwd(), scope):
+            names: list[str] = []
+        else:
+            names = _harnesses("remove", harness, scope, as_json)
+        result = remove_plugin(Path.cwd(), names, scope)
+    except PluginError as error:
+        typer.echo(f"kmctl plugin remove: refused: {error}", err=True)
+        raise typer.Exit(1) from error
+    _report_remove(result, as_json)
+    if not as_json:
+        flags = " --scope user" if scope == "user" else ""
+        typer.echo(next_step(f"kmctl doctor{flags}"))
 
 
 _DOCTOR_EPILOG = (

@@ -203,10 +203,13 @@ def harnesses_found(cwd: Path, scope: Scope = "project") -> list[str]:
     """The harnesses kmctl is installed for at ``scope``, from what an install leaves.
 
     Antigravity installs per repository only, so at user scope only
-    ``claude`` can be found.
+    ``claude`` can be found. apm.yml's ``targets`` count only when the lock
+    lists no kmctl package: ``kmctl plugin remove`` keeps a target other
+    packages may use, so once the lock exists it is the record of where
+    kmctl's package went.
     """
-    targets = _manifest_targets(cwd, scope)
     package = kmctl_package(read_lock(cwd, scope))
+    targets = _manifest_targets(cwd, scope) if package is None else []
     deployed = {_harness_of(p) for p in package.deployed_files} if package else set()
     return [
         h

@@ -817,7 +817,11 @@ def test_doctor_replaces_plugin_status() -> None:
 
     assert result.exit_code == 2
     assert "No such command" in plain(result.output)
-    assert sorted(get_command(app).commands["plugin"].commands) == ["install", "update"]
+    assert sorted(get_command(app).commands["plugin"].commands) == [
+        "install",
+        "remove",
+        "update",
+    ]
 
 
 def test_docs_name_doctor_and_not_plugin_status() -> None:

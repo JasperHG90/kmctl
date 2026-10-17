@@ -24,6 +24,7 @@ from importlib.resources import files
 from io import StringIO
 from pathlib import Path
 from typing import Any, Literal
+from urllib.parse import urlsplit
 
 import yaml
 from pydantic import BaseModel, Field, TypeAdapter, ValidationError
@@ -243,17 +244,21 @@ def _run(args: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
     return subprocess.run(args, cwd=cwd, capture_output=True, text=True, check=False)
 
 
-def _require(proc: subprocess.CompletedProcess[str], what: str) -> None:
-    """Raise when ``proc`` failed, naming the command ``what`` and its cause."""
+def _require(
+    proc: subprocess.CompletedProcess[str],
+    what: str,
+    again: str = "kmctl plugin install",
+) -> None:
+    """Raise when ``proc`` failed, naming the command ``what``, its cause and the verb ``again`` to rerun."""
     if proc.returncode != 0:
         output = f"{proc.stderr}\n{proc.stdout}"
         raise PluginError(
             f"{what} failed: {_cause(output)}; run it by hand to see why, then "
-            "kmctl plugin install again"
+            f"{again} again"
         )
 
 
-def _apm(args: list[str], cwd: Path) -> None:
+def _apm(args: list[str], cwd: Path, again: str = "kmctl plugin install") -> None:
     """Run APM at ``APM_CLI`` through uvx, raising when it fails.
 
     Raises
@@ -261,10 +266,14 @@ def _apm(args: list[str], cwd: Path) -> None:
     PluginError
         When uvx is not on PATH or APM fails, with APM's cause.
     """
-    _require(_apm_run(args, cwd), f"uvx --from {APM_CLI} apm {' '.join(args)}")
+    _require(
+        _apm_run(args, cwd, again), f"uvx --from {APM_CLI} apm {' '.join(args)}", again
+    )
 
 
-def _apm_run(args: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
+def _apm_run(
+    args: list[str], cwd: Path, again: str = "kmctl plugin install"
+) -> subprocess.CompletedProcess[str]:
     """Run APM at ``APM_CLI`` through uvx and return what it did.
 
     Raises
@@ -275,7 +284,7 @@ def _apm_run(args: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
     if shutil.which("uvx") is None:
         raise PluginError(
             "uvx is not on PATH, and kmctl runs APM through it; install uv "
-            "(https://docs.astral.sh/uv/), then run kmctl plugin install again"
+            f"(https://docs.astral.sh/uv/), then run {again} again"
         )
     return _run(["uvx", "--from", APM_CLI, "apm", *args], cwd)
 
@@ -519,8 +528,8 @@ def remove_old_apm_entry(cwd: Path, scope: Scope, source: str) -> list[str]:
 # apm.yml and the APM install ---------------------------------------------------
 
 
-def kmctl_entry(source: str) -> dict[str, object]:
-    """The apm.yml dependency entry naming this CLI's package in ``source``.
+def kmctl_entry(source: str, ref: str | None = None) -> dict[str, object]:
+    """The apm.yml dependency entry naming the package in ``source`` at ``ref``, by default this CLI's.
 
     An ``http://`` source, such as a local test server, also carries
     ``allow_insecure: true``, which APM requires for it.
@@ -528,7 +537,7 @@ def kmctl_entry(source: str) -> dict[str, object]:
     entry: dict[str, object] = {
         "git": source,
         "path": PACKAGE_PATH,
-        "ref": package_ref(),
+        "ref": ref or package_ref(),
     }
     if source.startswith("http://"):
         entry["allow_insecure"] = True
@@ -536,7 +545,11 @@ def kmctl_entry(source: str) -> dict[str, object]:
 
 
 def write_manifest(
-    path: Path, source: str, harnesses: Sequence[str], lock: Lock | None = None
+    path: Path,
+    source: str,
+    harnesses: Sequence[str],
+    lock: Lock | None = None,
+    ref: str | None = None,
 ) -> list[str]:
     """Put kmctl's entry and the harnesses into the apm.yml at ``path``, keeping the rest.
 
@@ -545,7 +558,8 @@ def write_manifest(
     further kmctl entries are removed, so apm.yml never names the package
     twice. A missing file is created. ``targets`` gains each harness it
     lacks, because APM records targets in apm.yml only when it creates the
-    file (spike:kmctl-doctor/1). Comments and layout are kept.
+    file (spike:kmctl-doctor/1). Comments and layout are kept. ``ref`` is
+    the tag the entry names, by default this CLI's (``package_ref``).
 
     Returns
     -------
@@ -586,9 +600,9 @@ def write_manifest(
     for i in reversed(found[1:]):
         del entries[i]
     if found:
-        entries[found[0]] = kmctl_entry(source)
+        entries[found[0]] = kmctl_entry(source, ref)
     else:
-        entries.append(kmctl_entry(source))
+        entries.append(kmctl_entry(source, ref))
     out = StringIO()
     _roundtrip().dump(data, out)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -927,6 +941,7 @@ def install(
     scope: Scope = "project",
     source: str = DEFAULT_SOURCE,
     force: bool = False,
+    ref: str | None = None,
 ) -> InstallResult:
     """Install this CLI's package for ``harnesses`` with APM, then the hook and okf's MCP server.
 
@@ -954,6 +969,10 @@ def install(
         The git URL holding the package.
     force :
         Pass ``--force`` to APM, which then replaces files it did not write.
+    ref :
+        The package tag to install, by default this CLI's; ``kmctl plugin
+        remove`` passes the removed entry's, so the harnesses it keeps stay
+        at their version.
 
     Returns
     -------
@@ -972,7 +991,11 @@ def install(
     _preflight(cwd, scope, harnesses)
     notes = remove_old_apm_entry(cwd, scope, source)
     notes += write_manifest(
-        apm_dir(cwd, scope) / "apm.yml", source, harnesses, read_lock(cwd, scope)
+        apm_dir(cwd, scope) / "apm.yml",
+        source,
+        harnesses,
+        read_lock(cwd, scope),
+        ref,
     )
     args = apm_install_args(harnesses, scope, source, force)
     proc = _apm_run(args, apm_root(cwd, scope))
@@ -1037,3 +1060,265 @@ def shown_path(path: Path, cwd: Path) -> str:
         return str(path.relative_to(cwd))
     except ValueError:
         return str(path)
+
+
+# Remove ------------------------------------------------------------------------
+#
+# ``apm uninstall`` on kmctl's entry takes kmctl's and okf's skills, agent,
+# rules, hooks and lock entries (spike:plugin-remove/3). Dropping one target
+# and installing again would leave okf's Antigravity hook script behind
+# (spike:plugin-remove/2), so removing some of the installed harnesses
+# uninstalls the package and installs the kept ones again, from the same
+# source at the same ref (ADR 0019).
+
+
+#: The command a failed step of ``remove`` tells the reader to run again.
+REMOVE_AGAIN = "kmctl plugin remove"
+
+
+@dataclass
+class RemoveResult:
+    """What ``remove`` did.
+
+    Attributes
+    ----------
+    scope : str
+        ``project`` or ``user``.
+    removed : list[str]
+        The harnesses kmctl was removed from.
+    kept : list[str]
+        The harnesses still installed, reinstalled at their ref.
+    notes : list[str]
+        One line per thing a reader should know: a harness that was not
+        installed, a target kept, a step skipped and why.
+    """
+
+    scope: str
+    removed: list[str]
+    kept: list[str]
+    notes: list[str]
+
+
+def uninstall_name(entry: object) -> str:
+    """The name ``apm uninstall`` takes for an apm.yml entry of kmctl's package.
+
+    A ``git:`` entry becomes ``HOST[:PORT]/OWNER/REPO/apm`` from its own URL,
+    case kept: APM lowercases a GitHub repo_url in the lock, so the lock is
+    not used (spike:plugin-remove/5, /3). An scp-style ``git@host:owner/repo``
+    URL works the same way. A plain string entry is passed as written.
+    """
+    if not isinstance(entry, dict):
+        return str(entry)
+    url = str(entry.get("git", "")).strip()
+    if "://" in url:
+        parts = urlsplit(url)
+        host = parts.hostname or ""
+        host += f":{parts.port}" if parts.port else ""
+        path = parts.path
+    else:
+        host, _, path = (
+            url.partition("@")[2].partition(":") if "@" in url else ("", "", url)
+        )
+    path = path.strip("/").removesuffix(".git")
+    return "/".join(p for p in (host, path, str(entry.get("path", PACKAGE_PATH))) if p)
+
+
+def _kmctl_entries(cwd: Path, scope: Scope) -> list[object]:
+    """kmctl's entries in the apm.yml at ``scope``, as ``write_manifest`` finds them."""
+    locked = _locked_kmctl_urls(read_lock(cwd, scope))
+    manifest = read_manifest(apm_dir(cwd, scope) / "apm.yml")
+    return [e for e in apm_entries(manifest) if _is_kmctl_entry(e, "", locked)]
+
+
+def _drop_targets(cwd: Path, scope: Scope, removed: list[str]) -> list[str]:
+    """Take ``removed`` out of apm.yml's ``targets`` when no other dependency is left there.
+
+    Install only adds targets, so a target may be one the repository's own
+    packages use; with another ``dependencies.apm`` entry left, the target
+    stays and a note says so.
+    """
+    path = apm_dir(cwd, scope) / "apm.yml"
+    data: Any = read_manifest(path)
+    if not isinstance(data, dict):
+        return []
+    targets = data.get("targets")
+    if not isinstance(targets, list):
+        return []
+    named = [h for h in removed if h in targets]
+    if not named:
+        return []
+    if apm_entries(data):
+        return [
+            (
+                f"kept {', '.join(named)} in apm.yml's targets, because other "
+                "packages there may use it; a bare apm install (without --target) "
+                "would deploy kmctl's package to it again"
+            )
+        ]
+    for harness in named:
+        targets.remove(harness)
+    out = StringIO()
+    _roundtrip().dump(data, out)
+    path.write_text(out.getvalue(), encoding="utf-8")
+    return []
+
+
+def unhook(path: Path) -> bool:
+    """Take kmctl's SessionStart hook out of the settings.json at ``path``; return whether it was there.
+
+    Every other key and hook stays; a group left empty goes, and so does a
+    SessionStart list or hooks object left empty. A missing file is left
+    missing.
+    """
+    if not path.is_file():
+        return False
+    data = read_json(path)
+    hooks = data.get("hooks")
+    groups = hooks.get("SessionStart") if isinstance(hooks, dict) else None
+    if not isinstance(groups, list):
+        return False
+    found = False
+    kept: list[object] = []
+    for group in groups:
+        inner = group.get("hooks") if isinstance(group, dict) else None
+        if not isinstance(inner, list) or not any(_is_kmctl_hook(h) for h in inner):
+            kept.append(group)
+            continue
+        found = True
+        rest = [h for h in inner if not _is_kmctl_hook(h)]
+        if rest:
+            kept.append({**group, "hooks": rest})
+    if not found:
+        return False
+    assert isinstance(hooks, dict)
+    if kept:
+        hooks["SessionStart"] = kept
+    else:
+        del hooks["SessionStart"]
+    if not hooks:
+        del data["hooks"]
+    _write_json(path, data)
+    return True
+
+
+def _remove_mcp(cwd: Path, scope: Scope) -> list[str]:
+    """Take kmctl's okf-bundle MCP server out, keeping every other server, okf's included."""
+    if scope == "user":
+        try:
+            servers = read_json(user_mcp_file()).get("mcpServers")
+        except PluginError:
+            servers = None
+        if not (isinstance(servers, dict) and _is_okf_server(servers.get(MCP_NAME))):
+            return []
+        args = ["mcp", "remove", MCP_NAME, "--scope", "user"]
+        if shutil.which("claude") is None:
+            return [
+                (
+                    "the claude CLI is not on PATH, so kmctl left okf's MCP server "
+                    f"{MCP_NAME}; run claude {' '.join(args)}"
+                )
+            ]
+        _require(_run(["claude", *args], cwd), f"claude {' '.join(args)}", REMOVE_AGAIN)
+        return []
+    path = cwd / ".mcp.json"
+    if not path.is_file():
+        return []
+    data = read_json(path)
+    servers = data.get("mcpServers")
+    if not (isinstance(servers, dict) and _is_okf_server(servers.get(MCP_NAME))):
+        return []
+    del servers[MCP_NAME]
+    if not servers and set(data) == {"mcpServers"}:
+        path.unlink()
+    else:
+        _write_json(path, data)
+    return []
+
+
+def _remove_antigravity(cwd: Path) -> None:
+    """Delete kmctl's plugin folder, and APM's hooks.json when the uninstall left it empty."""
+    from kmctl import antigravity
+
+    folder = antigravity.plugin_dir(cwd)
+    if folder.exists():
+        shutil.rmtree(folder)
+    hooks = cwd / antigravity.APM_HOOKS
+    if hooks.is_file():
+        try:
+            empty = read_json(hooks) == {}
+        except PluginError:
+            empty = False
+        if empty:
+            hooks.unlink()
+
+
+def remove(cwd: Path, harnesses: list[str], scope: Scope = "project") -> RemoveResult:
+    """Remove kmctl's package, hook and okf's MCP server from ``harnesses``, keeping the rest.
+
+    In order: uninstall kmctl's apm.yml entry with APM (``-g`` at user
+    scope); take each removed harness out of apm.yml's ``targets`` when no
+    other dependency is left; delete what kmctl wrote for each removed
+    harness; then, when harnesses stay installed, install them again from
+    the removed entry's source at its ref.
+
+    Parameters
+    ----------
+    cwd :
+        The repository; at user scope, only where APM and claude run.
+    harnesses :
+        Names from ``HARNESSES``, as ``parse_harnesses`` returns them.
+    scope :
+        ``project`` or ``user``.
+
+    Returns
+    -------
+    RemoveResult
+        The harnesses removed and kept, and notes; nothing removed when none
+        of ``harnesses`` is installed.
+
+    Raises
+    ------
+    PluginError
+        When a step fails. When the reinstall of the kept harnesses fails,
+        it names APM's cause and the install that puts them back.
+    """
+    # doctor imports this module, so it is imported here, not at the top.
+    from kmctl.doctor import harnesses_found
+
+    installed = harnesses_found(cwd, scope)
+    removed = [h for h in harnesses if h in installed]
+    notes = [
+        f"kmctl is not installed for {h} ({scope} scope); nothing to remove there"
+        for h in harnesses
+        if h not in installed
+    ]
+    if not removed:
+        return RemoveResult(scope, [], installed, notes)
+    kept = [h for h in installed if h not in removed]
+    entries = _kmctl_entries(cwd, scope)
+    entry = entries[0] if entries else None
+    for each in entries:
+        _apm(
+            ["uninstall", uninstall_name(each), *(["-g"] if scope == "user" else [])],
+            apm_root(cwd, scope),
+            REMOVE_AGAIN,
+        )
+    notes += _drop_targets(cwd, scope, removed)
+    if "claude" in removed:
+        unhook(settings_path(cwd, scope))
+        notes += _remove_mcp(cwd, scope)
+    if "antigravity" in removed:
+        _remove_antigravity(cwd)
+    if kept and isinstance(entry, dict) and entry.get("git"):
+        source, ref = str(entry["git"]), str(entry.get("ref") or "") or None
+        try:
+            notes += install(cwd, kept, scope, source=source, ref=ref).notes
+        except PluginError as error:
+            again = f"kmctl plugin install --harness {','.join(kept)} --source {source}"
+            again += " --scope user" if scope == "user" else ""
+            raise PluginError(
+                f"{error}; kmctl removed its package from {', '.join(removed)} and "
+                f"uninstalled it from {', '.join(kept)} too, so run {again} to put "
+                "it back (it installs at this kmctl's version)"
+            ) from error
+    return RemoveResult(scope, removed, kept, notes)
