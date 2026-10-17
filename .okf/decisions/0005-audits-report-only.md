@@ -66,3 +66,18 @@ repository. It fails when Hermes errors, runs past its time limit or returns
 no findings, never because a concept drifted. Why is
 [ADR 0010](0010-the-ci-audit-runs-hermes-agent-against-any-openai-compatible-provider.md).
 The report-only rule and the two tiers stand.
+
+## Correction, 2026-10-17
+
+The 2026-10-15 correction above is out of date. The action's `mode: audit`
+now runs `action/agent.py`, a standalone PydanticAI agent, against any
+provider. It reads the repository and the context and skill folders it is
+given, and can run shell commands so skills' scripts work. Its system prompt
+says never to change, commit or push a file, and nothing it changes is
+committed or pushed: the checkout holds no credentials and the GitHub token
+reaches only the later issue step. It fails when the run errors or passes
+its time limit, never because a concept drifted. It still runs only on
+`workflow_dispatch` or `schedule`: `action.yml` refuses any other event
+before the agent starts. Why is
+[ADR 0017](0017-the-ci-audit-is-a-standalone-pydanticai-agent-script.md).
+The report-only rule and the two tiers stand.

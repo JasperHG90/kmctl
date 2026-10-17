@@ -107,3 +107,7 @@
 ## 2026-10-17
 
 - Added `decisions/0016-antigravity-rules-come-from-the-kmctl-plugin-folder` with `kmctl new decision`.
+- Added `decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script` with `kmctl new decision`.
+- Superseded `decisions/0010-the-ci-audit-runs-hermes-agent-against-any-openai-compatible-provider` with `decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script`.
+- Corrected `decisions/0005-audits-report-only`: the audit mode now runs action/agent.py (ADR 0017), not Hermes.
+- Updated `architecture/overview`: the audit mode runs action/agent.py, a standalone PydanticAI agent, instead of Hermes (ADR 0017).

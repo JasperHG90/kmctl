@@ -6,7 +6,7 @@ tags: [adr, decision, ci, audit]
 generated:
   by: claude-opus/5.5
   at: 2026-10-15
-status: stable
+status: deprecated
 ---
 
 # ADR 0010: The CI audit runs Hermes Agent against any OpenAI-compatible provider
@@ -73,3 +73,7 @@ Rejected:
 - Hermes refuses an endpoint that reports less than 64K of context, and
   Ollama serves a smaller context than the model reports unless `num_ctx` is
   set.
+
+## Correction, 2026-10-17
+
+Superseded by [ADR 0017](0017-the-ci-audit-is-a-standalone-pydanticai-agent-script.md).

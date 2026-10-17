@@ -3,9 +3,9 @@ description: >-
   Run kmctl check and kmctl review due on a repository's docs/ and .okf/ bundle,
   write both to the job summary, and fail when kmctl check fails or kmctl review due crashes.
   Concepts that are due for review are reported, never failed. With
-  mode: audit, run the read-only audit agent through Hermes Agent against any
-  OpenAI-compatible model endpoint instead, and report its findings in the job
-  summary and one "Knowledge audit" issue.
+  mode: audit, run the agent in action/agent.py instead, against any model
+  provider, keep its report as an artifact, and post it to one
+  "Knowledge audit" issue.
 inputs:
   path:
     description: The repository folder to check, relative to the workspace.
@@ -13,45 +13,78 @@ inputs:
     default: "."
   mode:
     description: >-
-      checks (the default) runs kmctl check and kmctl review due. audit runs the
-      kmctl audit agent on the concepts that are due, through Hermes Agent with
-      only three read tools that cannot leave the repository; it needs model
-      (and base_url for provider custom), runs only on workflow_dispatch or
-      schedule, and needs the calling workflow to grant issues: write. Check
-      out with persist-credentials: false and fetch-depth: 0, and set no GH_TOKEN
-      or GITHUB_TOKEN for the job: the audit refuses to start when the model
-      could read a GitHub token. Only the later issue step gets the token. The
-      audit stops Hermes after 30 minutes (set KMCTL_AUDIT_TIMEOUT, such as 45m,
-      in the env of the step that uses this action to change it); also set
-      timeout-minutes on that step, since a composite action cannot set it on
-      its own steps.
+      checks (the default) runs kmctl check and kmctl review due. audit runs
+      the agent in action/agent.py (PydanticAI), which by default audits the
+      repository's knowledge with kmctl's skills; prompt changes its task. It
+      can read the repository, the context and skills folders, and run shell
+      commands. It needs model, and the calling workflow must grant
+      issues: write. Check out with persist-credentials: false and
+      fetch-depth: 0, and set no GH_TOKEN or GITHUB_TOKEN for the job: the
+      agent refuses to start when it could read a GitHub token. Only the later
+      issue step gets the token. It runs only on workflow_dispatch or
+      schedule and refuses any other event. Also set timeout-minutes on the
+      step, since a composite action cannot set it on its own steps.
     required: false
     default: checks
-  provider:
-    description: >-
-      Audit mode: the Hermes provider. custom (the default) talks to any
-      OpenAI-compatible endpoint at base_url, such as Ollama, Bifrost, OpenRouter
-      or a vendor's own API; Hermes' own provider names also work.
-    required: false
-    default: custom
   model:
-    description: Audit mode, required. The model name the endpoint serves, as its API names it.
+    description: >-
+      Audit mode, required. Without base_url, PydanticAI's provider:model name,
+      such as openai:gpt-5 or openrouter:qwen/qwen3-coder; set the provider's
+      own key variable (OPENAI_API_KEY, OPENROUTER_API_KEY and so on) in the
+      env of the step that uses this action. With base_url, the model name the
+      endpoint serves.
     required: false
     default: ""
   base_url:
     description: >-
-      Audit mode: the endpoint's base URL, ending in /v1 for most servers (for
-      example http://localhost:11434/v1 for Ollama). Required for provider custom.
+      Audit mode: an OpenAI-compatible endpoint's base URL, ending in /v1 for
+      most servers (for example http://localhost:11434/v1 for Ollama). Empty:
+      use model's provider.
     required: false
     default: ""
   api_key_env:
     description: >-
-      Audit mode: the name of the environment variable that holds the API key,
-      such as AUDIT_API_KEY. Set that variable from a secret in the env of the
-      step that uses this action. Leave empty for an endpoint that takes no key.
-      The key stays in the environment; the Hermes config names only the variable.
+      Audit mode, with base_url: the name of the environment variable that
+      holds the API key, such as AUDIT_API_KEY. Set that variable from a secret
+      in the env of the step that uses this action. Leave empty for an endpoint
+      that takes no key.
     required: false
     default: ""
+  prompt:
+    description: >-
+      Audit mode: the agent's task, as text. Empty: the kmctl knowledge audit.
+    required: false
+    default: ""
+  prompt_file:
+    description: >-
+      Audit mode: a file holding the agent's task, relative to path, instead of
+      prompt.
+    required: false
+    default: ""
+  system_prompt_file:
+    description: >-
+      Audit mode: a file that replaces the shipped system prompt, relative to
+      path. Empty: the shipped one, which lists the folders the agent can read
+      and its skills.
+    required: false
+    default: ""
+  context:
+    description: >-
+      Audit mode: folders the agent can read besides the repository, one per
+      line, relative to path; for example docs an earlier step fetched.
+    required: false
+    default: ""
+  skills:
+    description: >-
+      Audit mode: skill folders (each holding subfolders with a SKILL.md), one
+      per line, relative to path. Empty: kmctl's own skills.
+    required: false
+    default: ""
+  timeout:
+    description: >-
+      Audit mode: how long the agent may run, in seconds or with s, m, h or d.
+    required: false
+    default: 30m
 runs:
   using: composite
   steps:
@@ -73,21 +106,48 @@ runs:
       shell: bash
       working-directory: ${{ inputs.path }}
       run: bash "${{ github.action_path }}/action/knowledge-ci.sh"
-    - name: Install Hermes Agent
+    # The API key reaches a model that runs shell commands, so code from a pull
+    # request or fork must never run here (ADR 0005).
+    - name: Check the event
       if: inputs.mode == 'audit'
       shell: bash
-      run: uv tool install --python 3.12 hermes-agent==0.19.0
-    - name: Audit knowledge
+      run: |
+        case "$GITHUB_EVENT_NAME" in
+          workflow_dispatch | schedule) ;;
+          *) echo "kmctl audit: refused for event '$GITHUB_EVENT_NAME'; audit mode runs only on workflow_dispatch or schedule." >&2; exit 1 ;;
+        esac
+    # No GitHub token in this step: the agent runs shell commands.
+    - name: Run the agent
       if: inputs.mode == 'audit'
       shell: bash
       working-directory: ${{ inputs.path }}
       env:
-        KMCTL_AUDIT_PROVIDER: ${{ inputs.provider }}
-        KMCTL_AUDIT_MODEL: ${{ inputs.model }}
-        KMCTL_AUDIT_BASE_URL: ${{ inputs.base_url }}
-        KMCTL_AUDIT_API_KEY_ENV: ${{ inputs.api_key_env }}
-        KMCTL_PLUGIN_DIR: ${{ github.action_path }}/apm/.apm
-      run: bash "${{ github.action_path }}/action/knowledge-audit.sh"
+        MODEL: ${{ inputs.model }}
+        BASE_URL: ${{ inputs.base_url }}
+        API_KEY_ENV: ${{ inputs.api_key_env }}
+        PROMPT: ${{ inputs.prompt }}
+        PROMPT_FILE: ${{ inputs.prompt_file }}
+        SYSTEM_PROMPT_FILE: ${{ inputs.system_prompt_file }}
+        CONTEXT: ${{ inputs.context }}
+        SKILLS: ${{ inputs.skills }}
+        TIMEOUT: ${{ inputs.timeout }}
+      run: |
+        args=(run --model "$MODEL" --out "$RUNNER_TEMP/agent-report" --timeout "$TIMEOUT")
+        [ -n "$BASE_URL" ] && args+=(--base-url "$BASE_URL")
+        [ -n "$API_KEY_ENV" ] && args+=(--api-key-env "$API_KEY_ENV")
+        [ -n "$PROMPT" ] && args+=(--prompt "$PROMPT")
+        [ -n "$PROMPT_FILE" ] && args+=(--prompt-file "$PROMPT_FILE")
+        [ -n "$SYSTEM_PROMPT_FILE" ] && args+=(--system-prompt-file "$SYSTEM_PROMPT_FILE")
+        while IFS= read -r dir; do [ -n "$dir" ] && args+=(--context "$dir"); done <<< "$CONTEXT"
+        while IFS= read -r dir; do [ -n "$dir" ] && args+=(--skills "$dir"); done <<< "$SKILLS"
+        uv run --script "${{ github.action_path }}/action/agent.py" "${args[@]}"
+    - name: Keep the report
+      if: always() && inputs.mode == 'audit'
+      uses: actions/upload-artifact@v4
+      with:
+        name: agent-report
+        path: ${{ runner.temp }}/agent-report
+        if-no-files-found: ignore
     - name: Post the audit issue
       if: inputs.mode == 'audit'
       shell: bash
@@ -95,4 +155,4 @@ runs:
       env:
         GH_TOKEN: ${{ github.token }}
         GH_REPO: ${{ github.repository }}
-      run: bash "${{ github.action_path }}/action/knowledge-audit-issue.sh"
+      run: bash "${{ github.action_path }}/action/knowledge-audit-issue.sh" "$RUNNER_TEMP/agent-report/report.md"
