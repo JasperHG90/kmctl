@@ -1,1 +1,2 @@
 {"at": "2026-10-17T14:32:08+00:00", "command": "/tmp/claude-1000/-home-vscode-kmctl/dff53b03-6dd4-4578-a2d3-39665316bb2b/scratchpad/spike-real-audits/run.sh", "exit": 1, "kind": "spike", "n": 1, "schema_version": "1.0"}
+{"at": "2026-10-17T14:42:41+00:00", "command": "/tmp/claude-1000/-home-vscode-kmctl/dff53b03-6dd4-4578-a2d3-39665316bb2b/scratchpad/spike-real-audits/run.sh", "exit": 0, "kind": "spike", "n": 2, "schema_version": "1.0"}

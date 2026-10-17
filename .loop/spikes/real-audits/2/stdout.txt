@@ -1,0 +1,76 @@
+{
+  "validator_calls": [
+    {
+      "total": 62,
+      "bad": []
+    }
+  ],
+  "finished": true,
+  "requests": 85,
+  "retries": 0,
+  "checked": 20,
+  "findings": 0
+}
+## Agent report
+
+Audited all 20 due concepts in scope (1 architecture page, 19 decision records; 1 manifesto concept left out as out of scope for the audit skill). All 20 concepts hold: architecture/overview accurately depicts all modules, CLI verbs, package structure, and invariants; all decision records have valid front matter and required sections (Context, Decision with rejected alternative, Consequences), reflect current code, and deprecated records properly link to their superseding decisions. Zero drift findings.
+
+0 high, 0 medium, 0 low, 0 info.
+
+| Severity | Finding | Path | Summary | Claim | Contradicted by | Fix |
+|---|---|---|---|---|---|---|
+
+### Checked
+
+- `.okf/architecture/overview.md` against CLI modules, APM package contents, action scripts, release workflows, and manifesto invariants: `.okf/architecture/overview.md:14`, `src/kmctl/__init__.py:43`, `apm/apm.yml:6`, `action/knowledge-ci.sh:2`, `action/agent.py:381`
+- `.okf/decisions/0001-standalone-cli-installs-its-plugin.md` against CLI implementation in src/kmctl/__init__.py and doctor check in src/kmctl/doctor.py: `.okf/decisions/0001-standalone-cli-installs-its-plugin.md:25`, `src/kmctl/__init__.py:43`, `src/kmctl/doctor.py:233`
+- `.okf/decisions/0002-briefing-and-rules-injected-by-the-cli.md` against briefing loader in src/kmctl/briefing.py and rules delivery via APM: `.okf/decisions/0002-briefing-and-rules-injected-by-the-cli.md:25`, `src/kmctl/briefing.py:110`, `src/kmctl/briefing.py:149`
+- `.okf/decisions/0003-claude-code-plugin-first-depends-on-okf.md` against superseding decision ADR 0014 and deprecated status: `.okf/decisions/0003-claude-code-plugin-first-depends-on-okf.md:9`, `.okf/decisions/0003-claude-code-plugin-first-depends-on-okf.md:59`, `.okf/decisions/0014-apm-is-the-only-install-route.md:157`
+- `.okf/decisions/0004-sessionstart-is-the-only-hook.md` against SessionStart hook in src/kmctl/plugin.py and invariant I1 in manifesto: `.okf/decisions/0004-sessionstart-is-the-only-hook.md:26`, `.okf/decisions/0004-sessionstart-is-the-only-hook.md:49`, `.okf/manifesto.md:76`
+- `.okf/decisions/0005-audits-report-only.md` against read-only auditor in apm/.apm/agents/kmctl-auditor.md, CI checks in action/knowledge-ci.sh, and standalone agent in action/agent.py: `.okf/decisions/0005-audits-report-only.md:29`, `apm/.apm/agents/kmctl-auditor.md:4`, `action/knowledge-ci.sh:4`, `action/agent.py:18`
+- `.okf/decisions/0006-staleness-from-okf-fields.md` against staleness logic in src/kmctl/review_due.py and OKF field reader in src/kmctl/okf.py: `.okf/decisions/0006-staleness-from-okf-fields.md:27`, `src/kmctl/review_due.py:3`, `src/kmctl/okf.py:42`
+- `.okf/decisions/0007-skills-are-made-with-skill-creator.md` against manifesto skill development values: `.okf/decisions/0007-skills-are-made-with-skill-creator.md:25`, `.okf/manifesto.md:108`
+- `.okf/decisions/0008-handoffs-are-okf-concepts.md` against handoff creation in src/kmctl/concepts.py and handoffs command in src/kmctl/__init__.py: `.okf/decisions/0008-handoffs-are-okf-concepts.md:31`, `src/kmctl/concepts.py:37`, `src/kmctl/__init__.py:25`
+- `.okf/decisions/0009-handoff-key-extension-field.md` against extension field registry in src/kmctl/okf.py and manifesto invariant I4: `.okf/decisions/0009-handoff-key-extension-field.md:27`, `src/kmctl/okf.py:59`, `.okf/manifesto.md:94`
+- `.okf/decisions/0010-the-ci-audit-runs-hermes-agent-against-any-openai-compatible-provider.md` against superseding decision ADR 0017 and deprecated status: `.okf/decisions/0010-the-ci-audit-runs-hermes-agent-against-any-openai-compatible-provider.md:9`, `.okf/decisions/0010-the-ci-audit-runs-hermes-agent-against-any-openai-compatible-provider.md:79`, `.okf/decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script.md:98`
+- `.okf/decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md` against scaffolding block and first decision in src/kmctl/scaffold.py: `.okf/decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md:42`, `src/kmctl/scaffold.py:24`, `src/kmctl/scaffold.py:51`
+- `.okf/decisions/0012-releases-come-from-ci.md` against release workflow manifest and doc line definitions in scripts/release.py: `.okf/decisions/0012-releases-come-from-ci.md:43`, `scripts/release.py:33`, `scripts/release.py:41`
+- `.okf/decisions/0013-kmctl-installs-through-apm-too.md` against superseding decision ADR 0014 and deprecated status: `.okf/decisions/0013-kmctl-installs-through-apm-too.md:9`, `.okf/decisions/0013-kmctl-installs-through-apm-too.md:84`, `.okf/decisions/0014-apm-is-the-only-install-route.md:155`
+- `.okf/decisions/0014-apm-is-the-only-install-route.md` against APM package manifest in apm/apm.yml and manifest writer in src/kmctl/plugin.py: `.okf/decisions/0014-apm-is-the-only-install-route.md:65`, `apm/apm.yml:7`, `src/kmctl/plugin.py:538`
+- `.okf/decisions/0015-antigravity-gets-skills-and-rules-from-apm-and-a-kmctl-plugin-folder.md` against antigravity plugin generator in src/kmctl/antigravity.py and install handler in src/kmctl/plugin.py: `.okf/decisions/0015-antigravity-gets-skills-and-rules-from-apm-and-a-kmctl-plugin-folder.md:58`, `src/kmctl/antigravity.py:389`, `src/kmctl/plugin.py:1019`
+- `.okf/decisions/0016-antigravity-rules-come-from-the-kmctl-plugin-folder.md` against rule translator and file generator in src/kmctl/antigravity.py: `.okf/decisions/0016-antigravity-rules-come-from-the-kmctl-plugin-folder.md:38`, `src/kmctl/antigravity.py:202`, `src/kmctl/antigravity.py:401`
+- `.okf/decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script.md` against PydanticAI tools and publish command in action/agent.py: `.okf/decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script.md:37`, `action/agent.py:381`, `action/agent.py:659`
+- `.okf/decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity.md` against antigravity stop hook definition and drop handler in src/kmctl/antigravity.py: `.okf/decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity.md:48`, `src/kmctl/antigravity.py:55`, `src/kmctl/antigravity.py:329`
+- `.okf/decisions/0019-kmctl-plugin-remove-uninstalls-the-package-and-reinstalls-the-harnesses-kept.md` against plugin removal implementation in src/kmctl/plugin.py: `.okf/decisions/0019-kmctl-plugin-remove-uninstalls-the-package-and-reinstalls-the-harnesses-kept.md:43`, `src/kmctl/plugin.py:1255`, `src/kmctl/plugin.py:1288`
+--- report.md
+## Agent report
+
+Audited all 20 due concepts in scope (1 architecture page, 19 decision records; 1 manifesto concept left out as out of scope for the audit skill). All 20 concepts hold: architecture/overview accurately depicts all modules, CLI verbs, package structure, and invariants; all decision records have valid front matter and required sections (Context, Decision with rejected alternative, Consequences), reflect current code, and deprecated records properly link to their superseding decisions. Zero drift findings.
+
+0 high, 0 medium, 0 low, 0 info.
+
+| Severity | Finding | Path | Summary | Claim | Contradicted by | Fix |
+|---|---|---|---|---|---|---|
+
+### Checked
+
+- `.okf/architecture/overview.md` against CLI modules, APM package contents, action scripts, release workflows, and manifesto invariants: `.okf/architecture/overview.md:14`, `src/kmctl/__init__.py:43`, `apm/apm.yml:6`, `action/knowledge-ci.sh:2`, `action/agent.py:381`
+- `.okf/decisions/0001-standalone-cli-installs-its-plugin.md` against CLI implementation in src/kmctl/__init__.py and doctor check in src/kmctl/doctor.py: `.okf/decisions/0001-standalone-cli-installs-its-plugin.md:25`, `src/kmctl/__init__.py:43`, `src/kmctl/doctor.py:233`
+- `.okf/decisions/0002-briefing-and-rules-injected-by-the-cli.md` against briefing loader in src/kmctl/briefing.py and rules delivery via APM: `.okf/decisions/0002-briefing-and-rules-injected-by-the-cli.md:25`, `src/kmctl/briefing.py:110`, `src/kmctl/briefing.py:149`
+- `.okf/decisions/0003-claude-code-plugin-first-depends-on-okf.md` against superseding decision ADR 0014 and deprecated status: `.okf/decisions/0003-claude-code-plugin-first-depends-on-okf.md:9`, `.okf/decisions/0003-claude-code-plugin-first-depends-on-okf.md:59`, `.okf/decisions/0014-apm-is-the-only-install-route.md:157`
+- `.okf/decisions/0004-sessionstart-is-the-only-hook.md` against SessionStart hook in src/kmctl/plugin.py and invariant I1 in manifesto: `.okf/decisions/0004-sessionstart-is-the-only-hook.md:26`, `.okf/decisions/0004-sessionstart-is-the-only-hook.md:49`, `.okf/manifesto.md:76`
+- `.okf/decisions/0005-audits-report-only.md` against read-only auditor in apm/.apm/agents/kmctl-auditor.md, CI checks in action/knowledge-ci.sh, and standalone agent in action/agent.py: `.okf/decisions/0005-audits-report-only.md:29`, `apm/.apm/agents/kmctl-auditor.md:4`, `action/knowledge-ci.sh:4`, `action/agent.py:18`
+- `.okf/decisions/0006-staleness-from-okf-fields.md` against staleness logic in src/kmctl/review_due.py and OKF field reader in src/kmctl/okf.py: `.okf/decisions/0006-staleness-from-okf-fields.md:27`, `src/kmctl/review_due.py:3`, `src/kmctl/okf.py:42`
+- `.okf/decisions/0007-skills-are-made-with-skill-creator.md` against manifesto skill development values: `.okf/decisions/0007-skills-are-made-with-skill-creator.md:25`, `.okf/manifesto.md:108`
+- `.okf/decisions/0008-handoffs-are-okf-concepts.md` against handoff creation in src/kmctl/concepts.py and handoffs command in src/kmctl/__init__.py: `.okf/decisions/0008-handoffs-are-okf-concepts.md:31`, `src/kmctl/concepts.py:37`, `src/kmctl/__init__.py:25`
+- `.okf/decisions/0009-handoff-key-extension-field.md` against extension field registry in src/kmctl/okf.py and manifesto invariant I4: `.okf/decisions/0009-handoff-key-extension-field.md:27`, `src/kmctl/okf.py:59`, `.okf/manifesto.md:94`
+- `.okf/decisions/0010-the-ci-audit-runs-hermes-agent-against-any-openai-compatible-provider.md` against superseding decision ADR 0017 and deprecated status: `.okf/decisions/0010-the-ci-audit-runs-hermes-agent-against-any-openai-compatible-provider.md:9`, `.okf/decisions/0010-the-ci-audit-runs-hermes-agent-against-any-openai-compatible-provider.md:79`, `.okf/decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script.md:98`
+- `.okf/decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md` against scaffolding block and first decision in src/kmctl/scaffold.py: `.okf/decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md:42`, `src/kmctl/scaffold.py:24`, `src/kmctl/scaffold.py:51`
+- `.okf/decisions/0012-releases-come-from-ci.md` against release workflow manifest and doc line definitions in scripts/release.py: `.okf/decisions/0012-releases-come-from-ci.md:43`, `scripts/release.py:33`, `scripts/release.py:41`
+- `.okf/decisions/0013-kmctl-installs-through-apm-too.md` against superseding decision ADR 0014 and deprecated status: `.okf/decisions/0013-kmctl-installs-through-apm-too.md:9`, `.okf/decisions/0013-kmctl-installs-through-apm-too.md:84`, `.okf/decisions/0014-apm-is-the-only-install-route.md:155`
+- `.okf/decisions/0014-apm-is-the-only-install-route.md` against APM package manifest in apm/apm.yml and manifest writer in src/kmctl/plugin.py: `.okf/decisions/0014-apm-is-the-only-install-route.md:65`, `apm/apm.yml:7`, `src/kmctl/plugin.py:538`
+- `.okf/decisions/0015-antigravity-gets-skills-and-rules-from-apm-and-a-kmctl-plugin-folder.md` against antigravity plugin generator in src/kmctl/antigravity.py and install handler in src/kmctl/plugin.py: `.okf/decisions/0015-antigravity-gets-skills-and-rules-from-apm-and-a-kmctl-plugin-folder.md:58`, `src/kmctl/antigravity.py:389`, `src/kmctl/plugin.py:1019`
+- `.okf/decisions/0016-antigravity-rules-come-from-the-kmctl-plugin-folder.md` against rule translator and file generator in src/kmctl/antigravity.py: `.okf/decisions/0016-antigravity-rules-come-from-the-kmctl-plugin-folder.md:38`, `src/kmctl/antigravity.py:202`, `src/kmctl/antigravity.py:401`
+- `.okf/decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script.md` against PydanticAI tools and publish command in action/agent.py: `.okf/decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script.md:37`, `action/agent.py:381`, `action/agent.py:659`
+- `.okf/decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity.md` against antigravity stop hook definition and drop handler in src/kmctl/antigravity.py: `.okf/decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity.md:48`, `src/kmctl/antigravity.py:55`, `src/kmctl/antigravity.py:329`
+- `.okf/decisions/0019-kmctl-plugin-remove-uninstalls-the-package-and-reinstalls-the-harnesses-kept.md` against plugin removal implementation in src/kmctl/plugin.py: `.okf/decisions/0019-kmctl-plugin-remove-uninstalls-the-package-and-reinstalls-the-harnesses-kept.md:43`, `src/kmctl/plugin.py:1255`, `src/kmctl/plugin.py:1288`
