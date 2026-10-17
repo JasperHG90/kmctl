@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": ".okf/manifesto.md and .okf/architecture/overview.md still said APM supplies Antigravity's rules",
+      "anchor": ".okf/manifesto.md:63",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "the r4 consumer test never ran kmctl doctor",
+      "anchor": "tests/test_antigravity.py:816",
+      "category": "test-mismatch",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r4"
+    }
+  ],
+  "binds": {
+    "fingerprint": "3db4a2a9fab875d412e645a5a9dbd833789c6a360307f09ac7ab5b0b19518c75",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
+  "at": "2026-10-17T06:59:30+00:00"
+}
