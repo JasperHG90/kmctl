@@ -3,14 +3,14 @@
   "rows": [
     {
       "id": "r1",
-      "behavior": "kmctl docs index writes each Diataxis folder's README.md from its pages: a marker comment saying kmctl writes it, then one entry per page with its H1 title as link text and its description front matter when present; a second run changes nothing.",
-      "fails_when": "a page is missing or extra, an entry lacks the title or the description a page has, the marker is missing, or a second run changes a file",
-      "command": "uv run pytest tests/test_docs_frontmatter.py -k docs_index -q"
+      "behavior": "kmctl check --fix writes each Diataxis folder's README.md from its pages: a marker comment saying kmctl writes it, then one entry per page with its H1 title as link text and its description front matter when present; it changes no other file, and a second run changes nothing.",
+      "fails_when": "a page is missing or extra, an entry lacks the title or the description a page has, the marker is missing, --fix changes the root index, .okf/ or any other file, or a second run changes a file",
+      "command": "uv run pytest tests/test_docs_frontmatter.py -k check_fix -q"
     },
     {
       "id": "r2",
-      "behavior": "kmctl check fails (exit 1) with exactly one error when a folder index differs from what kmctl would generate, and its fix names kmctl docs index.",
-      "fails_when": "check exits 0, reports other than one error, or the fix does not name kmctl docs index",
+      "behavior": "kmctl check fails (exit 1) with exactly one error when a folder has no README.md or its index differs from what kmctl would generate, and the fix names kmctl check --fix.",
+      "fails_when": "check exits 0, reports other than one error for either case, or the fix does not name kmctl check --fix",
       "command": "uv run pytest tests/test_docs_frontmatter.py -k stale_folder_index -q"
     },
     {
@@ -21,7 +21,7 @@
     },
     {
       "id": "r4",
-      "behavior": "A folder README.md without kmctl's marker is never overwritten by kmctl docs index, kmctl new doc or kmctl update, and kmctl check warns (exit 0) that kmctl does not manage it.",
+      "behavior": "A folder README.md without kmctl's marker is never overwritten by kmctl check --fix, kmctl new doc or kmctl update, and kmctl check warns (exit 0) that kmctl does not manage it.",
       "fails_when": "any of the three changes the hand-written file, or check errors or says nothing",
       "command": "uv run pytest tests/test_docs_frontmatter.py -k hand_written_folder_index -q"
     },
@@ -51,9 +51,27 @@
     },
     {
       "id": "r9",
-      "behavior": "A new decision records docs front matter and generated indexes and amends ADR 0006; the manifesto's I4 names the docs fields and its kmctl description names kmctl docs index; docs-layout.md, docs/reference/commands.md (kmctl docs index and the warning level), the write-docs skill and the briefing line match.",
-      "fails_when": "the decision is missing or does not amend ADR 0006, or any of those pages still describes the flat index or omits the front matter or kmctl docs index",
+      "behavior": "A new decision records docs front matter, generated indexes and the pre-commit hook and amends ADR 0006; the manifesto's I4 names the docs fields and its kmctl description names kmctl check --fix; this repo's .claude/rules/docs-layout.md, docs/reference/commands.md (check --fix and the warning level) and the briefing line match.",
+      "fails_when": "the decision is missing or does not amend ADR 0006, or any of those pages still describes the flat index or omits the front matter or check --fix",
       "command": "uv run pytest tests/test_docs_frontmatter.py -k docs_pages_follow -q"
+    },
+    {
+      "id": "r11",
+      "behavior": ".pre-commit-hooks.yaml offers hook kmctl-check, which runs kmctl check without passing file names; in a scratch repo that lists this checkout under repos:, pre-commit run kmctl-check fails on a missing folder index, and with args: [--fix] it writes the index, and a second run passes.",
+      "fails_when": "the hook id is missing, it passes file names, it passes with a missing folder index, or --fix does not write it",
+      "command": "uv run pytest tests/test_docs_frontmatter.py -k pre_commit_hook -q"
+    },
+    {
+      "id": "r12",
+      "behavior": "This repo's .pre-commit-config.yaml runs kmctl-check.",
+      "fails_when": "no hook in the config runs kmctl check",
+      "command": "uv run pytest tests/test_docs_frontmatter.py -k own_pre_commit -q"
+    },
+    {
+      "id": "r13",
+      "behavior": "The agent instructions kmctl ships say docs pages may carry description, stale_after, verified and sources, that folder indexes are generated, and to run kmctl check --fix rather than edit one: the docs-layout rule and its Antigravity copy, the CLAUDE.md/AGENTS.md block kmctl init writes, the write-docs skill, the auditor agent and the audit skill.",
+      "fails_when": "any of them still says to edit an index by hand, describes only the flat docs/README.md index, or omits the front matter or kmctl check --fix",
+      "command": "uv run pytest tests/test_docs_frontmatter.py -k agent_instructions -q"
     },
     {
       "id": "r10",
