@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0",
+  "placeholder": true,
+  "verdict": "fail",
+  "findings": [],
+  "binds": {
+    "fingerprint": "1c5f288ffe124f181217239c15952e68598185f64a3f2f235c6455793e8594ea",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
+  "at": "2026-10-17T15:17:02+00:00"
+}
