@@ -7,7 +7,8 @@ description: Write one page in a repository's docs/ for the people who use the p
 
 `docs/` is for people who use the project. Each page has one job, named by its
 Diataxis type, and lives in that type's folder. kmctl writes the structure (the
-folder, the page skeleton and the `docs/README.md` entry); you write the prose.
+folder, the page's front matter and skeleton, the folder's `README.md` index and
+the folder's link in `docs/README.md`); you write the prose.
 
 ## 1. Check this belongs in docs/
 
@@ -39,6 +40,13 @@ It prints the path it wrote. It refuses when `docs/README.md` is missing (run
 existing page instead). Do not create the file, the folder or the index entry
 yourself: kmctl's format is what `kmctl check` reads.
 
+The page starts with front matter: `description` (its index entry), a
+`stale_after` three months ahead and an empty `sources`. List in `sources` the
+files the page describes (`- src/cli.py`), so `kmctl review due` flags the page
+when they change. Never add `verified` yourself, and never edit a folder's
+`README.md` index: it is generated. If you change a page's title or
+description, run `kmctl check --fix` to write the index again.
+
 ## 4. Write the prose
 
 Fill in the sections of the skeleton kmctl wrote, following the reference file.
@@ -55,5 +63,6 @@ manifests, hook messages); if it is not there, ask the user, or write
 
 ## 5. Check and report
 
-Run `kmctl check`. It must pass. Report the path of the page and its type in one
+Run `kmctl check` (`kmctl check --fix` when it says a folder index is out of
+date). It must pass. Report the path of the page and its type in one
 line, and name any second page the request suggested.

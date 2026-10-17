@@ -1,3 +1,7 @@
+---
+description: "Add kmctl's APM package to apm.yml, what APM leaves to kmctl plugin patch, and moving off an older entry."
+---
+
 # Install kmctl with APM
 
 This page adds kmctl's APM package to a repository's `apm.yml`, for a

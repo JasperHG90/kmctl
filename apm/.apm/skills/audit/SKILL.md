@@ -16,7 +16,11 @@ kmctl review due --json
 
 Keep the entries in `due` whose id starts with `architecture/`, `decisions/` or
 `practices/`. Other kinds (the manifesto, proposals, prototypes, handoffs) are
-not audited here; mention how many you left out. If the user named one kind,
+not audited here; mention how many you left out. An id starting with `docs/`
+is a user page in `docs/`, due because its `stale_after` passed or one of its
+`sources` changed; list those separately as pages for a person to check, and
+do not audit them. Never run `kmctl check --fix` or anything else that writes:
+it regenerates `docs/` folder indexes, and the audit changes nothing. If the user named one kind,
 keep only that kind. If the user named concepts, use those whether or not
 they are due. If nothing is left, say nothing in scope is due and stop.
 

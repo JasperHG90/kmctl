@@ -40,7 +40,11 @@ def _reference() -> str:
 def test_readme_install_and_links() -> None:
     text = (ROOT / "README.md").read_text()
     links = _links(text)
-    pages = sorted(p.relative_to(ROOT).as_posix() for p in DOCS.rglob("*.md"))
+    pages = sorted(
+        p.relative_to(ROOT).as_posix()
+        for p in DOCS.rglob("*.md")
+        if p.parent == DOCS or p.name != "README.md"
+    )
 
     assert INSTALL in text
     assert "kmctl plugin install" in text

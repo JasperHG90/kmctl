@@ -4,6 +4,7 @@ from pathlib import Path
 from typer.testing import CliRunner, Result
 
 from kmctl import app
+from kmctl.docs_index import folder_index
 
 CONCEPT = (
     '---\ntype: note\ntitle: "{title}"\ndescription: "A note."\n---\n\n# {title}\n'
@@ -22,9 +23,10 @@ def _good_repo(root: Path) -> None:
     _write(
         root,
         "docs/README.md",
-        "# Docs\n\n- [Install](how-to/install.md): install it.\n",
+        "# Docs\n\n- [How-to guides](how-to/README.md): one task each.\n",
     )
     _write(root, "docs/how-to/install.md", "# Install\n")
+    _write(root, "docs/how-to/README.md", folder_index(root / "docs/how-to"))
     _write(
         root,
         ".okf/index.md",
@@ -65,26 +67,27 @@ def test_index_check_passes(tmp_path: Path) -> None:
 
 def test_index_check_missing_entry(tmp_path: Path) -> None:
     _good_repo(tmp_path)
-    _write(tmp_path, "docs/how-to/upgrade.md", "# Upgrade\n")
+    _write(tmp_path, "docs/upgrade.md", "# Upgrade\n")
     _write(tmp_path, ".okf/decisions/0002-second.md", CONCEPT.format(title="ADR 0002"))
 
     result = _check(tmp_path)
     files = {f["file"] for f in _findings(tmp_path) if f["check"] == "index"}
 
     assert result.exit_code != 0
-    assert files == {"docs/how-to/upgrade.md", ".okf/decisions/0002-second.md"}
+    assert files == {"docs/upgrade.md", ".okf/decisions/0002-second.md"}
 
 
 def test_index_check_entry_without_file(tmp_path: Path) -> None:
     _good_repo(tmp_path)
-    (tmp_path / "docs/how-to/install.md").unlink()
+    readme = tmp_path / "docs/README.md"
+    readme.write_text(readme.read_text() + "- [Gone](gone.md): removed.\n")
 
     result = _check(tmp_path)
     [finding] = _findings(tmp_path)
 
     assert result.exit_code != 0
     assert finding["file"] == "docs/README.md"
-    assert finding["line"] == 3
+    assert finding["line"] == 4
     assert finding["check"] == "index"
 
 
@@ -330,6 +333,7 @@ def test_link_forms_resolve(tmp_path: Path) -> None:
         "[d](my%20page.md 'a title') [e](my%20page.md \"a title\")\n"
     )
     _write(tmp_path, "docs/how-to/install.md", page)
+    _write(tmp_path, "docs/how-to/README.md", folder_index(tmp_path / "docs/how-to"))
 
     assert _findings(tmp_path) == []
 
@@ -342,10 +346,10 @@ def test_reference_style_links(tmp_path: Path) -> None:
         tmp_path / "docs/README.md"
     ).read_text() + "- [Ref entry][g]\n\n[g]: how-to/install.md\n"
     _write(tmp_path, "docs/README.md", readme)
-    _write(tmp_path, "docs/how-to/other.md", "# Other\n")
+    _write(tmp_path, "docs/other.md", "# Other\n")
     readme2 = (
         tmp_path / "docs/README.md"
-    ).read_text() + "- [Other][o]\n\n[o]: how-to/other.md\n"
+    ).read_text() + "- [Other][o]\n\n[o]: other.md\n"
     _write(tmp_path, "docs/README.md", readme2)
 
     findings = _findings(tmp_path)
@@ -353,9 +357,7 @@ def test_reference_style_links(tmp_path: Path) -> None:
     assert [
         (f["check"], f["file"], f["line"]) for f in findings if f["check"] == "link"
     ] == [("link", "docs/how-to/install.md", 6)]
-    assert ("index", "docs/how-to/other.md") in {
-        (f["check"], f["file"]) for f in findings
-    }
+    assert ("index", "docs/other.md") in {(f["check"], f["file"]) for f in findings}
 
 
 def test_angle_bracket_with_inner_brackets_is_not_a_link(tmp_path: Path) -> None:

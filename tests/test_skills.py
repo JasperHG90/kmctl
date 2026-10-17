@@ -39,7 +39,8 @@ def test_write_docs_grader_joins_metadata(tmp_path: Path) -> None:
     it = tmp_path / "iteration-1"
     good = it / "some-free-name" / "with_skill" / "repo" / "docs"
     (good / "reference").mkdir(parents=True)
-    (good / "README.md").write_text("# Docs\n\n- [Cmds](reference/cmds.md): all.\n")
+    (good / "README.md").write_text("# Docs\n\n- [Reference](reference/README.md)\n")
+    (good / "reference" / "README.md").write_text("# Reference\n\n- [Cmds](cmds.md)\n")
     (good / "reference" / "cmds.md").write_text("# Cmds\n")
     (it / "some-free-name" / "eval_metadata.json").write_text(
         json.dumps(

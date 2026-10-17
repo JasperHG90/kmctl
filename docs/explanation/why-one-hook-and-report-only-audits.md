@@ -1,3 +1,7 @@
+---
+description: "Why the session briefing is the only hook and why audits only report."
+---
+
 # Why one hook and report-only audits
 
 ## The question

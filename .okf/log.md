@@ -122,3 +122,4 @@
 - Added `decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest` with `kmctl new decision`.
 - Superseded `decisions/0019-kmctl-plugin-remove-uninstalls-the-package-and-reinstalls-the-harnesses-kept` with `decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest`.
 - Corrected `decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script`: the report lists what was checked, findings are mismatches only, and the script sends back citations of lines the agent did not see; updated `architecture/overview` to match.
+- Added `decisions/0022-docs-pages-carry-optional-okf-front-matter-and-generated-folder-indexes` with `kmctl new decision`.

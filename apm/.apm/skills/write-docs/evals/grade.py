@@ -1,4 +1,4 @@
-"""Grade write-docs runs: page in its type folder, listed in docs/README.md, kmctl check passes, no stray pages.
+"""Grade write-docs runs: page in its type folder, listed in its folder's README.md, kmctl check passes, no stray pages.
 
 Usage: python grade.py ITERATION_DIR, with ITERATION_DIR/<any-name>/<config>/repo as skill-creator lays
 out runs; each eval folder's eval_metadata.json names its eval_id in evals.json. kmctl must be on PATH, or set KMCTL_BIN to the folder holding it. Writes grading.json per run.
@@ -44,10 +44,11 @@ for eval_dir in sorted(p for p in ITER.iterdir() if p.is_dir()):
         pages = [p for p in docs.rglob("*.md") if p.name != "README.md"]
         in_type = [p for p in pages if p.relative_to(docs).parts[0] == want]
         stray = [p for p in pages if p.relative_to(docs).parts[0] not in TYPE_FOLDERS]
-        index = (
-            (docs / "README.md").read_text() if (docs / "README.md").exists() else ""
-        )
-        listed = [p for p in in_type if f"({p.relative_to(docs).as_posix()})" in index]
+        folder_index = docs / want / "README.md"
+        index = folder_index.read_text() if folder_index.exists() else ""
+        listed = [
+            p for p in in_type if f"({p.relative_to(docs / want).as_posix()})" in index
+        ]
         env = os.environ | ({"PATH": f"{BIN}:{os.environ['PATH']}"} if BIN else {})
         check = subprocess.run(
             ["kmctl", "check"],
@@ -65,7 +66,7 @@ for eval_dir in sorted(p for p in ITER.iterdir() if p.is_dir()):
                 or "no pages",
             },
             {
-                "text": "The page is listed in docs/README.md",
+                "text": "The page is listed in its folder's README.md index",
                 "passed": bool(listed),
                 "evidence": index.strip().splitlines()[-1]
                 if index.strip()

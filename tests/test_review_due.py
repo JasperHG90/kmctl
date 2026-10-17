@@ -212,3 +212,66 @@ def test_due_source_folder(tmp_path: Path) -> None:
     _commit(tmp_path, date=NEW)
 
     assert _reasons(tmp_path) == {"c": ["source changed: src"]}
+
+
+def _docs_page(root: Path, rel: str, front: str) -> None:
+    """Write a docs page at ``docs/rel`` with ``front`` as its front matter, or none when empty."""
+    head = f"---\n{front}---\n\n" if front else ""
+    _write(root, f"docs/{rel}", f"{head}# {rel}\n")
+
+
+def test_docs_page_stale_after(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    _docs_page(tmp_path, "how-to/old.md", "stale_after: 2020-01-01\n")
+    _docs_page(tmp_path, "how-to/fresh.md", "stale_after: 2999-01-01\n")
+    _docs_page(tmp_path, "how-to/plain.md", "")
+    _commit(tmp_path)
+
+    data = _data(tmp_path)
+
+    assert {d["id"]: d["reasons"] for d in data["due"]} == {
+        "docs/how-to/old": ["stale_after passed"]
+    }
+    assert data["due"][0]["path"] == "docs/how-to/old.md"
+    assert set(data) == {"due", "notices", "expired_handoffs", "history_skipped"}
+
+
+def test_docs_page_source_changed_after_page_commit(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    _docs_page(tmp_path, "reference/app.md", "sources:\n  - src/app.py\n")
+    _commit(tmp_path)
+
+    assert _reasons(tmp_path) == {}
+
+    (tmp_path / "src/app.py").write_text("x = 2\n")
+    _commit(tmp_path, date=NEW)
+
+    assert _reasons(tmp_path) == {"docs/reference/app": ["source changed: src/app.py"]}
+
+    page = tmp_path / "docs/reference/app.md"
+    page.write_text(page.read_text() + "\nUpdated.\n")
+    _commit(tmp_path, date="2026-09-02T00:00:00+00:00")
+
+    assert _reasons(tmp_path) == {}
+
+
+def test_docs_page_source_changed_after_verified(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    _docs_page(
+        tmp_path,
+        "reference/app.md",
+        f"verified:\n  - {{by: 'human:j', at: '{VERIFIED}'}}\nsources:\n  - resource: src/app.py\n",
+    )
+    _commit(tmp_path, date=NEW)
+    (tmp_path / "src/app.py").write_text("x = 2\n")
+    _commit(tmp_path, date="2026-09-02T00:00:00+00:00")
+
+    assert _reasons(tmp_path) == {"docs/reference/app": ["source changed: src/app.py"]}
+
+
+def test_docs_page_without_okf(tmp_path: Path) -> None:
+    _git(tmp_path, "init", "-q", "-b", "main")
+    _docs_page(tmp_path, "how-to/old.md", "stale_after: 2020-01-01\n")
+    _commit(tmp_path)
+
+    assert _reasons(tmp_path) == {"docs/how-to/old": ["stale_after passed"]}

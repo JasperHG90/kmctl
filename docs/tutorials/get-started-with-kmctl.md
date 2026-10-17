@@ -1,14 +1,18 @@
+---
+description: "Set a repository up, record a first decision and check it, in one sitting."
+---
+
 # Get started with kmctl
 
 ## What you will build
 
 A new repository with a `docs/` folder, an `.okf/` knowledge bundle with two
 decision records in it, and a clean `kmctl check`. Along the way you will see
-`kmctl check` catch a page that is missing from the docs index. It takes about
-ten minutes.
+`kmctl check` catch a docs folder with no index, and `kmctl check --fix` write
+it. It takes about ten minutes.
 
-Every command in the steps below was run in a scratch folder with kmctl 0.1.0,
-and the output shown is what it printed.
+Every command in the steps below was run in a scratch folder with the kmctl
+release this page ships with, and the output shown is what it printed.
 
 ## Before you start
 
@@ -62,7 +66,9 @@ created .okf/decisions/0001-keep-project-knowledge-in-an-okf-bundle.md
 Next: install kmctl's package with APM for the skills and the knowledge rules (the kmctl README's install section: an apm.yml entry, apm install, kmctl plugin patch), then fill the purpose and invariants in .okf/manifesto.md (its values are the operator's to write), then add a diagram page to .okf/architecture/ once there is code, then record each choice as you make it with kmctl new decision
 ```
 
-`docs/README.md` is the index of pages for people who use your project.
+`docs/README.md` is the index of the docs for people who use your project. It
+links each docs folder, and each folder gets its own `README.md` listing its
+pages, which kmctl writes.
 `.okf/` is the knowledge bundle for people and agents working on it:
 `index.md` is where a reader starts, `log.md` records each change, and
 `manifesto.md` is where your project's design will go. You can write the
@@ -165,15 +171,29 @@ kmctl check
 This time the check fails and exits 1:
 
 ```
-error  index  docs/how-to/deploy.md  not listed in docs/README.md
-1 failed
+warning  index  docs/README.md  does not link how-to/; add '- [How-to guides](how-to/README.md)'
+error  index  docs/how-to  folder has no README.md index; run kmctl check --fix
+1 failed, 1 warning
 ```
 
-The page is not in `docs/README.md`, so a reader of the index would never find
-it. Remove it and the check passes again:
+The new folder has no index, so a reader would never find the page. kmctl
+writes each folder's index from its pages, so let it:
 
 ```
-rm docs/how-to/deploy.md
+kmctl check --fix
+```
+
+```
+fixed docs/how-to/README.md
+warning  index  docs/README.md  does not link how-to/; add '- [How-to guides](how-to/README.md)'
+all checks passed, 1 warning
+```
+
+The check passes now. The warning is about `docs/README.md`, which is yours to
+write: kmctl never changes it. Add the link it suggests:
+
+```
+echo '- [How-to guides](how-to/README.md)' >> docs/README.md
 kmctl check
 ```
 
@@ -181,8 +201,8 @@ kmctl check
 all checks passed
 ```
 
-To add a page the right way, `kmctl new doc` writes it and its index entry
-together.
+To add a page the right way, `kmctl new doc` writes it, its folder's index and
+the folder's link in `docs/README.md` together.
 
 ## What you learned
 
@@ -191,7 +211,8 @@ together.
   upgrading kmctl, `kmctl update` refreshes the block.
 - `kmctl new decision` writes the structure of a record (number, front matter,
   index entry, log line) and you write the prose.
-- `kmctl check` fails when an index and its folder disagree.
+- `kmctl check` fails when an index and its folder disagree, and
+  `kmctl check --fix` writes the docs folder indexes for you.
 
 Next:
 

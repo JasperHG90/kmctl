@@ -208,7 +208,8 @@ the block. Then ask in plain words:
   `kmctl new decision`, which writes the front matter, index entry and log
   line; the agent writes the prose.
 - "Write a how-to for backing up the database." The `write-docs` skill files
-  it under `docs/how-to/` and lists it in `docs/README.md`.
+  it under `docs/how-to/` with `kmctl new doc`, which lists it in that
+  folder's generated `README.md`.
 - `/audit` reports knowledge that has drifted from the code. It changes
   nothing; you decide what to fix.
 - `/handoff` at the end of a session saves where the work stands; `/continue`
@@ -222,6 +223,7 @@ kmctl update                     # after upgrading kmctl: refresh the block
 kmctl new decision 'Store data in SQLite' --description 'One SQLite file, no database server.'
 kmctl new doc how-to 'Back up the database' --description 'Copy the SQLite file safely.'
 kmctl check                      # indexes agree with their folders, links resolve
+kmctl check --fix                # also rewrite the generated docs/ folder indexes
 kmctl review due                 # what is unverified or stale
 ```
 
@@ -231,6 +233,19 @@ knowledge rules come with kmctl's APM package. Every command takes `--help`,
 and most take `--json` for scripts and agents. The
 [tutorial](docs/tutorials/get-started-with-kmctl.md) walks through this in one
 sitting.
+
+To run `kmctl check` on every commit, add kmctl's `kmctl-check` hook to your
+`.pre-commit-config.yaml`; `args: [--fix]` rewrites the folder indexes as you
+commit:
+
+```yaml
+repos:
+  - repo: https://github.com/JasperHG90/Knowledge-management
+    rev: vX.Y.Z  # the kmctl version you run; the hook needs a release after 0.3.0
+    hooks:
+      - id: kmctl-check
+        args: [--fix]
+```
 
 ## What it does not do
 
@@ -243,7 +258,7 @@ and syncing to a central place are left to other tools. See
 
 ## Documentation
 
-The [docs index](docs/README.md) lists every page:
+The [docs index](docs/README.md) links each folder's index. The pages:
 
 - Tutorial: [Get started with kmctl](docs/tutorials/get-started-with-kmctl.md)
 - How-to: [Install the plugin and the CI action](docs/how-to/install-the-plugin-and-the-ci-action.md)
