@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "the r2 test asserts the new install URL appears in plugin.HOOK_COMMAND once, so it passes if one of the hook's two install lines still names the old repository; r1 does not catch that either, because src/kmctl/plugin.py is allowed to name the old repository",
+      "anchor": "tests/test_repo_name.py:52",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r2"
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "commands.md says patch refuses the string entry JasperHG90/Knowledge-management/apm#…, but _names_old_package now also refuses the string JasperHG90/kmctl/apm#…; the page should name both",
+      "anchor": "docs/reference/commands.md:337",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "4f03fd0a54a78e03de43e164c1047ae66d95f421dfd6459d54ba18f701471b1f",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
+  "at": "2026-10-17T19:02:28+00:00"
+}

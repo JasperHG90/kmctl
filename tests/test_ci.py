@@ -1,4 +1,4 @@
-"""The CI workflow for this repository: kmctl's own check, prek and pytest on every pull request."""
+"""The CI workflow for this repository: kmctl's own check, prek (ruff, kmctl check, OKF validation) and pytest on every pull request."""
 
 import re
 from pathlib import Path
@@ -101,3 +101,17 @@ def test_ci_howto_quoted_workflows_exist() -> None:
     cited = re.findall(r"`(\.github/workflows/[\w.-]+)`", note[1] + shipped[1])
     assert cited
     assert [c for c in cited if not (ROOT / c).exists()] == []
+
+
+def test_ci_prek_hooks_cover_the_gates_and_the_bundle() -> None:
+    """prek, which CI runs on every tracked file, lints, formats and checks docs/ and .okf/."""
+    config = yaml.safe_load((ROOT / ".pre-commit-config.yaml").read_text())
+    hooks = {h["id"]: h for repo in config["repos"] for h in repo["hooks"]}
+
+    assert hooks["ruff-check"]["entry"] == "uv run ruff check --fix"
+    assert hooks["ruff-format"]["entry"] == "uv run ruff format"
+    assert hooks["kmctl-check"]["entry"] == "uv run kmctl check --fix"
+    assert hooks["okf-validate"]["entry"] == (
+        "uv run python tests/vendor/okf/okf_validate.py .okf --strict"
+    )
+    assert (ROOT / "tests/vendor/okf/okf_validate.py").is_file()

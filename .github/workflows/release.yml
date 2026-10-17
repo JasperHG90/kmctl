@@ -191,7 +191,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git switch -c "$BRANCH"
-          git add apm.yml apm/apm.yml README.md docs/tutorials/get-started-with-kmctl.md docs/how-to/install-the-plugin-and-the-ci-action.md docs/how-to/install-kmctl-with-apm.md
+          git add apm.yml apm/apm.yml apm/claude/apm.yml apm/antigravity/apm.yml README.md docs/tutorials/get-started-with-kmctl.md docs/how-to/install-the-plugin-and-the-ci-action.md docs/how-to/install-kmctl-with-apm.md
           git commit -m "release: v$VERSION"
           if ! git diff --exit-code --stat; then
             echo "::error::release.py set changed a file this step does not stage. Add it to the git add line."

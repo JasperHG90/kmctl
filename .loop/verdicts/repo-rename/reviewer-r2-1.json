@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "the r2 test now counts two install lines in HOOK_COMMAND and asserts the old repo name is absent",
+      "anchor": "tests/test_repo_name.py:55",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r2"
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "commands.md step 1 now names the string entry under both repository names",
+      "anchor": "docs/reference/commands.md:337",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "3a08e3e21224ae2232c10816770822361790a9977687709da7990c10c6fb0a20",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
+  "at": "2026-10-17T19:06:01+00:00"
+}

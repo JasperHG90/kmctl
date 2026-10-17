@@ -63,7 +63,7 @@ still true; that takes judgment. So kmctl does two things instead:
 ### 1. Install the kmctl CLI
 
 ```
-uv tool install git+https://github.com/JasperHG90/kmctl@v0.3.0
+uv tool install git+https://github.com/JasperHG90/kmctl@v0.4.0
 ```
 
 ### 2. Set up the repository

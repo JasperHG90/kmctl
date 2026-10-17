@@ -1,6 +1,7 @@
 # Hooks for this repository, run by prek (`just hooks` installs them behind
 # loopctl's git hook). Each hook here generates or checks something a test
-# also checks, so a commit fixes it before the gates refuse it.
+# also checks, so a commit fixes it before the gates refuse it. CI runs every
+# hook on every tracked file (ci.yml, the prek job).
 repos:
   - repo: local
     hooks:
@@ -23,4 +24,26 @@ repos:
         entry: uv run kmctl check --fix
         language: system
         files: ^(docs/|\.okf/|README\.md$)
+        pass_filenames: false
+      # The loop's lint and format gates, run before a commit instead of after.
+      # Both fix what they can; the commit then stops so you can stage it.
+      - id: ruff-check
+        name: ruff check
+        entry: uv run ruff check --fix
+        language: system
+        types: [python]
+        pass_filenames: false
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format
+        language: system
+        types: [python]
+        pass_filenames: false
+      # This repository's own .okf/ bundle against the OKF v0.2 spec, strict,
+      # with the validator the tests pin.
+      - id: okf-validate
+        name: okf validate --strict
+        entry: uv run python tests/vendor/okf/okf_validate.py .okf --strict
+        language: system
+        files: ^\.okf/
         pass_filenames: false
