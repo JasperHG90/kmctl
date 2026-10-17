@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017
-  at: '2026-10-17T14:42:41+00:00'
+  at: '2026-10-17T14:43:06+00:00'
 slug: real-audits
 n: 2
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike real-audits/2
@@ -24,7 +24,10 @@ The command exited 0:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note real-audits 2`.
+Exit 0: the live Gemini 3.8 Flash audit of kmctl finished in 9.4 minutes and 85 of the 200 allowed requests. The validator ran once and rejected 0 of 62 citations, so there were 0 retries. The report has 20 checked entries and 0 findings.
+The agent made 47 read_file calls (16 of them with an offset or limit), 27 search_files calls, 6 list_files calls and 4 run_shell calls. All of its citations fell inside a range it read or matched a search hit. Run 1, which crashed on a stats bug in the spike, also passed 82 of 82 citations on the first try.
+This settles risk 1 for this repo and model: with the prompt saying citations are checked, the agent did not get stuck in retries and stayed well under the cap.
+Limits: two runs, one model, one repo. Neither run triggered a retry, so it is unknown whether the agent can recover once a citation is rejected. The offline TestModel did show the failure path: after 5 rejected outputs it stops with UnexpectedModelBehavior (7 requests). The plan's offline test should cover recovery.
 
 ## Files
 
