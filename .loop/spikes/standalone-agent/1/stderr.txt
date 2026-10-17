@@ -1,0 +1,20 @@
+Downloading pydantic-ai-slim (2.1MiB)
+Downloading tiktoken (1.1MiB)
+ Downloaded tiktoken
+ Downloaded pydantic-ai-slim
+Installed 26 packages in 158ms
+                 pydantic-ai v2.57.0 • Python 3.12.15
+
+      / \        agent: agent • model: openai:gemini-3.8-flash • output: Report • tools: 2
+     /   \         capabilities: 0
+   /___.___\
+  /    |    \    observability: off — see every model and tool call live, with cost
+/      |      \    set it up free with Logfire and a GitHub login: https://pydantic.dev/ai-setup.md
+`---.._|_..---'    or use any OpenTelemetry backend: https://pydantic.dev/docs/ai/logfire/#otel
+
+                 goes away once observability is on — or PYDANTIC_AI_NO_BANNER=1
+Traceback (most recent call last):
+  File "/tmp/claude-1000/-home-vscode-kmctl/dff53b03-6dd4-4578-a2d3-39665316bb2b/scratchpad/spike-standalone-agent/pydantic_ai_tools_report.py", line 98, in <module>
+    print("usage:", result.usage())
+                    ^^^^^^^^^^^^^^
+TypeError: 'RunUsage' object is not callable

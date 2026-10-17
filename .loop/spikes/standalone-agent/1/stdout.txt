@@ -1,0 +1,18 @@
+pydantic-ai-slim 2.57.0
+model gemini-3.8-flash
+tool calls in order: ['read_file', 'run_shell', 'final_result']
+output type: Report
+{
+  "summary": "The version specified in docs/install.md (1.0) does not match the version specified in VERSION (2.3.0).",
+  "findings": [
+    {
+      "title": "Version mismatch between docs/install.md and VERSION",
+      "severity": "medium",
+      "path": "docs/install.md",
+      "evidence": [
+        "Run `pip install widget==1.0` to install.",
+        "2.3.0"
+      ]
+    }
+  ]
+}

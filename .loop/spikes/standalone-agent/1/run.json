@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "standalone-agent",
+  "n": 1,
+  "command": "uv run --no-project /tmp/claude-1000/-home-vscode-kmctl/dff53b03-6dd4-4578-a2d3-39665316bb2b/scratchpad/spike-standalone-agent/pydantic_ai_tools_report.py",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/dff53b03-6dd4-4578-a2d3-39665316bb2b/scratchpad/spike-standalone-agent/pydantic_ai_tools_report.py",
+      "copy": "files/pydantic_ai_tools_report.py"
+    }
+  ],
+  "where": "worktree",
+  "head": "4b4f3257a75bcb57855841ac61a28a913d920f39",
+  "fingerprint": "873296580311e233676b9f29a01245643f24022be4e5d9d462fe287859d224af",
+  "started_at": "2026-10-17T07:00:46+00:00",
+  "finished_at": "2026-10-17T07:00:57+00:00",
+  "duration_seconds": 11.065,
+  "timeout_seconds": 300.0,
+  "exit": 1,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
+  "moved_from": null
+}
