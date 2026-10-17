@@ -1,0 +1,13 @@
+warning: `VIRTUAL_ENV=/home/vscode/kmctl/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+unformatted: File would be reformatted
+   --> tests/test_antigravity.py:931:18
+    |
+930 |
+    - RULES_DECISION = DECISIONS / "0016-antigravity-rules-come-from-the-kmctl-plugin-folder.md"
+931 + RULES_DECISION = (
+932 +     DECISIONS / "0016-antigravity-rules-come-from-the-kmctl-plugin-folder.md"
+933 + )
+934 |
+    |
+
+1 file would be reformatted, 89 files already formatted

@@ -19,7 +19,9 @@
   "archived": false,
   "worktree": "/home/vscode/kmctl.worktrees/antigravity-rules",
   "branch": "loop/antigravity-rules",
-  "stamps": [],
+  "stamps": [
+    "b44600e8ff5168aa1d49b3087c75c8105374d1db86f083632cb088509e05cd4e"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
     "hash": "aeb72ce77f2496c255a0bd85e56a66d7f70eccc74baa520f9804a7feacffa1d1",
@@ -122,5 +124,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T06:37:21+00:00"
+  "at": "2026-10-17T06:43:58+00:00"
 }

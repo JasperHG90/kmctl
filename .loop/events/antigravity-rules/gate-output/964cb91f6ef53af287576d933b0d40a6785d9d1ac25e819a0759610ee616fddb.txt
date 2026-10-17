@@ -1,0 +1,103 @@
+warning: `VIRTUAL_ENV=/home/vscode/kmctl/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+FFFF.................................................................... [ 10%]
+....................F................................................... [ 20%]
+........................................................................ [ 31%]
+........................................................................ [ 41%]
+........................................................................ [ 52%]
+........................................................................ [ 62%]
+........................................................................ [ 73%]
+........................................................................ [ 83%]
+........................................................................ [ 94%]
+......................................                                   [100%]
+=================================== FAILURES ===================================
+____________________ test_expected_entries_follow_pyproject ____________________
+
+    def test_expected_entries_follow_pyproject() -> None:
+        """The package's skills and agents folders, as pyproject force-includes them."""
+>       assert expected_entries(ROOT / "pyproject.toml") == [
+            "kmctl/_skills/",
+            "kmctl/_agents/",
+        ]
+E       AssertionError: assert ['kmctl/_skil...nstructions/'] == ['kmctl/_skil...ctl/_agents/']
+E         
+E         Left contains one more item: 'kmctl/_instructions/'
+E         Use -v to get more diff
+
+tests/scripts/test_check_wheel.py:50: AssertionError
+_________________________ test_a_complete_wheel_passes _________________________
+
+tmp_path = PosixPath('/tmp/pytest-of-vscode/pytest-3304/test_a_complete_wheel_passes0')
+
+    def test_a_complete_wheel_passes(tmp_path: Path) -> None:
+        """A wheel holding the skills and the agents passes."""
+        res = _check(_wheel(tmp_path / "kmctl-0.1.0-py3-none-any.whl", COMPLETE))
+    
+>       assert res.returncode == 0, res.stderr
+E       AssertionError: check_wheel: kmctl-0.1.0-py3-none-any.whl lacks kmctl/_instructions/
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/home/vscode/kmctl.worktrees/antigravity-rules/.venv/bin/python', '/home/vscode/kmctl.worktree...oject.toml'], returncode=1, stdout='', stderr='check_wheel: kmctl-0.1.0-py3-none-any.whl lacks kmctl/_instructions/\n').returncode
+
+tests/scripts/test_check_wheel.py:60: AssertionError
+_____________ test_a_wheel_without_an_entry_fails[kmctl/_skills/] ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-vscode/pytest-3304/test_a_wheel_without_an_entry_0')
+dropped = 'kmctl/_skills/'
+
+    @pytest.mark.parametrize("dropped", ["kmctl/_skills/", "kmctl/_agents/"])
+    def test_a_wheel_without_an_entry_fails(tmp_path: Path, dropped: str) -> None:
+        """A wheel without the skills or the agents is named, and the script exits 1."""
+        names = [n for n in COMPLETE if not n.startswith(dropped)]
+        wheel = _wheel(tmp_path / "kmctl-0.1.0-py3-none-any.whl", names)
+    
+        res = _check(wheel)
+    
+>       assert missing_entries(wheel, expected_entries(ROOT / "pyproject.toml")) == [
+            dropped
+        ]
+E       AssertionError: assert ['kmctl/_skil...nstructions/'] == ['kmctl/_skills/']
+E         
+E         Left contains one more item: 'kmctl/_instructions/'
+E         Use -v to get more diff
+
+tests/scripts/test_check_wheel.py:71: AssertionError
+_____________ test_a_wheel_without_an_entry_fails[kmctl/_agents/] ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-vscode/pytest-3304/test_a_wheel_without_an_entry_1')
+dropped = 'kmctl/_agents/'
+
+    @pytest.mark.parametrize("dropped", ["kmctl/_skills/", "kmctl/_agents/"])
+    def test_a_wheel_without_an_entry_fails(tmp_path: Path, dropped: str) -> None:
+        """A wheel without the skills or the agents is named, and the script exits 1."""
+        names = [n for n in COMPLETE if not n.startswith(dropped)]
+        wheel = _wheel(tmp_path / "kmctl-0.1.0-py3-none-any.whl", names)
+    
+        res = _check(wheel)
+    
+>       assert missing_entries(wheel, expected_entries(ROOT / "pyproject.toml")) == [
+            dropped
+        ]
+E       AssertionError: assert ['kmctl/_agen...nstructions/'] == ['kmctl/_agents/']
+E         
+E         Left contains one more item: 'kmctl/_instructions/'
+E         Use -v to get more diff
+
+tests/scripts/test_check_wheel.py:71: AssertionError
+________________________ test_records_have_consequences ________________________
+
+    def test_records_have_consequences() -> None:
+        records = _records()
+        log = (OKF / "log.md").read_text(encoding="utf-8")
+    
+>       assert len(records) == 15
+E       AssertionError: assert 16 == 15
+E        +  where 16 = len([PosixPath('/home/vscode/kmctl.worktrees/antigravity-rules/.okf/decisions/0001-standalone-cli-installs-its-plugin.md')...d'), PosixPath('/home/vscode/kmctl.worktrees/antigravity-rules/.okf/decisions/0006-staleness-from-okf-fields.md'), ...])
+
+tests/test_adr_audit_fixes.py:34: AssertionError
+=========================== short test summary info ============================
+FAILED tests/scripts/test_check_wheel.py::test_expected_entries_follow_pyproject
+FAILED tests/scripts/test_check_wheel.py::test_a_complete_wheel_passes - Asse...
+FAILED tests/scripts/test_check_wheel.py::test_a_wheel_without_an_entry_fails[kmctl/_skills/]
+FAILED tests/scripts/test_check_wheel.py::test_a_wheel_without_an_entry_fails[kmctl/_agents/]
+FAILED tests/test_adr_audit_fixes.py::test_records_have_consequences - Assert...
+5 failed, 681 passed in 51.56s
