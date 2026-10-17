@@ -1,1 +1,2 @@
 {"at": "2026-10-17T21:20:31+00:00", "command": "uv run --project /home/vscode/kmctl python /tmp/claude-1000/-home-vscode-kmctl/125ee49d-9032-42f6-96bc-67af67c66263/scratchpad/spike-verify-verb/budget.py", "exit": 1, "kind": "spike", "n": 1, "schema_version": "1.0"}
+{"at": "2026-10-17T21:21:30+00:00", "command": "sh -c uv run kmctl briefing | grep \"^State:\" | grep -E \"[1-9][0-9]* concepts? due for review \\(kmctl review due\\)\"", "exit": 0, "kind": "spike", "n": 2, "schema_version": "1.0"}

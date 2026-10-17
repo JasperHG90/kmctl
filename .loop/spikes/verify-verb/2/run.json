@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "slug": "verify-verb",
+  "n": 2,
+  "command": "sh -c uv run kmctl briefing | grep \"^State:\" | grep -E \"[1-9][0-9]* concepts? due for review \\(kmctl review due\\)\"",
+  "scripts": [],
+  "where": "worktree",
+  "head": "247432acefae4b1478b390ffb81c0623b6c5cfff",
+  "fingerprint": "041dd2c386b2a0411b31f77c09c1693af432f17d39ca1f60284c5161a09496ac",
+  "started_at": "2026-10-17T21:21:27+00:00",
+  "finished_at": "2026-10-17T21:21:30+00:00",
+  "duration_seconds": 3.429,
+  "timeout_seconds": 1800.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
+  "moved_from": null
+}
