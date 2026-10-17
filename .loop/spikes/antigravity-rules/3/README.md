@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016
-  at: '2026-10-17T06:34:25+00:00'
+  at: '2026-10-17T06:34:39+00:00'
 slug: antigravity-rules
 n: 3
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike antigravity-rules/3
@@ -24,7 +24,7 @@ The command exited 0:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note antigravity-rules 3`.
+Exit 0: every glob claim in the plan holds for plugin rules in agy 1.4.0. Reading .okf/index.md, the rule with globs "**/.okf/**" fired and ".okf/**" did not, so ** does enter the hidden .okf/ folder. Reading docs/guide/intro.md, only "**/docs/**, **/README.md" fired; "docs/**", "{**/docs/**,**/README.md}" and "**/src/**" did not. Reading README.md, the same comma list fired, so both of its globs count.
 
 ## Files
 
