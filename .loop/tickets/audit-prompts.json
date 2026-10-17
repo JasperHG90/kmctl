@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "audit-prompts",
-  "stage": "planning",
+  "stage": "ready",
   "attempts": 0,
   "plan_rounds": 2,
   "review_rounds": 0,
@@ -62,8 +62,14 @@
       "to": "planning",
       "at": "2026-10-17T16:38:55+00:00",
       "by": "promote"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-10-17T17:39:52+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
-  "at": "2026-10-17T17:39:50+00:00"
+  "at": "2026-10-17T17:39:52+00:00"
 }
