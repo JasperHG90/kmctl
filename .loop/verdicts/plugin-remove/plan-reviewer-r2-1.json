@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "The kept harnesses are now reinstalled from the removed entry's git source and ref, and a failed reinstall refuses with exit 1, names APM's cause and the install command that puts them back.",
+      "anchor": "src/kmctl/plugin.py:522",
+      "category": "design",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "A target is dropped only when no other dependencies.apm entry is left, and doctor's harnesses_found ignores targets when the lock lists kmctl's package, so a kept target neither wipes the user's packages nor marks a removed harness installed.",
+      "anchor": "src/kmctl/doctor.py:202",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "resolved",
+      "claim": "spike:plugin-remove/5 shows apm 0.33.0 uninstall accepts github.com/JasperHG90/Knowledge-management/apm for a GitHub-sourced entry and removes the entry and its packages.",
+      "anchor": "src/kmctl/plugin.py:399",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p4",
+      "disposition": "open",
+      "claim": "The plan builds the uninstall name from the lock's host and repo_url, but spike:plugin-remove/5's lock shows APM lowercases repo_url for GitHub (repo_url jasperhg90/knowledge-management; the original case is only in materialization_repo_url), while the spike passed the mixed-case github.com/JasperHG90/Knowledge-management/apm by hand. So the name the plan would actually build, github.com/jasperhg90/knowledge-management/apm, is untested. If APM matches the apm.yml entry case-sensitively, remove aborts with 'not found' on every install from the default source, which spike 3 (an all-lowercase local server) cannot show. Settle with a spike: after the same GitHub install, does apm 0.33.0 uninstall --dry-run accept github.com/jasperhg90/knowledge-management/apm? If not, the plan should name materialization_repo_url, or the apm.yml entry's git URL, as the source of the name.",
+      "anchor": "src/kmctl/plugin.py:399",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "c5739a31e8eb8e2a92eebd419e7b11a32f18353a65ae46c51c67d593d536efbc"
+  },
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
+  "at": "2026-10-17T06:58:15+00:00"
+}
