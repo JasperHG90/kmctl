@@ -3,7 +3,7 @@
   "slug": "agent-publish",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -89,8 +89,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "95e85790ecba64cbc22d8cbe590de6b8dcd3e0fca83c61a9ef42640584ab1a6c",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "3835304fa67875308e8d9082f3110a14efec4ed5443b1694ac54231c73937c22",
+    "started_at": "2026-10-17T07:40:52+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "3835304fa67875308e8d9082f3110a14efec4ed5443b1694ac54231c73937c22",
   "intent": {
     "epic": null,
     "depends_on": [
@@ -107,5 +126,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T07:40:49+00:00"
+  "at": "2026-10-17T07:40:52+00:00"
 }
