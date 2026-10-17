@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "_read_answer tests word.isdigit() and then calls int(word). Characters like '²' pass isdigit() but int() rejects them, so an answer such as '²' ends the command with a ValueError traceback instead of asking again.",
+      "anchor": "src/kmctl/__init__.py:777",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "71ac86a244d49aa29aed350f258e73a3f2d14a3d61bf96289491fefca3aa68f7",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
+  "at": "2026-10-17T06:07:42+00:00"
+}
