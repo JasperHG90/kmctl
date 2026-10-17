@@ -37,3 +37,4 @@
 {"at": "2026-10-17T19:44:22+00:00", "kind": "resume", "schema_version": "1.0"}
 {"at": "2026-10-17T19:51:18+00:00", "by": "human:jasperginn@gmail.com", "kind": "halt", "reason": "operator: manual commits", "schema_version": "1.0"}
 {"at": "2026-10-17T19:51:26+00:00", "kind": "resume", "schema_version": "1.0"}
+{"at": "2026-10-17T21:17:33+00:00", "by": "human:jasperginn@gmail.com", "epic": null, "id": "g4", "kind": "grant", "schema_version": "1.0", "steps": ["eval-sign", "plan-keep-whole", "ticket-promote", "ticket-drop", "ticket-done-outside", "ticket-override", "state-resume", "drive-install", "drive-uninstall", "judgements-label"], "tickets": [], "until": "2026-10-18T21:17:33+00:00"}
