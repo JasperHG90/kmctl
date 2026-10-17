@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "Deleting .github/workflows/knowledge.yml leaves the user-facing how-to pointing at a file that no longer exists. docs/how-to/install-the-plugin-and-the-ci-action.md says its workflow examples are \"quoted from\" the shipped .github/workflows/knowledge.yml (line 25), and step 4 (line 178-179) tells readers that the workflow to create \"is the shipped .github/workflows/knowledge.yml\" with uses: ./ swapped for a ref. The plan's scope covers only ci.yml and tests/test_ci.py, so the change would ship a docs page whose source claim is false, in a repository whose whole job is keeping docs current. The plan must name the docs change in scope: either re-point the how-to at ci.yml's knowledge job (which uses SHA-pinned actions unlike the quoted block) or keep a standalone example workflow the doc can quote.",
+      "anchor": "docs/how-to/install-the-plugin-and-the-ci-action.md:25",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r6"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "b834800766c7caffc6490ccb8b8942df588e72e1388d26259eec0dd009d3bb5e"
+  },
+  "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
+  "at": "2026-10-17T17:39:19+00:00"
+}
