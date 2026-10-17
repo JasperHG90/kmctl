@@ -1,0 +1,1 @@
+{"ask":"Enable Langfuse in kmctl GH: pass the LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY and LANGFUSE_BASE_URL secrets to the agent step in knowledge-audit.yml"}
