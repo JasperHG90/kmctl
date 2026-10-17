@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "apm-hands-back",
+  "n": 3,
+  "command": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/spike-migrate.sh",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/spike-migrate.sh",
+      "copy": "files/spike-migrate.sh"
+    }
+  ],
+  "where": "here",
+  "head": "ba3376cd3cece2a132c6fc5e84baaf1920626d8e",
+  "fingerprint": "06c73c6cd3b46e575f21a7b4017ff93a06122fcbc3cd3c864559421cbf7abaa4",
+  "started_at": "2026-10-17T12:52:16+00:00",
+  "finished_at": "2026-10-17T12:52:21+00:00",
+  "duration_seconds": 5.136,
+  "timeout_seconds": 600.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
+  "moved_from": null
+}

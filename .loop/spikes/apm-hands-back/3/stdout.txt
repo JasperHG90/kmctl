@@ -1,0 +1,9 @@
+install rc=0
+  okf-bundle already configured, skipping
+  [i] Skipped inactive experimental resolver for target 'copilot-cowork' during 
+  [i] Skipped inactive experimental resolver for target 'copilot-app' during 
+claude SessionStart kmctl hooks: 2 theme kept: dark
+mcp names: ['mine', 'okf-bundle']
+okf-bundle args kept: True
+ag start kept: True ag stop kept: True
+ag mcp args kept: True
