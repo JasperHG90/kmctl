@@ -1,0 +1,91 @@
+[
+ {
+  "severity": "medium",
+  "title": "The explanation page says kmctl has one hook that never stops anything",
+  "path": "docs/explanation/why-one-hook-and-report-only-audits.md",
+  "claim": "docs/explanation/why-one-hook-and-report-only-audits.md:10-11",
+  "contradicted_by": [
+   ".okf/manifesto.md:78-87",
+   ".okf/decisions/0004-sessionstart-is-the-only-hook.md:47-52",
+   ".okf/decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity.md:44-58",
+   ".okf/architecture/overview.md:195-200"
+  ],
+  "fix": "Keep the page's point (kmctl's own hook is SessionStart only and never blocks a session) but add the Antigravity case: the package also ships okf's opt-in Stop check (ADR 0018), which can send the agent back to work while `.okf/index.md` sets `upkeep: enforced`. Adjust line 10-11, line 16-17 (\"the only hook in kmctl's package\") and the \"Why there is only one hook\" heading at line 65 so they say \"kmctl's own hook\" rather than \"one hook\"."
+ },
+ {
+  "severity": "medium",
+  "title": "Tutorial prints kmctl 0.1.0 after installing the v0.3.0 tag",
+  "path": "docs/tutorials/get-started-with-kmctl.md",
+  "claim": "docs/tutorials/get-started-with-kmctl.md:32",
+  "contradicted_by": [
+   ".okf/architecture/overview.md:256-259",
+   ".okf/architecture/overview.md:139-140",
+   ".okf/decisions/0012-releases-come-from-ci.md:95-99",
+   "apm/apm.yml:10",
+   "docs/reference/commands.md:9"
+  ],
+  "fix": "Make line 32 print `kmctl 0.3.0`, matching the install at line 23 and docs/reference/commands.md:9. (docs/how-to/install-the-plugin-and-the-ci-action.md:63's `version: 0.1.0` is the example project's own version and stays.)"
+ },
+ {
+  "severity": "low",
+  "title": "Commands summary says the briefing prints \"the rules\"",
+  "path": "docs/reference/commands.md",
+  "claim": "docs/reference/commands.md:22",
+  "contradicted_by": [
+   ".okf/decisions/0002-briefing-and-rules-injected-by-the-cli.md:69-74",
+   ".okf/architecture/overview.md:159",
+   "docs/reference/commands.md:184-186",
+   "src/kmctl/__init__.py:555"
+  ],
+  "fix": "Change the row to match line 184-186 and .okf/: \"Print the session briefing: where knowledge lives, what is due, its one rule and the package's skills.\" The CLI docstring at src/kmctl/__init__.py:555, which the row is copied from, should be reworded with it."
+ },
+ {
+  "severity": "low",
+  "title": "Schema section says docs/ pages allow no front matter properties",
+  "path": "docs/reference/commands.md",
+  "claim": "docs/reference/commands.md:233-235",
+  "contradicted_by": [
+   ".okf/decisions/0022-docs-pages-carry-optional-okf-front-matter-and-generated-folder-indexes.md:38-42",
+   ".okf/manifesto.md:97-99",
+   "docs/reference/commands.md:149-153",
+   "src/kmctl/kinds.py:120-121"
+  ],
+  "fix": "Say that the kinds with no front matter are the indexes below the root, the docs folder indexes and the log, and that the `tutorial`/`how-to`/`reference`/`explanation` kinds allow the four optional docs fields (ADR 0022)."
+ },
+ {
+  "severity": "low",
+  "title": "Commands summary says review due lists only .okf/ concepts",
+  "path": "docs/reference/commands.md",
+  "claim": "docs/reference/commands.md:25",
+  "contradicted_by": [
+   ".okf/manifesto.md:51-53",
+   ".okf/decisions/0022-docs-pages-carry-optional-okf-front-matter-and-generated-folder-indexes.md:43-49",
+   "docs/reference/commands.md:242-243",
+   "src/kmctl/__init__.py:300"
+  ],
+  "fix": "Change the row to \"List the concepts in `.okf/` and the pages in `docs/` that are due for review, with the reason for each\", as at line 242. The CLI docstring at src/kmctl/__init__.py:300 should be reworded with it."
+ },
+ {
+  "severity": "low",
+  "title": "CI checks mode said to fail only when kmctl check fails",
+  "path": "docs/how-to/install-the-plugin-and-the-ci-action.md",
+  "claim": "docs/how-to/install-the-plugin-and-the-ci-action.md:212-213",
+  "contradicted_by": [
+   ".okf/decisions/0005-audits-report-only.md:50-52",
+   ".okf/architecture/overview.md:226-228",
+   "action/knowledge-ci.sh:4"
+  ],
+  "fix": "Write \"fails when `kmctl check` fails or `kmctl review due` crashes, never because a concept is due\", matching ADR 0005 and action/knowledge-ci.sh."
+ },
+ {
+  "severity": "low",
+  "title": "Explanation page calls kmctl's packaging one APM package",
+  "path": "docs/explanation/where-kmctl-fits-in-knowledge-management.md",
+  "claim": "docs/explanation/where-kmctl-fits-in-knowledge-management.md:113",
+  "contradicted_by": [
+   ".okf/decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md:61-73",
+   ".okf/architecture/overview.md:189-194"
+  ],
+  "fix": "Say \"as an APM package (three packages in one folder: the shared one and a sub-package per harness, ADR 0020)\", or drop the count and say \"as an APM package\"."
+ }
+]
