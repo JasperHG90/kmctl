@@ -20,10 +20,43 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude",
+    "hash": "dcb7fd4932a7370e89702a30cd7bb1896732809e376f84a03f8deaa241036be0",
+    "at": "2026-10-17T18:48:20+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "The docs and the bundle stay valid after the fixes: kmctl check passes on the repository.",
+      "fails_when": "kmctl check reports a broken link, index or schema after the change",
+      "command": "uv run kmctl check",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "kmctl review due's and kmctl briefing's help say what the commands do now: review due lists docs/ pages as well as .okf/ concepts, and the commands reference quotes the help as the CLI prints it.",
+      "fails_when": "review due's help still says it lists only .okf/ concepts, or the reference and the help disagree",
+      "command": "uv run pytest tests -q -k \"help or commands or reference\"",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "The commit message lists every one of the 35 findings (spikes 2 to 4) as fixed, naming the changed file, or not real, with the evidence; decisions change only through Correction sections, their index lines through a note, and every touched concept has a .okf/log.md line.",
+      "fails_when": "a finding is missing from the list, a fix is claimed for an unchanged file, a decision's body or description is rewritten, or a touched concept has no log line",
+      "command": null,
+      "judgment": true
+    },
+    {
+      "id": "r4",
+      "behavior": "The three audits ran once more on the result; any of the 35 that came back was checked again and fixed or recorded as not real, and new findings went to a follow-up stub.",
+      "fails_when": "the rerun is missing, a returning finding is left unanswered, or a new finding is fixed in this ticket instead of a stub",
+      "command": null,
+      "judgment": true
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -69,5 +102,5 @@
     }
   ],
   "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
-  "at": "2026-10-17T18:48:18+00:00"
+  "at": "2026-10-17T18:48:20+00:00"
 }
