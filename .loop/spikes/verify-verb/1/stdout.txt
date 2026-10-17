@@ -1,0 +1,21 @@
+kmctl repo: render 473 tokens, CLI stdout 474 / 500
+    State: 24 concepts due for review (kmctl review due); 0 live handoffs.
+  + short (44 chars): 485 tokens, spare 15
+  + medium (67 chars): 490 tokens, spare 10
+  + long (116 chars): 503 tokens, spare -3  <-- under margin
+  ~ swap-verify '(kmctl review due; kmctl verify)': 477 tokens, spare 23 (test needs < 500)
+  ~ swap-then '(kmctl review due, then kmctl verify ID)': 479 tokens, spare 21 (test needs < 500)
+test_briefing_token_budget: render 487 tokens, CLI stdout 488 / 500
+    State: 2 concepts due for review (kmctl review due); 2 live handoffs, newest: Earlier work.
+  + short (44 chars): 499 tokens, spare 1  <-- under margin
+  + medium (67 chars): 504 tokens, spare -4  <-- under margin
+  + long (116 chars): 517 tokens, spare -17  <-- under margin
+  ~ swap-verify '(kmctl review due; kmctl verify)': 491 tokens, spare 9 (test needs < 500)
+  ~ swap-then '(kmctl review due, then kmctl verify ID)': 493 tokens, spare 7 (test needs < 500)
+test_..._long_handoff_title: render 494 tokens, CLI stdout 494 / 500
+    State: 2 concepts due for review (kmctl review due); 3 live handoffs, newest: ab ab ab ab ab ab ab ab ab ab ab ab....
+  + short (44 chars): 505 tokens, spare -5  <-- under margin
+  + medium (67 chars): 511 tokens, spare -11  <-- under margin
+  + long (116 chars): 523 tokens, spare -23  <-- under margin
+  ~ swap-verify '(kmctl review due; kmctl verify)': 498 tokens, spare 2 (test needs < 500)
+  ~ swap-then '(kmctl review due, then kmctl verify ID)': 500 tokens, spare 0 (test needs < 500)

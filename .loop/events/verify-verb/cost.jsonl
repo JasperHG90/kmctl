@@ -1,0 +1,1 @@
+{"at": "2026-10-17T21:20:31+00:00", "command": "uv run --project /home/vscode/kmctl python /tmp/claude-1000/-home-vscode-kmctl/125ee49d-9032-42f6-96bc-67af67c66263/scratchpad/spike-verify-verb/budget.py", "exit": 1, "kind": "spike", "n": 1, "schema_version": "1.0"}
