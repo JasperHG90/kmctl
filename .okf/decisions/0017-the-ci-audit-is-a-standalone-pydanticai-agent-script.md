@@ -116,3 +116,17 @@ body is edited. It @-mentions the owners of the last `*` rule in CODEOWNERS
 or the `--mention` names, and below the threshold it closes the open issue
 with a comment. When the audit job fails, the publish job is skipped and the
 issue stays as it was.
+
+## Correction, 2026-10-17
+
+A live run returned one `info` finding per concept saying it held, and 18
+of its 61 citations named lines the agent had neither read nor found by
+search, so "holds" meant little. The `Report` now has a `checked` list,
+one entry per thing compared with what it was compared against, and
+`findings` holds mismatches only: each names the claim (`path:line`), the
+lines that contradict it and a suggested fix. The script records every line
+range `read_file` returns and every line `search_files` returns, and sends
+the report back to the agent while it cites any other line, or a line past
+the file's end. After five retries the run stops with exit 1, names the
+citations and writes no report. Lines seen only in `run_shell` output do
+not count, so a finding about a command cites the source that defines it.

@@ -41,7 +41,8 @@ os.environ.setdefault("PYDANTIC_AI_NO_BANNER", "1")
 
 import yaml
 from pydantic import BaseModel, Field
-from pydantic_ai import Agent
+from pydantic_ai import Agent, ModelRetry
+from pydantic_ai.exceptions import UnexpectedModelBehavior
 from pydantic_ai.models import Model
 from pydantic_ai.usage import UsageLimits
 
@@ -58,6 +59,8 @@ MAX_MATCHES = 200
 MAX_FILES = 500
 LINE_CHARS = 300
 SHELL_OUTPUT_CHARS = 20_000
+#: How many times a report goes back to the agent for unchecked citations.
+OUTPUT_RETRIES = 5
 SKIP_DIRS = {".git"}
 #: Variables a shell command keeps; everything else, the API key included, is dropped.
 SHELL_ENV_KEEP = ("PATH", "HOME", "LANG", "LC_ALL", "TERM", "TMPDIR", "USER")
@@ -92,11 +95,21 @@ you start and follow it. Paths a skill names are relative to its own folder.
 
 ## Your report
 
-Finish with a report: a short summary, then one finding per thing you found.
-Give each finding a severity: high for something wrong that someone must fix,
-medium for something that is probably wrong or that you could not check,
-low for something minor, info for something you checked and found right.
-Every finding cites evidence as path:line strings you actually read.
+Finish with a report: a short summary, a checked list and a findings list.
+
+- checked: one entry per page, concept or file you compared, naming what you
+  compared it against, with evidence. Something that holds goes here, never
+  in findings.
+- findings: mismatches only. Each names the claim that does not hold
+  (path:line), the lines that contradict it (path:line), and a suggested
+  fix. Give each a severity: high for something wrong that someone must
+  fix, medium for something that is probably wrong or that you could not
+  check, low for something minor, info for a note that needs no fix.
+
+Cite a line as path:line, or a range as path:first-last, with the path
+relative to the repository. The report is checked: a citation of a line you
+did not read with read_file or get as a search_files hit, or of a line past
+the file's end, is sent back.
 """
 
 DEFAULT_PROMPT = """\
@@ -107,9 +120,10 @@ every batch in turn, following its instructions below. Your tools stand in for
 the ones they name: read_file for Read, search_files for Grep and list_files
 for Glob, and run_shell to run kmctl.
 
-Turn each concept's verdict into one finding: drifted is high, unsure is
-medium and holds is info. Use the concept's id as the finding's title, its
-path as the path and the verdict's summary as the summary.
+Put every concept you compared in checked. Turn each drifted verdict into a
+high finding and each unsure verdict into a medium one; a concept that holds
+gets no finding. Use the concept's id as the finding's title and its path as
+the path.
 
 === The kmctl-auditor instructions ===
 
@@ -117,20 +131,33 @@ path as the path and the verdict's summary as the summary.
 """
 
 
+class Checked(BaseModel):
+    """One thing the agent compared."""
+
+    subject: str = Field(description="The page, concept or file compared.")
+    against: str = Field(description="What it was compared against, in a few words.")
+    evidence: list[str] = Field(description="path:line strings you read.")
+
+
 class Finding(BaseModel):
-    """One thing the agent found."""
+    """One mismatch the agent found."""
 
     title: str = Field(description="What the finding is about, in a few words.")
     severity: Literal["info", "low", "medium", "high"]
     path: str = Field(description="The file the finding is about.")
-    summary: str = Field(description="What is wrong or right, in a sentence or two.")
-    evidence: list[str] = Field(description="path:line strings you read.")
+    summary: str = Field(description="What is wrong, in a sentence or two.")
+    claim: str = Field(description="path:line of the claim that does not hold.")
+    contradicted_by: list[str] = Field(
+        description="path:line strings that contradict the claim."
+    )
+    fix: str = Field(description="A suggested fix.")
 
 
 class Report(BaseModel):
     """What the agent hands back."""
 
     summary: str
+    checked: list[Checked]
     findings: list[Finding]
 
 
@@ -149,6 +176,12 @@ class Workspace:
     repo: Path
     roots: list[Path] = field(default_factory=list)
     shell_timeout: int = 120
+    #: Line ranges read_file returned, by resolved file.
+    read: dict[Path, list[tuple[int, int]]] = field(default_factory=dict)
+    #: Lines search_files returned, by resolved file.
+    hits: dict[Path, set[int]] = field(default_factory=dict)
+    #: The citations the last report was sent back for.
+    unchecked: list[str] = field(default_factory=list)
 
     def resolve(self, raw: object) -> Path:
         """Resolve ``raw`` against the repository, following symlinks; refuse it outside every root."""
@@ -260,6 +293,7 @@ def make_tools(ws: Workspace) -> list:
         shown = ws.show(file)
         if not lines:
             return f"{shown}: no lines from line {first} (the file has {number})."
+        ws.read.setdefault(file, []).append((first, first + len(lines) - 1))
         tail = (
             f"[cut: the file goes on; read again with offset={cut_at} for the rest]"
             if cut_at
@@ -303,6 +337,7 @@ def make_tools(ws: Workspace) -> list:
                 line = line.rstrip("\r")
                 if needle in (line.casefold() if ignore_case else line):
                     matches.append(f"{shown}:{number}: {line[:LINE_CHARS]}")
+                    ws.hits.setdefault(real, set()).add(number)
                     if len(matches) == MAX_MATCHES:
                         matches.append(
                             f"[stopped after {MAX_MATCHES} matches; search a narrower path or longer text.]"
@@ -494,7 +529,8 @@ def refuse_tokens(repo: Path) -> None:
 
 
 def render(report: Report) -> str:
-    """Return the report as Markdown: the summary, counts, then a table, most severe first."""
+    """Return the report as Markdown: the summary, counts, a table of findings
+    (most severe first), then the checked list."""
 
     def cell(text: object) -> str:
         return str(text).replace("|", "\\|").replace("\n", " ")
@@ -510,15 +546,62 @@ def render(report: Report) -> str:
         "",
         f"{counts}.",
         "",
-        "| Severity | Finding | Path | Summary | Evidence |",
-        "|---|---|---|---|---|",
+        "| Severity | Finding | Summary | Claim | Contradicted by | Fix |",
+        "|---|---|---|---|---|---|",
     ]
     for f in sorted(report.findings, key=lambda f: -SEVERITIES.index(f.severity)):
-        evidence = ", ".join(f"`{e}`" for e in f.evidence)
+        against = ", ".join(f"`{cell(c)}`" for c in f.contradicted_by)
         lines.append(
-            f"| {f.severity} | {cell(f.title)} | `{cell(f.path)}` | {cell(f.summary)} | {cell(evidence)} |"
+            f"| {f.severity} | {cell(f.title)} | {cell(f.summary)} | `{cell(f.claim)}` | {against} | {cell(f.fix)} |"
         )
+    lines += ["", f"### Checked ({len(report.checked)})", ""]
+    for c in report.checked:
+        evidence = ", ".join(f"`{e}`" for e in c.evidence)
+        lines.append(f"- `{c.subject}` against {c.against}: {evidence}")
     return "\n".join(lines) + "\n"
+
+
+CITATION = re.compile(r"(.+):(\d+)(?:-(\d+))?")
+
+
+def bad_citations(ws: Workspace, report: Report) -> list[str]:
+    """Return each citation in ``report`` the agent did not see, with why."""
+    cited = [c for f in report.findings for c in (f.claim, *f.contradicted_by)]
+    cited += [e for c in report.checked for e in c.evidence]
+    bad = []
+    for cite in cited:
+        match = CITATION.fullmatch(cite.strip().strip("`"))
+        if not match:
+            bad.append(f"{cite}: not path:line or path:first-last")
+            continue
+        first = int(match.group(2))
+        last = int(match.group(3) or first)
+        if not 1 <= first <= last:
+            bad.append(f"{cite}: lines count from 1, and a range runs first-last")
+            continue
+        try:
+            file = ws.resolve(match.group(1))
+        except Refused as err:
+            bad.append(f"{cite}: {err}")
+            continue
+        if not file.is_file():
+            bad.append(f"{cite}: no such file")
+            continue
+        with file.open("rb") as handle:
+            length = sum(1 for _ in handle)
+        if last > length:
+            bad.append(f"{cite}: past the end of the file ({length} lines)")
+            continue
+        ranges = ws.read.get(file, [])
+        hits = ws.hits.get(file, set())
+        unseen = [
+            n
+            for n in range(first, last + 1)
+            if n not in hits and not any(a <= n <= b for a, b in ranges)
+        ]
+        if unseen:
+            bad.append(f"{cite}: line {unseen[0]} was neither read nor a search hit")
+    return bad
 
 
 async def run_agent(
@@ -529,10 +612,30 @@ async def run_agent(
     timeout: float,
     max_requests: int,
 ):
-    """Run the agent once and return PydanticAI's result."""
+    """Run the agent once and return PydanticAI's result.
+
+    The report goes back to the agent, up to ``OUTPUT_RETRIES`` times, while
+    it cites a line the agent did not see.
+    """
     agent = Agent(
-        model, output_type=Report, instructions=instructions, tools=make_tools(ws)
+        model,
+        output_type=Report,
+        instructions=instructions,
+        tools=make_tools(ws),
+        retries={"output": OUTPUT_RETRIES},
     )
+
+    @agent.output_validator
+    def check_citations(report: Report) -> Report:
+        ws.unchecked = bad_citations(ws, report)
+        if bad := ws.unchecked:
+            raise ModelRetry(
+                "Cite only lines you read with read_file or got as a search_files "
+                "hit. Read or search these, or drop them, then send the report "
+                "again:\n" + "\n".join(f"- {b}" for b in bad)
+            )
+        return report
+
     return await asyncio.wait_for(
         agent.run(prompt, usage_limits=UsageLimits(request_limit=max_requests)),
         timeout,
@@ -584,6 +687,17 @@ def run(args: argparse.Namespace, model: Model | str | None = None) -> int:
         )
     except TimeoutError:
         print(f"agent: stopped after the time limit ({args.timeout}).", file=sys.stderr)
+        return 1
+    except UnexpectedModelBehavior as err:
+        if ws.unchecked:
+            print(
+                f"agent: stopped; after {OUTPUT_RETRIES} retries the report still cites "
+                "lines the agent did not see, so its citations could not be checked:\n"
+                + "\n".join(f"- {b}" for b in ws.unchecked),
+                file=sys.stderr,
+            )
+        else:
+            print(f"agent: stopped; the model failed: {err}", file=sys.stderr)
         return 1
 
     out = Path(args.out)

@@ -119,7 +119,7 @@ flowchart LR
     ci -- "kmctl check,<br/>kmctl review due" --> app
     agentPy -- "run_shell: kmctl review due --json" --> reviewDue
     agentPy -. "lists the skills; reads the audit skill,<br/>review skills and auditor as it needs" .-> audit & reviews & auditor
-    agentPy -- "one run, typed Report,<br/>under --timeout" --> provider
+    agentPy -- "one run, typed Report (checked, findings),<br/>citations sent back unless read or a search hit,<br/>under --timeout" --> provider
     agentPy -. "reads, never commits or pushes" .-> repo & context
     agentPy -- "write: --out" --> artifact
     agentPy -- "report.md" --> summary
