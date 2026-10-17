@@ -1,0 +1,13 @@
+[
+ {
+  "title": "Incorrect option name for decision supersede",
+  "severity": "high",
+  "path": "docs/reference/commands.md",
+  "summary": "The options table for `kmctl decision supersede` lists `--with NEW`, but the command defines `--by` and does not accept `--with`.",
+  "claim": "docs/reference/commands.md:262",
+  "contradicted_by": [
+   "src/kmctl/__init__.py:623-628"
+  ],
+  "fix": "Change option name from `--with NEW` to `--by NEW` in the options table."
+ }
+]

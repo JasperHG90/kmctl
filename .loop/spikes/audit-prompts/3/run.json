@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "slug": "audit-prompts",
+  "n": 3,
+  "command": "python3 -c \nimport json,sys\nr=json.load(open('/tmp/claude-1000/-home-vscode-kmctl/dff53b03-6dd4-4578-a2d3-39665316bb2b/scratchpad/spike-audit-prompts/run1/out-docs/report.json'))\nhit=[f for f in r['findings'] if f['claim'].startswith('docs/reference/commands.md:26') and any(c.startswith('src/') for c in f['contradicted_by'])]\nprint(json.dumps(hit,indent=1)); sys.exit(0 if hit else 1)",
+  "scripts": [],
+  "where": "worktree",
+  "head": "216b274dad5a7194571c377964e5b2ac02ff9140",
+  "fingerprint": "75a93ecbbfbbf9f8d971c04b88125a4b0e86b0a31b90d65a53589f969f931bbd",
+  "started_at": "2026-10-17T17:37:13+00:00",
+  "finished_at": "2026-10-17T17:37:13+00:00",
+  "duration_seconds": 0.034,
+  "timeout_seconds": 1800.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
+  "moved_from": null
+}
