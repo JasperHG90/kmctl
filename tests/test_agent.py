@@ -27,35 +27,57 @@ agent = importlib.util.module_from_spec(_spec)
 sys.modules["ci_agent"] = agent
 _spec.loader.exec_module(agent)
 
+#: Cites only README.md, which Recorder reads before it hands the report in.
 REPORT = {
     "summary": "One page drifted.",
+    "checked": [
+        {
+            "subject": "README.md",
+            "against": "itself",
+            "evidence": ["README.md:1-2"],
+        }
+    ],
     "findings": [
         {
-            "title": "architecture/overview",
+            "title": "readme/greeting",
             "severity": "high",
-            "path": ".okf/architecture/overview.md",
-            "summary": "It names a script that is gone.",
-            "evidence": [".okf/architecture/overview.md:12"],
+            "path": "README.md",
+            "summary": "It says hello, then world.",
+            "claim": "README.md:2",
+            "contradicted_by": ["README.md:1"],
+            "fix": "Say hello once.",
         },
         {
-            "title": "decisions/0001",
+            "title": "readme/style",
             "severity": "info",
-            "path": ".okf/decisions/0001.md",
-            "summary": "Still holds.",
-            "evidence": ["src/app.py:3"],
+            "path": "README.md",
+            "summary": "Lower case.",
+            "claim": "README.md:1",
+            "contradicted_by": ["README.md:2"],
+            "fix": "None needed.",
         },
     ],
 }
 
 
 class Recorder:
-    """A FunctionModel body that records what the model saw and returns REPORT."""
+    """A FunctionModel body that records what the model saw and returns REPORT.
 
-    def __init__(self, calls: list[tuple[str, dict]] | None = None) -> None:
-        self.calls = list(calls or [])
+    It makes ``calls``, then reads README.md, then returns each of ``reports``
+    in turn (REPORT when none are left).
+    """
+
+    def __init__(
+        self,
+        calls: list[tuple[str, dict]] | None = None,
+        reports: list[dict] | None = None,
+    ) -> None:
+        self.calls = [*(calls or []), ("read_file", {"path": "README.md"})]
+        self.reports = list(reports or [])
         self.instructions: str | None = None
         self.prompt: str | None = None
         self.returns: list[str] = []
+        self.retries: list[str] = []
 
     def __call__(self, messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
         first = messages[0]
@@ -69,10 +91,14 @@ class Recorder:
             self.returns += [
                 str(p.content) for p in last.parts if p.part_kind == "tool-return"
             ]
+            self.retries += [
+                p.model_response() for p in last.parts if p.part_kind == "retry-prompt"
+            ]
         if self.calls:
             name, args = self.calls.pop(0)
             return ModelResponse(parts=[ToolCallPart(name, args)])
-        return ModelResponse(parts=[ToolCallPart(info.output_tools[0].name, REPORT)])
+        report = self.reports.pop(0) if self.reports else REPORT
+        return ModelResponse(parts=[ToolCallPart(info.output_tools[0].name, report)])
 
 
 def _skill(folder: Path, name: str, front: str | None = None) -> Path:
@@ -129,14 +155,15 @@ def test_run_writes_report_files_and_summary(
     markdown = (out / "report.md").read_text()
     for finding in REPORT["findings"]:
         assert finding["title"] in markdown
-        assert finding["evidence"][0] in markdown
+        assert finding["fix"] in markdown
     assert markdown.index("high") < markdown.index("| info")
     assert json.loads((out / "transcript.json").read_text())
     assert summary.read_text() == markdown
 
 
-def test_run_writes_with_cli_test_model(repo: Path, tmp_path: Path) -> None:
-    """`--model test` runs end to end through the real command line, offline."""
+def test_evidence_gives_up_with_cli_test_model(repo: Path, tmp_path: Path) -> None:
+    """`--model test` runs through the real command line, offline, and cites
+    lines it never read, so the run stops at the retry limit with no report."""
     env = {k: v for k, v in os.environ.items() if k not in agent.TOKEN_VARS}
     proc = subprocess.run(
         [
@@ -158,8 +185,76 @@ def test_run_writes_with_cli_test_model(repo: Path, tmp_path: Path) -> None:
         check=False,
     )
 
-    assert proc.returncode == 0, proc.stderr
-    agent.Report.model_validate_json((tmp_path / "out" / "report.json").read_text())
+    assert proc.returncode == 1, proc.stderr
+    assert "citations could not be checked" in proc.stderr
+    assert not (tmp_path / "out" / "report.json").exists()
+
+
+def test_report_shape_lists_checked_after_findings(repo: Path, tmp_path: Path) -> None:
+    assert _main(repo, tmp_path, FunctionModel(Recorder())) == 0
+
+    out = tmp_path / "out"
+    report = json.loads((out / "report.json").read_text())
+    assert report["checked"] == REPORT["checked"]
+    for finding in report["findings"]:
+        assert {"claim", "contradicted_by", "fix"} <= finding.keys()
+    markdown = (out / "report.md").read_text()
+    assert "`README.md` against itself: `README.md:1-2`" in markdown
+    assert markdown.index("readme/style") < markdown.index("### Checked (1)")
+
+
+def _citing(*cites: str) -> dict:
+    """REPORT with its first finding's claim and the checked evidence replaced."""
+    report = json.loads(json.dumps(REPORT))
+    report["findings"][0]["claim"] = cites[0]
+    report["checked"][0]["evidence"] = list(cites[1:])
+    return report
+
+
+def test_evidence_unread_lines_are_sent_back(repo: Path, tmp_path: Path) -> None:
+    (repo / "big.md").write_text("".join(f"line {n}\n" for n in range(1, 11)))
+    (repo / "other.md").write_text("never read\n")
+    rec = Recorder(
+        [("read_file", {"path": "big.md", "offset": 3, "limit": 2})],
+        reports=[
+            _citing(
+                "big.md:4",
+                "big.md:2",
+                "other.md:1",
+                "README.md:9",
+                "nope",
+                "big.md:9-1",
+                "big.md:0",
+            )
+        ],
+    )
+
+    assert _main(repo, tmp_path, FunctionModel(rec)) == 0
+
+    (retry,) = rec.retries
+    assert "big.md:2: line 2 was neither read nor a search hit" in retry
+    assert "other.md:1: line 1 was neither read nor a search hit" in retry
+    assert "README.md:9: past the end of the file (2 lines)" in retry
+    assert "nope: not path:line" in retry
+    assert "big.md:9-1: lines count from 1, and a range runs first-last" in retry
+    assert "big.md:0: lines count from 1" in retry
+    assert "big.md:4" not in retry
+    report = json.loads((tmp_path / "out" / "report.json").read_text())
+    assert report == REPORT
+
+
+def test_evidence_search_hits_count_as_seen(repo: Path, tmp_path: Path) -> None:
+    (repo / "notes.md").write_text("alpha\nbeta\n")
+    rec = Recorder(
+        [("search_files", {"pattern": "beta"})],
+        reports=[_citing("notes.md:2", "notes.md:1")],
+    )
+
+    assert _main(repo, tmp_path, FunctionModel(rec)) == 0
+
+    (retry,) = rec.retries
+    assert "notes.md:1: line 1 was neither read" in retry
+    assert "notes.md:2" not in retry
 
 
 def test_prompt_option_is_the_user_message(repo: Path, tmp_path: Path) -> None:
@@ -187,6 +282,18 @@ def test_default_prompt_is_the_audit(repo: Path, tmp_path: Path) -> None:
     assert _main(repo, tmp_path, FunctionModel(rec)) == 0
     assert rec.prompt and "audit skill" in rec.prompt
     assert agent.AUDITOR.read_text() in rec.prompt
+
+
+def test_prompt_defaults_keep_holds_out_of_findings(repo: Path, tmp_path: Path) -> None:
+    rec = Recorder()
+
+    assert _main(repo, tmp_path, FunctionModel(rec)) == 0
+    assert rec.instructions and rec.prompt
+    system = " ".join(rec.instructions.split())
+    assert "Something that holds goes here, never in findings" in system
+    assert "The report is checked" in system
+    assert "holds is info" not in rec.prompt
+    assert "a concept that holds gets no finding" in " ".join(rec.prompt.split())
 
 
 def test_system_prompt_file_replaces_the_default(repo: Path, tmp_path: Path) -> None:
@@ -301,7 +408,7 @@ def test_tools_reach_repo_context_and_skills(repo: Path, tmp_path: Path) -> None
         )
         == 0
     )
-    readme, ea, skill_md, search, listing = rec.returns
+    readme, ea, skill_md, search, listing, _ = rec.returns
     assert "1|hello" in readme
     assert "1|enterprise rule" in ea
     assert "name: alpha" in skill_md
@@ -534,10 +641,13 @@ def _report_file(tmp_path: Path, severities: list[str]) -> Path:
                 "severity": s,
                 "path": f".okf/c{n}.md",
                 "summary": f"Finding {n}.",
-                "evidence": [f".okf/c{n}.md:1"],
+                "claim": f".okf/c{n}.md:1",
+                "contradicted_by": [f"src/c{n}.py:1"],
+                "fix": f"Fix {n}.",
             }
             for n, s in enumerate(severities)
         ],
+        "checked": [],
     }
     path = tmp_path / "report.json"
     path.write_text(json.dumps(report))

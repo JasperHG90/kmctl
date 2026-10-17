@@ -234,6 +234,11 @@ Audit mode sends your repository to a model, so it is off unless you add it.
 Per `action.yml`, it runs `action/agent.py`, a small agent built on
 [PydanticAI](https://ai.pydantic.dev). By default it audits the architecture
 pages, decisions and practices that are due, following kmctl's audit skill.
+The report lists what the agent checked and what it compared each thing
+against, and has a finding only for a mismatch: the claim (`path:line`), the
+lines that contradict it and a suggested fix. The script checks every
+citation: one that names a line the agent did not read or find by search
+goes back to the agent, and after five retries the run fails with no report.
 It writes its report to the job summary and keeps it as an `agent-report`
 artifact (`report.json`, `report.md` and the full `transcript.json`). A
 second job, with `mode: publish`, posts it to one issue titled "Knowledge
