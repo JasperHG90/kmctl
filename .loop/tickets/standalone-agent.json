@@ -12,7 +12,7 @@
   "ask": "j-20261017T065743+0000-2c5d5938",
   "split": "j-20261017T065957+0000-a5ebc3c2",
   "split_plan_hash": "f774b5b4c7f28d33ebefddc7928d15d05ee305cf53e448dd2f77067737a24bb9",
-  "split_hold": true,
+  "split_hold": false,
   "commit_sha": null,
   "closed_outside": false,
   "dropped": false,
@@ -43,6 +43,6 @@
       "by": "register"
     }
   ],
-  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T06:59:57+00:00"
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-17T07:02:06+00:00"
 }
