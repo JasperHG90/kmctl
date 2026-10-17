@@ -20,10 +20,64 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "ccfe1e8aee4a508d5ce03c3d88249bb808b27f587bdc917f44f121eca2a15b18",
+    "at": "2026-10-17T14:48:05+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "kmctl plugin patch reads apm.lock.yaml (~/.apm/ with --scope user) and, for antigravity, writes .agents/plugins/kmctl/ (plugin.json and the translated agents) and takes APM's okf Stop handler out of .agents/hooks.json; for claude, takes out a kmctl SessionStart group APM does not record and an okf-bundle differing from the package's (project files, or the user settings.json and .claude.json) and the old kmctl@kmctl plugin, saying to run apm install again when it removed something APM should write; it never runs APM or needs uv; a second run changes nothing; it ends with Next: kmctl doctor and takes --json.",
+      "fails_when": "patch runs uvx or apm, writes anything else, misses a piece for an installed harness, touches a harness the lock does not list, leaves an unrecorded kmctl group or stale okf-bundle, omits the apm install note after a removal, changes a file on a second run, or lacks the Next line or --json",
+      "command": "uv run pytest tests/test_plugin_patch.py -k \"patch_writes or patch_claude or patch_again or patch_json\" -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "Without a kmctl package in the lock, patch refuses (exit 1) naming the apm install to run; for an older entry form (the ADR 0013 string entry in apm.yml, or a lock with virtual_path plugin) it refuses before that, naming the exact apm uninstall for that entry, the {git: ..., path: apm, ref: vVERSION} entry to write and apm install.",
+      "fails_when": "patch exits 0 without a kmctl package, names no fix, or for an old form says only to run apm install or names the wrong uninstall",
+      "command": "uv run pytest tests/test_plugin_patch.py -k refuses -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "kmctl plugin patch --undo deletes .agents/plugins/kmctl/ and nothing else, and exits 0 when it is already gone.",
+      "fails_when": "--undo leaves the folder, deletes or changes any other file, or fails when there is nothing to undo",
+      "command": "uv run pytest tests/test_plugin_patch.py -k undo -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "kmctl plugin install, update and remove no longer exist (kmctl plugin lists only patch), and the harness question goes with them; every doctor fix names apm install, the apm.yml ref or kmctl plugin patch, never kmctl plugin install, update or remove; kmctl init's Next line points at installing the package (the README's install section) rather than kmctl plugin install.",
+      "fails_when": "an old verb still runs, kmctl plugin lists another verb, a doctor fix or kmctl init's Next line names an old verb",
+      "command": "uv run pytest tests/test_plugin_patch.py tests/test_doctor.py tests/test_init.py -k \"old_verbs or fix_names or next_line\" -q",
+      "judgment": false
+    },
+    {
+      "id": "r5",
+      "behavior": "The README has an install section per harness (Claude Code, Antigravity, both): the apm.yml entry at the CLI's version, the apm install --target line (with APM through uvx --from apm-cli==0.33.0 when it is not installed), kmctl plugin patch, trusting the folder in Antigravity, upgrading (change the ref, apm install, kmctl plugin patch) and removing (apm uninstall, kmctl plugin patch --undo, and claude mcp remove okf-bundle --scope user after a user-scope uninstall); docs/reference/commands.md documents kmctl plugin patch and no old verb; the how-tos and architecture page follow; a decision records that APM installs and kmctl patches, superseding ADR 0019 and amending ADR 0014.",
+      "fails_when": "the README lacks a harness, a step or the user-scope note, a page still documents install, update or remove, or the decision or its links are missing",
+      "command": "uv run pytest tests/test_plugin_patch.py -k patch_docs -q",
+      "judgment": false
+    },
+    {
+      "id": "r6",
+      "behavior": "In a scratch consumer, apm install of kmctl's entry from a local git server (APM 0.33.0) followed by kmctl plugin patch makes kmctl doctor pass for claude and antigravity; kmctl plugin patch --undo then apm uninstall of the entry leaves no kmctl file under .claude/ or .agents/ but files APM leaves empty.",
+      "fails_when": "patch fails, doctor exits nonzero, or a kmctl file remains after undo and uninstall",
+      "command": "uv run pytest tests/test_plugin_patch.py -m integration -q",
+      "judgment": false
+    },
+    {
+      "id": "r7",
+      "behavior": "The other tests still pass.",
+      "fails_when": "uv run pytest or uv run pytest -m integration fails",
+      "command": "uv run pytest -q -m \"not integration or integration\"",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -69,5 +123,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
-  "at": "2026-10-17T13:00:17+00:00"
+  "at": "2026-10-17T14:48:05+00:00"
 }
