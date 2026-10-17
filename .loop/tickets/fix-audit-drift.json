@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "fix-audit-drift",
-  "stage": "building",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 0,
@@ -19,7 +19,9 @@
   "archived": false,
   "worktree": "/home/vscode/kmctl.worktrees/fix-audit-drift",
   "branch": "loop/fix-audit-drift",
-  "stamps": [],
+  "stamps": [
+    "8572d82eff39615879b5c39c2facbb6dd64ddac1b6f419757447ab34657fb75f"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude",
     "hash": "dcb7fd4932a7370e89702a30cd7bb1896732809e376f84a03f8deaa241036be0",
@@ -105,8 +107,14 @@
       "to": "building",
       "at": "2026-10-17T19:09:47+00:00",
       "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-10-17T19:18:56+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
-  "at": "2026-10-17T19:09:47+00:00"
+  "at": "2026-10-17T19:18:56+00:00"
 }
