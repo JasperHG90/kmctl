@@ -193,7 +193,9 @@ names the `apm uninstall` to run first. The steps with the CI action are in
 Install kmctl's package for Claude Code as in [Claude Code](#claude-code),
 then start a Claude Code session in the repository. The session opens with a `kmctl briefing`: where knowledge lives,
 what is due for review and the rules for writing it. In a repository with no
-`.okf/` yet, the briefing says so and points the agent at `kmctl init`. Ask:
+`.okf/` yet, the briefing says so and points the agent at `kmctl init`. Until
+the manifesto is written and `.okf/architecture/` has a page, the briefing
+tells the agent to fill them in with you before any other work. Ask:
 
 > Set this repository up with kmctl.
 

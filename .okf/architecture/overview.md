@@ -100,6 +100,7 @@ flowchart LR
     doctorPy -. "reads only" .-> consumer & agConsumer
     briefing --> reviewDue & handoffs
     briefing -- "skills_dir: names the package's skills" --> pluginPy
+    briefing -- "ARCHITECTURE: the setup line" --> kinds
     concepts & handoffs & reviewDue & supersede --> okf
     docs & supersede --> concepts
     checks & docs & scaffold -- "generate, compare" --> docsIndex
@@ -158,7 +159,7 @@ exit codes. Each verb calls one module:
 |---|---|---|
 | `kmctl init`, `kmctl update` (an alias) | `scaffold.py`, with `concepts.py` for the first decision and `docs_index.py` for the docs folder indexes | `docs/README.md`, each docs folder's generated `README.md`, a starter `.okf/`, the kmctl block in `CLAUDE.md` and `AGENTS.md`, and decision "Keep project knowledge in an OKF bundle"; it keeps every file that exists except for that block, the decision's index entry and log line (ADR 0011), and a generated docs folder index (ADR 0022). It writes no rules: those come with the package (ADR 0014) |
 | `kmctl check` | `checks.py`, with `docs_index.py` | nothing; with `--fix`, each generated docs folder `README.md` that is missing or out of date (ADR 0022) |
-| `kmctl briefing` | `briefing.py`, with `review_due.py`, `handoffs.py` and `plugin.py` for the skills it names, which the wheel carries as `kmctl/_skills/`; the knowledge rules are in `.claude/rules/`, not the briefing | nothing |
+| `kmctl briefing` | `briefing.py`, with `review_due.py`, `handoffs.py`, `kinds.py` for the architecture folder its setup line checks, and `plugin.py` for the skills it names, which the wheel carries as `kmctl/_skills/`; the knowledge rules are in `.claude/rules/`, not the briefing | nothing |
 | `kmctl review due` | `review_due.py` | nothing |
 | `kmctl handoffs` | `handoffs.py` | nothing |
 | `kmctl schema` | `kinds.py`, with `okf.py` for the field names | nothing |

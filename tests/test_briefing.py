@@ -181,3 +181,80 @@ def test_briefing_unchanged_by_the_seeded_files(tmp_path: Path) -> None:
     for key in ("routing", "rules", "skills"):
         assert with_seed[key] == without[key], key
     assert [r["name"] for r in with_seed["rules"]] == ["unverified-is-a-lead"]
+
+
+def test_briefing_setup_after_init_puts_the_scaffold_first(tmp_path: Path) -> None:
+    assert _invoke("init", "--path", str(tmp_path)).exit_code == 0
+
+    out = _briefing(tmp_path).stdout
+    setup = json.loads(_briefing(tmp_path, "--json").stdout)["setup"]
+
+    assert out.splitlines()[1] == (
+        "Setup first: manifesto not written; no architecture pages. "
+        "Ask the user to fill these in with you now."
+    )
+    assert setup == {
+        "initialized": True,
+        "manifesto_written": False,
+        "architecture_detailed": False,
+    }
+
+
+def test_briefing_setup_done(tmp_path: Path) -> None:
+    assert _invoke("init", "--path", str(tmp_path)).exit_code == 0
+    manifesto = tmp_path / ".okf/manifesto.md"
+    manifesto.write_text(
+        manifesto.read_text().replace(
+            "## What this is for\n", "## What this is for\n\nA test repository.\n"
+        )
+    )
+    architecture = tmp_path / ".okf/architecture"
+    architecture.mkdir()
+    (architecture / "index.md").write_text("# Architecture\n")
+    assert "no architecture pages" in _briefing(tmp_path).stdout
+    (architecture / "overview.md").write_text("# Overview\n")
+
+    out = _briefing(tmp_path).stdout
+
+    assert out.splitlines()[1] == (
+        "Setup: kmctl initialized, manifesto written, architecture detailed."
+    )
+
+
+def test_briefing_setup_without_init(tmp_path: Path) -> None:
+    out = _briefing(tmp_path).stdout
+    setup = json.loads(_briefing(tmp_path, "--json").stdout)["setup"]
+
+    assert out.splitlines()[1] == (
+        "Setup first: kmctl is not initialized. Ask the user to run kmctl "
+        "init, then write the manifesto and architecture with you."
+    )
+    assert not any(setup.values())
+
+
+def test_briefing_setup_without_a_manifesto(tmp_path: Path) -> None:
+    (tmp_path / ".okf").mkdir()
+
+    assert "manifesto not written" in _briefing(tmp_path).stdout
+
+
+def test_briefing_setup_reads_crlf_front_matter(tmp_path: Path) -> None:
+    assert _invoke("init", "--path", str(tmp_path)).exit_code == 0
+    manifesto = tmp_path / ".okf/manifesto.md"
+    manifesto.write_bytes(manifesto.read_bytes().replace(b"\n", b"\r\n"))
+
+    assert "manifesto not written" in _briefing(tmp_path).stdout
+
+
+def test_briefing_long_handoff_title_keeps_the_budget(tmp_path: Path) -> None:
+    root = _repo(tmp_path)
+    title = " ".join(["ab"] * 40)
+    result = _invoke(
+        "new", "handoff", title, "--description", "x.", "--path", str(root)
+    )
+    assert result.exit_code == 0, result.output
+
+    out = _briefing(root).stdout
+
+    assert estimate_tokens(out) < TOKEN_BUDGET, estimate_tokens(out)
+    assert title not in out

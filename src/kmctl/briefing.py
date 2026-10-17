@@ -21,6 +21,7 @@ from pydantic import BaseModel, Field, ValidationError
 
 from kmctl import plugin
 from kmctl.handoffs import live_handoffs
+from kmctl.kinds import ARCHITECTURE
 from kmctl.review_due import review_due
 
 #: The most tokens the briefing may take, estimated at CHARS_PER_TOKEN.
@@ -41,25 +42,23 @@ RULES = [
 ROUTING = """\
 Knowledge in this repository:
 - docs/: pages for people who use the project, one folder per Diataxis type
-  (tutorials, how-to, reference, explanation), each with a generated README.md;
-  a page may carry stale_after and sources.
+  (tutorials, how-to, reference, explanation), each with a generated README.md.
 - .okf/: an OKF v0.2 bundle for people and agents working on it. Start at
   .okf/index.md. manifesto.md is the design; decisions/ records each choice and
-  what it rejected; architecture/ the design as diagrams; practices/ lessons
-  backed by evidence; proposals/ designs not yet built; prototypes/ spikes with
-  their scripts; handoffs/ notes on where work stopped.
+  what it rejected; architecture/ the design as diagrams; practices/ lessons;
+  proposals/ designs not yet built; prototypes/ spikes; handoffs/ notes on
+  where work stopped.
 - Skills do repeatable tasks; .claude/rules/ holds the rules for writing knowledge.
 Verbs: kmctl new decision|practice|proposal|prototype|handoff to add a concept;
 kmctl new doc tutorial|how-to|reference|explanation for a docs/ page;
 kmctl check when done (--fix writes docs indexes; never edit one);
-kmctl review due for what needs review;
-kmctl handoffs for live handoffs; kmctl schema KIND for a document's expected
-shape. All take --help and --json."""
+kmctl handoffs for live handoffs; kmctl schema KIND for a document's shape. All take --help and --json."""
 
 EMPTY = "No .okf/ bundle here. Run kmctl init to start docs/ and .okf/."
 
 _FIRST_SENTENCE = re.compile(r"\.\s| - ")
-#: Words kept from a skill's description, so new skills cannot break TOKEN_BUDGET.
+#: Words kept from a skill's description or the newest handoff's title, so
+#: neither can break TOKEN_BUDGET.
 _SUMMARY_WORDS = 12
 
 
@@ -73,10 +72,30 @@ class State:
 
 
 @dataclass(frozen=True)
+class Setup:
+    """Whether the repository's knowledge is set up, which the agent settles with the user first.
+
+    Attributes
+    ----------
+    initialized : bool
+        ``kmctl init`` has run: there is an ``.okf/`` folder.
+    manifesto_written : bool
+        ``.okf/manifesto.md`` has text under its headings, not only init's scaffold.
+    architecture_detailed : bool
+        ``.okf/architecture/`` has a page other than its index.
+    """
+
+    initialized: bool
+    manifesto_written: bool
+    architecture_detailed: bool
+
+
+@dataclass(frozen=True)
 class Briefing:
     """The parts of the briefing."""
 
     routing: str
+    setup: Setup
     state: State | None
     rules: list[tuple[str, str]]
     skills: list[tuple[str, str]]
@@ -101,12 +120,17 @@ def _skill_summary(skill_md: Path) -> str:
     description = data.get("description") if isinstance(data, dict) else None
     if not isinstance(description, str) or not description.strip():
         return "see its SKILL.md."
-    words = (
-        _FIRST_SENTENCE.split(description.strip(), maxsplit=1)[0].rstrip(".").split()
-    )
+    first = _FIRST_SENTENCE.split(description.strip(), maxsplit=1)[0].rstrip(".")
+    clipped = _clip(first)
+    return clipped if clipped.endswith("...") else clipped + "."
+
+
+def _clip(text: str) -> str:
+    """``text`` cut at _SUMMARY_WORDS words, ending in "..." when cut."""
+    words = text.split()
     if len(words) > _SUMMARY_WORDS:
         return " ".join(words[:_SUMMARY_WORDS]).rstrip(",;:") + "..."
-    return " ".join(words) + "."
+    return " ".join(words)
 
 
 def load_skills() -> list[tuple[str, str]]:
@@ -126,6 +150,31 @@ def estimate_tokens(text: str) -> int:
     return -(-len(text) // CHARS_PER_TOKEN)
 
 
+def _manifesto_written(manifesto: Path) -> bool:
+    """Whether ``manifesto`` has a line of text that is not front matter, a heading or blank."""
+    if not manifesto.is_file():
+        return False
+    text = manifesto.read_text(encoding="utf-8", errors="replace").replace("\r\n", "\n")
+    if text.startswith("---\n"):
+        end = text.find("\n---", 4)
+        text = text[end + 4 :] if end != -1 else ""
+    return any(
+        line.strip() and not line.lstrip().startswith("#") for line in text.splitlines()
+    )
+
+
+def read_setup(root: Path) -> Setup:
+    """Whether ``root`` has kmctl initialized, a written manifesto and an architecture page."""
+    okf = root / ".okf"
+    architecture = okf / ARCHITECTURE
+    return Setup(
+        initialized=okf.is_dir(),
+        manifesto_written=_manifesto_written(okf / "manifesto.md"),
+        architecture_detailed=architecture.is_dir()
+        and any(p.name != "index.md" for p in architecture.glob("*.md")),
+    )
+
+
 def build_briefing(root: Path) -> Briefing:
     """Build the briefing for the repository at ``root``.
 
@@ -137,25 +186,55 @@ def build_briefing(root: Path) -> Briefing:
     Returns
     -------
     Briefing
-        Routing, state (None when there is no .okf/), RULES and the
-        package's skills (empty when there is no .okf/).
+        Routing, setup, state (None when there is no .okf/), RULES and
+        the package's skills (empty when there is no .okf/).
     """
-    if not (root / ".okf").is_dir():
-        return Briefing(routing=EMPTY, state=None, rules=RULES, skills=[])
+    setup = read_setup(root)
+    if not setup.initialized:
+        return Briefing(routing=EMPTY, setup=setup, state=None, rules=RULES, skills=[])
     handoffs = live_handoffs(root)
     state = State(
         due=len(review_due(root).due),
         live_handoffs=len(handoffs),
-        newest_handoff=handoffs[0].title if handoffs else None,
+        newest_handoff=_clip(handoffs[0].title) if handoffs else None,
     )
-    return Briefing(routing=ROUTING, state=state, rules=RULES, skills=load_skills())
+    return Briefing(
+        routing=ROUTING, setup=setup, state=state, rules=RULES, skills=load_skills()
+    )
+
+
+def setup_line(setup: Setup) -> str:
+    """The briefing's setup line: all done, or what is missing and that it comes first."""
+    if not setup.initialized:
+        return (
+            "Setup first: kmctl is not initialized. Ask the user to run kmctl "
+            "init, then write the manifesto and architecture with you."
+        )
+    missing = [
+        text
+        for done, text in (
+            (setup.manifesto_written, "manifesto not written"),
+            (setup.architecture_detailed, "no architecture pages"),
+        )
+        if not done
+    ]
+    if not missing:
+        return "Setup: kmctl initialized, manifesto written, architecture detailed."
+    return (
+        f"Setup first: {'; '.join(missing)}. Ask the user to fill these in "
+        "with you now."
+    )
 
 
 def render(briefing: Briefing) -> str:
     """The briefing as text for the session start."""
-    lines = [f"kmctl briefing (kmctl {version('kmctl')})", briefing.routing]
+    lines = [
+        f"kmctl briefing (kmctl {version('kmctl')})",
+        setup_line(briefing.setup),
+        briefing.routing,
+    ]
     if briefing.skills:
-        lines.append("Skills in the kmctl plugin:")
+        lines.append("kmctl skills:")
         lines += [f"- {name}: {summary}" for name, summary in briefing.skills]
     if briefing.state is not None:
         s = briefing.state

@@ -181,7 +181,11 @@ List the live handoffs in `.okf/handoffs/`, newest first. Handoffs past their
 ### `kmctl briefing`
 
 Print the session briefing: where knowledge lives, what is due, and the
-package's skills, in under 500 tokens. The rules for writing knowledge are not
+package's skills, in under 500 tokens. Its first line after the title says
+whether the repository is set up: `kmctl init` has run, `.okf/manifesto.md`
+has text beyond its headings, and `.okf/architecture/` has a page other than
+its index. When one is missing, it tells the agent to ask the user to fill
+them in together before any other work; `--json` gives the three as `setup`. The rules for writing knowledge are not
 in it: APM puts them in `.claude/rules/` with kmctl's package, and the briefing
 adds only the one they lack. The SessionStart hook in kmctl's APM package,
 which APM writes, prints this: Claude Code's runs `kmctl briefing`,
@@ -203,7 +207,7 @@ echo '{"workspacePaths": ["/home/me/repo"]}' | kmctl briefing --format antigravi
 | Option | Meaning | Default |
 |---|---|---|
 | `--path DIR` | The repository to brief on: an existing folder. | `.` |
-| `--json` | Print one JSON object (`routing`, `state`, `rules`, `skills`). Not with `--format antigravity`. | off |
+| `--json` | Print one JSON object (`routing`, `setup`, `state`, `rules`, `skills`). Not with `--format antigravity`. | off |
 | `--format FORMAT` | `text` (the briefing as text) or `antigravity` (the briefing in the JSON an Antigravity SessionStart hook prints, with the repository read from stdin). | `text` |
 
 Exit code: 2 when `--json` and `--format antigravity` are given together.
