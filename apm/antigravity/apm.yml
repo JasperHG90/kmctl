@@ -1,7 +1,7 @@
 # kmctl's rules and hooks for Antigravity (ADR 0020). The rules are written by
 # scripts/sync_antigravity_rules.py from apm/claude/; edit those, not these.
 name: kmctl-antigravity
-version: 0.4.0
+version: 0.4.1
 description: kmctl's knowledge rules, session briefing hook and okf Stop check for Antigravity.
 targets:
   - antigravity

@@ -46,7 +46,7 @@ How the commands below were run:
 ### 1. Install kmctl
 
 ```
-uv tool install git+https://github.com/JasperHG90/kmctl@v0.4.0
+uv tool install git+https://github.com/JasperHG90/kmctl@v0.4.1
 ```
 
 The kmctl repository is private for now, so this needs a GitHub account
@@ -198,7 +198,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: JasperHG90/kmctl@v0.4.0
+      - uses: JasperHG90/kmctl@v0.4.1
 ```
 
 While the kmctl repository is private, GitHub runs this action only in
@@ -326,7 +326,7 @@ Publish mode takes three more:
            with:
              fetch-depth: 0
              persist-credentials: false
-         - uses: JasperHG90/kmctl@v0.4.0
+         - uses: JasperHG90/kmctl@v0.4.1
            timeout-minutes: 40
            env:
              AUDIT_API_KEY: ${{ secrets.AUDIT_API_KEY }}
@@ -349,7 +349,7 @@ Publish mode takes three more:
          - uses: actions/checkout@v4
            with:
              persist-credentials: false
-         - uses: JasperHG90/kmctl@v0.4.0
+         - uses: JasperHG90/kmctl@v0.4.1
            with:
              mode: publish
    ```
