@@ -1,0 +1,5 @@
+MCP: {'name': 'call_mcp_tool', 'parameters': {'Arguments': {'query': 'okf bundle'}, 'ServerName': 'okf-bundle', 'ToolName': 'search_concepts'}, 'output': '{\n  "id": "decisions/0001-keep-project-knowledge-in-an-okf-bundle",\n  "type": "decision",\n  "title": "ADR 0001: Keep project knowledge in an OKF bu
+RESULT: 1) kmctl briefing (kmctl 0.3.0)
+2) decisions/0001-keep-project-knowledge-in-an-okf-bundle
+
+ok True
