@@ -1,0 +1,65 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.15, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/vscode/kmctl
+configfile: pyproject.toml
+plugins: respx-0.23.1, anyio-4.15.1
+collected 718 items / 8 deselected / 710 selected
+
+tests/scripts/test_check_wheel.py ....                                   [  0%]
+tests/scripts/test_next_release_version.py ........................      [  3%]
+tests/scripts/test_release.py .............................              [  8%]
+tests/scripts/test_release_docs.py .....                                 [  8%]
+tests/scripts/test_smoke_wheel.py .........                              [ 10%]
+tests/scripts/test_workflows.py .............                            [ 11%]
+tests/test_action.py .............                                       [ 13%]
+tests/test_adr_audit_fixes.py ....                                       [ 14%]
+tests/test_agent.py ..............F..................................    [ 21%]
+tests/test_antigravity.py .............................................. [ 27%]
+...........                                                              [ 29%]
+tests/test_apm_package.py ........................................       [ 34%]
+tests/test_audit.py .....                                                [ 35%]
+tests/test_briefing.py ...........                                       [ 37%]
+tests/test_check.py .........................                            [ 40%]
+tests/test_ci.py .......                                                 [ 41%]
+tests/test_cli.py ..                                                     [ 41%]
+tests/test_docs.py .....                                                 [ 42%]
+tests/test_docs_frontmatter.py ..........................                [ 46%]
+tests/test_doctor.py ................................................... [ 53%]
+..............................                                           [ 57%]
+tests/test_handoff_key.py ........                                       [ 58%]
+tests/test_handoffs.py .........                                         [ 60%]
+tests/test_help.py ................................................      [ 66%]
+tests/test_init.py ..............................................        [ 73%]
+tests/test_network_retry.py ...............                              [ 75%]
+tests/test_new_concept.py ....................                           [ 78%]
+tests/test_new_doc.py .......                                            [ 79%]
+tests/test_okf_fields.py ......                                          [ 80%]
+tests/test_plugin.py ......                                              [ 80%]
+tests/test_plugin_error.py .......                                       [ 81%]
+tests/test_plugin_patch.py ................................              [ 86%]
+tests/test_repo_apm.py ..........                                        [ 87%]
+tests/test_review_due.py .............                                   [ 89%]
+tests/test_rules.py ...............................                      [ 93%]
+tests/test_schema.py .................................                   [ 98%]
+tests/test_skills.py ...                                                 [ 99%]
+tests/test_supersede.py .......                                          [100%]
+
+=================================== FAILURES ===================================
+________________________ test_audit_choices_are_in_help ________________________
+
+capsys = <_pytest.capture.CaptureFixture object at 0xfffface0ee40>
+
+    def test_audit_choices_are_in_help(capsys: pytest.CaptureFixture[str]) -> None:
+        with pytest.raises(SystemExit):
+            agent.main(["run", "--help"])
+    
+        help_text = " ".join(capsys.readouterr().out.split())
+        for name in agent.AUDITS:
+            assert name in help_text
+>       assert "Default: okf-vs-code" in help_text
+E       AssertionError: assert 'Default: okf-vs-code' in 'usage: agent.py run [-h] --model MODEL [--base-url BASE_URL] [--api-key-env API_KEY_ENV] [--audit {docs-vs-code,okf-v...ll command may take. Default: 120. --max-requests MAX_REQUESTS How many model requests the run may make. Default: 200.'
+
+tests/test_agent.py:332: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_agent.py::test_audit_choices_are_in_help - AssertionError: ...
+============ 1 failed, 709 passed, 8 deselected in 64.10s (0:01:04) ============
