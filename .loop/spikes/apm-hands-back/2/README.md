@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017
-  at: '2026-10-17T12:43:20+00:00'
+  at: '2026-10-17T12:47:55+00:00'
 slug: apm-hands-back
 n: 2
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike apm-hands-back/2
@@ -24,7 +24,7 @@ The command exited 0:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note apm-hands-back 2`.
+Exit 0: APM's workspace files work in agy 1.4.0. In a trusted scratch repository after kmctl init, with only .agents/hooks.json = {"apm": {"SessionStart": [kmctl's guarded briefing command]}} and .agents/mcp_config.json declaring okf-bundle with kmctl's sh launcher (the shapes APM 0.33.0 writes) and no plugin folder, an agy -p session on gemini-3.8-flash-high quoted the briefing's first line, kmctl briefing (kmctl 0.3.0), and call_mcp_tool okf-bundle/search_concepts returned decisions/0001-keep-project-knowledge-in-an-okf-bundle. So the hook name apm, the workspace hooks.json and the workspace mcp_config.json all load, and the launcher finds .okf/ from the server's working folder.
 
 ## Files
 
