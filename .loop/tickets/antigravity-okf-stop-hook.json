@@ -3,7 +3,7 @@
   "slug": "antigravity-okf-stop-hook",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 1,
+  "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -30,9 +30,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 1,
-    "binds": "8cdc1a2b7bff23fe2ce175c234bce364f736417f5444d88d980da8ed8fba64f1",
-    "started_at": "2026-10-17T06:32:42+00:00",
+    "n": 2,
+    "binds": "a5195df492775fa3699e0074010c8f79c76466b5f62422a96fdde5173b9a328c",
+    "started_at": "2026-10-17T06:36:52+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -45,10 +45,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "8cdc1a2b7bff23fe2ce175c234bce364f736417f5444d88d980da8ed8fba64f1",
+  "plan_hash": "a5195df492775fa3699e0074010c8f79c76466b5f62422a96fdde5173b9a328c",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -63,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T06:36:51+00:00"
+  "at": "2026-10-17T06:36:52+00:00"
 }

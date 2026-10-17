@@ -68,3 +68,7 @@ for an enforced bundle with a stray change, `{}` on `executionNum` 1, and
   either do nothing or loop. It does neither (spike:antigravity-okf-stop-hook/2):
   the first stop came back with okf's reason, and the second carried
   `executionNum` 1 and ended.
+- `executionNum` may count across a whole conversation rather than per
+  turn, so the guard would only work on the first turn. It counts per turn
+  (spike:antigravity-okf-stop-hook/3): turn 2 of one conversation started
+  again at 0.
