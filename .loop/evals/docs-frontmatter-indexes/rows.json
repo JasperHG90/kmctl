@@ -9,8 +9,8 @@
     },
     {
       "id": "r2",
-      "behavior": "kmctl check fails (exit 1) with exactly one error when a folder has no README.md or its index differs from what kmctl would generate, and the fix names kmctl check --fix.",
-      "fails_when": "check exits 0, reports other than one error for either case, or the fix does not name kmctl check --fix",
+      "behavior": "kmctl check fails (exit 1) with exactly one error when a Diataxis folder has no README.md or its index differs from what kmctl would generate, with a fix naming kmctl check --fix; a page directly in docs/ or outside the four folders that docs/README.md does not list is still an error.",
+      "fails_when": "check exits 0, reports other than one error for either folder case, the fix does not name kmctl check --fix, or an unlisted page outside the four folders passes",
       "command": "uv run pytest tests/test_docs_frontmatter.py -k stale_folder_index -q"
     },
     {
@@ -33,8 +33,8 @@
     },
     {
       "id": "r6",
-      "behavior": "kmctl review due lists a docs page whose stale_after has passed or whose listed source changed, with an id starting docs/ and the same --json shape; a docs page with no verified, or with no front matter, is not listed for that.",
-      "fails_when": "a stale or source-changed docs page is missing, its id lacks the docs/ prefix, the --json shape changes, or a page is due only for a missing verified",
+      "behavior": "kmctl review due lists a docs page whose stale_after has passed, or one of whose listed sources was committed after the page's latest verified date or, with none, after the page's own last commit, with an id starting docs/ and the same --json shape, also in a repo with no .okf/; a docs page with no verified, or with no front matter, is not listed for that alone.",
+      "fails_when": "a stale or source-changed docs page is missing, a page is listed when no source changed since its baseline, its id lacks the docs/ prefix, the --json shape changes, docs pages are skipped without .okf/, or a page is due only for a missing verified",
       "command": "uv run pytest tests/test_review_due.py -k docs_page -q"
     },
     {
@@ -57,9 +57,9 @@
     },
     {
       "id": "r11",
-      "behavior": ".pre-commit-hooks.yaml offers hook kmctl-check, which runs kmctl check without passing file names; in a scratch repo that lists this checkout under repos:, pre-commit run kmctl-check fails on a missing folder index, and with args: [--fix] it writes the index, and a second run passes.",
-      "fails_when": "the hook id is missing, it passes file names, it passes with a missing folder index, or --fix does not write it",
-      "command": "uv run pytest tests/test_docs_frontmatter.py -k pre_commit_hook -q"
+      "behavior": ".pre-commit-hooks.yaml offers hook kmctl-check, which runs kmctl check without passing file names (checked offline); and, as an integration test, prek in a scratch repo listing a temporary commit of this checkout under repos: fails kmctl-check on a missing folder index, writes it with args: [--fix], and passes on a second run.",
+      "fails_when": "the hook id is missing, it passes file names, the integration test selects no test, the hook passes with a missing folder index, or --fix does not write it",
+      "command": "uv run pytest tests/test_docs_frontmatter.py -k pre_commit_hook -q && uv run pytest tests/test_docs_frontmatter.py -m integration -k pre_commit_hook -q"
     },
     {
       "id": "r12",
