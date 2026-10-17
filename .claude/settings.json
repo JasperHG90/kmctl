@@ -1,8 +1,6 @@
 {
   "enabledPlugins": {
-    "loop-harness@loopctl": true,
-    "okf@scaccogatto": true,
-    "kmctl@kmctl": true
+    "loop-harness@loopctl": true
   },
   "extraKnownMarketplaces": {
     "scaccogatto": {
@@ -10,16 +8,6 @@
         "source": "github",
         "repo": "scaccogatto/okf-skills"
       }
-    },
-    "kmctl": {
-      "source": {
-        "source": "directory",
-        "path": "/home/vscode/.local/share/kmctl/marketplace"
-      }
     }
-  },
-  "env": {
-    "GOOGLE_API_KEY": "AIzaSyDrdIW9KZCHQRq_JBCQuBZ-_41EKqsHJ-8",
-    "GEMINI_API_KEY": "AIzaSyDrdIW9KZCHQRq_JBCQuBZ-_41EKqsHJ-8"
   }
 }

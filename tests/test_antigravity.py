@@ -889,7 +889,13 @@ def test_docs_decision_matches_the_decision_schema() -> None:
     ]
 
     assert errors == []
-    assert _sections(_decision().read_text()) == skeleton("decision")
+    # Later corrections are appended, never written into the skeleton's sections.
+    sections = [
+        s
+        for s in _sections(_decision().read_text())
+        if not s.startswith("Correction, ")
+    ]
+    assert sections == skeleton("decision")
 
 
 def test_docs_decision_records_the_route() -> None:
@@ -1140,11 +1146,11 @@ def test_apm_okf_hook_unparsable_file_left_alone(repo: Path, fakes: FakeTools) -
 
 
 def test_okf_stop_docs_name_the_hook_and_the_check() -> None:
-    decision = DECISIONS / "0017-kmctl-runs-okf-s-stop-check-for-antigravity.md"
+    decision = DECISIONS / "0018-kmctl-runs-okf-s-stop-check-for-antigravity.md"
     text = _flat(decision.read_text())
     for term in ("executionNum", "continue", "block", "repository root", "hooks.json"):
         assert term in text, term
-    assert "0017" in _decision().read_text()
+    assert "0018" in _decision().read_text()
     for path in (COMMANDS, INSTALL_HOW_TO):
         assert "Stop" in path.read_text(), path.name
     commands = COMMANDS.read_text()

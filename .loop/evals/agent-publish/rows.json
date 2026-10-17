@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "publish with a report whose findings are all below --min-severity (default high) closes the open issue titled --title with a comment saying so, posts nothing when none is open, and exits 0.",
+      "fails_when": "an issue is created or edited, an open issue is left open or closed without a comment, or the exit code is not 0",
+      "command": "uv run pytest tests/test_agent.py -k publish_below -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "publish with a finding at or above --min-severity creates the issue titled --title when none is open; when one is open it replaces the body and adds a comment that mentions the owners and gives the counts; the body holds the rendered report and, when GITHUB_RUN_ID is set, a link to the run.",
+      "fails_when": "no issue is created, a second one is created instead of editing the open one, the update adds no comment or the comment lacks the mentions, or the body lacks a finding or the run link",
+      "command": "uv run pytest tests/test_agent.py -k publish_posts -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "The issue body @-mentions the owners of the last * rule in CODEOWNERS, found in .github/, the root or docs/ in GitHub's order; --mention (repeatable) replaces them; with neither, it mentions no one.",
+      "fails_when": "owners from another rule or file are mentioned, --mention does not replace them, or a mention line appears with no owners",
+      "command": "uv run pytest tests/test_agent.py -k mention -q"
+    },
+    {
+      "id": "r4",
+      "behavior": "publish exits 1 when gh fails and writes no issue, and exits 2 with a message for a missing or invalid report.json.",
+      "fails_when": "a gh failure exits 0, or a bad report is posted or crashes with a traceback",
+      "command": "uv run pytest tests/test_agent.py -k publish_fails -q"
+    },
+    {
+      "id": "r5",
+      "behavior": "action/knowledge-audit-issue.sh is gone. .github/workflows/knowledge-audit.yml has an audit job (no issues: write, no token) that runs the agent and uploads agent-report, and a publish job (needs: audit, issues: write) that downloads it and runs agent.py publish with GH_TOKEN. action.yml's audit mode runs the agent and uploads the artifact with no token; its publish mode downloads the artifact and runs publish with min_severity, mention and issue_title. Every astral-sh/setup-uv step in the workflow and in action.yml sets enable-cache: false, and no actions/cache step is used, so nothing the agent wrote reaches the publish job but the artifact.",
+      "fails_when": "the shell script remains, a job or mode that runs the agent can see a token or has issues: write, publish runs in the agent's job, or an input is missing or not passed, or a setup-uv step leaves its cache on or an actions/cache step appears",
+      "command": "uv run pytest tests/test_action.py -q"
+    },
+    {
+      "id": "r6",
+      "behavior": "ADR 0017 gets a correction (separate job, GitHub-hosted runners only), and the how-to and architecture overview describe publish, the two jobs, its threshold, closing and the mentions; the bundle and docs check clean.",
+      "fails_when": "a page still names knowledge-audit-issue.sh or kmctl check fails",
+      "command": "uv run kmctl check && ! grep -rn 'knowledge-audit-issue' docs .okf/architecture action.yml .github"
+    },
+    {
+      "id": "r7",
+      "behavior": "All of the repository's gates pass.",
+      "fails_when": "just lint or just test fails",
+      "command": "just lint && just test"
+    },
+    {
+      "id": "r8",
+      "behavior": "publish --help names every option, what it takes and its default.",
+      "fails_when": "an option lacks a description or its default",
+      "judgment": true
+    }
+  ]
+}

@@ -21,7 +21,7 @@ How the commands below were run:
   `.github/workflows/knowledge-audit.yml`. Those steps run only on GitHub, so
   their output on GitHub is not shown. The job summary shown in step 4 comes
   from running the script the action runs, `action/knowledge-ci.sh`, locally,
-  and the refusal in step 5 from running `action/knowledge-audit.sh` locally.
+  and the refusal in step 5 from running `action/agent.py` locally.
 
 ## Before you start
 
@@ -198,23 +198,33 @@ Concepts that are due are reported, never failed.
 ### 5. Optional: turn on the audit
 
 Audit mode sends your repository to a model, so it is off unless you add it.
-Per `action.yml`, it runs the kmctl audit agent through
-[Hermes Agent](https://hermes-agent.nousresearch.com) on the architecture
-pages, decisions and practices that are due, and writes its findings to the
-job summary and to one open issue titled "Knowledge audit". The model gets
-three tools only: read a file, search files for text, and list files. They
-refuse any path outside the repository, and none of them can write. The
-audit never edits files.
+Per `action.yml`, it runs `action/agent.py`, a small agent built on
+[PydanticAI](https://ai.pydantic.dev). By default it audits the architecture
+pages, decisions and practices that are due, following kmctl's audit skill.
+It writes its report to the job summary, keeps it as an `agent-report`
+artifact (`report.json`, `report.md` and the full `transcript.json`), and
+posts `report.md` to one open issue titled "Knowledge audit".
 
-It works with any OpenAI-compatible endpoint: Ollama, Bifrost, OpenRouter, a
-vendor's own API, or your own server. You give it four settings:
+The agent can read, search and list files in your repository and in any
+folders you add, and run shell commands, so it can use the scripts skills
+ship. It is told never to change, commit or push a file, and nothing it
+changes is committed: the checkout keeps no credentials, and only the later
+issue step gets a GitHub token.
+
+It works with any provider. Name a PydanticAI provider in `model`, or give
+`base_url` for any OpenAI-compatible endpoint: Ollama, Bifrost, OpenRouter, a
+vendor's own API, or your own server.
 
 | Input | What it is |
 |---|---|
-| `provider` | `custom` (the default) for any OpenAI-compatible endpoint; a Hermes provider name also works |
-| `model` | the model name, as the endpoint's API names it |
-| `base_url` | the endpoint's base URL, usually ending in `/v1` |
-| `api_key_env` | the name of the variable that holds the key; leave it out for an endpoint that takes no key |
+| `model` | Required. Without `base_url`, PydanticAI's `provider:model`, such as `openai:gpt-5` (set the provider's own key variable, such as `OPENAI_API_KEY`). With `base_url`, the model name the endpoint serves |
+| `base_url` | an OpenAI-compatible endpoint's base URL, usually ending in `/v1` |
+| `api_key_env` | with `base_url`, the name of the variable that holds the key; leave it out for an endpoint that takes no key |
+| `prompt` or `prompt_file` | the agent's task; leave both out for the knowledge audit |
+| `system_prompt_file` | a file that replaces the shipped system prompt |
+| `context` | folders the agent can read besides the repository, one per line |
+| `skills` | skill folders (subfolders with a `SKILL.md`), one per line; default kmctl's own |
+| `timeout` | how long the agent may run; default `30m` |
 
 1. Add a repository secret named `AUDIT_API_KEY` with your provider's API
    key. Skip this for an endpoint that takes no key.
@@ -240,7 +250,7 @@ vendor's own API, or your own server. You give it four settings:
      audit:
        runs-on: ubuntu-latest
        steps:
-         # No token left in git config for the model to read; full history for review due.
+         # No token left in git config for the agent to read; full history for review due.
          - uses: actions/checkout@v4
            with:
              fetch-depth: 0
@@ -251,47 +261,66 @@ vendor's own API, or your own server. You give it four settings:
              AUDIT_API_KEY: ${{ secrets.AUDIT_API_KEY }}
            with:
              mode: audit
-             provider: custom
              base_url: https://openrouter.ai/api/v1
              model: qwen/qwen3-coder
              api_key_env: AUDIT_API_KEY
    ```
 
-The action installs Hermes Agent 0.19.0 and stops it after 30 minutes; set
-`KMCTL_AUDIT_TIMEOUT` (such as `45m`) in the step's `env` to change that.
-The audit runs Hermes once per batch of up to ten concepts, and the time limit
-covers all batches together, not each one.
-`timeout-minutes` on the step is a second limit, so a stuck run cannot hold
-the runner for GitHub's six-hour default. The config the action writes for
-Hermes names `AUDIT_API_KEY`, never the key itself.
+`timeout-minutes` on the step is a second limit after `timeout`, so a stuck
+run cannot hold the runner for GitHub's six-hour default.
+
+**Your own task.** To check the repository against something else, such as
+your enterprise architecture docs, fetch them in a step before the action's,
+such as `- run: ./scripts/fetch-ea-docs.sh context/`, and add a task, the
+folder and any skills of your own under the action step's `with:`:
+
+```yaml
+             prompt_file: .github/ea-review.md
+             context: context
+             skills: |
+               .github/skills
+```
+
+`uv run --script action/agent.py run --help` lists every option the agent
+takes, with its default.
 
 This repository's own `.github/workflows/knowledge-audit.yml` runs the same
-commands as separate steps instead of `uses:`: install kmctl, install Hermes
-Agent, run `action/knowledge-audit.sh`, then `action/knowledge-audit-issue.sh`.
-Read it to see exactly what the audit runs.
+commands as separate steps instead of `uses:`: install kmctl, run
+`action/agent.py`, upload the report, then run
+`action/knowledge-audit-issue.sh`. Read it to see exactly what the audit runs.
 
-**Ollama.** Set the model's context size to 64K tokens or more, with
+**Ollama.** Set the model's context size high enough for the audit, with
 `PARAMETER num_ctx 65536` in a Modelfile or `OLLAMA_CONTEXT_LENGTH=65536` for
 the server. Ollama serves a smaller context than the model reports unless you
-set it, so a long prompt is cut without warning, and Hermes refuses an
-endpoint that reports less than 64K. A GitHub-hosted runner cannot reach
-Ollama on your own machine; use a self-hosted runner or a URL the runner can
-reach.
+set it, so a long conversation is cut without warning. A GitHub-hosted runner
+cannot reach Ollama on your own machine; use a self-hosted runner or a URL
+the runner can reach.
 
-Keep the `on:` and `permissions:` blocks as they are. Audit mode runs only on
-`workflow_dispatch` or `schedule`; on any other event the script stops. Run
-locally with `GITHUB_EVENT_NAME=pull_request`, it prints this and exits 1:
+Keep the `on:` block as it is. Audit mode runs only on `workflow_dispatch`
+or `schedule`, since on a pull request code from the pull request would run
+with your API key; on any other event the action stops with:
 
 ```
 kmctl audit: refused for event 'pull_request'; audit mode runs only on workflow_dispatch or schedule.
 ```
 
 Keep `persist-credentials: false` on the checkout, and do not set `GH_TOKEN`
-or `GITHUB_TOKEN` for the job. Either would sit in the model's process, so
-the audit refuses to start when it finds one. The action hands the token only
-to its own later step, which posts the report.
+or `GITHUB_TOKEN` for the job. The agent runs shell commands, so it refuses
+to start when it finds either. Run locally with `GH_TOKEN` set, it prints
+this and exits 2:
 
-The model reads your repository's files, so anything checked into it,
+```
+agent: refused: GH_TOKEN is set, and the agent could read the token. Give it only to the step that posts the report.
+```
+
+The action hands the token only to its own later step, which posts the
+report.
+
+The agent's shell commands run without the API key in their environment, but
+as the same user, so a determined command could still read the key from the
+agent's own process. Use a key made for the audit, with a spending limit.
+
+The agent reads your repository's files, so anything checked into it,
 secrets included, is in its view, and its findings quote what it read into
 the "Knowledge audit" issue in the same repository.
 

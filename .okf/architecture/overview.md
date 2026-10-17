@@ -56,10 +56,8 @@ flowchart LR
 
     subgraph action["action.yml (GitHub Action)"]
         ci["action/knowledge-ci.sh<br/>mode: checks"]
-        auditSh["action/knowledge-audit.sh<br/>mode: audit"]
-        batchesPy["action/audit-batches.py"]
-        report["action/audit-report.py"]
-        readTools["action/hermes/kmctl-read<br/>kmctl_read_file, kmctl_search_files,<br/>kmctl_list_files"]
+        agentPy["action/agent.py (PydanticAI)<br/>mode: audit; read_file, search_files,<br/>list_files, run_shell"]
+        artifact["agent-report artifact<br/>report.json, report.md,<br/>transcript.json"]
         issueSh["action/knowledge-audit-issue.sh<br/>own step, GH_TOKEN"]
     end
 
@@ -79,7 +77,8 @@ flowchart LR
     consumer[("the consumer's apm.yml,<br/>.claude/ skills, agents, rules,<br/>.claude/settings.json hook,<br/>.mcp.json okf-bundle")]
     agConsumer[("the consumer's .agents/<br/>skills, rules,<br/>plugins/kmctl/: agents, hooks.json,<br/>mcp_config.json bundle")]
     claude["claude CLI<br/>old plugin removal,<br/>user-scope MCP server"]
-    hermes["hermes CLI<br/>any OpenAI-compatible endpoint"]
+    provider["any model provider<br/>or OpenAI-compatible endpoint"]
+    context[("--context and --skills folders")]
     summary["job summary and<br/>Knowledge audit issue"]
 
     consumer -- "SessionStart hook:<br/>kmctl briefing" --> briefing
@@ -118,14 +117,13 @@ flowchart LR
     rules -. "applyTo becomes paths:" .-> consumer
 
     ci -- "kmctl check,<br/>kmctl review due" --> app
-    auditSh -- "kmctl review due --json" --> reviewDue
-    auditSh -. "puts their text in the prompt" .-> audit & reviews & auditor
-    auditSh -- "splits the due list,<br/>merges each batch's findings" --> batchesPy
-    auditSh -- "hermes -z -t kmctl_read per batch<br/>fresh HOME, under timeout" --> hermes
-    hermes --> readTools
-    readTools -. "reads only, inside the repository" .-> repo
-    auditSh --> report --> summary
-    report -- "body in RUNNER_TEMP" --> issueSh
+    agentPy -- "run_shell: kmctl review due --json" --> reviewDue
+    agentPy -. "lists the skills; reads the audit skill,<br/>review skills and auditor as it needs" .-> audit & reviews & auditor
+    agentPy -- "one run, typed Report,<br/>under --timeout" --> provider
+    agentPy -. "reads, never commits or pushes" .-> repo & context
+    agentPy -- "write: --out" --> artifact
+    agentPy -- "report.md" --> summary
+    artifact -- "report.md" --> issueSh
     issueSh -- "gh issue create or edit" --> summary
     ci --> summary
 
@@ -157,7 +155,7 @@ exit codes. Each verb calls one module:
 | `kmctl new decision`, `practice`, `proposal`, `prototype`, `handoff` | `concepts.py`, with `okf.py` to find each `--source` the way `review_due.py` does | the concept, its section index entry and a log line; `--stale-after` and `--source` write its `stale_after` and `sources` |
 | `kmctl new doc` | `docs.py` | the page and its `docs/README.md` entry |
 | `kmctl decision supersede` | `supersede.py` | both decision records and a log line |
-| `kmctl plugin install`, `update` | `plugin.py`, with `antigravity.py` for `--harness antigravity` | runs `apm uninstall` on an old apm.yml entry; writes kmctl's entry and `targets:` into `apm.yml`; runs `apm install` through `uvx`; for claude, only once that succeeds removes the old claude plugin `kmctl@kmctl`, then merges one SessionStart hook into `.claude/settings.json` and the `okf-bundle` server into `.mcp.json` (ADR 0014); for antigravity, replaces `.agents/plugins/kmctl/` and deletes APM's copies of kmctl's rules from `.agents/rules/` and its okf Stop handler from `.agents/hooks.json` (ADR 0015, ADR 0016, ADR 0017) |
+| `kmctl plugin install`, `update` | `plugin.py`, with `antigravity.py` for `--harness antigravity` | runs `apm uninstall` on an old apm.yml entry; writes kmctl's entry and `targets:` into `apm.yml`; runs `apm install` through `uvx`; for claude, only once that succeeds removes the old claude plugin `kmctl@kmctl`, then merges one SessionStart hook into `.claude/settings.json` and the `okf-bundle` server into `.mcp.json` (ADR 0014); for antigravity, replaces `.agents/plugins/kmctl/` and deletes APM's copies of kmctl's rules from `.agents/rules/` and its okf Stop handler from `.agents/hooks.json` (ADR 0015, ADR 0016, ADR 0018) |
 | `kmctl doctor` | `doctor.py`, with `plugin.py` for the hook, MCP entries and lock reader and `antigravity.py` for the folder comparison | nothing; it reads `apm.yml`, `apm.lock.yaml` and the files it lists, the settings files, `.mcp.json`, `.agents/plugins/kmctl/` and agy's trust list, and runs only `uv tool run --offline --from apm-cli==0.33.0 apm --version`; `--online` fetches okf's MCP script URL |
 
 `kinds.py` holds the one table of document kinds: each kind's front matter
@@ -198,13 +196,13 @@ Antigravity translation.
   `hooks.json` with one SessionStart hook running
   `kmctl briefing --format antigravity` (it prints `{}` and exits 0 when
   kmctl is missing or fails, I1) and one Stop hook running okf's bundle
-  check from the repository root in Antigravity's format (ADR 0017), the auditor and okf's two agents
+  check from the repository root in Antigravity's format (ADR 0018), the auditor and okf's two agents
   translated from Claude Code's format, the four rules in `rules/` with
   their globs as one comma-separated string of `**/` globs, and
   `mcp_config.json` with okf's server `bundle` through the same launcher
   (ADR 0015). It then deletes APM's copies of kmctl's rules from
   `.agents/rules/` (ADR 0016) and APM's broken okf Stop handler from
-  `.agents/hooks.json` (ADR 0017).
+  `.agents/hooks.json` (ADR 0018).
 - **Rules as instructions.** Each rule is
   `apm/.apm/instructions/NAME.instructions.md` with an `applyTo:`, which APM
   writes into `.claude/rules/NAME.md` as `paths:`, and `antigravity.py`
@@ -215,7 +213,8 @@ Antigravity translation.
 - **The audit reads only.** The `audit` skill takes the due list from
   `kmctl review due --json`, batches it, and dispatches the `kmctl-auditor`
   agent with one of the three review skills. The auditor's tools are Read,
-  Grep and Glob (I2, ADR 0005).
+  Grep and Glob (I2, ADR 0005). In CI, `action/agent.py` does the auditor's
+  work itself and also has a shell, but nothing it changes is committed.
 
 ## The action
 
@@ -225,25 +224,24 @@ action's own checkout.
 - **checks** (the default) runs `action/knowledge-ci.sh`: `kmctl check` and
   `kmctl review due` into the job summary, failing when `kmctl check` fails
   or `kmctl review due` crashes, never because a concept is due.
-- **audit** (opt-in) runs `action/knowledge-audit.sh`, only on
-  `workflow_dispatch` or `schedule`. It filters `kmctl review due --json` to
-  architecture, decisions and practices, and runs Hermes Agent against any
-  OpenAI-compatible endpoint (ADR 0010). It writes Hermes' config into a
-  fresh HOME, installs kmctl's Hermes plugin there, and passes
-  `-t kmctl_read`, so the model's only tools are the plugin's
-  `kmctl_read_file`, `kmctl_search_files` and `kmctl_list_files`. They are
-  plain Python, start no program and refuse any path outside the repository.
-  `action/audit-batches.py` splits the due list by kind into batches of at
-  most ten, and Hermes runs once per batch. Each prompt carries the audit
-  skill, the kmctl-auditor instructions and that kind's review skill as text.
-  `timeout` gives each run the time left of one budget for the whole audit.
-  `action/audit-batches.py` merges each run's last json block, and
-  `action/audit-report.py` turns the merged list into the job summary and an
-  issue body (I2). It
-  never edits or pushes, and it refuses to start when the model could read a GitHub token
-  (`GH_TOKEN` or `GITHUB_TOKEN` set, or checkout's credentials in git config).
-  A later step of its own, `action/knowledge-audit-issue.sh`, is the only one
-  that gets `GH_TOKEN`; it posts the body to the one "Knowledge audit" issue.
+- **audit** (opt-in) runs `action/agent.py` with `uv run --script`: one
+  standalone PydanticAI script that does not import kmctl (ADR 0017). Its
+  task is the `prompt` input, or by default the knowledge audit: follow the
+  audit skill and do the kmctl-auditor's work itself. Its system prompt,
+  replaceable with `system_prompt_file`, lists the folders it can read and
+  each skill's name and description; it reads a SKILL.md when the skill fits.
+  `model` names any PydanticAI provider, or with `base_url` any
+  OpenAI-compatible endpoint. Its tools are `read_file`, `search_files` and
+  `list_files`, which refuse any path outside the repository and the
+  `context` and `skills` folders, and `run_shell`, which runs a command in
+  the repository with no API key or GitHub token in its environment. It
+  returns a typed report, writes `report.json`, `report.md` and
+  `transcript.json` to the `agent-report` artifact and `report.md` to the
+  job summary. It never commits or pushes (I2), and it refuses to start
+  when a GitHub token is reachable (`GH_TOKEN` or `GITHUB_TOKEN` set, or
+  checkout's credentials in git config). A later step of its own,
+  `action/knowledge-audit-issue.sh`, is the only one that gets `GH_TOKEN`; it
+  posts `report.md` to the one "Knowledge audit" issue.
 
 ## Releases
 
@@ -267,8 +265,8 @@ tag `kmctl plugin install` asks for and a build from a download with no
 
 ## Depicts
 
-- Invariants: I1 (the SessionStart hook kmctl writes never blocks), I2 (the auditor and
-  the action's audit mode read only), I3 (the hook prints `kmctl briefing`),
+- Invariants: I1 (the SessionStart hook kmctl writes never blocks), I2 (the auditor reads
+  only; the action's audit mode never commits or pushes), I3 (the hook prints `kmctl briefing`),
   I4 (`okf.py` reads OKF fields for every module).
 - Verbs: `kmctl init`, `kmctl update`, `kmctl check`, `kmctl briefing` (and `--format antigravity`), `kmctl review due`,
   `kmctl handoffs`, `kmctl new decision`, `kmctl new practice`,
@@ -283,9 +281,7 @@ tag `kmctl plugin install` asks for and a build from a download with no
   `okf.py`, `kinds.py`; `apm/.apm/skills/` (write-docs, handoff,
   continue, audit and the three review skills),
   `apm/.apm/agents/kmctl-auditor.md`, `apm/.apm/instructions/`; `action.yml`,
-  `action/knowledge-ci.sh`, `action/knowledge-audit.sh`,
-  `action/hermes/kmctl-read/`, `action/audit-batches.py`,
-  `action/audit-report.py`,
+  `action/knowledge-ci.sh`, `action/agent.py`,
   `action/knowledge-audit-issue.sh`; `.github/workflows/knowledge-audit.yml`.
 - Releases: `.github/workflows/release.yml`, `.github/workflows/release-tag.yml`,
   `scripts/release.py`, `scripts/next_release_version.py`,

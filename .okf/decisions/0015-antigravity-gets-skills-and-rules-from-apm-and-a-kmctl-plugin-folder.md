@@ -18,7 +18,7 @@ sources:
 
 [ADR 0016](0016-antigravity-rules-come-from-the-kmctl-plugin-folder.md)
 moves the rules into kmctl's plugin folder: APM's copies in `.agents/rules/`
-never reach an Antigravity session. [ADR 0017](0017-kmctl-runs-okf-s-stop-check-for-antigravity.md)
+never reach an Antigravity session. [ADR 0018](0018-kmctl-runs-okf-s-stop-check-for-antigravity.md)
 has kmctl run okf's Stop check, whose APM copy fails in Antigravity.
 
 [ADR 0014](0014-apm-is-the-only-install-route.md) made APM (`apm-cli`
@@ -111,3 +111,11 @@ Rejected:
   unseen; the ticket antigravity-live-check is for checking it on an
   eligible account.
 - The manifesto names Antigravity as a harness kmctl installs for.
+
+## Correction, 2026-10-17
+
+`kmctl plugin status --harness antigravity`, named in the Decision and the
+Consequences, no longer exists; `kmctl doctor` took over its checks. Its
+`antigravity.plugin` check compares the files in `.agents/plugins/kmctl/`
+with what this kmctl writes, through `antigravity.plugin_problems`
+(`src/kmctl/doctor.py`). The decision stands.

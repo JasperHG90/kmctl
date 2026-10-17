@@ -1,6 +1,6 @@
 ---
 type: decision
-title: "ADR 0017: kmctl runs okf's Stop check for Antigravity"
+title: "ADR 0018: kmctl runs okf's Stop check for Antigravity"
 description: "kmctl's plugin folder runs okf's Stop check from the repository root and in Antigravity's format, and takes APM's broken copy out of .agents/hooks.json."
 tags: [adr, decision, install, antigravity, hooks]
 generated:
@@ -13,7 +13,7 @@ sources:
   - resource: "src/kmctl/doctor.py"
 ---
 
-# ADR 0017: kmctl runs okf's Stop check for Antigravity
+# ADR 0018: kmctl runs okf's Stop check for Antigravity
 
 ## Context
 

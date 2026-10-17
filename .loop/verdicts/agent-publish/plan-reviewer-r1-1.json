@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The plan moves posting into action/agent.py, run with uv run --script in the step that holds GH_TOKEN. That process now loads the script from the checkout (in the workflow) and PydanticAI and its dependencies from the uv cache. The run step built that cache and could have written to the checkout. Its shell commands run as the same user with HOME kept (SHELL_ENV_KEEP), so a prompt-injected model can edit agent.py, plant a module next to it, or patch a cached package, and that code then runs with the token. ADR 0017's claim, \"The GitHub token is never in the agent's step, so no command can reach it\", stops holding. Today's shell script has the same exposure through the checkout, but only bash, gh and stdlib python3 run with the token. The plan adds the uv cache and the script's folder, and the cache path also hits action.yml users who load the action remotely. r5 tests only which step gets the token, not whether the code that step runs is code the agent could not touch. The plan needs to say how the token step runs code the agent step could not write: for example a stdlib-only publisher run with python3 -I from a clean copy, a check that the checkout and action path are unchanged before posting, or a fresh, isolated uv environment. A spike can answer the question: \"can a run_shell command in the run step change what `uv run --script action/agent.py publish` imports in the next step?\"",
+      "anchor": "action/agent.py:55",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r5"
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "The operator asked that a found issue \"tag repo owners\". The plan tags them by @-mentioning them in the issue body, and after the first run it updates that body with gh issue edit. As far as I know, GitHub sends a mention notification only when the text is first posted, not when an edit adds or keeps a mention. So every run after the one that opens the issue tells no one, even when it finds new high findings. Weekly runs edit the same issue, so in practice owners hear about the first audit only. The plan should choose how a later run reaches the owners (a comment that mentions them, or a new issue), or the operator should accept that only the first one does. r2 and r3 check the body text, which would pass either way.",
+      "anchor": "action/knowledge-audit-issue.sh:30",
+      "category": "design",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r2"
+    },
+    {
+      "id": "p3",
+      "disposition": "open",
+      "claim": "Below the threshold, publish \"posts nothing\". If an earlier run opened the Knowledge audit issue, it stays open and keeps listing high findings that may since have been fixed. Today's script overwrites it every run, so this ticket brings in the stale state. The plan should say what happens to an open issue when a run finds nothing at the threshold (close it, comment, or leave it on purpose), so the threshold does not leave a wrong alarm open.",
+      "anchor": ".loop/plans/agent-publish.md",
+      "category": "design",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "3835304fa67875308e8d9082f3110a14efec4ed5443b1694ac54231c73937c22"
+  },
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
+  "at": "2026-10-17T07:42:14+00:00"
+}

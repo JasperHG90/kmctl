@@ -1,0 +1,65 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.15, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/vscode/kmctl
+configfile: pyproject.toml
+plugins: respx-0.23.1, anyio-4.15.1
+collected 680 items / 5 deselected / 675 selected
+
+tests/scripts/test_check_wheel.py .....                                  [  0%]
+tests/scripts/test_next_release_version.py ........................      [  4%]
+tests/scripts/test_release.py .............................              [  8%]
+tests/scripts/test_release_docs.py .....                                 [  9%]
+tests/scripts/test_smoke_wheel.py .........                              [ 10%]
+tests/scripts/test_workflows.py .............                            [ 12%]
+tests/test_action.py ..........F...                                      [ 14%]
+tests/test_adr_audit_fixes.py ....                                       [ 15%]
+tests/test_agent.py .........................                            [ 18%]
+tests/test_antigravity.py .............................................. [ 25%]
+.............                                                            [ 27%]
+tests/test_apm_package.py ..........................                     [ 31%]
+tests/test_audit.py .....                                                [ 32%]
+tests/test_briefing.py ...........                                       [ 33%]
+tests/test_check.py .........................                            [ 37%]
+tests/test_cli.py ..                                                     [ 37%]
+tests/test_docs.py .....                                                 [ 38%]
+tests/test_doctor.py ................................................... [ 46%]
+........................                                                 [ 49%]
+tests/test_handoff_key.py ........                                       [ 50%]
+tests/test_handoffs.py .........                                         [ 52%]
+tests/test_help.py ...................................................   [ 59%]
+tests/test_init.py ..............................................        [ 66%]
+tests/test_network_retry.py ...............                              [ 68%]
+tests/test_new_concept.py ....................                           [ 71%]
+tests/test_new_doc.py .......                                            [ 72%]
+tests/test_okf_fields.py ......                                          [ 73%]
+tests/test_plugin.py ................................................... [ 81%]
+............................                                             [ 85%]
+tests/test_plugin_error.py .......                                       [ 86%]
+tests/test_repo_apm.py ..........                                        [ 88%]
+tests/test_review_due.py .........                                       [ 89%]
+tests/test_rules.py ...............................                      [ 93%]
+tests/test_schema.py ...............................                     [ 98%]
+tests/test_skills.py ...                                                 [ 98%]
+tests/test_supersede.py .......                                          [100%]
+
+=================================== FAILURES ===================================
+____________________________ test_old_audit_is_gone ____________________________
+
+    def test_old_audit_is_gone() -> None:
+        texts = [
+            (ROOT / "action.yml").read_text(),
+            WORKFLOW.read_text(),
+            (ROOT / "pyproject.toml").read_text(),
+        ]
+    
+        for rel in OLD_AUDIT:
+>           assert not (ROOT / rel).exists(), rel
+E           AssertionError: action/hermes
+E           assert not True
+E            +  where True = exists()
+E            +    where exists = (PosixPath('/home/vscode/kmctl') / 'action/hermes').exists
+
+tests/test_action.py:246: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_action.py::test_old_audit_is_gone - AssertionError: action/...
+================= 1 failed, 674 passed, 5 deselected in 23.61s =================

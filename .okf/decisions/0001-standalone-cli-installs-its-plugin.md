@@ -59,3 +59,12 @@ content of its own release, and `kmctl plugin status` compares the ref in
 `apm.lock.yaml` with the CLI's version. The wheel carries only the skills,
 for `kmctl briefing`; nothing is staged, and the install needs `uv` rather
 than `claude` on PATH.
+
+## Correction, 2026-10-17
+
+`kmctl plugin status`, named in the Consequences and in the 2026-10-16
+correction, no longer exists: the `kmctl-doctor` ticket that
+[ADR 0014](0014-apm-is-the-only-install-route.md) planned folded it into
+`kmctl doctor`. Its `HARNESS.lock` check compares the kmctl ref in
+`apm.lock.yaml` with this kmctl's version (`src/kmctl/doctor.py`). The
+decision stands.

@@ -72,3 +72,12 @@ so repeating them only spent the budget. `src/kmctl/rules/` is gone; the
 briefing keeps one rule the rule files lack (`unverified-is-a-lead`, in
 `src/kmctl/briefing.py`), and its budget is 500 tokens instead of 600 words
 (I3). The operator asked for this on 2026-10-16.
+
+## Correction, 2026-10-17
+
+The 2026-10-16 correction says `kmctl init` writes the knowledge rules to
+`.claude/rules/`. Since [ADR 0014](0014-apm-is-the-only-install-route.md)
+it writes no rules: they ship in kmctl's APM package, and
+`kmctl plugin install` puts them in `.claude/rules/` through APM
+(`src/kmctl/scaffold.py`). The reason the briefing stopped carrying them
+still holds: the rule files reach the agent's system prompt.

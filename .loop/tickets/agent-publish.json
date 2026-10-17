@@ -1,35 +1,157 @@
 {
   "schema_version": "1.0",
   "slug": "agent-publish",
-  "stage": "stub",
-  "attempts": 0,
-  "plan_rounds": 0,
+  "stage": "building",
+  "attempts": 1,
+  "plan_rounds": 3,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
   "fix": null,
   "ask": null,
-  "split": null,
-  "split_plan_hash": null,
+  "split": "j-20261017T074440+0000-5844e7ec",
+  "split_plan_hash": "e87ca4430fed9c7b80a9ac8195aa7c2f27b2ce88e22d18b4004342a24a49f96f",
   "split_hold": false,
   "commit_sha": null,
   "closed_outside": false,
   "dropped": false,
   "archived": false,
-  "worktree": null,
-  "branch": null,
+  "worktree": "/home/vscode/kmctl.worktrees/agent-publish",
+  "branch": "loop/agent-publish",
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude",
+    "hash": "5ae28a63c22ef8a6b713c712b41f57e96bebcd1265e4ffff917ca2e5dd8bfe56",
+    "at": "2026-10-17T07:44:41+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
-  "resigns": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "publish with a report whose findings are all below --min-severity (default high) closes the open issue titled --title with a comment saying so, posts nothing when none is open, and exits 0.",
+      "fails_when": "an issue is created or edited, an open issue is left open or closed without a comment, or the exit code is not 0",
+      "command": "uv run pytest tests/test_agent.py -k publish_below -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "publish with a finding at or above --min-severity creates the issue titled --title when none is open; when one is open it replaces the body and adds a comment that mentions the owners and gives the counts; the body holds the rendered report and, when GITHUB_RUN_ID is set, a link to the run.",
+      "fails_when": "no issue is created, a second one is created instead of editing the open one, the update adds no comment or the comment lacks the mentions, or the body lacks a finding or the run link",
+      "command": "uv run pytest tests/test_agent.py -k publish_posts -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "The issue body @-mentions the owners of the last * rule in CODEOWNERS, found in .github/, the root or docs/ in GitHub's order; --mention (repeatable) replaces them; with neither, it mentions no one.",
+      "fails_when": "owners from another rule or file are mentioned, --mention does not replace them, or a mention line appears with no owners",
+      "command": "uv run pytest tests/test_agent.py -k mention -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "publish exits 1 when gh fails and writes no issue, and exits 2 with a message for a missing or invalid report.json.",
+      "fails_when": "a gh failure exits 0, or a bad report is posted or crashes with a traceback",
+      "command": "uv run pytest tests/test_agent.py -k publish_fails -q",
+      "judgment": false
+    },
+    {
+      "id": "r5",
+      "behavior": "action/knowledge-audit-issue.sh is gone. .github/workflows/knowledge-audit.yml has an audit job (no issues: write, no token) that runs the agent and uploads agent-report, and a publish job (needs: audit, issues: write) that downloads it and runs agent.py publish with GH_TOKEN. action.yml's audit mode runs the agent and uploads the artifact with no token; its publish mode downloads the artifact and runs publish with min_severity, mention and issue_title. Every astral-sh/setup-uv step in the workflow and in action.yml sets enable-cache: false, and no actions/cache step is used, so nothing the agent wrote reaches the publish job but the artifact.",
+      "fails_when": "the shell script remains, a job or mode that runs the agent can see a token or has issues: write, publish runs in the agent's job, or an input is missing or not passed, or a setup-uv step leaves its cache on or an actions/cache step appears",
+      "command": "uv run pytest tests/test_action.py -q",
+      "judgment": false
+    },
+    {
+      "id": "r6",
+      "behavior": "ADR 0017 gets a correction (separate job, GitHub-hosted runners only), and the how-to and architecture overview describe publish, the two jobs, its threshold, closing and the mentions; the bundle and docs check clean.",
+      "fails_when": "a page still names knowledge-audit-issue.sh or kmctl check fails",
+      "command": "uv run kmctl check && ! grep -rn 'knowledge-audit-issue' docs .okf/architecture action.yml .github",
+      "judgment": false
+    },
+    {
+      "id": "r7",
+      "behavior": "All of the repository's gates pass.",
+      "fails_when": "just lint or just test fails",
+      "command": "just lint && just test",
+      "judgment": false
+    },
+    {
+      "id": "r8",
+      "behavior": "publish --help names every option, what it takes and its default.",
+      "fails_when": "an option lacks a description or its default",
+      "command": null,
+      "judgment": true
+    }
+  ],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude",
+      "reason": "plan round 1: publish moves to its own job (p1), comments to re-notify owners (p2), closes the issue below the threshold (p3)",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r1": [
+            "behavior",
+            "fails_when"
+          ],
+          "r2": [
+            "behavior",
+            "fails_when"
+          ],
+          "r5": [
+            "behavior",
+            "fails_when"
+          ],
+          "r6": [
+            "behavior"
+          ]
+        }
+      },
+      "at": "2026-10-17T07:43:09+00:00"
+    },
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude",
+      "reason": "plan round 2 p1: setup-uv cache off in both jobs and modes so only the artifact crosses to the publish job",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r5": [
+            "behavior",
+            "fails_when"
+          ]
+        }
+      },
+      "at": "2026-10-17T07:44:41+00:00"
+    }
+  ],
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "95e85790ecba64cbc22d8cbe590de6b8dcd3e0fca83c61a9ef42640584ab1a6c",
+  "round": {
+    "kind": "plan",
+    "n": 3,
+    "binds": "e87ca4430fed9c7b80a9ac8195aa7c2f27b2ce88e22d18b4004342a24a49f96f",
+    "started_at": "2026-10-17T07:44:42+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": true,
+    "outcome": "pass"
+  },
+  "plan_hash": "e87ca4430fed9c7b80a9ac8195aa7c2f27b2ce88e22d18b4004342a24a49f96f",
   "intent": {
     "epic": null,
     "depends_on": [
@@ -37,7 +159,32 @@
     ],
     "priority": null
   },
-  "history": [],
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-10-17T07:40:23+00:00",
+      "by": "promote"
+    },
+    {
+      "from": "planning",
+      "to": "blocked",
+      "at": "2026-10-17T07:44:38+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "blocked",
+      "to": "ready",
+      "at": "2026-10-17T07:46:02+00:00",
+      "by": "unblock"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-10-17T07:46:03+00:00",
+      "by": "advance"
+    }
+  ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T06:59:56+00:00"
+  "at": "2026-10-17T07:46:03+00:00"
 }

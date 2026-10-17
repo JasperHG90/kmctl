@@ -46,7 +46,7 @@ The record had no Consequences section; this adds it.
 
 ## Amended, 2026-10-17
 
-[ADR 0017](0017-kmctl-runs-okf-s-stop-check-for-antigravity.md): in
+[ADR 0018](0018-kmctl-runs-okf-s-stop-check-for-antigravity.md): in
 Antigravity kmctl's plugin folder also relays okf's opt-in Stop check,
 because APM's copy cannot run there. kmctl's own hook is still SessionStart
 only; the operator chose this, and I1 says so.
