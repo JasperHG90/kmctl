@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "slug": "agent-publish",
+  "stage": "stub",
+  "attempts": 0,
+  "plan_rounds": 0,
+  "review_rounds": 0,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": null,
+  "ask": null,
+  "split": null,
+  "split_plan_hash": null,
+  "split_hold": false,
+  "commit_sha": null,
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": null,
+  "branch": null,
+  "stamps": [],
+  "signoff": null,
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [],
+  "resigns": [],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [],
+  "round": null,
+  "plan_hash": "95e85790ecba64cbc22d8cbe590de6b8dcd3e0fca83c61a9ef42640584ab1a6c",
+  "intent": {
+    "epic": null,
+    "depends_on": [
+      "standalone-agent"
+    ],
+    "priority": null
+  },
+  "history": [],
+  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
+  "at": "2026-10-17T06:59:56+00:00"
+}
