@@ -50,7 +50,8 @@ this formalizes so every repository can have it.
   script can do: scaffold `docs/` and `.okf/` with a `CLAUDE.md` block and a
   first decision (ADR 0011), create a new decision or practice with the next
   number and its index entry, supersede a decision, list what is due for
-  review in `.okf/` and `docs/`, check indexes, docs front matter and links
+  review in `.okf/` and `docs/`, record a person's check of one
+  (`kmctl verify`, ADR 0023), check indexes, docs front matter and links
   (`kmctl check --fix` writes the generated `docs/` folder indexes, and the
   `kmctl-check` pre-commit hook runs the check, ADR 0022), and list live
   and expired handoffs.

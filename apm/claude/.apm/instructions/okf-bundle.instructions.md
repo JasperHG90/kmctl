@@ -52,6 +52,13 @@ An agent records itself in `generated.by` as `<producer>/<version>` (for
 example `claude-opus/5.5`) and leaves the concept unverified. Only a person
 who checked the content adds a `verified` entry with `by: human:<id>`.
 
+A concept with no `verified` entry stays in `kmctl review due`, however often
+an audit finds it holds. To clear one, the person reads it and confirms it is
+still right. When they ask you to record that, run
+`kmctl verify <id> --by human:<their id>` (ask for their id if you do not know
+it); add `--stale-after 6m` when it is listed as `stale_after passed`. Never
+run it on an audit verdict alone, or for a concept they did not confirm.
+
 ## Writing back
 
 Touching a concept means updating its body, then appending a dated bullet to

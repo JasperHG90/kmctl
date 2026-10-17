@@ -275,3 +275,39 @@ def test_docs_page_without_okf(tmp_path: Path) -> None:
     _commit(tmp_path)
 
     assert _reasons(tmp_path) == {"docs/how-to/old": ["stale_after passed"]}
+
+
+def test_due_listing_names_kmctl_verify(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    _concept(tmp_path, "new.md", verified=False)
+    _commit(tmp_path)
+
+    last = _due(tmp_path).stdout.strip().splitlines()[-1]
+
+    assert last.startswith("Next: ")
+    assert "kmctl verify ID --by human:" in last
+    assert "--stale-after" in last
+
+
+def test_nothing_due_names_no_verify(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    _concept(tmp_path, "checked.md")
+    _concept(
+        tmp_path,
+        "handoffs/old.md",
+        "stale_after: 2020-01-01T00:00:00Z\n",
+        verified=False,
+    )
+    _commit(tmp_path)
+
+    assert "kmctl verify" not in _due(tmp_path).stdout
+
+
+def test_json_keys_unchanged(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    _concept(tmp_path, "new.md", verified=False)
+    _commit(tmp_path)
+
+    data = _data(tmp_path)
+
+    assert set(data) == {"due", "notices", "expired_handoffs", "history_skipped"}

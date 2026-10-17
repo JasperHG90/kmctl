@@ -23,6 +23,7 @@ for people. Warnings and refusals go to stderr.
 | `kmctl schema` | Print the JSON Schema of one document kind, or list the kinds there are. |
 | `kmctl review` | Find knowledge that is due for review. Verbs: `due`. |
 | `kmctl review due` | List the concepts in `.okf/` and the pages in `docs/` that are due for review, with the reason for each. |
+| `kmctl verify` | Record that a person checked a concept or docs page, so `kmctl review due` drops it. |
 | `kmctl new` | Create a `.okf/` concept or a `docs/` page with its structure. Needs a repository set up by `kmctl init`. |
 | `kmctl new decision` | Create a decision in `.okf/` with its front matter, skeleton, index entry and log line. |
 | `kmctl new practice` | Create a practice in `.okf/`, the same way. |
@@ -260,7 +261,47 @@ repository root. The `README.md` indexes are left out.
 | `--path DIR` | The repository to read: an existing folder. | `.` |
 | `--json` | Print one JSON object (`due`, `notices`, `expired_handoffs`, `history_skipped`). | off |
 
+When anything is due, the text output ends with a `Next:` line naming
+`kmctl verify`, which clears an id once a person has checked it.
+
 Exit code: always 0. Being due is a report, not a failure.
+
+### `kmctl verify`
+
+`kmctl verify ID --by human:<id>`
+
+Record that a person checked a concept or docs page, so `kmctl review due`
+drops it. It appends `{by, at}` to the file's `verified` list, with `at` the
+current UTC time (`2026-10-17T21:30:00Z`), and changes no other line. A
+`verified` field written as one mapping or a flow list is extended in its
+place. A concept also gets a line in `.okf/log.md`. The id then stays off
+`kmctl review due` until its `stale_after` passes or one of its `sources` is
+committed again.
+
+Only a person verifies (ADR 0023). An agent runs it only when the person named
+in `--by` has read the content and asked for it, never on an audit verdict
+alone (ADR 0005). Fix a drifted concept's body first.
+
+A `verified` entry does not clear `stale_after passed`: when the file's
+`stale_after` has passed, give `--stale-after`, or the verb refuses.
+
+| Argument or option | Meaning | Default |
+|---|---|---|
+| `ID` | The id as `kmctl review due` prints it: a concept under `.okf/` without `.md` (`decisions/0001-x`, `manifesto`) or a docs page (`docs/how-to/install`). Required. | |
+| `--by human:<id>` | The person who read it and confirms it: `human:` and a name or email address. Required. | |
+| `--stale-after WHEN` | A new `stale_after`, in the forms `kmctl new --stale-after` takes. Required when the file's `stale_after` has passed. | none |
+| `--path DIR` | The repository to write in: an existing folder. | `.` |
+| `--json` | Print one JSON object (`id`, `path`, `by`, `at`, `stale_after`). | off |
+
+Output: `verified ID by BY at AT (PATH)`, then `stale_after is now WHEN`
+when `--stale-after` was given, then `Next: kmctl review due`.
+
+Exit code: 1 when kmctl refuses, with the reason on stderr: `--by` does not
+start with `human:`, the id names no file (or holds `..`), the id is a
+handoff (handoffs are never verified), the front matter is unreadable or
+missing, `stale_after` has passed and no `--stale-after` is given, the
+`--stale-after` value is not in the future, or the `verified` field is in a
+form kmctl cannot extend (the refusal says to rewrite it as a block list).
 
 ### `kmctl new decision`, `kmctl new practice`, `kmctl new proposal`, `kmctl new prototype`, `kmctl new handoff`
 

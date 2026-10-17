@@ -45,3 +45,9 @@ verdict and its one-line summary, `drifted` first, then `unsure`, then
 `holds`, followed by the evidence for anything drifted. End with the counts and
 the combined JSON block, so a script or the CI action can read it. Do not fix
 anything or offer edits unless the user asks.
+
+Then say how a concept leaves `kmctl review due`: a `holds` verdict alone
+does not clear it. A drifted concept needs its body fixed first. Once the
+person has read a concept and confirms it, `kmctl verify <id> --by
+human:<their id>` records that, with `--stale-after 6m` for one listed as
+`stale_after passed`. Run it only when they ask you to.
