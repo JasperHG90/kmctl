@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "verify-verb",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
@@ -157,8 +157,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "9b29ec64bb3d2b6ce4b3e78097e04021104bc4292fef0630c8e289f35e16d3a7",
   "intent": {
@@ -190,8 +190,14 @@
       "to": "verifying",
       "at": "2026-10-17T21:34:09+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-17T21:40:07+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
-  "at": "2026-10-17T21:34:10+00:00"
+  "at": "2026-10-17T21:40:07+00:00"
 }
