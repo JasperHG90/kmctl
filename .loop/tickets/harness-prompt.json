@@ -3,7 +3,7 @@
   "slug": "harness-prompt",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "9005fa15eb88e458ded8016626710ff1fae3d344c1c57db75b91f2786ccbe2d8",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "abb26a221cbb987932cc4b492beeb15f88d6c31cf03c6159f6dae65899082875",
+    "started_at": "2026-10-17T05:55:45+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "abb26a221cbb987932cc4b492beeb15f88d6c31cf03c6159f6dae65899082875",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -44,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T05:55:40+00:00"
+  "at": "2026-10-17T05:55:45+00:00"
 }
