@@ -68,5 +68,5 @@ finding for the folder, and doctor passes.
 - Deleting the rule files APM deployed for kmctl's package may make a later
   `apm install` (a second `kmctl plugin install`) or `apm uninstall` fail,
   refuse, or skip files, so kmctl could not remove them. It does not
-  (spike:antigravity-rules/1): APM writes the deleted files back without a
+  (spike:antigravity-rules/2): APM writes the deleted files back without a
   skip, and `apm uninstall` still exits 0 and leaves nothing.

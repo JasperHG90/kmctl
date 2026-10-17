@@ -2,3 +2,5 @@
 {"at": "2026-10-17T06:29:34+00:00", "kind": "spike-note", "n": 1, "replaced": false, "schema_version": "1.0"}
 {"at": "2026-10-17T06:29:37+00:00", "binds": "12c302f7a42e05effc4892fa586ca873e9498547b925250f79bcedbc45f860e8", "kind": "round-start", "n": 1, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
 {"at": "2026-10-17T06:30:07+00:00", "kind": "spike-note", "n": 2, "replaced": false, "schema_version": "1.0"}
+{"at": "2026-10-17T06:30:11+00:00", "kind": "round-abandoned", "n": 1, "round_kind": "plan", "schema_version": "1.0"}
+{"at": "2026-10-17T06:30:11+00:00", "binds": "95c018dbb222dd5d100b13b628ae0356973e2a25cbdcc8b9462f5b269e627609", "kind": "round-start", "n": 2, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}

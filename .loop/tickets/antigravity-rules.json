@@ -3,7 +3,7 @@
   "slug": "antigravity-rules",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 1,
+  "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -30,9 +30,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 1,
-    "binds": "12c302f7a42e05effc4892fa586ca873e9498547b925250f79bcedbc45f860e8",
-    "started_at": "2026-10-17T06:29:37+00:00",
+    "n": 2,
+    "binds": "95c018dbb222dd5d100b13b628ae0356973e2a25cbdcc8b9462f5b269e627609",
+    "started_at": "2026-10-17T06:30:11+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -48,7 +48,7 @@
     "closed": false,
     "outcome": null
   },
-  "plan_hash": "12c302f7a42e05effc4892fa586ca873e9498547b925250f79bcedbc45f860e8",
+  "plan_hash": "95c018dbb222dd5d100b13b628ae0356973e2a25cbdcc8b9462f5b269e627609",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -63,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T06:30:10+00:00"
+  "at": "2026-10-17T06:30:11+00:00"
 }
