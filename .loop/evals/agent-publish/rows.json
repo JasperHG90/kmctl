@@ -1,4 +1,53 @@
 {
   "schema_version": "1.0",
-  "rows": []
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "publish with a report whose findings are all below --min-severity (default high) calls gh for nothing, exits 0 and says no issue was written.",
+      "fails_when": "gh is called to list, create or edit an issue, or the exit code is not 0",
+      "command": "uv run pytest tests/test_agent.py -k publish_below -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "publish with a finding at or above --min-severity creates the issue titled --title when none is open, and edits the open one when it is; the body holds the rendered report and, when GITHUB_RUN_ID is set, a link to the run.",
+      "fails_when": "no issue is created, a second one is created instead of editing the open one, or the body lacks a finding or the run link",
+      "command": "uv run pytest tests/test_agent.py -k publish_posts -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "The issue body @-mentions the owners of the last * rule in CODEOWNERS, found in .github/, the root or docs/ in GitHub's order; --mention (repeatable) replaces them; with neither, it mentions no one.",
+      "fails_when": "owners from another rule or file are mentioned, --mention does not replace them, or a mention line appears with no owners",
+      "command": "uv run pytest tests/test_agent.py -k mention -q"
+    },
+    {
+      "id": "r4",
+      "behavior": "publish exits 1 when gh fails and writes no issue, and exits 2 with a message for a missing or invalid report.json.",
+      "fails_when": "a gh failure exits 0, or a bad report is posted or crashes with a traceback",
+      "command": "uv run pytest tests/test_agent.py -k publish_fails -q"
+    },
+    {
+      "id": "r5",
+      "behavior": "action/knowledge-audit-issue.sh is gone; action.yml's audit mode and .github/workflows/knowledge-audit.yml run agent.py publish on report.json in the only step that gets GH_TOKEN, and action.yml has min_severity, mention and issue_title inputs passed to it.",
+      "fails_when": "the shell script remains, the issue step does not run publish, another step gets the token, or an input is missing or not passed",
+      "command": "uv run pytest tests/test_action.py -q"
+    },
+    {
+      "id": "r6",
+      "behavior": "ADR 0017 gets a correction, and the how-to and architecture overview describe publish, its threshold and the mentions; the bundle and docs check clean.",
+      "fails_when": "a page still names knowledge-audit-issue.sh or kmctl check fails",
+      "command": "uv run kmctl check && ! grep -rn 'knowledge-audit-issue' docs .okf/architecture action.yml .github"
+    },
+    {
+      "id": "r7",
+      "behavior": "All of the repository's gates pass.",
+      "fails_when": "just lint or just test fails",
+      "command": "just lint && just test"
+    },
+    {
+      "id": "r8",
+      "behavior": "publish --help names every option, what it takes and its default.",
+      "fails_when": "an option lacks a description or its default",
+      "judgment": true
+    }
+  ]
 }
