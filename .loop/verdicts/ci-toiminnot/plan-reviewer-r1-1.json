@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "At toiminnot v1.3.0 (4763b907) the two hook actions' action.yaml files are swapped relative to their names and READMEs: actions/prek runs pip-installed pre-commit 4.2.0, while actions/pre_commit runs prek (input prek_version, default 0.2.25). The plan picks actions/prek and so moves CI off prek onto pre-commit, dropping the prek version the justfile pins (0.5.5) that test_ci_prek_job_runs_all_files_at_justfile_version ties CI to. The repo's hooks, justfile and rules standardize on prek; the plan never weighs actions/pre_commit with prek_version: \"0.5.5\", which keeps the tool and the pin. Choose one: use actions/pre_commit with prek_version matched to the justfile (and keep a test tying the two), or record the operator's acceptance that CI runs pre-commit 4.2.0 instead of prek. Either way the plan and r1 should name the swap, since a later toiminnot release that fixes it would change behaviour on a SHA bump.",
+      "anchor": ".loop/plans/ci-toiminnot.md:28",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "9cd0d3aff20fe03cd81155593b99643186be4874fe3d90c9a76ef33741d0c981"
+  },
+  "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
+  "at": "2026-10-17T18:02:47+00:00"
+}
