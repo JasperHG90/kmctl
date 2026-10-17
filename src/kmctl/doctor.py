@@ -499,7 +499,13 @@ def _antigravity_apm_hooks(cwd: Path) -> Check:
     """Whether APM's hooks.json no longer runs okf's Stop check, which fails in agy."""
     shown = antigravity.APM_HOOKS.as_posix()
     cid = "antigravity.apm-hooks"
-    if antigravity.apm_okf_stop_present(cwd):
+    try:
+        present = antigravity.apm_okf_stop_present(cwd)
+    except PluginError:
+        detail = f"{shown} is not a JSON object, so agy cannot load its hooks"
+        fix = f"repair {shown} by hand, then {antigravity.FIX}"
+        return _fail(cid, "antigravity", detail, fix)
+    if present:
         detail = (
             f"{shown} still runs okf-stop-check.sh, which fails at the end of every "
             "turn in Antigravity"
