@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "Trace size of a real audit is an unlisted risk that could stop the plan working in practice. Each chat span carries the whole conversation so far in gen_ai.input.messages, and the root span carries pydantic_ai.all_messages, so the payload grows with the square of the run length. From the five real transcripts in the scratchpad (30 to 83 requests, 0.6 to 1.2 MB each), a real audit would send about 11 to 43 MB of span attributes to Langfuse, with single spans near 1 MB. If Langfuse's OTLP endpoint rejects or truncates requests or attributes of that size, real audits lose their traces. Because a failed export never fails the run (by design), nobody would notice. The live check in Done when does not say it must be a full-length audit, so a short prompt could pass it while real runs fail. The plan should list this risk and settle it with a spike (see the body), then either confirm the default exporter settings work or choose a fix such as a smaller max_export_batch_size, include_content=False, or dropping the cumulative message attributes.",
+      "anchor": ".loop/plans/langfuse-traces.md",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "ac695a6165ab018dff2a4419d2688bb2232c155d6b0f809a9c0727c9ba9b0ff9"
+  },
+  "by": "process:loopctl/2.2.1.dev8+g8b371c2b0.d20261017",
+  "at": "2026-10-17T18:16:43+00:00"
+}
