@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "audit-prompts",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
@@ -29,7 +29,7 @@
   "split": "j-20261017T173901+0000-af2bd35e",
   "split_plan_hash": "ed280fd9c6bbd22ea039fb3ba7df1c1c0176d3e0fe1d361fc2489cd608ec5795",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "23c2144309e57d3ffd50e8fe81e102413ca73624",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -144,8 +144,14 @@
       "to": "verifying",
       "at": "2026-10-17T17:50:19+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-17T17:53:42+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
-  "at": "2026-10-17T17:53:33+00:00"
+  "at": "2026-10-17T17:53:42+00:00"
 }
