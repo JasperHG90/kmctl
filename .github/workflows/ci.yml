@@ -8,17 +8,9 @@ on:
 permissions:
   contents: read
 
+# The jobs run one after another: prek, then kmctl's check, then pytest, so
+# a cheap failure stops the run before the slower jobs start.
 jobs:
-  # kmctl's own check on this repository's docs/ and .okf/, through the
-  # action. review due reads git history, so check out all of it.
-  knowledge:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          fetch-depth: 0
-      - uses: ./
-
   # The hooks in .pre-commit-config.yaml, at the prek version the justfile
   # pins. The hooks call uv run, which the action does not install, so uv
   # goes on PATH first. The action checks out the repository.
@@ -33,10 +25,22 @@ jobs:
           prek_version: "0.5.5"
           python_version: "3.12"
 
+  # kmctl's own check on this repository's docs/ and .okf/, through the
+  # action. review due reads git history, so check out all of it.
+  knowledge:
+    needs: prek
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: ./
+
   # The default test suite. The integration tier reaches GitHub and runs in
   # the loop's gate instead (.loop/config.toml). The action checks out the
   # repository.
   tests:
+    needs: knowledge
     runs-on: ubuntu-latest
     steps:
       - uses: JasperHG90/toiminnot/actions/pytest@dc32088cfc239bd550283512de713872370280c2 # v2.0.0

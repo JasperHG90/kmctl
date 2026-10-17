@@ -32,3 +32,6 @@
 {"ask": "j-20261017T184945+0000-e06477d2", "at": "2026-10-17T18:58:20+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "5ad38e17e279b9b91fd143f2af0c9fdd813992d4", "subject": "release: stage the sub-package apm.yml files in the version commit"}
 {"ask": "j-20261017T185857+0000-b42c3bac", "at": "2026-10-17T19:00:44+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "e83621bc1caffe6cf4909c74e60b69a691409d96", "subject": "ci: run ruff, kmctl check and OKF validation through prek"}
 {"ask": "j-20261017T191346+0000-de5b01b4", "at": "2026-10-17T19:28:10+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "e75cf850de18a08226beada4750001db8d335853", "subject": "Brief on setup: init, manifesto, architecture"}
+{"at": "2026-10-17T19:44:10+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "8b5d840c92e86582e2321774ab49c32e3337c766", "subject": "chore; manual commits"}
+{"at": "2026-10-17T19:44:18+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "12ad03d008b6b7f6b6ec9fdbfc62a3219c9a8648", "subject": "chore; manual commits"}
+{"at": "2026-10-17T19:51:24+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "195764e3076386fa7d39f6e018e41ac976a5e425", "subject": "chore; manual commits"}
