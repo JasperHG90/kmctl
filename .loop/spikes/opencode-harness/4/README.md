@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014
-  at: '2026-10-17T21:49:58+00:00'
+  at: '2026-10-17T21:50:15+00:00'
 slug: opencode-harness
 n: 4
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike opencode-harness/4
@@ -24,7 +24,10 @@ The command exited 1:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note opencode-harness 4`.
+With apm 0.33.0, a git-served package (subfolder `apm`, tag v0.1.0, two Claude-format agents and one skill) and `targets: [opencode]`, both deployed `.opencode/agents/*.md` were edited as patch would (tools string to a mapping, plus a marker line). Plain `apm install`, `--frozen` and `--force` each exited 0 and silently rewrote both edited agents back to APM's bytes (lock hashes unchanged); none skipped or refused, so `--force` changes nothing here. `apm audit` exits 0 but reports "Drift detected: 2 file(s)".
+`apm uninstall` exits 1: "Retained user-edited file ... resolve it and retry", leaves both edited agents, apm.yml's entry and every lock entry, yet still deletes apm_modules/ and the skill's 2 files, so it fails half-done.
+Both ways out work: a plain `apm install` first (reverts the edits) then uninstall, or deleting the edited agent files first then uninstall; each exits 0 and leaves no agent file, an empty `apm: []` and no apm.lock.yaml.
+Risk 3 is real: patch must re-run after every `apm install`, and remove must delete or revert the patched agents before `apm uninstall`. Also seen: APM itself warns "OpenCode agent ... has tools as str; OpenCode will reject this agent at load time" (bears on risk 2). Limits: one run, a small package rather than kmctl's, project scope only.
 
 ## Files
 
