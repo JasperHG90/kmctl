@@ -37,3 +37,4 @@
 {"at": "2026-10-17T19:51:24+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "195764e3076386fa7d39f6e018e41ac976a5e425", "subject": "chore; manual commits"}
 {"ask": "j-20261017T200018+0000-a16bcf2b", "at": "2026-10-17T20:03:14+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "bc6f0ebe66ed946f275fc2aca12fab0fcd2ce240", "subject": "docs: link kmctl-starter from the README's install section"}
 {"at": "2026-10-17T20:09:20+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "3790a2e344c1ebe7217e26bb266234876e3c8516", "subject": "Merge remote-tracking branch 'origin/main'"}
+{"ask": "j-20261017T213717+0000-281aa39f", "at": "2026-10-17T21:40:42+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "ffc4c90b756c1d6ce2ffa9d7bfc274a649076749", "subject": "ci: send the knowledge audit's traces to Langfuse"}
