@@ -109,8 +109,10 @@ on every run: the audit agent and okf's two agents in Antigravity's format,
 the four knowledge rules in `.agents/plugins/kmctl/rules/` (in the form
 Antigravity reads; kmctl deletes the copies APM writes to `.agents/rules/`),
 one SessionStart hook
-that runs `kmctl briefing --format antigravity`, and okf's MCP server,
-`bundle`. okf's MCP server runs with `uv run`, so it needs `uv` on PATH
+that runs `kmctl briefing --format antigravity`, one Stop hook that runs
+okf's bundle check (it keeps the agent working only when `.okf/index.md`
+sets `upkeep: enforced`; kmctl takes APM's broken copy of it out of
+`.agents/hooks.json`), and okf's MCP server, `bundle`. okf's MCP server runs with `uv run`, so it needs `uv` on PATH
 wherever Antigravity runs. For both harnesses at once, run
 `kmctl plugin install --harness claude,antigravity`. Antigravity installs
 per repository only; `--scope user` is refused for it.
@@ -390,7 +392,7 @@ ok   antigravity.lock: apm.lock.yaml has kmctl's package at v0.3.0
 ok   antigravity.files: 32 kmctl paths match apm.lock.yaml
 ok   antigravity.okf-skills: 19 okf-skills paths match apm.lock.yaml
 ok   antigravity.plugin: .agents/plugins/kmctl/ holds what this kmctl writes
-ok   antigravity.hook: .agents/plugins/kmctl/hooks.json holds the SessionStart hook this kmctl writes
+ok   antigravity.hook: .agents/plugins/kmctl/hooks.json holds the SessionStart hook and okf's Stop check this kmctl writes
 ok   antigravity.okf-mcp: .agents/plugins/kmctl/mcp_config.json declares okf's MCP server bundle
 ok   antigravity.trust: …/repo is in trustedWorkspaces of ~/.gemini/antigravity-cli/settings.json
 ```

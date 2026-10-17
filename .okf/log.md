@@ -113,3 +113,4 @@
 - Updated `architecture/overview`: the audit mode runs action/agent.py, a standalone PydanticAI agent, instead of Hermes (ADR 0017).
 - Corrected `decisions/0001-standalone-cli-installs-its-plugin` and `decisions/0015-antigravity-gets-skills-and-rules-from-apm-and-a-kmctl-plugin-folder`: `kmctl plugin status` became `kmctl doctor`. Found by the first live run of action/agent.py.
 - Corrected `decisions/0002-briefing-and-rules-injected-by-the-cli`: `kmctl init` writes no rules since ADR 0014. Found by the same run.
+- Added `decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity` with `kmctl new decision`.

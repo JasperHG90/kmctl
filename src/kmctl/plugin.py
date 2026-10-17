@@ -938,8 +938,9 @@ def install(
     then, for Claude Code, write the SessionStart hook and declare okf's MCP
     server, and for Antigravity, rewrite its plugin folder
     (``antigravity.write_plugin``) and delete APM's copies of kmctl's rules
-    there (``antigravity.drop_apm_rules``). ``kmctl plugin update`` runs the
-    same.
+    there (``antigravity.drop_apm_rules``) and APM's okf Stop handler in
+    ``.agents/hooks.json`` (``antigravity.drop_apm_okf_stop``). ``kmctl
+    plugin update`` runs the same.
 
     Parameters
     ----------
@@ -993,10 +994,11 @@ def install(
     if "antigravity" in harnesses:
         folder = antigravity.write_plugin(cwd)
         antigravity.drop_apm_rules(cwd, package.deployed_files if package else [])
+        antigravity.drop_apm_okf_stop(cwd)
         notes.append(
             f"wrote {shown_path(folder, cwd)}/ (the agents, the rules, the SessionStart "
-            f"hook and okf's MCP server {antigravity.MCP_NAME}); Antigravity loads it "
-            "once you trust this folder"
+            f"hook, okf's Stop check and okf's MCP server {antigravity.MCP_NAME}); "
+            "Antigravity loads it once you trust this folder"
         )
     return InstallResult(
         scope, list(harnesses), package.resolved_ref if package else None, notes
