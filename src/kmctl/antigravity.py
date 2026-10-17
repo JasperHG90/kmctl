@@ -1,9 +1,13 @@
 """The Antigravity plugin folder kmctl writes beside APM's install (ADR 0015).
 
-APM 0.33.0 installs skills and rules for Antigravity into ``.agents/``, but no
-agents and no MCP server Antigravity reads. kmctl writes those, and the
-SessionStart hook, into one folder it alone owns, ``.agents/plugins/kmctl/``,
-which Antigravity loads from a trusted workspace (spike:antigravity-harness/3).
+APM 0.33.0 installs skills for Antigravity into ``.agents/``, but no agents
+and no MCP server Antigravity reads, and rules agy cannot use: a YAML list of
+globs, which agy refuses, and globs relative to the repository, which agy
+matches against absolute paths. kmctl writes the agents, the rules, the MCP
+server and the SessionStart hook into one folder it alone owns,
+``.agents/plugins/kmctl/``, which Antigravity loads from a trusted workspace
+(spike:antigravity-harness/3, spike:antigravity-rules/3), and deletes APM's
+copies of its rules.
 
 Every function here prints nothing. ``plugin_files`` says what the folder
 holds, ``write_plugin`` replaces the folder with it, and ``compare_plugin``
@@ -30,6 +34,11 @@ HOOK_NAME = "kmctl-briefing"
 MCP_NAME = "bundle"
 #: Where APM puts okf-skills' Claude-format agents, relative to the repository.
 OKF_AGENTS = Path("apm_modules") / "scaccogatto" / "okf-skills" / "agents"
+#: Where APM writes rules for Antigravity, relative to the repository.
+APM_RULES = ".agents/rules/"
+#: The prefix agy needs on a glob: it matches a glob holding a ``/`` against
+#: the file's absolute path (spike:antigravity-rules/3).
+ANY_FOLDER = "**/"
 #: The command the hook runs. Antigravity fails a hook whose stdout is not
 #: JSON, so it prints ``{}`` and exits 0 when kmctl is missing or fails (I1).
 HOOK_COMMAND = (
@@ -64,6 +73,14 @@ def agents_dir() -> Path:
     if (package / "_agents").is_dir():
         return package / "_agents"
     return Path(__file__).resolve().parents[2] / "apm" / ".apm" / "agents"
+
+
+def instructions_dir() -> Path:
+    """kmctl's APM instructions: package data in a wheel, the repository in a checkout."""
+    package = Path(str(files("kmctl")))
+    if (package / "_instructions").is_dir():
+        return package / "_instructions"
+    return Path(__file__).resolve().parents[2] / "apm" / ".apm" / "instructions"
 
 
 class _ClaudeAgent(BaseModel):
@@ -142,6 +159,83 @@ def translate_agent(text: str, source: str) -> str:
     return f"---\n{head}---\n{text[end + 5 :]}"
 
 
+class _Instruction(BaseModel):
+    """An APM instruction's front matter: the globs it applies to, if any."""
+
+    apply_to: str | list[str] | None = Field(
+        default=None,
+        alias="applyTo",
+        description="A comma-separated string or a list of globs, relative to the repository.",
+    )
+
+
+def _globs(apply_to: str | list[str] | None) -> list[str]:
+    """The globs of an ``applyTo`` value, each with the ``**/`` prefix agy needs."""
+    items = apply_to.split(",") if isinstance(apply_to, str) else apply_to or []
+    globs = [g.strip() for g in items if g.strip()]
+    return [g if g.startswith(ANY_FOLDER) else ANY_FOLDER + g for g in globs]
+
+
+def translate_rule(text: str, source: str) -> str:
+    """An APM instruction file rewritten as an Antigravity rule.
+
+    ``applyTo`` becomes ``trigger: glob`` and ``globs:`` as one
+    comma-separated string, the only form agy reads, with each glob given a
+    leading ``**/``. An instruction without ``applyTo`` becomes
+    ``trigger: always_on``. The body is copied unchanged.
+
+    Parameters
+    ----------
+    text :
+        The instruction file.
+    source :
+        Where it came from, for error messages.
+
+    Raises
+    ------
+    PluginError
+        When the front matter is not YAML or ``applyTo`` is not a string or
+        a list of strings.
+    """
+    body = text
+    meta: object = {}
+    end = text.find("\n---\n", 4)
+    if text.startswith("---\n") and end != -1:
+        body = text[end + 5 :]
+        try:
+            meta = yaml.safe_load(text[4:end]) or {}
+        except yaml.YAMLError as error:
+            raise PluginError(
+                f"the instruction {source} has front matter that is not YAML ({error})"
+            ) from error
+    try:
+        instruction = _Instruction.model_validate(meta)
+    except ValidationError as error:
+        raise PluginError(
+            f"the instruction {source} has an applyTo kmctl cannot read ({error}); "
+            "it must be a comma-separated string of globs"
+        ) from error
+    globs = _globs(instruction.apply_to)
+    if not globs:
+        return f"---\ntrigger: always_on\n---\n{body}"
+    return f"---\ntrigger: glob\nglobs: {json.dumps(', '.join(globs))}\n---\n{body}"
+
+
+def drop_apm_rules(cwd: Path, deployed: list[str]) -> list[str]:
+    """Delete the rule files APM wrote for kmctl's package in ``cwd``, and return their paths.
+
+    ``deployed`` is the lock's ``deployed_files`` for kmctl's package; only
+    those under ``APM_RULES`` go, so every other package's rules stay.
+    """
+    gone = []
+    for rel in deployed:
+        path = cwd / rel
+        if rel.startswith(APM_RULES) and path.is_file():
+            path.unlink()
+            gone.append(rel)
+    return gone
+
+
 def hooks() -> dict[str, object]:
     """hooks.json: one named hook with one SessionStart handler."""
     handler = {"type": "command", "command": HOOK_COMMAND, "timeout": HOOK_TIMEOUT}
@@ -161,8 +255,8 @@ def _json(data: dict[str, object]) -> str:
 def plugin_files(cwd: Path) -> dict[str, str]:
     """Every file the plugin folder holds, by its path inside the folder, as this kmctl writes it.
 
-    kmctl's agents come with the CLI; okf's come from where APM put
-    okf-skills in ``cwd``.
+    kmctl's agents and rules come with the CLI; okf's agents come from where
+    APM put okf-skills in ``cwd``.
 
     Raises
     ------
@@ -183,6 +277,10 @@ def plugin_files(cwd: Path) -> dict[str, str]:
         for path in sorted(folder.glob("*.md")):
             text = path.read_text(encoding="utf-8")
             out[f"agents/{path.name}"] = translate_agent(text, str(path))
+    for path in sorted(instructions_dir().glob("*.instructions.md")):
+        name = path.name.removesuffix(".instructions.md")
+        text = path.read_text(encoding="utf-8")
+        out[f"rules/{name}.md"] = translate_rule(text, str(path))
     return out
 
 

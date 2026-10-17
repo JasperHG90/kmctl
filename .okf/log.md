@@ -103,3 +103,7 @@
 - Added `decisions/0015-antigravity-gets-skills-and-rules-from-apm-and-a-kmctl-plugin-folder` with `kmctl new decision`.
 - Updated `manifesto` and `architecture/overview`, and corrected `decisions/0003-claude-code-plugin-first-depends-on-okf`, for ADR 0015: Antigravity is a harness `kmctl plugin install` serves, through APM and the plugin folder `antigravity.py` writes.
 - Updated `manifesto` and `architecture/overview`: `kmctl doctor` replaces `kmctl plugin status`, as ADR 0014's Consequences planned.
+
+## 2026-10-17
+
+- Added `decisions/0016-antigravity-rules-come-from-the-kmctl-plugin-folder` with `kmctl new decision`.

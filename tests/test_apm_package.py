@@ -212,6 +212,9 @@ def test_wheel_reports_the_set_version_and_carries_the_skills(tmp_path: Path) ->
     }
     assert want <= names
     assert "kmctl/_agents/kmctl-auditor.md" in names
+    instructions = ROOT / "apm" / ".apm" / "instructions"
+    for path in instructions.glob("*.instructions.md"):
+        assert f"kmctl/_instructions/{path.name}" in names
     assert not [n for n in names if "_plugin" in n or "marketplace" in n]
 
 

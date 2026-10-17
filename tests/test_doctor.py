@@ -301,9 +301,9 @@ BREAKS: dict[str, tuple[Callable[[Path], None], str, str, str]] = {
         AG_FIX,
     ),
     "hash": (
-        lambda r: (r / ".agents/rules/okf-bundle.md").write_text("edited\n"),
+        lambda r: (r / f".agents/skills/{SKILL_NAMES[0]}/SKILL.md").write_text("e\n"),
         "antigravity.files",
-        ".agents/rules/okf-bundle.md differs from apm.lock.yaml",
+        f".agents/skills/{SKILL_NAMES[0]}/SKILL.md differs from apm.lock.yaml",
         AG_FIX,
     ),
     "okf-skill": (
@@ -989,3 +989,36 @@ def test_doctor_after_a_real_install_exits_zero(
     assert re.findall(r"^\S+\s+([\w.-]+):", result.stdout, re.MULTILINE) == ALL_IDS
     assert [c.tool for c in fakes.calls()] == ["claude"]
     assert antigravity.plugin_problems(consumer) == []
+
+
+# antigravity-rules r3: kmctl's rules live in the plugin folder -------------------
+
+
+def test_antigravity_rules_absent_from_agents_rules_pass(complete: Setup) -> None:
+    assert not (complete.repo / ".agents/rules/okf-bundle.md").exists()
+
+    _, data = _doctor()
+
+    assert _by_id(data)["antigravity.files"]["ok"], data
+
+
+@pytest.mark.parametrize(
+    ("change", "said"),
+    [
+        (lambda f: (f / "rules/okf-bundle.md").unlink(), "is missing"),
+        (lambda f: (f / "rules/okf-bundle.md").write_text("e\n"), "differs"),
+        (lambda f: (f / "rules/extra.md").write_text("e\n"), "is not one kmctl"),
+    ],
+)
+def test_antigravity_rule_changes_fail_the_plugin_check(
+    complete: Setup, change: Callable[[Path], object], said: str
+) -> None:
+    change(complete.repo / ".agents" / "plugins" / "kmctl")
+
+    result, data = _doctor()
+
+    check = _by_id(data)["antigravity.plugin"]
+    assert not check["ok"]
+    assert "rules/" in check["detail"] and said in check["detail"]
+    assert check["fix"] == AG_FIX
+    assert result.exit_code == 1

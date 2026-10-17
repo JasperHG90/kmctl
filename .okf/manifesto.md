@@ -61,10 +61,10 @@ this formalizes so every repository can have it.
   (Agent Package Manager), then writes what APM does not carry: one
   SessionStart hook that relays `kmctl`'s briefing (ADR 0004) and okf's MCP
   server. `kmctl plugin install --harness antigravity` does the same for
-  Antigravity: APM writes the skills and rules into `.agents/`, and kmctl
-  writes the folder `.agents/plugins/kmctl/` with the agents translated to
-  Antigravity's format, the SessionStart hook and okf's MCP server
-  (ADR 0015). The harnesses are Claude Code and Antigravity.
+  Antigravity: APM writes the skills into `.agents/`, and kmctl writes the
+  folder `.agents/plugins/kmctl/` with the agents translated to
+  Antigravity's format, the knowledge rules in the form Antigravity reads,
+  the SessionStart hook and okf's MCP server (ADR 0015, ADR 0016). The harnesses are Claude Code and Antigravity.
 - **A reusable GitHub Action** (ADR 0005). On every pull request it runs the
   deterministic checks for free. The LLM audit is opt-in and reports only.
 

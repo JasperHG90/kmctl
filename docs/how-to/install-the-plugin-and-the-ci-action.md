@@ -98,15 +98,17 @@ kmctl plugin install --harness antigravity
 It prints:
 
 ```
-note: wrote .agents/plugins/kmctl/ (the agents, the SessionStart hook and okf's MCP server bundle); Antigravity loads it once you trust this folder
+note: wrote .agents/plugins/kmctl/ (the agents, the rules, the SessionStart hook and okf's MCP server bundle); Antigravity loads it once you trust this folder
 installed kmctl's package v0.3.0 for antigravity (project scope)
 Next: open this folder in Antigravity, trust it and start a new session, then kmctl doctor
 ```
 
-APM writes kmctl's seven skills and okf's four to `.agents/skills/` and the
-four knowledge rules to `.agents/rules/`. kmctl then writes the folder
-`.agents/plugins/kmctl/`, which it owns and replaces on every run: the audit
-agent and okf's two agents in Antigravity's format, one SessionStart hook
+APM writes kmctl's seven skills and okf's four to `.agents/skills/`. kmctl
+then writes the folder `.agents/plugins/kmctl/`, which it owns and replaces
+on every run: the audit agent and okf's two agents in Antigravity's format,
+the four knowledge rules in `.agents/plugins/kmctl/rules/` (in the form
+Antigravity reads; kmctl deletes the copies APM writes to `.agents/rules/`),
+one SessionStart hook
 that runs `kmctl briefing --format antigravity`, and okf's MCP server,
 `bundle`. okf's MCP server runs with `uv run`, so it needs `uv` on PATH
 wherever Antigravity runs. For both harnesses at once, run

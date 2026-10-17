@@ -157,7 +157,7 @@ exit codes. Each verb calls one module:
 | `kmctl new decision`, `practice`, `proposal`, `prototype`, `handoff` | `concepts.py`, with `okf.py` to find each `--source` the way `review_due.py` does | the concept, its section index entry and a log line; `--stale-after` and `--source` write its `stale_after` and `sources` |
 | `kmctl new doc` | `docs.py` | the page and its `docs/README.md` entry |
 | `kmctl decision supersede` | `supersede.py` | both decision records and a log line |
-| `kmctl plugin install`, `update` | `plugin.py`, with `antigravity.py` for `--harness antigravity` | runs `apm uninstall` on an old apm.yml entry; writes kmctl's entry and `targets:` into `apm.yml`; runs `apm install` through `uvx`; for claude, only once that succeeds removes the old claude plugin `kmctl@kmctl`, then merges one SessionStart hook into `.claude/settings.json` and the `okf-bundle` server into `.mcp.json` (ADR 0014); for antigravity, replaces `.agents/plugins/kmctl/` (ADR 0015) |
+| `kmctl plugin install`, `update` | `plugin.py`, with `antigravity.py` for `--harness antigravity` | runs `apm uninstall` on an old apm.yml entry; writes kmctl's entry and `targets:` into `apm.yml`; runs `apm install` through `uvx`; for claude, only once that succeeds removes the old claude plugin `kmctl@kmctl`, then merges one SessionStart hook into `.claude/settings.json` and the `okf-bundle` server into `.mcp.json` (ADR 0014); for antigravity, replaces `.agents/plugins/kmctl/` and deletes APM's copies of kmctl's rules from `.agents/rules/` (ADR 0015, ADR 0016) |
 | `kmctl doctor` | `doctor.py`, with `plugin.py` for the hook, MCP entries and lock reader and `antigravity.py` for the folder comparison | nothing; it reads `apm.yml`, `apm.lock.yaml` and the files it lists, the settings files, `.mcp.json`, `.agents/plugins/kmctl/` and agy's trust list, and runs only `uv tool run --offline --from apm-cli==0.33.0 apm --version`; `--online` fetches okf's MCP script URL |
 
 `kinds.py` holds the one table of document kinds: each kind's front matter
@@ -179,7 +179,8 @@ The skills, the audit agent and the knowledge rules live in `apm/.apm/`, and
 writes `{git: SOURCE, path: apm, ref: v<cli version>}` into the repository's
 `apm.yml` and runs APM, so the CLI always installs the package of its own
 release (ADR 0001). The wheel carries `apm/.apm/skills/`, for the
-briefing, and `apm/.apm/agents/`, for the Antigravity translation.
+briefing, and `apm/.apm/agents/` and `apm/.apm/instructions/`, for the
+Antigravity translation.
 
 - **One hook, written by kmctl.** `plugin.py` merges one SessionStart hook
   into `.claude/settings.json`, found again by its `kmctl briefing` command.
@@ -191,17 +192,21 @@ briefing, and `apm/.apm/agents/`, for the Antigravity translation.
   `okf_mcp.py` at the pinned commit, through an `sh` launcher that walks up
   to the nearest `.okf/`. It keeps an okf server already there under another
   name.
-- **Antigravity's plugin folder.** APM writes the skills and rules into
-  `.agents/` but no agents or MCP server Antigravity reads, so
-  `antigravity.py` writes `.agents/plugins/kmctl/` whole: `plugin.json`,
+- **Antigravity's plugin folder.** APM writes the skills into `.agents/`
+  but no agents or MCP server Antigravity reads, and rules it cannot use,
+  so `antigravity.py` writes `.agents/plugins/kmctl/` whole: `plugin.json`,
   `hooks.json` with one SessionStart hook running
   `kmctl briefing --format antigravity` (it prints `{}` and exits 0 when
   kmctl is missing or fails, I1), the auditor and okf's two agents
-  translated from Claude Code's format, and `mcp_config.json` with okf's
-  server `bundle` through the same launcher (ADR 0015).
+  translated from Claude Code's format, the four rules in `rules/` with
+  their globs as one comma-separated string of `**/` globs, and
+  `mcp_config.json` with okf's server `bundle` through the same launcher
+  (ADR 0015). It then deletes APM's copies of kmctl's rules from
+  `.agents/rules/` (ADR 0016).
 - **Rules as instructions.** Each rule is
   `apm/.apm/instructions/NAME.instructions.md` with an `applyTo:`, which APM
-  writes into `.claude/rules/NAME.md` as `paths:`.
+  writes into `.claude/rules/NAME.md` as `paths:`, and `antigravity.py`
+  translates into `.agents/plugins/kmctl/rules/NAME.md`.
 - **Skills route; kmctl writes.** `write-docs`, `handoff` and `continue` call
   `kmctl new doc`, `kmctl new handoff` and `kmctl handoffs`, so the file
   structure always comes from the CLI.

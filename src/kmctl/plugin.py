@@ -937,7 +937,9 @@ def install(
     then remove the old claude plugin, so a failed install leaves it working;
     then, for Claude Code, write the SessionStart hook and declare okf's MCP
     server, and for Antigravity, rewrite its plugin folder
-    (``antigravity.write_plugin``). ``kmctl plugin update`` runs the same.
+    (``antigravity.write_plugin``) and delete APM's copies of kmctl's rules
+    there (``antigravity.drop_apm_rules``). ``kmctl plugin update`` runs the
+    same.
 
     Parameters
     ----------
@@ -987,14 +989,15 @@ def install(
         notes = remove_old_plugin(cwd, scope) + notes
         merge_hook(settings_path(cwd, scope))
         notes += install_mcp(cwd, scope)
+    package = kmctl_package(read_lock(cwd, scope))
     if "antigravity" in harnesses:
         folder = antigravity.write_plugin(cwd)
+        antigravity.drop_apm_rules(cwd, package.deployed_files if package else [])
         notes.append(
-            f"wrote {shown_path(folder, cwd)}/ (the agents, the SessionStart hook and "
-            f"okf's MCP server {antigravity.MCP_NAME}); Antigravity loads it once "
-            "you trust this folder"
+            f"wrote {shown_path(folder, cwd)}/ (the agents, the rules, the SessionStart "
+            f"hook and okf's MCP server {antigravity.MCP_NAME}); Antigravity loads it "
+            "once you trust this folder"
         )
-    package = kmctl_package(read_lock(cwd, scope))
     return InstallResult(
         scope, list(harnesses), package.resolved_ref if package else None, notes
     )
