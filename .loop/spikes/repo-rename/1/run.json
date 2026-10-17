@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "slug": "repo-rename",
+  "n": 1,
+  "command": "/tmp/claude-1000/-home-vscode-kmctl/ca0a6ec4-fb78-4dae-a201-8e5e832f449a/scratchpad/rename/spike.sh",
+  "scripts": [],
+  "where": "worktree",
+  "head": "2cc7c68f9f6d8df5d5ceb997086f491462671bb5",
+  "fingerprint": "44fbb60e797ae2c5f050e7e8bbb693b7d9ef73ab32819f174b0d716ba944d1d3",
+  "started_at": "2026-10-17T18:48:55+00:00",
+  "finished_at": "2026-10-17T18:49:00+00:00",
+  "duration_seconds": 5.779,
+  "timeout_seconds": 1800.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
+  "moved_from": null
+}
