@@ -3,7 +3,7 @@
   "slug": "standalone-agent",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -117,8 +117,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "f1c3bab7296c97b75a14bedd8d6b9957fa61c84381d164bbdcc52ee7fe6fc764",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "6339b03dc5d7860c0a9bbc76d8c499fc0b60d976d29a0b5408fffb4558cdd73d",
+    "started_at": "2026-10-17T07:05:26+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "6339b03dc5d7860c0a9bbc76d8c499fc0b60d976d29a0b5408fffb4558cdd73d",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -133,5 +152,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T07:05:20+00:00"
+  "at": "2026-10-17T07:05:26+00:00"
 }
