@@ -267,6 +267,12 @@ Exit code: 1 when kmctl refuses, with the reason on stderr.
 Install kmctl's APM package (the skills, the audit agent and the four
 knowledge rules, with the okf skills they use), its session hook and okf's
 MCP server for a harness: `claude` (Claude Code), `antigravity` or both.
+Without `--harness`, it asks which harnesses to install for, listing each
+with a number; answer with numbers or names as a comma list, or press Enter
+for `claude`. The question goes to stderr. When stdin is not a terminal, or
+with `--json`, it asks nothing and refuses, naming `--harness`, so a script
+or an agent must pass it.
+
 Steps 5 to 7 are for `claude`; step 8 is for `antigravity`. It runs, in
 order:
 
@@ -329,7 +335,7 @@ harnesses and the scope, then a `Next:` line ending with `kmctl doctor`.
 
 | Option | Meaning | Default |
 |---|---|---|
-| `--harness LIST` | The agent harnesses to install for, as a comma list. Accepted: `claude`, `antigravity`. | `claude` |
+| `--harness LIST` | The agent harnesses to install for, as a comma list. Accepted: `claude`, `antigravity`. | Left out, the command asks which harnesses to install for when stdin is a terminal; it refuses when stdin is not a terminal or `--json` is given |
 | `--scope SCOPE` | `project` (this repository: `apm.yml`, `.claude/`, `.mcp.json` and `.agents/` here) or `user` (every repository: `~/.apm/apm.yml` and Claude Code's folder, `$CLAUDE_CONFIG_DIR` or `~/.claude`). `antigravity` is `project` only. | `project` |
 | `--source GIT_URL` | The git URL of the repository holding the kmctl package, its `apm/` folder at the tag `vVERSION`. Set it for a fork, a local git server or an unreleased tree; an `http://` URL is allowed as insecure. | `https://github.com/JasperHG90/Knowledge-management.git` |
 | `--force` | Let APM replace skill folders it did not write. It replaces each folder whole, deleting any file you added there. | off |
@@ -343,6 +349,9 @@ parse, a failed APM run (with APM's cause), or skipped files.
 
 The same steps and options as `kmctl plugin install`. Run it after upgrading
 kmctl: it moves the `apm.yml` entry to the new version's tag and reinstalls.
+Without `--harness` it asks which harnesses to update, as install does, and
+Enter takes the harnesses already installed at that scope (`claude` when it
+finds none).
 
 ### `kmctl doctor`
 

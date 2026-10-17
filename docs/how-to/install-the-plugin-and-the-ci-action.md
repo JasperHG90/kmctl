@@ -52,6 +52,9 @@ From the repository root:
 kmctl plugin install --harness claude
 ```
 
+Run bare `kmctl plugin install` and it asks which harnesses to install
+for; `--harness` answers that up front, and a script or an agent must pass it.
+
 It prints:
 
 ```
@@ -311,8 +314,9 @@ its `vX.Y.Z` tag. To move to a newer one:
    kmctl plugin update
    ```
 
-   For Antigravity, run `kmctl plugin update --harness antigravity` (or
-   `--harness claude,antigravity`). It moves the `apm.yml` entry to the new
+   It asks which harnesses to update; press Enter for the ones already
+   installed. In a script, pass them: `kmctl plugin update --harness
+   claude,antigravity`. It moves the `apm.yml` entry to the new
    tag and reinstalls.
    `kmctl doctor` then reports `claude.lock` (and `antigravity.lock`) as
    `ok` at the new version.

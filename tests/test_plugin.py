@@ -20,6 +20,7 @@ from conftest import plain
 from fixtures.fake_tools import Call, FakeTools
 from typer.testing import CliRunner, Result
 
+import kmctl
 from kmctl import app, plugin
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -362,7 +363,7 @@ def test_install_refuses_unknown_harness(
 
 
 def test_install_update_runs_the_same_steps(repo: Path, fakes: FakeTools) -> None:
-    result = _kmctl("plugin", "update")
+    result = _kmctl("plugin", "update", "--harness", "claude")
 
     assert result.exit_code == 0, result.output
     [call] = _apm_calls(fakes, "install")
@@ -1017,3 +1018,164 @@ def test_user_scope_is_not_the_default(
     assert "-g" not in _apm_calls(fakes, "install")[0].args
     assert not (home / ".claude" / "settings.json").exists()
     assert not (home / ".apm").exists()
+
+
+# harness-prompt: the question when --harness is missing ---------------------------
+
+
+QUESTION = "Which harnesses should kmctl install for?"
+
+
+@pytest.fixture
+def terminal(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Make kmctl see a terminal on stdin, as a person running it by hand would."""
+    monkeypatch.setattr(kmctl, "_at_terminal", lambda: True)
+
+
+@pytest.fixture
+def installs(monkeypatch: pytest.MonkeyPatch) -> list[list[str]]:
+    """Record the harnesses each install is asked for, instead of installing."""
+    seen: list[list[str]] = []
+
+    def fake_install(cwd: Path, harnesses: list[str], scope: str, **_: object):
+        seen.append(harnesses)
+        return plugin.InstallResult(scope, harnesses, None, [])
+
+    monkeypatch.setattr(kmctl, "install_plugin", fake_install)
+    return seen
+
+
+def _ask(verb: str, answer: str, *args: str) -> Result:
+    """Run ``kmctl plugin VERB`` without --harness, typing ``answer``."""
+    return CliRunner().invoke(app, ["plugin", verb, *args], input=answer)
+
+
+@pytest.mark.usefixtures("terminal")
+def test_prompt_installs_the_named_harnesses(repo: Path, fakes: FakeTools) -> None:
+    result = _ask("install", "1\n")
+
+    assert result.exit_code == 0, result.output
+    assert QUESTION in result.stderr
+    assert "1. claude" in result.stderr and "2. antigravity" in result.stderr
+    assert QUESTION not in result.stdout and "1. claude" not in result.stdout
+    [call] = _apm_calls(fakes, "install")
+    assert call.args == [*APM, "install", "--target", "claude"]
+
+
+@pytest.mark.usefixtures("repo", "terminal")
+@pytest.mark.parametrize(
+    ("answer", "expected"),
+    [
+        ("1,2", ["claude", "antigravity"]),
+        ("antigravity", ["antigravity"]),
+        ("2, claude", ["antigravity", "claude"]),
+        ("", ["claude"]),
+    ],
+)
+def test_prompt_reads_numbers_and_names(
+    installs: list[list[str]], answer: str, expected: list[str]
+) -> None:
+    result = _ask("install", answer + "\n")
+
+    assert result.exit_code == 0, result.output
+    assert installs == [expected]
+
+
+@pytest.mark.usefixtures("repo", "terminal")
+def test_prompt_asks_again_after_a_bad_answer(installs: list[list[str]]) -> None:
+    result = _ask("install", "3\nopencode\n2\n")
+
+    assert result.exit_code == 0, result.output
+    assert installs == [["antigravity"]]
+    assert result.stderr.count(QUESTION) == 1
+    assert result.stderr.count("one of: 1 claude, 2 antigravity") == 2
+
+
+@pytest.mark.usefixtures("terminal")
+@pytest.mark.parametrize(
+    ("targets", "expected"),
+    [
+        ([], ["claude"]),
+        (["antigravity"], ["antigravity"]),
+        (["claude", "antigravity"], ["claude", "antigravity"]),
+    ],
+)
+def test_prompt_update_default_is_what_is_installed(
+    repo: Path, installs: list[list[str]], targets: list[str], expected: list[str]
+) -> None:
+    if targets:
+        entry = {"git": plugin.DEFAULT_SOURCE, "path": "apm", "ref": REF}
+        manifest = {"dependencies": {"apm": [entry]}, "targets": targets}
+        (repo / "apm.yml").write_text(yaml.safe_dump(manifest))
+
+    result = _ask("update", "\n")
+
+    assert result.exit_code == 0, result.output
+    assert QUESTION in result.stderr
+    assert f"[{','.join(expected)}]" in result.stderr
+    assert installs == [expected]
+
+
+@pytest.mark.parametrize("verb", ["install", "update"])
+def test_no_terminal_without_harness_refuses(
+    repo: Path, fakes: FakeTools, verb: str
+) -> None:
+    result = _ask(verb, "1\n")
+
+    assert result.exit_code == 1
+    assert QUESTION not in result.output
+    assert "--harness" in result.stderr
+    assert "claude, antigravity" in result.stderr
+    assert fakes.calls() == []
+
+
+@pytest.mark.usefixtures("terminal")
+@pytest.mark.parametrize("verb", ["install", "update"])
+def test_json_no_harness_refuses_at_a_terminal(
+    repo: Path, fakes: FakeTools, verb: str
+) -> None:
+    result = _ask(verb, "1\n", "--json")
+
+    assert result.exit_code == 1
+    assert QUESTION not in result.output
+    assert "--harness" in result.stderr
+    assert fakes.calls() == []
+
+
+@pytest.mark.usefixtures("repo", "terminal")
+@pytest.mark.parametrize("verb", ["install", "update"])
+def test_harness_given_never_prompts(installs: list[list[str]], verb: str) -> None:
+    result = _ask(verb, "2\n", "--harness", "claude")
+
+    assert result.exit_code == 0, result.output
+    assert QUESTION not in result.output
+    assert installs == [["claude"]]
+
+
+@pytest.mark.parametrize("verb", ["install", "update"])
+def test_harness_docs_help_says_it_asks(verb: str) -> None:
+    result = CliRunner().invoke(
+        app, ["plugin", verb, "--help"], env={"COLUMNS": "80"}, terminal_width=80
+    )
+    text = " ".join(plain(result.stdout).replace("│", " ").split())
+
+    assert "Default: claude" not in text
+    assert "asks which harnesses" in text
+    assert "refuses" in text
+    if verb == "update":
+        assert "already installed" in text
+
+
+def test_harness_docs_pages_say_it_asks() -> None:
+    root = Path(__file__).parents[1]
+    pages = [
+        "docs/reference/commands.md",
+        "docs/how-to/install-the-plugin-and-the-ci-action.md",
+        "docs/how-to/install-kmctl-with-apm.md",
+    ]
+    for page in pages:
+        text = " ".join((root / page).read_text().split())
+        assert "asks which harnesses" in text, page
+    reference = " ".join((root / pages[0]).read_text().split())
+    assert "already installed" in reference
+    assert "Default: claude" not in reference
