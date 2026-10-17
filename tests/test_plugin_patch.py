@@ -439,7 +439,7 @@ def test_patch_after_a_real_apm_install_then_undo_and_uninstall(
     assert not (consumer / OKF_AGENTS).exists()
 
 
-# Review round 1 f2: the helpers patch runs, case by case -----------------------------
+# The helpers patch runs, case by case ----------------------------------------------
 
 
 def _list_plugins(fakes: FakeTools, *entries: dict) -> None:

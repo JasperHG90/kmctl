@@ -14,7 +14,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-#: The tests that run the real kmctl plugin install, which reaches GitHub through APM.
+#: The tests that install kmctl's package with the real APM, which reaches GitHub.
 PLUGIN_TESTS = ROOT / "tests" / "test_apm_package.py"
 CONFTEST = ROOT / "tests" / "conftest.py"
 

@@ -167,7 +167,7 @@ def test_init_warns_on_non_utf8_kept_index(tmp_path: Path) -> None:
     assert "not UTF-8" in result.stderr
 
 
-# Rules come from kmctl plugin install, not init (apm-only-install r8)
+# Rules come with kmctl's APM package, not from init (apm-only-install r8)
 
 
 def test_init_writes_no_rules(tmp_path: Path) -> None:
