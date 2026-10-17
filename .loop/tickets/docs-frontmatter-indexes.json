@@ -21,7 +21,8 @@
   "branch": "loop/docs-frontmatter-indexes",
   "stamps": [
     "c744c5cc500fdb3ee8b6ccd0013155e938676944352b5db6bd4ac232a423c463",
-    "d541da4729b6c4e7c085b95168d74ebf029ec6668d5f31ff5d849625bd985578"
+    "d541da4729b6c4e7c085b95168d74ebf029ec6668d5f31ff5d849625bd985578",
+    "bec26f4a7de893e9e15039c12af80ddecef86f937f20547f492b50e52d137cc9"
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude",
@@ -242,5 +243,5 @@
     }
   ],
   "by": "process:loopctl/2.1.1.dev246+g2cd5b87ba.d20261017",
-  "at": "2026-10-17T17:09:36+00:00"
+  "at": "2026-10-17T17:12:41+00:00"
 }
