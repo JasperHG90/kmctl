@@ -44,6 +44,7 @@ packages = ["src/kmctl"]
 dev = [
     "jsonschema>=4.26.0",
     "packaging>=26.3",
+    "pydantic-ai-slim[openai]==2.57.0",
     "pytest>=9.1.1",
     "respx>=0.23.1",
     "ruff>=0.17.0",
@@ -59,11 +60,6 @@ cache-keys = [{ file = "pyproject.toml" }, { file = "apm/apm.yml" }]
 # bundle (.okf/) are not project code, and tests/vendor/ is a pinned copy:
 # their files are kept as written.
 extend-exclude = [".loop", ".claude", ".okf", "tests/vendor"]
-
-[tool.ruff.lint.per-file-ignores]
-# Hermes names a plugin by its folder, kmctl-read; it loads the file by path,
-# and nothing imports it as a module by that name.
-"action/hermes/kmctl-read/__init__.py" = ["N999"]
 
 [tool.pytest.ini_options]
 addopts = ["--strict-markers", "-m", "not integration"]

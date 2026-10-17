@@ -1,18 +1,19 @@
 #!/usr/bin/env bash
-# The kmctl GitHub Action's audit issue step (ADR 0005). Runs after
-# knowledge-audit.sh, in a step of its own so the GitHub token never shares a
-# process with the model. Posts $RUNNER_TEMP/kmctl-audit-body.md to the one open
-# issue titled "Knowledge audit", creating it if none is open. With no body
-# (nothing was due, or the audit failed) it does nothing.
+# The kmctl GitHub Action's audit issue step (ADR 0005). Runs after the agent
+# (action/agent.py), in a step of its own so the GitHub token never shares a
+# process with the model. Posts the report named by $1 (default
+# $RUNNER_TEMP/agent-report/report.md) to the one open issue titled
+# "Knowledge audit", creating it if none is open. With no report (the agent
+# failed) it does nothing.
 #
 # Needs: gh on PATH and GH_TOKEN.
 set -euo pipefail
 
-body="${RUNNER_TEMP:-${TMPDIR:-/tmp}}/kmctl-audit-body.md"
+body="${1:-${RUNNER_TEMP:-${TMPDIR:-/tmp}}/agent-report/report.md}"
 title="Knowledge audit"
 
 if [ ! -f "$body" ]; then
-  echo "kmctl audit: no report to post; no issue was written."
+  echo "kmctl audit: no report at $body; no issue was written."
   exit 0
 fi
 

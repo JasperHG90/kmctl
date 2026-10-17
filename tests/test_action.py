@@ -152,3 +152,197 @@ def test_action_and_workflow_wiring() -> None:
         for step in action["runs"]["steps"]
     )
     assert any("uses: ./" in w.read_text() for w in workflows)
+
+
+ISSUE_SCRIPT = ROOT / "action" / "knowledge-audit-issue.sh"
+WORKFLOW = ROOT / ".github" / "workflows" / "knowledge-audit.yml"
+TOKENS = ("GH_TOKEN", "GITHUB_TOKEN")
+OLD_AUDIT = (
+    "action/knowledge-audit.sh",
+    "action/audit-batches.py",
+    "action/audit-report.py",
+    "action/hermes",
+)
+
+
+def _gh_bin(tmp_path: Path, issues: str = "[]", list_fails: bool = False) -> Path:
+    """A bin folder with a gh that records its calls and the body file it is given."""
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir(exist_ok=True)
+    (tmp_path / "issues.json").write_text(issues)
+    (bin_dir / "gh").write_text(
+        "#!/bin/sh\n"
+        f'echo "$@" >> "{tmp_path}/gh-calls"\n'
+        + ('[ "$1 $2" = "issue list" ] && exit 4\n' if list_fails else "")
+        + 'for a in "$@"; do case "$a" in --body-file) next=1 ;; *) '
+        f'[ -n "$next" ] && cp "$a" "{tmp_path}/issue-body" && next= ;; esac; done\n'
+        f'[ "$1 $2" = "issue list" ] && cat "{tmp_path}/issues.json"\n'
+        "exit 0\n"
+    )
+    (bin_dir / "gh").chmod(0o755)
+    return bin_dir
+
+
+def _issue(
+    tmp_path: Path, bin_dir: Path, body: str | None
+) -> subprocess.CompletedProcess[str]:
+    report = tmp_path / "agent-report" / "report.md"
+    if body is not None:
+        report.parent.mkdir()
+        report.write_text(body)
+    env = os.environ | {"PATH": f"{bin_dir}:{os.environ['PATH']}", "GH_TOKEN": "t"}
+    return subprocess.run(
+        ["bash", str(ISSUE_SCRIPT), str(report)],
+        cwd=tmp_path,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+def test_issue_script_creates_the_issue(tmp_path: Path) -> None:
+    proc = _issue(tmp_path, _gh_bin(tmp_path), "## Agent report\n")
+    calls = (tmp_path / "gh-calls").read_text()
+
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert "issue create --title Knowledge audit" in calls
+    assert (tmp_path / "issue-body").read_text() == "## Agent report\n"
+
+
+def test_issue_script_updates_the_open_issue(tmp_path: Path) -> None:
+    issues = '[{"number": 7, "title": "Knowledge audit"}]'
+    proc = _issue(tmp_path, _gh_bin(tmp_path, issues), "## Agent report\n")
+    calls = (tmp_path / "gh-calls").read_text()
+
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert "issue edit 7" in calls
+    assert "issue create" not in calls
+
+
+def test_issue_script_skips_without_a_report(tmp_path: Path) -> None:
+    proc = _issue(tmp_path, _gh_bin(tmp_path), None)
+
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert not (tmp_path / "gh-calls").exists()
+
+
+def test_failed_issue_lookup_fails(tmp_path: Path) -> None:
+    proc = _issue(tmp_path, _gh_bin(tmp_path, list_fails=True), "## Agent report\n")
+    calls = (tmp_path / "gh-calls").read_text()
+
+    assert proc.returncode != 0
+    assert "issue create" not in calls and "issue edit" not in calls
+
+
+def test_old_audit_is_gone() -> None:
+    texts = [
+        (ROOT / "action.yml").read_text(),
+        WORKFLOW.read_text(),
+        (ROOT / "pyproject.toml").read_text(),
+    ]
+
+    for rel in OLD_AUDIT:
+        assert not (ROOT / rel).exists(), rel
+    for text in texts:
+        assert "hermes" not in text.lower()
+
+
+def _steps(steps: list[dict]) -> tuple[dict, dict, dict]:
+    """The agent, artifact and issue steps, in that order in ``steps``."""
+    agent = next(s for s in steps if "action/agent.py" in str(s.get("run", "")))
+    keep = next(
+        s for s in steps if str(s.get("uses", "")).startswith("actions/upload-artifact")
+    )
+    issue = next(
+        s for s in steps if "knowledge-audit-issue.sh" in str(s.get("run", ""))
+    )
+    assert steps.index(agent) < steps.index(keep) < steps.index(issue)
+    return agent, keep, issue
+
+
+def test_workflow_runs_agent_keeps_report_then_posts() -> None:
+    workflow = yaml.safe_load(WORKFLOW.read_text())
+    triggers = workflow[True]  # YAML 1.1 reads the key "on" as True
+    steps = workflow["jobs"]["audit"]["steps"]
+    checkout = next(
+        s for s in steps if str(s.get("uses", "")).startswith("actions/checkout")
+    )
+    agent, keep, issue = _steps(steps)
+
+    assert set(triggers) == {"workflow_dispatch", "schedule"}
+    assert workflow["permissions"] == {"contents": "read", "issues": "write"}
+    assert not any(str(s.get("uses", "")).startswith("./") for s in steps)
+    assert checkout["with"]["persist-credentials"] is False
+    assert checkout["with"]["fetch-depth"] == 0
+    assert "uv run --script action/agent.py run" in agent["run"]
+    assert "--out ${{ runner.temp }}/agent-report" in agent["run"]
+    assert agent["env"]["AUDIT_API_KEY"] == "${{ secrets.AUDIT_API_KEY }}"
+    for name in (*TOKENS, "github.token"):
+        assert name not in yaml.safe_dump(agent), name
+    assert keep["with"]["path"] == "${{ runner.temp }}/agent-report"
+    assert keep["if"] == "always()"
+    assert issue["env"]["GH_TOKEN"] == "${{ github.token }}"
+    assert "${{ runner.temp }}/agent-report/report.md" in issue["run"]
+
+
+def test_action_audit_mode_runs_agent_keeps_report_then_posts() -> None:
+    action = yaml.safe_load((ROOT / "action.yml").read_text())
+    steps = action["runs"]["steps"]
+    agent, keep, issue = _steps(steps)
+
+    assert action["inputs"]["mode"]["default"] == "checks"
+    for name in (
+        "model",
+        "base_url",
+        "api_key_env",
+        "prompt",
+        "prompt_file",
+        "system_prompt_file",
+        "context",
+        "skills",
+        "timeout",
+    ):
+        assert action["inputs"][name]["description"], name
+        assert f"${{{{ inputs.{name} }}}}" in agent["env"].values(), name
+    assert "provider" not in action["inputs"]
+    for step in (agent, keep, issue):
+        assert "inputs.mode == 'audit'" in step["if"], step
+    assert "${{ github.action_path }}/action/agent.py" in agent["run"]
+    for name in (*TOKENS, "github.token"):
+        assert name not in yaml.safe_dump(agent), name
+    assert keep["with"]["path"] == "${{ runner.temp }}/agent-report"
+    assert issue["env"]["GH_TOKEN"] == "${{ github.token }}"
+    assert issue["working-directory"] == agent["working-directory"]
+    assert '"$RUNNER_TEMP/agent-report/report.md"' in issue["run"]
+
+
+def _event_check(steps: list[dict]) -> dict:
+    """The step that refuses events other than workflow_dispatch and schedule."""
+    return next(s for s in steps if "GITHUB_EVENT_NAME" in str(s.get("run", "")))
+
+
+def _run_check(step: dict, event: str) -> subprocess.CompletedProcess[str]:
+    env = os.environ | {"GITHUB_EVENT_NAME": event}
+    return subprocess.run(
+        ["bash", "-c", step["run"]],
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+def test_action_audit_refuses_other_events() -> None:
+    steps = yaml.safe_load((ROOT / "action.yml").read_text())["runs"]["steps"]
+    check = _event_check(steps)
+    agent, _, _ = _steps(steps)
+
+    assert "inputs.mode == 'audit'" in check["if"]
+    assert steps.index(check) < steps.index(agent)
+    for event in ("workflow_dispatch", "schedule"):
+        assert _run_check(check, event).returncode == 0, event
+    for event in ("pull_request", "pull_request_target", "push"):
+        proc = _run_check(check, event)
+        assert proc.returncode != 0, event
+        assert f"refused for event '{event}'" in proc.stderr

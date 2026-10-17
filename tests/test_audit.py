@@ -14,7 +14,7 @@ SKILLS = PACKAGE / "skills"
 AUDIT_FILES = (
     "action.yml",
     ".github/workflows/knowledge-audit.yml",
-    "action/knowledge-audit.sh",
+    "action/agent.py",
 )
 
 
@@ -75,12 +75,8 @@ def test_audit_paths_read_the_apm_package() -> None:
     texts = {rel: (ROOT / rel).read_text() for rel in AUDIT_FILES}
 
     assert [rel for rel, text in texts.items() if "plugin/" in text] == []
-    assert "KMCTL_PLUGIN_DIR: ${{ github.action_path }}/apm/.apm" in texts["action.yml"]
-    assert (
-        "KMCTL_PLUGIN_DIR: ${{ github.workspace }}/apm/.apm"
-        in texts[".github/workflows/knowledge-audit.yml"]
-    )
-    script = texts["action/knowledge-audit.sh"]
-    assert '"${KMCTL_PLUGIN_DIR}/skills"' in script
-    assert '"${KMCTL_PLUGIN_DIR}/agents/kmctl-auditor.md"' in script
+    script = texts["action/agent.py"]
+    assert 'PACKAGE = HERE.parent / "apm" / ".apm"' in script
+    assert 'DEFAULT_SKILLS = PACKAGE / "skills"' in script
+    assert 'AUDITOR = PACKAGE / "agents" / "kmctl-auditor.md"' in script
     assert (PACKAGE / "skills").is_dir() and AGENT.is_file()
