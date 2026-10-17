@@ -1,1 +1,2 @@
 {"at": "2026-10-17T06:08:02+00:00", "by": "review close", "kind": "register", "schema_version": "1.0", "stage": "stub"}
+{"at": "2026-10-17T06:16:02+00:00", "by": "promote", "from": "stub", "grant": "g2", "kind": "transition", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5", "step": "ticket-promote", "to": "planning"}
