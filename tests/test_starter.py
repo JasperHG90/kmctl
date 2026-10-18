@@ -65,12 +65,16 @@ def template(tmp_path_factory: pytest.TempPathFactory) -> Path:
 
 
 def _copier(src: Path, dst: Path, *data: str) -> subprocess.CompletedProcess[str]:
-    """Run ``copier copy --defaults`` from ``src``'s HEAD into ``dst`` with each ``KEY=VALUE``."""
+    """Run ``copier copy --defaults`` from ``src``'s HEAD into ``dst`` with each ``KEY=VALUE``.
+
+    ``src`` goes as a git+file:// URL: git then packs the objects it sends, where a
+    plain path makes it copy object files one by one.
+    """
     args = [arg for pair in data for arg in ("--data", pair)]
     return subprocess.run(
         [sys.executable, "-m", "copier", "copy", "--defaults", "--vcs-ref", "HEAD"]
         + ["--data", "project_name=demo", "--data", "codeowners=@octocat", *args]
-        + [str(src), str(dst)],
+        + ["git+" + src.as_uri(), str(dst)],
         capture_output=True,
         text=True,
         check=False,
@@ -204,7 +208,7 @@ def test_bootstrap_installs_this_checkout(
         [sys.executable, "-m", "copier", "copy", "--defaults", "--overwrite"]
         + ["--vcs-ref", "HEAD", "--data", "project_name=demo"]
         + ["--data", "codeowners=@octocat", "--data", f"harnesses={harnesses}"]
-        + [str(work), str(consumer)],
+        + ["git+" + work.as_uri(), str(consumer)],
         tmp_path,
     )
 

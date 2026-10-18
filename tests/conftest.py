@@ -111,6 +111,8 @@ def tree_repo(dest: Path) -> Path:
             (dest / os.fsdecode(name)).parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(src, dest / os.fsdecode(name))
     _git("init", "-q", "-b", "main", cwd=dest)
+    # No background gc: it repacks objects while a test clones the repository.
+    _git("config", "gc.auto", "0", cwd=dest)
     _git("add", "-A", cwd=dest)
     _git(
         *("-c", "user.email=t@e.invalid", "-c", "user.name=t"),
