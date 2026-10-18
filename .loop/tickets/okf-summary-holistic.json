@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "okf-summary-holistic",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 2,
@@ -29,7 +29,7 @@
   "split": "j-20261018T214613+0000-27452b8e",
   "split_plan_hash": "1e451ba156faadfa2ef1a8e8386b5e16e6b4503ecfbb550c40f55bec6d468ef2",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "532f759886ec1a23abf2846babd122afa274031a",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -151,8 +151,14 @@
       "to": "verifying",
       "at": "2026-10-18T22:39:41+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-18T22:53:23+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T22:53:16+00:00"
+  "at": "2026-10-18T22:53:23+00:00"
 }
