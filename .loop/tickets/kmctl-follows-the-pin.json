@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "kmctl-follows-the-pin",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
@@ -29,7 +29,7 @@
   "split": "j-20261018T190408+0000-98795353",
   "split_plan_hash": "8159eca78d491c911b4ebe6ffcc397faca740dfef36c9c96a929f01446f30112",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "9801f41b6c86f47dff74f93d92c4c5dc6269ccdd",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -185,8 +185,14 @@
       "to": "verifying",
       "at": "2026-10-18T19:37:35+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-18T19:43:39+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T19:43:25+00:00"
+  "at": "2026-10-18T19:43:39+00:00"
 }
