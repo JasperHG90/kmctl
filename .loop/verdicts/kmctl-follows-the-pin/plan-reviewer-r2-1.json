@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "The hand-off now finds the project from --path (both forms) or the cwd, walking up to apm.lock.yaml and stopping at .git, so Antigravity's hook in .agents/ finds the repo's lock. The PATH copy no longer reads stdin and the child inherits it, so the hook JSON reaches the pinned briefing unread. Rows r1 and r2 test the walk up, the .git boundary, --path and stdin.",
+      "anchor": "apm/antigravity/.apm/hooks/hooks.json:9",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "The outer copy (KMCTL_PINNED unset) now adds the newer-release line, capturing the child's briefing stdout and adding it in each format: last line for text, a newer_release key for --json, appended to injectSteps[0].systemMessage.systemMessage for antigravity. So old pins get the line. Row r5 tests it over an old release's output.",
+      "anchor": ".loop/plans/kmctl-follows-the-pin.md",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r5"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "8159eca78d491c911b4ebe6ffcc397faca740dfef36c9c96a929f01446f30112"
+  },
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-18T19:05:30+00:00"
+}
