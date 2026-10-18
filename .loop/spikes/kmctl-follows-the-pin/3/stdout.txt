@@ -1,0 +1,96 @@
+commit=9861767d029230356fafbad50f7d454ad10c221f
+== a1) empty cache, offline --version: 5268 ms rc=1 inet_connects=0 git_execs=34
+-- stdout (first 3 lines):
+-- stderr:
+error: Failed to resolve `--with` requirement
+  cause: Failed to resolve requirements from `build-system.requires`
+  cause: No solution found when resolving: `hatchling`
+  cause: Because hatchling was not found in the cache and you require hatchling, we can conclude that your requirements are unsatisfiable.
+
+hint: Packages were unavailable because the network was disabled. When the network is disabled, registry packages may only be read from the cache.
+== a2) empty cache, offline, bare clone unreachable: 43 ms rc=1 inet_connects=0 git_execs=10
+-- stdout (first 3 lines):
+-- stderr:
+error: Failed to resolve `--with` requirement
+  cause: Failed to resolve requirements from `build-system.requires`
+  cause: No solution found when resolving: `hatchling`
+  cause: Because hatchling was not found in the cache and you require hatchling, we can conclude that your requirements are unsatisfiable.
+
+hint: Packages were unavailable because the network was disabled. When the network is disabled, registry packages may only be read from the cache.
+== a3) empty cache, uv tool run --offline, bare clone unreachable: 42 ms rc=1 inet_connects=0 git_execs=10
+-- stdout (first 3 lines):
+-- stderr:
+error: Failed to resolve `--with` requirement
+  cause: Failed to resolve requirements from `build-system.requires`
+  cause: No solution found when resolving: `hatchling`
+  cause: Because hatchling was not found in the cache and you require hatchling, we can conclude that your requirements are unsatisfiable.
+
+hint: Packages were unavailable because the network was disabled. When the network is disabled, registry packages may only be read from the cache.
+== a4) empty cache, offline -q: 61 ms rc=1 inet_connects=0 git_execs=10
+-- stdout (first 3 lines):
+-- stderr:
+error: Failed to resolve `--with` requirement
+  cause: Failed to resolve requirements from `build-system.requires`
+  cause: No solution found when resolving: `hatchling`
+  cause: Because hatchling was not found in the cache and you require hatchling, we can conclude that your requirements are unsatisfiable.
+
+hint: Packages were unavailable because the network was disabled. When the network is disabled, registry packages may only be read from the cache.
+== a5) control: empty cache, ONLINE, bare clone unreachable: 2823 ms rc=0 inet_connects=290 git_execs=15
+-- stdout (first 3 lines):
+kmctl 0.6.0
+-- stderr:
+   Building kmctl @ git+https://github.com/JasperHG90/kmctl@9861767d029230356fafbad50f7d454ad10c221f
+Downloading pydantic-core (2.0MiB)
+Downloading pygments (1.2MiB)
+ Downloaded pydantic-core
+      Built kmctl @ git+https://github.com/JasperHG90/kmctl@9861767d029230356fafbad50f7d454ad10c221f
+ Downloaded pygments
+Installed 20 packages in 356ms
+cache entry after misses: archive-v0
+cache entry after misses: builds-v0
+cache entry after misses: CACHEDIR.TAG
+cache entry after misses: environments-v2
+cache entry after misses: git-v1
+cache entry after misses: interpreter-v4
+cache entry after misses: sdists-v10
+cache entry after misses: simple-v26
+cache entry after misses: wheels-v7
+== b0) warm-up, online: 193 ms rc=0 inet_connects=0 git_execs=10
+-- stdout (first 3 lines):
+kmctl 0.6.0
+-- stderr:
+== b1) warm, offline --version, bare clone unreachable: 202 ms rc=0 inet_connects=0 git_execs=10
+-- stdout (first 3 lines):
+kmctl 0.6.0
+-- stderr:
+== c1) warm, offline briefing --format text in empty dir: 192 ms rc=0 inet_connects=0 git_execs=10
+-- stdout (first 3 lines):
+kmctl briefing (kmctl 0.6.0)
+Setup first: kmctl is not initialized. Ask the user to run kmctl init, then write the manifesto and architecture with you.
+No .okf/ bundle here. Run kmctl init to start docs/ and .okf/.
+-- stderr:
+== c2) warm, offline kmctl nosuchcommand: 355 ms rc=2 inet_connects=0 git_execs=10
+-- stdout (first 3 lines):
+-- stderr:
+Usage: kmctl [OPTIONS] COMMAND [ARGS]...
+Try 'kmctl -h' for help.
+╭─ Error ──────────────────────────────────────────────────────────────────────╮
+│ No such command 'nosuchcommand'.                                             │
+╰──────────────────────────────────────────────────────────────────────────────╯
+== c3) warm, offline kmctl --help: 257 ms rc=0 inet_connects=0 git_execs=10
+-- stdout (first 3 lines):
+                                                                                
+ Usage: kmctl [OPTIONS] COMMAND [ARGS]...                                       
+                                                                                
+-- stderr:
+== c4) child exits 7 via python -c: 92 ms rc=7 inet_connects=0 git_execs=10
+-- stdout (first 3 lines):
+-- stderr:
+== c5) child exits 1: 130 ms rc=1 inet_connects=0 git_execs=10
+-- stdout (first 3 lines):
+-- stderr:
+== c6) child exits 2: 218 ms rc=2 inet_connects=0 git_execs=10
+-- stdout (first 3 lines):
+-- stderr:
+uv 0.13.0 (aarch64-unknown-linux-gnu)
+miss_rc=1 fail=1
