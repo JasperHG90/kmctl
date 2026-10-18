@@ -152,9 +152,9 @@
       "kind": "eval-row",
       "command": "uv run pytest tests/test_opencode.py -m integration -k loads_agents -q",
       "exit": 0,
-      "passed": false,
-      "tests_passed": 0,
-      "note": "zero tests passed (all skipped or none collected)",
+      "passed": true,
+      "tests_passed": 1,
+      "note": null,
       "input_fingerprint": null,
       "cached": false,
       "cached_from": null
@@ -177,15 +177,15 @@
       "command": "uv run pytest -q -m \"not integration or integration\"",
       "exit": 0,
       "passed": true,
-      "tests_passed": 838,
+      "tests_passed": 839,
       "note": null,
       "input_fingerprint": null,
       "cached": false,
       "cached_from": null
     }
   ],
-  "green": false,
-  "at": "2026-10-18T04:51:57+00:00",
+  "green": true,
+  "at": "2026-10-18T04:55:02+00:00",
   "commit": null,
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014"
 }
