@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014
-  at: '2026-10-18T21:48:16+00:00'
+  at: '2026-10-18T21:48:26+00:00'
 slug: okf-summary-nudge
 n: 1
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike okf-summary-nudge/1
@@ -24,7 +24,8 @@ The command exited 1:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note okf-summary-nudge 1`.
+- Broken command, not evidence: `--allowedTools "Write Edit Bash"` is variadic and swallowed the prompt, so every `claude -p` run failed with "Input must be provided".
+- Shows nothing about the risk; spike 2 reruns with `--allowedTools=Write,Edit,Bash`. Does not settle risk 1.
 
 ## Files
 
