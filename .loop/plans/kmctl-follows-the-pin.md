@@ -42,16 +42,27 @@ uv asks GitHub for the tag each time, and fails offline.
 What changes:
 
 - **The hand-off.** Before any command runs, `main` in `src/kmctl/__init__.py`
-  reads `apm.lock.yaml` in the current directory. When it names kmctl's
-  package (`kmctl_package` in `src/kmctl/plugin.py`) at a `resolved_ref`
-  other than this CLI's `package_ref()`, kmctl replaces itself (exec) with
-  `uvx --from git+https://github.com/JasperHG90/kmctl@<resolved_commit> kmctl
-  ARGS`, with the same stdin, stdout, stderr and exit code, and
-  `KMCTL_PINNED=1` set so the pinned copy runs as itself. No lock, no kmctl
-  entry, a matching ref, `KMCTL_PINNED` set, or no `uvx` on PATH: kmctl runs
-  as itself. `LockDependency` gains `resolved_commit`. A pinned release from
-  before this one has no hand-off and needs none: only the copy on PATH
-  hands off.
+  finds the project: the `--path` value when the arguments carry one
+  (`--path X` or `--path=X`), otherwise the current directory, then up from
+  there to the first folder holding `apm.lock.yaml`, stopping at the first
+  folder with `.git`. The walk up matters for Antigravity, whose hooks run in
+  `.agents/` (`apm/antigravity/.apm/hooks/hooks.json`; the Stop hook starts
+  with `cd ..`), and `--path` for `kmctl check --path ../other`. When that
+  lock names kmctl's package (`kmctl_package` in `src/kmctl/plugin.py`) at a
+  `resolved_ref` other than this CLI's `package_ref()`, kmctl runs `uvx
+  --from git+https://github.com/JasperHG90/kmctl@<resolved_commit> kmctl
+  ARGS` as a child, in the same directory, with stdin, stdout and stderr
+  inherited (kmctl reads none of stdin, so Antigravity's hook JSON reaches
+  the pinned briefing), `KMCTL_PINNED=1` set so the child runs as itself,
+  and exits with the child's code. A child rather than exec: on Windows
+  `os.execvp` starts a new process and the caller loses the exit code. No
+  lock, no kmctl entry, a matching ref, no `resolved_commit`,
+  `KMCTL_PINNED` set, or no `uvx` on PATH: kmctl runs as itself.
+  `LockDependency` gains `resolved_commit`. A pinned release from before
+  this one has no hand-off and needs none: only the copy on PATH hands off.
+- **The CI action runs its own tag.** `action.yml` sets `KMCTL_PINNED=1`,
+  so the action runs the kmctl of the tag it is used at, as today, and needs
+  no access to fetch another.
 - **The briefing never waits for a build.** The session hooks allow 10 s
   (`apm/claude/.apm/hooks/hooks.json`, `apm/antigravity/.apm/hooks/hooks.json`,
   `HOOK_TIMEOUT` for OpenCode), and with an empty uv cache the first
@@ -70,24 +81,41 @@ What changes:
   kmctl` do, warms the commit-pinned copy (spike:kmctl-follows-the-pin/1).
 - **just kmctl stops replacing it.** `starter/justfile.jinja`'s `kmctl`
   recipe installs the pinned kmctl only when no `kmctl` is on PATH or the
-  one there is older than the pin (compared with `sort -V`), never
+  one there is older than the pin (the `kmctl --version` output and the pin
+  stripped to bare versions and compared with `packaging.version` through
+  `uv run --no-project --with packaging`, which orders pre-releases right,
+  unlike `sort -V`; `KMCTL_PINNED=1` so `--version` reports the copy on
+  PATH, not the pin), never
   downgrading, so a second project leaves a newer install alone and an
   install from before the hand-off is replaced by one that has it; then it runs
   `kmctl --version` in the project, so uv builds the pinned copy during
   bootstrap rather than at the first session start.
-- **The briefing says when a release is newer than the pin.** `kmctl
-  briefing` (`src/kmctl/briefing.py`), which every harness's session hook
-  runs, adds one line when the newest kmctl release tag is newer than the
-  pin: "kmctl vX.Y.Z is out; this project pins vA.B.C. Tell the user; `just
-  upgrade vX.Y.Z` moves it." It reads the newest tag from a cache file in
-  the user's cache folder; when the cache is older than a day or missing, it
-  starts a detached `git ls-remote --tags` refresh and does not wait for it,
-  so the line appears from the next session on and no session start waits
-  on the network. A failed refresh leaves no line and no error. Pre-release
-  tags are not counted. `KMCTL_NO_UPDATE_CHECK=1` turns the check off.
+- **The briefing says when a release is newer than the pin, from the copy
+  on PATH.** The line has to reach projects pinned to releases from before
+  this one, whose own briefing has no such check, so the outer kmctl (the
+  one with `KMCTL_PINNED` unset) adds it, never the pinned child. For
+  `briefing` it captures the child's stdout and adds the line in the
+  output's own form: text, a last line; `--json`, a `newer_release` key
+  (`{"latest": "vX.Y.Z", "pinned": "vA.B.C"}`) added to the object;
+  `--format antigravity`, appended to the systemMessage text. When it runs as
+  itself, it adds the line the same way. The line: "kmctl vX.Y.Z is out;
+  this project pins vA.B.C. Tell the user; `just upgrade vX.Y.Z` moves it."
+  The newest tag comes from a cache file in the user's cache folder; when
+  the cache is older than a day or missing, kmctl starts a detached `git
+  ls-remote --tags https://github.com/JasperHG90/kmctl` refresh (stdio
+  closed, its own session) and does not wait for it, so the line appears
+  from the next session on and no session start waits on the network
+  (spike:kmctl-follows-the-pin/2: Claude Code neither waits for nor kills
+  the child). A failed refresh leaves the cache and the briefing as they
+  were. Pre-release tags are not counted. `KMCTL_NO_UPDATE_CHECK=1` turns
+  the check off.
 - **Tests.** The hand-off with a fake `uvx` on PATH that records its
-  arguments and environment (exec, args, `KMCTL_PINNED`, the commit), each
-  case where kmctl runs as itself, and the exit code passed back; an
+  arguments, directory, stdin and environment (args, `KMCTL_PINNED`, the
+  commit), each case where kmctl runs as itself, the exit code passed back,
+  the walk up from `.agents/` with hook JSON on stdin reaching the child,
+  and `--path` choosing the pin; the newer-release line added by the outer
+  copy in each format, over a fake pinned child's output as an old release
+  prints it; an
   integration test that hands off to this tree's commit through a real
   `uvx` with git rewriting GitHub's URL, as `tests/test_starter.py` does;
   the briefing line from a seeded cache (newer, same, older, pre-release,
