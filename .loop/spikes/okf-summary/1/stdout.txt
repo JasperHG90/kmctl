@@ -1,0 +1,15 @@
+PASS a decision after summary: got ['.okf/decisions/0002-b.md'] want ['.okf/decisions/0002-b.md']
+PASS b same commit: got [] want []
+PASS b2 summary in later commit: got [] want []
+PASS c1 uncommitted decision: got ['.okf/decisions/0001-a.md', '.okf/decisions/0002-b.md'] want ['.okf/decisions/0001-a.md', '.okf/decisions/0002-b.md']
+PASS c2 uncommitted summary too: got [] want []
+PASS d verify stamp after summary (expected nudge): got ['.okf/decisions/0001-a.md'] want ['.okf/decisions/0001-a.md']
+PASS d2 verify then summary: got [] want []
+PASS d3 uncommitted verify: got ['.okf/manifesto.md'] want ['.okf/manifesto.md']
+PASS e non-concepts only: got [] want []
+PASS f ack after decision: got [] want []
+g real repo: baseline=none; concepts flagged=27; ms min=31.7 max=53.5
+g diff root..HEAD -- .okf: 31 files in 1.8 ms
+h real history: 40 concept-changing non-loop commits, 29 change >1 concept, 2 front-matter-only concept edits
+  fm-only: 49439dd4 Fix what the first audit found in kmctl's own decision log .okf/decisions/0007-skills-are-made-with-skill-creator.md
+  fm-only: 49439dd4 Fix what the first audit found in kmctl's own decision log .okf/decisions/0009-handoff-key-extension-field.md
