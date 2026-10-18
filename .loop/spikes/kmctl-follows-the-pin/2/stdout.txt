@@ -1,0 +1,32 @@
+{
+  "a_run": {
+    "return_s": 0.029,
+    "stdout": "briefing line",
+    "cache_before_return": false,
+    "cache_filled": true,
+    "fill_s": 3.08
+  },
+  "a_shell": {
+    "return_s": 0.034,
+    "stdout": "got:briefing line",
+    "cache_before_return": false,
+    "cache_filled": true,
+    "fill_s": 3.11
+  },
+  "c_killpg": {
+    "return_s": 0.022,
+    "killpg": "group already empty",
+    "cache_filled": true,
+    "fill_s": 3.09
+  },
+  "d_claude": {
+    "exit": 0,
+    "return_s": 8.83,
+    "stdout": "ok",
+    "stderr": "",
+    "cache_before_return": false,
+    "cache_filled": true,
+    "fill_s": 26.03
+  }
+}
+RISK DOES NOT HOLD
