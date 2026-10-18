@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "An explicit --path is the fallback when stdin has no usable cwd; resolved in round 2 and unchanged here.",
+      "anchor": "src/kmctl/__init__.py:910",
+      "category": "design",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "--json prints {behind, concepts, nudge} and is refused with --format claude; resolved in round 2 and still so.",
+      "anchor": "src/kmctl/__init__.py:903",
+      "category": "design",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "The explanation page tells the two hooks' failure output apart; resolved in round 2, untouched here.",
+      "anchor": "docs/explanation/why-one-hook-and-report-only-audits.md:40",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "resolved",
+      "claim": "The --json shape now lives in the frozen Nudge dataclass (concepts, nudge, behind derived in __post_init__) and the command prints json.dumps(asdict(found)).",
+      "anchor": "src/kmctl/summary.py:338",
+      "category": "nit",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "c8ec3765ce84631fa2cbfe62d57841e04171b699e1445e599bc783af648fdb6e",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-18T23:53:29+00:00"
+}
