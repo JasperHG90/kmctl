@@ -8,7 +8,23 @@
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "f418dd9d6f02dcf4f3a86224e7e7c2d195fe5f0ef7a2ace5eda0bed684bef9f9",
+    "tree": "3eec21d76b3aaa6b5be9f73afc1b62e4c8f027e7",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "cleared-unreviewed",
+        "by": "judgement",
+        "judgement": "j-20261018T185653+0000-c8fee65a",
+        "paths": [
+          "tests/test_starter.py"
+        ]
+      }
+    ],
+    "at": "2026-10-18T18:56:53+00:00"
+  },
   "ask": "j-20261018T181315+0000-0c9cd23e",
   "split": "j-20261018T182847+0000-4eec881b",
   "split_plan_hash": "9d160b2a966952ebc13196d2bb839004daba75508763b55d666f16cd6f6e2e59",
@@ -145,5 +161,5 @@
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T18:56:45+00:00"
+  "at": "2026-10-18T18:56:53+00:00"
 }
