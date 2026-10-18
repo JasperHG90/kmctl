@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "okf-summary-nudge",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 3,
   "review_rounds": 1,
@@ -94,8 +94,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "0949485dbdd3f21d633731ccc868d74835a8620d28ea42094fdb4c04d2df2935",
   "intent": {
@@ -129,8 +129,14 @@
       "to": "verifying",
       "at": "2026-10-18T23:23:54+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-18T23:29:44+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T23:23:55+00:00"
+  "at": "2026-10-18T23:29:44+00:00"
 }
