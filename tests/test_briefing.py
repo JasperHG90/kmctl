@@ -1,6 +1,7 @@
 import json
 import os
 import shutil
+import subprocess
 import sys
 import time
 from importlib.metadata import version
@@ -174,7 +175,13 @@ def test_briefing_unchanged_by_the_seeded_files(tmp_path: Path) -> None:
     seeded, plain = tmp_path / "seeded", tmp_path / "plain"
     seeded.mkdir()
     assert _invoke("init", "--path", str(seeded)).exit_code == 0
-    for rel in ("docs/README.md", ".okf/index.md", ".okf/log.md", ".okf/manifesto.md"):
+    for rel in (
+        "docs/README.md",
+        ".okf/index.md",
+        ".okf/log.md",
+        ".okf/manifesto.md",
+        ".okf/summary.md",
+    ):
         (plain / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(seeded / rel, plain / rel)
     assert (seeded / "CLAUDE.md").is_file()
@@ -260,6 +267,99 @@ def test_briefing_long_handoff_title_keeps_the_budget(tmp_path: Path) -> None:
 
     out = _briefing(root).stdout
 
+    assert estimate_tokens(out) < TOKEN_BUDGET, estimate_tokens(out)
+    assert title not in out
+
+
+# The summary: where to start, and whether it is current (ADR 0027) ---------------
+
+
+def _git(root: Path, *args: str) -> None:
+    env = os.environ | {
+        "GIT_AUTHOR_NAME": "t",
+        "GIT_AUTHOR_EMAIL": "t@example.com",
+        "GIT_COMMITTER_NAME": "t",
+        "GIT_COMMITTER_EMAIL": "t@example.com",
+    }
+    subprocess.run(["git", *args], cwd=root, env=env, check=True, capture_output=True)
+
+
+def _git_repo(root: Path) -> Path:
+    """``_repo`` as a git repository with everything committed."""
+    _git(root, "init", "-q", "-b", "main")
+    _repo(root)
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "init")
+    return root
+
+
+def _state_line(out: str) -> str:
+    return next(line for line in out.splitlines() if line.startswith("State: "))
+
+
+def test_briefing_starts_at_the_summary(tmp_path: Path) -> None:
+    out = " ".join(_briefing(_repo(tmp_path)).stdout.split())
+
+    assert "Start at .okf/summary.md." in out
+    assert ".okf/index.md" not in out
+
+
+def test_briefing_without_a_summary_starts_at_the_index(tmp_path: Path) -> None:
+    """A bundle that never ran kmctl update has no summary: the briefing names the index."""
+    root = _repo(tmp_path)
+    (root / ".okf" / "summary.md").unlink()
+
+    out = " ".join(_briefing(root).stdout.split())
+    routing = json.loads(_briefing(root, "--json").stdout)["routing"]
+
+    assert "Start at .okf/index.md." in out
+    assert "summary.md" not in out and "summary.md" not in routing
+
+
+def test_briefing_summary_current_then_behind(tmp_path: Path) -> None:
+    root = _git_repo(tmp_path)
+    assert _state_line(_briefing(root).stdout).endswith("; summary current.")
+    assert json.loads(_briefing(root, "--json").stdout)["state"]["summary_behind"] == 0
+
+    _invoke("new", "decision", "One", "--description", "One.", "--path", str(root))
+    one = _state_line(_briefing(root).stdout)
+    _invoke("new", "practice", "Two", "--description", "Two.", "--path", str(root))
+    two = _state_line(_briefing(root).stdout)
+
+    assert one.endswith("; summary behind: 1 concept changed.")
+    assert two.endswith("; summary behind: 2 concepts changed.")
+    assert json.loads(_briefing(root, "--json").stdout)["state"]["summary_behind"] == 2
+
+
+def test_briefing_summary_state_left_out_without_git(tmp_path: Path) -> None:
+    out = _briefing(_repo(tmp_path)).stdout
+
+    assert "summary current" not in out and "summary behind" not in out
+    assert (
+        json.loads(_briefing(tmp_path, "--json").stdout)["state"]["summary_behind"]
+        is None
+    )
+
+
+def test_briefing_summary_behind_with_a_long_handoff_title_keeps_the_budget(
+    tmp_path: Path,
+) -> None:
+    """The worst case: a clipped handoff title, and a summary 100 concepts behind."""
+    root = _git_repo(tmp_path)
+    title = " ".join(["ab"] * 40)
+    result = _invoke(
+        "new", "handoff", title, "--description", "x.", "--path", str(root)
+    )
+    assert result.exit_code == 0, result.output
+    for n in range(100):
+        made = _invoke(
+            "new", "decision", f"D {n}", "--description", "x.", "--path", str(root)
+        )
+        assert made.exit_code == 0, made.output
+
+    out = _briefing(root).stdout
+
+    assert "; summary behind: 100 concepts changed." in out
     assert estimate_tokens(out) < TOKEN_BUDGET, estimate_tokens(out)
     assert title not in out
 

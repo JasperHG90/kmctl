@@ -54,6 +54,7 @@ flowchart LR
         docsIndex["docs_index.py<br/>docs folder indexes"]
         supersede["supersede.py<br/>decision supersede"]
         verifyPy["verify.py<br/>verify"]
+        summaryPy["summary.py<br/>summary ack; when<br/>summary.md is behind"]
         pluginPy["plugin.py<br/>plugin patch"]
         doctorPy["doctor.py<br/>doctor: reads the install,<br/>runs apm --version offline"]
         antigravityPy["antigravity.py<br/>the Antigravity plugin folder,<br/>agent translator"]
@@ -107,7 +108,10 @@ flowchart LR
     app -- "main: before any verb" --> pinPy
     pinPy -- "Lock, kmctl_package,<br/>package_ref" --> pluginPy
     pinPy -. "reads apm.lock.yaml" .-> consumer & agConsumer & ocConsumer
-    app --> scaffold & checks & briefing & reviewDue & handoffs & concepts & docs & supersede & verifyPy & pluginPy & doctorPy & kinds
+    app --> scaffold & checks & briefing & reviewDue & handoffs & concepts & docs & supersede & verifyPy & summaryPy & pluginPy & doctorPy & kinds
+    reviewDue & checks & briefing -- "changed_concepts" --> summaryPy
+    summaryPy -. "git log, diff, status" .-> repo
+    summaryPy -- "write: checked in .okf/summary.md" --> repo
     doctorPy -- "hook and MCP entries,<br/>lock reader" --> pluginPy
     doctorPy -- "plugin_problems" --> antigravityPy
     doctorPy -- "agent_problems, rule_problems,<br/>hook_problems, mcp_present" --> opencodePy
@@ -115,7 +119,7 @@ flowchart LR
     briefing --> reviewDue & handoffs
     briefing -- "skills_dir: names the package's skills" --> pluginPy
     briefing -- "ARCHITECTURE: the setup line" --> kinds
-    concepts & handoffs & reviewDue & supersede & verifyPy --> okf
+    concepts & handoffs & reviewDue & supersede & verifyPy & summaryPy --> okf
     docs & supersede & verifyPy --> concepts
     checks & docs & scaffold -- "generate, compare" --> docsIndex
     app -- "check --fix" --> docsIndex
@@ -181,10 +185,11 @@ cached, and the copy on PATH adds the newer-release line from
 
 | Verb | Module | Writes |
 |---|---|---|
-| `kmctl init`, `kmctl update` (an alias) | `scaffold.py`, with `concepts.py` for the first decision and `docs_index.py` for the docs folder indexes | `docs/README.md`, each docs folder's generated `README.md`, a starter `.okf/`, the kmctl block in `CLAUDE.md` and `AGENTS.md`, and decision "Keep project knowledge in an OKF bundle"; it keeps every file that exists except for that block, the decision's index entry and log line (ADR 0011), and a generated docs folder index (ADR 0022). It writes no rules: those come with the package (ADR 0014) |
-| `kmctl check` | `checks.py`, with `docs_index.py` | nothing; with `--fix`, each generated docs folder `README.md` that is missing or out of date (ADR 0022) |
-| `kmctl briefing` | `briefing.py`, with `review_due.py`, `handoffs.py`, `kinds.py` for the architecture folder its setup line checks, and `plugin.py` for the skills it names, which the wheel carries as `kmctl/_skills/`; the knowledge rules are in `.claude/rules/`, not the briefing | nothing |
-| `kmctl review due` | `review_due.py` | nothing |
+| `kmctl init`, `kmctl update` (an alias) | `scaffold.py`, with `concepts.py` for the first decision and `docs_index.py` for the docs folder indexes | `docs/README.md`, each docs folder's generated `README.md`, a starter `.okf/` with `summary.md` (ADR 0027), the kmctl block in `CLAUDE.md` and `AGENTS.md`, and decision "Keep project knowledge in an OKF bundle"; it keeps every file that exists except for that block, the decision's index entry and log line (ADR 0011), and a generated docs folder index (ADR 0022). It writes no rules: those come with the package (ADR 0014) |
+| `kmctl check` | `checks.py`, with `docs_index.py`, and `summary.py` for the summary's word limit and whether it is behind (a warning) | nothing; with `--fix`, each generated docs folder `README.md` that is missing or out of date (ADR 0022) |
+| `kmctl briefing` | `briefing.py`, with `review_due.py`, `handoffs.py`, `summary.py` for whether the summary is current, `kinds.py` for the architecture folder its setup line checks, and `plugin.py` for the skills it names, which the wheel carries as `kmctl/_skills/`; the knowledge rules are in `.claude/rules/`, not the briefing | nothing |
+| `kmctl review due` | `review_due.py`, with `summary.py` for the summary's one reason, `concepts changed` (ADR 0027) | nothing |
+| `kmctl summary ack` | `summary.py` | `checked` (`at`, `against`) in `.okf/summary.md`'s front matter, and nothing else; an agent's word that the summary holds, not a person's review (ADR 0023, ADR 0027) |
 | `kmctl handoffs` | `handoffs.py` | nothing |
 | `kmctl schema` | `kinds.py`, with `okf.py` for the field names | nothing |
 | `kmctl new decision`, `practice`, `proposal`, `prototype`, `handoff` | `concepts.py`, with `okf.py` to find each `--source` the way `review_due.py` does | the concept, its section index entry and a log line; `--stale-after` and `--source` write its `stale_after` and `sources` |
@@ -202,8 +207,8 @@ prints a JSON Schema built from it, so the schema is what kmctl writes.
 
 `okf.py` is the one reader of OKF front matter. `concepts.py`, `handoffs.py`,
 `review_due.py` and `supersede.py` read fields through it, so the fields kmctl
-uses are the ones the OKF v0.2 spec defines plus `handoff_key` (I4, ADR 0006,
-ADR 0009).
+uses are the ones the OKF v0.2 spec defines plus `handoff_key` and
+`checked` (I4, ADR 0006, ADR 0009, ADR 0027).
 
 ## The package and its install
 
@@ -326,11 +331,12 @@ tag a consumer's `apm.yml` names and a build from a download with no
 - Verbs: `kmctl init`, `kmctl update`, `kmctl check`, `kmctl briefing` (and `--format antigravity`), `kmctl review due`,
   `kmctl handoffs`, `kmctl new decision`, `kmctl new practice`,
   `kmctl new proposal`, `kmctl new prototype`, `kmctl new handoff`,
-  `kmctl new doc`, `kmctl schema`, `kmctl decision supersede`, `kmctl verify`, `kmctl plugin patch`,
+  `kmctl new doc`, `kmctl schema`, `kmctl decision supersede`, `kmctl verify`, `kmctl summary ack`, `kmctl plugin patch`,
   `kmctl doctor`.
 - Modules: `src/kmctl/__init__.py`, `scaffold.py`, `checks.py`,
   `briefing.py`, `review_due.py`, `handoffs.py`, `concepts.py`,
-  `docs.py`, `docs_index.py`, `supersede.py`, `verify.py`, `src/kmctl/plugin.py` (the hook and MCP
+  `docs.py`, `docs_index.py`, `supersede.py`, `verify.py`, `summary.py` (the
+  summary's freshness rule and ack), `src/kmctl/plugin.py` (the hook and MCP
   writers), `src/kmctl/antigravity.py` (the Antigravity plugin folder),
   `src/kmctl/opencode.py` (the OpenCode agents, rules and briefing plugin),
   `src/kmctl/doctor.py` (the install checks), `src/kmctl/pin.py` (the

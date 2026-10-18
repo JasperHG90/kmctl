@@ -31,6 +31,8 @@ from kmctl.plugin import patch as patch_plugin
 from kmctl.plugin import unpatch as unpatch_plugin
 from kmctl.review_due import review_due
 from kmctl.scaffold import AGENT_FILES, scaffold
+from kmctl.summary import SUMMARY_ID
+from kmctl.summary import ack as ack_summary
 from kmctl.supersede import supersede
 from kmctl.verify import verify as verify_concept
 
@@ -70,7 +72,8 @@ _INIT_EPILOG = (
     "Examples:\n\n"
     "  kmctl init\n\n"
     "  kmctl init --path ../other-repo --json\n\n"
-    "It writes docs/README.md; .okf/index.md, log.md and manifesto.md; a kmctl "
+    "It writes docs/README.md; .okf/index.md, log.md, manifesto.md and "
+    "summary.md (the bundle's first page, at most 500 words); a kmctl "
     "block (where knowledge lives and the agent's duties) in each CLAUDE.md and "
     "AGENTS.md; a new CLAUDE.md when there is none, holding only @AGENTS.md "
     "when AGENTS.md exists (Claude Code then reads AGENTS.md and its block "
@@ -84,10 +87,12 @@ _INIT_EPILOG = (
     "AGENTS.md is such a link and there is no CLAUDE.md, init writes no "
     "CLAUDE.md. A symlink inside the repository is written through.\n\n"
     "Run it again at any time, or as kmctl update after upgrading kmctl: a "
-    "file that already exists is kept, with two exceptions. The kmctl block "
+    "file that already exists is kept, with these exceptions. The kmctl block "
     "between <!-- kmctl:start --> and <!-- kmctl:end --> is added or replaced, "
     "and no other text in the file changes. Writing the first decision into a "
-    "kept bundle adds its index entry and log line."
+    "kept bundle adds its index entry and log line, and writing a manifesto or "
+    "summary into one adds its entry to the kept .okf/index.md and a line to "
+    ".okf/log.md, so kmctl check passes after it."
 )
 
 
@@ -107,7 +112,10 @@ def init(
         bool,
         typer.Option(
             "--json",
-            help="Print one JSON object with created, skipped, updated and warnings lists, for scripts.",
+            help=(
+                "Print one JSON object with created, skipped, updated, warnings and "
+                "linked (new pages it added to a kept .okf/index.md) lists, for scripts."
+            ),
         ),
     ] = False,
 ) -> None:
@@ -118,14 +126,26 @@ def init(
         return
     for rel in result.created:
         typer.echo(f"created {rel}")
+    first = any(
+        r.startswith(".okf/decisions/") and r != ".okf/decisions/index.md"
+        for r in result.created
+    )
     for rel in result.updated:
         if Path(rel).name in AGENT_FILES:
             why = "kmctl block"
         elif rel.startswith("docs/"):
             why = "generated index"
+        elif rel in (".okf/index.md", ".okf/log.md") and result.linked:
+            names = " and ".join(Path(p).stem for p in result.linked)
+            why = f"entry for the new {names}"
+            if first:
+                why += " and the first decision's"
         else:
             why = "first decision's entry"
         typer.echo(f"updated {rel} ({why})")
+    logged = ", with a line in .okf/log.md" if ".okf/log.md" in result.updated else ""
+    for rel in result.linked:
+        typer.echo(f"linked   {rel} from .okf/index.md{logged}")
     for rel in result.skipped:
         typer.echo(f"kept    {rel} (already there)")
     for warning in result.warnings:
@@ -281,7 +301,10 @@ app.add_typer(review_app, name="review")
         "An id leaves the list once a person has read it and confirms it: "
         "kmctl verify ID --by human:<id> records that. A verified entry does not "
         "clear stale_after passed, so add --stale-after for those. Fix a drifted "
-        "concept's body before verifying it."
+        "concept's body before verifying it.\n\n"
+        "The summary, .okf/summary.md, is never verified: it is listed only with "
+        "concepts changed: ID, ..., and leaves the list once you update it or "
+        "run kmctl summary ack."
     ),
 )
 def due(
@@ -323,13 +346,18 @@ def due(
     if not (result.due or result.expired_handoffs):
         typer.echo("nothing is due for review")
     if result.due:
-        typer.echo(
-            next_step(
+        steps = []
+        if any(d.id == SUMMARY_ID for d in result.due):
+            steps.append(
+                "update .okf/summary.md, or kmctl summary ack when it still holds"
+            )
+        if any(d.id != SUMMARY_ID for d in result.due):
+            steps.append(
                 "once a person has read one and confirms it, "
                 "kmctl verify ID --by human:<their id> (add --stale-after 6m "
                 "for stale_after passed)"
             )
-        )
+        typer.echo(next_step(*steps))
 
 
 new_app = typer.Typer(
@@ -730,6 +758,69 @@ def schema_cmd(
         )
         raise typer.Exit(1)
     typer.echo(json.dumps(schema(kind), indent=2))
+
+
+summary_app = typer.Typer(
+    help=(
+        "Keep .okf/summary.md, the bundle's first page, in step with its "
+        "concepts. Verbs: ack."
+    ),
+    no_args_is_help=True,
+)
+app.add_typer(summary_app, name="summary")
+
+
+@summary_app.command(
+    "ack",
+    epilog=(
+        "Examples:\n\n"
+        "  kmctl summary ack\n\n"
+        "  kmctl summary ack --path ../other-repo --json\n\n"
+        "kmctl review due lists the summary, with reason concepts changed: ID, "
+        "..., when a concept (the manifesto, a decision, practice, proposal, "
+        "prototype README or architecture page) changed in a commit after the "
+        "summary's last commit, or is changed in the working tree while the "
+        "summary is not. Editing the summary clears that. When you have read "
+        "the changed concepts and the summary still holds, run this instead: it "
+        "writes checked (at: the UTC time to the second, against: those ids) into the "
+        "summary's front matter, changes no other line and no other file, and "
+        "the summary leaves the list. Commit it with the concepts. It is an "
+        "agent's word, not a person's review, which is kmctl verify (ADR 0023, "
+        "ADR 0027). When the summary is current it writes nothing.\n\n"
+        "Exit 1, with the reason on stderr, when there is no .okf/summary.md, "
+        "its front matter is unreadable or lacks type: summary, or there is no "
+        "git history (not a repository, or a shallow clone)."
+    ),
+)
+def summary_ack(
+    path: Annotated[Path, _PATH_OPTION] = Path("."),
+    as_json: Annotated[
+        bool,
+        typer.Option(
+            "--json",
+            help=(
+                "Print one JSON object (path, at, against), for scripts; at is "
+                "null when nothing was written."
+            ),
+        ),
+    ] = False,
+) -> None:
+    """Record that .okf/summary.md still holds after the concepts that changed since it."""
+    try:
+        result = ack_summary(path)
+    except ConceptError as error:
+        typer.echo(f"kmctl summary ack: refused: {error}", err=True)
+        raise typer.Exit(1) from error
+    if as_json:
+        typer.echo(json.dumps(asdict(result)))
+        return
+    if result.at is None:
+        typer.echo(f"nothing to ack: {result.path} is current")
+        return
+    typer.echo(
+        f"checked {result.path} at {result.at} against {', '.join(result.against)}"
+    )
+    typer.echo(next_step("kmctl review due"))
 
 
 decision_app = typer.Typer(

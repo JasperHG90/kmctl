@@ -24,6 +24,8 @@ for people. Warnings and refusals go to stderr.
 | `kmctl review` | Find knowledge that is due for review. Verbs: `due`. |
 | `kmctl review due` | List the concepts in `.okf/` and the pages in `docs/` that are due for review, with the reason for each. |
 | `kmctl verify` | Record that a person checked a concept or docs page, so `kmctl review due` drops it. |
+| `kmctl summary` | Keep `.okf/summary.md`, the bundle's first page, in step with its concepts. Verbs: `ack`. |
+| `kmctl summary ack` | Record that `.okf/summary.md` still holds after the concepts that changed since it. |
 | `kmctl new` | Create a `.okf/` concept or a `docs/` page with its structure. Needs a repository set up by `kmctl init`. |
 | `kmctl new decision` | Create a decision in `.okf/` with its front matter, skeleton, index entry and log line. |
 | `kmctl new practice` | Create a practice in `.okf/`, the same way. |
@@ -59,15 +61,21 @@ Set a repository up. It writes:
 - each Diataxis folder's `README.md` index under `docs/`, generated from its
   pages, when the folder exists and the index is missing or generated and out
   of date (see `kmctl check`);
-- a starter `.okf/` bundle: `index.md`, `log.md` and `manifesto.md`;
+- a starter `.okf/` bundle: `index.md`, `log.md`, `manifesto.md` and
+  `summary.md`, the bundle's first page, with its five sections (Decisions,
+  Architecture, Open work, Practices, Known gaps) and a line under each
+  saying what goes there;
 - a kmctl block between `<!-- kmctl:start -->` and `<!-- kmctl:end -->` in
   each `CLAUDE.md` and `AGENTS.md` that exists. The block lists where each
-  kind of knowledge lives and gives the agent five duties: record each
+  kind of knowledge lives, says to start at `.okf/summary.md`, and gives the
+  agent six duties: record each
   choice with `kmctl new decision`, name the code a concept describes with
   `--source` and give anything time-bound a `--stale-after`, keep
   `.okf/architecture/` matching the code, give `docs/` pages their front
   matter and never edit a folder index by hand (run `kmctl check --fix`),
-  and run `kmctl check` before finishing. A `CLAUDE.md` that is a
+  update `.okf/summary.md` after adding or changing a concept (or run
+  `kmctl summary ack` when it still holds), and run `kmctl check` before
+  finishing. A `CLAUDE.md` that is a
   symlink to `AGENTS.md` gets one block, and stays a symlink;
 - a new `CLAUDE.md` when there is none. Beside an `AGENTS.md` it holds only
   `@AGENTS.md`, because Claude Code reads `AGENTS.md` only when there is no
@@ -84,11 +92,16 @@ It writes no rules: the four knowledge rules (`okf-bundle`, `docs-layout`,
 in kmctl's APM package, which `apm install` installs, and init never reads
 or writes `.claude/rules/`.
 
-A file that already exists is kept, so it is safe to run again, with three
+A file that already exists is kept, so it is safe to run again, with four
 exceptions. The kmctl block is added to an existing `CLAUDE.md` or
 `AGENTS.md`, or replaced when it is already there, and no other text in the
 file changes. Writing the first decision into a kept bundle adds its entry to
-the kept indexes and a line to the kept `log.md`. A docs folder index kmctl
+the kept indexes and a line to the kept `log.md`. Writing `summary.md` or
+`manifesto.md` into a kept bundle (a bundle from an older kmctl, say) adds
+the page's one entry to the kept `.okf/index.md`, where a fresh index has it
+(the summary before the first entry, the manifesto after the summary), and
+a line to the kept `log.md`, unless they are there already; nothing else in
+either file changes, so `kmctl check` passes after it. A docs folder index kmctl
 generated is rewritten when it is out of date; a hand-written one is kept. A
 second run changes nothing.
 
@@ -102,8 +115,10 @@ Code, and one importing it would load no block. Fix the link and run init
 again. A symlink inside the repository is written through once.
 
 Output lists each file as `created`, `updated` (its kmctl block, the first
-decision's index entry and log line, or a generated docs folder index) or
-`kept`, and ends with the next steps:
+decision's index entry and log line, a new page's root index entry and log
+line, or a generated docs folder index) or `kept`, then a `linked PAGE from
+.okf/index.md, with a line in .okf/log.md` line for each new page it added
+to a kept index, and ends with the next steps:
 install kmctl's package with APM for the skills and the knowledge rules
 (the README's install section: an `apm.yml` entry, `apm install`,
 `kmctl plugin patch`), fill the purpose and invariants in the manifesto (its values are the
@@ -113,13 +128,15 @@ choice with `kmctl new decision`.
 | Option | Meaning | Default |
 |---|---|---|
 | `--path DIR` | The repository to set up: an existing folder. | `.` |
-| `--json` | Print one JSON object with `created`, `skipped`, `updated` and `warnings` lists. | off |
+| `--json` | Print one JSON object with `created`, `skipped`, `updated`, `warnings` and `linked` (the new pages it added to a kept `.okf/index.md`) lists. | off |
 
 ### `kmctl update`
 
 The same command as `kmctl init`, with the same options and output. Run it
 after upgrading kmctl: it replaces the kmctl block with this release's block,
-writes each docs folder index that is missing, and keeps every other file.
+writes each docs folder index that is missing, writes `.okf/summary.md` when
+there is none and adds its entry to `.okf/index.md` and a line to
+`.okf/log.md`, and keeps every other file.
 It leaves your `docs/README.md` alone, so after upgrading from a kmctl that
 listed every page there, `kmctl check` warns until you link each folder's
 index from it. Bumping kmctl (or the CI action's ref) without running
@@ -152,6 +169,12 @@ In `docs/`:
   shape (check `front-matter`): `description` a string, `stale_after` a date
   or UTC timestamp, `verified` a list of `{by, at}`, `sources` a list of paths
   or `{resource}` mappings. A page with none passes.
+
+In `.okf/`, the body of `summary.md` (outside its front matter, counted as
+words between spaces) holds at most 500 words; over that is an error naming
+the count and the limit (check `summary`). A summary behind the concepts
+that changed after it is a `warning`, never a failure (see
+`kmctl summary ack`).
 
 Each finding has a `level`: `error` fails the check, `warning` is printed but
 does not fail it, and `skipped` names a part with nothing to check.
@@ -186,7 +209,11 @@ package's skills, in under 500 tokens. Its first line after the title says
 whether the repository is set up: `kmctl init` has run, `.okf/manifesto.md`
 has text beyond its headings, and `.okf/architecture/` has a page other than
 its index. When one is missing, it tells the agent to ask the user to fill
-them in together before any other work; `--json` gives the three as `setup`. The rules for writing knowledge are not
+them in together before any other work; `--json` gives the three as `setup`.
+The state line counts what is due and the live handoffs, and ends with
+`summary current` or `summary behind: N concepts changed` when there is a
+`.okf/summary.md` and git history to tell (`--json`: `state.summary_behind`,
+null otherwise). The rules for writing knowledge are not
 in it: APM puts them in `.claude/rules/` with kmctl's package, and the briefing
 adds only the one they lack. The SessionStart hook in kmctl's APM package,
 which APM writes, prints this: Claude Code's runs `kmctl briefing`,
@@ -226,7 +253,7 @@ page by hand. Nothing checks a file against it yet.
 
 | Argument or option | Meaning | Default |
 |---|---|---|
-| `KIND` | The kind whose schema to print: `decision`, `practice`, `proposal`, `prototype`, `handoff` (what `kmctl new` writes); `manifesto`, `index`, `section-index`, `log` (the bundle files `kmctl init` writes); `architecture` (a diagram page, which no verb writes); `tutorial`, `how-to`, `reference`, `explanation` (`docs/` pages); `docs-index` (`docs/README.md`, the root index you write by hand), `docs-folder-index` (a Diataxis folder's `README.md`, which `kmctl check --fix` generates). | none: list the kinds |
+| `KIND` | The kind whose schema to print: `decision`, `practice`, `proposal`, `prototype`, `handoff` (what `kmctl new` writes); `manifesto`, `summary`, `index`, `section-index`, `log` (the bundle files `kmctl init` writes); `architecture` (a diagram page, which no verb writes); `tutorial`, `how-to`, `reference`, `explanation` (`docs/` pages); `docs-index` (`docs/README.md`, the root index you write by hand), `docs-folder-index` (a Diataxis folder's `README.md`, which `kmctl check --fix` generates). | none: list the kinds |
 | `--json` | With no kind, print the list as one JSON object of kind to where it lives and what it is for. A kind's schema is JSON either way. | off |
 
 The body is in `x-kmctl-sections`: a list of the `##` sections in order,
@@ -256,13 +283,23 @@ for that alone. A docs page's id is its path without `.md`, such as
 `docs/how-to/install`; a source resolves from the page's folder, then the
 repository root. The `README.md` indexes are left out.
 
+The summary, `.okf/summary.md`, is never listed as `unverified` or for
+`stale_after`. It is due, with the reason `concepts changed: ID, ...`, when
+a concept (the manifesto, a decision, practice, proposal, prototype
+`README.md` or architecture page) changed in a commit after the summary's
+last commit, or is changed or new in the working tree while the summary is
+not. Indexes, `log.md`, handoffs and the summary itself never count. Editing
+the summary, or `kmctl summary ack`, clears it. Without full git history (no
+repository, or a shallow clone) it is not checked.
+
 | Option | Meaning | Default |
 |---|---|---|
 | `--path DIR` | The repository to read: an existing folder. | `.` |
 | `--json` | Print one JSON object (`due`, `notices`, `expired_handoffs`, `history_skipped`). | off |
 
 When anything is due, the text output ends with a `Next:` line naming
-`kmctl verify`, which clears an id once a person has checked it.
+`kmctl verify`, which clears an id once a person has checked it, and, when
+the summary is due, updating it or `kmctl summary ack`.
 
 Exit code: always 0. Being due is a report, not a failure.
 
@@ -302,6 +339,42 @@ handoff (handoffs are never verified), the front matter is unreadable or
 missing, `stale_after` has passed and no `--stale-after` is given, the
 `--stale-after` value is not in the future, or the `verified` field is in a
 form kmctl cannot extend (the refusal says to rewrite it as a block list).
+
+### `kmctl summary ack`
+
+Record that `.okf/summary.md` still holds after the concepts that changed
+since it, so `kmctl review due` drops it. Run it when you have read the
+changed concepts and the summary needs no edit. It writes
+
+```yaml
+checked:
+  at: 2026-10-18T20:15:04Z
+  against:
+    - decisions/0002-use-a-queue
+```
+
+into the summary's front matter, with `at` the UTC time to the second
+(a second later when the last ack wrote the same time and ids, so the file
+always changes) and `against`
+the ids `kmctl review due` listed, replacing an older `checked`. It changes
+no other line and no other file. That is an edit to the summary, so the
+summary leaves the list; commit it with the concepts. It is an agent's word
+that the summary holds, not a person's review, which is `kmctl verify`
+(ADR 0023, ADR 0027). When the summary is current it writes nothing and
+prints `nothing to ack`.
+
+| Option | Meaning | Default |
+|---|---|---|
+| `--path DIR` | The repository to write in: an existing folder. | `.` |
+| `--json` | Print one JSON object (`path`, `at`, `against`); `at` is null when nothing was written. | off |
+
+Output: `checked .okf/summary.md at TIME against ID, ...`, then
+`Next: kmctl review due`.
+
+Exit code: 1 when kmctl refuses, with the reason on stderr: there is no
+`.okf/summary.md`, its front matter is unreadable or lacks `type: summary`,
+or there is no git history to tell what changed (not a repository, or a
+shallow clone).
 
 ### `kmctl new decision`, `kmctl new practice`, `kmctl new proposal`, `kmctl new prototype`, `kmctl new handoff`
 

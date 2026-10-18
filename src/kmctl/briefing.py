@@ -23,6 +23,7 @@ from kmctl import plugin
 from kmctl.handoffs import live_handoffs
 from kmctl.kinds import ARCHITECTURE
 from kmctl.review_due import review_due
+from kmctl.summary import changed_concepts
 
 #: The most tokens the briefing may take, estimated at CHARS_PER_TOKEN.
 TOKEN_BUDGET = 500
@@ -41,10 +42,10 @@ RULES = [
 
 ROUTING = """\
 Knowledge in this repository:
-- docs/: pages for people who use the project, one folder per Diataxis type
-  (tutorials, how-to, reference, explanation), each with a generated README.md.
+- docs/: pages for people who use the project, one folder per Diataxis type,
+  each with a generated README.md.
 - .okf/: an OKF v0.2 bundle for people and agents working on it. Start at
-  .okf/index.md. manifesto.md is the design; decisions/ records each choice and
+  .okf/summary.md. manifesto.md is the design; decisions/ records each choice and
   what it rejected; architecture/ the design as diagrams; practices/ lessons;
   proposals/ designs not yet built; prototypes/ spikes; handoffs/ notes on
   where work stopped.
@@ -53,6 +54,11 @@ Verbs: kmctl new decision|practice|proposal|prototype|handoff to add a concept;
 kmctl new doc tutorial|how-to|reference|explanation for a docs/ page;
 kmctl check when done (--fix writes docs indexes; never edit one);
 kmctl handoffs for live handoffs; kmctl schema KIND for a document's shape. All take --help and --json."""
+
+#: ROUTING for a bundle with no .okf/summary.md yet (kmctl update writes one).
+ROUTING_NO_SUMMARY = ROUTING.replace(
+    "Start at\n  .okf/summary.md.", "Start at\n  .okf/index.md."
+)
 
 EMPTY = "No .okf/ bundle here. Run kmctl init to start docs/ and .okf/."
 
@@ -69,6 +75,9 @@ class State:
     due: int
     live_handoffs: int
     newest_handoff: str | None
+    #: How many concepts changed after .okf/summary.md (0 when it is current),
+    #: or None when there is no summary or no git history to tell (ADR 0027).
+    summary_behind: int | None
 
 
 @dataclass(frozen=True)
@@ -186,20 +195,26 @@ def build_briefing(root: Path) -> Briefing:
     Returns
     -------
     Briefing
-        Routing, setup, state (None when there is no .okf/), RULES and
+        Routing (starting at .okf/summary.md, or at .okf/index.md when there
+        is no summary), setup, state (None when there is no .okf/), RULES and
         the package's skills (empty when there is no .okf/).
     """
     setup = read_setup(root)
     if not setup.initialized:
         return Briefing(routing=EMPTY, setup=setup, state=None, rules=RULES, skills=[])
     handoffs = live_handoffs(root)
+    changed = changed_concepts(root)
     state = State(
         due=len(review_due(root).due),
         live_handoffs=len(handoffs),
         newest_handoff=_clip(handoffs[0].title) if handoffs else None,
+        summary_behind=None if changed is None else len(changed),
+    )
+    routing = (
+        ROUTING if (root / ".okf" / "summary.md").is_file() else ROUTING_NO_SUMMARY
     )
     return Briefing(
-        routing=ROUTING, setup=setup, state=state, rules=RULES, skills=load_skills()
+        routing=routing, setup=setup, state=state, rules=RULES, skills=load_skills()
     )
 
 
@@ -244,9 +259,14 @@ def render(briefing: Briefing) -> str:
             f"State: {s.due} {concepts} due for review (kmctl review due); "
             f"{s.live_handoffs} live {handoffs}"
         )
-        lines.append(
-            line + (f", newest: {s.newest_handoff}." if s.newest_handoff else ".")
-        )
+        if s.newest_handoff:
+            line += f", newest: {s.newest_handoff}"
+        if s.summary_behind == 0:
+            line += "; summary current"
+        elif s.summary_behind is not None:
+            changed = "concept" if s.summary_behind == 1 else "concepts"
+            line += f"; summary behind: {s.summary_behind} {changed} changed"
+        lines.append(line + ".")
     lines.append("Reading knowledge:")
     lines += [f"- {name}: {text}" for name, text in briefing.rules]
     return "\n".join(lines)

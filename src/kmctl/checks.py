@@ -26,6 +26,9 @@ The index format, which every kmctl verb that writes an index follows:
   README.md (check name ``prototype``).
 - Every link in docs/, and every .okf/ link that leaves the bundle, must
   resolve (check name ``link``); links inside .okf/ are the okf validator's.
+- The body of .okf/summary.md, outside its front matter, holds at most
+  ``WORD_LIMIT`` words (check name ``summary``). A summary behind the
+  concepts that changed after it is a warning, never a failure.
 - No concept counts are written or checked.
 """
 
@@ -43,6 +46,8 @@ from kmctl.docs_index import (
     is_generated,
 )
 from kmctl.okf import BadFrontMatter, as_datetime, field, front_matter
+from kmctl.summary import SUMMARY, WORD_LIMIT, body_words, changed_concepts
+from kmctl.summary import reason as summary_reason
 
 RESERVED = {"index.md", "log.md"}
 _TARGET = r"(<[^<>\n]*>|[^<)\s][^)\s]*)(?:\s+(?:\"[^\"]*\"|'[^']*'))?"
@@ -493,6 +498,45 @@ def check_links(root: Path) -> list[Finding]:
     return findings
 
 
+def check_summary(root: Path) -> list[Finding]:
+    """Check the bundle summary: its body fits ``WORD_LIMIT``, and whether it is behind its concepts.
+
+    A body over the limit fails. A summary behind its concepts is a warning,
+    never a failure: it is a report, as in kmctl review due (ADR 0027).
+    """
+    path = root / SUMMARY
+    if not path.is_file():
+        return []
+    try:
+        words = body_words(_read(path))
+    except _Unreadable:
+        return [Finding("summary", SUMMARY, None, "summary is not UTF-8 text")]
+    findings = []
+    if words > WORD_LIMIT:
+        findings.append(
+            Finding(
+                "summary",
+                SUMMARY,
+                None,
+                f"body has {words} words, over the limit of {WORD_LIMIT}; "
+                "cut it, and link down to the concepts for the detail",
+            )
+        )
+    changed = changed_concepts(root)
+    if changed:
+        findings.append(
+            Finding(
+                "summary",
+                SUMMARY,
+                None,
+                f"summary is behind: {summary_reason(changed)}; update it, or run "
+                "kmctl summary ack when it is still right",
+                "warning",
+            )
+        )
+    return findings
+
+
 def run_checks(root: Path) -> list[Finding]:
     """Run every knowledge check on the repository at ``root``.
 
@@ -507,5 +551,9 @@ def run_checks(root: Path) -> list[Finding]:
         Every finding, errors, warnings and skipped parts alike, in check order.
     """
     return (
-        check_docs(root) + check_okf(root) + check_prototypes(root) + check_links(root)
+        check_docs(root)
+        + check_okf(root)
+        + check_prototypes(root)
+        + check_summary(root)
+        + check_links(root)
     )

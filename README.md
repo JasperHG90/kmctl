@@ -109,7 +109,9 @@ kmctl init
 ```
 
 It writes `docs/`, a starter `.okf/` bundle and a short block in `AGENTS.md`
-or `CLAUDE.md`, and keeps any file that already exists.
+or `CLAUDE.md`, and keeps any file that already exists. The exceptions are
+its own block and entries: in a bundle from an older kmctl, it adds the
+index and log lines for the pages it adds, such as `.okf/summary.md`.
 
 ### 3. Add kmctl's package to `apm.yml`
 
@@ -356,6 +358,7 @@ The [docs index](docs/README.md) links each folder's index. The pages:
 
 ## Working on kmctl
 
-Start at [`.okf/index.md`](.okf/index.md); the design is
+Start at [`.okf/summary.md`](.okf/summary.md), which links down to the
+rest of the bundle; the design is
 [`.okf/manifesto.md`](.okf/manifesto.md). `just lint`, `just test` and
 `just integration` run the checks.

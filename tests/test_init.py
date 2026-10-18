@@ -8,10 +8,22 @@ from conftest import okf_validate
 from typer.testing import CliRunner
 
 from kmctl import app
-from kmctl.scaffold import FIRST_DECISION, ScaffoldResult, scaffold
+from kmctl.scaffold import (
+    FIRST_DECISION,
+    MANIFESTO_LINE,
+    SUMMARY_LINE,
+    ScaffoldResult,
+    scaffold,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
-BASE_FILES = ("docs/README.md", ".okf/index.md", ".okf/log.md", ".okf/manifesto.md")
+BASE_FILES = (
+    "docs/README.md",
+    ".okf/index.md",
+    ".okf/log.md",
+    ".okf/manifesto.md",
+    ".okf/summary.md",
+)
 DECISION = ".okf/decisions/0001-keep-project-knowledge-in-an-okf-bundle.md"
 FILES = (
     *BASE_FILES,
@@ -139,35 +151,122 @@ def _partial_bundle(root: Path) -> str:
     return index
 
 
-def test_init_warns_when_kept_index_misses_new_manifesto(tmp_path: Path) -> None:
+SUMMARY_ENTRY = f"- [Summary](summary.md): {SUMMARY_LINE}\n"
+MANIFESTO_ENTRY = f"- [Manifesto](manifesto.md): {MANIFESTO_LINE}\n"
+
+
+def test_init_links_new_pages_from_a_kept_index(tmp_path: Path) -> None:
     index = _partial_bundle(tmp_path)
 
     result = _init(tmp_path)
 
     assert result.exit_code == 0, result.output
-    # The one change to the kept index: the first decision's section link.
     assert (tmp_path / ".okf" / "index.md").read_text() == (
-        index + "- [Decisions](decisions/index.md): the decisions.\n"
+        index
+        + SUMMARY_ENTRY
+        + MANIFESTO_ENTRY
+        + "- [Decisions](decisions/index.md): the decisions.\n"
     )
-    assert "index.md does not link the new manifesto" in result.stderr
-    assert "log.md has no line for the new manifesto" in result.stderr
+    log = (tmp_path / ".okf" / "log.md").read_text()
+    assert "- Added `manifesto` with `kmctl init`." in log
+    assert "- Added `summary` with `kmctl init`." in log
+    assert "warning" not in result.stderr
+    assert "linked   .okf/manifesto.md from .okf/index.md" in result.stdout
+    assert "linked   .okf/summary.md from .okf/index.md" in result.stdout
+    check = CliRunner().invoke(app, ["check", "--path", str(tmp_path)])
+    assert check.exit_code == 0, check.output
 
 
-def test_init_json_lists_warnings(tmp_path: Path) -> None:
+def test_init_json_lists_linked_pages_and_no_warnings(tmp_path: Path) -> None:
     _partial_bundle(tmp_path)
 
     data = json.loads(_init(tmp_path, "--json").stdout)
 
-    assert len(data["warnings"]) == 2, data["warnings"]
+    assert data["warnings"] == []
+    assert data["linked"] == [".okf/manifesto.md", ".okf/summary.md"]
+    assert ".okf/index.md" in data["updated"] and ".okf/log.md" in data["updated"]
+
+
+def test_init_update_adds_the_summary_to_an_old_bundle(tmp_path: Path) -> None:
+    """A bundle from before the summary: update writes it, links it, and check passes."""
+    _init(tmp_path)
+    okf = tmp_path / ".okf"
+    fresh_index = (okf / "index.md").read_text()
+    (okf / "summary.md").unlink()
+    (okf / "index.md").write_text(fresh_index.replace(SUMMARY_ENTRY, ""))
+    log = (okf / "log.md").read_text().replace("`manifesto`, `summary`", "`manifesto`")
+    (okf / "log.md").write_text(log)
+
+    result = CliRunner().invoke(app, ["update", "--path", str(tmp_path)])
+
+    assert result.exit_code == 0, result.output
+    assert "warning" not in result.stderr
+    assert (okf / "index.md").read_text() == fresh_index
+    assert (okf / "log.md").read_text() == (
+        log.rstrip("\n") + "\n- Added `summary` with `kmctl init`.\n"
+    )
+    check = CliRunner().invoke(app, ["check", "--path", str(tmp_path)])
+    assert check.exit_code == 0, check.output
+    before = _snapshot(tmp_path)
+    again = CliRunner().invoke(app, ["update", "--path", str(tmp_path)])
+    assert again.exit_code == 0, again.output
+    assert _snapshot(tmp_path) == before
+
+
+def test_init_update_says_no_log_line_when_the_kept_log_is_not_utf8(
+    tmp_path: Path,
+) -> None:
+    """With a kept log.md that is not UTF-8, the linked line does not claim a log line was written."""
+    _init(tmp_path)
+    okf = tmp_path / ".okf"
+    fresh_index = (okf / "index.md").read_text()
+    (okf / "summary.md").unlink()
+    (okf / "index.md").write_text(fresh_index.replace(SUMMARY_ENTRY, ""))
+    (okf / "log.md").write_bytes(b"\xff\xfe not utf-8\n")
+
+    result = CliRunner().invoke(app, ["update", "--path", str(tmp_path)])
+
+    assert result.exit_code == 0, result.output
+    assert "linked   .okf/summary.md from .okf/index.md\n" in result.stdout
+    assert "with a line in .okf/log.md" not in result.stdout
+    assert "log.md is not UTF-8" in result.stderr
+
+
+def test_init_update_links_the_manifesto_after_a_wrapped_entry(tmp_path: Path) -> None:
+    """A missing manifesto goes in after the summary's entry, even one wrapped over lines."""
+    _init(tmp_path)
+    okf = tmp_path / ".okf"
+    (okf / "manifesto.md").unlink()
+    head = '---\nokf_version: "0.2"\n---\n\n# Bundle\n\n'
+    summary = (
+        "- [Summary](summary.md): what the bundle knows,\n  wrapped onto two lines.\n"
+    )
+    rest = "- [Decisions](decisions/index.md): the decisions.\n"
+    (okf / "index.md").write_text(head + summary + rest)
+
+    result = _init(tmp_path)
+
+    assert result.exit_code == 0, result.output
+    assert (okf / "index.md").read_text() == head + summary + MANIFESTO_ENTRY + rest
+    check = CliRunner().invoke(app, ["check", "--path", str(tmp_path)])
+    assert check.exit_code == 0, check.output
+    before = _snapshot(tmp_path)
+    assert _init(tmp_path).exit_code == 0
+    assert _snapshot(tmp_path) == before
 
 
 def test_init_no_warning_when_kept_index_already_links_manifesto(
     tmp_path: Path,
 ) -> None:
     (tmp_path / ".okf").mkdir()
-    index = '---\nokf_version: "0.2"\n---\n\n- [Manifesto](manifesto.md): the design.\n'
+    index = (
+        '---\nokf_version: "0.2"\n---\n\n- [Manifesto](manifesto.md): the design.\n'
+        "- [Summary](summary.md): start here.\n"
+    )
     (tmp_path / ".okf" / "index.md").write_text(index)
-    (tmp_path / ".okf" / "log.md").write_text("# Log\n\n- Wrote `manifesto`.\n")
+    (tmp_path / ".okf" / "log.md").write_text(
+        "# Log\n\n- Wrote `manifesto` and `summary`.\n"
+    )
 
     result = _init(tmp_path)
 

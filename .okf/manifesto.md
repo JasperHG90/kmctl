@@ -37,8 +37,9 @@ this formalizes so every repository can have it.
 | Repeatable tasks | skills | agents |
 | General maxims and strategies | rules | agents |
 
-`.okf/` has these sections, each created with its first page: `manifesto.md`
-(the root concept), `decisions/`, `architecture/`, `practices/`,
+`.okf/` has these sections, each created with its first page: `summary.md`
+(the first page to read, at most 500 words, linking down to the rest;
+ADR 0027), `manifesto.md` (the root concept), `decisions/`, `architecture/`, `practices/`,
 `proposals/`, `prototypes/` and `handoffs/`. A repository may add its own.
 
 ## Parts
@@ -51,7 +52,9 @@ this formalizes so every repository can have it.
   first decision (ADR 0011), create a new decision or practice with the next
   number and its index entry, supersede a decision, list what is due for
   review in `.okf/` and `docs/`, record a person's check of one
-  (`kmctl verify`, ADR 0023), check indexes, docs front matter and links
+  (`kmctl verify`, ADR 0023), say when the bundle summary is behind its
+  concepts and record an agent's word that it still holds (`kmctl summary
+  ack`, ADR 0027), check indexes, docs front matter and links
   (`kmctl check --fix` writes the generated `docs/` folder indexes, and the
   `kmctl-check` pre-commit hook runs the check, ADR 0022), and list live
   and expired handoffs.
@@ -104,8 +107,9 @@ Each is `planned` until the test named for it passes, then `enforced`.
   stays under 500 tokens (estimated at four characters a token). Status: enforced by `tests/test_briefing.py::test_briefing_token_budget`.
 - **I4. kmctl reads OKF as it is.** It uses the fields the OKF v0.2 spec
   defines (`stale_after`, `verified`, `sources`, `status`) plus the extension
-  fields an ADR names. The only one is `handoff_key` (ADR 0009); a covers
-  field is out of scope (ADR 0006). `docs/` pages may carry four of those
+  fields an ADR names. There are two: `handoff_key` (ADR 0009) and
+  `checked` on the summary (ADR 0027); a covers field is out of scope
+  (ADR 0006). `docs/` pages may carry four of those
   fields (`description`, `stale_after`, `verified`, `sources`) with their OKF
   meaning, and nothing else of OKF: `docs/` is not a bundle (ADR 0022).
   Status: enforced by `tests/test_okf_fields.py` (written keys, and reads through

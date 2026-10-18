@@ -140,3 +140,5 @@
 - Added `decisions/0024-opencode-gets-the-package-from-apm-and-its-agents-rules-and-briefing-from-kmctl-plugin-patch` with `kmctl new decision`.
 - Added `decisions/0025-the-starter-template-lives-in-kmctl-and-shares-its-release-tags` with `kmctl new decision`.
 - Added `decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins` with `kmctl new decision`.
+- Added `decisions/0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step` with `kmctl new decision`.
+- Added `summary`, the bundle's first page (ADR 0027), and updated `manifesto` (I4 names `checked`; the sections and Parts name the summary), `architecture/overview` (`summary.py`, `kmctl summary ack`) and `decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code` (a correction: the block starts at the summary and holds six duties).
