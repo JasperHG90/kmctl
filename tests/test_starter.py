@@ -52,6 +52,52 @@ GENERATED = {
 # Doctor checks a runner cannot pass: no harness CLI, and nobody trusts the
 # folder in Antigravity.
 UNPASSABLE = {"dep.claude", "dep.agy", "dep.opencode", "antigravity.trust"}
+# The reviewer agent from jasperhg90/skills, pinned to the commit that named
+# it .agent.md, the only single-file agent name APM installs
+# (spike:starter-reviewer-gitignore/1, /3).
+REVIEWER = (
+    "jasperhg90/skills/agents/adversarial-reviewer.agent.md"
+    "#41f495021f3b264992c8fa764d58565c1184ab91"
+)
+# Words of the adversarial-reviews rule AGENTS.md carries.
+RULE = (
+    '<constraint name="adversarial-reviews">',
+    "run an adversarial review before reporting it as done",
+    "otherwise a general-purpose sub-agent briefed to review skeptically",
+    "Act on the verdict and fix every issue it confirms.",
+)
+# Paths a generated project leaves out of git, and paths it commits.
+IGNORED = (
+    "apm_modules/x",
+    ".DS_Store",
+    "sub/.DS_Store",
+    "Thumbs.db",
+    ".venv/x",
+    "__pycache__/x.pyc",
+    "x.pyc",
+    ".pytest_cache/x",
+    ".ruff_cache/x",
+    ".mypy_cache/x",
+    "node_modules/x",
+    ".env",
+    ".idea/x",
+    ".vscode/x",
+    "x.swp",
+)
+COMMITTED = (
+    "apm.yml",
+    "apm.lock.yaml",
+    "AGENTS.md",
+    "CLAUDE.md",
+    ".claude/agents/adversarial-reviewer.md",
+    ".claude/settings.json",
+    ".agents/skills/x/SKILL.md",
+    ".opencode/agents/x.md",
+    "opencode.json",
+    ".okf/index.md",
+    "docs/README.md",
+    ".mcp.json",
+)
 # Found before the consumer fixture narrows PATH.
 JUST = shutil.which("just")
 HOW_TO = ROOT / "docs" / "how-to" / "start-a-repository-with-kmctl-starter.md"
@@ -106,7 +152,11 @@ def test_render_writes_the_project_pinned_to_this_release(
     assert _files(out) == GENERATED
     apm = yaml.safe_load((out / "apm.yml").read_text())
     assert apm["targets"] == yaml.safe_load(harnesses)
-    assert apm["dependencies"]["apm"] == [{"git": KMCTL_GIT, "path": "apm", "ref": TAG}]
+    assert apm["dependencies"]["apm"][0] == {
+        "git": KMCTL_GIT,
+        "path": "apm",
+        "ref": TAG,
+    }
     assert f'kmctl_ref := "{TAG}"' in (out / "justfile").read_text()
     ci = yaml.safe_load((out / ".github" / "workflows" / "ci.yml").read_text())
     assert {"uses": f"JasperHG90/kmctl@{TAG}"} in ci["jobs"]["knowledge"]["steps"]
@@ -161,8 +211,81 @@ def test_render_validator_takes_older_and_pre_release_tags(
     res = _copier(template, out, *data)
 
     assert res.returncode == 0, res.stderr
-    [entry] = yaml.safe_load((out / "apm.yml").read_text())["dependencies"]["apm"]
+    entry = yaml.safe_load((out / "apm.yml").read_text())["dependencies"]["apm"][0]
     assert entry["ref"] == data[-1].split("=", 1)[1]
+
+
+# The adversarial reviewer -------------------------------------------------------
+
+
+def test_adversarial_review_on_writes_the_rule(template: Path, tmp_path: Path) -> None:
+    """By default AGENTS.md carries the adversarial-reviews rule and the answer is true."""
+    out = tmp_path / "demo"
+
+    res = _copier(template, out)
+
+    assert res.returncode == 0, res.stderr
+    agents = " ".join((out / "AGENTS.md").read_text().split())
+    for words in RULE:
+        assert words in agents, words
+    answers = yaml.safe_load((out / ".copier-answers.yml").read_text())
+    assert answers["adversarial_review"] is True
+
+
+@pytest.mark.parametrize("harnesses", HARNESS_SETS)
+def test_adversarial_review_agent_follows_claude(
+    template: Path, tmp_path: Path, harnesses: str
+) -> None:
+    """apm.yml lists the pinned reviewer agent when Claude Code is a harness, and only then."""
+    out = tmp_path / "demo"
+
+    res = _copier(template, out, f"harnesses={harnesses}")
+
+    assert res.returncode == 0, res.stderr
+    deps = yaml.safe_load((out / "apm.yml").read_text())["dependencies"]["apm"]
+    expected = [REVIEWER] if "claude" in yaml.safe_load(harnesses) else []
+    assert deps[1:] == expected
+
+
+@pytest.mark.parametrize("harnesses", HARNESS_SETS)
+def test_adversarial_review_off_writes_neither(
+    template: Path, tmp_path: Path, harnesses: str
+) -> None:
+    """With adversarial_review=false, neither the rule nor the agent is written."""
+    out = tmp_path / "demo"
+
+    res = _copier(template, out, f"harnesses={harnesses}", "adversarial_review=false")
+
+    assert res.returncode == 0, res.stderr
+    assert "adversarial" not in (out / "AGENTS.md").read_text()
+    deps = yaml.safe_load((out / "apm.yml").read_text())["dependencies"]["apm"]
+    assert deps == [{"git": KMCTL_GIT, "path": "apm", "ref": TAG}]
+
+
+# The .gitignore -----------------------------------------------------------------
+
+
+def test_gitignore_leaves_out_common_paths_and_keeps_installed_files(
+    template: Path, tmp_path: Path
+) -> None:
+    """The .gitignore ignores OS, editor, Python and Node clutter, and nothing a project commits."""
+    out = tmp_path / "demo"
+    assert _copier(template, out).returncode == 0
+    _run(["git", "init", "-q"], out)
+
+    def ignored(paths: tuple[str, ...]) -> set[str]:
+        """The paths git check-ignore reports as ignored."""
+        res = subprocess.run(
+            ["git", "check-ignore", "--no-index", *paths],
+            cwd=out,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        return set(res.stdout.split())
+
+    assert ignored(IGNORED) == set(IGNORED)
+    assert ignored(COMMITTED) == set()
 
 
 # r6: a bootstrap from this checkout ----------------------------------------------
@@ -228,6 +351,7 @@ def test_bootstrap_installs_this_checkout(
 
     failed = {c["id"] for c in report["checks"] if not c["ok"]}
     assert failed <= UNPASSABLE, report
+    assert (consumer / ".claude" / "agents" / "adversarial-reviewer.md").is_file()
     lock = yaml.safe_load((consumer / "apm.lock.yaml").read_text())
     [kmctl] = [d for d in lock["dependencies"] if d["name"] == "kmctl"]
     assert kmctl["resolved_commit"] == commit
@@ -263,6 +387,7 @@ def test_docs_how_to_covers_the_starter() -> None:
         "just bootstrap",
         "`kmctl_ref`",
         "`harnesses`",
+        "`adversarial_review`",
         "apm.yml",
         "justfile",
         "just upgrade vX.Y.Z",
@@ -283,6 +408,17 @@ def test_docs_readme_and_index_link_the_how_to() -> None:
 
     assert f"docs/how-to/{link}" in (ROOT / "README.md").read_text()
     assert link in (ROOT / "docs" / "how-to" / "README.md").read_text()
+
+
+def test_docs_readme_says_the_template_offers_the_reviewer() -> None:
+    """README.md's reviewer section says the copier template offers it, with the .agent.md entry."""
+    readme = (ROOT / "README.md").read_text()
+    section = readme.split("## Works better with an adversarial reviewer", 1)[1]
+    section = " ".join(section.split("\n## ", 1)[0].split())
+
+    assert "`adversarial_review`" in section
+    assert "adversarial-reviewer.agent.md" in section
+    assert re.search(r"adversarial-reviewer\.md(?![\w.])", section) is None
 
 
 def test_docs_name_the_old_repository_only_in_the_move_section() -> None:

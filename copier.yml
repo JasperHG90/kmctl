@@ -36,6 +36,16 @@ harnesses:
   default: [claude]
   validator: "{% if not harnesses %}Pick at least one harness.{% endif %}"
 
+adversarial_review:
+  type: bool
+  help: >-
+    Add the adversarial-reviews rule to AGENTS.md, which has the agent hand
+    each finished task to a separate reviewer before calling it done, and,
+    for Claude Code, the adversarial-reviewer agent from jasperhg90/skills
+    in apm.yml. Antigravity and OpenCode have no agent APM can install, so
+    there the rule uses a general sub-agent.
+  default: true
+
 kmctl_ref:
   type: str
   help: >-

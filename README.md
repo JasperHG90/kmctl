@@ -309,19 +309,24 @@ against what was asked, the repository's rules and its `.okf/` knowledge, and
 catches what the first agent missed: a decision it never recorded, a diagram
 it left stale, a test that proves nothing.
 
-For example, add
-[`adversarial-reviewer`](https://github.com/JasperHG90/skills/blob/main/agents/adversarial-reviewer.md)
+The copier template offers both: answer yes to `adversarial_review` (the
+default). It writes the rule into `AGENTS.md` and, for Claude Code, adds the
+agent to `apm.yml`.
+
+In an existing repository, add
+[`adversarial-reviewer`](https://github.com/JasperHG90/skills/blob/main/agents/adversarial-reviewer.agent.md)
 and the rule that tells the agent to call it after each task to `apm.yml`:
 
 ```yaml
 dependencies:
   apm:
-    - jasperhg90/skills/agents/adversarial-reviewer.md
+    - jasperhg90/skills/agents/adversarial-reviewer.agent.md
     - jasperhg90/skills/rules/adversarial-reviews.instructions.md
 ```
 
 Then run `apm install`. The agent lands in `.claude/agents/` and the rule
-in `.claude/rules/`.
+in `.claude/rules/`. Only Claude Code can load the agent APM installs;
+without it, the rule has the agent use a general sub-agent.
 
 ## What it does not do
 

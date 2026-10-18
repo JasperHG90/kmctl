@@ -38,6 +38,7 @@ copier asks:
 | `project_description` | The first line of the README and `AGENTS.md`. |
 | `codeowners` | `.github/CODEOWNERS`, the reviewers of every change. |
 | `harnesses` | Claude Code, Antigravity, OpenCode (2.x only), or any of them together: the targets in `apm.yml`. |
+| `adversarial_review` | Yes by default. Adds the adversarial-reviews rule to `AGENTS.md`: when the agent finishes a task, it hands the work to a separate reviewer and fixes what it confirms. For Claude Code it also adds the `adversarial-reviewer` agent from [jasperhg90/skills](https://github.com/JasperHG90/skills) to `apm.yml`. Antigravity and OpenCode have no agent APM can install, so there the rule uses a general sub-agent. |
 | `kmctl_ref` | The kmctl release tag, by default the release the template comes from, used for the package in `apm.yml`, the kmctl the justfile runs and the CI checks, so all three match. v0.4.0 or later (the first release with `kmctl plugin patch`), v0.5.1 or later for OpenCode. A branch is refused. |
 | `apm_version` | The APM version the justfile runs through `uvx`. |
 
@@ -45,13 +46,13 @@ copier asks:
 
 | File | What it does |
 |---|---|
-| `apm.yml` | APM's manifest, with kmctl's package at `kmctl_ref` and the harnesses as targets. Commit `apm.lock.yaml` after the first install. |
+| `apm.yml` | APM's manifest, with kmctl's package at `kmctl_ref`, the reviewer agent if you chose it, and the harnesses as targets. Commit `apm.lock.yaml` after the first install. |
 | `justfile` | `bootstrap` (the three below), `kmctl` (install the CLI on your PATH, which the session hooks call), `install` (`apm install` for `apm.yml`'s targets, then `kmctl plugin patch` for what APM cannot install yet), `init` (`kmctl init`: `docs/`, `.okf/` and kmctl's block in `AGENTS.md`), `upgrade` (move to another kmctl release), plus `install-frozen` (exactly what the lock records), `lock`, `outdated`, `check` (`kmctl check` and `kmctl doctor`) and `lint` (the pre-commit hooks). The recipes run APM and kmctl at the pinned versions through `uvx`. |
-| `AGENTS.md` | The project's name and description. `just init` adds kmctl's section on where knowledge lives, and writes `CLAUDE.md`, which imports `AGENTS.md` for Claude Code; Antigravity and OpenCode read `AGENTS.md` directly. |
+| `AGENTS.md` | The project's name and description, and the adversarial-reviews rule if you chose it. `just init` adds kmctl's section on where knowledge lives, and writes `CLAUDE.md`, which imports `AGENTS.md` for Claude Code; Antigravity and OpenCode read `AGENTS.md` directly. |
 | `.github/workflows/ci.yml` | Two jobs: the pre-commit hooks, and kmctl's checks (`kmctl check` fails the job on a broken bundle; `kmctl review due` goes to the job summary). |
 | `.github/CODEOWNERS` | The owners you named. |
 | `.pre-commit-config.yaml` | Generic hooks only: whitespace, line endings, YAML, TOML and JSON syntax, merge markers, large files, private keys. They skip the agent files APM and `kmctl plugin patch` install (`.agents/`, `.claude/agents/`, `rules/` and `skills/`, `.opencode/`, `opencode.json`), which `apm install` writes again. Run with `just lint` ([prek](https://github.com/j178/prek)). |
-| `.gitignore` | APM's package cache, `apm_modules/`. |
+| `.gitignore` | APM's package cache, `apm_modules/`, and common clutter: `.DS_Store` and `Thumbs.db`, editor folders, Python and Node caches and environments, and `.env`. |
 | `.copier-answers.yml` | Your answers, so `uvx copier update` can bring in a newer template. |
 
 ## Keep a project current
