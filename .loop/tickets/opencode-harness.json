@@ -1,14 +1,92 @@
 {
   "schema_version": "1.0",
   "slug": "opencode-harness",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "fc5c93b678b4ed6cfc3d25fac659bd294a42601be4091c4cf599ba7930227c32",
+    "tree": "0ca8dd88aacf9d3e1c6551b0ec25af5a984eada0",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "blocking",
+        "judgement": null,
+        "paths": [
+          "src/kmctl/opencode.py",
+          "tests/test_opencode.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f2",
+        "outcome": "sent-back",
+        "by": "blocking",
+        "judgement": null,
+        "paths": [
+          "src/kmctl/opencode.py",
+          "tests/test_opencode.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f3",
+        "outcome": "sent-back",
+        "by": "blocking",
+        "judgement": null,
+        "paths": [
+          "tests/test_opencode.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f4",
+        "outcome": "sent-back",
+        "by": "blocking",
+        "judgement": null,
+        "paths": [
+          ".okf/architecture/overview.md",
+          ".okf/decisions/0024-opencode-gets-the-package-from-apm-and-its-agents-rules-and-briefing-from-kmctl-plugin-patch.md",
+          "README.md",
+          "docs/how-to/install-kmctl-with-apm.md",
+          "docs/reference/commands.md",
+          "tests/test_opencode.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f5",
+        "outcome": "sent-back",
+        "by": "judgement",
+        "judgement": "j-20261018T050502+0000-b16f1566",
+        "paths": [
+          "src/kmctl/opencode.py",
+          "tests/test_opencode.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f7",
+        "outcome": "sent-back",
+        "by": "judgement",
+        "judgement": "j-20261018T050503+0000-56b65eeb",
+        "paths": [
+          "tests/test_opencode.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f8",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": null,
+        "paths": [
+          "docs/how-to/install-kmctl-with-apm.md"
+        ]
+      }
+    ],
+    "at": "2026-10-18T05:05:03+00:00"
+  },
   "ask": "j-20261017T214039+0000-9a89bbc5",
   "split": "j-20261018T041436+0000-64e9de3d",
   "split_plan_hash": "fb04735da389442ee2db4df7b1f78b28cd607b5ef3662109d0ad59cfccb51aa3",
@@ -212,8 +290,14 @@
       "to": "fixing",
       "at": "2026-10-18T04:59:58+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-18T05:05:03+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T05:04:40+00:00"
+  "at": "2026-10-18T05:05:03+00:00"
 }
