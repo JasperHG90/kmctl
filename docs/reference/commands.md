@@ -454,7 +454,8 @@ It runs, in order:
 
    `apm install` writes APM's agents back over the rewritten ones, so run
    patch after every `apm install`. It refuses, leaving every file as it
-   was, when `opencode.json` is not a JSON object.
+   was, when `opencode.json` is not a JSON object or its `instructions`
+   key is not a list.
 
 Running it again changes nothing. Output: a `note:` line for each thing it
 removed or wrote, or a step it skipped, then a line naming the package ref
@@ -495,7 +496,8 @@ still kmctl's translation, the four rules, the `.opencode/rules/*.md` entry
 Exit code: 1 when kmctl refuses, with
 `kmctl plugin patch: refused: REASON; FIX` on stderr; for example an old
 `apm.yml` entry, a lock with no kmctl package, an `apm.yml` or
-`settings.json` or `opencode.json` that does not parse, a missing
+`settings.json` or `opencode.json` that does not parse, an `opencode.json`
+whose `instructions` is not a list, a missing
 `apm_modules/`, or a failed `claude` command (with its cause).
 
 #### What `apm install` writes, and patch leaves to it
