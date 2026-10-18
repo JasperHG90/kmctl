@@ -1,0 +1,99 @@
+
+===== harnesses=[claude] =====
+copier exit 0
+just bootstrap exit 0
+bootstrap lines mentioning adversarial/warn/error/skip:
+    [>] Resolving skills-adversarial-reviewer...
+    github.com/jasperhg90/skills/agents/adversarial-reviewer.agent.md#41f495021f3b26
+    overlap authorized active targets; skipping
+      [i] Skipped inactive experimental resolver for target 'copilot-cowork' during 
+      [i] Skipped inactive experimental resolver for target 'copilot-app' during 
+adversarial-reviewer files: ['.claude/agents/adversarial-reviewer.md', 'apm_modules/jasperhg90/skills-adversarial-reviewer/.apm/agents/adversarial-reviewer.agent.md']
+lock entry: d0db21c42889e
+    .claude/skills/write-docs/references/reference.md: sha256:f58b9d594333d5782b081ac3e236a062b7b6239ab197c486806e0a5b65e1596f
+    .claude/skills/write-docs/references/tutorial.md: sha256:3d252e1372d60a7822d8af4ad35e14df02bff1da4853f0927c21bf222c3883f9
+  content_hash: sha256:55becfa742b9c8d34c92a4631dc24a545fde0724ec82f239115bbb6a32dd38ca
+- repo_url: jasperhg90/skills
+  name: skills-adversarial-reviewer
+  host: github.com
+  resolved_commit: 41f495021f3b264992c8fa764d58565c1184ab91
+  resolved_ref: 41f495021f3b264992c8fa764d58565c1184ab91
+  version: 1.0.0
+  virtual_path: agents/adversarial-reviewer.agent.md
+  is_virtual: true
+  package_type: apm_package
+  deployed_files:
+  - .claude/agents/adversarial-reviewer.md
+  deployed_file_hashes:
+    .claude/agents/adversarial-reviewer.m
+prek exit 0
+prek summary:
+    trim trailing whitespace.................................................Passed
+    fix end of files.........................................................Passed
+    mixed line ending........................................................Passed
+    check yaml...............................................................Passed
+    check toml...........................................(no files to check)Skipped
+    check json...............................................................Passed
+    check for merge conflicts................................................Passed
+    check for case conflicts.................................................Passed
+    check for added large files..............................................Passed
+    detect private key.......................................................Passed
+kmctl check exit 0
+kmctl doctor exit 1
+doctor failing: ['dep.claude'] | beyond unpassable: []
+RESULT [claude]: OK (agent deployed to: ['.claude/agents/adversarial-reviewer.md'])
+
+===== harnesses=[claude, antigravity, opencode] =====
+copier exit 0
+just bootstrap exit 0
+bootstrap lines mentioning adversarial/warn/error/skip:
+    [>] Resolving skills-adversarial-reviewer...
+    github.com/jasperhg90/skills/agents/adversarial-reviewer.agent.md#41f495021f3b26
+      [!] [skills-adversarial-reviewer] OpenCode agent 
+    'skills-adversarial-reviewer/adversarial-reviewer.agent.md' has tools as str; 
+      [!] [skills-adversarial-reviewer] OpenCode agent 
+    'skills-adversarial-reviewer/adversarial-reviewer.agent.md' has color='red'; 
+    OpenCode requires a hex value (e.g. '#aabbcc') or one of ['accent', 'error', 
+    'info', 'primary', 'secondary', 'success', 'warning']. OpenCode will reject this
+    requires a hex value (e.g. '#aabbcc') or one of ['accent', 'error', 'info', 
+    'primary', 'secondary', 'success', 'warning']. OpenCode will reject this agent 
+    requires a hex value (e.g. '#aabbcc') or one of ['accent', 'error', 'info', 
+    'primary', 'secondary', 'success', 'warning']. OpenCode will reject this agent 
+      [i] Skipped inactive experimental resolver for target 'copilot-cowork' during 
+      [i] Skipped inactive experimental resolver for target 'copilot-app' during 
+adversarial-reviewer files: ['.claude/agents/adversarial-reviewer.md', '.opencode/agents/adversarial-reviewer.md', 'apm_modules/jasperhg90/skills-adversarial-reviewer/.apm/agents/adversarial-reviewer.agent.md']
+lock entry: 6239ab197c486806e0a5b65e1596f
+    .claude/skills/write-docs/references/tutorial.md: sha256:3d252e1372d60a7822d8af4ad35e14df02bff1da4853f0927c21bf222c3883f9
+    .opencode/agents/kmctl-auditor.md: sha256:0535bfc2dd74ee376aa206691a2378084aed55859c6b0450dd3aa7f9dc139b7e
+  content_hash: sha256:55becfa742b9c8d34c92a4631dc24a545fde0724ec82f239115bbb6a32dd38ca
+- repo_url: jasperhg90/skills
+  name: skills-adversarial-reviewer
+  host: github.com
+  resolved_commit: 41f495021f3b264992c8fa764d58565c1184ab91
+  resolved_ref: 41f495021f3b264992c8fa764d58565c1184ab91
+  version: 1.0.0
+  virtual_path: agents/adversarial-reviewer.agent.md
+  is_virtual: true
+  package_type: apm_package
+  deployed_files:
+  - .claude/agents/adversarial-reviewer.md
+  - .opencode/agents/adversarial-reviewer.md
+  deployed_file_hash
+prek exit 0
+prek summary:
+    trim trailing whitespace.................................................Passed
+    fix end of files.........................................................Passed
+    mixed line ending........................................................Passed
+    check yaml...............................................................Passed
+    check toml...........................................(no files to check)Skipped
+    check json...............................................................Passed
+    check for merge conflicts................................................Passed
+    check for case conflicts.................................................Passed
+    check for added large files..............................................Passed
+    detect private key.......................................................Passed
+kmctl check exit 0
+kmctl doctor exit 1
+doctor failing: ['dep.agy', 'dep.claude', 'dep.opencode'] | beyond unpassable: []
+RESULT [claude, antigravity, opencode]: OK (agent deployed to: ['.claude/agents/adversarial-reviewer.md', '.opencode/agents/adversarial-reviewer.md'])
+
+ALL OK
