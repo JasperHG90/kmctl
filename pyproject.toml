@@ -37,6 +37,7 @@ packages = ["src/kmctl"]
 [tool.hatch.build.targets.wheel.force-include]
 "apm/.apm/skills" = "kmctl/_skills"
 "apm/.apm/agents" = "kmctl/_agents"
+"apm/claude/.apm/instructions" = "kmctl/_rules"
 
 [dependency-groups]
 dev = [

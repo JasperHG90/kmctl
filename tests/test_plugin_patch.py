@@ -335,12 +335,18 @@ def test_patch_docs_readme_installs_per_harness() -> None:
     install = _section(README.read_text(), "## Install")
     flat = " ".join(install.split())
 
-    for harness in ("### Claude Code", "### Antigravity", "### Both"):
+    for harness in (
+        "### Claude Code",
+        "### Antigravity",
+        "### OpenCode",
+        "### More than one",
+    ):
         assert harness in install, harness
     for step in (
         "path: apm",
         "uvx --from apm-cli==0.33.0 apm install --target claude",
         "uvx --from apm-cli==0.33.0 apm install --target antigravity",
+        "uvx --from apm-cli==0.33.0 apm install --target opencode",
         "kmctl plugin patch",
         "trust",
         "kmctl plugin patch --undo",

@@ -98,22 +98,33 @@ def _split(text: str) -> tuple[dict, str]:
 
 
 def _lock(harnesses: tuple[str, ...] = ("antigravity",)) -> str:
-    """An apm.lock.yaml holding the kmctl package at this CLI's ref, deployed for ``harnesses``."""
+    """An apm.lock.yaml holding the kmctl package at this CLI's ref, deployed for ``harnesses``.
+
+    As APM records it, Antigravity's rules sit under the ``kmctl-antigravity``
+    sub-package: its skills alone, in the shared ``.agents/skills/``, would not
+    say Antigravity is installed.
+    """
     tops = {"claude": ".claude", "antigravity": ".agents"}
-    return yaml.safe_dump(
+    deps: list[dict[str, object]] = [
         {
-            "lockfile_version": "1",
-            "dependencies": [
-                {
-                    "repo_url": "JasperHG90/kmctl",
-                    "name": "kmctl",
-                    "resolved_ref": REF,
-                    "virtual_path": "apm",
-                    "deployed_files": [f"{tops[h]}/skills/audit" for h in harnesses],
-                }
-            ],
+            "repo_url": "JasperHG90/kmctl",
+            "name": "kmctl",
+            "resolved_ref": REF,
+            "virtual_path": "apm",
+            "deployed_files": [f"{tops[h]}/skills/audit" for h in harnesses],
         }
-    )
+    ]
+    if "antigravity" in harnesses:
+        deps.append(
+            {
+                "repo_url": "JasperHG90/kmctl",
+                "name": "kmctl-antigravity",
+                "resolved_ref": REF,
+                "virtual_path": "apm/antigravity",
+                "deployed_files": [".agents/rules/okf-bundle.md"],
+            }
+        )
+    return yaml.safe_dump({"lockfile_version": "1", "dependencies": deps})
 
 
 @pytest.fixture

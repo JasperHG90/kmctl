@@ -504,16 +504,19 @@ its `vX.Y.Z` tag. To move to a newer one:
 From the repository root:
 
 ```
-uvx --from apm-cli==0.33.0 apm uninstall github.com/JasperHG90/kmctl/apm
 kmctl plugin patch --undo
+uvx --from apm-cli==0.33.0 apm uninstall github.com/JasperHG90/kmctl/apm
 ```
 
+`kmctl plugin patch --undo` deletes what patch wrote:
+`.agents/plugins/kmctl/` (it prints `note: deleted .agents/plugins/kmctl/`)
+and, for OpenCode, the agents it rewrote, `.opencode/rules/`, the
+`instructions` entry in `opencode.json` and `.opencode/plugins/kmctl.js`.
+Run it first: `apm uninstall` stops on an agent patch rewrote.
 `apm uninstall` takes kmctl's entry out of `apm.yml` and removes the
 package for every harness: the skills, agent, rules, hooks and okf's MCP
 server. The name is the host, owner and repository of the entry's `git:`
-URL, then `apm`. `kmctl plugin patch --undo` deletes
-`.agents/plugins/kmctl/`, the one folder patch writes, and prints
-`note: deleted .agents/plugins/kmctl/`.
+URL, then `apm`.
 
 For a user-scope install, run `apm uninstall -g` with the same name, then
 remove okf's MCP server, which APM leaves in your user `.claude.json`:

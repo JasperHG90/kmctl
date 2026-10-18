@@ -134,3 +134,7 @@
 - Updated `index`: dropped the concept and record counts, which nothing keeps true.
 - Added `decisions/0023-kmctl-verify-records-a-person-s-check` with `kmctl new decision`.
 - Updated `manifesto` and `architecture/overview`: `kmctl verify` and `verify.py` record a person's check (ADR 0023).
+
+## 2026-10-18
+
+- Added `decisions/0024-opencode-gets-the-package-from-apm-and-its-agents-rules-and-briefing-from-kmctl-plugin-patch` with `kmctl new decision`.

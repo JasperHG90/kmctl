@@ -187,7 +187,7 @@ def test_wheel_reports_the_set_version_and_carries_the_skills(tmp_path: Path) ->
     for name in ("pyproject.toml", "README.md", *map(str, APM_FILES)):
         (project / name).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(ROOT / name, project / name)
-    for folder in ("src", "apm/.apm", "docs"):
+    for folder in ("src", "apm/.apm", "apm/claude/.apm", "docs"):
         shutil.copytree(
             ROOT / folder,
             project / folder,
@@ -214,9 +214,11 @@ def test_wheel_reports_the_set_version_and_carries_the_skills(tmp_path: Path) ->
     }
     assert want <= names
     assert "kmctl/_agents/kmctl-auditor.md" in names
-    instructions = ROOT / "apm" / ".apm" / "instructions"
-    for path in instructions.glob("*.instructions.md"):
-        assert f"kmctl/_instructions/{path.name}" in names
+    # The rules, which kmctl plugin patch writes for OpenCode (ADR 0024).
+    rules = sorted((ROOT / "apm" / "claude" / ".apm" / "instructions").glob("*.md"))
+    assert len(rules) == 4
+    for path in rules:
+        assert f"kmctl/_rules/{path.name}" in names
     assert not [n for n in names if "_plugin" in n or "marketplace" in n]
 
 

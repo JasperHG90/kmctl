@@ -39,7 +39,7 @@ still true; that takes judgment. So kmctl does two things instead:
 - **The `kmctl` CLI** sets a repository up, creates new decisions, docs pages
   and other concepts with their index entries, checks that indexes and links
   agree, and lists what is due for review.
-- **An APM package** for Claude Code and Antigravity, which
+- **An APM package** for Claude Code, Antigravity and OpenCode, which
   [APM](https://microsoft.github.io/apm) installs: an audit agent, a skill
   for writing `docs/` pages, `/handoff` and `/continue` to save and resume
   work between sessions, and the knowledge rules, plus one SessionStart hook
@@ -67,7 +67,8 @@ follow these steps.
 - [uv](https://docs.astral.sh/uv/) and `git`. uv installs the kmctl CLI and
   runs APM (Agent Package Manager), so you need not install APM. Keep uv
   installed: okf's MCP server, which the package adds, runs with `uv run`.
-- Claude Code, Antigravity (the IDE or the `agy` CLI), or both.
+- Claude Code, Antigravity (the IDE or the `agy` CLI), OpenCode, or more
+  than one.
 - While the kmctl repository is private: a GitHub account with access to it,
   and a GitHub token APM can use; see
   [Install kmctl with APM](docs/how-to/install-kmctl-with-apm.md#before-you-start).
@@ -164,10 +165,27 @@ repository root once:
 
 Antigravity installs per repository only; there is no user-scope install.
 
-#### Both
+#### OpenCode
 
 ```
-uvx --from apm-cli==0.33.0 apm install --target claude,antigravity
+uvx --from apm-cli==0.33.0 apm install --target opencode
+kmctl plugin patch
+```
+
+APM writes the skills into `.agents/skills/`, the agents into
+`.opencode/agents/` and okf's MCP server into `opencode.json`.
+`kmctl plugin patch` rewrites the agents into OpenCode's format (APM copies
+them in Claude Code's, which OpenCode skips), writes the four rules to
+`.opencode/rules/` and lists them in `opencode.json`'s `instructions`, and
+adds `.opencode/plugins/kmctl.js`, which adds the briefing to each
+session's system prompt. kmctl supports OpenCode 2.x only. OpenCode has no rules scoped to paths, so all four load in every
+session. Start a new OpenCode session afterwards. Like Antigravity, OpenCode
+installs per repository only.
+
+#### More than one
+
+```
+uvx --from apm-cli==0.33.0 apm install --target claude,antigravity,opencode
 kmctl plugin patch
 ```
 
@@ -184,11 +202,13 @@ set `ref` in `apm.yml` to the same tag, and run your `apm install` line and
 ### Remove
 
 ```
-uvx --from apm-cli==0.33.0 apm uninstall github.com/JasperHG90/kmctl/apm
 kmctl plugin patch --undo
+uvx --from apm-cli==0.33.0 apm uninstall github.com/JasperHG90/kmctl/apm
 ```
 
-`--undo` deletes `.agents/plugins/kmctl/`, the one folder patch writes. For
+`--undo` deletes what patch wrote: `.agents/plugins/kmctl/`, and for
+OpenCode the rewritten agents, the rules, their `instructions` entry and
+the plugin. Run it first: `apm uninstall` stops on an agent patch rewrote. For
 a user-scope install, run `apm uninstall -g` with the same name, then
 `claude mcp remove okf-bundle --scope user`, because APM leaves okf's MCP
 server in your user `.claude.json`.
