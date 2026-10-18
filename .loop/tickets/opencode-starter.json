@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "opencode-starter",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 3,
   "review_rounds": 1,
@@ -13,7 +13,7 @@
   "split": "j-20261018T060116+0000-6b36c75b",
   "split_plan_hash": "5e1276c0272474db517518f20a8197f0cd4d4cf6a3db79986ff77dc317bcf4b7",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "4705a90ab56434f999a0002dd84dda9292e3f42e",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -146,8 +146,14 @@
       "to": "verifying",
       "at": "2026-10-18T07:09:52+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-18T07:14:27+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T07:14:19+00:00"
+  "at": "2026-10-18T07:14:27+00:00"
 }
