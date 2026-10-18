@@ -12,6 +12,19 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "description": "kmctl: after a tool call, when a concept in .okf/ changed after .okf/summary.md, ask to update it or run kmctl summary ack. Never blocks.",
+            "command": "command -v kmctl >/dev/null 2>&1 || { echo '{}'; exit 0; }; KMCTL_PINNED=1 kmctl summary nudge --format claude 2>/dev/null || echo '{}'; exit 0",
+            "timeout": 10
+          }
+        ]
+      }
     ]
   }
 }

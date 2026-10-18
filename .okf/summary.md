@@ -27,20 +27,21 @@ Claude Code, Antigravity and OpenCode.
 
 Four parts ([overview](architecture/overview.md)). The CLI in `src/kmctl/`
 alone writes knowledge. An APM package in `apm/` carries skills, an audit
-agent, four knowledge rules and a SessionStart hook; APM installs it and
+agent, four knowledge rules and two hooks; APM installs it and
 `kmctl plugin patch` fills APM's gaps. A GitHub Action runs free checks on
 each pull request and an opt-in LLM audit. A copier template starts new
 projects pinned to a release.
 
-An agent reads in layers: the hook injects `kmctl briefing` (what is due,
-where knowledge lives), the block in `CLAUDE.md` and `AGENTS.md` points to
-this summary, the summary to the indexes, and the indexes to the
-concepts. Each project pins kmctl in `apm.lock.yaml`, and the `kmctl` on
-PATH hands every command to that release
+An agent reads in layers: the SessionStart hook injects `kmctl briefing`,
+the block in `CLAUDE.md` and `AGENTS.md` points to this summary, the summary
+to the indexes, and the indexes to the concepts. When a concept changes
+after this page, a PostToolUse hook asks the agent to update it. Each
+project pins kmctl in `apm.lock.yaml`, and the `kmctl` on PATH hands every
+command to that release
 ([ADR 0026](decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins.md)).
-Handoffs in `.okf/handoffs/` carry where work stopped into the next
-session: `/handoff` writes one, `/continue` reads it back
-([ADR 0008](decisions/0008-handoffs-are-okf-concepts.md)).
+Handoffs in `.okf/handoffs/` carry unfinished work into the next session
+(`/handoff`, `/continue`;
+[ADR 0008](decisions/0008-handoffs-are-okf-concepts.md)).
 
 ## What it has settled
 
@@ -51,11 +52,10 @@ session: `/handoff` writes one, `/continue` reads it back
   [ADR 0008](decisions/0008-handoffs-are-okf-concepts.md),
   [ADR 0022](decisions/0022-docs-pages-carry-optional-okf-front-matter-and-generated-folder-indexes.md)).
 - **Inject, don't link.** An agent reads a page only if it
-  knows to look, so knowledge arrives through one SessionStart hook that
-  never blocks, plus rules where the briefing alone left too few records
-  written
+  knows to look, so knowledge arrives through two hooks that never block,
+  plus rules where the briefing alone left too few records written
   ([ADR 0002](decisions/0002-briefing-and-rules-injected-by-the-cli.md),
-  [ADR 0004](decisions/0004-sessionstart-is-the-only-hook.md),
+  [ADR 0028](decisions/0028-two-hooks-the-session-briefing-and-the-summary-nudge.md),
   [ADR 0011](decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md)).
   Antigravity also relays okf's Stop check
   ([ADR 0018](decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity.md)).
@@ -90,4 +90,4 @@ All four parts work, for the three harnesses. Invariants I1, I3 and I4 are
 enforced by tests; I2, that audits never write knowledge, is still
 `planned`. No practices, proposals or prototypes are recorded, and many
 concepts have no `verified` entry, so `kmctl review due` lists them. Work in
-flight lives as loop tickets in `.loop/`, outside the bundle.
+flight lives in `.loop/` tickets, outside the bundle.

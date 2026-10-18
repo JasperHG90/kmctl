@@ -66,7 +66,8 @@ ADR 0027), `manifesto.md` (the root concept), `decisions/`, `architecture/`, `pr
   four knowledge rules, and it depends on the okf skills for OKF authoring and
   validation. Skills route; `kmctl` decides and writes.
   The package also ships, per harness, the SessionStart hook that relays
-  `kmctl`'s briefing (ADR 0004), okf's MCP server and, for Antigravity, okf's
+  `kmctl`'s briefing, for Claude Code the PostToolUse hook that runs `kmctl
+  summary nudge` (ADR 0028), okf's MCP server and, for Antigravity, okf's
   Stop check (ADR 0018), so APM (Agent Package Manager) installs all of it
   (ADR 0020). The user adds the package to `apm.yml` at the CLI's own
   version and runs `apm install --target claude` (or `--target
@@ -87,13 +88,18 @@ ADR 0027), `manifesto.md` (the root concept), `decisions/`, `architecture/`, `pr
 
 Each is `planned` until the test named for it passes, then `enforced`.
 
-- **I1. One hook of its own, and it never breaks a session.** kmctl's own
-  hook is SessionStart, and it exits 0 even when `kmctl` is missing or
-  fails. In Antigravity kmctl also relays okf's opt-in Stop check, which
-  APM's copy cannot run there (ADR 0018); it exits 0 and prints `{}` when
+- **I1. Two hooks of its own, and neither breaks a session.** kmctl's own
+  hooks are SessionStart, which prints the briefing, and, for Claude Code,
+  PostToolUse, which runs `kmctl summary nudge` after Write, Edit, MultiEdit
+  and Bash calls (ADR 0028). Neither blocks: each exits 0 even when `kmctl`
+  is missing or fails, and the nudge then prints `{}`. In Antigravity kmctl
+  also relays okf's opt-in Stop check, which APM's copy cannot run there
+  (ADR 0018); it exits 0 and prints `{}` when
   okf's script is missing or fails. Status: enforced by
-  `tests/test_plugin.py` (the package ships one SessionStart hook; it exits
-  0 without `kmctl` and when it fails) and
+  `tests/test_plugin.py` (the package ships one SessionStart and one
+  PostToolUse hook; the SessionStart one exits 0 without `kmctl` and when it
+  fails), `tests/test_summary_nudge.py` (the nudge hook prints `{}` and exits
+  0 without `kmctl` and when the verb is missing) and
   `tests/test_antigravity.py` (Antigravity's SessionStart hook prints `{}`
   and exits 0 in both cases; the okf Stop relay prints `{}` and exits 0
   without a working script) and `tests/test_opencode.py` (OpenCode's
