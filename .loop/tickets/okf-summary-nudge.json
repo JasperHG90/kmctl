@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "okf-summary-nudge",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 3,
   "review_rounds": 3,
@@ -30,7 +30,7 @@
   "split": "j-20261018T215050+0000-07d6a227",
   "split_plan_hash": "0949485dbdd3f21d633731ccc868d74835a8620d28ea42094fdb4c04d2df2935",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "944ff7391ebac92894e0a34e8c8ec53d42204fb0",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -172,8 +172,14 @@
       "to": "verifying",
       "at": "2026-10-18T23:48:57+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-18T23:53:52+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T23:53:47+00:00"
+  "at": "2026-10-18T23:53:52+00:00"
 }
