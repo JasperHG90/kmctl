@@ -39,3 +39,4 @@
 {"at": "2026-10-17T20:09:20+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "3790a2e344c1ebe7217e26bb266234876e3c8516", "subject": "Merge remote-tracking branch 'origin/main'"}
 {"ask": "j-20261017T213717+0000-281aa39f", "at": "2026-10-17T21:40:42+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "ffc4c90b756c1d6ce2ffa9d7bfc274a649076749", "subject": "ci: send the knowledge audit's traces to Langfuse"}
 {"at": "2026-10-17T22:00:23+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "08f85d7b6882dfe17c70aa42dee3151eeb1edd62", "subject": "loop: plans for the verify-verb hardening stubs (f4, f6)"}
+{"ask": "j-20261018T052148+0000-b007e184", "at": "2026-10-18T05:23:19+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "4f41566cfa917288d2ce623542d98fb3232eff41", "subject": "docs: name the opencode.json instructions refusal in the patch reference"}
