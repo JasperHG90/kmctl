@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "starter-in-repo",
+  "n": 1,
+  "command": "/tmp/claude-1000/-home-vscode-kmctl/efac4bda-9c30-41af-bec2-10265f82b0d7/scratchpad/spike1/spike.sh",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/efac4bda-9c30-41af-bec2-10265f82b0d7/scratchpad/spike1/spike.sh",
+      "copy": "files/spike.sh"
+    }
+  ],
+  "where": "worktree",
+  "head": "d2962c3ccd2c8d1e79e2ed0227bbaf0eab05e255",
+  "fingerprint": "bd7eb1341e1480da7d0270c6c42d911bf18b9fa088f3c9bad4d013d089b59d74",
+  "started_at": "2026-10-18T09:53:44+00:00",
+  "finished_at": "2026-10-18T09:53:47+00:00",
+  "duration_seconds": 2.788,
+  "timeout_seconds": 300.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "moved_from": null
+}

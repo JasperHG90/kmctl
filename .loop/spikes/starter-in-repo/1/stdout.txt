@@ -1,0 +1,95 @@
+copier version: copier 9.19.1
+tags: v0.2.0 v0.3.0 v0.4.0 v0.4.1 v0.5.0 v0.5.1 
+5:_subdirectory: starter
+=== (a) no --vcs-ref ===
+
+Copying from template version 0.6.0
+[32m[1m    create[39m[0m  .github
+[32m[1m    create[39m[0m  .github/CODEOWNERS
+[32m[1m    create[39m[0m  .github/workflows
+[32m[1m    create[39m[0m  .github/workflows/ci.yml
+[32m[1m    create[39m[0m  .gitignore
+[32m[1m    create[39m[0m  .pre-commit-config.yaml
+[32m[1m    create[39m[0m  AGENTS.md
+[32m[1m    create[39m[0m  README.md
+[32m[1m    create[39m[0m  apm.yml
+[32m[1m    create[39m[0m  justfile
+[32m[1m    create[39m[0m  .copier-answers.yml
+
+
+--- out1 files:
+./AGENTS.md
+./apm.yml
+./.copier-answers.yml
+./.github/CODEOWNERS
+./.github/workflows/ci.yml
+./.gitignore
+./justfile
+./.pre-commit-config.yaml
+./README.md
+--- out1/.copier-answers.yml:
+# Changes here are overwritten by `copier update`.
+_commit: v0.6.0
+_src_path: /tmp/tmp.Nm5tEyUykc/repo
+apm_version: 0.33.0
+codeowners: '@octocat'
+harnesses:
+- opencode
+kmctl_ref: v0.5.1
+project_description: ''
+project_name: demo
+--- out1/apm.yml targets:
+targets:
+  - opencode
+=== (c) no kmctl root files in output ===
+=== (b) --vcs-ref HEAD with a dirty tree ===
+/home/vscode/.cache/uv/archive-v0/TsUJjhk1M0D6H0UJ/lib/python3.12/site-packages/copier/_vcs.py:440: DirtyLocalWarning: Dirty template changes included automatically.
+  warn(
+
+Copying from template version 0.6.0.post1.dev0+66d40d86
+[32m[1m    create[39m[0m  .github
+[32m[1m    create[39m[0m  .github/CODEOWNERS
+[32m[1m    create[39m[0m  .github/workflows
+[32m[1m    create[39m[0m  .github/workflows/ci.yml
+[32m[1m    create[39m[0m  .gitignore
+[32m[1m    create[39m[0m  .pre-commit-config.yaml
+[32m[1m    create[39m[0m  AGENTS.md
+[32m[1m    create[39m[0m  README.md
+[32m[1m    create[39m[0m  UNTRACKED.txt
+[32m[1m    create[39m[0m  apm.yml
+[32m[1m    create[39m[0m  justfile
+[32m[1m    create[39m[0m  .copier-answers.yml
+
+
+--- out2/.copier-answers.yml:
+# Changes here are overwritten by `copier update`.
+_commit: v0.6.0-1-g66d40d86
+_src_path: /tmp/tmp.Nm5tEyUykc/repo
+apm_version: 0.33.0
+codeowners: '@octocat'
+harnesses:
+- opencode
+kmctl_ref: v0.5.1
+project_description: ''
+project_name: demo
+dirty-tree: modified file USED
+dirty-tree: untracked file USED
+=== (b2) no --vcs-ref with same dirty tree ===
+
+Copying from template version 0.6.0
+[32m[1m    create[39m[0m  .github
+[32m[1m    create[39m[0m  .github/CODEOWNERS
+[32m[1m    create[39m[0m  .github/workflows
+[32m[1m    create[39m[0m  .github/workflows/ci.yml
+[32m[1m    create[39m[0m  .gitignore
+[32m[1m    create[39m[0m  .pre-commit-config.yaml
+[32m[1m    create[39m[0m  AGENTS.md
+[32m[1m    create[39m[0m  README.md
+[32m[1m    create[39m[0m  apm.yml
+[32m[1m    create[39m[0m  justfile
+[32m[1m    create[39m[0m  .copier-answers.yml
+
+
+_commit: v0.6.0
+no-ref dirty: NOT used
+result fail=0
