@@ -1,0 +1,1 @@
+{"ask":"Ok do your suggested fix: the kmctl on PATH hands off to the project's pin (apm.lock.yaml's commit) via uvx; just kmctl installs only if none and never downgrades. Also kmctl should complain if a new version is out and the user is using an old version (when using agent that is)"}
