@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014
-  at: '2026-10-18T09:56:00+00:00'
+  at: '2026-10-18T09:56:47+00:00'
 slug: starter-in-repo
 n: 3
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike starter-in-repo/3
@@ -24,7 +24,7 @@ true
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note starter-in-repo 3`.
+Accidental probe: `true` with --about "test", run only to find which part of a longer spike command a hook refused. It measured nothing and answers no risk; ignore it. The risk 2 evidence is in later spikes of this slug.
 
 ## Files
 
