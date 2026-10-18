@@ -101,3 +101,20 @@ Rejected:
   into a kept bundle, which used to get only a warning. A second run changes
   nothing.
 - Adding any other extension field still needs its own ADR.
+
+## Correction, 2026-10-18
+
+The summary's sections are now The project, How it works, What it has
+settled and Where it stands, not Decisions, Architecture, Open work,
+Practices and Known gaps. The operator: "Summary should not list decisions
+verbatim, that's what index is for. Summary should **summarize the
+knowledge in them** and **keep a holistic view of the repo**". Sections
+named after the concept folders steered each summary into one bullet per
+group of records, as the decision index already lists them: this
+repository's had 17 of its 20 links in Decisions. The new sections follow
+what a reader needs: what the project is for, how its parts fit, the
+principles and constraints the records settle, with their reasons and the
+records cited as evidence, and what works or is open. The prompts `kmctl
+init` writes under each say so, and the indexes still list every concept.
+The rest of this decision holds: one summary, at most 500 words, kept in
+step by commit order and `kmctl summary ack`.

@@ -32,8 +32,10 @@ Each section is created with its first concept, by `kmctl new`.
 
 ## Start at the summary
 
-`.okf/summary.md` is the entry point: at most 500 words, theme by theme,
-each theme linking down to its concepts. `.okf/index.md` carries
+`.okf/summary.md` is the entry point: in at most 500 words it distils what
+the knowledge says as a whole, citing concepts inline as evidence, rather
+than giving one bullet per decision; the indexes list the concepts.
+`.okf/index.md` carries
 `okf_version` and links the summary, the manifesto and each section. Each
 section has its own `index.md` listing its concepts with the description
 from each concept's front matter. Follow links from the summary and the
