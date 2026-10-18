@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014
-  at: '2026-10-18T19:42:35+00:00'
+  at: '2026-10-18T19:42:47+00:00'
 slug: okf-summary
 n: 2
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike okf-summary/2
@@ -24,7 +24,10 @@ uv run --project /home/vscode/kmctl python /tmp/claude-1000/-home-vscode-kmctl/e
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note okf-summary 2`.
+It fits. The worst-case briefing (`test_briefing_long_handoff_title_keeps_the_budget`'s repo) is 494/500 tokens today. Swapping in "Start at .okf/summary.md" alone gives 495, then 499 with "; summary current" and 504 with "; summary behind: 3 concepts changed" on the state line, so a swap alone breaks the budget.
+Dropping the Diataxis list "(tutorials, how-to, reference, explanation)" from the docs/ line fixes it: 484 with no status, 488 current, 493 behind (also 493 with a 3-digit count). The Verbs line already names the four types (`kmctl new doc tutorial|how-to|reference|explanation`), so no information is lost. This repo goes 474 -> 473 at most.
+Adding ", then index.md" after summary.md costs 4 more tokens (497 worst), which still fits but leaves only 3 spare.
+This settles risk 2. Limits: sizes use estimate_tokens (4 chars per token) on the CLI output, as the tests do. The status wording was spliced onto the rendered state line, not built by render(). The worst-case repo has no summary.md yet, and init's skeleton could add one due concept (the count changes, the size does not).
 
 ## Files
 
