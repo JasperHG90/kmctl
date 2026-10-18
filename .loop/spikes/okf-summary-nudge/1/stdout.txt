@@ -1,0 +1,35 @@
+== case write (hook marker) rc=1 secs=4
+-- answer:
+-- stderr:
+Error: Input must be provided either through stdin or as a prompt argument when using --print
+-- hook env:
+-- hook stdin (keys, tool_name, cwd):
+FAIL: hook stdin missing, or cwd/tool_name/tool_input wrong
+FAIL: write answer lacks pineapple
+FAIL: note.txt missing
+== case bash (hook marker) rc=1 secs=1
+-- answer:
+-- stderr:
+Error: Input must be provided either through stdin or as a prompt argument when using --print
+-- hook env:
+-- hook stdin (keys, tool_name, cwd):
+FAIL: hook stdin missing, or cwd/tool_name/tool_input wrong
+FAIL: bash answer lacks pineapple
+FAIL: x.txt missing
+== case empty (hook empty) rc=1 secs=2
+-- answer:
+-- stderr:
+Error: Input must be provided either through stdin or as a prompt argument when using --print
+-- hook env:
+-- hook stdin (keys, tool_name, cwd):
+FAIL: hook stdin missing, or cwd/tool_name/tool_input wrong
+FAIL: empty-output hook run
+== case braces (hook braces) rc=1 secs=2
+-- answer:
+-- stderr:
+Error: Input must be provided either through stdin or as a prompt argument when using --print
+-- hook env:
+-- hook stdin (keys, tool_name, cwd):
+FAIL: hook stdin missing, or cwd/tool_name/tool_input wrong
+FAIL: {} hook run
+RESULT fail=1
