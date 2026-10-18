@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The plan does not say what the OpenCode plugin gives `kmctl summary nudge --format opencode` on stdin. Both obvious choices break it. okf-summary-nudge's verb reads the hook JSON on stdin and must stay quiet on empty or unreadable stdin (its r2). If the plugin passes nothing, Node's execFile leaves the child's stdin pipe open, so a verb that reads stdin waits until the timeout kills it. Every OpenCode tool call then waits HOOK_TIMEOUT (10 s) and never gets a nudge. I measured this: execFile running python3 with sys.stdin.read() was killed at the 3 s timeout with empty output. If the plugin closes stdin with nothing in it, the parent verb's empty-stdin rule makes it print nothing, every time. The plan has to fix the contract: either the plugin writes a payload (its cwd and the event's tool/input) and closes stdin, or `--format opencode` reads no stdin and takes the repository from cwd or --path, as `kmctl briefing --path` does. r4's fake kmctl and r2's CliRunner test both skip real stdin, so neither row would catch the hang.",
+      "anchor": "src/kmctl/opencode.py:75",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r4"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "fd19d3a1b363c32c6fdfcc6e808653617b66313616b6600d81f7b3e60ae1b07e"
+  },
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-18T22:02:12+00:00"
+}
