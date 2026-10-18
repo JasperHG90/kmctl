@@ -3,7 +3,7 @@
   "slug": "okf-summary",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "9d53c3fa713c9d8109940f2d43000ae4474bbba6f89517ab63f93ebdc72f47c0",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "c12c9931e3e6cfd797b4e67db978e013101ce641c6192977d9a328df86c25fbe",
+    "started_at": "2026-10-18T19:43:20+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "c12c9931e3e6cfd797b4e67db978e013101ce641c6192977d9a328df86c25fbe",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -44,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T19:43:10+00:00"
+  "at": "2026-10-18T19:43:20+00:00"
 }
