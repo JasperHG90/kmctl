@@ -815,12 +815,22 @@ _PATCH_EPILOG = (
     "apm_modules/), which APM does not install for Antigravity yet, and takes "
     "APM's okf Stop handler, which cannot run there, out of .agents/hooks.json. "
     "Antigravity loads .agents/ only once you trust the repository folder. "
-    "Running it again changes nothing.\n\n"
+    "For opencode (project scope only) it rewrites the three agents APM copies "
+    "into .opencode/agents/ in Claude Code's format, which OpenCode skips, into "
+    "OpenCode's (mode: subagent and a permission map), writes kmctl's four "
+    "rules to .opencode/rules/, adds .opencode/rules/*.md to the instructions "
+    "list of opencode.json (keeping every other key) so OpenCode loads them in "
+    "every session, and writes .opencode/plugins/kmctl.js, which adds kmctl "
+    "briefing to each session. apm install puts APM's agents back, so run "
+    "patch after every apm install. Running it again changes nothing.\n\n"
     "It refuses, naming the fix, when apm.lock.yaml lists no kmctl package "
     "(add the entry to apm.yml and run apm install), or when apm.yml still names "
     "the package the way kmctl v0.3.0 and older did (it names the apm uninstall "
-    "to run first). --undo deletes .agents/plugins/kmctl/ and nothing else; to "
-    "remove kmctl, run apm uninstall on its entry and kmctl plugin patch --undo. "
+    "to run first), or when opencode.json is not a JSON object. --undo deletes "
+    ".agents/plugins/kmctl/ and, for OpenCode, the agents it rewrote, the "
+    "rules, the instructions entry and the plugin, and nothing else; to remove "
+    "kmctl, run kmctl plugin patch --undo first, then apm uninstall on its "
+    "entry (apm uninstall stops on an agent patch rewrote). "
     "Installing is in the README's install section."
 )
 
@@ -847,10 +857,11 @@ def plugin_patch(
             "--scope",
             metavar="project",
             help=(
-                "project (this repository's apm.lock.yaml, .claude/, .mcp.json and "
-                ".agents/; the default) or user (~/.apm/apm.lock.yaml and Claude "
-                "Code's folder, $CLAUDE_CONFIG_DIR or ~/.claude, for a package "
-                "installed with apm install -g). Antigravity is patched at "
+                "project (this repository's apm.lock.yaml, .claude/, .mcp.json, "
+                ".agents/, .opencode/ and opencode.json; the default) or user "
+                "(~/.apm/apm.lock.yaml and Claude Code's folder, "
+                "$CLAUDE_CONFIG_DIR or ~/.claude, for a package installed with "
+                "apm install -g). Antigravity and OpenCode are patched at "
                 "project scope only."
             ),
         ),
@@ -860,8 +871,10 @@ def plugin_patch(
         typer.Option(
             "--undo",
             help=(
-                "Delete what patch wrote, .agents/plugins/kmctl/, and nothing "
-                "else. apm uninstall removes the rest."
+                "Delete what patch wrote, and nothing else: .agents/plugins/kmctl/, "
+                "and for OpenCode the agents it rewrote, .opencode/rules/, the "
+                "instructions entry in opencode.json and .opencode/plugins/kmctl.js. "
+                "Run it before apm uninstall, which removes the rest."
             ),
         ),
     ] = False,
@@ -885,7 +898,7 @@ def plugin_patch(
         raise typer.Exit(1) from error
     _report(result, as_json)
     if undo and not as_json and not result.notes:
-        typer.echo("nothing to undo: .agents/plugins/kmctl/ is not there")
+        typer.echo("nothing to undo: kmctl wrote nothing here")
     if not as_json:
         steps = []
         if "claude" in result.harnesses:
@@ -894,6 +907,8 @@ def plugin_patch(
             steps.append(
                 "open this folder in Antigravity, trust it and start a new session"
             )
+        if "opencode" in result.harnesses and scope == "project":
+            steps.append("start a new OpenCode session")
         flags = " --scope user" if scope == "user" else ""
         typer.echo(next_step(*steps, f"kmctl doctor{flags}"))
 
@@ -910,12 +925,14 @@ _DOCTOR_EPILOG = (
     "The checks, by id: kmctl.version (this kmctl's version); dep.uv, "
     "dep.git (on PATH); dep.apm (APM "
     f"{APM_CLI.split('==')[1]} runs from uv's cache, with uv tool run "
-    "--offline); dep.claude, dep.agy (on PATH, for each harness installed); "
+    "--offline); dep.claude, dep.agy, dep.opencode (on PATH, for each harness "
+    "installed); "
     "init.okf, init.docs (.okf/index.md and docs/README.md, from kmctl "
     "init; project scope only); kmctl.harness (which harnesses are "
-    "installed, from apm.yml targets, apm.lock.yaml, the hook and "
-    ".agents/plugins/kmctl/); claude.scope (no Claude Code install here, "
-    "but one at user scope). Then per harness, claude. or antigravity.: "
+    "installed, from apm.yml targets, apm.lock.yaml, the hook, "
+    ".agents/plugins/kmctl/ and .opencode/plugins/kmctl.js); claude.scope (no "
+    "Claude Code install here, but one at user scope). Then per harness, "
+    "claude., antigravity. or opencode.: "
     "lock (apm.lock.yaml names kmctl's package at v<this version>); files "
     "(every kmctl file the lock lists for the harness exists with its "
     "sha256); okf-skills (the same for okf's skills); okf-mcp (okf's MCP "
@@ -929,10 +946,15 @@ _DOCTOR_EPILOG = (
     "agy is on PATH, the "
     "repository is in trustedWorkspaces of "
     "~/.gemini/antigravity-cli/settings.json); antigravity.okf-mcp-url "
-    "(--online only).\n\n"
+    "(--online only). opencode.agents (the agents in .opencode/agents/ are in "
+    "OpenCode's format, not APM's Claude-format copies; opencode.files and "
+    "opencode.okf-skills skip them); opencode.rules (.opencode/rules/ holds "
+    "kmctl's rules and opencode.json's instructions lists them); "
+    "opencode.okf-mcp (opencode.json declares okf's MCP server); opencode.hook "
+    "(.opencode/plugins/kmctl.js is the briefing plugin this kmctl writes).\n\n"
     "It writes nothing and uses no network unless --online. The only "
     f"command it runs is uv tool run --offline --from {APM_CLI} apm "
-    "--version; it never runs claude or agy."
+    "--version; it never runs claude, agy or opencode."
 )
 
 

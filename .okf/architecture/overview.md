@@ -19,7 +19,9 @@ their own beyond relaying it, and the audit they run reads and reports only.
 APM installs the package from the consumer's `apm.yml`, writing its skills,
 SessionStart hooks, okf's MCP server and per-harness rules (ADR 0014,
 ADR 0020); `kmctl plugin patch` then adds the Antigravity agents as the
-plugin folder `.agents/plugins/kmctl/` (ADR 0015, ADR 0021). `kmctl doctor` reads what an install left, without writing
+plugin folder `.agents/plugins/kmctl/` (ADR 0015, ADR 0021), and for
+OpenCode rewrites the agents into its format and writes the rules, their
+`instructions` entry and a briefing plugin (ADR 0024). `kmctl doctor` reads what an install left, without writing
 or using the network, and names each missing or changed piece with its
 fix. Releases come from
 two workflows and the scripts in `scripts/` (ADR 0012).
@@ -52,6 +54,7 @@ flowchart LR
         pluginPy["plugin.py<br/>plugin patch"]
         doctorPy["doctor.py<br/>doctor: reads the install,<br/>runs apm --version offline"]
         antigravityPy["antigravity.py<br/>the Antigravity plugin folder,<br/>agent translator"]
+        opencodePy["opencode.py<br/>OpenCode agents, rules,<br/>instructions entry, briefing plugin"]
         okf["okf.py<br/>reads front matter"]
         kinds["kinds.py<br/>schema; the table of kinds"]
     end
@@ -79,6 +82,7 @@ flowchart LR
     agentFiles[("CLAUDE.md, AGENTS.md")]
     consumer[("the consumer's apm.yml,<br/>.claude/ skills, agents, rules,<br/>.claude/settings.json hook,<br/>.mcp.json okf-bundle (all from APM)")]
     agConsumer[("the consumer's .agents/<br/>skills, rules, hooks.json,<br/>mcp_config.json okf-bundle (from APM),<br/>plugins/kmctl/: agents (from kmctl)")]
+    ocConsumer[("the consumer's .opencode/ and opencode.json<br/>agents, okf-bundle (from APM, agents rewritten),<br/>rules/, instructions entry,<br/>plugins/kmctl.js (from kmctl)")]
     claude["claude CLI<br/>old plugin removal,<br/>user-scope MCP server"]
     provider["any model provider<br/>or OpenAI-compatible endpoint"]
     traces["Langfuse or another<br/>OTLP endpoint (optional)"]
@@ -87,6 +91,7 @@ flowchart LR
 
     consumer -- "SessionStart hook:<br/>kmctl briefing" --> briefing
     agConsumer -- "SessionStart hook:<br/>kmctl briefing --format antigravity" --> briefing
+    ocConsumer -- "plugin: kmctl briefing --path" --> briefing
     writeDocs -- "kmctl new doc, kmctl check" --> app
     handoff -- "kmctl new handoff" --> app
     cont -- "kmctl handoffs --json" --> handoffs
@@ -98,7 +103,8 @@ flowchart LR
     app --> scaffold & checks & briefing & reviewDue & handoffs & concepts & docs & supersede & verifyPy & pluginPy & doctorPy & kinds
     doctorPy -- "hook and MCP entries,<br/>lock reader" --> pluginPy
     doctorPy -- "plugin_problems" --> antigravityPy
-    doctorPy -. "reads only" .-> consumer & agConsumer
+    doctorPy -- "agent_problems, rule_problems,<br/>hook_problems, mcp_present" --> opencodePy
+    doctorPy -. "reads only" .-> consumer & agConsumer & ocConsumer
     briefing --> reviewDue & handoffs
     briefing -- "skills_dir: names the package's skills" --> pluginPy
     briefing -- "ARCHITECTURE: the setup line" --> kinds
@@ -117,6 +123,10 @@ flowchart LR
     pluginPy -- "plugin patch removes: an older kmctl's<br/>hook, a stale okf-bundle entry" --> consumer
     pluginPy -- "write_plugin, plugin_problems" --> antigravityPy
     antigravityPy -- "write: plugins/kmctl/, translated<br/>from apm/.apm/agents and<br/>apm_modules okf agents" --> agConsumer
+    pluginPy -- "write, undo" --> opencodePy
+    opencodePy -- "write: agents translated in place,<br/>rules from apm/claude instructions,<br/>instructions entry, plugins/kmctl.js" --> ocConsumer
+    opencodePy -- "OKF_AGENTS, agents_dir" --> antigravityPy
+    apmCli -- "write: skills, agents,<br/>okf-bundle" --> ocConsumer
     apmCli -- "write: skills, rules" --> agConsumer
     pluginPy -- "plugin uninstall, prune, marketplace remove;<br/>mcp remove at user scope" --> claude
     apmCli -- "git: SOURCE, path: apm,<br/>ref: vVERSION" --> apmPkg
@@ -167,8 +177,8 @@ exit codes. Each verb calls one module:
 | `kmctl new doc` | `docs.py`, with `docs_index.py` | the page with its front matter, its folder's generated `README.md`, and a `docs/README.md` link to the folder when missing (ADR 0022) |
 | `kmctl decision supersede` | `supersede.py` | both decision records and a log line |
 | `kmctl verify` | `verify.py`, with `concepts.py` for `--stale-after` and the log line | a `verified` entry (and, with `--stale-after`, `stale_after`) in one concept or docs page, and a log line for a concept; only a person verifies, never an audit (ADR 0005, ADR 0023) |
-| `kmctl plugin patch` | `plugin.py`, with `antigravity.py` for the plugin folder | never runs APM, only `claude` to remove the old plugin and a user-scope `okf-bundle`: reads `apm.lock.yaml`; refuses an `apm.yml` that names the package the v0.3.0 way, naming the `apm uninstall`; for claude, removes the hook and `okf-bundle` an older kmctl wrote and the old claude plugin `kmctl@kmctl`; for antigravity, writes `.agents/plugins/kmctl/` with the translated agents and takes APM's broken okf Stop handler out of `.agents/hooks.json` (ADR 0018, ADR 0020, ADR 0021); `--undo` deletes the plugin folder |
-| `kmctl doctor` | `doctor.py`, with `plugin.py` for the hook, MCP entries and lock reader and `antigravity.py` for the folder comparison | nothing; it reads `apm.yml`, `apm.lock.yaml` and the files it lists, the settings files, `.mcp.json`, `.agents/plugins/kmctl/` and agy's trust list, and runs only `uv tool run --offline --from apm-cli==0.33.0 apm --version`; `--online` fetches okf's MCP script URL |
+| `kmctl plugin patch` | `plugin.py`, with `antigravity.py` for the plugin folder and `opencode.py` for OpenCode | never runs APM, only `claude` to remove the old plugin and a user-scope `okf-bundle`: reads `apm.lock.yaml`; refuses an `apm.yml` that names the package the v0.3.0 way, naming the `apm uninstall`; for claude, removes the hook and `okf-bundle` an older kmctl wrote and the old claude plugin `kmctl@kmctl`; for antigravity, writes `.agents/plugins/kmctl/` with the translated agents and takes APM's broken okf Stop handler out of `.agents/hooks.json` (ADR 0018, ADR 0020, ADR 0021); for opencode, rewrites the three agents in `.opencode/agents/`, writes `.opencode/rules/`, the `instructions` entry in `opencode.json` and `.opencode/plugins/kmctl.js` (ADR 0024); `--undo` deletes the plugin folder and the OpenCode files |
+| `kmctl doctor` | `doctor.py`, with `plugin.py` for the hook, MCP entries and lock reader, `antigravity.py` for the folder comparison and `opencode.py` for the OpenCode files | nothing; it reads `apm.yml`, `apm.lock.yaml` and the files it lists, the settings files, `.mcp.json`, `.agents/plugins/kmctl/`, `.opencode/`, `opencode.json` and agy's trust list, and runs only `uv tool run --offline --from apm-cli==0.33.0 apm --version`; `--online` fetches okf's MCP script URL |
 
 `kinds.py` holds the one table of document kinds: each kind's front matter
 fields, its status values and its `##` sections. `kmctl new`, `kmctl new doc`,
@@ -189,7 +199,8 @@ The skills and the audit agent live in `apm/.apm/`, the knowledge rules in
 `scaccogatto/okf-skills` (ADR 0014). A consumer names it in `apm.yml` as
 `{git: SOURCE, path: apm, ref: v<cli version>}`, the ref of the CLI it
 runs, and doctor says when the two differ (ADR 0001, ADR 0021). The wheel carries `apm/.apm/skills/`, for the
-briefing, and `apm/.apm/agents/`, for the Antigravity translation.
+briefing, `apm/.apm/agents/`, for the Antigravity and OpenCode translations,
+and `apm/claude/.apm/instructions/`, for the OpenCode rules.
 
 - **Three packages in one folder** (ADR 0020). `apm/` holds what both
   harnesses get: the skills, the auditor, okf-skills and okf's MCP server
@@ -214,7 +225,14 @@ briefing, and `apm/.apm/agents/`, for the Antigravity translation.
   itself; it never runs APM (ADR 0021). For Antigravity, `antigravity.py`
   writes `.agents/plugins/kmctl/` (`plugin.json` and the agents translated
   from Claude Code's format, which APM does not install there yet) and takes
-  APM's broken okf Stop handler out of `.agents/hooks.json`.
+  APM's broken okf Stop handler out of `.agents/hooks.json`. For OpenCode,
+  which APM installs from `apm/` alone (it writes no rules or hooks there),
+  `opencode.py` rewrites the agents APM copied into `.opencode/agents/`,
+  writes the rules to `.opencode/rules/` with their `instructions` entry in
+  `opencode.json`, and writes `.opencode/plugins/kmctl.js`, which relays the
+  briefing in OpenCode 2.x, the one line kmctl supports (ADR 0024). `.agents/skills/` serves
+  Antigravity and OpenCode alike, so `harnesses_of_path` in `plugin.py` tells
+  them apart by `.opencode/` and the rest of `.agents/`.
 - **Skills route; kmctl writes.** `write-docs`, `handoff` and `continue` call
   `kmctl new doc`, `kmctl new handoff` and `kmctl handoffs`, so the file
   structure always comes from the CLI.
@@ -294,6 +312,7 @@ tag a consumer's `apm.yml` names and a build from a download with no
   `briefing.py`, `review_due.py`, `handoffs.py`, `concepts.py`,
   `docs.py`, `docs_index.py`, `supersede.py`, `verify.py`, `src/kmctl/plugin.py` (the hook and MCP
   writers), `src/kmctl/antigravity.py` (the Antigravity plugin folder),
+  `src/kmctl/opencode.py` (the OpenCode agents, rules and briefing plugin),
   `src/kmctl/doctor.py` (the install checks),
   `okf.py`, `kinds.py`; `apm/.apm/skills/` (write-docs, handoff,
   continue, audit and the three review skills),
@@ -305,4 +324,5 @@ tag a consumer's `apm.yml` names and a build from a download with no
   `scripts/release.py`, `scripts/next_release_version.py`,
   `scripts/check_wheel.py`, `scripts/smoke_wheel.py`, `apm/apm.yml`.
 - APM: `apm/apm.yml` and its pinned `scaccogatto/okf-skills`; the
-  consumer's `apm.yml`, `.claude/settings.json` and `.mcp.json`.
+  consumer's `apm.yml`, `.claude/settings.json`, `.mcp.json`, `.opencode/`
+  and `opencode.json`.

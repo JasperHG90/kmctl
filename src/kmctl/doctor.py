@@ -11,9 +11,11 @@ read from ``enabledPlugins`` in the settings files instead. Only with
 
 It finds the harnesses installed here from what an install leaves, never
 from what is missing: the targets in apm.yml, the paths apm.lock.yaml lists
-for the kmctl package, the kmctl hook or an old kmctl plugin in
-settings.json, and ``.agents/plugins/kmctl/``. Any one marks the harness, so
-a deleted piece is reported by name instead of hiding the harness.
+for the kmctl package and its sub-packages, the kmctl hook or an old kmctl
+plugin in settings.json, ``.agents/plugins/kmctl/`` and OpenCode's briefing
+plugin. Any one marks the harness, so a deleted piece is reported by name
+instead of hiding the harness. A skill in ``.agents/skills/``, which serves
+both Antigravity and OpenCode, marks neither.
 """
 
 import hashlib
@@ -21,10 +23,10 @@ import json
 import shutil
 import subprocess
 from dataclasses import dataclass
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 from typing import Any
 
-from kmctl import antigravity
+from kmctl import antigravity, opencode
 from kmctl.plugin import (
     APM_CLI,
     HARNESSES,
@@ -39,6 +41,8 @@ from kmctl.plugin import (
     apm_entries,
     apm_root,
     cli_version,
+    harnesses_marked,
+    harnesses_of_path,
     hook_entry,
     kmctl_files,
     kmctl_hooks,
@@ -61,8 +65,9 @@ APM_VERSION_ARGS = ("tool", "run", "--offline", "--from", APM_CLI, "apm", "--ver
 OLD_PLUGINS = (OLD_PLUGIN, "okf@scaccogatto")
 #: Where APM's lock names okf's skills package.
 OKF_REPO = "scaccogatto/okf-skills"
-#: The folder each harness's files go in, relative to the repository.
-FOLDERS = {"claude": ".claude", "antigravity": ".agents"}
+#: The folder each harness's files go in, relative to the repository; OpenCode's
+#: skills go in Antigravity's ``.agents/skills/`` (``harnesses_of_path``).
+FOLDERS = {"claude": ".claude", "antigravity": ".agents", "opencode": ".opencode"}
 #: The agy CLI settings file under HOME that lists the trusted folders.
 AGY_SETTINGS = Path(".gemini") / "antigravity-cli" / "settings.json"
 TRUST_FIX = 'run agy in this folder and choose "Yes, I trust this folder"'
@@ -159,15 +164,6 @@ def _load(path: Path) -> tuple[dict[str, Any], str | None]:
 # Which harnesses are here -------------------------------------------------------
 
 
-def _harness_of(path: str) -> str | None:
-    """The harness whose folder holds ``path``, a path apm.lock.yaml lists."""
-    parts = PurePosixPath(path).parts
-    for harness, folder in FOLDERS.items():
-        if parts[:1] == (folder,):
-            return harness
-    return None
-
-
 def _manifest_targets(cwd: Path, scope: Scope) -> list[str]:
     """The ``targets`` of the apm.yml that names kmctl's package, or none."""
     try:
@@ -205,25 +201,27 @@ def _kmctl_mark(cwd: Path, scope: Scope, harness: str) -> bool:
     if harness == "claude":
         old = any(name == OLD_PLUGIN for _, name in _old_plugins(cwd, scope))
         return bool(kmctl_hooks(settings_path(cwd, scope)) or old)
+    if harness == "opencode":
+        return (cwd / opencode.PLUGIN).exists()
     return antigravity.plugin_dir(cwd).exists()
 
 
 def harnesses_found(cwd: Path, scope: Scope = "project") -> list[str]:
     """The harnesses kmctl is installed for at ``scope``, from what an install leaves.
 
-    Antigravity installs per repository only, so at user scope only
-    ``claude`` can be found. apm.yml's ``targets`` count only when the lock
+    Antigravity and OpenCode are patched per repository only, so at user
+    scope only ``claude`` can be found. apm.yml's ``targets`` count only when the lock
     lists no kmctl package: a target in apm.yml may be one other packages
     use, so once the lock exists it is the record of where kmctl's package
     went.
     """
-    package = kmctl_package(read_lock(cwd, scope))
+    package = kmctl_files(read_lock(cwd, scope))
     targets = _manifest_targets(cwd, scope) if package is None else []
-    deployed = {_harness_of(p) for p in package.deployed_files} if package else set()
+    deployed = harnesses_marked(package.deployed_files) if package else set()
     return [
         h
         for h in HARNESSES
-        if not (h == "antigravity" and scope == "user")
+        if not (h != "claude" and scope == "user")
         and (h in targets or h in deployed or _kmctl_mark(cwd, scope, h))
     ]
 
@@ -288,6 +286,15 @@ def _dependencies(cwd: Path, found: list[str]) -> list[Check]:
                 "install the Antigravity CLI so agy is on PATH",
             )
         )
+    if "opencode" in found:
+        checks.append(
+            _tool(
+                "dep.opencode",
+                "opencode",
+                "opencode",
+                "install OpenCode (https://opencode.ai/docs/)",
+            )
+        )
     return checks
 
 
@@ -344,14 +351,23 @@ def _deployed(
     cid: str,
     what: str,
     package: LockDependency | None,
+    skip: frozenset[str] = frozenset(),
 ) -> Check:
-    """Whether every file the lock lists for ``package`` under ``harness``'s folder is there unchanged."""
+    """Whether every file the lock lists for ``package`` for ``harness`` is there unchanged.
+
+    ``skip`` names files kmctl rewrites after APM, such as OpenCode's agents,
+    which ``opencode.agents`` checks instead.
+    """
     install = _install_fix(harness, scope)
     folder = FOLDERS[harness]
     if package is None:
         return _fail(cid, harness, f"apm.lock.yaml does not list {what}", install)
     root = apm_root(cwd, scope)
-    paths = [p for p in package.deployed_files if _harness_of(p) == harness]
+    paths = [
+        p
+        for p in package.deployed_files
+        if harness in harnesses_of_path(p) and p not in skip
+    ]
     if not paths:
         detail = f"apm.lock.yaml lists no {what} files under {folder}/"
         return _fail(cid, harness, detail, install)
@@ -560,12 +576,65 @@ def _antigravity_fetch() -> Check:
     return _pass("antigravity.okf-mcp-url", "antigravity", f"{url} can be fetched")
 
 
+# OpenCode ----------------------------------------------------------------------
+
+
+def _listed(cid: str, problems: list[str], fix: str, passed: str) -> Check:
+    """A check that fails naming up to ``SHOWN_PROBLEMS`` of ``problems``, or passes."""
+    if not problems:
+        return _pass(cid, "opencode", passed)
+    shown = problems[:SHOWN_PROBLEMS]
+    if len(problems) > SHOWN_PROBLEMS:
+        shown.append(f"and {len(problems) - SHOWN_PROBLEMS} more")
+    return _fail(cid, "opencode", ", ".join(shown), fix)
+
+
+def _opencode_agents(cwd: Path) -> Check:
+    """Whether the agents in .opencode/agents/ are kmctl's translation, not APM's Claude-format copies."""
+    try:
+        problems = opencode.agent_problems(cwd)
+    except PluginError as error:
+        detail, _, fix = str(error).rpartition("; ")
+        return _fail("opencode.agents", "opencode", detail or fix, fix)
+    passed = f"{opencode.AGENTS.as_posix()}/ holds the agents in OpenCode's format"
+    return _listed("opencode.agents", problems, opencode.FIX, passed)
+
+
+def _opencode_rules(cwd: Path) -> Check:
+    """Whether .opencode/rules/ and opencode.json's instructions entry are what this kmctl writes."""
+    passed = (
+        f"{opencode.RULES.as_posix()}/ holds kmctl's rules and "
+        f"{opencode.CONFIG.as_posix()} lists them"
+    )
+    return _listed("opencode.rules", opencode.rule_problems(cwd), opencode.FIX, passed)
+
+
+def _opencode_mcp(cwd: Path) -> Check:
+    """Whether opencode.json declares okf's MCP server as APM writes it from kmctl's package."""
+    shown = opencode.CONFIG.as_posix()
+    if opencode.mcp_present(cwd):
+        detail = f"{shown} declares okf's MCP server {MCP_NAME}"
+        return _pass("opencode.okf-mcp", "opencode", detail)
+    detail = (
+        f"{shown} is missing okf's MCP server {MCP_NAME} as kmctl's package declares it"
+    )
+    return _fail("opencode.okf-mcp", "opencode", detail, opencode.APM_FIX)
+
+
+def _opencode_hook(cwd: Path) -> Check:
+    """Whether the briefing plugin is the one this kmctl writes."""
+    passed = f"{opencode.PLUGIN.as_posix()} is the briefing plugin this kmctl writes"
+    return _listed("opencode.hook", opencode.hook_problems(cwd), opencode.FIX, passed)
+
+
 # One harness, and all of it ------------------------------------------------------
 
 
 def _harness(cwd: Path, scope: Scope, harness: str, online: bool) -> list[Check]:
     """Every check of one harness installed at ``scope``."""
     lock_check, lock = _lock(cwd, scope, harness)
+    # OpenCode's agents are rewritten by patch, so they cannot match the lock.
+    rewritten = opencode.agent_paths(cwd) if harness == "opencode" else frozenset()
     checks = [
         lock_check,
         _deployed(
@@ -575,6 +644,7 @@ def _harness(cwd: Path, scope: Scope, harness: str, online: bool) -> list[Check]
             f"{harness}.files",
             "kmctl",
             kmctl_files(lock),
+            rewritten,
         ),
         _deployed(
             cwd,
@@ -583,6 +653,7 @@ def _harness(cwd: Path, scope: Scope, harness: str, online: bool) -> list[Check]
             f"{harness}.okf-skills",
             "okf-skills",
             _okf_package(lock),
+            rewritten,
         ),
     ]
     if harness == "claude":
@@ -592,6 +663,13 @@ def _harness(cwd: Path, scope: Scope, harness: str, online: bool) -> list[Check]
             _claude_old_plugin(cwd, scope),
         ]
         return checks
+    if harness == "opencode":
+        return checks + [
+            _opencode_agents(cwd),
+            _opencode_rules(cwd),
+            _opencode_mcp(cwd),
+            _opencode_hook(cwd),
+        ]
     checks += [
         _antigravity_plugin(cwd),
         _antigravity_hook(cwd),
@@ -645,15 +723,17 @@ def run_doctor(
     """Run every check for the repository at ``cwd``, or for the user-scope install.
 
     In order: this kmctl's version (``kmctl.version``); the tools
-    (``dep.uv``, ``dep.git``, ``dep.apm``, and ``dep.claude`` or ``dep.agy``
-    for each harness found); at project scope, the ``kmctl init`` files
+    (``dep.uv``, ``dep.git``, ``dep.apm``, and ``dep.claude``, ``dep.agy`` or
+    ``dep.opencode`` for each harness found); at project scope, the ``kmctl init`` files
     (``init.okf``, ``init.docs``); which harnesses are installed
     (``kmctl.harness``, or ``claude.scope`` when only a user-scope install
     exists); then each harness's checks: ``HARNESS.lock``, ``.files``,
     ``.okf-skills``, ``.okf-mcp``, and for claude ``claude.hook`` and
     ``claude.old-plugin``, for antigravity ``antigravity.plugin``,
     ``antigravity.hook``, ``antigravity.trust`` (when agy is on PATH) and,
-    with ``online``, ``antigravity.okf-mcp-url``.
+    with ``online``, ``antigravity.okf-mcp-url``, for opencode
+    ``opencode.agents``, ``opencode.rules`` and ``opencode.hook``. ``dep.opencode``
+    checks opencode is on PATH when OpenCode is installed.
 
     Parameters
     ----------

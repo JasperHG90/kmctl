@@ -67,10 +67,12 @@ this formalizes so every repository can have it.
   Stop check (ADR 0018), so APM (Agent Package Manager) installs all of it
   (ADR 0020). The user adds the package to `apm.yml` at the CLI's own
   version and runs `apm install --target claude` (or `--target
-  antigravity`); `kmctl plugin patch` then adds only what APM cannot
-  install yet: the agents translated to Antigravity's format, in
-  `.agents/plugins/kmctl/` (ADR 0015, ADR 0021). The harnesses are Claude
-  Code and Antigravity.
+  antigravity`, or `--target opencode`); `kmctl plugin patch` then adds
+  only what APM cannot install yet: the agents translated to Antigravity's
+  format, in `.agents/plugins/kmctl/` (ADR 0015, ADR 0021), and for
+  OpenCode the agents rewritten into its format, the rules and a plugin
+  that relays the briefing (ADR 0024). The harnesses are Claude Code,
+  Antigravity and OpenCode.
 - **A reusable GitHub Action** (ADR 0005). On every pull request it runs the
   deterministic checks for free. The LLM audit is opt-in and reports only.
 
@@ -87,7 +89,9 @@ Each is `planned` until the test named for it passes, then `enforced`.
   0 without `kmctl` and when it fails) and
   `tests/test_antigravity.py` (Antigravity's SessionStart hook prints `{}`
   and exits 0 in both cases; the okf Stop relay prints `{}` and exits 0
-  without a working script).
+  without a working script) and `tests/test_opencode.py` (OpenCode's
+  briefing plugin adds nothing and throws nothing without a working
+  `kmctl`).
 - **I2. Audits never write knowledge.** The audit agent, its skills and the
   CI action report findings; they never edit `.okf/` or `docs/` and never
   write a `verified` stamp. Status: planned.
@@ -119,6 +123,6 @@ Each is `planned` until the test named for it passes, then `enforced`.
 - A `covers` field mapping concepts to code paths (ADR 0006).
 - Hooks beyond SessionStart: a nudge after code edits, a reminder at Stop,
   a commit gate (ADR 0004).
-- More harnesses than the two in Parts: opencode, Hermes and others come
-  later (ADR 0014, ADR 0015).
+- More harnesses than the three in Parts: Hermes and others come later
+  (ADR 0014, ADR 0015).
 - Writing `verified` stamps from an audit (ADR 0005).

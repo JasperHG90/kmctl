@@ -4,7 +4,9 @@ APM installs kmctl's package from a repository's apm.yml: the skills, the
 audit agent, the rules, the SessionStart hooks and okf's MCP server.
 ``patch``, run after ``apm install``, adds only what APM cannot install yet:
 for Antigravity, the plugin folder of agents ``kmctl.antigravity`` builds and
-the removal of APM's broken okf Stop handler; for Claude Code, it moves older
+the removal of APM's broken okf Stop handler; for OpenCode, the agents
+rewritten into its format, the rules and the briefing plugin
+``kmctl.opencode`` writes; for Claude Code, it moves older
 installs over (the hook and MCP entry an older kmctl wrote itself, and the
 claude plugin ``kmctl@kmctl``, ADR 0003). It never runs APM.
 
@@ -29,7 +31,10 @@ from pydantic import BaseModel, Field, TypeAdapter, ValidationError
 
 Scope = Literal["project", "user"]
 #: The harnesses kmctl's package installs for, in the order doctor lists them.
-HARNESSES = ("claude", "antigravity")
+HARNESSES = ("claude", "antigravity", "opencode")
+#: Where APM writes skills for both Antigravity and OpenCode, relative to the
+#: repository; a path here alone does not say which of the two is installed.
+SHARED_SKILLS = ".agents/skills"
 #: The APM release kmctl's docs and doctor name, run through uvx.
 APM_CLI = "apm-cli==0.33.0"
 #: kmctl's GitHub repository.
@@ -710,14 +715,38 @@ def _old_entry(cwd: Path, scope: Scope, lock: Lock | None) -> object | None:
     return None
 
 
+def harnesses_of_path(path: str) -> tuple[str, ...]:
+    """The harnesses a path apm.lock.yaml lists belongs to.
+
+    ``.claude/`` is Claude Code's and ``.opencode/`` OpenCode's.
+    ``.agents/skills/`` serves both Antigravity and OpenCode; the rest of
+    ``.agents/`` (rules, hooks) is Antigravity's.
+    """
+    top = path.split("/", 1)[0]
+    if top == ".claude":
+        return ("claude",)
+    if top == ".opencode":
+        return ("opencode",)
+    if top != ".agents":
+        return ()
+    if path == SHARED_SKILLS or path.startswith(SHARED_SKILLS + "/"):
+        return ("antigravity", "opencode")
+    return ("antigravity",)
+
+
+def harnesses_marked(paths: Sequence[str]) -> set[str]:
+    """The harnesses that ``paths`` show are installed: each one a path belongs to alone.
+
+    A shared skill marks neither Antigravity nor OpenCode, since it is there
+    for either.
+    """
+    return {h for p in paths if len(hs := harnesses_of_path(p)) == 1 for h in hs}
+
+
 def _harnesses_of(package: LockDependency) -> list[str]:
-    """The harnesses whose folders hold files the lock lists for ``package``."""
-    tops = {f.split("/", 1)[0] for f in package.deployed_files}
-    return [
-        h
-        for h, top in (("claude", ".claude"), ("antigravity", ".agents"))
-        if top in tops
-    ]
+    """The harnesses the files the lock lists for ``package`` show are installed."""
+    marked = harnesses_marked(package.deployed_files)
+    return [h for h in HARNESSES if h in marked]
 
 
 def patch(cwd: Path, scope: Scope = "project") -> PatchResult:
@@ -727,7 +756,9 @@ def patch(cwd: Path, scope: Scope = "project") -> PatchResult:
     that APM now writes (``drop_old_hook``, ``drop_old_mcp``) and the old
     claude plugin ``kmctl@kmctl``; for Antigravity it writes the plugin
     folder of translated agents and takes APM's broken okf Stop handler out
-    of ``.agents/hooks.json`` (ADR 0020). Running it again changes nothing.
+    of ``.agents/hooks.json`` (ADR 0020); for OpenCode it rewrites the agents
+    into OpenCode's format and writes the rules, their ``instructions`` entry
+    and the briefing plugin (ADR 0024). Running it again changes nothing.
 
     Raises
     ------
@@ -736,8 +767,8 @@ def patch(cwd: Path, scope: Scope = "project") -> PatchResult:
         (naming the ``apm uninstall`` and the entry to write), when the lock
         lists no kmctl package (naming ``apm install``), or a step fails.
     """
-    # antigravity imports this module, so it is imported here, not at the top.
-    from kmctl import antigravity
+    # antigravity and opencode import this module, so they are imported here.
+    from kmctl import antigravity, opencode
 
     g = " -g" if scope == "user" else ""
     lock = read_lock(cwd, scope)
@@ -783,18 +814,43 @@ def patch(cwd: Path, scope: Scope = "project") -> PatchResult:
                 "took APM's okf Stop handler out of .agents/hooks.json, where it "
                 "cannot run; kmctl's package runs okf's check instead"
             )
+    if "opencode" in harnesses and scope == "project":
+        changed = opencode.write(cwd)
+        notes.append(
+            f"wrote {len(changed)} OpenCode files"
+            + (f" ({', '.join(changed)})" if changed else "")
+            + ": the agents in OpenCode's format, the rules, their "
+            f"{opencode.INSTRUCTIONS} entry in {opencode.CONFIG} and the briefing "
+            "plugin; apm install puts APM's agents back, so run kmctl plugin "
+            "patch after every apm install"
+        )
+    if "opencode" in harnesses and scope == "user":
+        notes.append(
+            "OpenCode is patched at project scope only, so kmctl left it alone; "
+            "run kmctl plugin patch in the repository"
+        )
     return PatchResult(scope, harnesses, package.resolved_ref, notes)
 
 
 def unpatch(cwd: Path, scope: Scope = "project") -> PatchResult:
-    """Delete what ``patch`` wrote: the Antigravity plugin folder in ``cwd``, and nothing else."""
-    from kmctl import antigravity
+    """Delete what ``patch`` wrote in ``cwd``, and nothing else.
+
+    That is the Antigravity plugin folder, and for OpenCode the agents while
+    they are still kmctl's translation, the rules, the instructions entry
+    and the briefing plugin (``kmctl.opencode.undo``). Run it before
+    ``apm uninstall``, which stops on an agent patch rewrote
+    (spike:opencode-harness/4).
+    """
+    from kmctl import antigravity, opencode
 
     folder = antigravity.plugin_dir(cwd)
     notes = []
     if folder.exists():
         shutil.rmtree(folder)
         notes.append(f"deleted {shown_path(folder, cwd)}/")
+    undone = opencode.undo(cwd)
+    if undone:
+        notes.append(f"removed what kmctl wrote for OpenCode: {', '.join(undone)}")
     return PatchResult(scope, [], None, notes)
 
 
