@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "starter-in-repo",
+  "n": 2,
+  "command": "/tmp/claude-1000/-home-vscode-kmctl/efac4bda-9c30-41af-bec2-10265f82b0d7/scratchpad/spike3/migrate.sh",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/efac4bda-9c30-41af-bec2-10265f82b0d7/scratchpad/spike3/migrate.sh",
+      "copy": "files/migrate.sh"
+    }
+  ],
+  "where": "worktree",
+  "head": "0055f1eff95641a5010e76a28f99555c42020aab",
+  "fingerprint": "bd7eb1341e1480da7d0270c6c42d911bf18b9fa088f3c9bad4d013d089b59d74",
+  "started_at": "2026-10-18T09:55:20+00:00",
+  "finished_at": "2026-10-18T09:55:42+00:00",
+  "duration_seconds": 22.416,
+  "timeout_seconds": 300.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "moved_from": null
+}

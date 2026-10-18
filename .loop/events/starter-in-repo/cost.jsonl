@@ -1,1 +1,2 @@
 {"at": "2026-10-18T09:53:48+00:00", "command": "/tmp/claude-1000/-home-vscode-kmctl/efac4bda-9c30-41af-bec2-10265f82b0d7/scratchpad/spike1/spike.sh", "exit": 0, "kind": "spike", "n": 1, "schema_version": "1.0"}
+{"at": "2026-10-18T09:55:42+00:00", "command": "/tmp/claude-1000/-home-vscode-kmctl/efac4bda-9c30-41af-bec2-10265f82b0d7/scratchpad/spike3/migrate.sh", "exit": 0, "kind": "spike", "n": 2, "schema_version": "1.0"}

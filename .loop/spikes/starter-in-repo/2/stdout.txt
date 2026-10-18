@@ -1,0 +1,88 @@
+workdir: /tmp/tmp.WNTJ5fmxbm
+copier 9.19.1
+== 1. project from kmctl-starter v0.3.0
++ uvx copier copy --defaults --data project_name=demo --data codeowners=@octocat --vcs-ref v0.3.0 /tmp/tmp.WNTJ5fmxbm/starter-clone proj
+
+
+  -> exit 0
+# Changes here are overwritten by `copier update`.
+_commit: v0.3.0
+_src_path: /tmp/tmp.WNTJ5fmxbm/starter-clone
+apm_version: 0.33.0
+codeowners: '@octocat'
+harnesses:
+- claude
+kmctl_ref: v0.5.1
+project_description: ''
+project_name: demo
+== 2. fake new template in a kmctl clone
+v0.2.0 v0.3.0 v0.4.0 v0.4.1 v0.5.0 v0.5.1 
+5:_subdirectory: starter
+== 3. move _src_path and try update
+# Changes here are overwritten by `copier update`.
+_commit: v0.3.0
+_src_path: /tmp/tmp.WNTJ5fmxbm/newrepo
+apm_version: 0.33.0
+codeowners: '@octocat'
+harnesses:
+- claude
+kmctl_ref: v0.5.1
+project_description: ''
+project_name: demo
++ uvx copier update --defaults --skip-answered
+  -> exit 0
+git status after update:
+ M .copier-answers.yml
+UU README.md
+UU justfile
+README.md after update (conflict markers?):
+18:<<<<<<< before updating
+19:LOCAL USER EDIT
+20:=======
+21:>>>>>>> after updating
+justfile marker after update:
+1
+_commit after update:
+_commit: v0.6.0
+== 4. recopy
++ uvx copier recopy --defaults --skip-answered --overwrite
+
+
+  -> exit 0
+# Changes here are overwritten by `copier update`.
+_commit: v0.6.0
+_src_path: /tmp/tmp.WNTJ5fmxbm/newrepo
+apm_version: 0.33.0
+codeowners: '@octocat'
+harnesses:
+- claude
+kmctl_ref: v0.5.1
+project_description: ''
+project_name: demo
+ M .copier-answers.yml
+ M README.md
+ M justfile
+PASS: recopy exit 0
+PASS: answers kept (project_name demo)
+PASS: answers kept (codeowners @octocat)
+PASS: _commit is v0.6.0
+PASS: _src_path is new repo
+PASS: template change present
+PASS: no stray kmctl files rendered
+README user edit: OVERWRITTEN by recopy
+ .copier-answers.yml | 2 +-
+ README.md           | 1 -
+ justfile            | 1 +
+ 3 files changed, 2 insertions(+), 2 deletions(-)
+== 5. later release v0.6.1, then copier update
++ uvx copier update --defaults --skip-answered
+  -> exit 0
+ M .copier-answers.yml
+ M justfile
+PASS: second update exit 0
+PASS: _commit is v0.6.1
+PASS: v0.6.1 change applied
+PASS: answers still kept
+PASS: user README edit kept by update
+PASS: no conflict files
+summary: first update rc=0 recopy rc=0 second update rc=0
