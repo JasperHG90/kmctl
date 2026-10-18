@@ -1,0 +1,22 @@
+
+== A pinned shorthand: apm install exit 1; landed: []
+    [x] Failed to parse apm.yml: Invalid APM dependency 
+    6defd83ce7': Invalid virtual package path 'agents/adversarial-reviewer.md'. 
+    Individual files must end with one of: .prompt.md, .instructions.md, .agent.md. 
+    [x] Install failed after 0.0s.
+
+== B unpinned shorthand (README form): apm install exit 1; landed: []
+    [x] Failed to parse apm.yml: Invalid APM dependency 
+    'jasperhg90/skills/agents/adversarial-reviewer.md': Invalid virtual package path
+    'agents/adversarial-reviewer.md'. Individual files must end with one of: 
+    [x] Install failed after 0.0s.
+
+== C git object with path and ref: apm install exit 1; landed: []
+      [x] 1 package failed:
+    [x] Installation failed with 1 error(s) in 1.1s. No install transaction changes 
+
+== D control: pinned single-file rule: apm install exit 0; landed: ['.claude/rules/adversarial-reviews.md']
+      [i] Skipped inactive experimental resolver for target 'copilot-cowork' during 
+      [i] Skipped inactive experimental resolver for target 'copilot-app' during 
+
+accepted: {'A pinned shorthand': False, 'B unpinned shorthand (README form)': False, 'C git object with path and ref': False, 'D control: pinned single-file rule': True}
