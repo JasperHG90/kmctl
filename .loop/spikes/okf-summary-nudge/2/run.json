@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "okf-summary-nudge",
+  "n": 2,
+  "command": "/tmp/claude-1000/-home-vscode-kmctl/efac4bda-9c30-41af-bec2-10265f82b0d7/scratchpad/spike-nudge/risk1.sh",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/efac4bda-9c30-41af-bec2-10265f82b0d7/scratchpad/spike-nudge/risk1.sh",
+      "copy": "files/risk1.sh"
+    }
+  ],
+  "where": "worktree",
+  "head": "12f38fac5748fdaccdab8c411981b2d33e23304a",
+  "fingerprint": "2fe6e5471cd3ff4ca8711aee9293c2ba441edf7933df9707e7a817d536234347",
+  "started_at": "2026-10-18T21:48:28+00:00",
+  "finished_at": "2026-10-18T21:48:52+00:00",
+  "duration_seconds": 24.119,
+  "timeout_seconds": 600.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "moved_from": null
+}

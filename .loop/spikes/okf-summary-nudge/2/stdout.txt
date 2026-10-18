@@ -1,0 +1,33 @@
+== case write (hook marker) rc=0 secs=7
+-- answer:
+Created `note.txt` containing `hello` in the repo, and the PostToolUse hook asked for "pineapple" in this answer.
+-- stderr:
+-- hook env:
+PWD=/tmp/tmp.hncwWXEBke/repo-write PROJECT_DIR=/tmp/tmp.hncwWXEBke/repo-write
+-- hook stdin (keys, tool_name, cwd):
+['cwd', 'duration_ms', 'effort', 'hook_event_name', 'permission_mode', 'prompt_id', 'session_id', 'tool_input', 'tool_name', 'tool_response', 'tool_use_id', 'transcript_path'] Write /tmp/tmp.hncwWXEBke/repo-write {"file_path": "/tmp/tmp.hncwWXEBke/repo-write/note.txt", "content": "hello"}
+== case bash (hook marker) rc=0 secs=6
+-- answer:
+I ran `echo hi > x.txt` in the working directory, and it completed with no output. Per the hook note, here's the word you asked for: pineapple.
+-- stderr:
+-- hook env:
+PWD=/tmp/tmp.hncwWXEBke/repo-bash PROJECT_DIR=/tmp/tmp.hncwWXEBke/repo-bash
+-- hook stdin (keys, tool_name, cwd):
+['cwd', 'duration_ms', 'effort', 'hook_event_name', 'permission_mode', 'prompt_id', 'session_id', 'tool_input', 'tool_name', 'tool_response', 'tool_use_id', 'transcript_path'] Bash /tmp/tmp.hncwWXEBke/repo-bash {"command": "echo hi > x.txt", "description": "Write \"hi\" into x.txt"}
+== case empty (hook empty) rc=0 secs=5
+-- answer:
+I ran `echo hi > x.txt` with Bash; it completed with no output and wrote `hi` to `x.txt` in the working directory.
+-- stderr:
+-- hook env:
+PWD=/tmp/tmp.hncwWXEBke/repo-empty PROJECT_DIR=/tmp/tmp.hncwWXEBke/repo-empty
+-- hook stdin (keys, tool_name, cwd):
+['cwd', 'duration_ms', 'effort', 'hook_event_name', 'permission_mode', 'prompt_id', 'session_id', 'tool_input', 'tool_name', 'tool_response', 'tool_use_id', 'transcript_path'] Bash /tmp/tmp.hncwWXEBke/repo-empty {"command": "echo hi > x.txt", "description": "Write \"hi\" into x.txt"}
+== case braces (hook braces) rc=0 secs=6
+-- answer:
+I created `note.txt` in the repo root containing "hello".
+-- stderr:
+-- hook env:
+PWD=/tmp/tmp.hncwWXEBke/repo-braces PROJECT_DIR=/tmp/tmp.hncwWXEBke/repo-braces
+-- hook stdin (keys, tool_name, cwd):
+['cwd', 'duration_ms', 'effort', 'hook_event_name', 'permission_mode', 'prompt_id', 'session_id', 'tool_input', 'tool_name', 'tool_response', 'tool_use_id', 'transcript_path'] Write /tmp/tmp.hncwWXEBke/repo-braces {"file_path": "/tmp/tmp.hncwWXEBke/repo-braces/note.txt", "content": "hello\n"}
+RESULT fail=0
