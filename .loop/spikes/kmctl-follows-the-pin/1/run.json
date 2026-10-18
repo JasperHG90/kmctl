@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "kmctl-follows-the-pin",
+  "n": 1,
+  "command": "/tmp/claude-1000/-home-vscode-kmctl/efac4bda-9c30-41af-bec2-10265f82b0d7/scratchpad/spike-pin1/warm.sh",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/efac4bda-9c30-41af-bec2-10265f82b0d7/scratchpad/spike-pin1/warm.sh",
+      "copy": "files/warm.sh"
+    }
+  ],
+  "where": "worktree",
+  "head": "98137c4f6243c98e4525dc3e9f6e725826891830",
+  "fingerprint": "ee7a6874bcda7a52a9cea1ca19fa64fe8ce3ca6bf34989400314a4ca4bfbbcb5",
+  "started_at": "2026-10-18T18:47:14+00:00",
+  "finished_at": "2026-10-18T18:47:32+00:00",
+  "duration_seconds": 17.355,
+  "timeout_seconds": 300.0,
+  "exit": 1,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "moved_from": null
+}

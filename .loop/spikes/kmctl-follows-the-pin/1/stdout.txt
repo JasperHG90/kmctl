@@ -1,0 +1,19 @@
+commit=9861767d029230356fafbad50f7d454ad10c221f
+bare clone size: 56M
+== a) cold commit form
+8787 ms rc=0 :: uvx --from git+https://github.com/JasperHG90/kmctl@9861767d029230356fafbad50f7d454ad10c221f kmctl --version :: kmctl 0.6.0
+== b) warm commit form
+132 ms rc=0 :: uvx --from git+https://github.com/JasperHG90/kmctl@9861767d029230356fafbad50f7d454ad10c221f kmctl --version :: kmctl 0.6.0
+== e) offline commit form
+134 ms rc=0 :: uvx --offline --from git+https://github.com/JasperHG90/kmctl@9861767d029230356fafbad50f7d454ad10c221f kmctl --version :: kmctl 0.6.0
+== c) tag uvx, then commit form
+3045 ms rc=0 :: uvx --from git+https://github.com/JasperHG90/kmctl@v0.6.0 kmctl --version :: kmctl 0.6.0
+385 ms rc=0 :: uvx --from git+https://github.com/JasperHG90/kmctl@9861767d029230356fafbad50f7d454ad10c221f kmctl --version :: kmctl 0.6.0
+110 ms rc=0 :: uvx --offline --from git+https://github.com/JasperHG90/kmctl@9861767d029230356fafbad50f7d454ad10c221f kmctl --version :: kmctl 0.6.0
+== d) uv tool install tag, then commit form
+2849 ms rc=0 :: uv tool install git+https://github.com/JasperHG90/kmctl@v0.6.0 :: warning: `/tmp/tmp.AskndWV3He/bind` is not on your PATH. To use installed tools, run `export PATH="/tmp/tmp.AskndWV3He/bind:$PATH"` or `uv tool update-shell`.
+661 ms rc=0 :: uvx --from git+https://github.com/JasperHG90/kmctl@9861767d029230356fafbad50f7d454ad10c221f kmctl --version :: kmctl 0.6.0
+135 ms rc=0 :: uvx --offline --from git+https://github.com/JasperHG90/kmctl@9861767d029230356fafbad50f7d454ad10c221f kmctl --version :: kmctl 0.6.0
+cache sizes: a=85M c=108M d=85M
+uv 0.13.0 (aarch64-unknown-linux-gnu)
+cold=8787ms fail=1
