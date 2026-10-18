@@ -54,10 +54,14 @@ still true; that takes judgment. So kmctl does two things instead:
 [copier](https://copier.readthedocs.io/) template in this repository
 (`copier.yml` and `starter/`), sets one up with `docs/`, `.okf/` and kmctl's
 package for your agent harness (Claude Code, Antigravity or OpenCode), so you
-can skip the steps below:
+can skip the steps below. It needs [uv](https://docs.astral.sh/uv/) and
+[just](https://just.systems/):
 
 ```
 uvx copier copy gh:JasperHG90/kmctl my-project
+cd my-project
+git init
+just bootstrap
 ```
 
 [Start a repository with kmctl-starter](docs/how-to/start-a-repository-with-kmctl-starter.md)
