@@ -3,7 +3,7 @@
   "rows": [
     {
       "id": "r1",
-      "behavior": "The OpenCode agent translator keeps description, adds mode: subagent, writes permission with \"*\": deny first and then allow for each mapped tool (Read to read, Grep to grep, Glob to glob, Write and Edit to edit, Bash to bash, which OpenCode 1.x reads as bash and 2.x as shell), drops name, color, effort and model, copies the body unchanged, gives the same bytes for the same input, and refuses, naming the tool, a Claude tool not in its map.",
+      "behavior": "The OpenCode agent translator keeps description, adds mode: subagent, writes permission with \"*\": deny first and then allow for each mapped tool (Read to read, Grep to grep, Glob to glob, Write and Edit to edit, Bash to shell), drops name, color, effort and model, copies the body unchanged, gives the same bytes for the same input, and refuses, naming the tool, a Claude tool not in its map.",
       "fails_when": "any mapping differs, \"*\": deny is not the first rule, a tools key or a Claude-only key survives, the body changes, two runs differ, or an unknown tool translates silently",
       "command": "uv run pytest tests/test_opencode.py -k translate -q"
     },
@@ -27,8 +27,8 @@
     },
     {
       "id": "r5",
-      "behavior": "The briefing plugin .opencode/plugins/kmctl.js, loaded under node with stub inputs as OpenCode 2.x (setup, then its context hook) and 1.x (server, then its experimental.chat.system.transform hook) load it, adds the kmctl briefing to the system prompt once per line ({type: \"text\"} parts for 2.x, strings for 1.x), and when kmctl is not on PATH, fails or prints nothing it adds nothing, and neither entry point nor hook throws or rejects, even with empty inputs (I1).",
-      "fails_when": "the text added differs from kmctl briefing's output, an entry point registers no hook, or with kmctl missing, failing or silent anything is added or anything throws or rejects; the test skips only when node is not on PATH",
+      "behavior": "The briefing plugin .opencode/plugins/kmctl.js, loaded under node with a stub ctx as OpenCode 2.x loads it (a default export {id, setup}; setup registers a context hook), pushes the kmctl briefing as a {type: \"text\"} system part, and when kmctl is not on PATH, fails or prints nothing it pushes nothing, and neither setup nor the hook throws or rejects, even with an empty ctx (I1).",
+      "fails_when": "the text pushed differs from kmctl briefing's output, setup registers no context hook, or with kmctl missing, failing or silent anything is pushed or anything throws or rejects; the test skips only when node is not on PATH",
       "command": "uv run pytest tests/test_opencode.py -k briefing_plugin -q"
     },
     {
@@ -51,7 +51,7 @@
     },
     {
       "id": "r9",
-      "behavior": "With opencode on PATH, 1.x (opencode agent list) or 2.x (opencode debug agents, on a service port of its own that the test stops), OpenCode lists kmctl-auditor, bundle-weaver and event-analyzer as subagents; the test skips when opencode is absent.",
+      "behavior": "With OpenCode 2.x on PATH, opencode debug agents (on a service port of its own that the test stops) lists kmctl-auditor, bundle-weaver and event-analyzer as subagents; the test skips when opencode is absent.",
       "fails_when": "opencode is present and any of the three agents is missing from its list",
       "command": "uv run pytest tests/test_opencode.py -m integration -k loads_agents -q"
     },
