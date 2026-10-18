@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "the docs said copier update changes nothing after a release with no template change",
+      "anchor": "docs/how-to/start-a-repository-with-kmctl-starter.md:68",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "the .pre-commit-config.yaml row did not name the agent files the hooks skip",
+      "anchor": "docs/how-to/start-a-repository-with-kmctl-starter.md:53",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "ebe396b7e2a062e18591cb990f0192f7130e4583e9551b657cdb62642280eb82",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-18T10:29:42+00:00"
+}
