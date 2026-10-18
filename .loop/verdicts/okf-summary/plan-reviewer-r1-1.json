@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "`kmctl summary ack` writes a new front-matter field, `checked`, holding a date and a list of concepts. Invariant I4 and ADR 0009 say kmctl writes only OKF fields plus extension fields an ADR names, and that `handoff_key` is the only one. `okf.field` raises KeyError on any path not in ALLOWED_FIELDS, and tests/test_okf_fields.py fails on any key it doesn't know. The plan doesn't name `checked` (or its nested paths) as an I4 extension, doesn't amend I4's wording, and doesn't update ALLOWED_FIELDS or test_okf_fields to cover ack. The planned ADR needs to name it. Otherwise ack breaks an enforced invariant, or gets built some other way, such as reusing `verified`, which ADR 0023 forbids.",
+      "anchor": "src/kmctl/okf.py:42",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": ".okf/summary.md is a root concept, so review_due._concepts picks it up, and review_due lists it as `unverified` until a person runs `kmctl verify`. Ack doesn't count as a person's check, by design. So in every `kmctl init` repo the summary stays in `kmctl review due`, and in the briefing's 'N concepts due' count, after an edit or an ack. The plan's success test says an edit or ack 'clears it', but only the `concepts changed` reason clears. The plan must decide whether the summary is exempt from the unverified rule (and stale_after), or say that only the freshness reason clears. That choice decides what the tests and the briefing state line assert.",
+      "anchor": "src/kmctl/review_due.py:223",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "c12c9931e3e6cfd797b4e67db978e013101ce641c6192977d9a328df86c25fbe"
+  },
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-18T19:44:39+00:00"
+}
