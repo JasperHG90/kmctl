@@ -3,7 +3,7 @@
   "slug": "opencode-harness-reviewer-f6",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "7efe90b6c6ecdf4769b93f8ff3b3ee763586c4ba280c648bc86dba93e4c75e53",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "441f68733946a59dcffb12391e2e312862e3ffab1b2304c9d114965b5b3edefa",
+    "started_at": "2026-10-18T05:31:47+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "441f68733946a59dcffb12391e2e312862e3ffab1b2304c9d114965b5b3edefa",
   "intent": {
     "epic": "multi-harness",
     "depends_on": [],
@@ -44,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T05:31:46+00:00"
+  "at": "2026-10-18T05:31:47+00:00"
 }
