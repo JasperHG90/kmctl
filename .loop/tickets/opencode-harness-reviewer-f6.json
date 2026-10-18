@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "opencode-harness-reviewer-f6",
-  "stage": "building",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 0,
@@ -107,8 +107,14 @@
       "to": "building",
       "at": "2026-10-18T05:32:54+00:00",
       "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-10-18T05:37:45+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T05:37:39+00:00"
+  "at": "2026-10-18T05:37:45+00:00"
 }
