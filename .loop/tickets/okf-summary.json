@@ -1,72 +1,14 @@
 {
   "schema_version": "1.0",
   "slug": "okf-summary",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": {
-    "round": 1,
-    "fingerprint": "de477ed5e0a1a10e0a292c638fff5c12ffe670b84a97cb5a890c1e8dd7fff25c",
-    "tree": "de3f0e7fe473104c14936033fda4b4c0439a6313",
-    "decisions": [
-      {
-        "finding": "reviewer:f1",
-        "outcome": "sent-back",
-        "by": "blocking",
-        "judgement": null,
-        "paths": [
-          ".okf/decisions/0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step.md",
-          "docs/reference/commands.md",
-          "src/kmctl/__init__.py",
-          "src/kmctl/kinds.py",
-          "src/kmctl/summary.py",
-          "tests/test_summary.py"
-        ]
-      },
-      {
-        "finding": "reviewer:f2",
-        "outcome": "sent-back",
-        "by": "fallback",
-        "judgement": "j-20261018T205641+0000-13c9de26",
-        "paths": [
-          "src/kmctl/briefing.py",
-          "tests/test_briefing.py"
-        ]
-      },
-      {
-        "finding": "reviewer:f3",
-        "outcome": "sent-back",
-        "by": "judgement",
-        "judgement": "j-20261018T205642+0000-ec507b05",
-        "paths": [
-          ".claude/rules/okf-bundle.md",
-          "README.md",
-          "apm/antigravity/.apm/instructions/okf-bundle.instructions.md",
-          "apm/claude/.apm/instructions/okf-bundle.instructions.md",
-          "docs/tutorials/get-started-with-kmctl.md",
-          "tests/test_apm_package.py"
-        ]
-      },
-      {
-        "finding": "reviewer:f4",
-        "outcome": "sent-back",
-        "by": "judgement",
-        "judgement": "j-20261018T205643+0000-d79d6416",
-        "paths": [
-          ".okf/decisions/0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step.md",
-          "docs/reference/commands.md",
-          "src/kmctl/__init__.py",
-          "src/kmctl/scaffold.py",
-          "tests/test_init.py"
-        ]
-      }
-    ],
-    "at": "2026-10-18T20:56:43+00:00"
-  },
+  "fix": null,
   "ask": "j-20261018T192834+0000-db7087e2",
   "split": "j-20261018T194102+0000-44637fec",
   "split_plan_hash": "7f3890072988ab1aed6a6998bc1d9f864d22a1e7ad28fa4fa899b987854e506c",
@@ -167,8 +109,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "7f3890072988ab1aed6a6998bc1d9f864d22a1e7ad28fa4fa899b987854e506c",
   "intent": {
@@ -212,8 +154,14 @@
       "to": "verifying",
       "at": "2026-10-18T20:56:43+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-18T21:04:46+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T20:56:47+00:00"
+  "at": "2026-10-18T21:04:46+00:00"
 }
