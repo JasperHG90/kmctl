@@ -20,7 +20,8 @@
   "worktree": "/home/vscode/kmctl.worktrees/okf-summary-holistic",
   "branch": "loop/okf-summary-holistic",
   "stamps": [
-    "d4d82a747bc7a23988756031b8edbdb2fbbe43fc589eb80b12270d8a334a38a3"
+    "d4d82a747bc7a23988756031b8edbdb2fbbe43fc589eb80b12270d8a334a38a3",
+    "5ea7f5b254f79bf48549b2afb39ad599f9c6becd5d0a647613c65b3e3c11e8d9"
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
@@ -131,5 +132,5 @@
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T22:35:11+00:00"
+  "at": "2026-10-18T22:39:40+00:00"
 }
