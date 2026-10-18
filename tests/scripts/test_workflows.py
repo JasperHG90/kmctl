@@ -223,3 +223,26 @@ def test_ci_starter_job_bootstraps_a_generated_project() -> None:
     assert any(s.get("uses", "").startswith("astral-sh/setup-uv@") for s in steps)
     assert "uv tool install rust-just==" in _runs(CI, "starter")
     assert steps[-1]["run"] == "uv run pytest tests/test_starter.py -m integration"
+
+
+def _installs_just_before(path: Path, job: str, pytest_step: int) -> bool:
+    """Whether ``job`` in ``path`` installs just with uv in a step before step ``pytest_step``."""
+    steps = _steps(path, job)
+    return any(
+        "uv tool install rust-just==" in s.get("run", "") for s in steps[:pytest_step]
+    )
+
+
+def test_ci_and_release_test_jobs_install_just() -> None:
+    """The default tier runs the template's just recipes (tests/test_starter.py), so both test jobs install just first."""
+    ci = _steps(CI, "tests")
+    [ci_pytest] = [
+        i for i, s in enumerate(ci) if "toiminnot/actions/pytest@" in s.get("uses", "")
+    ]
+    release = _steps(RELEASE, "test")
+    [release_pytest] = [
+        i for i, s in enumerate(release) if s.get("run") == "uv run pytest"
+    ]
+
+    assert _installs_just_before(CI, "tests", ci_pytest)
+    assert _installs_just_before(RELEASE, "test", release_pytest)
