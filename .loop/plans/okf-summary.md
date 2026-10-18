@@ -61,7 +61,7 @@ What changes:
 
 - **The `summary` kind.** `src/kmctl/kinds.py` gets `summary` at
   `.okf/summary.md`: front matter `type: summary`, title, description, tags,
-  generated, `verified` (a person), `checked` (an agent's ack), and sections Decisions, Architecture, Open work
+  generated, `checked` (an agent's ack), and sections Decisions, Architecture, Open work
   (proposals and prototypes), Practices, Known gaps. Each section describes
   a theme of what the bundle knows and links down to its concepts; no
   counts or due lists, which kmctl computes. `kmctl schema summary`
@@ -69,6 +69,19 @@ What changes:
   links it from `.okf/index.md`. Progressive disclosure, which means each
   layer is short and points to the next: briefing, then summary, then the
   section indexes, then the concepts.
+- **The summary has one freshness rule.** `kmctl review due` lists other
+  concepts as `unverified` until a person runs `kmctl verify`, and when
+  `stale_after` passes. The summary is exempt from both: the rule below is
+  its only reason to be listed, so an edit or an `ack` clears it fully, and
+  the briefing's due count and state line agree (plan review round 1, p2).
+- **`checked` is an extension field.** Invariant I4 (`.okf/manifesto.md`)
+  and ADR 0009 allow only fields an ADR names, and `handoff_key` is the only
+  one; `okf.field` raises on any other key (`src/kmctl/okf.py`). The new
+  decision names `checked` (`checked.at`, the date, and `checked.against`,
+  the concept ids it was checked against) as the second extension, I4's
+  "The only one is" becomes a list of the two, `ALLOWED_FIELDS` gains the
+  keys, and `tests/test_okf_fields.py` covers what `ack` writes (plan
+  review round 1, p1).
 - **The check.** `kmctl check` (`src/kmctl/checks.py`) fails a summary
   body over 500 words (counted as `len(text.split())` outside front matter)
   and names the count; links in it are checked like other `.okf/` pages
