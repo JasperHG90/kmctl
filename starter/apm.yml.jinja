@@ -9,6 +9,11 @@ dependencies:
     - git: https://github.com/JasperHG90/kmctl.git
       path: apm
       ref: {{ kmctl_ref }}
+{%- if adversarial_review and 'claude' in harnesses %}
+    # The agent the adversarial-reviews rule in AGENTS.md hands each finished
+    # task to (Claude Code only).
+    - jasperhg90/skills/agents/adversarial-reviewer.agent.md#41f495021f3b264992c8fa764d58565c1184ab91
+{%- endif %}
 targets:
 {%- for harness in harnesses %}
   - {{ harness }}
