@@ -3,7 +3,7 @@
   "slug": "verify-verb-reviewer-f6",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,7 +28,26 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "d687b0588bf987c487b31eca5cc6b47567b0b9cb664c1556ebbf493889ec6477",
+    "started_at": "2026-10-18T21:46:42+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
   "plan_hash": "d687b0588bf987c487b31eca5cc6b47567b0b9cb664c1556ebbf493889ec6477",
   "intent": {
     "epic": "knowledge",
@@ -44,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T21:46:41+00:00"
+  "at": "2026-10-18T21:46:42+00:00"
 }
