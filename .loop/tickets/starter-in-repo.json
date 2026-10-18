@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "starter-in-repo",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
@@ -39,7 +39,7 @@
   "split": "j-20261018T100313+0000-ee36d6f4",
   "split_plan_hash": "c65d9390112512eb988e2030cc14cde8a98bbad1634009573ead8a045cf35ad2",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "c4c4edd3324675c37360562571c376289cd359b8",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -180,8 +180,14 @@
       "to": "verifying",
       "at": "2026-10-18T10:25:52+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-18T10:30:06+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T10:29:54+00:00"
+  "at": "2026-10-18T10:30:06+00:00"
 }
