@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "starter-reviewer-gitignore",
+  "n": 1,
+  "command": "python3 /tmp/claude-1000/-home-vscode-kmctl/efac4bda-9c30-41af-bec2-10265f82b0d7/scratchpad/spike-reviewer/spike.py",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/efac4bda-9c30-41af-bec2-10265f82b0d7/scratchpad/spike-reviewer/spike.py",
+      "copy": "files/spike.py"
+    }
+  ],
+  "where": "worktree",
+  "head": "4ed1e9d732c9fbdc9842dd21a949b8e3e0ee9ed2",
+  "fingerprint": "ee7a6874bcda7a52a9cea1ca19fa64fe8ce3ca6bf34989400314a4ca4bfbbcb5",
+  "started_at": "2026-10-18T18:17:20+00:00",
+  "finished_at": "2026-10-18T18:17:47+00:00",
+  "duration_seconds": 27.383,
+  "timeout_seconds": 1200.0,
+  "exit": 1,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "moved_from": null
+}

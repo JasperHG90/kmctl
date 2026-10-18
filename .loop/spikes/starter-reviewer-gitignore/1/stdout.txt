@@ -1,0 +1,253 @@
+
+===== harnesses=[claude] =====
+copier exit 0
+just bootstrap exit 1
+bootstrap lines mentioning adversarial/warn/error/skip:
+    'jasperhg90/skills/agents/adversarial-reviewer.md#09b7a0a844b86be4e9ba0973f6b117
+    6defd83ce7': Invalid virtual package path 'agents/adversarial-reviewer.md'. 
+    error: recipe `install` failed on line 22 with exit code 1
+bootstrap tail:
+[>] Installing dependencies from apm.yml...
+[x] Failed to parse apm.yml: Invalid APM dependency 
+'jasperhg90/skills/agents/adversarial-reviewer.md#09b7a0a844b86be4e9ba0973f6b117
+6defd83ce7': Invalid virtual package path 'agents/adversarial-reviewer.md'. 
+Individual files must end with one of: .prompt.md, .instructions.md, .agent.md. 
+For subdirectory packages, the path should not have a file extension.
+[x] Install failed after 0.0s.
+uv tool install --force "git+https://github.com/JasperHG90/kmctl@v0.6.0"
+Downloading cpython-3.15.0-linux-aarch64-gnu (download) (30.0MiB)
+ Downloaded cpython-3.15.0-linux-aarch64-gnu (download)
+Resolved 20 packages in 120ms
+   Building kmctl @ git+https://github.com/JasperHG90/kmctl@9861767d029230356fafbad50f7d454ad10c221f
+      Built kmctl @ git+https://github.com/JasperHG90/kmctl@9861767d029230356fafbad50f7d454ad10c221f
+Prepared 1 package in 74ms
+Installed 20 packages in 188ms
+ + annotated-doc==0.0.5
+ + annotated-types==0.8.0
+ + anyio==4.15.1
+ + certifi==2026.10.18
+ + h11==0.16.0
+ + httpcore==1.0.9
+ + httpx==0.28.1
+ + idna==3.20
+ + kmctl==0.6.0 (from git+https://github.com/JasperHG90/kmctl@9861767d029230356fafbad50f7d454ad10c221f)
+ + markdown-it-py==4.2.0
+ + mdurl==0.1.2
+ + pydantic==2.14.1
+ + pydantic-core==2.50.1
+ + pygments==2.21.0
+ + pyyaml==6.0.3
+ + rich==15.0.0
+ + shellingham==1.5.4
+ + typer==0.27.3
+ + typing-extensions==4.16.0
+ + typing-inspection==0.4.4
+Installed 1 executable: kmctl
+uvx --from apm-cli==0.33.0 apm install
+Installed 62 packages in 302ms
+error: recipe `install` failed on line 22 with exit code 1
+
+adversarial-reviewer files: []
+kmctl check exit 0
+kmctl doctor exit 1
+doctor failing: ['claude.files', 'claude.hook', 'claude.lock', 'claude.okf-mcp', 'claude.okf-skills', 'dep.claude', 'init.docs', 'init.okf'] | beyond unpassable: ['claude.files', 'claude.hook', 'claude.lock', 'claude.okf-mcp', 'claude.okf-skills', 'init.docs', 'init.okf']
+    {"id": "init.okf", "harness": null, "ok": false, "detail": ".okf/index.md is missing", "fix": "run kmctl init"}
+    {"id": "init.docs", "harness": null, "ok": false, "detail": "docs/README.md is missing", "fix": "run kmctl init"}
+    {"id": "claude.lock", "harness": "claude", "ok": false, "detail": "apm.lock.yaml is missing", "fix": "run apm install --target claude (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "claude.files", "harness": "claude", "ok": false, "detail": "apm.lock.yaml does not list kmctl", "fix": "run apm install --target claude (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "claude.okf-skills", "harness": "claude", "ok": false, "detail": "apm.lock.yaml does not list okf-skills", "fix": "run apm install --target claude (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "claude.hook", "harness": "claude", "ok": false, "detail": "the kmctl SessionStart hook is missing from .claude/settings.json", "fix": "run apm install --target claude (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "claude.okf-mcp", "harness": "claude", "ok": false, "detail": "okf's MCP server okf-bundle is missing from .mcp.json", "fix": "run apm install --target claude (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+RESULT [claude]: FAIL (agent deployed to: nowhere)
+
+===== harnesses=[opencode] =====
+copier exit 0
+just bootstrap exit 1
+bootstrap lines mentioning adversarial/warn/error/skip:
+    'jasperhg90/skills/agents/adversarial-reviewer.md#09b7a0a844b86be4e9ba0973f6b117
+    6defd83ce7': Invalid virtual package path 'agents/adversarial-reviewer.md'. 
+    error: recipe `install` failed on line 22 with exit code 1
+bootstrap tail:
+[>] Installing dependencies from apm.yml...
+[x] Failed to parse apm.yml: Invalid APM dependency 
+'jasperhg90/skills/agents/adversarial-reviewer.md#09b7a0a844b86be4e9ba0973f6b117
+6defd83ce7': Invalid virtual package path 'agents/adversarial-reviewer.md'. 
+Individual files must end with one of: .prompt.md, .instructions.md, .agent.md. 
+For subdirectory packages, the path should not have a file extension.
+[x] Install failed after 0.0s.
+uv tool install --force "git+https://github.com/JasperHG90/kmctl@v0.6.0"
+Downloading cpython-3.15.0-linux-aarch64-gnu (download) (30.0MiB)
+ Downloaded cpython-3.15.0-linux-aarch64-gnu (download)
+Resolved 20 packages in 4ms
+Installed 20 packages in 103ms
+ + annotated-doc==0.0.5
+ + annotated-types==0.8.0
+ + anyio==4.15.1
+ + certifi==2026.10.18
+ + h11==0.16.0
+ + httpcore==1.0.9
+ + httpx==0.28.1
+ + idna==3.20
+ + kmctl==0.6.0 (from git+https://github.com/JasperHG90/kmctl@9861767d029230356fafbad50f7d454ad10c221f)
+ + markdown-it-py==4.2.0
+ + mdurl==0.1.2
+ + pydantic==2.14.1
+ + pydantic-core==2.50.1
+ + pygments==2.21.0
+ + pyyaml==6.0.3
+ + rich==15.0.0
+ + shellingham==1.5.4
+ + typer==0.27.3
+ + typing-extensions==4.16.0
+ + typing-inspection==0.4.4
+Installed 1 executable: kmctl
+uvx --from apm-cli==0.33.0 apm install
+Installed 62 packages in 194ms
+error: recipe `install` failed on line 22 with exit code 1
+
+adversarial-reviewer files: []
+kmctl check exit 0
+kmctl doctor exit 1
+doctor failing: ['dep.opencode', 'init.docs', 'init.okf', 'opencode.agents', 'opencode.files', 'opencode.hook', 'opencode.lock', 'opencode.okf-mcp', 'opencode.okf-skills', 'opencode.rules'] | beyond unpassable: ['init.docs', 'init.okf', 'opencode.agents', 'opencode.files', 'opencode.hook', 'opencode.lock', 'opencode.okf-mcp', 'opencode.okf-skills', 'opencode.rules']
+    {"id": "init.okf", "harness": null, "ok": false, "detail": ".okf/index.md is missing", "fix": "run kmctl init"}
+    {"id": "init.docs", "harness": null, "ok": false, "detail": "docs/README.md is missing", "fix": "run kmctl init"}
+    {"id": "opencode.lock", "harness": "opencode", "ok": false, "detail": "apm.lock.yaml is missing", "fix": "run apm install --target opencode (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "opencode.files", "harness": "opencode", "ok": false, "detail": "apm.lock.yaml does not list kmctl", "fix": "run apm install --target opencode (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "opencode.okf-skills", "harness": "opencode", "ok": false, "detail": "apm.lock.yaml does not list okf-skills", "fix": "run apm install --target opencode (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "opencode.agents", "harness": "opencode", "ok": false, "detail": "apm_modules/ is missing", "fix": "run apm install --target opencode (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "opencode.rules", "harness": "opencode", "ok": false, "detail": ".opencode/rules/diagrams-stay-current.md is missing, .opencode/rules/docs-layout.md is missing, .opencode/rules/manifesto-invariants.md is missing, .opencode/rules/okf-bundle.md is missing, opencode.json's instructions lacks .opencode/rules/*.md", "fix": "run kmctl plugin patch"}
+    {"id": "opencode.okf-mcp", "harness": "opencode", "ok": false, "detail": "opencode.json is missing okf's MCP server okf-bundle as kmctl's package declares it", "fix": "run apm install --target opencode (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "opencode.hook", "harness": "opencode", "ok": false, "detail": ".opencode/plugins/kmctl.js is missing", "fix": "run kmctl plugin patch"}
+RESULT [opencode]: FAIL (agent deployed to: nowhere)
+
+===== harnesses=[antigravity] =====
+copier exit 0
+just bootstrap exit 1
+bootstrap lines mentioning adversarial/warn/error/skip:
+    'jasperhg90/skills/agents/adversarial-reviewer.md#09b7a0a844b86be4e9ba0973f6b117
+    6defd83ce7': Invalid virtual package path 'agents/adversarial-reviewer.md'. 
+    error: recipe `install` failed on line 22 with exit code 1
+bootstrap tail:
+[>] Installing dependencies from apm.yml...
+[x] Failed to parse apm.yml: Invalid APM dependency 
+'jasperhg90/skills/agents/adversarial-reviewer.md#09b7a0a844b86be4e9ba0973f6b117
+6defd83ce7': Invalid virtual package path 'agents/adversarial-reviewer.md'. 
+Individual files must end with one of: .prompt.md, .instructions.md, .agent.md. 
+For subdirectory packages, the path should not have a file extension.
+[x] Install failed after 0.0s.
+uv tool install --force "git+https://github.com/JasperHG90/kmctl@v0.6.0"
+Downloading cpython-3.15.0-linux-aarch64-gnu (download) (30.0MiB)
+ Downloaded cpython-3.15.0-linux-aarch64-gnu (download)
+Resolved 20 packages in 3ms
+Installed 20 packages in 191ms
+ + annotated-doc==0.0.5
+ + annotated-types==0.8.0
+ + anyio==4.15.1
+ + certifi==2026.10.18
+ + h11==0.16.0
+ + httpcore==1.0.9
+ + httpx==0.28.1
+ + idna==3.20
+ + kmctl==0.6.0 (from git+https://github.com/JasperHG90/kmctl@9861767d029230356fafbad50f7d454ad10c221f)
+ + markdown-it-py==4.2.0
+ + mdurl==0.1.2
+ + pydantic==2.14.1
+ + pydantic-core==2.50.1
+ + pygments==2.21.0
+ + pyyaml==6.0.3
+ + rich==15.0.0
+ + shellingham==1.5.4
+ + typer==0.27.3
+ + typing-extensions==4.16.0
+ + typing-inspection==0.4.4
+Installed 1 executable: kmctl
+uvx --from apm-cli==0.33.0 apm install
+Installed 62 packages in 398ms
+error: recipe `install` failed on line 22 with exit code 1
+
+adversarial-reviewer files: []
+kmctl check exit 0
+kmctl doctor exit 1
+doctor failing: ['antigravity.files', 'antigravity.hook', 'antigravity.lock', 'antigravity.okf-mcp', 'antigravity.okf-skills', 'antigravity.plugin', 'dep.agy', 'init.docs', 'init.okf'] | beyond unpassable: ['antigravity.files', 'antigravity.hook', 'antigravity.lock', 'antigravity.okf-mcp', 'antigravity.okf-skills', 'antigravity.plugin', 'init.docs', 'init.okf']
+    {"id": "init.okf", "harness": null, "ok": false, "detail": ".okf/index.md is missing", "fix": "run kmctl init"}
+    {"id": "init.docs", "harness": null, "ok": false, "detail": "docs/README.md is missing", "fix": "run kmctl init"}
+    {"id": "antigravity.lock", "harness": "antigravity", "ok": false, "detail": "apm.lock.yaml is missing", "fix": "run apm install --target antigravity (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "antigravity.files", "harness": "antigravity", "ok": false, "detail": "apm.lock.yaml does not list kmctl", "fix": "run apm install --target antigravity (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "antigravity.okf-skills", "harness": "antigravity", "ok": false, "detail": "apm.lock.yaml does not list okf-skills", "fix": "run apm install --target antigravity (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "antigravity.plugin", "harness": "antigravity", "ok": false, "detail": "apm_modules/ is missing", "fix": "run apm install --target antigravity (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "antigravity.hook", "harness": "antigravity", "ok": false, "detail": ".agents/hooks.json lacks kmctl's SessionStart hook or okf's Stop check", "fix": "run apm install --target antigravity (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "antigravity.okf-mcp", "harness": "antigravity", "ok": false, "detail": ".agents/mcp_config.json is missing okf's MCP server okf-bundle as kmctl's package declares it", "fix": "run apm install --target antigravity (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+RESULT [antigravity]: FAIL (agent deployed to: nowhere)
+
+===== harnesses=[claude, antigravity, opencode] =====
+copier exit 0
+just bootstrap exit 1
+bootstrap lines mentioning adversarial/warn/error/skip:
+    'jasperhg90/skills/agents/adversarial-reviewer.md#09b7a0a844b86be4e9ba0973f6b117
+    6defd83ce7': Invalid virtual package path 'agents/adversarial-reviewer.md'. 
+    error: recipe `install` failed on line 22 with exit code 1
+bootstrap tail:
+[>] Installing dependencies from apm.yml...
+[x] Failed to parse apm.yml: Invalid APM dependency 
+'jasperhg90/skills/agents/adversarial-reviewer.md#09b7a0a844b86be4e9ba0973f6b117
+6defd83ce7': Invalid virtual package path 'agents/adversarial-reviewer.md'. 
+Individual files must end with one of: .prompt.md, .instructions.md, .agent.md. 
+For subdirectory packages, the path should not have a file extension.
+[x] Install failed after 0.0s.
+uv tool install --force "git+https://github.com/JasperHG90/kmctl@v0.6.0"
+Downloading cpython-3.15.0-linux-aarch64-gnu (download) (30.0MiB)
+ Downloaded cpython-3.15.0-linux-aarch64-gnu (download)
+Resolved 20 packages in 2ms
+Installed 20 packages in 112ms
+ + annotated-doc==0.0.5
+ + annotated-types==0.8.0
+ + anyio==4.15.1
+ + certifi==2026.10.18
+ + h11==0.16.0
+ + httpcore==1.0.9
+ + httpx==0.28.1
+ + idna==3.20
+ + kmctl==0.6.0 (from git+https://github.com/JasperHG90/kmctl@9861767d029230356fafbad50f7d454ad10c221f)
+ + markdown-it-py==4.2.0
+ + mdurl==0.1.2
+ + pydantic==2.14.1
+ + pydantic-core==2.50.1
+ + pygments==2.21.0
+ + pyyaml==6.0.3
+ + rich==15.0.0
+ + shellingham==1.5.4
+ + typer==0.27.3
+ + typing-extensions==4.16.0
+ + typing-inspection==0.4.4
+Installed 1 executable: kmctl
+uvx --from apm-cli==0.33.0 apm install
+Installed 62 packages in 189ms
+error: recipe `install` failed on line 22 with exit code 1
+
+adversarial-reviewer files: []
+kmctl check exit 0
+kmctl doctor exit 1
+doctor failing: ['antigravity.files', 'antigravity.hook', 'antigravity.lock', 'antigravity.okf-mcp', 'antigravity.okf-skills', 'antigravity.plugin', 'claude.files', 'claude.hook', 'claude.lock', 'claude.okf-mcp', 'claude.okf-skills', 'dep.agy', 'dep.claude', 'dep.opencode', 'init.docs', 'init.okf', 'opencode.agents', 'opencode.files', 'opencode.hook', 'opencode.lock', 'opencode.okf-mcp', 'opencode.okf-skills', 'opencode.rules'] | beyond unpassable: ['antigravity.files', 'antigravity.hook', 'antigravity.lock', 'antigravity.okf-mcp', 'antigravity.okf-skills', 'antigravity.plugin', 'claude.files', 'claude.hook', 'claude.lock', 'claude.okf-mcp', 'claude.okf-skills', 'init.docs', 'init.okf', 'opencode.agents', 'opencode.files', 'opencode.hook', 'opencode.lock', 'opencode.okf-mcp', 'opencode.okf-skills', 'opencode.rules']
+    {"id": "init.okf", "harness": null, "ok": false, "detail": ".okf/index.md is missing", "fix": "run kmctl init"}
+    {"id": "init.docs", "harness": null, "ok": false, "detail": "docs/README.md is missing", "fix": "run kmctl init"}
+    {"id": "claude.lock", "harness": "claude", "ok": false, "detail": "apm.lock.yaml is missing", "fix": "run apm install --target claude (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "claude.files", "harness": "claude", "ok": false, "detail": "apm.lock.yaml does not list kmctl", "fix": "run apm install --target claude (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "claude.okf-skills", "harness": "claude", "ok": false, "detail": "apm.lock.yaml does not list okf-skills", "fix": "run apm install --target claude (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "claude.hook", "harness": "claude", "ok": false, "detail": "the kmctl SessionStart hook is missing from .claude/settings.json", "fix": "run apm install --target claude (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "claude.okf-mcp", "harness": "claude", "ok": false, "detail": "okf's MCP server okf-bundle is missing from .mcp.json", "fix": "run apm install --target claude (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "antigravity.lock", "harness": "antigravity", "ok": false, "detail": "apm.lock.yaml is missing", "fix": "run apm install --target antigravity (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "antigravity.files", "harness": "antigravity", "ok": false, "detail": "apm.lock.yaml does not list kmctl", "fix": "run apm install --target antigravity (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "antigravity.okf-skills", "harness": "antigravity", "ok": false, "detail": "apm.lock.yaml does not list okf-skills", "fix": "run apm install --target antigravity (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "antigravity.plugin", "harness": "antigravity", "ok": false, "detail": "apm_modules/ is missing", "fix": "run apm install --target antigravity (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "antigravity.hook", "harness": "antigravity", "ok": false, "detail": ".agents/hooks.json lacks kmctl's SessionStart hook or okf's Stop check", "fix": "run apm install --target antigravity (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "antigravity.okf-mcp", "harness": "antigravity", "ok": false, "detail": ".agents/mcp_config.json is missing okf's MCP server okf-bundle as kmctl's package declares it", "fix": "run apm install --target antigravity (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "opencode.lock", "harness": "opencode", "ok": false, "detail": "apm.lock.yaml is missing", "fix": "run apm install --target opencode (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "opencode.files", "harness": "opencode", "ok": false, "detail": "apm.lock.yaml does not list kmctl", "fix": "run apm install --target opencode (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "opencode.okf-skills", "harness": "opencode", "ok": false, "detail": "apm.lock.yaml does not list okf-skills", "fix": "run apm install --target opencode (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "opencode.agents", "harness": "opencode", "ok": false, "detail": "apm_modules/ is missing", "fix": "run apm install --target opencode (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "opencode.rules", "harness": "opencode", "ok": false, "detail": ".opencode/rules/diagrams-stay-current.md is missing, .opencode/rules/docs-layout.md is missing, .opencode/rules/manifesto-invariants.md is missing, .opencode/rules/okf-bundle.md is missing, opencode.json's instructions lacks .opencode/rules/*.md", "fix": "run kmctl plugin patch"}
+    {"id": "opencode.okf-mcp", "harness": "opencode", "ok": false, "detail": "opencode.json is missing okf's MCP server okf-bundle as kmctl's package declares it", "fix": "run apm install --target opencode (kmctl's package must be in apm.yml), then kmctl plugin patch"}
+    {"id": "opencode.hook", "harness": "opencode", "ok": false, "detail": ".opencode/plugins/kmctl.js is missing", "fix": "run kmctl plugin patch"}
+RESULT [claude, antigravity, opencode]: FAIL (agent deployed to: nowhere)
+
+NOT ALL OK
