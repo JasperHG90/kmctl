@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "Rendering the template with --defaults writes AGENTS.md with an adversarial-review section holding the rule's constraint (run an adversarial review in a separate sub-agent before reporting a ticket or feature done, act on its verdict), and writes .copier-answers.yml with adversarial_review: true.",
+      "fails_when": "the section or its constraint text is missing from AGENTS.md, or the answer is not recorded as true",
+      "command": "uv run pytest tests/test_starter.py -k adversarial_review_on -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "With the default answer, apm.yml lists jasperhg90/skills/agents/adversarial-reviewer.agent.md pinned to commit 41f495021f3b264992c8fa764d58565c1184ab91 when claude is one of the harnesses, and has no such entry for [antigravity], [opencode] or [antigravity, opencode].",
+      "fails_when": "the entry is missing, unpinned or pinned to another commit for a harness set with claude, or present for a set without claude",
+      "command": "uv run pytest tests/test_starter.py -k adversarial_review_agent -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "Rendering with adversarial_review=false writes neither the AGENTS.md section nor the apm.yml entry, for every harness set.",
+      "fails_when": "either appears with the answer false",
+      "command": "uv run pytest tests/test_starter.py -k adversarial_review_off -q"
+    },
+    {
+      "id": "r4",
+      "behavior": "The generated .gitignore ignores apm_modules/, .DS_Store, Thumbs.db, .venv/, __pycache__/, *.pyc, .pytest_cache/, .ruff_cache/, .mypy_cache/, node_modules/, .env, .idea/, .vscode/ and *.swp, and ignores none of the files a bootstrapped project commits (apm.yml, apm.lock.yaml, AGENTS.md, CLAUDE.md, .claude/, .agents/, .opencode/, opencode.json, .okf/, docs/).",
+      "fails_when": "git check-ignore in a rendered project does not ignore one of the listed paths, or ignores one of the committed ones",
+      "command": "uv run pytest tests/test_starter.py -k gitignore -q"
+    },
+    {
+      "id": "r5",
+      "behavior": "In a project rendered with the defaults for [claude, antigravity, opencode], just bootstrap exits 0, the hooks pass, kmctl check exits 0, kmctl doctor fails no check except dep.claude, dep.agy, dep.opencode and antigravity.trust, and .claude/agents/adversarial-reviewer.md exists.",
+      "fails_when": "bootstrap, the hooks or check fail, doctor fails another check, or .claude/agents/adversarial-reviewer.md is missing",
+      "command": "uv run pytest tests/test_starter.py -m integration -k bootstrap -q"
+    },
+    {
+      "id": "r6",
+      "behavior": "The how-to's question table names adversarial_review and what it adds, and README.md's adversarial reviewer section says the copier template offers it.",
+      "fails_when": "either page does not mention it",
+      "command": "uv run pytest tests/test_starter.py -k docs -q"
+    },
+    {
+      "id": "r7",
+      "behavior": "The full suite and every tier pass.",
+      "fails_when": "any test fails",
+      "command": "uv run pytest -q -m \"not integration or integration\""
+    }
+  ]
+}
