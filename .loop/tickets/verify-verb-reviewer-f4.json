@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "verify-verb-reviewer-f4",
-  "stage": "stub",
+  "stage": "planning",
   "attempts": 0,
   "plan_rounds": 0,
   "review_rounds": 0,
@@ -35,7 +35,14 @@
     "depends_on": [],
     "priority": null
   },
-  "history": [],
-  "by": "process:loopctl/2.2.1.dev14+g22f6ca3aa.d20261017",
-  "at": "2026-10-17T21:40:07+00:00"
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-10-18T21:44:32+00:00",
+      "by": "promote"
+    }
+  ],
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-18T21:44:32+00:00"
 }
