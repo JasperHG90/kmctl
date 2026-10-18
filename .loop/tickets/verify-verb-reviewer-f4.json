@@ -20,10 +20,29 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "7ac549acfd2f8db10c8f7fca703ea74a400d3f6760cb84a15dcc6cabe8132111",
+    "at": "2026-10-18T21:48:59+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "kmctl verify adds its entry when the verified line carries a trailing YAML comment: `verified:  # checks` over a block list gets the entry appended to that list, and `verified: []  # none` becomes a list with the one entry; the comment is kept and the front matter still parses to the same entries plus the new one.",
+      "fails_when": "verify refuses either form, drops or corrupts the comment or another entry, or the result does not parse",
+      "command": "uv run pytest tests/test_verify.py -k comment -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "The full suite and every tier pass.",
+      "fails_when": "any test fails",
+      "command": "uv run pytest -q -m \"not integration or integration\"",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -63,5 +82,5 @@
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T21:48:55+00:00"
+  "at": "2026-10-18T21:48:59+00:00"
 }
