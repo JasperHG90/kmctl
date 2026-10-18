@@ -839,11 +839,23 @@ def unpatch(cwd: Path, scope: Scope = "project") -> PatchResult:
     they are still kmctl's translation, the rules, the instructions entry
     and the briefing plugin (``kmctl.opencode.undo``). Run it before
     ``apm uninstall``, which stops on an agent patch rewrote
-    (spike:opencode-harness/4).
+    (spike:opencode-harness/4). Both harnesses are patched at project scope
+    only, so at user scope it deletes nothing and names what it left.
     """
     from kmctl import antigravity, opencode
 
     folder = antigravity.plugin_dir(cwd)
+    if scope == "user":
+        left = [f"{shown_path(folder, cwd)}/"] if folder.exists() else []
+        left += opencode.undo_paths(cwd)
+        notes = []
+        if left:
+            notes.append(
+                f"left {', '.join(left)}: Antigravity and OpenCode are patched at "
+                "project scope only; to remove them, run kmctl plugin patch --undo "
+                "in the repository without --scope user"
+            )
+        return PatchResult(scope, [], None, notes)
     notes = []
     if folder.exists():
         shutil.rmtree(folder)

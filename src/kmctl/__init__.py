@@ -830,7 +830,9 @@ _PATCH_EPILOG = (
     ".agents/plugins/kmctl/ and, for OpenCode, the agents it rewrote, the "
     "rules, the instructions entry and the plugin, and nothing else; to remove "
     "kmctl, run kmctl plugin patch --undo first, then apm uninstall on its "
-    "entry (apm uninstall stops on an agent patch rewrote). "
+    "entry (apm uninstall stops on an agent patch rewrote). With --scope user, "
+    "--undo leaves this repository's .agents/plugins/kmctl/ and OpenCode files, "
+    "which are patched at project scope only, and names them. "
     "Installing is in the README's install section."
 )
 
@@ -874,7 +876,8 @@ def plugin_patch(
                 "Delete what patch wrote, and nothing else: .agents/plugins/kmctl/, "
                 "and for OpenCode the agents it rewrote, .opencode/rules/, the "
                 "instructions entry in opencode.json and .opencode/plugins/kmctl.js. "
-                "Run it before apm uninstall, which removes the rest."
+                "Run it before apm uninstall, which removes the rest. At user "
+                "scope it deletes nothing here; the epilog says why."
             ),
         ),
     ] = False,

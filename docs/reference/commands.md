@@ -486,6 +486,10 @@ still kmctl's translation, the four rules, the `.opencode/rules/*.md` entry
 `nothing to undo: kmctl wrote nothing here`, then `Next: kmctl doctor`.
 `apm uninstall` removes the rest of kmctl's package. For OpenCode, run
 `--undo` first: `apm uninstall` stops on an agent patch rewrote.
+With `--scope user` it deletes nothing in this repository: it leaves
+`.agents/plugins/kmctl/` and the OpenCode files, which are patched at
+project scope only, and prints a note naming them and saying to run
+`kmctl plugin patch --undo` here without `--scope user`.
 
 | Option | Meaning | Default |
 |---|---|---|

@@ -310,6 +310,47 @@ def test_undo_with_nothing_to_undo_exits_zero(repo: Path, fakes: FakeTools) -> N
     assert "nothing to undo" in result.stdout
 
 
+def test_undo_user_scope_leaves_the_antigravity_folder_and_names_it(
+    repo: Path, fakes: FakeTools
+) -> None:
+    _apm_install(repo)
+    _patch()
+    before = _files(repo)
+
+    result = _patch("--undo", "--scope", "user")
+
+    assert _files(repo) == before
+    said = " ".join(plain(result.stdout).split())
+    assert ".agents/plugins/kmctl/" in said
+    assert "kmctl plugin patch --undo" in said
+    assert "without --scope user" in said
+    assert "deleted" not in said
+
+
+def test_undo_user_scope_with_nothing_here_says_nothing_to_undo(
+    repo: Path, fakes: FakeTools
+) -> None:
+    result = _patch("--undo", "--scope", "user")
+
+    assert result.exit_code == 0
+    assert "nothing to undo" in result.stdout
+    assert "note:" not in result.stdout
+
+
+def test_undo_docs_say_user_scope_leaves_project_files() -> None:
+    help_text = " ".join(plain(_kmctl("plugin", "patch", "--help").stdout).split())
+    reference = " ".join(COMMANDS.read_text().split())
+
+    assert (
+        "With --scope user, --undo leaves this repository's .agents/plugins/kmctl/ "
+        "and OpenCode files, which are patched at project scope only, and names them"
+    ) in help_text
+    assert (
+        "With `--scope user` it deletes nothing in this repository: it leaves "
+        "`.agents/plugins/kmctl/` and the OpenCode files"
+    ) in reference
+
+
 # r4: the old verbs are gone -----------------------------------------------------------
 
 
