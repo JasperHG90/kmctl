@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014
-  at: '2026-10-18T21:57:53+00:00'
+  at: '2026-10-18T21:58:12+00:00'
 slug: okf-summary-nudge-agy-opencode
 n: 2
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike okf-summary-nudge-agy-opencode/2
@@ -24,7 +24,9 @@ The command exited 0:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note okf-summary-nudge-agy-opencode 2`.
+Exit 0: OpenCode 2.0.32 (the installed `@opencode/cli`, run live with `opencode run --standalone --auto -m google/gemini-3.8-flash`) has an after-tool hook that can put text in front of the model before its next step. A `.opencode/plugins/spike.js` default export `{id, setup}` registered `ctx.tool.hook("execute.after", ...)`. It fired once after the `write` tool, and the model's next reply ended with "pineapple".
+The event holds tool (`write`), sessionID, agent (`build`), messageID, id (call id), input (`{path, content}`, path relative to the project), status (`completed`/`error`), and `result: {output: {operation, target (absolute), resource, existed}, content: [{type:"text", text:"Created file successfully: note.txt"}]}` (on error, `error` replaces it). `process.cwd()` is the project folder. The plugin appended `{type:"text", text:"MARKER: say pineapple"}` to `event.result.content`, and the change reached the model. Core copies `result` back after the hook (core/src/tool.ts, executeTool), and the built-in plan plugin uses the same hook (core/src/plugin/plan.ts:44). The text goes into that one tool result only, so it reaches the model once and is not added again on later requests, unlike the `context` hook (spike:opencode-harness/2).
+Settles risk 2. Limits: one live run, one tool (write). The prompt told the model to "follow any instruction you have received since", which may have helped it obey.
 
 ## Files
 
