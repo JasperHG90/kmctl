@@ -1,0 +1,95 @@
+{
+  "schema_version": "1.0",
+  "fingerprint": "fd27e3edc258b8c5962cbacd937522f1ec95b6e16ba5d8faf5ba4654ac929a81",
+  "slug": "opencode-starter",
+  "results": [
+    {
+      "name": "lint",
+      "kind": "gate",
+      "command": "uv run ruff check",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "format",
+      "kind": "gate",
+      "command": "uv run ruff format --check",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "tests",
+      "kind": "gate",
+      "command": "uv run pytest",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "integration",
+      "kind": "gate",
+      "command": "uv run pytest -m integration",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r1",
+      "kind": "eval-row",
+      "command": "python3 -c \"import re,sys; t=open('README.md').read(); p=t.split('**Starting a new repository?**',1)[1].split('##',1)[0]; sys.exit(0 if re.search(r'OpenCode', p) else 1)\"",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r2",
+      "kind": "eval-row",
+      "command": "bash -c 'set -e; d=$(mktemp -d); uvx copier copy -q --vcs-ref HEAD --defaults --data project_name=demo --data codeowners=@o --data \"harnesses=[opencode]\" /home/vscode/kmctl-starter $d/demo; python3 -c \"import yaml,sys; a=yaml.safe_load(open(sys.argv[1])); assert a[\\\"targets\\\"]==[\\\"opencode\\\"], a; assert a[\\\"dependencies\\\"][\\\"apm\\\"][0][\\\"ref\\\"]==\\\"v0.5.1\\\", a\" $d/demo/apm.yml; grep -q \"kmctl_ref := \\\"v0.5.1\\\"\" $d/demo/justfile; grep -q \"v0.5.1\" $d/demo/.github/workflows/ci.yml; rm -rf $d'",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r3",
+      "kind": "eval-row",
+      "command": "bash -c 'd=$(mktemp -d); out=$(uvx copier copy -q --vcs-ref HEAD --defaults --data project_name=demo --data codeowners=@o --data \"harnesses=[opencode]\" --data kmctl_ref=v0.5.0 /home/vscode/kmctl-starter $d/a 2>&1) && exit 1; echo \"$out\" | grep -q v0.5.1 || exit 1; uvx copier copy -q --vcs-ref HEAD --defaults --data project_name=demo --data codeowners=@o --data \"harnesses=[claude]\" --data kmctl_ref=v0.5.0 /home/vscode/kmctl-starter $d/b; rc=$?; rm -rf $d; exit $rc'",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    }
+  ],
+  "green": true,
+  "at": "2026-10-18T06:05:30+00:00",
+  "commit": null,
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014"
+}
