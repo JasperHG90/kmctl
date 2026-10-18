@@ -1,0 +1,115 @@
+commit=9861767d029230356fafbad50f7d454ad10c221f other=78458c85b90a9294ad1aefc9791f352ef67b7b3d
+== A) empty cache, offline, source path missing: 97 ms rc=1 inet_connects=0
+-- git subcommands run:
+-- inet connect targets:
+-- stdout:
+-- stderr:
+   Updating https://github.com/JasperHG90/kmctl (9861767d029230356fafbad50f7d454ad10c221f)
+error: Failed to resolve `--with` requirement
+  cause: Git operation failed
+  cause: failed to fetch into: /tmp/tmp.GEhNM6yKvz/cacheA/git-v1/db/6e1c0739ee5282e7
+  cause: failed to fetch commit `9861767d029230356fafbad50f7d454ad10c221f`
+  cause: process didn't exit successfully: `/usr/local/bin/git fetch --force --update-head-ok 'https://github.com/JasperHG90/kmctl' '+9861767d029230356fafbad50f7d454ad10c221f:refs/commit/9861767d029230356fafbad50f7d454ad10c221f'` (exit status: 128)
+         --- stderr
+         fatal: '/tmp/tmp.GEhNM6yKvz/nonexistent.git' does not appear to be a git repository
+         fatal: Could not read from remote repository.
+
+         Please make sure you have the correct access rights
+         and the repository exists.
+== B) empty cache, offline, source on unroutable host: 80 ms rc=1 inet_connects=0
+-- git subcommands run:
+-- inet connect targets:
+-- stdout:
+-- stderr:
+   Updating https://github.com/JasperHG90/kmctl (9861767d029230356fafbad50f7d454ad10c221f)
+error: Failed to resolve `--with` requirement
+  cause: Git operation failed
+  cause: failed to fetch into: /tmp/tmp.GEhNM6yKvz/cacheB/git-v1/db/6e1c0739ee5282e7
+  cause: failed to fetch commit `9861767d029230356fafbad50f7d454ad10c221f`
+  cause: Remote Git fetches are not allowed because network connectivity is disabled (i.e., with `--offline`)
+== C) empty cache, offline, real GitHub URL: 61 ms rc=1 inet_connects=0
+-- git subcommands run:
+-- inet connect targets:
+-- stdout:
+-- stderr:
+   Updating https://github.com/JasperHG90/kmctl (9861767d029230356fafbad50f7d454ad10c221f)
+error: Failed to resolve `--with` requirement
+  cause: Git operation failed
+  cause: failed to fetch into: /tmp/tmp.GEhNM6yKvz/cacheC/git-v1/db/6e1c0739ee5282e7
+  cause: failed to fetch commit `9861767d029230356fafbad50f7d454ad10c221f`
+  cause: Remote Git fetches are not allowed because network connectivity is disabled (i.e., with `--offline`)
+== C2) empty cache, UV_OFFLINE=1, real GitHub URL: 66 ms rc=1 inet_connects=0
+-- git subcommands run:
+-- inet connect targets:
+-- stdout:
+-- stderr:
+   Updating https://github.com/JasperHG90/kmctl (9861767d029230356fafbad50f7d454ad10c221f)
+error: Failed to resolve `--with` requirement
+  cause: Git operation failed
+  cause: failed to fetch into: /tmp/tmp.GEhNM6yKvz/cacheC2/git-v1/db/6e1c0739ee5282e7
+  cause: failed to fetch commit `9861767d029230356fafbad50f7d454ad10c221f`
+  cause: Remote Git fetches are not allowed because network connectivity is disabled (i.e., with `--offline`)
+
+### cache warm with another commit (78458c85b90a9294ad1aefc9791f352ef67b7b3d), not this one
+== D0) warm-up other commit, online: 8929 ms rc=0 inet_connects=300
+-- git subcommands run:
+      2 "rev-parse", "--show-toplevel"
+      2 "rev-parse", "--show-prefix"
+      2 "rev-parse", "--is-inside-work-tree"
+      2 "rev-parse", "--git-path", "objects"
+      2 "rev-parse", "--git-dir"
+      2 "--exec-path"
+      1 "submodule--helper", "update", "--recursive", "--init", "--"
+      1 "submodule--helper", "update", "--init", "--"
+-- inet connect targets:
+     30 sin_addr=inet_addr("0.250.250.200")
+     34 sin_addr=inet_addr("151.101.0.223")
+     29 sin_addr=inet_addr("151.101.128.223")
+     53 sin_addr=inet_addr("151.101.192.223")
+     29 sin_addr=inet_addr("151.101.64.223")
+-- stdout:
+kmctl 0.5.1
+-- stderr:
+   Building kmctl @ git+https://github.com/JasperHG90/kmctl@78458c85b90a9294ad1aefc9791f352ef67b7b3d
+Downloading pygments (1.2MiB)
+Downloading pydantic-core (2.0MiB)
+ Downloaded pydantic-core
+ Downloaded pygments
+      Built kmctl @ git+https://github.com/JasperHG90/kmctl@78458c85b90a9294ad1aefc9791f352ef67b7b3d
+Installed 20 packages in 308ms
+== D1) offline this commit, source path missing: 55 ms rc=1 inet_connects=0
+-- git subcommands run:
+-- inet connect targets:
+-- stdout:
+-- stderr:
+   Updating https://github.com/JasperHG90/kmctl (9861767d029230356fafbad50f7d454ad10c221f)
+error: Failed to resolve `--with` requirement
+  cause: Git operation failed
+  cause: failed to fetch into: /tmp/tmp.GEhNM6yKvz/cacheD/git-v1/db/6e1c0739ee5282e7
+  cause: failed to fetch commit `9861767d029230356fafbad50f7d454ad10c221f`
+  cause: process didn't exit successfully: `/usr/local/bin/git fetch --force --update-head-ok 'https://github.com/JasperHG90/kmctl' '+9861767d029230356fafbad50f7d454ad10c221f:refs/commit/9861767d029230356fafbad50f7d454ad10c221f'` (exit status: 128)
+         --- stderr
+         fatal: '/tmp/tmp.GEhNM6yKvz/nonexistent.git' does not appear to be a git repository
+         fatal: Could not read from remote repository.
+
+         Please make sure you have the correct access rights
+         and the repository exists.
+== D2) offline this commit, source reachable locally: 4499 ms rc=0 inet_connects=0
+-- git subcommands run:
+      2 "rev-parse", "--show-toplevel"
+      2 "rev-parse", "--show-prefix"
+      2 "rev-parse", "--is-inside-work-tree"
+      2 "rev-parse", "--git-path", "objects"
+      2 "rev-parse", "--git-dir"
+      2 "--exec-path"
+      1 "submodule--helper", "update", "--recursive", "--init", "--"
+      1 "submodule--helper", "update", "--init", "--"
+-- inet connect targets:
+-- stdout:
+kmctl 0.6.0
+-- stderr:
+   Building kmctl @ git+https://github.com/JasperHG90/kmctl@9861767d029230356fafbad50f7d454ad10c221f
+      Built kmctl @ git+https://github.com/JasperHG90/kmctl@9861767d029230356fafbad50f7d454ad10c221f
+Installed 20 packages in 258ms
+uv 0.13.0 (aarch64-unknown-linux-gnu)
+fail=0
