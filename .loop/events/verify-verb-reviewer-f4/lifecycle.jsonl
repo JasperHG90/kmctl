@@ -1,3 +1,4 @@
 {"at": "2026-10-17T21:40:07+00:00", "by": "review close", "kind": "register", "schema_version": "1.0", "stage": "stub"}
 {"at": "2026-10-18T21:44:32+00:00", "by": "promote", "from": "stub", "grant": "g5", "kind": "transition", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5", "step": "ticket-promote", "to": "planning"}
 {"at": "2026-10-18T21:46:37+00:00", "binds": "6bbdadea0f5816a93ffbeb2f9d709637bf41bb451b0a0429c942e9ad173425b4", "kind": "round-start", "n": 1, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
+{"at": "2026-10-18T21:48:55+00:00", "dispatched_at": "2026-10-18T21:46:37+00:00", "kind": "round-close", "n": 1, "outcome": "pass", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-10-18T21:48:27+00:00"}}
