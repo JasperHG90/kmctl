@@ -16,13 +16,29 @@ from typer.testing import CliRunner, Result
 from kmctl import app
 from kmctl.kinds import SUMMARY_SECTIONS
 from kmctl.okf import field, front_matter
-from kmctl.scaffold import BLOCK
+from kmctl.scaffold import BLOCK, SUMMARY_LINE, SUMMARY_PROMPTS
 from kmctl.summary import ack
 
 ROOT = Path(__file__).resolve().parents[1]
 SUMMARY = ".okf/summary.md"
 #: How ack writes checked.at: a UTC timestamp to the second.
 STAMP = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z")
+#: The summary's sections, by what a reader needs rather than by concept folder.
+FOUR_SECTIONS = [
+    "The project",
+    "How it works",
+    "What it has settled",
+    "Where it stands",
+]
+#: A prompt that asks for a link or an entry per concept, as the old ones did.
+LINK_EACH = re.compile(r"\b(link|list)\w*\s+each\b", re.IGNORECASE)
+#: Where the guidance on writing the summary lives, besides the AGENTS.md block.
+GUIDANCE = (
+    ".claude/rules/okf-bundle.md",
+    "apm/claude/.apm/instructions/okf-bundle.instructions.md",
+    "apm/antigravity/.apm/instructions/okf-bundle.instructions.md",
+    "docs/reference/commands.md",
+)
 
 
 def _invoke(*args: str) -> Result:
@@ -100,7 +116,7 @@ def _ack(root: Path, *args: str) -> Result:
 # r1: the kind and init ---------------------------------------------------------
 
 
-def test_init_writes_the_summary_skeleton(tmp_path: Path) -> None:
+def test_init_writes_the_summary_sections(tmp_path: Path) -> None:
     _init(tmp_path, git=False)
     path = tmp_path / SUMMARY
     text = path.read_text(encoding="utf-8")
@@ -108,27 +124,22 @@ def test_init_writes_the_summary_skeleton(tmp_path: Path) -> None:
     index = (tmp_path / ".okf/index.md").read_text(encoding="utf-8")
 
     assert field(front_matter(path), "type") == "summary"
-    assert (
-        headings
-        == SUMMARY_SECTIONS
-        == [
-            "Decisions",
-            "Architecture",
-            "Open work",
-            "Practices",
-            "Known gaps",
-        ]
-    )
+    assert headings == SUMMARY_SECTIONS == FOUR_SECTIONS
     for heading in SUMMARY_SECTIONS:
         after = text.split(f"## {heading}\n\n", 1)[1].split("\n", 1)[0]
         assert after and not after.startswith("#"), heading
+        assert after == SUMMARY_PROMPTS[heading]
+        assert not LINK_EACH.search(after), after
+    assert "evidence" in SUMMARY_PROMPTS["What it has settled"]
+    assert "never one bullet per decision" in SUMMARY_PROMPTS["What it has settled"]
+    assert "theme by theme" not in text
     assert "](summary.md)" in index
     check = okf_validate(tmp_path / ".okf")
     assert check.returncode == 0, check.stdout + check.stderr
     assert _invoke("check", "--path", str(tmp_path)).exit_code == 0
 
 
-def test_init_summary_kind_has_a_schema(tmp_path: Path) -> None:
+def test_init_summary_kind_has_a_schema_with_its_sections(tmp_path: Path) -> None:
     result = _invoke("schema", "summary")
 
     assert result.exit_code == 0, result.output
@@ -142,7 +153,7 @@ def test_init_summary_kind_has_a_schema(tmp_path: Path) -> None:
         "generated",
         "checked",
     }
-    assert schema["x-kmctl-sections"] == SUMMARY_SECTIONS
+    assert schema["x-kmctl-sections"] == SUMMARY_SECTIONS == FOUR_SECTIONS
     assert set(schema["properties"]["checked"]["properties"]) == {"at", "against"}
 
 
@@ -524,7 +535,43 @@ def test_summary_block_points_to_it_and_gives_the_duty(tmp_path: Path) -> None:
         assert "update `.okf/summary.md`" in duty
 
 
+def test_guidance_says_the_summary_distils_the_knowledge() -> None:
+    duty = next(line for line in BLOCK.splitlines() if "kmctl summary ack" in line)
+    texts = {"the block's duty": duty, "SUMMARY_LINE": SUMMARY_LINE}
+    texts |= {rel: (ROOT / rel).read_text(encoding="utf-8") for rel in GUIDANCE}
+
+    for name, text in texts.items():
+        assert "theme by theme" not in text, name
+        assert "each theme linking" not in text, name
+    for name in ("the block's duty", *GUIDANCE):
+        flat = " ".join(texts[name].split())
+        assert "distils what the knowledge says as a whole" in flat, name
+        assert "the indexes list the concepts" in flat, name
+    reference = " ".join(texts["docs/reference/commands.md"].split())
+    assert "(The project, How it works, What it has settled, Where it stands)" in (
+        reference
+    )
+    assert "Decisions, Architecture, Open work" not in reference
+
+
 # r7: this repository -------------------------------------------------------------
+
+
+def _sections(body: str) -> dict[str, str]:
+    """Each ``##`` section of ``body`` by its heading, with its text."""
+    parts = re.split(r"^## (.+)$", body, flags=re.MULTILINE)
+    return dict(zip(parts[1::2], parts[2::2], strict=True))
+
+
+def _bullets(text: str) -> list[str]:
+    """The top-level bullets in ``text``, each with its wrapped lines joined."""
+    return [" ".join(b.split()) for b in re.split(r"^- ", text, flags=re.MULTILINE)[1:]]
+
+
+def _single_decision_link(bullet: str) -> bool:
+    """A bullet whose only link points at one decision record."""
+    links = re.findall(r"\]\(([^)\s]+)\)", bullet)
+    return len(links) == 1 and links[0].startswith("decisions/")
 
 
 def test_this_repository_has_a_summary_within_the_limit() -> None:
@@ -537,13 +584,37 @@ def test_this_repository_has_a_summary_within_the_limit() -> None:
 
     assert field(front_matter(path), "type") == "summary"
     assert 0 < words <= 500, words
-    assert headings == SUMMARY_SECTIONS
+    assert headings == SUMMARY_SECTIONS == FOUR_SECTIONS
     assert links
     for link in links:
         assert (path.parent / link.split("#")[0]).resolve().is_file(), link
     assert any(link.startswith("decisions/0") for link in links)
     assert any(link.startswith("architecture/") for link in links)
     assert "](summary.md)" in (ROOT / ".okf/index.md").read_text(encoding="utf-8")
+
+
+def test_this_repository_summary_does_not_list_the_decisions() -> None:
+    path = ROOT / SUMMARY
+    text = path.read_text(encoding="utf-8")
+    body = text[text.index("\n---", 4) + len("\n---") :]
+
+    for heading, section in _sections(body).items():
+        bullets = _bullets(section)
+        single = [b for b in bullets if _single_decision_link(b)]
+        assert len(single) * 2 <= len(bullets), (heading, single)
+    assert "theme by theme" not in text
+    assert "theme by theme" not in (ROOT / ".okf/index.md").read_text(encoding="utf-8")
+
+
+def test_this_repository_single_decision_link_is_what_the_check_counts() -> None:
+    listed = _bullets(
+        "- **A.** One ([ADR 0004](decisions/0004-x.md)).\n"
+        "- **B.** Two ([ADR 0005](decisions/0005-x.md),\n"
+        "  [ADR 0023](decisions/0023-x.md)).\n"
+        "- **C.** The [overview](architecture/overview.md).\n"
+    )
+
+    assert [_single_decision_link(b) for b in listed] == [True, False, False]
 
 
 def test_this_repository_passes_kmctl_check() -> None:

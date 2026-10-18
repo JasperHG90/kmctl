@@ -78,7 +78,8 @@ SKILL_NAMES = (
 #: Each rule's ``paths:`` globs and the sha256 of its body as they were in
 #: src/kmctl/repo_rules/ before the move into the package, or since a change
 #: an ADR names (docs-layout: ADR 0022; okf-bundle: ADR 0027, start at the
-#: summary and keep it current).
+#: summary and keep it current, and its 2026-10-18 correction, the summary
+#: distils the knowledge).
 OLD_RULES = {
     "diagrams-stay-current": (
         [".okf/**", "src/**", "lib/**", "app/**", "pkg/**", "cmd/**"],
@@ -94,7 +95,7 @@ OLD_RULES = {
     ),
     "okf-bundle": (
         [".okf/**"],
-        "cf40fec3c98fdcbfc937d6bde4fd9772c9cf6f99f61d156574ed21c41674e5e9",
+        "19852c62864b045dfed2545778e30bcf065ff758e77aaa2be26b10c342e0bcbb",
     ),
 }
 
