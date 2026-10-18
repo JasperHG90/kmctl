@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "The 1.x server entry point is gone; the plugin exports only {id, setup} with a context hook.",
+      "anchor": "src/kmctl/opencode.py:63",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "Bash maps to shell in TOOLS, and the r1 tests expect shell.",
+      "anchor": "src/kmctl/opencode.py:56",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "r9 drives only opencode debug agents and asserts its exit code and JSON, so another version fails rather than branches.",
+      "anchor": "tests/test_opencode.py:872",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "resolved",
+      "claim": "ADR 0024, the commands reference, the how-to, the README, the overview and the code comments say kmctl supports OpenCode 2.x only; the ADR records the operator's decision and what 1.x users get.",
+      "anchor": ".okf/decisions/0024-opencode-gets-the-package-from-apm-and-its-agents-rules-and-briefing-from-kmctl-plugin-patch.md:40",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f5",
+      "disposition": "resolved",
+      "claim": "write() checks instructions before writing any file; a new test asserts the tree is unchanged.",
+      "anchor": "src/kmctl/opencode.py:343",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f7",
+      "disposition": "resolved",
+      "claim": "The help test now asserts each opencode.* id in full, plus the shared-prefix line.",
+      "anchor": "tests/test_opencode.py:789",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f8",
+      "disposition": "resolved",
+      "claim": "The how-to says the plugin adds the briefing to the system prompt.",
+      "anchor": "docs/how-to/install-kmctl-with-apm.md:31",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "fc5c93b678b4ed6cfc3d25fac659bd294a42601be4091c4cf599ba7930227c32",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-18T05:19:11+00:00"
+}
