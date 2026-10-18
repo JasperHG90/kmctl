@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "The nudge no longer goes through the hand-off: the hook command sets KMCTL_PINNED=1, so the copy on PATH runs the verb itself and never starts uvx. r2 checks that a pinned project never calls uvx.",
+      "anchor": "src/kmctl/pin.py:147",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r2"
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "Copies v0.7.0 and v0.8.0 on PATH no longer hand off: with KMCTL_PINNED=1, their handoff_pin returns None before reading the lock, so main() falls through to app(), which gives a usage error (exit 2) on the missing verb. The hook's guard turns that into {}. r2 tests the missing-verb case with a fake kmctl.",
+      "anchor": "src/kmctl/pin.py:147",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r2"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "0949485dbdd3f21d633731ccc868d74835a8620d28ea42094fdb4c04d2df2935"
+  },
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-18T21:56:00+00:00"
+}

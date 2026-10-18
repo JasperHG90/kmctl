@@ -1,14 +1,30 @@
 {
   "schema_version": "1.0",
   "slug": "okf-summary-holistic",
-  "stage": "building",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 1,
-  "review_rounds": 0,
+  "review_rounds": 2,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "5ea7f5b254f79bf48549b2afb39ad599f9c6becd5d0a647613c65b3e3c11e8d9",
+    "tree": "9f6ec3d075406fe7234015874be6f39cf1bf28aa",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": null,
+        "paths": [
+          ".okf/summary.md"
+        ]
+      }
+    ],
+    "at": "2026-10-18T22:39:41+00:00"
+  },
   "ask": "j-20261018T214524+0000-dc23e505",
   "split": "j-20261018T214613+0000-27452b8e",
   "split_plan_hash": "1e451ba156faadfa2ef1a8e8386b5e16e6b4503ecfbb550c40f55bec6d468ef2",
@@ -19,7 +35,10 @@
   "archived": false,
   "worktree": "/home/vscode/kmctl.worktrees/okf-summary-holistic",
   "branch": "loop/okf-summary-holistic",
-  "stamps": [],
+  "stamps": [
+    "d4d82a747bc7a23988756031b8edbdb2fbbe43fc589eb80b12270d8a334a38a3",
+    "5ea7f5b254f79bf48549b2afb39ad599f9c6becd5d0a647613c65b3e3c11e8d9"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
     "hash": "1d22206214350135da31b26ff2829b3191d8f3e056fd70d07c840205050dcf76",
@@ -69,24 +88,24 @@
   "waivers": [],
   "overrides": [],
   "round": {
-    "kind": "plan",
-    "n": 1,
-    "binds": "1e451ba156faadfa2ef1a8e8386b5e16e6b4503ecfbb550c40f55bec6d468ef2",
-    "started_at": "2026-10-18T21:46:28+00:00",
+    "kind": "review",
+    "n": 2,
+    "binds": "5ea7f5b254f79bf48549b2afb39ad599f9c6becd5d0a647613c65b3e3c11e8d9",
+    "started_at": "2026-10-18T22:39:51+00:00",
     "passes": [
-      "plan-reviewer"
+      "reviewer"
     ],
-    "tree": null,
-    "plan_hash": null,
-    "eval_hash": null,
+    "tree": "9f6ec3d075406fe7234015874be6f39cf1bf28aa",
+    "plan_hash": "1e451ba156faadfa2ef1a8e8386b5e16e6b4503ecfbb550c40f55bec6d468ef2",
+    "eval_hash": "1d22206214350135da31b26ff2829b3191d8f3e056fd70d07c840205050dcf76",
     "scope": "full",
     "sent_back": [],
     "since": null,
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "pass"
+    "closed": false,
+    "outcome": null
   },
   "plan_hash": "1e451ba156faadfa2ef1a8e8386b5e16e6b4503ecfbb550c40f55bec6d468ef2",
   "intent": {
@@ -114,8 +133,26 @@
       "to": "building",
       "at": "2026-10-18T21:49:15+00:00",
       "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-10-18T22:28:53+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-18T22:35:11+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-18T22:39:41+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T21:49:15+00:00"
+  "at": "2026-10-18T22:39:51+00:00"
 }

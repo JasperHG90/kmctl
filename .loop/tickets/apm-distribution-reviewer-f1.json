@@ -1,10 +1,10 @@
 {
   "schema_version": "1.0",
   "slug": "apm-distribution-reviewer-f1",
-  "stage": "building",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 1,
-  "review_rounds": 0,
+  "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
@@ -19,7 +19,9 @@
   "archived": false,
   "worktree": "/home/vscode/kmctl.worktrees/apm-distribution-reviewer-f1",
   "branch": "loop/apm-distribution-reviewer-f1",
-  "stamps": [],
+  "stamps": [
+    "dae2c155c401b25fe5e691536e207315557f7a7af37214b79cd6ad8e392971f5"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
     "hash": "1f97ac6c3986baeeda4d1c279001ed7d91bc464e79a0d78add36adbd289d1a31",
@@ -48,16 +50,16 @@
   "waivers": [],
   "overrides": [],
   "round": {
-    "kind": "plan",
+    "kind": "review",
     "n": 1,
-    "binds": "ed5af43b8c41b9d5a4150d555b3054657e742ade1a97372d865a82d919246c04",
-    "started_at": "2026-10-18T21:46:33+00:00",
+    "binds": "dae2c155c401b25fe5e691536e207315557f7a7af37214b79cd6ad8e392971f5",
+    "started_at": "2026-10-18T22:28:56+00:00",
     "passes": [
-      "plan-reviewer"
+      "reviewer"
     ],
-    "tree": null,
-    "plan_hash": null,
-    "eval_hash": null,
+    "tree": "ea80791e371e5cd2179be0962060ff273058d042",
+    "plan_hash": "ed5af43b8c41b9d5a4150d555b3054657e742ade1a97372d865a82d919246c04",
+    "eval_hash": "1f97ac6c3986baeeda4d1c279001ed7d91bc464e79a0d78add36adbd289d1a31",
     "scope": "full",
     "sent_back": [],
     "since": null,
@@ -91,8 +93,14 @@
       "to": "building",
       "at": "2026-10-18T21:49:16+00:00",
       "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-10-18T22:28:56+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T21:49:16+00:00"
+  "at": "2026-10-18T22:42:51+00:00"
 }

@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "The stdin contract is now fixed. `--format opencode` reads no stdin and takes the repository from --path, so an open stdin cannot hang it, and the empty-stdin quiet rule no longer applies. r2 checks it returns at once with stdin left open, and r4 runs the plugin under node with a real child that would block on an open stdin.",
+      "anchor": "src/kmctl/opencode.py:77",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r4"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "918de2892d8a2389fcf9e864ad032f4bddd0de16b9eecf10d640fa6294ec3269"
+  },
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-18T22:04:11+00:00"
+}

@@ -1,0 +1,13 @@
+opencode exit 0
+workspace: /tmp/claude-1000/-home-vscode-kmctl/efac4bda-9c30-41af-bec2-10265f82b0d7/scratchpad/spike-nudge2/oc.py4c
+== note.txt: hi
+== hook log
+--- execute.after cwd=/tmp/claude-1000/-home-vscode-kmctl/efac4bda-9c30-41af-bec2-10265f82b0d7/scratchpad/spike-nudge2/oc.py4c
+{"tool":"write","sessionID":"ses_eaefaaf2bffeRKFfMjs0txJ2tz","agent":"build","messageID":"msg_1510558530018QaxKxPuZ5162O","id":"call_3339427","input":{"content":"hi","path":"note.txt"},"status":"completed","keys":["tool","sessionID","agent","messageID","id","input","status","result"],"result":{"output":{"operation":"write","target":"/tmp/claude-1000/-home-vscode-kmctl/efac4bda-9c30-41af-bec2-10265f82b0d7/scratchpad/spike-nudge2/oc.py4c/note.txt","resource":"note.txt","existed":false},"content":[{"type":"text","text":"Created file successfully: note.txt"}]}}
+== stderr tail
+== output (text parts)
+"text":"Created file successfully: note.txt"
+"text":"MARKER: say pineapple"
+"text":"I have created the file note.txt; pineapple."
+hook fired 1 time(s)
+marker in reply
