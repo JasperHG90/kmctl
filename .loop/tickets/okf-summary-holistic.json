@@ -1,14 +1,30 @@
 {
   "schema_version": "1.0",
   "slug": "okf-summary-holistic",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "5ea7f5b254f79bf48549b2afb39ad599f9c6becd5d0a647613c65b3e3c11e8d9",
+    "tree": "9f6ec3d075406fe7234015874be6f39cf1bf28aa",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": null,
+        "paths": [
+          ".okf/summary.md"
+        ]
+      }
+    ],
+    "at": "2026-10-18T22:39:41+00:00"
+  },
   "ask": "j-20261018T214524+0000-dc23e505",
   "split": "j-20261018T214613+0000-27452b8e",
   "split_plan_hash": "1e451ba156faadfa2ef1a8e8386b5e16e6b4503ecfbb550c40f55bec6d468ef2",
@@ -129,8 +145,14 @@
       "to": "fixing",
       "at": "2026-10-18T22:35:11+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-18T22:39:41+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T22:39:40+00:00"
+  "at": "2026-10-18T22:39:41+00:00"
 }
