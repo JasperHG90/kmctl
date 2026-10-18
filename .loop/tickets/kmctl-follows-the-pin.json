@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "kmctl-follows-the-pin",
-  "stage": "planning",
+  "stage": "ready",
   "attempts": 0,
   "plan_rounds": 2,
   "review_rounds": 0,
@@ -135,8 +135,14 @@
       "to": "planning",
       "at": "2026-10-18T18:45:35+00:00",
       "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-10-18T19:05:47+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T19:05:46+00:00"
+  "at": "2026-10-18T19:05:47+00:00"
 }
