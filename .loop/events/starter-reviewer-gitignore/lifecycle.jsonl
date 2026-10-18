@@ -2,3 +2,4 @@
 {"at": "2026-10-18T18:18:30+00:00", "kind": "spike-note", "n": 1, "replaced": false, "schema_version": "1.0"}
 {"at": "2026-10-18T18:18:31+00:00", "kind": "spike-note", "n": 2, "replaced": false, "schema_version": "1.0"}
 {"at": "2026-10-18T18:28:14+00:00", "kind": "spike-note", "n": 3, "replaced": false, "schema_version": "1.0"}
+{"at": "2026-10-18T18:28:37+00:00", "binds": "2d6e81eba85c7a6d19ea3a997d3dbe889c29af576f682efeb6ed735d9506be2f", "kind": "round-start", "n": 1, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
