@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "ack rewrote identical bytes on a same-day re-ack, so it could not clear the summary.",
+      "anchor": "src/kmctl/summary.py:217",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "the briefing pointed at a missing summary.",
+      "anchor": "src/kmctl/briefing.py:214",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "docs still said readers start at the index.",
+      "anchor": "docs/tutorials/get-started-with-kmctl.md:57",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "resolved",
+      "claim": "ADR 0027 and commands.md misdescribed kmctl update.",
+      "anchor": ".okf/decisions/0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step.md:97",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f5",
+      "disposition": "open",
+      "claim": "ADR 0011's Consequences still says the kept-file exceptions are the kmctl block and the first decision's index entry and log line. init now has another one: the root index entry and log line for a manifesto or summary it writes into a kept bundle. The 2026-10-18 Correction this change adds to ADR 0011 covers only the block's new start line and sixth duty, so the record does not say it changed. README.md:112 also still says init 'keeps any file that already exists'. Add the new exception to ADR 0011's Correction (pointing at ADR 0027), update its decisions/index.md amendment note, and qualify the README sentence.",
+      "anchor": ".okf/decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md:173",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f6",
+      "disposition": "open",
+      "claim": "When the kept .okf/log.md is not UTF-8 but the index is, init prints 'linked .okf/summary.md from .okf/index.md, with a line in .okf/log.md' and then a warning that it could not add the line to log.md. The two lines contradict each other. Drop the 'with a line in .okf/log.md' clause, or print it only when the log line was written.",
+      "anchor": "src/kmctl/__init__.py:147",
+      "category": "nit",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "de477ed5e0a1a10e0a292c638fff5c12ffe670b84a97cb5a890c1e8dd7fff25c",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-18T21:04:27+00:00"
+}
