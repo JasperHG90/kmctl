@@ -16,3 +16,4 @@
 {"at": "2026-10-18T18:51:40+00:00", "dispatched_at": "2026-10-18T18:45:15+00:00", "kind": "round-close", "n": 1, "outcome": "fail", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-18T18:51:20+00:00"}}
 {"at": "2026-10-18T18:56:45+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "fixing"}
 {"at": "2026-10-18T18:57:11+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "8bed48c3e82ac200270dd97dd7119df519066982"}
+{"at": "2026-10-18T18:59:29+00:00", "branch": "loop/starter-reviewer-gitignore", "kind": "land", "schema_version": "1.0", "sha": "cbd067da1f153e1325f785e07ee62183bd12737f"}
