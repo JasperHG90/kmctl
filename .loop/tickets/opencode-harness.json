@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "opencode-harness",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 2,
@@ -91,7 +91,7 @@
   "split": "j-20261018T041436+0000-64e9de3d",
   "split_plan_hash": "fb04735da389442ee2db4df7b1f78b28cd607b5ef3662109d0ad59cfccb51aa3",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "d6bd9a15288b48d749ec3c0ad685d6b74bcfad5a",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -296,8 +296,14 @@
       "to": "verifying",
       "at": "2026-10-18T05:05:03+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-18T05:19:56+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T05:19:30+00:00"
+  "at": "2026-10-18T05:19:56+00:00"
 }
