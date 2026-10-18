@@ -219,5 +219,5 @@ Next:
   so Claude Code gets a briefing at each session start and every pull request
   is checked.
 - [Commands](../reference/commands.md) lists every command and option.
-- [Why one hook and report-only audits](../explanation/why-one-hook-and-report-only-audits.md)
+- [Why two hooks and report-only audits](../explanation/why-one-hook-and-report-only-audits.md)
   explains how kmctl keeps knowledge current without blocking anyone.

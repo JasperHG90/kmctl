@@ -54,7 +54,7 @@ flowchart LR
         docsIndex["docs_index.py<br/>docs folder indexes"]
         supersede["supersede.py<br/>decision supersede"]
         verifyPy["verify.py<br/>verify"]
-        summaryPy["summary.py<br/>summary ack; when<br/>summary.md is behind"]
+        summaryPy["summary.py<br/>summary ack, summary nudge;<br/>when summary.md is behind"]
         pluginPy["plugin.py<br/>plugin patch"]
         doctorPy["doctor.py<br/>doctor: reads the install,<br/>runs apm --version offline"]
         antigravityPy["antigravity.py<br/>the Antigravity plugin folder,<br/>agent translator"]
@@ -85,7 +85,7 @@ flowchart LR
     ghRelease["v* tag and GitHub Release<br/>wheel, sdist, SHA256SUMS"]
     repo[("docs/ and .okf/")]
     agentFiles[("CLAUDE.md, AGENTS.md")]
-    consumer[("the consumer's apm.yml,<br/>.claude/ skills, agents, rules,<br/>.claude/settings.json hook,<br/>.mcp.json okf-bundle (all from APM)")]
+    consumer[("the consumer's apm.yml,<br/>.claude/ skills, agents, rules,<br/>.claude/settings.json hooks,<br/>.mcp.json okf-bundle (all from APM)")]
     agConsumer[("the consumer's .agents/<br/>skills, rules, hooks.json,<br/>mcp_config.json okf-bundle (from APM),<br/>plugins/kmctl/: agents (from kmctl)")]
     ocConsumer[("the consumer's .opencode/ and opencode.json<br/>agents, okf-bundle (from APM, agents rewritten),<br/>rules/, instructions entry,<br/>plugins/kmctl.js (from kmctl)")]
     claude["claude CLI<br/>old plugin removal,<br/>user-scope MCP server"]
@@ -95,6 +95,7 @@ flowchart LR
     summary["job summary and<br/>Knowledge audit issue"]
 
     consumer -- "SessionStart hook:<br/>kmctl briefing" --> briefing
+    consumer -- "PostToolUse hook:<br/>KMCTL_PINNED=1 kmctl summary nudge" --> summaryPy
     agConsumer -- "SessionStart hook:<br/>kmctl briefing --format antigravity" --> briefing
     ocConsumer -- "plugin: kmctl briefing --path" --> briefing
     writeDocs -- "kmctl new doc, kmctl check" --> app
@@ -111,7 +112,7 @@ flowchart LR
     app --> scaffold & checks & briefing & reviewDue & handoffs & concepts & docs & supersede & verifyPy & summaryPy & pluginPy & doctorPy & kinds
     reviewDue & checks & briefing -- "changed_concepts" --> summaryPy
     summaryPy -. "git log, diff, status" .-> repo
-    summaryPy -- "write: checked in .okf/summary.md" --> repo
+    summaryPy -- "write: checked in .okf/summary.md;<br/>nudge: the set's hash in the git directory" --> repo
     doctorPy -- "hook and MCP entries,<br/>lock reader" --> pluginPy
     doctorPy -- "plugin_problems" --> antigravityPy
     doctorPy -- "agent_problems, rule_problems,<br/>hook_problems, mcp_present" --> opencodePy
@@ -189,6 +190,7 @@ cached, and the copy on PATH adds the newer-release line from
 | `kmctl check` | `checks.py`, with `docs_index.py`, and `summary.py` for the summary's word limit and whether it is behind (a warning) | nothing; with `--fix`, each generated docs folder `README.md` that is missing or out of date (ADR 0022) |
 | `kmctl briefing` | `briefing.py`, with `review_due.py`, `handoffs.py`, `summary.py` for whether the summary is current, `kinds.py` for the architecture folder its setup line checks, and `plugin.py` for the skills it names, which the wheel carries as `kmctl/_skills/`; the knowledge rules are in `.claude/rules/`, not the briefing | nothing |
 | `kmctl review due` | `review_due.py`, with `summary.py` for the summary's one reason, `concepts changed` (ADR 0027) | nothing |
+| `kmctl summary nudge` | `summary.py`, by git only, never `review_due.py` (ADR 0028) | the hash of the set it last named, in `kmctl/summary-nudge` under the git directory; nothing in `.okf/` |
 | `kmctl summary ack` | `summary.py` | `checked` (`at`, `against`) in `.okf/summary.md`'s front matter, and nothing else; an agent's word that the summary holds, not a person's review (ADR 0023, ADR 0027) |
 | `kmctl handoffs` | `handoffs.py` | nothing |
 | `kmctl schema` | `kinds.py`, with `okf.py` for the field names | nothing |
@@ -197,7 +199,7 @@ cached, and the copy on PATH adds the newer-release line from
 | `kmctl decision supersede` | `supersede.py` | both decision records and a log line |
 | `kmctl verify` | `verify.py`, with `concepts.py` for `--stale-after` and the log line | a `verified` entry (and, with `--stale-after`, `stale_after`) in one concept or docs page, and a log line for a concept; only a person verifies, never an audit (ADR 0005, ADR 0023) |
 | `kmctl plugin patch` | `plugin.py`, with `antigravity.py` for the plugin folder and `opencode.py` for OpenCode | never runs APM, only `claude` to remove the old plugin and a user-scope `okf-bundle`: reads `apm.lock.yaml`; refuses an `apm.yml` that names the package the v0.3.0 way, naming the `apm uninstall`; for claude, removes the hook and `okf-bundle` an older kmctl wrote and the old claude plugin `kmctl@kmctl`; for antigravity, writes `.agents/plugins/kmctl/` with the translated agents and takes APM's broken okf Stop handler out of `.agents/hooks.json` (ADR 0018, ADR 0020, ADR 0021); for opencode, rewrites the three agents in `.opencode/agents/`, writes `.opencode/rules/`, the `instructions` entry in `opencode.json` and `.opencode/plugins/kmctl.js` (ADR 0024); `--undo` deletes the plugin folder and the OpenCode files, and with `--scope user` deletes nothing in the repository and names them |
-| `kmctl doctor` | `doctor.py`, with `plugin.py` for the hook, MCP entries and lock reader, `antigravity.py` for the folder comparison and `opencode.py` for the OpenCode files | nothing; it reads `apm.yml`, `apm.lock.yaml` and the files it lists, the settings files, `.mcp.json`, `.agents/plugins/kmctl/`, `.opencode/`, `opencode.json` and agy's trust list, and runs only `uv tool run --offline --from apm-cli==0.33.0 apm --version`; `--online` fetches okf's MCP script URL |
+| `kmctl doctor` | `doctor.py`, with `plugin.py` for the hooks, MCP entries and lock reader, `antigravity.py` for the folder comparison and `opencode.py` for the OpenCode files | nothing; it reads `apm.yml`, `apm.lock.yaml` and the files it lists, the settings files, `.mcp.json`, `.agents/plugins/kmctl/`, `.opencode/`, `opencode.json` and agy's trust list, and runs only `uv tool run --offline --from apm-cli==0.33.0 apm --version`; `--online` fetches okf's MCP script URL |
 
 `kinds.py` holds the one table of document kinds: each kind's front matter
 fields, its status values and its `##` sections. `kmctl new`, `kmctl new doc`,
@@ -227,12 +229,17 @@ and `apm/claude/.apm/instructions/`, for the OpenCode rules.
   `okf_mcp.py` at the pinned commit for the nearest `.okf/`). It depends on
   `apm/claude/` and `apm/antigravity/`, each with its own `targets:`, which
   hold that harness's rules and hooks. APM writes and records all of it.
-- **One hook of kmctl's own.** Each harness's sub-package ships one
+- **Two hooks of kmctl's own.** Each harness's sub-package ships one
   SessionStart hook that runs `kmctl briefing` (for Antigravity,
   `--format antigravity`) and exits 0 even when kmctl is missing or fails
-  (I1, ADR 0004). The briefing is whatever the CLI prints, so upgrading the
-  CLI updates it, and it has a fixed budget (I3, ADR 0002). The Antigravity
-  sub-package also ships okf's Stop check wrapper (ADR 0018).
+  (I1). The briefing is whatever the CLI prints, so upgrading the
+  CLI updates it, and it has a fixed budget (I3, ADR 0002). The Claude
+  sub-package also ships a PostToolUse hook, matcher
+  `Write|Edit|MultiEdit|Bash`, that runs `KMCTL_PINNED=1 kmctl summary
+  nudge --format claude`: the copy on PATH, never a hand-off to the pin
+  through uvx, names the concepts the summary is behind, once per set, and
+  prints `{}` when kmctl is missing or the verb fails (I1, ADR 0028). The
+  Antigravity sub-package also ships okf's Stop check wrapper (ADR 0018).
 - **Rules as instructions.** Each rule is
   `apm/claude/.apm/instructions/NAME.instructions.md` with an `applyTo:`,
   which APM writes into `.claude/rules/NAME.md` as `paths:`.
@@ -328,18 +335,18 @@ tag a consumer's `apm.yml` names and a build from a download with no
 
 ## Depicts
 
-- Invariants: I1 (the SessionStart hook kmctl writes never blocks), I2 (the auditor reads
+- Invariants: I1 (the SessionStart and PostToolUse hooks kmctl's package ships never block), I2 (the auditor reads
   only; the action's audit mode never commits or pushes), I3 (the hook prints `kmctl briefing`),
   I4 (`okf.py` reads OKF fields for every module).
 - Verbs: `kmctl init`, `kmctl update`, `kmctl check`, `kmctl briefing` (and `--format antigravity`), `kmctl review due`,
   `kmctl handoffs`, `kmctl new decision`, `kmctl new practice`,
   `kmctl new proposal`, `kmctl new prototype`, `kmctl new handoff`,
-  `kmctl new doc`, `kmctl schema`, `kmctl decision supersede`, `kmctl verify`, `kmctl summary ack`, `kmctl plugin patch`,
+  `kmctl new doc`, `kmctl schema`, `kmctl decision supersede`, `kmctl verify`, `kmctl summary ack`, `kmctl summary nudge`, `kmctl plugin patch`,
   `kmctl doctor`.
 - Modules: `src/kmctl/__init__.py`, `scaffold.py`, `checks.py`,
   `briefing.py`, `review_due.py`, `handoffs.py`, `concepts.py`,
   `docs.py`, `docs_index.py`, `supersede.py`, `verify.py`, `summary.py` (the
-  summary's freshness rule and ack), `src/kmctl/plugin.py` (the hook and MCP
+  summary's freshness rule, ack and nudge), `src/kmctl/plugin.py` (the hook and MCP
   writers), `src/kmctl/antigravity.py` (the Antigravity plugin folder),
   `src/kmctl/opencode.py` (the OpenCode agents, rules and briefing plugin),
   `src/kmctl/doctor.py` (the install checks), `src/kmctl/pin.py` (the
@@ -347,7 +354,8 @@ tag a consumer's `apm.yml` names and a build from a download with no
   `okf.py`, `kinds.py`; `apm/.apm/skills/` (write-docs, handoff,
   continue, audit and the three review skills),
   `apm/.apm/agents/kmctl-auditor.md`, `apm/claude/.apm/instructions/`,
-  `apm/antigravity/.apm/instructions/`; `action.yml`,
+  `apm/antigravity/.apm/instructions/`, `apm/claude/.apm/hooks/hooks.json`
+  (the SessionStart and PostToolUse hooks); `action.yml`,
   `action/knowledge-ci.sh`, `action/agent.py` (run and publish), `action/prompts/` (the three
   audits); `.github/workflows/knowledge-audit.yml`.
 - Releases: `.github/workflows/release.yml`, `.github/workflows/release-tag.yml`,

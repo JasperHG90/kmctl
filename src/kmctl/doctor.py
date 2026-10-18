@@ -31,6 +31,7 @@ from kmctl.plugin import (
     APM_CLI,
     HARNESSES,
     MCP_NAME,
+    NUDGE_MATCHER,
     OLD_PLUGIN,
     PACKAGE_PATH,
     Lock,
@@ -47,6 +48,8 @@ from kmctl.plugin import (
     kmctl_files,
     kmctl_hooks,
     kmctl_package,
+    nudge_hook_entry,
+    nudge_hooks,
     okf_mcp_url,
     okf_server_current,
     other_okf_server,
@@ -422,6 +425,27 @@ def _claude_hook(cwd: Path, scope: Scope) -> Check:
     return _fail("claude.hook", "claude", detail, _update_fix("claude", scope))
 
 
+def _claude_nudge_hook(cwd: Path, scope: Scope) -> Check:
+    """Whether settings.json holds exactly the PostToolUse summary nudge kmctl's package ships."""
+    path = settings_path(cwd, scope)
+    shown = shown_path(path, cwd)
+    cid = "claude.nudge-hook"
+    _, broken = _load(path)
+    if broken:
+        return _fail(cid, "claude", f"{shown} {broken}", f"fix {shown}")
+    hooks = nudge_hooks(path)
+    if hooks == [(NUDGE_MATCHER, nudge_hook_entry())]:
+        detail = f"{shown} holds the PostToolUse hook that runs kmctl summary nudge"
+        return _pass(cid, "claude", detail)
+    if not hooks:
+        detail = f"the kmctl PostToolUse hook is missing from {shown}"
+        return _fail(cid, "claude", detail, _install_fix("claude", scope))
+    detail = (
+        f"the kmctl PostToolUse hook in {shown} is not the one kmctl's package ships"
+    )
+    return _fail(cid, "claude", detail, _update_fix("claude", scope))
+
+
 def _claude_mcp(cwd: Path, scope: Scope) -> Check:
     """Whether okf's MCP server is declared for Claude Code: kmctl's okf-bundle, or another okf server."""
     path = cwd / ".mcp.json" if scope == "project" else user_mcp_file()
@@ -659,6 +683,7 @@ def _harness(cwd: Path, scope: Scope, harness: str, online: bool) -> list[Check]
     if harness == "claude":
         checks += [
             _claude_hook(cwd, scope),
+            _claude_nudge_hook(cwd, scope),
             _claude_mcp(cwd, scope),
             _claude_old_plugin(cwd, scope),
         ]
@@ -728,8 +753,8 @@ def run_doctor(
     (``init.okf``, ``init.docs``); which harnesses are installed
     (``kmctl.harness``, or ``claude.scope`` when only a user-scope install
     exists); then each harness's checks: ``HARNESS.lock``, ``.files``,
-    ``.okf-skills``, ``.okf-mcp``, and for claude ``claude.hook`` and
-    ``claude.old-plugin``, for antigravity ``antigravity.plugin``,
+    ``.okf-skills``, ``.okf-mcp``, and for claude ``claude.hook``,
+    ``claude.nudge-hook`` and ``claude.old-plugin``, for antigravity ``antigravity.plugin``,
     ``antigravity.hook``, ``antigravity.trust`` (when agy is on PATH) and,
     with ``online``, ``antigravity.okf-mcp-url``, for opencode
     ``opencode.agents``, ``opencode.rules`` and ``opencode.hook``. ``dep.opencode``

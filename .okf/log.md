@@ -143,3 +143,6 @@
 - Added `decisions/0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step` with `kmctl new decision`.
 - Added `summary`, the bundle's first page (ADR 0027), and updated `manifesto` (I4 names `checked`; the sections and Parts name the summary), `architecture/overview` (`summary.py`, `kmctl summary ack`) and `decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code` (a correction: the block starts at the summary and holds six duties).
 - Rewrote `summary` in its new sections (The project, How it works, What it has settled, Where it stands), distilling the bundle rather than listing the decisions; corrected `decisions/0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step` (a correction naming the sections and why) and updated `decisions/index` and `index` to match.
+- Added `decisions/0028-two-hooks-the-session-briefing-and-the-summary-nudge` with `kmctl new decision`.
+- Superseded `decisions/0004-sessionstart-is-the-only-hook` with `decisions/0028-two-hooks-the-session-briefing-and-the-summary-nudge`.
+- Updated `manifesto` (I1 names both hooks, SessionStart and PostToolUse, and that neither blocks; the package ships the nudge hook), `architecture/overview` (`kmctl summary nudge`, the PostToolUse hook and its edge to `summary.py`) and `summary` (two hooks; the nudge keeps the summary in step) for ADR 0028.

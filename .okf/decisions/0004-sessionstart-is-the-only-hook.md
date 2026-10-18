@@ -6,7 +6,7 @@ generated:
   by: claude-opus/5.5
   at: 2026-10-15
 tags: [adr, decision]
-status: stable
+status: deprecated
 ---
 
 # ADR 0004: SessionStart is the only hook
@@ -50,3 +50,7 @@ The record had no Consequences section; this adds it.
 Antigravity kmctl's plugin folder also relays okf's opt-in Stop check,
 because APM's copy cannot run there. kmctl's own hook is still SessionStart
 only; the operator chose this, and I1 says so.
+
+## Correction, 2026-10-18
+
+Superseded by [ADR 0028](0028-two-hooks-the-session-briefing-and-the-summary-nudge.md).

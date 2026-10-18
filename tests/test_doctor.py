@@ -77,6 +77,7 @@ ALL_IDS = [
     "claude.files",
     "claude.okf-skills",
     "claude.hook",
+    "claude.nudge-hook",
     "claude.okf-mcp",
     "claude.old-plugin",
     "antigravity.lock",
@@ -173,9 +174,15 @@ def _apm_writes(harnesses: tuple[str, ...], scope: str) -> dict[str, str]:
     if "claude" in harnesses:
         # As APM 0.33.0 writes kmctl's package (spike:apm-hands-back/1, /5).
         group = {"matcher": "*", "hooks": [plugin.hook_entry()]}
-        out[".claude/settings.json"] = json.dumps({"hooks": {"SessionStart": [group]}})
+        nudge = {"matcher": plugin.NUDGE_MATCHER, "hooks": [plugin.nudge_hook_entry()]}
+        out[".claude/settings.json"] = json.dumps(
+            {"hooks": {"SessionStart": [group], "PostToolUse": [nudge]}}
+        )
         out[".claude/apm-hooks.json"] = json.dumps(
-            {"SessionStart": [{**group, "_apm_source": "kmctl/claude"}]}
+            {
+                "SessionStart": [{**group, "_apm_source": "kmctl/claude"}],
+                "PostToolUse": [{**nudge, "_apm_source": "kmctl/claude"}],
+            }
         )
         mcp = ".claude/.claude.json" if scope == "user" else ".mcp.json"
         out[mcp] = json.dumps({"mcpServers": {plugin.MCP_NAME: server}})
@@ -499,6 +506,43 @@ def test_broken_piece_fails_naming_it_and_its_fix(complete: Setup, case: str) ->
     line = _fail_line(result.stdout, cid)
     assert piece in line, line
     assert line.endswith(f"; {fix}"), line
+
+
+def _settings_hooks(repo: Path) -> tuple[Path, dict]:
+    path = repo / ".claude" / "settings.json"
+    return path, json.loads(path.read_text())
+
+
+def test_nudge_hook_present_passes(complete: Setup) -> None:
+    check = _by_id(_doctor()[1])["claude.nudge-hook"]
+
+    assert check["ok"] is True
+    assert "PostToolUse" in check["detail"] and "summary nudge" in check["detail"]
+
+
+def test_nudge_hook_missing_fails_with_the_install_fix(complete: Setup) -> None:
+    path, data = _settings_hooks(complete.repo)
+    del data["hooks"]["PostToolUse"]
+    path.write_text(json.dumps(data))
+
+    result = _kmctl("doctor")
+
+    assert result.exit_code == 1, result.output
+    line = _fail_line(result.stdout, "claude.nudge-hook")
+    assert "PostToolUse hook is missing from .claude/settings.json" in line
+    assert CLAUDE_FIX in line
+    assert _by_id(_doctor()[1])["claude.hook"]["ok"] is True
+
+
+def test_nudge_hook_changed_fails_with_the_update_fix(complete: Setup) -> None:
+    path, data = _settings_hooks(complete.repo)
+    data["hooks"]["PostToolUse"][0]["matcher"] = "Write"
+    path.write_text(json.dumps(data))
+
+    line = _fail_line(_kmctl("doctor").stdout, "claude.nudge-hook")
+
+    assert "is not the one kmctl's package ships" in line
+    assert _update_fix("claude") in line
 
 
 def test_broken_lock_and_hook_still_name_the_harness(complete: Setup) -> None:

@@ -31,8 +31,10 @@ from kmctl.plugin import patch as patch_plugin
 from kmctl.plugin import unpatch as unpatch_plugin
 from kmctl.review_due import review_due
 from kmctl.scaffold import AGENT_FILES, scaffold
-from kmctl.summary import SUMMARY_ID
+from kmctl.summary import SUMMARY_ID, BadPayload, as_claude, find_root, payload_cwd
+from kmctl.summary import Nudge as NudgeResult
 from kmctl.summary import ack as ack_summary
+from kmctl.summary import nudge as nudge_summary
 from kmctl.supersede import supersede
 from kmctl.verify import verify as verify_concept
 
@@ -763,7 +765,7 @@ def schema_cmd(
 summary_app = typer.Typer(
     help=(
         "Keep .okf/summary.md, the bundle's first page, in step with its "
-        "concepts. Verbs: ack."
+        "concepts. Verbs: ack, nudge."
     ),
     no_args_is_help=True,
 )
@@ -821,6 +823,107 @@ def summary_ack(
         f"checked {result.path} at {result.at} against {', '.join(result.against)}"
     )
     typer.echo(next_step("kmctl review due"))
+
+
+@summary_app.command(
+    "nudge",
+    epilog=(
+        "Examples:\n\n"
+        '  echo \'{"cwd": "/repo", "tool_name": "Bash"}\' | kmctl summary nudge '
+        "--format claude\n\n"
+        "  kmctl summary nudge --path ../other-repo\n\n"
+        "  kmctl summary nudge --path ../other-repo --json\n\n"
+        "Claude Code's PostToolUse hook in kmctl's package runs this after every "
+        "Write, Edit, MultiEdit and Bash call, as KMCTL_PINNED=1 kmctl summary "
+        "nudge --format claude, so the kmctl on PATH runs it rather than "
+        "handing it to the project's pin through uvx (ADR 0026). The repository "
+        "is the cwd of the JSON object on stdin. Without a usable cwd (stdin "
+        "a terminal, which is never read, empty, not a JSON object, or with no "
+        "cwd that is a folder) it is --path when you give it, so a script can "
+        "run it with no input; without --path, empty or bad stdin prints "
+        "nothing, as the hook never passes --path, and a payload with no cwd "
+        "uses the current directory. From a subfolder it walks up to the "
+        "folder holding .okf/summary.md or .git.\n\n"
+        "It nudges when the summary is behind, by the rule kmctl summary ack "
+        "describes (a concept changed after the summary; never log.md, an "
+        "index, a handoff or the summary itself), and names the concepts and "
+        "both ways out: update .okf/summary.md, or kmctl summary ack. It uses "
+        "git only. It remembers the set it last named as a hash in "
+        "kmctl/summary-nudge under the git directory (git rev-parse --git-path), "
+        "so the same set stays quiet and a grown one nudges again. It never "
+        "writes .okf/.\n\n"
+        "It always exits 0, except exit 2 for --json with --format claude. When "
+        "there is nothing to say, or anything fails (no git, no "
+        ".okf/summary.md, bad stdin without --path), --format claude prints {} "
+        "and --format text prints nothing."
+    ),
+)
+def summary_nudge(
+    path: Annotated[
+        Path | None,
+        typer.Option(
+            "--path",
+            metavar="../other-repo",
+            exists=True,
+            file_okay=False,
+            help=(
+                "The repository to check when stdin gives no usable cwd (a "
+                "terminal, empty, not a JSON object, or no folder named): an "
+                "existing folder. Default: the current directory, and then "
+                "empty or bad stdin prints nothing."
+            ),
+        ),
+    ] = None,
+    output_format: Annotated[
+        Literal["text", "claude"],
+        typer.Option(
+            "--format",
+            metavar="claude",
+            help=(
+                "text (the nudge as one line, or nothing; the default) or claude "
+                '(one JSON object, {"hookSpecificOutput": {"hookEventName": '
+                '"PostToolUse", "additionalContext": TEXT}}, or {} for no nudge, '
+                "for Claude Code's PostToolUse hook)."
+            ),
+        ),
+    ] = "text",
+    as_json: Annotated[
+        bool,
+        typer.Option(
+            "--json",
+            help=(
+                "Print one JSON object, {behind, concepts, nudge}, for scripts: "
+                "whether the summary is behind, the changed concept ids, and the "
+                "nudge text, null when it stays quiet. Not with --format claude."
+            ),
+        ),
+    ] = False,
+) -> None:
+    """Print a nudge to update .okf/summary.md when a concept changed after it."""
+    if as_json and output_format == "claude":
+        raise typer.BadParameter(
+            "--json prints the nudge's parts and --format claude the hook's "
+            "JSON; give one of them",
+            param_hint="'--format'",
+        )
+    found = NudgeResult(concepts=[], nudge=None)
+    try:
+        root = path or Path(".")
+        if not sys.stdin.isatty():
+            try:
+                root = payload_cwd(sys.stdin.read()) or root
+            except BadPayload:
+                if path is None:
+                    raise
+        found = nudge_summary(find_root(root))
+    except (OSError, ValueError):  # BadPayload is a ValueError
+        pass  # a hook never fails: say nothing
+    if as_json:
+        typer.echo(json.dumps(asdict(found)))
+    elif output_format == "claude":
+        typer.echo(as_claude(found.nudge))
+    elif found.nudge is not None:
+        typer.echo(found.nudge)
 
 
 decision_app = typer.Typer(
@@ -1040,7 +1143,8 @@ _DOCTOR_EPILOG = (
     "(every kmctl file the lock lists for the harness exists with its "
     "sha256); okf-skills (the same for okf's skills); okf-mcp (okf's MCP "
     "server as kmctl's package declares it). claude.hook (the SessionStart "
-    "hook in settings.json); claude.old-plugin (no settings file enables "
+    "hook in settings.json); claude.nudge-hook (the PostToolUse hook that "
+    "runs kmctl summary nudge, in settings.json); claude.old-plugin (no settings file enables "
     "kmctl@kmctl or okf@scaccogatto). antigravity.plugin (every file in "
     ".agents/plugins/kmctl/ is what this kmctl writes); antigravity.hook "
     "(.agents/hooks.json holds kmctl's SessionStart hook and okf's Stop "

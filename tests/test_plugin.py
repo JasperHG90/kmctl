@@ -51,11 +51,13 @@ def _kmctl(*args: str) -> Result:
     return CliRunner().invoke(app, list(args))
 
 
-def test_hook_the_package_ships_is_one_sessionstart_entry() -> None:
-    """kmctl's own hook is one SessionStart entry relaying kmctl briefing (I1), shipped in apm/claude/."""
+def test_hooks_the_package_ships_are_one_sessionstart_and_one_posttooluse_entry() -> (
+    None
+):
+    """kmctl's own hooks are the SessionStart briefing and the PostToolUse summary nudge (I1), shipped in apm/claude/."""
     shipped = json.loads((ROOT / "apm/claude/.apm/hooks/hooks.json").read_text())
 
-    assert list(shipped["hooks"]) == ["SessionStart"]
+    assert list(shipped["hooks"]) == ["SessionStart", "PostToolUse"]
     [group] = shipped["hooks"]["SessionStart"]
     assert group["hooks"] == [
         {
@@ -65,6 +67,18 @@ def test_hook_the_package_ships_is_one_sessionstart_entry() -> None:
             "timeout": 10,
         }
     ]
+    [nudge] = shipped["hooks"]["PostToolUse"]
+    assert nudge == {
+        "matcher": "Write|Edit|MultiEdit|Bash",
+        "hooks": [
+            {
+                "type": "command",
+                "description": plugin.NUDGE_DESCRIPTION,
+                "command": plugin.NUDGE_COMMAND,
+                "timeout": 10,
+            }
+        ],
+    }
 
 
 def _installed_hook_command(repo: Path) -> str:

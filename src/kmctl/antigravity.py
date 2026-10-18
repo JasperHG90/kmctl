@@ -174,17 +174,25 @@ def translate_agent(text: str, source: str) -> str:
 def package_hooks(harness: str) -> dict[str, object]:
     """The hooks.json kmctl's ``apm/HARNESS/`` sub-package ships, in Claude Code's format APM reads.
 
-    Claude Code gets the briefing's SessionStart hook; Antigravity gets
-    ``HOOK_COMMAND`` at SessionStart and ``STOP_COMMAND`` at Stop. The files
-    in the package must equal these (the tests check it).
+    Claude Code gets the briefing's SessionStart hook and the summary
+    nudge's PostToolUse hook; Antigravity gets ``HOOK_COMMAND`` at
+    SessionStart and ``STOP_COMMAND`` at Stop. The files in the package must
+    equal these (the tests check it).
     """
-    from kmctl.plugin import hook_entry
+    from kmctl.plugin import NUDGE_MATCHER, hook_entry, nudge_hook_entry
 
-    def group(handler: dict[str, object]) -> list[dict[str, object]]:
-        return [{"matcher": "*", "hooks": [handler]}]
+    def group(
+        handler: dict[str, object], matcher: str = "*"
+    ) -> list[dict[str, object]]:
+        return [{"matcher": matcher, "hooks": [handler]}]
 
     if harness == "claude":
-        return {"hooks": {"SessionStart": group(hook_entry())}}
+        return {
+            "hooks": {
+                "SessionStart": group(hook_entry()),
+                "PostToolUse": group(nudge_hook_entry(), NUDGE_MATCHER),
+            }
+        }
     start = {"type": "command", "command": HOOK_COMMAND, "timeout": HOOK_TIMEOUT}
     stop = {"type": "command", "command": STOP_COMMAND, "timeout": HOOK_TIMEOUT}
     return {"hooks": {"SessionStart": group(start), "Stop": group(stop)}}
