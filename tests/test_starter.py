@@ -269,8 +269,10 @@ def test_docs_how_to_covers_the_starter() -> None:
         "newest",
         "_src_path",
         "gh:JasperHG90/kmctl-starter",
-        "uvx copier recopy --defaults --skip-answered --overwrite",
-        "git diff",
+        "_commit: v0.6.0",
+        "--vcs-ref v0.3.0",
+        "uvx copier update --defaults --skip-answered",
+        "exclude:",
     ):
         assert words in text, words
 
@@ -330,7 +332,7 @@ def test_docs_decision_records_why_and_the_costs() -> None:
         "kmctl_ref",
         "every kmctl release",
         "_src_path",
-        "recopy",
+        "_commit: v0.6.0",
         "private",
         "no template",
         "file://",

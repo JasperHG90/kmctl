@@ -73,19 +73,38 @@ Releases before v0.6.0 have no template, so copier cannot render from them.
 
 Until v0.6.0 the template lived in its own repository, JasperHG90/kmctl-starter,
 now archived. A project made from it records `_src_path:
-gh:JasperHG90/kmctl-starter` in `.copier-answers.yml`. Move it once, on a
-clean tree:
+gh:JasperHG90/kmctl-starter` in `.copier-answers.yml`, and a `_commit` from
+that repository. Move it once, on a clean tree.
+
+If `_commit` is older than v0.3.0, kmctl-starter's last release, update to
+that first:
 
 ```
-sed -i 's|^_src_path: .*|_src_path: gh:JasperHG90/kmctl|' .copier-answers.yml
+uvx copier update --defaults --skip-answered --vcs-ref v0.3.0
+```
+
+Then point the answers at kmctl, at v0.6.0, the first release with the
+template:
+
+```
+sed -i -e 's|^_src_path: .*|_src_path: gh:JasperHG90/kmctl|' \
+  -e 's|^_commit: .*|_commit: v0.6.0|' .copier-answers.yml
 git commit -am "Take the starter template from kmctl"
-uvx copier recopy --defaults --skip-answered --overwrite
-git diff
 ```
 
-`copier recopy` renders the template again with your answers. It replaces
-every file the template writes, so put back any change you made to one of
-them from `git diff`, then commit. A plain `uvx copier update` does not work
-here: kmctl has its own v0.3.0 tag, so copier compares against the wrong
-template and leaves conflicts. After the move, `just upgrade` and `uvx
-copier update` work as above.
+v0.6.0's template is kmctl-starter v0.3.0's plus one change. Make that
+change by hand: add these lines to `.pre-commit-config.yaml`, above
+`repos:`, so the hooks leave the agent files APM
+installs as they are:
+
+```
+# APM and kmctl plugin patch write the agent files below, and apm install
+# writes them again, so the hooks leave them as installed.
+exclude: ^(\.agents/|\.claude/(agents|rules|skills)/|\.opencode/|opencode\.json$)
+```
+
+From here `just upgrade` and `uvx copier update --defaults --skip-answered`
+work as above, and keep your own changes to the files the template writes.
+Change `_commit` along with `_src_path`: with only `_src_path` changed,
+copier looks up v0.3.0 in kmctl, finds kmctl's own v0.3.0 tag, which has no
+template, and leaves conflicts.

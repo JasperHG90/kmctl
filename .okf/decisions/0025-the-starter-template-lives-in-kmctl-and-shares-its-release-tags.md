@@ -68,9 +68,12 @@ a rewrite to `file://` but refuses one to `http://` or another host
   no template, so copier cannot render from them.
 - A project made from kmctl-starter records a `_src_path` naming
   that repository and a `_commit` from it. It moves
-  once: point `_src_path` at gh:JasperHG90/kmctl and run `copier recopy`,
-  which replaces the files the template writes. A plain `copier update`
-  leaves conflicts, because kmctl has its own v0.3.0 tag
-  (spike:starter-in-repo/2). The how-to gives the steps.
+  once: from kmctl-starter v0.3.0, set `_src_path` to gh:JasperHG90/kmctl
+  and `_commit: v0.6.0`, whose template is v0.3.0's plus the pre-commit
+  exclude, added by hand. `copier update` then works and keeps local edits.
+  Changing only `_src_path` leaves conflicts, because kmctl has its own
+  v0.3.0 tag with no template (spike:starter-in-repo/2); `copier recopy`
+  works too but replaces every file the template writes. The how-to gives
+  the steps.
 - The starter is exactly as public as kmctl. The operator accepted that.
 - kmctl-starter is archived, with its README pointing here.
