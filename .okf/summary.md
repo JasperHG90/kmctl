@@ -1,7 +1,7 @@
 ---
 type: summary
 title: "Summary: kmctl"
-description: "What kmctl's bundle knows, theme by theme, in at most 500 words; start here."
+description: "The whole of kmctl in at most 500 words: what it is for, how its parts fit, what its records settle and where it stands, citing the concepts; start here."
 generated:
   by: claude-opus/5.5
   at: 2026-10-18
@@ -14,69 +14,80 @@ checked:
 
 # Summary: kmctl
 
+## The project
+
 kmctl keeps a repository's knowledge current: `docs/` for people who use a
-project, this `.okf/` bundle for people and agents working on it. It puts
-the right knowledge in front of the agent at every session start and audits
-the rest, because nothing can force knowledge to stay true. The
-[manifesto](manifesto.md) holds the purpose, the parts and the invariants.
+project, an `.okf/` bundle for people and agents working on it. Since
+nothing can force knowledge to stay true, kmctl puts it in front of the
+agent at every session start and audits it; a person decides
+([manifesto](manifesto.md)). It serves maintainers and their agents in
+Claude Code, Antigravity and OpenCode.
 
-## Decisions
+## How it works
 
-- **A CLI that does the bookkeeping.** kmctl is a standalone Typer CLI
-  ([ADR 0001](decisions/0001-standalone-cli-installs-its-plugin.md)) whose
-  briefing a SessionStart hook injects
+Four parts ([overview](architecture/overview.md)). The CLI in `src/kmctl/`
+alone writes knowledge. An APM package in `apm/` carries skills, an audit
+agent, four knowledge rules and a SessionStart hook; APM installs it and
+`kmctl plugin patch` fills APM's gaps. A GitHub Action runs free checks on
+each pull request and an opt-in LLM audit. A copier template starts new
+projects pinned to a release.
+
+An agent reads in layers: the hook injects `kmctl briefing` (what is due,
+where knowledge lives), the block in `CLAUDE.md` and `AGENTS.md` points to
+this summary, the summary to the indexes, and the indexes to the
+concepts. Each project pins kmctl in `apm.lock.yaml`, and the `kmctl` on
+PATH hands every command to that release
+([ADR 0026](decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins.md)).
+Handoffs in `.okf/handoffs/` carry where work stopped into the next
+session: `/handoff` writes one, `/continue` reads it back
+([ADR 0008](decisions/0008-handoffs-are-okf-concepts.md)).
+
+## What it has settled
+
+- **Prompts may, code must.** Verbs write the numbering, front matter,
+  index entries, log lines and `docs/` folder indexes; the agent writes the
+  prose, and skills only route to verbs
+  ([ADR 0001](decisions/0001-standalone-cli-installs-its-plugin.md),
+  [ADR 0008](decisions/0008-handoffs-are-okf-concepts.md),
+  [ADR 0022](decisions/0022-docs-pages-carry-optional-okf-front-matter-and-generated-folder-indexes.md)).
+- **Inject, don't link.** An agent reads a page only if it
+  knows to look, so knowledge arrives through one SessionStart hook that
+  never blocks, plus rules where the briefing alone left too few records
+  written
   ([ADR 0002](decisions/0002-briefing-and-rules-injected-by-the-cli.md),
-  [ADR 0004](decisions/0004-sessionstart-is-the-only-hook.md)). The kmctl on
-  PATH runs the release a project's lock pins
-  ([ADR 0026](decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins.md)).
-- **APM installs the package.** Skills, the audit agent, rules, hooks and
-  okf's MCP server come from APM; `kmctl plugin patch` adds only what APM
-  cannot install yet, for Antigravity and OpenCode
-  ([ADR 0021](decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md),
-  [ADR 0024](decisions/0024-opencode-gets-the-package-from-apm-and-its-agents-rules-and-briefing-from-kmctl-plugin-patch.md)).
-- **Staleness from OKF's own fields.** `kmctl review due` reads
-  `stale_after`, `verified` and `sources`
-  ([ADR 0006](decisions/0006-staleness-from-okf-fields.md)); only a person
-  verifies ([ADR 0023](decisions/0023-kmctl-verify-records-a-person-s-check.md)).
-  The only extension fields are `handoff_key` and `checked`
-  ([ADR 0009](decisions/0009-handoff-key-extension-field.md),
+  [ADR 0004](decisions/0004-sessionstart-is-the-only-hook.md),
+  [ADR 0011](decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md)).
+  Antigravity also relays okf's Stop check
+  ([ADR 0018](decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity.md)).
+- **OKF as it is.** kmctl uses the spec's fields plus two named extensions,
+  `handoff_key` and `checked`, so any bundle works; staleness comes from
+  `stale_after`, `verified`, `sources` and commit order, with no `covers`
+  field
+  ([ADR 0006](decisions/0006-staleness-from-okf-fields.md),
+  [ADR 0009](decisions/0009-handoff-key-extension-field.md),
   [ADR 0027](decisions/0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step.md)).
-- **Audits report only.** CI runs the free checks on every pull request and
-  an opt-in LLM audit, a standalone PydanticAI script for any provider
+- **Judging is not trusting.** Audits report and never write; only a person
+  verifies, and an agent's `kmctl summary ack` is no review. The CI
+  audit takes any provider and never runs beside a GitHub token
   ([ADR 0005](decisions/0005-audits-report-only.md),
-  [ADR 0017](decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script.md)).
-- **Setting a repository up.** `kmctl init` writes the bundle, a block in
-  `CLAUDE.md` and `AGENTS.md` and a first decision
-  ([ADR 0011](decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md));
-  `docs/` pages carry optional OKF front matter and generated folder indexes
-  ([ADR 0022](decisions/0022-docs-pages-carry-optional-okf-front-matter-and-generated-folder-indexes.md));
-  a copier template starts new projects
-  ([ADR 0025](decisions/0025-the-starter-template-lives-in-kmctl-and-shares-its-release-tags.md)).
-- Releases come from CI ([ADR 0012](decisions/0012-releases-come-from-ci.md)).
-  The full list, with what each replaced, is the
-  [decision index](decisions/index.md).
+  [ADR 0017](decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script.md),
+  [ADR 0023](decisions/0023-kmctl-verify-records-a-person-s-check.md)).
+- **One version, one owner per file.** The package matches the CLI's
+  version. APM owns what it installs; kmctl patches only its gaps, each
+  until APM closes it
+  ([ADR 0014](decisions/0014-apm-is-the-only-install-route.md),
+  [ADR 0020](decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md),
+  [ADR 0021](decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md)).
+  CI makes releases, and each tag releases the template too
+  ([ADR 0012](decisions/0012-releases-come-from-ci.md),
+  [ADR 0025](decisions/0025-the-starter-template-lives-in-kmctl-and-shares-its-release-tags.md)).
 
-## Architecture
+The [decision index](decisions/index.md) lists every record.
 
-The [overview](architecture/overview.md) shows the four parts: the CLI in
-`src/kmctl/`, one module per verb and the only part that writes knowledge;
-the APM package in `apm/`; the GitHub Action in `action.yml` and `action/`;
-and the starter template. `okf.py` is the one reader of front matter, and
-`kinds.py` the one table of document kinds.
+## Where it stands
 
-## Open work
-
-No proposals or prototypes are recorded in the bundle. Work in flight lives
-as loop tickets in `.loop/`, outside it.
-
-## Practices
-
-No practices are recorded yet.
-
-## Known gaps
-
-- Invariant I2, that audits never write knowledge, is still `planned`: no
-  test enforces it ([manifesto](manifesto.md)).
-- Many concepts have no `verified` entry, so `kmctl review due` lists them.
-- Out of scope for now: a `covers` field, hooks beyond SessionStart, and
-  harnesses beyond Claude Code, Antigravity and OpenCode.
+All four parts work, for the three harnesses. Invariants I1, I3 and I4 are
+enforced by tests; I2, that audits never write knowledge, is still
+`planned`. No practices, proposals or prototypes are recorded, and many
+concepts have no `verified` entry, so `kmctl review due` lists them. Work in
+flight lives as loop tickets in `.loop/`, outside the bundle.

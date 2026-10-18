@@ -1,17 +1,17 @@
 {
   "schema_version": "1.0",
   "slug": "okf-summary-nudge-agy-opencode",
-  "stage": "planning",
+  "stage": "ready",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
   "fix": null,
   "ask": null,
-  "split": null,
-  "split_plan_hash": null,
+  "split": "j-20261018T215921+0000-3322bdf7",
+  "split_plan_hash": "918de2892d8a2389fcf9e864ad032f4bddd0de16b9eecf10d640fa6294ec3269",
   "split_hold": false,
   "commit_sha": null,
   "closed_outside": false,
@@ -20,16 +20,82 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "7b47385593cbe424ad76cc0217ae97f4fd4dcbf697fa0e39fd8703ceb551cd2d",
+    "at": "2026-10-18T22:04:29+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "kmctl summary nudge --format antigravity, given agy's PostToolUse JSON with workspacePaths[0] naming a repository whose summary is behind and run from its .agents/ folder, prints {\"injectSteps\":[{\"systemMessage\":{\"systemMessage\":TEXT}}]} with TEXT naming the changed concepts and both ways out; with the summary current, or bad stdin, it prints {} and exits 0.",
+      "fails_when": "the JSON shape differs, the repository is read from the cwd (.agents/) rather than workspacePaths, TEXT lacks the concepts or the ways out, or a quiet case prints a nudge or exits nonzero",
+      "command": "uv run pytest tests/test_summary_nudge.py -k antigravity -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "kmctl summary nudge --format opencode --path DIR reads no stdin (run with stdin left open, it returns at once), takes the repository from --path, prints the nudge text alone when the summary is behind and nothing when it is current, exiting 0.",
+      "fails_when": "it reads or waits on stdin, ignores --path, prints JSON or other text, prints when current, or exits nonzero",
+      "command": "uv run pytest tests/test_summary_nudge.py -k opencode_format -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "apm/antigravity/.apm/hooks/hooks.json carries a PostToolUse entry running KMCTL_PINNED=1 kmctl summary nudge --format antigravity with a timeout, guarded so a missing kmctl or verb prints {} and exits 0; kmctl doctor reports it, reading APM's nested {matcher, hooks} form of the entry.",
+      "fails_when": "the entry, KMCTL_PINNED, the guard or the timeout is missing, a missing verb makes it fail, or doctor does not check it",
+      "command": "uv run pytest tests/test_summary_nudge.py tests/test_doctor.py -k antigravity_nudge -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "The plugin kmctl plugin patch writes to .opencode/plugins/kmctl.js registers ctx.tool.hook(\"execute.after\"), runs kmctl summary nudge --format opencode --path <project> with KMCTL_PINNED=1 and stdin closed, asynchronously with a timeout, and appends {type: \"text\", text} to event.result.content only when the output is non-empty, never throwing; run under node with a fake ctx and a real child process (a fake kmctl script that would block on an open stdin), it appends the text once when kmctl prints a nudge, returns well inside the timeout, and leaves content unchanged when kmctl prints nothing, fails, or is missing; --undo removes it; kmctl doctor reports it.",
+      "fails_when": "the hook is not registered, KMCTL_PINNED or --path is not passed, stdin is left open (the fake blocks to the timeout), it appends on empty output or a failure, throws, or doctor does not check it",
+      "command": "uv run pytest tests/test_opencode.py -k nudge -q",
+      "judgment": false
+    },
+    {
+      "id": "r5",
+      "behavior": "docs/reference/commands.md, the nudge's decision and docs/how-to/install-kmctl-with-apm.md name the Antigravity and OpenCode nudges, and the decision notes that agy documents PostToolUse as expecting {} and kmctl relies on injectSteps reaching the model there (spike 1).",
+      "fails_when": "a page does not name a harness's nudge or the decision omits the agy caveat",
+      "command": "uv run pytest tests/test_summary_nudge.py -k harness_docs -q",
+      "judgment": false
+    },
+    {
+      "id": "r6",
+      "behavior": "The full suite and every tier pass.",
+      "fails_when": "any test fails",
+      "command": "uv run pytest -q -m \"not integration or integration\"",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "0eb0b27e7cd7133864065fa8e9299afcfb997e91dcd669037b150e9349a0e09d",
+  "round": {
+    "kind": "plan",
+    "n": 2,
+    "binds": "918de2892d8a2389fcf9e864ad032f4bddd0de16b9eecf10d640fa6294ec3269",
+    "started_at": "2026-10-18T22:03:12+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": true,
+    "outcome": "pass"
+  },
+  "plan_hash": "918de2892d8a2389fcf9e864ad032f4bddd0de16b9eecf10d640fa6294ec3269",
   "intent": {
     "epic": null,
     "depends_on": [
@@ -43,8 +109,14 @@
       "to": "planning",
       "at": "2026-10-18T21:44:28+00:00",
       "by": "promote"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-10-18T22:04:31+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T21:44:29+00:00"
+  "at": "2026-10-18T22:04:31+00:00"
 }

@@ -62,9 +62,10 @@ Set a repository up. It writes:
   pages, when the folder exists and the index is missing or generated and out
   of date (see `kmctl check`);
 - a starter `.okf/` bundle: `index.md`, `log.md`, `manifesto.md` and
-  `summary.md`, the bundle's first page, with its five sections (Decisions,
-  Architecture, Open work, Practices, Known gaps) and a line under each
-  saying what goes there;
+  `summary.md`, the bundle's first page, which distils what the knowledge
+  says as a whole in its four sections (The project, How it works, What it
+  has settled, Where it stands), with a line under each saying what goes
+  there; the indexes list the concepts;
 - a kmctl block between `<!-- kmctl:start -->` and `<!-- kmctl:end -->` in
   each `CLAUDE.md` and `AGENTS.md` that exists. The block lists where each
   kind of knowledge lives, says to start at `.okf/summary.md`, and gives the
@@ -332,6 +333,9 @@ A `verified` entry does not clear `stale_after passed`: when the file's
 
 Output: `verified ID by BY at AT (PATH)`, then `stale_after is now WHEN`
 when `--stale-after` was given, then `Next: kmctl review due`.
+
+A comment at the end of the `verified:` line, such as `verified: []  # none`,
+stays on that line.
 
 Exit code: 1 when kmctl refuses, with the reason on stderr: `--by` does not
 start with `human:`, the id names no file (or holds `..`), the id is a

@@ -21,8 +21,14 @@ STATUS_VALUES = (DRAFT, STABLE, DEPRECATED)
 ARCHITECTURE = "architecture"
 DEPICTS = "Depicts"
 
-#: The summary's sections, each a theme of what the bundle knows (ADR 0027).
-SUMMARY_SECTIONS = ["Decisions", "Architecture", "Open work", "Practices", "Known gaps"]
+#: The summary's sections, by what a reader needs rather than by concept
+#: folder; the indexes list the concepts (ADR 0027).
+SUMMARY_SECTIONS = [
+    "The project",
+    "How it works",
+    "What it has settled",
+    "Where it stands",
+]
 
 #: The heading ``kmctl decision supersede`` appends to a record, before its date.
 CORRECTION = "Correction"
@@ -214,7 +220,7 @@ KINDS: dict[str, DocumentKind] = {
     ),
     "summary": DocumentKind(
         where=".okf/summary.md",
-        purpose="the bundle's first page: its themes, each linking down to its concepts",
+        purpose="the bundle's first page: what the knowledge says as a whole, citing its concepts",
         detail=(
             "There is one, and kmctl init writes it. Its body is at most 500 "
             "words, which kmctl check enforces, and holds no counts or due "

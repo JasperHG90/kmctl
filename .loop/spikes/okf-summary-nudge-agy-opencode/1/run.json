@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "okf-summary-nudge-agy-opencode",
+  "n": 1,
+  "command": "/tmp/claude-1000/-home-vscode-kmctl/efac4bda-9c30-41af-bec2-10265f82b0d7/scratchpad/spike-nudge2/agy-posttool.sh",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/efac4bda-9c30-41af-bec2-10265f82b0d7/scratchpad/spike-nudge2/agy-posttool.sh",
+      "copy": "files/agy-posttool.sh"
+    }
+  ],
+  "where": "worktree",
+  "head": "a85c65da7e03ebde0044068f53b302356c065c2c",
+  "fingerprint": "2fe6e5471cd3ff4ca8711aee9293c2ba441edf7933df9707e7a817d536234347",
+  "started_at": "2026-10-18T21:49:17+00:00",
+  "finished_at": "2026-10-18T21:49:35+00:00",
+  "duration_seconds": 17.389,
+  "timeout_seconds": 360.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "moved_from": null
+}

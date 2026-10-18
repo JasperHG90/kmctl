@@ -225,6 +225,94 @@ def test_verify_keeps_every_other_line(
     assert outside(after) == outside(original)
 
 
+@pytest.mark.parametrize(
+    ("folder", "rel", "cid"),
+    [
+        ("docs", "how-to/run.md", "docs/how-to/run"),
+        (".okf", "decisions/0001-x.md", "decisions/0001-x"),
+    ],
+    ids=["docs", "okf"],
+)
+def test_verify_through_a_symlinked_folder_outside_the_repo(
+    tmp_path: Path, folder: str, rel: str, cid: str
+) -> None:
+    """With docs/ or .okf/ a symlink out of the repo, verify writes and names the in-repo path."""
+    (tmp_path / "repo").mkdir()
+    root = _repo(tmp_path / "repo")
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    if (root / folder).exists():
+        (root / folder).rename(outside)
+    (root / folder).symlink_to(outside, target_is_directory=True)
+    _write(
+        outside,
+        rel,
+        '---\ntype: note\ntitle: "X"\ndescription: "A note."\n'
+        "stale_after: 2026-01-01T00:00:00Z\n---\n\n# X\n",
+    )
+    _commit(root)
+    assert cid in _due_ids(root)
+
+    result = _verify(root, cid, "--stale-after", "6m", "--json")
+
+    assert result.exit_code == 0, result.output
+    assert json.loads(result.stdout)["path"] == f"{folder}/{rel}"
+    assert front_matter(outside / rel)["verified"][-1]["by"] == "human:jasper"
+    if folder == ".okf":
+        assert f"`{cid}`" in (outside / "log.md").read_text().splitlines()[-1]
+
+
+@pytest.mark.parametrize(
+    ("verified", "before"),
+    [
+        (
+            "verified:  # checks\n  - by: human:a\n    at: 2026-03-01T00:00:00Z\n",
+            ["human:a"],
+        ),
+        ("verified: []  # checks\n", []),
+        ("verified:  # checks\n", []),
+        ("verified: ~  # checks\n", []),
+        (
+            "verified:  # checks\n  by: human:a\n  at: 2026-03-01T00:00:00Z\n",
+            ["human:a"],
+        ),
+        (
+            "verified: [{by: 'human:a', at: '2026-03-01T00:00:00Z'}]  # checks\n",
+            ["human:a"],
+        ),
+        (
+            "verified: {by: 'human:a', at: '2026-03-01T00:00:00Z'}  # checks\n",
+            ["human:a"],
+        ),
+    ],
+    ids=[
+        "block-list",
+        "empty-flow",
+        "null",
+        "tilde",
+        "single-mapping",
+        "flow-list",
+        "flow-mapping",
+    ],
+)
+def test_verify_keeps_a_comment_on_the_verified_line(
+    tmp_path: Path, verified: str, before: list[str]
+) -> None:
+    """A trailing comment on the verified line stays there, and the entry is added."""
+    root = _repo(tmp_path)
+    path = _concept(root, "decisions/0001-x.md", "status: stable\n" + verified)
+    _commit(root)
+
+    result = _verify(root, "decisions/0001-x")
+
+    assert result.exit_code == 0, result.output
+    by = [e["by"] for e in front_matter(path)["verified"]]
+    assert by == [*before, "human:jasper"]
+    [line] = [x for x in path.read_text().splitlines() if x.startswith("verified:")]
+    assert line.endswith("  # checks")
+    assert "status: stable" in path.read_text().splitlines()
+
+
 def _bad_front_matter(root: Path) -> None:
     _write(root, ".okf/decisions/0001-x.md", "---\ntype: [unclosed\n---\n\n# X\n")
 

@@ -4,3 +4,14 @@
 {"at": "2026-10-18T21:49:09+00:00", "grant": "g5", "hash": "1d22206214350135da31b26ff2829b3191d8f3e056fd70d07c840205050dcf76", "kind": "signoff", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5", "step": "eval-sign"}
 {"at": "2026-10-18T21:49:10+00:00", "by": "advance", "from": "planning", "kind": "transition", "schema_version": "1.0", "to": "ready"}
 {"at": "2026-10-18T21:49:15+00:00", "by": "advance", "from": "ready", "kind": "transition", "schema_version": "1.0", "to": "building"}
+{"at": "2026-10-18T22:15:20+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "building"}
+{"at": "2026-10-18T22:28:53+00:00", "by": "advance", "from": "building", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
+{"at": "2026-10-18T22:28:54+00:00", "binds": "d4d82a747bc7a23988756031b8edbdb2fbbe43fc589eb80b12270d8a334a38a3", "kind": "round-start", "n": 1, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "dc25dc80f8c9e7099861cef2f0296577a39c821b"}
+{"at": "2026-10-18T22:35:11+00:00", "by": "review close", "from": "verifying", "kind": "transition", "schema_version": "1.0", "to": "fixing"}
+{"at": "2026-10-18T22:35:11+00:00", "dispatched_at": "2026-10-18T22:28:54+00:00", "kind": "round-close", "n": 1, "outcome": "fail", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-18T22:34:46+00:00"}}
+{"at": "2026-10-18T22:39:40+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "fixing"}
+{"at": "2026-10-18T22:39:41+00:00", "by": "review fixed", "from": "fixing", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
+{"at": "2026-10-18T22:39:51+00:00", "binds": "5ea7f5b254f79bf48549b2afb39ad599f9c6becd5d0a647613c65b3e3c11e8d9", "kind": "round-start", "n": 2, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "9f6ec3d075406fe7234015874be6f39cf1bf28aa"}
+{"at": "2026-10-18T22:53:16+00:00", "dispatched_at": "2026-10-18T22:39:51+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-18T22:52:49+00:00"}}
+{"at": "2026-10-18T22:53:23+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "532f759886ec1a23abf2846babd122afa274031a"}
+{"at": "2026-10-18T22:55:18+00:00", "branch": "loop/okf-summary-holistic", "kind": "land", "schema_version": "1.0", "sha": "2d6b6a106bff985057d05c6bacca8618b473db9f"}

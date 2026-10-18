@@ -1,10 +1,10 @@
 {
   "schema_version": "1.0",
   "slug": "verify-verb-reviewer-f6",
-  "stage": "ready",
-  "attempts": 0,
+  "stage": "done",
+  "attempts": 1,
   "plan_rounds": 1,
-  "review_rounds": 0,
+  "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
@@ -13,13 +13,15 @@
   "split": "j-20261018T214640+0000-5f4c1b87",
   "split_plan_hash": "d687b0588bf987c487b31eca5cc6b47567b0b9cb664c1556ebbf493889ec6477",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "20f8a1c554b1e187265b33a1eb94dd75275dcc9c",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
-  "worktree": null,
-  "branch": null,
-  "stamps": [],
+  "worktree": "/home/vscode/kmctl.worktrees/verify-verb-reviewer-f6",
+  "branch": "loop/verify-verb-reviewer-f6",
+  "stamps": [
+    "e3b3f7391c3ef095aa894ea502bcc736bd7b9d7d2dd8bb2aa0641cb3f8a6f375"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
     "hash": "32c5cedc7050a7f67f6dff8551237c5be04b504a494b735dd34f7d75ff306e6b",
@@ -48,16 +50,16 @@
   "waivers": [],
   "overrides": [],
   "round": {
-    "kind": "plan",
+    "kind": "review",
     "n": 1,
-    "binds": "d687b0588bf987c487b31eca5cc6b47567b0b9cb664c1556ebbf493889ec6477",
-    "started_at": "2026-10-18T21:46:42+00:00",
+    "binds": "e3b3f7391c3ef095aa894ea502bcc736bd7b9d7d2dd8bb2aa0641cb3f8a6f375",
+    "started_at": "2026-10-18T22:29:01+00:00",
     "passes": [
-      "plan-reviewer"
+      "reviewer"
     ],
-    "tree": null,
-    "plan_hash": null,
-    "eval_hash": null,
+    "tree": "6716cb19de8e3794d2801f06b28b1e8a1a76b327",
+    "plan_hash": "d687b0588bf987c487b31eca5cc6b47567b0b9cb664c1556ebbf493889ec6477",
+    "eval_hash": "32c5cedc7050a7f67f6dff8551237c5be04b504a494b735dd34f7d75ff306e6b",
     "scope": "full",
     "sent_back": [],
     "since": null,
@@ -85,8 +87,26 @@
       "to": "ready",
       "at": "2026-10-18T21:49:13+00:00",
       "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-10-18T21:49:20+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-10-18T22:29:00+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-18T22:45:17+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T21:49:13+00:00"
+  "at": "2026-10-18T22:45:17+00:00"
 }

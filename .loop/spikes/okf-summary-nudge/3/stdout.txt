@@ -1,0 +1,128 @@
+install 1 rc=0
+Installed 62 packages in 658ms
+[>] Installing dependencies from apm.yml...
+[>] Resolving ./pkg...
+[i] Targets: claude  (source: --target flag)
+  [+] ./pkg (local)
+  |-- 4 rule(s) integrated -> .claude/rules/
+  |-- 1 hook(s) integrated -> .claude/settings.json
+  |   SessionStart: runs >/dev/null (hooks.json)
+  |   PostToolUse: runs >/dev/null (hooks.json)
+[i] Added apm_modules/ to .gitignore
+  [i] Skipped inactive experimental resolver for target 'copilot-cowork' during 
+lockfile reconciliation.
+  [i] Skipped inactive experimental resolver for target 'copilot-app' during 
+lockfile reconciliation.
+[*] Installed 1 APM dependency in 0.2s.
+--- after install 1
+events: ['PostToolUse', 'SessionStart']
+PostToolUse: [{"matcher": "Write|Edit|MultiEdit|Bash", "hooks": [{"type": "command", "description": "kmctl: nudge to summarise new OKF concepts. Never blocks.", "command": "command -v kmctl >/dev/null 2>&1 && kmctl nudge || true; exit 0", "timeout": 10}]}]
+matching entries: 1 | SessionStart entries: 1
+install 2 rc=0
+  [i] Skipped inactive experimental resolver for target 'copilot-cowork' during 
+lockfile reconciliation.
+  [i] Skipped inactive experimental resolver for target 'copilot-app' during 
+lockfile reconciliation.
+[*] Installed 1 APM dependency in 0.1s.
+--- after install 2
+events: ['PostToolUse', 'SessionStart']
+PostToolUse: [{"matcher": "Write|Edit|MultiEdit|Bash", "hooks": [{"type": "command", "description": "kmctl: nudge to summarise new OKF concepts. Never blocks.", "command": "command -v kmctl >/dev/null 2>&1 && kmctl nudge || true; exit 0", "timeout": 10}]}]
+matching entries: 1 | SessionStart entries: 1
+--- apm.lock.yaml
+lockfile_version: '1'
+apm_version: 0.33.0
+dependencies:
+- repo_url: _local/pkg
+  name: kmctl-claude
+  version: 0.8.0
+  package_type: apm_package
+  deployed_files:
+  - .claude/rules/diagrams-stay-current.md
+  - .claude/rules/docs-layout.md
+  - .claude/rules/manifesto-invariants.md
+  - .claude/rules/okf-bundle.md
+  deployed_file_hashes:
+    .claude/rules/diagrams-stay-current.md: sha256:828b1a262a40be85f84d8dffde36656817d1658a0e2d11d1965bfab37e6e9eb0
+    .claude/rules/docs-layout.md: sha256:a015e990b7808ccc07227b3279959a816dffea0eddedc75d768145d466bd1d69
+    .claude/rules/manifesto-invariants.md: sha256:65e1937175cea3039037906e5eb70e81c030f4f8c2394394c572ad474b2ac69b
+    .claude/rules/okf-bundle.md: sha256:0604d452aa4ac03154cf47233c4bd6645f6ef5c68fc0692e983cc2b2ed8cd202
+  source: local
+  local_path: ./pkg
+deployments:
+- kind: project-relative
+  target: claude
+  value: .claude/rules/diagrams-stay-current.md
+  runtime: null
+  scope: project
+  owners:
+  - ./pkg
+  active_owner: ./pkg
+  content_hash: sha256:828b1a262a40be85f84d8dffde36656817d1658a0e2d11d1965bfab37e6e9eb0
+- kind: project-relative
+  target: claude
+  value: .claude/rules/docs-layout.md
+  runtime: null
+  scope: project
+  owners:
+  - ./pkg
+  active_owner: ./pkg
+  content_hash: sha256:a015e990b7808ccc07227b3279959a816dffea0eddedc75d768145d466bd1d69
+- kind: project-relative
+  target: claude
+  value: .claude/rules/manifesto-invariants.md
+  runtime: null
+  scope: project
+  owners:
+  - ./pkg
+  active_owner: ./pkg
+  content_hash: sha256:65e1937175cea3039037906e5eb70e81c030f4f8c2394394c572ad474b2ac69b
+- kind: project-relative
+  target: claude
+  value: .claude/rules/okf-bundle.md
+  runtime: null
+  scope: project
+  owners:
+  - ./pkg
+  active_owner: ./pkg
+  content_hash: sha256:0604d452aa4ac03154cf47233c4bd6645f6ef5c68fc0692e983cc2b2ed8cd202
+lock does not name the hook or settings.json
+--- .claude/apm-hooks.json
+{
+  "SessionStart": [
+    {
+      "matcher": "*",
+      "hooks": [
+        {
+          "type": "command",
+          "description": "kmctl: print the knowledge briefing (where knowledge lives, what is due, the rules). Never blocks.",
+          "command": "command -v kmctl >/dev/null 2>&1 || { echo '[kmctl] kmctl is not installed, so there is no knowledge briefing. Install it with: uv tool install git+https://github.com/JasperHG90/kmctl'; exit 0; }; kmctl briefing || echo '[kmctl] kmctl briefing failed; run kmctl briefing in a terminal to see why, or upgrade with uv tool install --force git+https://github.com/JasperHG90/kmctl.'; exit 0",
+          "timeout": 10
+        }
+      ],
+      "_apm_source": "_local/pkg"
+    }
+  ],
+  "PostToolUse": [
+    {
+      "matcher": "Write|Edit|MultiEdit|Bash",
+      "hooks": [
+        {
+          "type": "command",
+          "description": "kmctl: nudge to summarise new OKF concepts. Never blocks.",
+          "command": "command -v kmctl >/dev/null 2>&1 && kmctl nudge || true; exit 0",
+          "timeout": 10
+        }
+      ],
+      "_apm_source": "_local/pkg"
+    }
+  ]
+}
+uninstall rc=0
+[i] Removed _local/pkg from dependencies.apm in apm.yml
+[*] Updated /tmp/tmp.OcPqmrDMex/c/apm.yml (removed 1 package(s))
+[+] Cleaned up 1 integrated hooks
+[*] Uninstall complete: Removed 1 package(s) from apm.yml, Removed 1 package(s) 
+from apm_modules/
+--- settings.json after uninstall
+{}
+ok=1

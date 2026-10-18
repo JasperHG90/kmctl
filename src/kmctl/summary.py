@@ -1,14 +1,15 @@
 """The bundle summary, ``.okf/summary.md``: when it is behind its concepts, and ``ack`` (ADR 0027).
 
-The summary is the bundle's first page: a few themes, each linking down to
-its concepts. It is behind when a concept changed in a commit after the last
-commit that changed the summary, or is changed (or new and untracked) in the
-working tree while the summary is not. Commit order, not dates, decides, so a
-concept committed together with the summary is covered. The concepts are the
-manifesto, decisions, practices, proposals, prototype READMEs and
-architecture pages; indexes, ``log.md``, handoffs and the summary itself
-never count. Without git history (no repository, or a shallow clone) the
-rule cannot be checked, the way ``review_due`` skips its history reason.
+The summary is the bundle's first page: what the knowledge says as a whole,
+citing its concepts. It is behind when a concept changed in a commit after
+the last commit that changed the summary, or is changed (or new and
+untracked) in the working tree while the summary is not. Commit order, not
+dates, decides, so a concept committed together with the summary is
+covered. The concepts are the manifesto, decisions, practices, proposals,
+prototype READMEs and architecture pages; indexes, ``log.md``, handoffs and
+the summary itself never count. Without git history (no repository, or a
+shallow clone) the rule cannot be checked, the way ``review_due`` skips its
+history reason.
 
 ``ack`` is how an agent says the summary is still right after a change: it
 writes ``checked`` into the summary's front matter, which is an edit to the
