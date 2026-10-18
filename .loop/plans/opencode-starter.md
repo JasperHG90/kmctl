@@ -45,6 +45,13 @@ What changes, in kmctl-starter:
 - .github/workflows/test.yml: the matrix gains `[opencode]` and
   `[claude, antigravity, opencode]`; the doctor filter leaves out
   `dep.opencode`, since the runner has no OpenCode.
+- README.md's "needs kmctl v0.4.0 or later" also says OpenCode needs
+  v0.5.1 or later.
+- A release tag, v0.1.2, on the commit that holds this. `uvx copier copy
+  gh:JasperHG90/kmctl-starter` renders the newest tag (v0.1.1 today), so
+  without it no one gets the OpenCode choice. The commit and tag are pushed
+  only after kmctl v0.5.1 is its Latest release, so the starter's test.yml
+  and bump-kmctl.yml both see v0.5.1.
 
 In kmctl: README.md's kmctl-starter paragraph names the harnesses it sets
 up, OpenCode among them.
@@ -57,7 +64,8 @@ Done when: in kmctl-starter, copier renders and `just bootstrap` succeeds
 for `[opencode]` and `[claude, antigravity, opencode]` against v0.5.1 with
 `kmctl doctor` failing only on `dep.opencode` (the same steps as its
 test.yml, run locally), copier refuses opencode with kmctl_ref v0.5.0, and
-the starter's test workflow passes on GitHub for every matrix entry.
+the starter's test workflow passes on GitHub for every matrix entry, and
+`uvx copier copy gh:JasperHG90/kmctl-starter` offers OpenCode (tag v0.1.2).
 
 ## Could invalidate this plan
 
