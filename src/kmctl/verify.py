@@ -163,7 +163,9 @@ def verify(
             f"{cid} is a handoff, and handoffs are never verified; "
             "kmctl review due lists one only once it expires"
         )
-    rel = path.relative_to(root.resolve()).as_posix()
+    # Name the file by its path in the repository, as kmctl review due does,
+    # even when docs/ or .okf/ is a symlink to a folder outside it.
+    rel = f"{cid}.md" if cid.startswith("docs/") else f".okf/{cid}.md"
     try:
         meta = front_matter(path)
     except BadFrontMatter as error:
