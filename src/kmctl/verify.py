@@ -21,6 +21,8 @@ from kmctl.okf import BadFrontMatter, field, front_matter, has_passed
 _PERSON = re.compile(r"human:[A-Za-z0-9._@+-]+")
 #: A front matter line that starts a top-level key.
 _KEY = re.compile(r"[^\s#-][^:]*:")
+#: A trailing YAML comment and the space before it.
+_COMMENT = re.compile(r"(?:^|\s+)#.*$")
 
 
 @dataclass(frozen=True)
@@ -71,18 +73,24 @@ def _block(lines: list[str], start: int) -> int:
 
 
 def _with_entry(head: list[str], by: str, at: str) -> list[str]:
-    """``head`` (the front matter lines) with ``{by, at}`` appended to its ``verified`` list."""
+    """``head`` (the front matter lines) with ``{by, at}`` appended to its ``verified`` list.
+
+    A trailing comment on the ``verified:`` line stays on that line.
+    """
     item = [f"  - by: {by}", f"    at: {at}"]
     starts = [i for i, line in enumerate(head) if line.startswith("verified:")]
     if not starts:
         return [*head, "verified:", *item]
     k = starts[0]
     end = _block(head, k)
-    rest = head[k].split(":", 1)[1].strip()
+    value = head[k].split(":", 1)[1]
+    found = _COMMENT.search(value)
+    comment = found.group(0) if found else ""
+    rest = value[: found.start()].strip() if found else value.strip()
     body = head[k + 1 : end]
     if rest in ("", "~", "null", "[]"):
         if not body:
-            return [*head[:k], "verified:", *item, *head[end:]]
+            return [*head[:k], f"verified:{comment}", *item, *head[end:]]
         indent = len(body[0]) - len(body[0].lstrip())
         pad = " " * indent
         if body[0].lstrip().startswith("- "):
@@ -93,12 +101,13 @@ def _with_entry(head: list[str], by: str, at: str) -> list[str]:
             pad + "  " + line[indent:] for line in body[1:]
         ]
         item = [f"{pad}- by: {by}", f"{pad}  at: {at}"]
-        return [*head[:k], "verified:", *mapped, *item, *head[end:]]
+        return [*head[:k], f"verified:{comment}", *mapped, *item, *head[end:]]
     flow = f"{{by: {json.dumps(by)}, at: {json.dumps(at)}}}"
     if not body and rest.startswith("[") and rest.endswith("]"):
-        return [*head[:k], f"verified: {rest[:-1].rstrip()}, {flow}]", *head[end:]]
+        line = f"verified: {rest[:-1].rstrip()}, {flow}]{comment}"
+        return [*head[:k], line, *head[end:]]
     if not body and rest.startswith("{") and rest.endswith("}"):
-        return [*head[:k], f"verified: [{rest}, {flow}]", *head[end:]]
+        return [*head[:k], f"verified: [{rest}, {flow}]{comment}", *head[end:]]
     raise ConceptError(
         "its verified field is in a form kmctl cannot extend; rewrite it as a "
         "block list (verified:, then '  - by: human:<id>' and '    at: <time>')"
