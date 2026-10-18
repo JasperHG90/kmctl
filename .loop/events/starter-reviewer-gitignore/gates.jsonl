@@ -1,0 +1,1 @@
+{"at": "2026-10-18T18:40:39+00:00", "command": "uv run ruff format --check", "exit": 1, "fingerprint": "4648f33e818682bba8a51725808605cd91ba5187d5cebe438b12a84b2d024516", "kind": "red", "name": "format", "note": null, "output": ".loop/events/starter-reviewer-gitignore/gate-output/b81d28ad5af62bcc2f8050a09013b1cd8be06156cc30d09f70e3da6da2cb5fc0.txt", "schema_version": "1.0"}

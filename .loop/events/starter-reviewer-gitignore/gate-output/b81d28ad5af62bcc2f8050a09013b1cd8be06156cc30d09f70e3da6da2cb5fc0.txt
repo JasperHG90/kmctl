@@ -1,0 +1,15 @@
+warning: `VIRTUAL_ENV=/home/vscode/kmctl/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+unformatted: File would be reformatted
+   --> tests/test_starter.py:155:46
+    |
+154 |     assert apm["targets"] == yaml.safe_load(harnesses)
+    -     assert apm["dependencies"]["apm"][0] == {"git": KMCTL_GIT, "path": "apm", "ref": TAG}
+155 +     assert apm["dependencies"]["apm"][0] == {
+156 +         "git": KMCTL_GIT,
+157 +         "path": "apm",
+158 +         "ref": TAG,
+159 +     }
+160 |     assert f'kmctl_ref := "{TAG}"' in (out / "justfile").read_text()
+    |
+
+1 file would be reformatted, 110 files already formatted
