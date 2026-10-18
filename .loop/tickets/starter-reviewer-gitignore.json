@@ -3,7 +3,7 @@
   "slug": "starter-reviewer-gitignore",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 1,
+  "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -30,9 +30,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 1,
-    "binds": "2d6e81eba85c7a6d19ea3a997d3dbe889c29af576f682efeb6ed735d9506be2f",
-    "started_at": "2026-10-18T18:28:37+00:00",
+    "n": 2,
+    "binds": "9d160b2a966952ebc13196d2bb839004daba75508763b55d666f16cd6f6e2e59",
+    "started_at": "2026-10-18T18:28:48+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -48,7 +48,7 @@
     "closed": false,
     "outcome": null
   },
-  "plan_hash": "2d6e81eba85c7a6d19ea3a997d3dbe889c29af576f682efeb6ed735d9506be2f",
+  "plan_hash": "9d160b2a966952ebc13196d2bb839004daba75508763b55d666f16cd6f6e2e59",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -63,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T18:28:47+00:00"
+  "at": "2026-10-18T18:28:48+00:00"
 }

@@ -76,14 +76,12 @@ Out of scope: translating the reviewer for OpenCode or Antigravity in
 
 ## Could invalidate this plan
 
-- APM 0.33.0 may refuse a single-file agent dependency pinned to a commit, or
-  `apm install` / `kmctl plugin patch` / `kmctl doctor` may fail when the
-  agent is installed for the opencode or antigravity target, which would
-  leave no way to offer the agent from apm.yml on those harnesses.
-  spike:starter-reviewer-gitignore/1 (refused as .md; /2: the pinned rule
-  installs, so pins work)
-- With the `.agent.md` entry and `claude` among several harnesses, APM also
-  copies the agent into `.opencode/agents/`; `kmctl plugin patch`,
-  `kmctl doctor` or the generated project's hooks may fail on that copy,
-  which would break `just bootstrap` for [claude, antigravity, opencode].
-  spike:starter-reviewer-gitignore/3
+- APM 0.33.0 may refuse the pinned
+  `adversarial-reviewer.agent.md#41f49502` dependency, or `apm install`,
+  `kmctl plugin patch`, `kmctl doctor` or the generated project's hooks may
+  fail on it, including on the copy APM writes to `.opencode/agents/` when
+  `claude` is one of several harnesses, which would break `just bootstrap`.
+  spike:starter-reviewer-gitignore/3 (bootstrap, hooks, check and doctor
+  pass for [claude] and [claude, antigravity, opencode]; the earlier .md
+  name was refused, spike:starter-reviewer-gitignore/1, and pins on single
+  files work, spike:starter-reviewer-gitignore/2)
