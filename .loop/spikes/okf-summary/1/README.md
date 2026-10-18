@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014
-  at: '2026-10-18T19:42:31+00:00'
+  at: '2026-10-18T19:42:41+00:00'
 slug: okf-summary
 n: 1
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike okf-summary/1
@@ -24,7 +24,12 @@ python3 /tmp/claude-1000/-home-vscode-kmctl/efac4bda-9c30-41af-bec2-10265f82b0d7
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note okf-summary 1`.
+All 10 scratch-repo cases pass: a decision committed after the summary is flagged by name; a decision in the same commit as the summary, or followed by a later summary commit, is not; uncommitted concept edits (tracked and untracked) are flagged until the summary is also edited uncommitted; an `ack` that writes `checked:` into the summary's front matter clears it; log.md, index.md and handoff edits never count.
+A `kmctl verify` stamp (front-matter `verified:` plus log.md) committed after the summary flags that concept: an expected nudge rather than a miss, cleared by `ack`; a stamp written before the summary edit is covered.
+Speed on kmctl itself (no summary yet, so the whole bundle counts): the full check takes 24-54 ms; `git diff --name-only ROOT..HEAD -- .okf` alone takes 2 ms.
+Real history: 29 of the 40 concept-changing non-loop commits change more than one concept, and one commit (49439dd4) changed only the front matter of 2 decisions, so verify-style edits do occur and will nudge.
+Limits: the uncommitted-summary branch clears committed concept changes too (the plan's "an edit to the summary clears it"); renames are read from the new path only; untracked files counted with --untracked-files=all.
+Settles risk 1: the rule neither flags a same-session summary update nor misses verify edits.
 
 ## Files
 
