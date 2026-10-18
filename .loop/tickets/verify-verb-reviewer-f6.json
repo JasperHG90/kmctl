@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "verify-verb-reviewer-f6",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 1,
@@ -13,7 +13,7 @@
   "split": "j-20261018T214640+0000-5f4c1b87",
   "split_plan_hash": "d687b0588bf987c487b31eca5cc6b47567b0b9cb664c1556ebbf493889ec6477",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "20f8a1c554b1e187265b33a1eb94dd75275dcc9c",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -99,8 +99,14 @@
       "to": "verifying",
       "at": "2026-10-18T22:29:00+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-18T22:45:17+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T22:42:49+00:00"
+  "at": "2026-10-18T22:45:17+00:00"
 }
