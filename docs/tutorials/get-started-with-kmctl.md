@@ -20,7 +20,7 @@ release this page ships with, and the output shown is what it printed.
 - kmctl installed:
 
   ```
-  uv tool install git+https://github.com/JasperHG90/kmctl@v0.5.1
+  uv tool install git+https://github.com/JasperHG90/kmctl@v0.6.0
   ```
 
   The kmctl repository is private for now, so this needs a GitHub account

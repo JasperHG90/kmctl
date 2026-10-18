@@ -78,7 +78,7 @@ old kmctl-starter repository. For an existing repository, follow these steps.
 ### 1. Install the kmctl CLI
 
 ```
-uv tool install git+https://github.com/JasperHG90/kmctl@v0.5.1
+uv tool install git+https://github.com/JasperHG90/kmctl@v0.6.0
 ```
 
 ### 2. Set up the repository
