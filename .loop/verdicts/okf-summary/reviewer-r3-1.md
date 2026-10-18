@@ -1,0 +1,52 @@
+---
+type: verdict
+title: 'Verdict: okf-summary reviewer round 3'
+description: 'reviewer verdict for round 3 of okf-summary: pass.'
+tags:
+- verdict
+- review
+generated:
+  by: claude-opus/5.5
+  at: '2026-10-18T21:16:26+00:00'
+slug: okf-summary
+pass: reviewer
+round: 3
+body_schema: verdict/1
+---
+
+## Summary
+
+Both findings sent back are fixed and nothing they touched broke. The
+stamp is green. The ticket can be committed.
+
+## Checked
+
+- Ran `loopctl gate stamp` from the worktree. Lint, format, tests,
+  integration and eval rows r1 to r8 all pass: "stamp green:
+  52f2d0d11430841d1562b73a4eeb4bb24e8b44215638dcdc1bc669fe3988c6cb".
+- f5: read the new paragraph in ADR 0011's 2026-10-18 Correction, the
+  amended index note in .okf/decisions/index.md, and README.md:111-114.
+  All three match what `_link_new_pages` in src/kmctl/scaffold.py does: one
+  index entry and one log line per new summary or manifesto, and nothing
+  else.
+- f6: `_link_new_pages` adds `.okf/log.md` to `updated` only after it
+  writes a log line. A non-UTF-8 log hits `continue` before that, so it never
+  lands in `updated`. The CLI now adds the log clause only when `.okf/log.md`
+  is in `result.updated`. The new test
+  `test_init_update_says_no_log_line_when_the_kept_log_is_not_utf8` asserts
+  the linked line without the clause and the stderr warning. On the old code
+  it would fail, because the old line always had the clause.
+
+## Findings
+
+- **f1**, **f2**, **f3** and **f4**: resolved in round 2, and nothing in this round touched them.
+- **f5** resolved: ADR 0011 lines 179-185, the ADR 0011 index note, and
+  README.md:112-114.
+- **f6** resolved: src/kmctl/__init__.py, where the `logged` clause depends on
+  `.okf/log.md` being in `updated`. Covered by tests/test_init.py:216.
+
+## Notes
+
+- One edge case is left. A log that already names `summary` but is updated
+  for the first decision would still get the clause. The log does hold a
+  line for the page in that case, so the output is not false.
