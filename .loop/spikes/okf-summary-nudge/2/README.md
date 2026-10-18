@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014
-  at: '2026-10-18T21:48:52+00:00'
+  at: '2026-10-18T21:49:03+00:00'
 slug: okf-summary-nudge
 n: 2
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike okf-summary-nudge/2
@@ -24,7 +24,10 @@ The command exited 0:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note okf-summary-nudge 2`.
+- Claude Code 2.1.302, `claude -p --model haiku`, PostToolUse hook with matcher `Write|Edit|MultiEdit|Bash` and `timeout: 10`: the hook fired after both Write and Bash, and its `hookSpecificOutput.additionalContext` reached the model: both final answers said "pineapple" (4 of 4 runs exited 0, 5 to 7 s each).
+- Hook stdin held `cwd` (the repo root claude was started in), `tool_name` (`Write`/`Bash`), `tool_input` (`file_path`+`content`, or `command`), plus `tool_response`, `hook_event_name`, `session_id`, `transcript_path`; the hook's `$PWD` and `CLAUDE_PROJECT_DIR` were the repo root too.
+- A hook that prints nothing, or `{}`, with exit 0 is harmless: the tool ran and the answer was normal.
+- Limits: Edit and MultiEdit were not exercised (same matcher); claude was started at the repo root, not a subdirectory; hook timeout behaviour was not measured (10 s was simply set). Settles risk 1.
 
 ## Files
 

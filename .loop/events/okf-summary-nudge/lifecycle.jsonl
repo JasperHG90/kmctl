@@ -1,3 +1,4 @@
 {"at": "2026-10-18T19:40:54+00:00", "kind": "register", "schema_version": "1.0", "stage": "stub"}
 {"at": "2026-10-18T21:44:27+00:00", "by": "promote", "from": "stub", "grant": "g5", "kind": "transition", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5", "step": "ticket-promote", "to": "planning"}
 {"at": "2026-10-18T21:48:26+00:00", "kind": "spike-note", "n": 1, "replaced": false, "schema_version": "1.0"}
+{"at": "2026-10-18T21:49:03+00:00", "kind": "spike-note", "n": 2, "replaced": false, "schema_version": "1.0"}
