@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014
-  at: '2026-10-18T21:49:59+00:00'
+  at: '2026-10-18T21:50:08+00:00'
 slug: okf-summary-nudge
 n: 3
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike okf-summary-nudge/3
@@ -24,7 +24,10 @@ The command exited 0:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note okf-summary-nudge 3`.
+- APM 0.33.0 (`apm install --target claude`, local path dependency `./pkg` copied from apm/claude with a PostToolUse entry added to `.apm/hooks/hooks.json`): `.claude/settings.json` got the PostToolUse entry with matcher `Write|Edit|MultiEdit|Bash`, description, command and `timeout: 10` byte for byte, next to the SessionStart one.
+- A second `apm install` left exactly 1 PostToolUse and 1 SessionStart entry.
+- apm.lock.yaml records the package (kmctl-claude 0.8.0) but names no hook and not settings.json, for SessionStart too; APM tracks hooks in `.claude/apm-hooks.json`, which held the PostToolUse entry with `_apm_source`. `apm uninstall ./pkg` cleaned the hooks and left settings.json `{}`.
+- Limit: a local path install, not git; spike apm-hands-back/1 shows git installs use the same hook integrator. Settles risk 2; any plan step that expects the hook in apm.lock.yaml should look in .claude/apm-hooks.json instead.
 
 ## Files
 
