@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "An explicit --path is now the fallback when stdin has no usable cwd; without --path bad stdin stays quiet, as row r2 requires.",
+      "anchor": "src/kmctl/__init__.py:909",
+      "category": "design",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "--json prints {behind, concepts, nudge} and is refused with --format claude (exit 2).",
+      "anchor": "src/kmctl/__init__.py:889",
+      "category": "design",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "The explanation page now says the briefing's hook prints how to install kmctl and only the nudge prints {}.",
+      "anchor": "docs/explanation/why-one-hook-and-report-only-audits.md:40",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "open",
+      "claim": "The --json output is a dict built by hand in the command body, with behind derived there. .claude/rules/pydantic-boundaries.md says an output shape a caller depends on is built as a typed object, not assembled as a dict, and every other result verb here prints json.dumps(asdict(dataclass)). Give Nudge a behind field (or a small frozen dataclass for the JSON shape) and print json.dumps(asdict(found)), so a renamed key breaks at the type gate and the shape lives in summary.py with its docstring.",
+      "anchor": "src/kmctl/__init__.py:921",
+      "category": "nit",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "b511cadabb0c18b62f07a88245301a2965078e6863cfde8c919b86a928e62933",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-18T23:43:52+00:00"
+}
