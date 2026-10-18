@@ -58,13 +58,19 @@ What changes:
   which `kmctl_ref`'s validator refuses today (it takes vX.Y.Z only), so the
   validator also takes an a, b or rc suffix. kmctl-starter's daily bump-kmctl workflow is not
   carried over: nothing is left for it to do.
-- **just upgrade.** The template's `upgrade` recipe moves the template and the
-  pin together: `copier update --vcs-ref REF --data kmctl_ref=REF`, since the
-  template's version and kmctl's are now one tag.
+- **just upgrade stays as it is.** It runs `copier update --defaults --data
+  kmctl_ref=REF`: the template moves to the newest kmctl release and the pin
+  to REF, which may be older (v0.4.0 or later, v0.5.1 or later for OpenCode,
+  as the validator says today). Tying the template to REF with `--vcs-ref`
+  would break moving to an older release, since copier refuses a downgrade,
+  and no tag before this release has a template (plan review round 1, p1).
+  The docs say so: the template follows the newest release, `kmctl_ref`
+  picks the CLI and package.
 - **Tests, built from this checkout.** `new:tests/test_starter.py` renders the
   template from this tree with copier (a dev dependency, `uv add --dev`) for
   each harness set kmctl-starter's CI ran ([claude], [antigravity], [opencode],
-  [claude, antigravity], [claude, antigravity, opencode]) and checks the
+  [claude, antigravity], [claude, antigravity, opencode]), with `--vcs-ref
+  HEAD` so copier reads the working tree rather than the newest tag, and checks the
   generated apm.yml, justfile and CI workflow; the validator refusals (a
   branch, OpenCode on a tag before v0.5.1) are checked too. An integration
   test runs `just bootstrap` in a generated project under a scratch HOME,
@@ -100,7 +106,7 @@ with copier.yml's default at its own tag, `uvx copier copy gh:JasperHG90/kmctl`
 renders from it, and kmctl-starter is archived with a pointer.
 
 Out of scope: changing the template's questions or the files it generates,
-beyond the upgrade recipe and the source path.
+beyond the pre-release tags the validator takes.
 
 ## Could invalidate this plan
 
