@@ -3,7 +3,7 @@
   "slug": "okf-summary-nudge",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 2,
+  "plan_rounds": 3,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -30,9 +30,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 2,
-    "binds": "85d4c5f3553413e335d1870adda648a5c28adca7ec25bf64707d318849866ef3",
-    "started_at": "2026-10-18T21:53:11+00:00",
+    "n": 3,
+    "binds": "0949485dbdd3f21d633731ccc868d74835a8620d28ea42094fdb4c04d2df2935",
+    "started_at": "2026-10-18T21:55:20+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -45,10 +45,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "85d4c5f3553413e335d1870adda648a5c28adca7ec25bf64707d318849866ef3",
+  "plan_hash": "0949485dbdd3f21d633731ccc868d74835a8620d28ea42094fdb4c04d2df2935",
   "intent": {
     "epic": null,
     "depends_on": [
@@ -65,5 +65,5 @@
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T21:55:14+00:00"
+  "at": "2026-10-18T21:55:20+00:00"
 }

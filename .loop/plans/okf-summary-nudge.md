@@ -44,10 +44,13 @@ The nudge never goes through the hand-off to a project's pin (ADR 0026,
 `hand_off` in `src/kmctl/pin.py`): the hook runs after every Write, Edit,
 MultiEdit and Bash call, and a hand-off would start uvx each time, building
 an uncached pin past the hook's 10 s timeout (plan review round 1, p1). The
-copy on PATH runs `summary nudge` itself, as it adds the briefing's notices
-itself: the nudge needs only git and the summary. A copy on PATH older than
-this release has no such verb; the hook's guard turns its usage error into
-`{}`.
+hook command sets `KMCTL_PINNED=1` for the call, the escape ADR 0026 already
+records for the CI action, so every copy on PATH runs the verb itself,
+including v0.7.0 and v0.8.0, whose hand-off would otherwise send it to uvx
+(plan review round 2, p2): one that has the verb nudges, needing only git
+and the summary; an older one prints a usage error, which the hook's guard
+turns into `{}`. `hand_off` itself does not change. The new decision says
+in one line that the nudge runs on the copy on PATH, and why.
 
 Done when: in a repository made with `kmctl init`, a PostToolUse payload for
 a Bash call that ran `kmctl new decision` makes `kmctl summary nudge --format
