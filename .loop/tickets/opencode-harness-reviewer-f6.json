@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "opencode-harness-reviewer-f6",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 2,
@@ -39,7 +39,7 @@
   "split": "j-20261018T053146+0000-b4d78190",
   "split_plan_hash": "441f68733946a59dcffb12391e2e312862e3ffab1b2304c9d114965b5b3edefa",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "1919ae6bd7018efb4005524b8761121305ee9b9b",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -152,8 +152,14 @@
       "to": "verifying",
       "at": "2026-10-18T05:45:50+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-18T05:49:58+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T05:49:48+00:00"
+  "at": "2026-10-18T05:49:58+00:00"
 }
