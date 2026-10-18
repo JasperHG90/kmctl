@@ -1,0 +1,15 @@
+# APM (Agent Package Manager) dependencies: skills, rules, hooks and MCP
+# servers for the agent harnesses below. Install them with `just install`.
+name: {{ project_name | lower | replace(' ', '-') }}
+version: 0.1.0
+dependencies:
+  apm:
+    # kmctl: knowledge skills, rules, the session briefing hook and okf's
+    # MCP server. Keep the ref the same as the kmctl CLI (`just kmctl`).
+    - git: https://github.com/JasperHG90/kmctl.git
+      path: apm
+      ref: {{ kmctl_ref }}
+targets:
+{%- for harness in harnesses %}
+  - {{ harness }}
+{%- endfor %}

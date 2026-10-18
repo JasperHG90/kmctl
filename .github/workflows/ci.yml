@@ -8,8 +8,9 @@ on:
 permissions:
   contents: read
 
-# The jobs run one after another: prek, then kmctl's check, then pytest, so
-# a cheap failure stops the run before the slower jobs start.
+# The jobs run one after another: prek, then kmctl's check, then pytest and
+# the starter template's bootstrap side by side, so a cheap failure stops the
+# run before the slower jobs start.
 jobs:
   # The hooks in .pre-commit-config.yaml, at the prek version the justfile
   # pins. The hooks call uv run, which the action does not install, so uv
@@ -48,3 +49,21 @@ jobs:
           directory: tests
           markers: not integration
           python_version: "3.12"
+
+  # The starter template (copier.yml, starter/): render a project from this
+  # checkout and run its just bootstrap, with git pointing kmctl's GitHub URL
+  # at a file:// clone of the checkout, so the CLI and the package are this
+  # commit's (tests/test_starter.py). The other tests job runs the render
+  # tests; this one runs the integration test that bootstraps.
+  starter:
+    needs: knowledge
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: false
+      - name: Install just
+        run: uv tool install rust-just==1.59.0
+      - name: Bootstrap a generated project
+        run: uv run pytest tests/test_starter.py -m integration

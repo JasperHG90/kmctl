@@ -96,29 +96,35 @@ def _git(*args: str, cwd: Path) -> None:
     assert res.returncode == 0, res.stderr
 
 
-@pytest.fixture
-def served(tmp_path: Path) -> Iterator[str]:
-    """This tree's files (not git-ignored ones) served as kmctl.git, tagged v<version>; yields its URL."""
+def tree_repo(dest: Path) -> Path:
+    """Copy this tree's files (not git-ignored ones) into a new git repository at ``dest``, tagged v<version>."""
+    dest.mkdir(parents=True, exist_ok=True)
     files = subprocess.run(
         ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
         cwd=ROOT,
         capture_output=True,
         check=True,
     ).stdout.split(b"\0")
-    work = tmp_path / "kmctl"
     for name in filter(None, files):
         src = ROOT / os.fsdecode(name)
         if src.is_file():
-            (work / os.fsdecode(name)).parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(src, work / os.fsdecode(name))
-    _git("init", "-q", "-b", "main", cwd=work)
-    _git("add", "-A", cwd=work)
+            (dest / os.fsdecode(name)).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src, dest / os.fsdecode(name))
+    _git("init", "-q", "-b", "main", cwd=dest)
+    _git("add", "-A", cwd=dest)
     _git(
         *("-c", "user.email=t@e.invalid", "-c", "user.name=t"),
         *("commit", "-qm", "tree"),
-        cwd=work,
+        cwd=dest,
     )
-    _git("tag", f"v{version('kmctl')}", cwd=work)
+    _git("tag", f"v{version('kmctl')}", cwd=dest)
+    return dest
+
+
+@pytest.fixture
+def served(tmp_path: Path) -> Iterator[str]:
+    """This tree's files (not git-ignored ones) served as kmctl.git, tagged v<version>; yields its URL."""
+    work = tree_repo(tmp_path / "kmctl")
     # APM wants an owner/repo path, as on GitHub.
     srv = tmp_path / "srv"
     bare = srv / "o" / "kmctl.git"

@@ -1,0 +1,54 @@
+# kmctl-starter: a copier template for a repository set up with kmctl. The
+# template's files are in starter/; copier takes its versions from kmctl's
+# release tags, and scripts/release.py set moves kmctl_ref's default to each
+# release (ADR 0025).
+# Generate:  uvx copier copy gh:JasperHG90/kmctl my-project
+# Update:    uvx copier update   (inside a generated project)
+
+_subdirectory: starter
+_templates_suffix: .jinja
+_answers_file: .copier-answers.yml
+
+project_name:
+  type: str
+  help: The project's name, used in apm.yml and the README.
+  validator: "{% if not project_name %}A name is required.{% endif %}"
+
+project_description:
+  type: str
+  help: One sentence on what the project does.
+  default: ""
+
+codeowners:
+  type: str
+  help: The GitHub users or teams who own the repository, space-separated (written to .github/CODEOWNERS).
+  default: "@your-github-handle"
+  validator: "{% for owner in codeowners.split() %}{% if not owner.startswith('@') %}Start each owner with @, such as @octocat or @org/team: {{ owner }}{% endif %}{% else %}Name at least one owner.{% endfor %}"
+
+harnesses:
+  type: str
+  help: The agent harnesses to install kmctl's package for.
+  multiselect: true
+  choices:
+    Claude Code: claude
+    Antigravity: antigravity
+    OpenCode (2.x): opencode
+  default: [claude]
+  validator: "{% if not harnesses %}Pick at least one harness.{% endif %}"
+
+kmctl_ref:
+  type: str
+  help: >-
+    The kmctl release to pin, a tag such as v0.4.0 (v0.4.0 or later: the first
+    release with `kmctl plugin patch`; v0.5.1 or later with OpenCode, the
+    first release that supports it). It is the ref of kmctl's package in
+    apm.yml, the kmctl CLI the justfile runs, and the knowledge checks in CI,
+    so the three always match. The default is the release this template
+    comes from.
+  default: v0.5.1
+  validator: "{% if not (kmctl_ref | regex_search('^v[0-9]+[.][0-9]+[.][0-9]+((a|b|rc)[0-9]+)?$')) %}Pin a release tag such as v0.4.0 or v0.6.0rc1, not a branch: a branch lets the CLI, the package and CI drift apart.{% elif 'opencode' in harnesses and (kmctl_ref[1:].split('.') | map('int') | list) < [0, 5, 1] %}OpenCode needs kmctl v0.5.1 or later, the first release that supports it; pin v0.5.1 or a later tag, not {{ kmctl_ref }}.{% endif %}"
+
+apm_version:
+  type: str
+  help: The APM (apm-cli) version the justfile runs through uvx.
+  default: "0.33.0"

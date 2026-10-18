@@ -138,3 +138,4 @@
 ## 2026-10-18
 
 - Added `decisions/0024-opencode-gets-the-package-from-apm-and-its-agents-rules-and-briefing-from-kmctl-plugin-patch` with `kmctl new decision`.
+- Added `decisions/0025-the-starter-template-lives-in-kmctl-and-shares-its-release-tags` with `kmctl new decision`.

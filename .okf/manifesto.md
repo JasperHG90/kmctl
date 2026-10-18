@@ -75,6 +75,10 @@ this formalizes so every repository can have it.
   Antigravity and OpenCode.
 - **A reusable GitHub Action** (ADR 0005). On every pull request it runs the
   deterministic checks for free. The LLM audit is opt-in and reports only.
+- **A copier template, kmctl-starter**, in `copier.yml` and `starter/`
+  (ADR 0025). It sets up a new repository with `docs/`, `.okf/` and the
+  package for the harnesses it names, pinned to the kmctl release whose tag
+  it comes from.
 
 ## Invariants
 

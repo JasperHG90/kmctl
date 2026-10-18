@@ -11,7 +11,7 @@ status: stable
 
 # Architecture overview
 
-kmctl has three parts (manifesto, Parts). The CLI in `src/kmctl/` does every
+kmctl has four parts (manifesto, Parts). The CLI in `src/kmctl/` does every
 step a script can do and is the only part that writes knowledge. The APM
 package in `apm/` (skills, the audit agent and the knowledge rules) and the
 action in `action.yml` and `action/` call the CLI; they hold no logic of
@@ -23,7 +23,9 @@ plugin folder `.agents/plugins/kmctl/` (ADR 0015, ADR 0021), and for
 OpenCode rewrites the agents into its format and writes the rules, their
 `instructions` entry and a briefing plugin (ADR 0024). `kmctl doctor` reads what an install left, without writing
 or using the network, and names each missing or changed piece with its
-fix. Releases come from
+fix. The fourth part, the kmctl-starter template in `copier.yml` and
+`starter/`, generates a project that installs the other three (ADR 0025).
+Releases come from
 two workflows and the scripts in `scripts/` (ADR 0012).
 
 ```mermaid
@@ -73,6 +75,7 @@ flowchart LR
         releasePy["scripts/release.py<br/>current, set, compare"]
         nextVersion["scripts/next_release_version.py"]
         wheelChecks["scripts/check_wheel.py<br/>scripts/smoke_wheel.py"]
+        starter["copier.yml and starter/<br/>the kmctl-starter template (ADR 0025)"]
     end
 
     apmCli["apm install, run by the user<br/>in the consumer (kmctl never runs it)"]
@@ -151,6 +154,7 @@ flowchart LR
     releaseYml -- "next version from v* tags" --> nextVersion
     releaseYml -- "set: version, docs' install lines" --> releasePy
     releasePy -- "write: version,<br/>and its copy in the root apm.yml" --> apmPkg
+    releasePy -- "write: kmctl_ref default vX.Y.Z" --> starter
     releaseYml -- "uv build, then check" --> wheelChecks
     releaseYml -- "commits it on release/vX.Y.Z,<br/>gh pr create" --> apmPkg
     apmPkg -- "merged to main" --> releaseTag
@@ -291,12 +295,18 @@ tag a consumer's `apm.yml` names and a build from a download with no
   commits `scripts/release.py set` (the version in `apm/apm.yml` and its
   copies in the root `apm.yml`, `apm/claude/apm.yml` and
   `apm/antigravity/apm.yml`, the docs' six install lines and the APM how-to's
-  pin) on `release/vX.Y.Z` and opens the version pull request.
+  pin, and `kmctl_ref`'s default in `copier.yml`) on `release/vX.Y.Z` and
+  opens the version pull request.
 - `.github/workflows/release-tag.yml` runs when a push to `main` changes
   `apm/apm.yml`. When `scripts/release.py compare` says the version went up, it
   builds and checks first, then pushes the tag `vX.Y.Z` and publishes the
   GitHub Release with the wheel, the sdist and `SHA256SUMS`. Nothing goes to
   PyPI.
+- The tag is also a release of kmctl-starter, the copier template in
+  `copier.yml` and `starter/` (ADR 0025): `uvx copier copy
+  gh:JasperHG90/kmctl` renders the newest tag, whose `kmctl_ref` default is
+  that release. `tests/test_starter.py` renders it, and bootstraps a
+  generated project from a `file://` clone of the tree.
 
 ## Depicts
 
@@ -322,7 +332,8 @@ tag a consumer's `apm.yml` names and a build from a download with no
   audits); `.github/workflows/knowledge-audit.yml`.
 - Releases: `.github/workflows/release.yml`, `.github/workflows/release-tag.yml`,
   `scripts/release.py`, `scripts/next_release_version.py`,
-  `scripts/check_wheel.py`, `scripts/smoke_wheel.py`, `apm/apm.yml`.
+  `scripts/check_wheel.py`, `scripts/smoke_wheel.py`, `apm/apm.yml`,
+  `copier.yml` and `starter/`.
 - APM: `apm/apm.yml` and its pinned `scaccogatto/okf-skills`; the
   consumer's `apm.yml`, `.claude/settings.json`, `.mcp.json`, `.opencode/`
   and `opencode.json`.

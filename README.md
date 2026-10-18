@@ -50,17 +50,19 @@ still true; that takes judgment. So kmctl does two things instead:
 
 ## Install
 
-**Starting a new repository?** [kmctl-starter](https://github.com/JasperHG90/kmctl-starter)
-is a [copier](https://copier.readthedocs.io/) template that sets one up with
-`docs/`, `.okf/` and kmctl's package for your agent harness (Claude Code,
-Antigravity or OpenCode), so you can skip the steps below:
+**Starting a new repository?** kmctl-starter, the
+[copier](https://copier.readthedocs.io/) template in this repository
+(`copier.yml` and `starter/`), sets one up with `docs/`, `.okf/` and kmctl's
+package for your agent harness (Claude Code, Antigravity or OpenCode), so you
+can skip the steps below:
 
 ```
-uvx copier copy gh:JasperHG90/kmctl-starter my-project
+uvx copier copy gh:JasperHG90/kmctl my-project
 ```
 
-Its README lists what it asks and what it needs. For an existing repository,
-follow these steps.
+[Start a repository with kmctl-starter](docs/how-to/start-a-repository-with-kmctl-starter.md)
+lists what it asks, what it needs, and how to move a project made from the
+old kmctl-starter repository. For an existing repository, follow these steps.
 
 ### You need
 

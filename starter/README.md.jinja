@@ -1,0 +1,32 @@
+# {{ project_name }}
+{% if project_description %}
+{{ project_description }}
+{% endif %}
+## Getting started
+
+Needs [uv](https://docs.astral.sh/uv/) and [just](https://just.systems/).
+
+```
+just bootstrap
+```
+
+That installs the kmctl CLI (`just kmctl`), installs the APM dependencies in
+`apm.yml` and runs `kmctl plugin patch` (`just install`), and creates `docs/`
+and `.okf/` when they are missing (`just init`). `just check` confirms it
+worked.
+{%- if 'antigravity' in harnesses %}
+
+In Antigravity, open the repository folder and trust it: Antigravity loads
+`.agents/` only from a trusted folder.
+{%- endif %}
+{%- if 'opencode' in harnesses %}
+
+In OpenCode, start a new session in the repository. kmctl supports OpenCode
+2.x only. OpenCode has no rules scoped to paths, so all four of kmctl's rules
+load in every session. `apm install` puts APM's copies of the agents back over
+the ones `kmctl plugin patch` rewrites, so after any `apm install` run
+`just install` again, which runs both.
+{%- endif %}
+
+Run `just` to see the other recipes. `AGENTS.md` says how this repository
+keeps its knowledge.

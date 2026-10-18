@@ -1,0 +1,28 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Pre-commit hooks
+        run: uvx prek@0.5.5 run --all-files --show-diff-on-failure
+
+  knowledge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # Installs kmctl, runs kmctl check (fails the job on a broken bundle)
+      # and kmctl review due, and writes both to the job summary.
+      - uses: JasperHG90/kmctl@{{ kmctl_ref }}

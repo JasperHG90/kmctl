@@ -9,12 +9,13 @@ from typing import Any
 import pytest
 import yaml
 
-from scripts.release import APM_DOC, APM_FILES, DOC_FILES, MANIFEST
+from scripts.release import APM_DOC, APM_FILES, COPIER, DOC_FILES, MANIFEST
 
 ROOT = Path(__file__).resolve().parents[2]
 WORKFLOWS = ROOT / ".github" / "workflows"
 RELEASE = WORKFLOWS / "release.yml"
 RELEASE_TAG = WORKFLOWS / "release-tag.yml"
+CI = WORKFLOWS / "ci.yml"
 # The job in each workflow that may write; every other job reads only.
 WRITERS = {RELEASE: {"bump"}, RELEASE_TAG: {"tag"}}
 
@@ -108,6 +109,17 @@ def test_release_builds_and_checks_at_the_release_version() -> None:
     assert '*-"$VERSION"-*.whl | *-"$VERSION".tar.gz' in _runs(RELEASE, "build")
 
 
+def test_release_bump_stages_copier_yml() -> None:
+    """The bump step stages copier.yml, so the version pull request carries kmctl_ref's new default."""
+    adds = [
+        line.split()[2:]
+        for line in _runs(RELEASE, "bump").splitlines()
+        if line.strip().startswith("git add")
+    ]
+
+    assert COPIER.as_posix() in {path for add in adds for path in add}
+
+
 def test_release_bump_opens_the_version_pull_request() -> None:
     """A real run commits ``release.py set`` on release/vX.Y.Z, staging every file it wrote."""
     job = _load(RELEASE)["jobs"]["bump"]
@@ -123,7 +135,7 @@ def test_release_bump_opens_the_version_pull_request() -> None:
         if line.strip().startswith("git add")
     ]
     staged = {path for add in adds for path in add}
-    written = {MANIFEST, *APM_FILES, *DOC_FILES, APM_DOC}
+    written = {MANIFEST, *APM_FILES, *DOC_FILES, APM_DOC, COPIER}
     assert {p.as_posix() for p in written} <= staged
     assert "gh pr create --base main" in runs
     assert "Allow GitHub Actions to create and approve pull requests" in runs
@@ -202,3 +214,12 @@ def test_only_the_writing_job_asks_for_write(path: Path) -> None:
         if "write" in (job.get("permissions") or {}).values()
     }
     assert writers == WRITERS[path]
+
+
+def test_ci_starter_job_bootstraps_a_generated_project() -> None:
+    """ci.yml's starter job installs uv and just and runs the starter's integration test."""
+    steps = _steps(CI, "starter")
+
+    assert any(s.get("uses", "").startswith("astral-sh/setup-uv@") for s in steps)
+    assert "uv tool install rust-just==" in _runs(CI, "starter")
+    assert steps[-1]["run"] == "uv run pytest tests/test_starter.py -m integration"
