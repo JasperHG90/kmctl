@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "okf-summary",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
@@ -108,8 +108,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "7f3890072988ab1aed6a6998bc1d9f864d22a1e7ad28fa4fa899b987854e506c",
   "intent": {
@@ -141,8 +141,14 @@
       "to": "verifying",
       "at": "2026-10-18T20:24:50+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-18T20:39:38+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T20:24:51+00:00"
+  "at": "2026-10-18T20:39:38+00:00"
 }
