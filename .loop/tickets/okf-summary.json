@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "okf-summary",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 3,
@@ -41,7 +41,7 @@
   "split": "j-20261018T194102+0000-44637fec",
   "split_plan_hash": "7f3890072988ab1aed6a6998bc1d9f864d22a1e7ad28fa4fa899b987854e506c",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "3f7725f38a61ab089dadf55d9fedb7538f8ac9b0",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -195,8 +195,14 @@
       "to": "verifying",
       "at": "2026-10-18T21:10:26+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-18T21:16:55+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T21:16:46+00:00"
+  "at": "2026-10-18T21:16:55+00:00"
 }
