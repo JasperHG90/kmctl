@@ -1,4 +1,17 @@
 {
   "schema_version": "1.0",
-  "rows": []
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "release-tag.yml reads the before commit's version from apm/apm.yml alone (a release.py subcommand or flag that does not require the root apm.yml to agree), so a before commit whose root apm.yml is missing or differs still gives its version, and compare can report lowered; only a before commit with no readable apm/apm.yml version gives an empty OLD.",
+      "fails_when": "the before read still uses `current || true`, a before commit with a differing root apm.yml gives an empty OLD, or a lowered version on such a commit is not refused",
+      "command": "uv run pytest tests/scripts/test_release.py tests/scripts/test_workflows.py -k before -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "The full suite and every tier pass.",
+      "fails_when": "any test fails",
+      "command": "uv run pytest -q -m \"not integration or integration\""
+    }
+  ]
 }
