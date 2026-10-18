@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The architecture overview's row for kmctl plugin patch still says \"--undo deletes the plugin folder and the OpenCode files\" with no scope, which is now false at --scope user.",
+      "anchor": ".okf/architecture/overview.md:180",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "The r3 test checks the reference only for \"With `--scope user`\" and the word \"leaves\", which appears many times elsewhere in commands.md, so it would still pass if the new sentence stopped saying the files are left and named.",
+      "anchor": "tests/test_plugin_patch.py:340",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "42215e19883ecd61d3f0ea7526292123654cfa6d75a376534b338738ed90f2dd",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-18T05:42:06+00:00"
+}
