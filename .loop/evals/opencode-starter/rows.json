@@ -21,8 +21,8 @@
     },
     {
       "id": "r4",
-      "behavior": "kmctl-starter's test workflow on GitHub, for the pushed commit, passes for every matrix entry, including [opencode] and [claude, antigravity, opencode], with doctor failing only on the checks the workflow filters (dep.claude, dep.agy, dep.opencode, antigravity.trust).",
-      "fails_when": "any matrix entry fails, or the opencode entries are missing from the matrix",
+      "behavior": "kmctl-starter's test workflow on GitHub, for the pushed commit, passes for every matrix entry, including [opencode] and [claude, antigravity, opencode]: render, YAML parse and the pre-commit hooks of the generated project. Its bootstrap steps are off while JasperHG90/kmctl is private, with a comment saying so, and the same bootstrap passes locally for both OpenCode entries with doctor failing only on dep.claude, dep.agy, dep.opencode and antigravity.trust.",
+      "fails_when": "any matrix entry fails, the opencode entries are missing, the bootstrap steps are off without saying why, or the local bootstrap of an OpenCode entry fails or doctor fails another check",
       "judgment": true
     },
     {

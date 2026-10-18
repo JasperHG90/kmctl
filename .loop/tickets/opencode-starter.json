@@ -24,8 +24,8 @@
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
-    "hash": "e87d0a85e0441000b66375d0335e5f571215d3b16e0a45422bd175c84b9c61de",
-    "at": "2026-10-18T06:02:19+00:00"
+    "hash": "55bab5580720818feda1e2289aab47066f1da236b5bddf4cfb72d7cea3ae0081",
+    "at": "2026-10-18T07:07:38+00:00"
   },
   "delegation": null,
   "budget_base": null,
@@ -53,8 +53,8 @@
     },
     {
       "id": "r4",
-      "behavior": "kmctl-starter's test workflow on GitHub, for the pushed commit, passes for every matrix entry, including [opencode] and [claude, antigravity, opencode], with doctor failing only on the checks the workflow filters (dep.claude, dep.agy, dep.opencode, antigravity.trust).",
-      "fails_when": "any matrix entry fails, or the opencode entries are missing from the matrix",
+      "behavior": "kmctl-starter's test workflow on GitHub, for the pushed commit, passes for every matrix entry, including [opencode] and [claude, antigravity, opencode]: render, YAML parse and the pre-commit hooks of the generated project. Its bootstrap steps are off while JasperHG90/kmctl is private, with a comment saying so, and the same bootstrap passes locally for both OpenCode entries with doctor failing only on dep.claude, dep.agy, dep.opencode and antigravity.trust.",
+      "fails_when": "any matrix entry fails, the opencode entries are missing, the bootstrap steps are off without saying why, or the local bootstrap of an OpenCode entry fails or doctor fails another check",
       "command": null,
       "judgment": true
     },
@@ -73,7 +73,23 @@
       "judgment": true
     }
   ],
-  "resigns": [],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+      "reason": "Operator, 2026-10-18: skip the starter's CI bootstrap while kmctl is private (every run since 946e051 failed on fetching it); r4 now asks CI to render and lint every entry and the bootstrap to pass locally",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r4": [
+            "behavior",
+            "fails_when"
+          ]
+        }
+      },
+      "at": "2026-10-18T07:07:38+00:00"
+    }
+  ],
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
@@ -126,5 +142,5 @@
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T06:05:30+00:00"
+  "at": "2026-10-18T07:07:38+00:00"
 }
