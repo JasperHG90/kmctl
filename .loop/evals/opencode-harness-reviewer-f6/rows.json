@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "kmctl plugin patch --undo --scope user, run in a repository holding a patched OpenCode install and an Antigravity plugin folder, deletes and changes no file in it, exits 0, and prints one note naming the project-scope files it left and saying to run kmctl plugin patch --undo there without --scope user.",
+      "fails_when": "any file in the repository is deleted or changes, the exit code is not 0, or the note is missing, names none of the files, or does not name kmctl plugin patch --undo",
+      "command": "uv run pytest tests/test_plugin_patch.py tests/test_opencode.py -k undo_user_scope -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "kmctl plugin patch --undo at project scope still deletes the Antigravity plugin folder and OpenCode's kmctl files as before, and --undo --scope user in a folder with no kmctl files prints nothing to undo.",
+      "fails_when": "a project-scope undo leaves a kmctl file, or a user-scope undo with nothing here prints a note or exits nonzero",
+      "command": "uv run pytest tests/test_plugin_patch.py tests/test_opencode.py -k undo -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "The --undo help and docs/reference/commands.md say that with --scope user it leaves the repository's Antigravity and OpenCode files alone and names them.",
+      "fails_when": "either the help or the reference does not say so",
+      "command": "uv run pytest tests/test_plugin_patch.py -k undo_docs -q"
+    },
+    {
+      "id": "r4",
+      "behavior": "The other tests still pass.",
+      "fails_when": "uv run pytest or uv run pytest -m integration fails",
+      "command": "uv run pytest -q -m \"not integration or integration\""
+    }
+  ]
+}
