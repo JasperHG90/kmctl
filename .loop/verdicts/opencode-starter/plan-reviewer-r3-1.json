@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "The plan now tags v0.3.0. That sorts above v0.2.1, the highest tag on the starter, so copier renders it.",
+      "anchor": ".loop/plans/opencode-starter.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "5e1276c0272474db517518f20a8197f0cd4d4cf6a3db79986ff77dc317bcf4b7"
+  },
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-18T06:02:02+00:00"
+}
