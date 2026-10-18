@@ -1,0 +1,57 @@
+# Run `just` to list the recipes.
+
+apm := "uvx --from apm-cli=={{ apm_version }} apm"
+kmctl_ref := "{{ kmctl_ref }}"
+{% raw -%}
+kmctl_src := "git+https://github.com/JasperHG90/kmctl@" + kmctl_ref
+# kmctl at the pinned release, without touching the kmctl on your PATH.
+kmctl := "uvx --from " + kmctl_src + " kmctl"
+
+# List the recipes.
+default:
+    @just --list
+
+# Set up a fresh clone: the kmctl CLI, the APM dependencies, the knowledge folders.
+bootstrap: kmctl install init
+
+# Install the kmctl CLI on your PATH at the pinned release; the session hooks call it.
+kmctl:
+    uv tool install --force "{{kmctl_src}}"
+
+# Install the APM dependencies in apm.yml for its targets, then what APM cannot install yet.
+install:
+    {{apm}} install
+    {{kmctl}} plugin patch
+
+# Install exactly what apm.lock.yaml records (for a clean clone or CI).
+install-frozen:
+    {{apm}} install --frozen
+    {{kmctl}} plugin patch
+
+# Resolve the dependencies again and rewrite apm.lock.yaml without installing.
+lock:
+    {{apm}} lock
+
+# Show locked dependencies that have newer versions.
+outdated:
+    {{apm}} outdated
+
+# Create docs/ and the .okf/ knowledge bundle, and kmctl's block in AGENTS.md (safe to run again).
+init:
+    {{kmctl}} init
+
+# Check the knowledge bundle and that kmctl is installed correctly.
+check:
+    {{kmctl}} check
+    {{kmctl}} doctor
+
+# Run `just` again rather than depending on recipes, so the second step reads the rewritten justfile.
+# Move to another kmctl release, such as v0.5.0: rewrite the pinned files, then reinstall at it.
+upgrade ref:
+    uvx copier update --defaults --data kmctl_ref={{ref}}
+    just kmctl install
+
+# Run the pre-commit hooks on every file.
+lint:
+    uvx prek@0.5.5 run --all-files
+{%- endraw %}

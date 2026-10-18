@@ -18,7 +18,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts.release import APM_DOC, APM_FILES, DOC_FILES, MANIFEST
+from scripts.release import APM_DOC, APM_FILES, COPIER, DOC_FILES, MANIFEST
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "release.py"
@@ -91,9 +91,9 @@ def test_version_source_follows_a_changed_manifest(tmp_path: Path) -> None:
 
 
 def _repo(tmp_path: Path, version: str = "0.1.0") -> Path:
-    """A git repository holding this repository's apm.yml files and the docs `set` edits."""
+    """A git repository holding this repository's apm.yml files, copier.yml and the docs `set` edits."""
     root = tmp_path / "repo"
-    for rel in (*APM_FILES, *DOC_FILES, APM_DOC):
+    for rel in (*APM_FILES, *DOC_FILES, APM_DOC, COPIER):
         (root / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(ROOT / rel, root / rel)
     for rel in APM_FILES:
@@ -179,7 +179,7 @@ def test_release_py_set_writes_the_version_and_the_six_doc_lines(
     assert changed == {f"version: {_manifest_version(ROOT)}", "version: 9.9.9"}
     assert _refs(root) == ["v9.9.9"] * 6
     assert res.stdout.splitlines() == [
-        f"wrote {p}" for p in (*APM_FILES, *DOC_FILES, APM_DOC)
+        f"wrote {p}" for p in (*APM_FILES, *DOC_FILES, APM_DOC, COPIER)
     ]
 
 
@@ -338,3 +338,54 @@ def test_release_py_set_never_commits_or_tags(tmp_path: Path) -> None:
         ).stdout
         == ""
     )
+
+
+def _kmctl_ref_default(root: Path) -> str:
+    """The default of copier.yml's kmctl_ref question at ``root``."""
+    return str(yaml.safe_load((root / COPIER).read_text())["kmctl_ref"]["default"])
+
+
+def test_release_py_set_moves_the_copier_default(tmp_path: Path) -> None:
+    """``set`` writes kmctl_ref's default as the release tag and changes no other copier.yml line."""
+    root = _repo(tmp_path)
+    old = _kmctl_ref_default(root)
+
+    res = _run(root, "set", "0.7.0rc1")
+
+    assert res.returncode == 0, res.stderr
+    assert _kmctl_ref_default(root) == "v0.7.0rc1"
+    changed = set((root / COPIER).read_text().splitlines()) ^ set(
+        (ROOT / COPIER).read_text().splitlines()
+    )
+    assert changed == {f"  default: {old}", "  default: v0.7.0rc1"}
+    assert f"wrote {COPIER}" in res.stdout.splitlines()
+
+
+def test_release_py_set_refuses_a_copier_yml_without_the_default(
+    tmp_path: Path,
+) -> None:
+    """With no kmctl_ref default in copier.yml, ``set`` names copier.yml and writes no file."""
+    root = _repo(tmp_path)
+    copier = root / COPIER
+    copier.write_text(
+        "\n".join(
+            line
+            for line in copier.read_text().splitlines()
+            if line != f"  default: {_kmctl_ref_default(ROOT)}"
+        )
+        + "\n"
+    )
+    subprocess.run([*GIT, "commit", "-qam", "drop the default"], cwd=root, check=True)
+
+    res = _run(root, "set", "0.7.0")
+
+    assert res.returncode == 1
+    assert "copier.yml has no kmctl_ref question with a default: line" in res.stderr
+    status = subprocess.run(
+        ["git", "status", "--porcelain"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert status.stdout == ""

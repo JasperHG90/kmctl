@@ -34,10 +34,11 @@ def test_ci_triggers_on_pull_request_and_push_to_main() -> None:
 def test_ci_jobs_run_prek_then_knowledge_then_pytest() -> None:
     jobs = _ci()["jobs"]
 
-    assert list(jobs) == ["prek", "knowledge", "tests"]
+    assert list(jobs) == ["prek", "knowledge", "tests", "starter"]
     assert "needs" not in jobs["prek"]
     assert jobs["knowledge"]["needs"] == "prek"
     assert jobs["tests"]["needs"] == "knowledge"
+    assert jobs["starter"]["needs"] == "knowledge"
 
 
 def test_ci_knowledge_job_runs_own_check_with_full_history() -> None:

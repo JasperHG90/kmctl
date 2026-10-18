@@ -35,7 +35,14 @@ from kmctl import antigravity, app, plugin
 from kmctl.doctor import run_doctor
 from kmctl.kinds import schema, skeleton
 from kmctl.okf import front_matter
-from scripts.release import APM_DOC, APM_FILES, DOC_FILES, MANIFEST, set_version
+from scripts.release import (
+    APM_DOC,
+    APM_FILES,
+    COPIER,
+    DOC_FILES,
+    MANIFEST,
+    set_version,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = ROOT / "apm"
@@ -184,7 +191,7 @@ def test_wheel_reports_the_set_version_and_carries_the_skills(tmp_path: Path) ->
     """After ``set 9.8.7`` the built wheel is 9.8.7 and holds every skill file."""
     project = tmp_path / "project"
     project.mkdir()
-    for name in ("pyproject.toml", "README.md", *map(str, APM_FILES)):
+    for name in ("pyproject.toml", "README.md", str(COPIER), *map(str, APM_FILES)):
         (project / name).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(ROOT / name, project / name)
     for folder in ("src", "apm/.apm", "apm/claude/.apm", "docs"):
@@ -430,7 +437,7 @@ def test_docs_apm_page_says_what_a_hand_added_entry_gets() -> None:
 
 def test_docs_release_set_moves_the_page_cli_pin(tmp_path: Path) -> None:
     """``scripts/release.py set`` points the page's CLI line at the new tag; the old-install example keeps its own."""
-    for rel in (*APM_FILES, APM_DOC, *DOC_FILES):
+    for rel in (*APM_FILES, APM_DOC, *DOC_FILES, COPIER):
         (tmp_path / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(ROOT / rel, tmp_path / rel)
 

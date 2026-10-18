@@ -1,0 +1,2 @@
+# APM's package cache; `just install` restores it.
+apm_modules/

@@ -41,6 +41,7 @@ packages = ["src/kmctl"]
 
 [dependency-groups]
 dev = [
+    "copier>=9.19.1",
     "jsonschema>=4.26.0",
     "opentelemetry-exporter-otlp-proto-http==1.45.1",
     "opentelemetry-sdk==1.45.1",

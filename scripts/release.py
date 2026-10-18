@@ -15,7 +15,9 @@ Usage::
 ``pyproject.toml`` reads it from there (ADR 0014). APM needs a ``version:`` in
 each apm.yml, so ``set`` writes it and copies it into the root ``apm.yml``;
 ``current`` refuses when the copy differs. ``set`` also points the six install lines in the docs, and the
-APM how-to's CLI install line, at the tag ``vVERSION``. This script never
+APM how-to's CLI install line, at the tag ``vVERSION``, and moves the starter
+template's ``kmctl_ref`` default in ``copier.yml`` to that tag, so the template
+a release tag carries pins that release (ADR 0025). This script never
 commits or tags: ``.github/workflows/release.yml`` opens the version pull
 request and ``release-tag.yml`` tags the merge, so there is one release path.
 """
@@ -49,6 +51,8 @@ APM_FILES = (
 )
 #: The APM how-to, whose install line ``set`` pins with the others.
 APM_DOC = Path("docs/how-to/install-kmctl-with-apm.md")
+#: The starter template's questions, whose ``kmctl_ref`` default ``set`` moves.
+COPIER = Path("copier.yml")
 _INSTALL = re.compile(
     r"^(\s*uv tool install git\+https://github\.com/JasperHG90/kmctl)(@\S+)?$",
     re.MULTILINE,
@@ -57,6 +61,11 @@ _USES = re.compile(r"^(\s*- uses: JasperHG90/kmctl)@\S+$", re.MULTILINE)
 # One top-level ``version:`` line, rewritten as text so comments and layout stay;
 # pyproject.toml's [tool.hatch.version] reads the same line.
 _APM_VERSION = re.compile(r"^(version: )(.*)$", re.MULTILINE)
+# The ``default:`` line of the top-level ``kmctl_ref:`` question, past its
+# indented help lines.
+_COPIER_DEFAULT = re.compile(
+    r"^(kmctl_ref:\n(?:(?!\S).*\n)*?  default: )\S+$", re.MULTILINE
+)
 
 
 class ReleaseRefused(Exception):
@@ -133,10 +142,11 @@ def pin_docs(text: str, version: str) -> tuple[str, int]:
 
 
 def set_version(repo: Path, version_text: str) -> list[Path]:
-    """Write the version into both apm.yml files and pin the docs.
+    """Write the version into both apm.yml files, pin the docs and copier.yml's default.
 
     Nothing is written unless the version is valid, all six install lines are
-    found, and each apm.yml has a ``version:`` line. ``APM_DOC``'s install line
+    found, each apm.yml has a ``version:`` line, and ``copier.yml`` has a
+    ``kmctl_ref`` default. ``APM_DOC``'s install line
     is pinned too; its "Older installs" example keeps the version it shows.
 
     Returns
@@ -148,7 +158,8 @@ def set_version(repo: Path, version_text: str) -> list[Path]:
     ------
     ReleaseRefused
         When the version is malformed, the docs hold fewer than six install
-        lines, or an apm.yml has no ``version:``.
+        lines, an apm.yml has no ``version:``, or copier.yml has no
+        ``kmctl_ref`` default.
     """
     version = str(parse_release(version_text))
     docs: dict[Path, str] = {}
@@ -169,9 +180,16 @@ def set_version(repo: Path, version_text: str) -> list[Path]:
         )
         if count != 1:
             raise ReleaseRefused(f"{rel} has no top-level version: line; restore it")
-    for rel, text in {**apm, **docs}.items():
+    copier, count = _COPIER_DEFAULT.subn(
+        rf"\g<1>v{version}", (repo / COPIER).read_text(), count=1
+    )
+    if count != 1:
+        raise ReleaseRefused(
+            f"{COPIER} has no kmctl_ref question with a default: line; restore it"
+        )
+    for rel, text in {**apm, **docs, COPIER: copier}.items():
         (repo / rel).write_text(text)
-    return [*APM_FILES, *DOC_FILES, APM_DOC]
+    return [*APM_FILES, *DOC_FILES, APM_DOC, COPIER]
 
 
 def compare(old_text: str, new_text: str) -> str:
@@ -205,7 +223,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     p_set = sub.add_parser(
         "set",
-        help="write the version into both apm.yml files, and pin the docs",
+        help="write the version into both apm.yml files, pin the docs and copier.yml's kmctl_ref",
     )
     p_set.add_argument("version", help="the release version, e.g. 0.2.0 or 0.2.0rc1")
     p_cmp = sub.add_parser("compare", help="print raised, same, lowered or skip")
