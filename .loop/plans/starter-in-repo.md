@@ -106,7 +106,11 @@ with copier.yml's default at its own tag, `uvx copier copy gh:JasperHG90/kmctl`
 renders from it, and kmctl-starter is archived with a pointer.
 
 Out of scope: changing the template's questions or the files it generates,
-beyond the pre-release tags the validator takes.
+beyond the pre-release tags the validator takes and one defect the bootstrap
+test found while building: in a bootstrapped project `just lint` fails on
+files APM installs (okf's SPEC.md and SKILL.md whitespace, APM's JSON with no
+final newline), which apm install writes again, so the template's
+.pre-commit-config.yaml excludes the installed agent files.
 
 ## Could invalidate this plan
 

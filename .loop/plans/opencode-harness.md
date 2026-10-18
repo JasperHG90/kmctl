@@ -164,7 +164,7 @@ What changes:
   (`opencode agent list` or an equivalent offline call) when `opencode` is
   on PATH, and skips otherwise. `tests/test_plugin_patch.py` and
   `tests/test_doctor.py` take the new harness.
-- **Knowledge.** `new:.okf/decisions/0023-opencode-gets-the-package-from-apm-and-its-agents-rules-and-briefing-from-kmctl-plugin-patch.md`
+- **Knowledge.** `new:.okf/decisions/0024-opencode-gets-the-package-from-apm-and-its-agents-rules-and-briefing-from-kmctl-plugin-patch.md`
   records the route, the tool map, why rules go through `instructions`, the
   briefing outcome, and an ADR 0020-style table of the gaps with "drop it
   when". `.okf/manifesto.md` names OpenCode in Parts and takes it out of
