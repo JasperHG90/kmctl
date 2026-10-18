@@ -333,6 +333,9 @@ A `verified` entry does not clear `stale_after passed`: when the file's
 Output: `verified ID by BY at AT (PATH)`, then `stale_after is now WHEN`
 when `--stale-after` was given, then `Next: kmctl review due`.
 
+A comment at the end of the `verified:` line, such as `verified: []  # none`,
+stays on that line.
+
 Exit code: 1 when kmctl refuses, with the reason on stderr: `--by` does not
 start with `human:`, the id names no file (or holds `..`), the id is a
 handoff (handoffs are never verified), the front matter is unreadable or
