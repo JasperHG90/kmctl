@@ -3,6 +3,7 @@ import re
 import shutil
 from pathlib import Path
 
+import pytest
 from conftest import okf_validate
 from typer.testing import CliRunner
 
@@ -64,6 +65,26 @@ def test_init_keeps_existing_files(tmp_path: Path) -> None:
 
     assert (tmp_path / "docs" / "README.md").read_text() == "my docs\n"
     assert (tmp_path / ".okf" / "manifesto.md").read_text() == "my manifesto\n"
+
+
+@pytest.mark.parametrize("rel", [f for f in FILES if f != "CLAUDE.md"])
+def test_init_keeps_each_edited_file(tmp_path: Path, rel: str) -> None:
+    """A second init leaves a file the user edited byte for byte, and lists it as neither created nor updated.
+
+    CLAUDE.md is left out: its kmctl block is the documented exception, and
+    test_init_claude_md_appends_and_keeps_text covers the text around it.
+    """
+    _init(tmp_path)
+    path = tmp_path / rel
+    path.write_text(path.read_text() + "\nA line the user wrote.\n")
+    before = _snapshot(tmp_path)
+
+    result = _init(tmp_path, "--json")
+
+    assert result.exit_code == 0, result.output
+    assert _snapshot(tmp_path) == before
+    report = json.loads(result.stdout)
+    assert rel not in report["created"] + report["updated"]
 
 
 def test_init_bundle_is_conformant(tmp_path: Path) -> None:
