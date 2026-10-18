@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "`checked` (checked.at, checked.against) is now named as the second I4 extension in the new decision, with I4's wording, ALLOWED_FIELDS and tests/test_okf_fields.py following.",
+      "anchor": "src/kmctl/okf.py:42",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "The summary is now exempt from the unverified and stale_after reasons, so the concepts-changed rule is its only reason to be listed and an edit or ack clears it fully.",
+      "anchor": "src/kmctl/review_due.py:228",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "7f3890072988ab1aed6a6998bc1d9f864d22a1e7ad28fa4fa899b987854e506c"
+  },
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-18T19:47:28+00:00"
+}
