@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The summary leaves out handoffs, one part of the design: /handoff and /continue write and read back handoffs in .okf/handoffs/ (manifesto Parts, ADR 0008), but the page never says they exist. It cites ADR 0008 only as evidence that verbs write front matter. Row r4 fails when the summary leaves out a part of the design. A clause in How it works or Where it stands would fix it, with a matching trim, since the body is at 491 of 500 words.",
+      "anchor": ".okf/summary.md:27",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "d4d82a747bc7a23988756031b8edbdb2fbbe43fc589eb80b12270d8a334a38a3",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-18T22:34:46+00:00"
+}
