@@ -19,7 +19,9 @@
   "archived": false,
   "worktree": "/home/vscode/kmctl.worktrees/okf-summary-nudge",
   "branch": "loop/okf-summary-nudge",
-  "stamps": [],
+  "stamps": [
+    "1e97a239a6c0923bfb08bed18549840ec35b42832d9c2f2e7df97f787f176bd3"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
     "hash": "73b46e30f7a6b81c9e243e41a98d1a2a7a0ae4efdd258439714644e2b942ecbf",
@@ -124,5 +126,5 @@
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T23:04:13+00:00"
+  "at": "2026-10-18T23:23:52+00:00"
 }
