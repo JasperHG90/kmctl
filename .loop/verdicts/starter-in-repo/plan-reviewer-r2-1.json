@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "The template-version/pin coupling conflicted with the validator's v0.4.0 floor and copier's downgrade refusal under --vcs-ref. The revision drops --vcs-ref from just upgrade, keeps the template at the newest release with kmctl_ref choosing the CLI and package, drops r4, and r8 documents that model. This is the same decoupling kmctl-starter had, so no upgrade path is lost.",
+      "anchor": ".loop/plans/starter-in-repo.md",
+      "category": "design",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r8"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "c65d9390112512eb988e2030cc14cde8a98bbad1634009573ead8a045cf35ad2"
+  },
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-18T10:04:14+00:00"
+}
