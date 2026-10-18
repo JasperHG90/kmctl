@@ -22,15 +22,15 @@
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
-    "hash": "469d0eb2ae5576e22827b61241560d5f539a8be98ce5ce9105095cad0598d365",
-    "at": "2026-10-18T04:15:22+00:00"
+    "hash": "0e8ad90c2df227126368e4d7087399f2181bae86e38f204dc597f99caeaef049",
+    "at": "2026-10-18T04:47:30+00:00"
   },
   "delegation": null,
   "budget_base": null,
   "signed_rows": [
     {
       "id": "r1",
-      "behavior": "The OpenCode agent translator keeps description, adds mode: subagent, writes permission with \"*\": deny first and then allow for each mapped tool (Read to read, Grep to grep, Glob to glob, Write and Edit to edit, Bash to shell), drops name, color, effort and model, copies the body unchanged, gives the same bytes for the same input, and refuses, naming the tool, a Claude tool not in its map.",
+      "behavior": "The OpenCode agent translator keeps description, adds mode: subagent, writes permission with \"*\": deny first and then allow for each mapped tool (Read to read, Grep to grep, Glob to glob, Write and Edit to edit, Bash to bash, which OpenCode 1.x reads as bash and 2.x as shell), drops name, color, effort and model, copies the body unchanged, gives the same bytes for the same input, and refuses, naming the tool, a Claude tool not in its map.",
       "fails_when": "any mapping differs, \"*\": deny is not the first rule, a tools key or a Claude-only key survives, the body changes, two runs differ, or an unknown tool translates silently",
       "command": "uv run pytest tests/test_opencode.py -k translate -q",
       "judgment": false
@@ -58,8 +58,8 @@
     },
     {
       "id": "r5",
-      "behavior": "The briefing plugin .opencode/plugins/kmctl.js, loaded under node with a stub ctx, registers one context hook that pushes the kmctl briefing as a {type: \"text\"} system part, and when kmctl is not on PATH or kmctl briefing fails it registers nothing or pushes nothing, and neither setup nor the hook throws or rejects (I1).",
-      "fails_when": "the text pushed differs from kmctl briefing's output, or with kmctl missing or failing setup or the hook throws, rejects, or pushes a part; the test skips only when node is not on PATH",
+      "behavior": "The briefing plugin .opencode/plugins/kmctl.js, loaded under node with stub inputs as OpenCode 2.x (setup, then its context hook) and 1.x (server, then its experimental.chat.system.transform hook) load it, adds the kmctl briefing to the system prompt once per line ({type: \"text\"} parts for 2.x, strings for 1.x), and when kmctl is not on PATH, fails or prints nothing it adds nothing, and neither entry point nor hook throws or rejects, even with empty inputs (I1).",
+      "fails_when": "the text added differs from kmctl briefing's output, an entry point registers no hook, or with kmctl missing, failing or silent anything is added or anything throws or rejects; the test skips only when node is not on PATH",
       "command": "uv run pytest tests/test_opencode.py -k briefing_plugin -q",
       "judgment": false
     },
@@ -86,7 +86,7 @@
     },
     {
       "id": "r9",
-      "behavior": "With opencode on PATH, OpenCode loads the three translated agents (opencode agent list, or its equivalent, names kmctl-auditor, bundle-weaver and event-analyzer as subagents); the test skips when opencode is absent.",
+      "behavior": "With opencode on PATH, 1.x (opencode agent list) or 2.x (opencode debug agents, on a service port of its own that the test stops), OpenCode lists kmctl-auditor, bundle-weaver and event-analyzer as subagents; the test skips when opencode is absent.",
       "fails_when": "opencode is present and any of the three agents is missing from its list",
       "command": "uv run pytest tests/test_opencode.py -m integration -k loads_agents -q",
       "judgment": false
@@ -106,7 +106,29 @@
       "judgment": false
     }
   ],
-  "resigns": [],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+      "reason": "Live runs against OpenCode 1.19.3 and 2.0.32 showed 1.x calls its shell permission bash, not shell, and loads plugins through server, not setup; r1 now maps Bash to bash (2.x reads it as shell), r5 checks both plugin entry points, and r9 lists agents with each line's own command",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r1": [
+            "behavior"
+          ],
+          "r5": [
+            "behavior",
+            "fails_when"
+          ],
+          "r9": [
+            "behavior"
+          ]
+        }
+      },
+      "at": "2026-10-18T04:47:30+00:00"
+    }
+  ],
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
@@ -157,5 +179,5 @@
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T04:19:30+00:00"
+  "at": "2026-10-18T04:47:30+00:00"
 }
