@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "apm-distribution-reviewer-f1",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 1,
@@ -13,7 +13,7 @@
   "split": "j-20261018T214630+0000-18944111",
   "split_plan_hash": "ed5af43b8c41b9d5a4150d555b3054657e742ade1a97372d865a82d919246c04",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "e59ae1557414583890a550f7a365dc137ddd922b",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -100,8 +100,14 @@
       "to": "verifying",
       "at": "2026-10-18T22:28:56+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-18T22:59:45+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T22:59:35+00:00"
+  "at": "2026-10-18T22:59:45+00:00"
 }
