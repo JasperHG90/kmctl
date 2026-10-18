@@ -1,0 +1,1 @@
+{"ask":"Fold kmctl-starter into the kmctl repository: the copier template moves into kmctl, copier.yml at the root, starter CI built from the local checkout, a migration note for existing projects, and the old repo archived with a pointer. When releasing, also bump the kmctl version in copier immediately."}
