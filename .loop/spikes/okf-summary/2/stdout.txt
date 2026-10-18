@@ -1,0 +1,52 @@
+== worst (long handoff title): baseline 494 / 500 (1975 chars)
+  swap-only: no status 495, current 499, behind-3 504, behind-999 504
+  swap+drop-types: no status 484, current 488, behind-3 493, behind-999 493
+  swap+drop-types+index: no status 487, current 492, behind-3 496, behind-999 497
+== this repo: baseline 474 / 500 (1893 chars)
+  swap-only: no status 474, current 478, behind-3 483, behind-999 484
+  swap+drop-types: no status 463, current 467, behind-3 472, behind-999 473
+  swap+drop-types+index: no status 467, current 471, behind-3 476, behind-999 476
+
+best: swap+drop-types at 493 tokens worst case
+---- ROUTING ----
+Knowledge in this repository:
+- docs/: pages for people who use the project, one folder per Diataxis type,
+  each with a generated README.md.
+- .okf/: an OKF v0.2 bundle for people and agents working on it. Start at
+  .okf/summary.md. manifesto.md is the design; decisions/ records each choice and
+  what it rejected; architecture/ the design as diagrams; practices/ lessons;
+  proposals/ designs not yet built; prototypes/ spikes; handoffs/ notes on
+  where work stopped.
+- Skills do repeatable tasks; .claude/rules/ holds the rules for writing knowledge.
+Verbs: kmctl new decision|practice|proposal|prototype|handoff to add a concept;
+kmctl new doc tutorial|how-to|reference|explanation for a docs/ page;
+kmctl check when done (--fix writes docs indexes; never edit one);
+kmctl handoffs for live handoffs; kmctl schema KIND for a document's shape. All take --help and --json.
+---- worst-case briefing with behind-3 (last candidate) ----
+kmctl briefing (kmctl 0.6.0)
+Setup first: manifesto not written; no architecture pages. Ask the user to fill these in with you now.
+Knowledge in this repository:
+- docs/: pages for people who use the project, one folder per Diataxis type,
+  each with a generated README.md.
+- .okf/: an OKF v0.2 bundle for people and agents working on it. Start at
+  .okf/summary.md, then index.md. manifesto.md is the design; decisions/ records each choice and
+  what it rejected; architecture/ the design as diagrams; practices/ lessons;
+  proposals/ designs not yet built; prototypes/ spikes; handoffs/ notes on
+  where work stopped.
+- Skills do repeatable tasks; .claude/rules/ holds the rules for writing knowledge.
+Verbs: kmctl new decision|practice|proposal|prototype|handoff to add a concept;
+kmctl new doc tutorial|how-to|reference|explanation for a docs/ page;
+kmctl check when done (--fix writes docs indexes; never edit one);
+kmctl handoffs for live handoffs; kmctl schema KIND for a document's shape. All take --help and --json.
+kmctl skills:
+- architecture-review: Review instructions for .okf/architecture/ pages, used through /audit and its kmctl-auditor agent.
+- audit: Audit a repository's .okf/ knowledge for drift.
+- continue: Resume work from earlier /handoff notes in .okf/handoffs/.
+- decision-log-review: Review instructions for .okf/decisions/ records, used through /audit and its kmctl-auditor agent.
+- handoff: Write a technical handoff of the current work to .okf/handoffs/ so you...
+- practices-review: Review instructions for .okf/practices/ pages, used through /audit and its kmctl-auditor agent.
+- write-docs: Write one page in a repository's docs/ for the people who use...
+State: 2 concepts due for review (kmctl review due); 3 live handoffs, newest: ab ab ab ab ab ab ab ab ab ab ab ab...; summary behind: 3 concepts changed.
+Reading knowledge:
+- unverified-is-a-lead: Treat a concept with no verified entry, or past its stale_after, as a lead to check, not a fact.
+

@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "okf-summary",
+  "n": 2,
+  "command": "uv run --project /home/vscode/kmctl python /tmp/claude-1000/-home-vscode-kmctl/efac4bda-9c30-41af-bec2-10265f82b0d7/scratchpad/spike-sum2/fit.py",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/efac4bda-9c30-41af-bec2-10265f82b0d7/scratchpad/spike-sum2/fit.py",
+      "copy": "files/fit.py"
+    }
+  ],
+  "where": "worktree",
+  "head": "b13c7876602de289a2343cc5b25c59958036714f",
+  "fingerprint": "00b908441b90104caf2f00a7314c4aeda0d514c81168c66faa94dd99cc6fe2f1",
+  "started_at": "2026-10-18T19:42:34+00:00",
+  "finished_at": "2026-10-18T19:42:35+00:00",
+  "duration_seconds": 1.53,
+  "timeout_seconds": 120.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "moved_from": null
+}
