@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "slug": "kmctl-follows-the-pin",
+  "stage": "planning",
+  "attempts": 0,
+  "plan_rounds": 0,
+  "review_rounds": 0,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": null,
+  "ask": "j-20261018T184534+0000-5cbf86c6",
+  "split": null,
+  "split_plan_hash": null,
+  "split_hold": false,
+  "commit_sha": null,
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": null,
+  "branch": null,
+  "stamps": [],
+  "signoff": null,
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [],
+  "resigns": [],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [],
+  "round": null,
+  "plan_hash": "8877fdc628a98c2eb4d16cb7ceeb8aadba7cdbd647ffe77df526bb2c58ea87f0",
+  "intent": {
+    "epic": null,
+    "depends_on": [],
+    "priority": null
+  },
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-10-18T18:45:35+00:00",
+      "by": "register"
+    }
+  ],
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-18T18:45:35+00:00"
+}
