@@ -665,6 +665,27 @@ def test_undo_keeps_other_instructions(repo: Path) -> None:
     }
 
 
+def test_undo_user_scope_leaves_opencode_files_and_names_them(repo: Path) -> None:
+    _install(repo)
+    before = _tree(repo)
+
+    result = _patch("--undo", "--scope", "user")
+
+    assert _tree(repo) == before
+    said = " ".join(plain(result.stdout).split())
+    for rel in [*AGENT_PATHS, *RULE_PATHS, PLUGIN_PATH, "opencode.json"]:
+        assert rel in said, rel
+    assert "kmctl plugin patch --undo" in said
+    assert "without --scope user" in said
+
+
+def test_undo_paths_name_what_undo_removes(repo: Path) -> None:
+    _install(repo)
+    planned = opencode.undo_paths(repo)
+
+    assert sorted(opencode.undo(repo)) == sorted(planned)
+
+
 def test_user_scope_leaves_opencode_alone_and_says_so(
     repo: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

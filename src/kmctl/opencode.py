@@ -354,8 +354,36 @@ def write(cwd: Path) -> list[str]:
     return changed
 
 
+def undo_paths(cwd: Path) -> list[str]:
+    """What ``undo`` would delete or change in ``cwd``, by path from the repository; it changes nothing.
+
+    The agents that are still kmctl's translation, the rules and the plugin
+    that are there, and opencode.json when its ``instructions`` lists
+    ``INSTRUCTIONS``.
+    """
+    try:
+        agents = agent_files(cwd)
+    except PluginError:
+        agents = {}
+    found = [
+        rel
+        for rel, text in agents.items()
+        if (cwd / rel).is_file() and (cwd / rel).read_bytes() == text.encode("utf-8")
+    ]
+    found += [
+        rel for rel in [*rule_files(), PLUGIN.as_posix()] if (cwd / rel).is_file()
+    ]
+    try:
+        listed = _config(cwd).get("instructions")
+    except PluginError:
+        return found
+    if isinstance(listed, list) and INSTRUCTIONS in listed:
+        found.append(CONFIG.as_posix())
+    return found
+
+
 def undo(cwd: Path) -> list[str]:
-    """Delete what ``write`` wrote in ``cwd``; return the paths it deleted or changed.
+    """Delete what ``write`` wrote in ``cwd``; return the paths it deleted or changed, as ``undo_paths`` names them.
 
     The rules and the plugin go. An agent goes only when it is still
     kmctl's translation, so ``apm uninstall`` can then remove APM's own
@@ -363,30 +391,16 @@ def undo(cwd: Path) -> list[str]:
     opencode.json, and the file goes once nothing is left in it. Folders
     left empty go. An unreadable opencode.json is left alone.
     """
-    done = []
-    try:
-        agents = agent_files(cwd)
-    except PluginError:
-        agents = {}
-    for rel, text in agents.items():
-        path = cwd / rel
-        if path.is_file() and path.read_bytes() == text.encode("utf-8"):
-            path.unlink()
-            done.append(rel)
-    for rel in [*rule_files(), PLUGIN.as_posix()]:
-        path = cwd / rel
-        if path.is_file():
-            path.unlink()
-            done.append(rel)
+    done = undo_paths(cwd)
+    for rel in done:
+        if rel != CONFIG.as_posix():
+            (cwd / rel).unlink()
     for folder in (RULES, PLUGIN.parent):
         if (cwd / folder).is_dir() and not any((cwd / folder).iterdir()):
             (cwd / folder).rmdir()
-    try:
+    if CONFIG.as_posix() in done:
         data = _config(cwd)
-    except PluginError:
-        return done
-    listed = data.get("instructions")
-    if isinstance(listed, list) and INSTRUCTIONS in listed:
+        listed = _instructions(data)
         listed.remove(INSTRUCTIONS)
         if not listed:
             del data["instructions"]
@@ -394,7 +408,6 @@ def undo(cwd: Path) -> list[str]:
             _write_config(cwd, data)
         else:
             (cwd / CONFIG).unlink()
-        done.append(CONFIG.as_posix())
     return done
 
 
