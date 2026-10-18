@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "ADR 0026's Consequences say `apm install` and `just install` 'run kmctl by tag' and so fill uv's cache, but `apm install` never runs kmctl; only `just install`'s `uvx ...@TAG kmctl plugin patch` (or a `kmctl plugin patch` from PATH, which hands off) fills it.",
+      "anchor": ".okf/decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins.md",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "397c5e0b9f1fbf0a940fc4497383045de72da8df5d1e004e67c9d79c43331720",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-18T19:31:57+00:00"
+}
