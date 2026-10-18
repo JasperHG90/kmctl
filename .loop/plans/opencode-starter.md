@@ -47,9 +47,11 @@ What changes, in kmctl-starter:
   `dep.opencode`, since the runner has no OpenCode.
 - README.md's "needs kmctl v0.4.0 or later" also says OpenCode needs
   v0.5.1 or later.
-- A release tag, v0.1.2, on the commit that holds this. `uvx copier copy
-  gh:JasperHG90/kmctl-starter` renders the newest tag (v0.1.1 today), so
-  without it no one gets the OpenCode choice. The commit and tag are pushed
+- A release, v0.3.0, on the commit that holds this: a plain tag, as v0.1.0
+  to v0.2.1 are, and a GitHub release with one line of notes, as each of
+  them has. `uvx copier copy gh:JasperHG90/kmctl-starter` renders the
+  highest version tag (v0.2.1 today, the Latest release), so without it no
+  one gets the OpenCode choice; a new harness choice is a minor bump. The commit and tag are pushed
   only after kmctl v0.5.1 is its Latest release, so the starter's test.yml
   and bump-kmctl.yml both see v0.5.1.
 
@@ -65,7 +67,7 @@ for `[opencode]` and `[claude, antigravity, opencode]` against v0.5.1 with
 `kmctl doctor` failing only on `dep.opencode` (the same steps as its
 test.yml, run locally), copier refuses opencode with kmctl_ref v0.5.0, and
 the starter's test workflow passes on GitHub for every matrix entry, and
-`uvx copier copy gh:JasperHG90/kmctl-starter` offers OpenCode (tag v0.1.2).
+`uvx copier copy gh:JasperHG90/kmctl-starter` offers OpenCode (tag v0.3.0).
 
 ## Could invalidate this plan
 

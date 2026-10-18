@@ -3,7 +3,7 @@
   "slug": "opencode-starter",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 2,
+  "plan_rounds": 3,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -30,9 +30,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 2,
-    "binds": "76d2e576eb32e4e83ff1aec7ac1bbcfbc64ce2eb7f72c5f9550b745885662b39",
-    "started_at": "2026-10-18T05:58:42+00:00",
+    "n": 3,
+    "binds": "5e1276c0272474db517518f20a8197f0cd4d4cf6a3db79986ff77dc317bcf4b7",
+    "started_at": "2026-10-18T06:01:17+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -45,10 +45,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "76d2e576eb32e4e83ff1aec7ac1bbcfbc64ce2eb7f72c5f9550b745885662b39",
+  "plan_hash": "5e1276c0272474db517518f20a8197f0cd4d4cf6a3db79986ff77dc317bcf4b7",
   "intent": {
     "epic": "multi-harness",
     "depends_on": [
@@ -65,5 +65,5 @@
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T06:01:16+00:00"
+  "at": "2026-10-18T06:01:17+00:00"
 }
