@@ -1,0 +1,111 @@
+scratch: /tmp/claude-1000/-home-vscode-kmctl/efac4bda-9c30-41af-bec2-10265f82b0d7/scratchpad/spikes/3b/tmp.nJBjKx7kFh
+Agent Package Manager (APM) CLI version 0.33.0
+
+##### step 1: install, patch
+
+=== step1-install: /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-apm/venv/bin/apm install --allow-insecure
+[>] Installing dependencies from apm.yml...
+[>] Resolving pkg-apm...
+[!] Insecure HTTP fetch (unencrypted): http://127.0.0.1:54509/o/pkg#v0.1.0
+[i] Targets: opencode  (source: apm.yml)
+  [+] 127.0.0.1:54509/o/pkg/apm#v0.1.0 #v0.1.0 @4ba178e7
+  |-- 2 agents integrated -> .opencode/agents/
+  |-- 1 skill(s) integrated -> .agents/skills/
+[i] Added apm_modules/ to .gitignore
+[*] Installed 1 APM dependency in 0.3s.
+=== step1-install exit 0
+PASS: step1-install exits 0
+--- after install (raw APM bytes)
+0535bfc2dd74e  .opencode/agents/kmctl-auditor.md
+86ce97a6e547c  .opencode/agents/other.md
+agents=c157efce7b2d702c tree=9a6478a96e2d7a3f files=.agents/skills/s1/SKILL.md .opencode/agents/kmctl-auditor.md .opencode/agents/other.md 
+--- after patch (H)
+8fca38bdd7530  .opencode/agents/kmctl-auditor.md
+1605b1033e371  .opencode/agents/other.md
+agents=328b05d725942dfe tree=f9ead194bf159d81 files=.agents/skills/s1/SKILL.md .opencode/agents/kmctl-auditor.md .opencode/agents/other.md 
+PASS: patch changed the agents
+PASS: other.md translated
+PASS: patch is idempotent on its own output
+
+##### step 2: plain install again, re-patch
+
+=== step2-install: /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-apm/venv/bin/apm install --allow-insecure
+[>] Installing dependencies from apm.yml...
+[!] Insecure HTTP fetch (unencrypted): http://127.0.0.1:54509/o/pkg#v0.1.0
+[i] Targets: opencode  (source: apm.yml)
+  [+] 127.0.0.1:54509/o/pkg/apm#v0.1.0 #v0.1.0 @4ba178e7 (cached)
+  |-- 2 agents integrated -> .opencode/agents/
+  |-- 1 skill(s) integrated -> .agents/skills/
+[*] Installed 1 APM dependency in 0.1s.
+=== step2-install exit 0
+PASS: step2-install exits 0
+--- after install
+0535bfc2dd74e  .opencode/agents/kmctl-auditor.md
+86ce97a6e547c  .opencode/agents/other.md
+agents=c157efce7b2d702c tree=9a6478a96e2d7a3f files=.agents/skills/s1/SKILL.md .opencode/agents/kmctl-auditor.md .opencode/agents/other.md 
+PASS: install reverted agents to raw APM bytes
+--- after re-patch
+8fca38bdd7530  .opencode/agents/kmctl-auditor.md
+1605b1033e371  .opencode/agents/other.md
+agents=328b05d725942dfe tree=f9ead194bf159d81 files=.agents/skills/s1/SKILL.md .opencode/agents/kmctl-auditor.md .opencode/agents/other.md 
+PASS: re-patched agents equal H
+PASS: whole tree equals state after step 1
+PASS: apm.lock.yaml unchanged by install
+
+##### step 3: install --frozen, re-patch
+
+=== step3-frozen: /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-apm/venv/bin/apm install --frozen --allow-insecure
+[>] Installing dependencies from apm.yml...
+[!] Insecure HTTP fetch (unencrypted): http://127.0.0.1:54509/o/pkg#v0.1.0
+[i] Targets: opencode  (source: apm.yml)
+  [+] 127.0.0.1:54509/o/pkg/apm#v0.1.0 #v0.1.0 @4ba178e7 (cached)
+  |-- 2 agents integrated -> .opencode/agents/
+  |-- 1 skill(s) integrated -> .agents/skills/
+[*] Installed 1 APM dependency in 0.1s.
+[i] Lockfile presence verified. Run 'apm audit' for on-disk content integrity.
+=== step3-frozen exit 0
+PASS: step3-frozen exits 0
+--- after frozen install
+0535bfc2dd74e  .opencode/agents/kmctl-auditor.md
+86ce97a6e547c  .opencode/agents/other.md
+agents=c157efce7b2d702c tree=9a6478a96e2d7a3f files=.agents/skills/s1/SKILL.md .opencode/agents/kmctl-auditor.md .opencode/agents/other.md 
+--- after re-patch
+8fca38bdd7530  .opencode/agents/kmctl-auditor.md
+1605b1033e371  .opencode/agents/other.md
+agents=328b05d725942dfe tree=f9ead194bf159d81 files=.agents/skills/s1/SKILL.md .opencode/agents/kmctl-auditor.md .opencode/agents/other.md 
+PASS: re-patched agents equal H after --frozen
+PASS: whole tree equals state after step 1 after --frozen
+PASS: apm.lock.yaml unchanged by --frozen
+
+##### step 4: undo (delete translated agents only), then uninstall
+--- after undo
+agents=e3b0c44298fc1c14 tree=500c741678bfe896 files=.agents/skills/s1/SKILL.md 
+
+=== step4-uninstall: /tmp/claude-1000/-home-vscode-kmctl/eee74b7b-f30f-4b17-b768-7eca3fbaa063/scratchpad/spike-apm/venv/bin/apm uninstall 127.0.0.1:54509/o/pkg/apm
+[>] Uninstalling 1 package(s)...
+[+] 127.0.0.1:54509/o/pkg/apm - found in apm.yml
+[i] Removed 127.0.0.1:54509/o/pkg/apm from apm_modules/
+[i] Cleaned 2 stale files from 127.0.0.1/o/pkg/apm
+[i] Removed 127.0.0.1:54509/o/pkg/apm from dependencies.apm in apm.yml
+[*] Updated 
+/tmp/claude-1000/-home-vscode-kmctl/efac4bda-9c30-41af-bec2-10265f82b0d7/scratch
+pad/spikes/3b/tmp.nJBjKx7kFh/consumer/apm.yml (removed 1 package(s))
+[*] Uninstall complete: Removed 1 package(s) from apm.yml, Removed 1 package(s) 
+from apm_modules/
+=== step4-uninstall exit 0
+PASS: step4-uninstall exits 0
+--- after uninstall
+agents=e3b0c44298fc1c14 tree=e3b0c44298fc1c14 files=
+PASS: no .opencode/agents/*.md left
+PASS: no lock dependency entry (lock present: no)
+PASS: no leftover skill files
+PASS: apm.yml no longer lists the dependency
+=== apm.yml after uninstall
+name: consumer
+version: 0.0.1
+targets: [opencode]
+dependencies:
+  apm: []
+=== files left under .opencode/ .agents/ apm_modules/
+
+RESULT FAIL=0

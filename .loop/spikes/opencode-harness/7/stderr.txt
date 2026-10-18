@@ -1,0 +1,2 @@
+sha256sum: '.opencode/agents/*.md': No such file or directory
+sha256sum: '.opencode/agents/*.md': No such file or directory
