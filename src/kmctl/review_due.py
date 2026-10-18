@@ -3,7 +3,10 @@
 A concept is due when its ``stale_after`` has passed, when it has no
 ``verified`` entry, or when a tracked file in its ``sources`` changed in git
 after its last verified date. Handoffs are short-lived notes, never verified,
-so they are left out of those checks and listed only once expired.
+so they are left out of those checks and listed only once expired. The
+bundle summary, ``.okf/summary.md``, is never verified either: it is due
+only when concepts changed after it (``kmctl.summary``, ADR 0027), with the
+reason ``concepts changed: ID, ...``.
 
 A docs/ page is due when its ``stale_after`` has passed, or when a tracked
 file in its ``sources`` changed after its last verified date or, with none,
@@ -27,6 +30,8 @@ from kmctl.okf import (
     has_passed,
     source_candidates,
 )
+from kmctl.summary import SUMMARY_ID, changed_concepts
+from kmctl.summary import reason as summary_reason
 
 RESERVED = {"index.md", "log.md"}
 
@@ -223,6 +228,11 @@ def review_due(root: Path, now: datetime | None = None) -> ReviewDue:
                 result.expired_handoffs.append(
                     ExpiredHandoff(cid, rel, str(field(meta, "title", cid)))
                 )
+            continue
+        if cid == SUMMARY_ID:
+            changed = changed_concepts(root)
+            if changed:
+                result.due.append(Due(cid, rel, [summary_reason(changed)]))
             continue
         reasons = []
         if has_passed(field(meta, "stale_after"), now):

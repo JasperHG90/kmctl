@@ -57,6 +57,7 @@ created docs/README.md
 created .okf/index.md
 created .okf/log.md
 created .okf/manifesto.md
+created .okf/summary.md
 created CLAUDE.md
 created .okf/decisions/index.md
 created .okf/decisions/0001-keep-project-knowledge-in-an-okf-bundle.md
@@ -67,8 +68,9 @@ Next: install kmctl's package with APM for the skills and the knowledge rules (t
 links each docs folder, and each folder gets its own `README.md` listing its
 pages, which kmctl writes.
 `.okf/` is the knowledge bundle for people and agents working on it:
-`index.md` is where a reader starts, `log.md` records each change, and
-`manifesto.md` is where your project's design will go. You can write the
+`summary.md` is where a reader starts, a page of at most 500 words that
+links down to the rest; `index.md` links every section, `log.md` records
+each change, and `manifesto.md` is where your project's design will go. You can write the
 manifesto later; this tutorial leaves it as kmctl wrote it.
 
 The rest is for an agent such as Claude Code working in the repository.

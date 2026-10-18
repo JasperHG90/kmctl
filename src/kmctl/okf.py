@@ -57,6 +57,9 @@ ALLOWED_FIELDS: dict[str, str] = {
     "status": "OKF v0.2 section 5.4",
     "stale_after": "OKF v0.2 section 5.5",
     "handoff_key": "kmctl extension, ADR 0009",
+    "checked": "kmctl extension, ADR 0027",
+    "checked.at": "kmctl extension, ADR 0027",
+    "checked.against": "kmctl extension, ADR 0027",
 }
 
 #: List fields whose items may be plain strings (the resource itself) instead of mappings.

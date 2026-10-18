@@ -24,6 +24,7 @@ KINDS = (
     "prototype",
     "handoff",
     "manifesto",
+    "summary",
     "index",
     "section-index",
     "log",
@@ -199,6 +200,7 @@ def test_schema_matches_what_kmctl_writes(tmp_path: Path) -> None:
         ".okf/index.md": "index",
         ".okf/log.md": "log",
         ".okf/manifesto.md": "manifesto",
+        ".okf/summary.md": "summary",
         ".okf/decisions/index.md": "section-index",
     }
     (first,) = (tmp_path / ".okf" / "decisions").glob("0001-*.md")

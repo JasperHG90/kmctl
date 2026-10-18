@@ -13,6 +13,8 @@ instead, is `.claude/rules/docs-layout.md`.
 
 Each section is created with its first concept, by `kmctl new`.
 
+- `summary.md`: the first page to read, at most 500 words, which
+  `kmctl init` writes.
 - `manifesto.md`: the root concept, the project's current design. Invariants
   in it follow `.claude/rules/manifesto-invariants.md`.
 - `.okf/decisions/`: one record per decision where a real alternative was
@@ -28,12 +30,16 @@ Each section is created with its first concept, by `kmctl new`.
   built, each a folder with a `README.md` concept, its scripts and its raw
   results.
 
-## Start at the root index
+## Start at the summary
 
-`.okf/index.md` is the entry point. It carries `okf_version` and one link per
-section. Each section has its own `index.md` listing its concepts with the
-description from each concept's front matter. Follow links from the index
-rather than grepping the bundle.
+`.okf/summary.md` is the entry point: at most 500 words, theme by theme,
+each theme linking down to its concepts. `.okf/index.md` carries
+`okf_version` and links the summary, the manifesto and each section. Each
+section has its own `index.md` listing its concepts with the description
+from each concept's front matter. Follow links from the summary and the
+indexes rather than grepping the bundle.
+A bundle with no summary yet starts at `.okf/index.md`; `kmctl update`
+writes one.
 
 `index.md` and `log.md` are reserved names. Never use either for a concept.
 
@@ -64,6 +70,10 @@ run it on an audit verdict alone, or for a concept they did not confirm.
 
 Touching a concept means updating its body, then appending a dated bullet to
 `log.md` that says why. `log.md` is append-only.
+
+When you add or change a concept, update `.okf/summary.md` in the same
+change, or run `kmctl summary ack` when it still holds. `kmctl review due`
+lists the summary until you do.
 
 <constraint name="every-touched-concept-is-logged">
 WHY: in the repository these rules came from, 43 of 53 commits that changed a

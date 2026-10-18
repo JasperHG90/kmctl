@@ -1,7 +1,9 @@
 """Invariant I4: kmctl writes and reads only allowed OKF fields (ADR 0009)."""
 
 import ast
+import os
 import re
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -73,6 +75,35 @@ def test_written_keys_are_allowed(tmp_path: Path) -> None:
     written = _written_keys(tmp_path)
 
     assert written, "the verbs wrote no front matter"
+    assert written <= set(ALLOWED_FIELDS), written - set(ALLOWED_FIELDS)
+
+
+def test_checked_keys_ack_writes_are_allowed(tmp_path: Path) -> None:
+    """kmctl summary ack writes checked, checked.at and checked.against, all allowed (ADR 0027)."""
+    env = os.environ | {
+        "GIT_AUTHOR_NAME": "t",
+        "GIT_AUTHOR_EMAIL": "t@example.com",
+        "GIT_COMMITTER_NAME": "t",
+        "GIT_COMMITTER_EMAIL": "t@example.com",
+    }
+
+    def git(*args: str) -> None:
+        subprocess.run(
+            ["git", *args], cwd=tmp_path, env=env, check=True, capture_output=True
+        )
+
+    root = str(tmp_path)
+    git("init", "-q", "-b", "main")
+    _invoke("init", "--path", root)
+    git("add", "-A")
+    git("commit", "-q", "-m", "init")
+    _invoke("new", "decision", "Use a queue", "--description", "One.", "--path", root)
+    _invoke("summary", "ack", "--path", root)
+
+    summary = _paths(front_matter(tmp_path / ".okf" / "summary.md"))
+    written = _written_keys(tmp_path)
+
+    assert {"checked", "checked.at", "checked.against"} <= summary
     assert written <= set(ALLOWED_FIELDS), written - set(ALLOWED_FIELDS)
 
 

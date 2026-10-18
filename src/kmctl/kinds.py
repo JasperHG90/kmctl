@@ -1,7 +1,7 @@
 """The document kinds kmctl knows, with their front matter and body sections, and their JSON Schema.
 
 ``KINDS`` is the one definition: ``kmctl new`` and ``kmctl new doc`` take their
-skeletons from it, ``kmctl init`` the manifesto's sections, ``kmctl decision
+skeletons from it, ``kmctl init`` the manifesto's and the summary's sections, ``kmctl decision
 supersede`` the deprecated status, and ``kmctl schema`` prints a schema built
 from it, so the schema is what kmctl writes. Field names come only from
 ``ALLOWED_FIELDS`` (invariant I4).
@@ -20,6 +20,9 @@ STATUS_VALUES = (DRAFT, STABLE, DEPRECATED)
 #: (``apm/.apm/instructions/diagrams-stay-current.instructions.md``).
 ARCHITECTURE = "architecture"
 DEPICTS = "Depicts"
+
+#: The summary's sections, each a theme of what the bundle knows (ADR 0027).
+SUMMARY_SECTIONS = ["Decisions", "Architecture", "Open work", "Practices", "Known gaps"]
 
 #: The heading ``kmctl decision supersede`` appends to a record, before its date.
 CORRECTION = "Correction"
@@ -209,9 +212,26 @@ KINDS: dict[str, DocumentKind] = {
         status=None,
         sections=["What this is for", "Invariants", "Values"],
     ),
+    "summary": DocumentKind(
+        where=".okf/summary.md",
+        purpose="the bundle's first page: its themes, each linking down to its concepts",
+        detail=(
+            "There is one, and kmctl init writes it. Its body is at most 500 "
+            "words, which kmctl check enforces, and holds no counts or due "
+            "lists. kmctl review due lists it, with the concepts that changed, "
+            "when a concept changed after the summary's last commit; editing it "
+            "or kmctl summary ack, which writes checked, clears that. It is "
+            "never verified and has no stale_after."
+        ),
+        fields=(*_WRITTEN, "checked"),
+        required=_WRITTEN,
+        type="summary",
+        status=None,
+        sections=SUMMARY_SECTIONS,
+    ),
     "index": DocumentKind(
         where=".okf/index.md",
-        purpose="the bundle's root index, linking each section",
+        purpose="the bundle's root index, linking the summary, the manifesto and each section",
         detail=(
             "Its front matter carries only okf_version, and its body is a "
             "list of links, one per section. kmctl init writes it."
@@ -364,6 +384,26 @@ _FIELD_SCHEMAS: dict[str, dict[str, Any]] = {
     "handoff_key": {
         "type": "string",
         "description": "The session key kmctl new handoff --key updates it by.",
+    },
+    "checked": {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["at", "against"],
+        "properties": {
+            "at": {
+                **_DATE,
+                "description": "When kmctl summary ack ran, a UTC timestamp to the second.",
+            },
+            "against": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "The ids of the concepts that had changed, which it was checked against.",
+            },
+        },
+        "description": (
+            "An agent's word, from kmctl summary ack, that the summary still "
+            "holds after the concepts that changed; not a person's review."
+        ),
     },
 }
 

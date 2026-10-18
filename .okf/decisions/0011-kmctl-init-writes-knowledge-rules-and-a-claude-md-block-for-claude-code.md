@@ -169,3 +169,17 @@ page may carry `description`, `stale_after` and `sources` front matter and
 that a folder's `README.md` index is written by `kmctl check --fix`, never
 by hand ([ADR 0022](0022-docs-pages-carry-optional-okf-front-matter-and-generated-folder-indexes.md),
 `src/kmctl/scaffold.py`).
+
+## Correction, 2026-10-18
+
+The kmctl block now says to start at `.okf/summary.md`, not
+`.okf/index.md`, and holds six duties, not five: the fifth says to update
+`.okf/summary.md` after adding or changing a concept, or run `kmctl summary
+ack` when it still holds ([ADR 0027](0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step.md),
+`src/kmctl/scaffold.py`).
+
+It also has a third kept-file exception. When init or update writes
+`.okf/summary.md` or `.okf/manifesto.md` into a bundle whose kept
+`.okf/index.md` does not link it, kmctl inserts that one index entry and
+appends one line to the kept `.okf/log.md`, and changes nothing else in
+either file, so `kmctl check` passes after an update (ADR 0027).
