@@ -3,6 +3,7 @@
 import importlib.util
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -651,7 +652,10 @@ def test_help_shows_no_empty_defaults() -> None:
         "--skills",
         "--prompt",
     ):
-        block = options.split(f"  {option} ", 1)[1].split("\n  --", 1)[0]
+        # The option's own line, not a mention wrapped into another's help.
+        start = re.search(rf"^  {re.escape(option)}(?=[ \n])", options, re.MULTILINE)
+        assert start, option
+        block = options[start.end() :].split("\n  --", 1)[0]
         assert "Default" in block or "default" in block, option
 
 

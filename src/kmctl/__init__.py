@@ -25,6 +25,7 @@ from kmctl.doctor import render as render_doctor
 from kmctl.doctor import run_doctor
 from kmctl.handoffs import live_handoffs
 from kmctl.kinds import KINDS, schema
+from kmctl.pin import add_notices, briefing_notices, hand_off
 from kmctl.plugin import APM_CLI, PatchResult, PluginError, Scope
 from kmctl.plugin import patch as patch_plugin
 from kmctl.plugin import unpatch as unpatch_plugin
@@ -609,7 +610,13 @@ def new_doc_page(
         "antigravity. With --format antigravity the repository is "
         "workspacePaths[0] of the JSON object on stdin, which Antigravity sends "
         "every hook; when stdin is a terminal, empty or not that JSON, it is "
-        "--path. It reads and never writes."
+        "--path. In a project whose apm.lock.yaml pins another kmctl, the kmctl "
+        "on PATH runs the pinned one if uv has it cached, and otherwise says to "
+        "run just install. It adds a line when a newer kmctl release is out than "
+        "the pin, read from kmctl/latest-release in the user's cache folder, "
+        "which a background git ls-remote refreshes once a day; "
+        "KMCTL_NO_UPDATE_CHECK=1 turns that off. It writes nothing in the "
+        "repository."
     ),
 )
 def briefing(
@@ -656,10 +663,12 @@ def briefing(
                 param_hint="'--format'",
             )
         root = hook_workspace(sys.stdin) or path
-        typer.echo(as_antigravity(render(build_briefing(root))))
+        out = as_antigravity(render(build_briefing(root)))
+        typer.echo(add_notices(out, "antigravity", briefing_notices(root)))
         return
     result = build_briefing(path)
-    typer.echo(json.dumps(as_dict(result)) if as_json else render(result))
+    out = json.dumps(as_dict(result)) if as_json else render(result)
+    typer.echo(add_notices(out, "json" if as_json else "text", briefing_notices(path)))
 
 
 @app.command(
@@ -1015,5 +1024,8 @@ def doctor_cmd(
 
 
 def main() -> None:
-    """Run the kmctl CLI."""
+    """Run the kmctl CLI, or the project's pinned kmctl when its lock pins another release."""
+    code = hand_off(sys.argv[1:])
+    if code is not None:
+        raise SystemExit(code)
     app()

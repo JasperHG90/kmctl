@@ -215,6 +215,69 @@ def test_render_validator_takes_older_and_pre_release_tags(
     assert entry["ref"] == data[-1].split("=", 1)[1]
 
 
+# just kmctl ------------------------------------------------------------------------
+
+FAKE_KMCTL = """#!/bin/sh
+echo "$KMCTL_PINNED $*" >> "$FAKE_LOG"
+echo "kmctl {version}"
+"""
+# uv tool install puts a kmctl at the pin on PATH; anything else goes to the real uv.
+FAKE_UV = """#!/bin/sh
+if [ "$1" = tool ]; then
+    echo "uv $*" >> "$FAKE_LOG"
+    printf '#!/bin/sh\\necho "$KMCTL_PINNED $*" >> "$FAKE_LOG"\\necho "kmctl {pin}"\\n' > "{bin}/kmctl"
+    chmod +x "{bin}/kmctl"
+    exit 0
+fi
+exec "{uv}" "$@"
+"""
+
+
+@pytest.mark.parametrize(
+    ("have", "installs"),
+    [
+        (None, True),
+        ("0.5.0", True),
+        (f"{TAG[1:]}rc1", True),
+        (TAG[1:], False),
+        ("99.0.0", False),
+    ],
+)
+def test_just_kmctl_installs_only_when_missing_or_older(
+    template: Path, tmp_path: Path, have: str | None, installs: bool
+) -> None:
+    """just kmctl installs the pin when kmctl is missing or older, never over a same or newer one, then runs kmctl --version."""
+    out = tmp_path / "demo"
+    assert _copier(template, out).returncode == 0
+    bin_dir = tmp_path / "fakebin"
+    bin_dir.mkdir()
+    log = tmp_path / "log"
+    log.touch()
+    uv = shutil.which("uv")
+    assert uv and JUST
+    (bin_dir / "uv").write_text(FAKE_UV.format(bin=bin_dir, uv=uv, pin=TAG[1:]))
+    (bin_dir / "uv").chmod(0o755)
+    if have is not None:
+        (bin_dir / "kmctl").write_text(FAKE_KMCTL.format(version=have))
+        (bin_dir / "kmctl").chmod(0o755)
+    env = {
+        **os.environ,
+        "PATH": f"{bin_dir}:/usr/bin:/bin",
+        "FAKE_LOG": str(log),
+    }
+    env.pop("KMCTL_PINNED")
+
+    res = subprocess.run(
+        [JUST, "kmctl"], cwd=out, env=env, capture_output=True, text=True, check=False
+    )
+
+    assert res.returncode == 0, res.stdout + res.stderr
+    lines = log.read_text().splitlines()
+    installed = [line for line in lines if line.startswith("uv tool install")]
+    assert bool(installed) is installs, lines
+    assert lines[-1] == " --version", lines
+
+
 # The adversarial reviewer -------------------------------------------------------
 
 

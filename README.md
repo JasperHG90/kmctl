@@ -96,6 +96,10 @@ old kmctl-starter repository.
 uv tool install git+https://github.com/JasperHG90/kmctl@v0.6.0
 ```
 
+One install serves every repository: when a repository's `apm.lock.yaml`
+pins another kmctl release, the kmctl on PATH runs that pinned release
+through `uvx`. The session briefing says when a newer release is out.
+
 ### 2. Set up the repository
 
 In the repository root:
@@ -211,10 +215,11 @@ install; each `fail` line names its fix.
 
 ### Upgrade
 
-Install the new CLI with
-`uv tool install --force git+https://github.com/JasperHG90/kmctl@vX.Y.Z`,
-set `ref` in `apm.yml` to the same tag, and run your `apm install` line and
-`kmctl plugin patch` again.
+Set `ref` in `apm.yml` to the new tag and run your `apm install` line and
+`kmctl plugin patch` again; the kmctl on PATH then runs the new pinned
+release. Install a newer CLI with
+`uv tool install --force git+https://github.com/JasperHG90/kmctl@vX.Y.Z`
+only for its own fixes.
 
 ### Remove
 
