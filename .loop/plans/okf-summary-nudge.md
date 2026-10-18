@@ -40,6 +40,15 @@ from a PostToolUse hook on `Write|Edit|MultiEdit|Bash` in
 Measured: 17% of this repo's 9,103 Write, Edit, MultiEdit and Bash calls
 name `.okf/`.
 
+The nudge never goes through the hand-off to a project's pin (ADR 0026,
+`hand_off` in `src/kmctl/pin.py`): the hook runs after every Write, Edit,
+MultiEdit and Bash call, and a hand-off would start uvx each time, building
+an uncached pin past the hook's 10 s timeout (plan review round 1, p1). The
+copy on PATH runs `summary nudge` itself, as it adds the briefing's notices
+itself: the nudge needs only git and the summary. A copy on PATH older than
+this release has no such verb; the hook's guard turns its usage error into
+`{}`.
+
 Done when: in a repository made with `kmctl init`, a PostToolUse payload for
 a Bash call that ran `kmctl new decision` makes `kmctl summary nudge --format
 claude` print one `additionalContext` naming the decision and the two ways
