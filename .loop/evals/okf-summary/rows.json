@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "kmctl init writes .okf/summary.md with type: summary and the sections Decisions, Architecture, Open work, Practices and Known gaps, links it from .okf/index.md, and the bundle passes strict OKF validation; kmctl schema summary prints the kind's schema; kmctl new does not offer summary as a concept to add (there is one).",
+      "fails_when": "the file, a section or the index link is missing, strict validation fails, or kmctl schema summary fails",
+      "command": "uv run pytest tests/test_summary.py -k init -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "kmctl check fails when the summary's body (outside front matter) is over 500 words, naming the count and the limit, and passes at 500 words or fewer.",
+      "fails_when": "a 501-word body passes, a 500-word body fails, or the failure does not name the count",
+      "command": "uv run pytest tests/test_summary.py -k word_limit -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "kmctl review due lists the summary with reason `concepts changed: ID, ...` when a concept (manifesto, decision, practice, proposal, prototype README, architecture page) changed in a commit after the last commit that changed the summary, or is changed (or new and untracked) in the working tree while the summary is not; never for log.md, an index, a handoff or the summary itself; a concept changed in the same commit as the summary does not count.",
+      "fails_when": "any of these cases is listed wrongly, the reason does not name the changed concepts, or a log, index or handoff change lists it",
+      "command": "uv run pytest tests/test_summary.py -k freshness -q"
+    },
+    {
+      "id": "r4",
+      "behavior": "An edit to .okf/summary.md, or kmctl summary ack, clears the summary from kmctl review due; ack writes checked.at (today) and checked.against (the concept ids that were listed) into its front matter and nothing else; the summary is never listed as unverified or for stale_after; kmctl check and the CI action report a stale summary without failing.",
+      "fails_when": "the summary stays listed after an edit or ack, ack writes anything else, the summary is listed as unverified or stale_after, or kmctl check exits nonzero only because the summary is stale",
+      "command": "uv run pytest tests/test_summary.py -k clears -q"
+    },
+    {
+      "id": "r5",
+      "behavior": "checked (checked.at, checked.against) is a named extension field: ALLOWED_FIELDS has its keys, okf.field reads them, and the fields test covers what ack writes; .okf/manifesto.md's I4 names handoff_key and checked.",
+      "fails_when": "okf.field raises on checked, the fields test does not cover it, or I4 still says handoff_key is the only extension",
+      "command": "uv run pytest tests/test_okf_fields.py tests/test_summary.py -k checked -q"
+    },
+    {
+      "id": "r6",
+      "behavior": "The briefing says Start at .okf/summary.md, and its state line says summary current or summary behind: N concepts changed, within the 500-token budget in the long-handoff-title worst case; the AGENTS.md block kmctl init writes says the same and gives the duty to update the summary or run kmctl summary ack after adding or changing a concept.",
+      "fails_when": "the briefing still starts at .okf/index.md, the state line lacks the summary's state, the worst case is over 500 tokens, or the block lacks the pointer or the duty",
+      "command": "uv run pytest tests/test_briefing.py tests/test_summary.py -k summary -q"
+    },
+    {
+      "id": "r7",
+      "behavior": "This repository has its own .okf/summary.md of at most 500 words linking down to its concepts, and kmctl check passes on it; a decision records the summary, its limit, the freshness rule and ack, and the docs reference lists kmctl summary ack.",
+      "fails_when": "the file is missing or over the limit, kmctl check fails, no decision names the summary, or the reference lacks the verb",
+      "command": "uv run pytest tests/test_summary.py -k this_repository -q"
+    },
+    {
+      "id": "r8",
+      "behavior": "The full suite and every tier pass.",
+      "fails_when": "any test fails",
+      "command": "uv run pytest -q -m \"not integration or integration\""
+    }
+  ]
+}
