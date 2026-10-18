@@ -1,14 +1,42 @@
 {
   "schema_version": "1.0",
   "slug": "okf-summary",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 2,
+    "fingerprint": "52f2d0d11430841d1562b73a4eeb4bb24e8b44215638dcdc1bc669fe3988c6cb",
+    "tree": "b6fe16780777a73d3c5ae9aa03b1b76bf34393cb",
+    "decisions": [
+      {
+        "finding": "reviewer:f5",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": null,
+        "paths": [
+          ".okf/decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md",
+          ".okf/decisions/index.md",
+          "README.md"
+        ]
+      },
+      {
+        "finding": "reviewer:f6",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": "j-20261018T211026+0000-5b5de0b6",
+        "paths": [
+          "src/kmctl/__init__.py",
+          "tests/test_init.py"
+        ]
+      }
+    ],
+    "at": "2026-10-18T21:10:26+00:00"
+  },
   "ask": "j-20261018T192834+0000-db7087e2",
   "split": "j-20261018T194102+0000-44637fec",
   "split_plan_hash": "7f3890072988ab1aed6a6998bc1d9f864d22a1e7ad28fa4fa899b987854e506c",
@@ -161,8 +189,14 @@
       "to": "fixing",
       "at": "2026-10-18T21:04:46+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-18T21:10:26+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T21:10:22+00:00"
+  "at": "2026-10-18T21:10:26+00:00"
 }
