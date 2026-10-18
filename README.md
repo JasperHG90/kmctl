@@ -52,8 +52,8 @@ still true; that takes judgment. So kmctl does two things instead:
 
 **Starting a new repository?** [kmctl-starter](https://github.com/JasperHG90/kmctl-starter)
 is a [copier](https://copier.readthedocs.io/) template that sets one up with
-`docs/`, `.okf/` and kmctl's package for your agent harness, so you can skip
-the steps below:
+`docs/`, `.okf/` and kmctl's package for your agent harness (Claude Code,
+Antigravity or OpenCode), so you can skip the steps below:
 
 ```
 uvx copier copy gh:JasperHG90/kmctl-starter my-project
