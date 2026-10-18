@@ -1,4 +1,17 @@
 {
   "schema_version": "1.0",
-  "rows": []
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "When docs/ or .okf/ is a symlink to a folder outside the repository, kmctl verify on a page kmctl review due lists there writes its entry and names the page by its path inside the repository (as review due does), instead of raising ValueError.",
+      "fails_when": "verify raises, writes nothing, or names the page by a path outside the repository",
+      "command": "uv run pytest tests/test_verify.py -k symlink -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "The full suite and every tier pass.",
+      "fails_when": "any test fails",
+      "command": "uv run pytest -q -m \"not integration or integration\""
+    }
+  ]
 }
