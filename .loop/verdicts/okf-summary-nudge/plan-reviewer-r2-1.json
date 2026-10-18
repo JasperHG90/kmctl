@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "The plan now says summary nudge never goes through the hand-off and the copy on PATH runs it itself, and r2 has a pinned-project case where uvx is never called. That settles p1 for a copy on PATH from this release or later. The older-copy case is still open; see p2.",
+      "anchor": "src/kmctl/pin.py:155",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r2"
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "The plan says a copy on PATH older than this release has no summary nudge verb, so the hook's guard turns its usage error into {}. That is wrong for v0.7.0 and v0.8.0. Their main calls hand_off(sys.argv[1:]) before Typer parses, and every verb but briefing goes to uvx online. They never reach a usage error. When the project pins another release, which it must for the PostToolUse entry to be deployed there, they start uvx after every Write, Edit, MultiEdit and Bash call. That is p1 again, in the usual upgrade state: the project's pin moved ahead of the copy on PATH. An exemption written into this release's hand_off cannot reach copies that are already installed. The fix is small and needs no change to hand_off: the hook command sets KMCTL_PINNED=1 for the call (the CI action already does this, per ADR 0026). Every copy then runs the verb itself. A copy with the verb nudges, and an older one prints a usage error that the guard turns into {}. r2's missing-verb case should use a copy that has the hand-off (or a fake kmctl on PATH that would call uvx) and check that the hook command sets the variable. A copy that just lacks the verb does not test this.",
+      "anchor": "apm/claude/.apm/hooks/hooks.json",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r2"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "85d4c5f3553413e335d1870adda648a5c28adca7ec25bf64707d318849866ef3"
+  },
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-18T21:54:39+00:00"
+}
