@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "verify-verb-reviewer-f4",
-  "stage": "building",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 0,
@@ -93,8 +93,14 @@
       "to": "building",
       "at": "2026-10-18T21:49:19+00:00",
       "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-10-18T22:28:58+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T22:24:44+00:00"
+  "at": "2026-10-18T22:28:58+00:00"
 }
