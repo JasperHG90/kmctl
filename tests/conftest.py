@@ -159,6 +159,16 @@ def _uv_cache() -> str:
     ).stdout.strip()
 
 
+@pytest.fixture(autouse=True)
+def _pinned(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Run every kmctl as itself: no hand-off to a lock's pin, no update check.
+
+    Fixture locks pin other releases, and a hand-off would fetch them from
+    GitHub. Tests of the hand-off unset KMCTL_PINNED themselves.
+    """
+    monkeypatch.setenv("KMCTL_PINNED", "1")
+
+
 @pytest.fixture
 def consumer(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """A scratch git repository as the working folder, with scratch HOME and Claude config.

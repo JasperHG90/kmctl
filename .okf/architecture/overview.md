@@ -43,6 +43,7 @@ flowchart LR
 
     subgraph cli["src/kmctl/ (kmctl CLI)"]
         app["__init__.py<br/>Typer app"]
+        pinPy["pin.py<br/>hand-off to the lock's pin,<br/>newer-release line"]
         scaffold["scaffold.py<br/>init"]
         checks["checks.py<br/>check"]
         briefing["briefing.py<br/>briefing"]
@@ -103,6 +104,9 @@ flowchart LR
     audit -- "dispatches" --> auditor
     auditor -. "reads only" .-> repo
 
+    app -- "main: before any verb" --> pinPy
+    pinPy -- "Lock, kmctl_package,<br/>package_ref" --> pluginPy
+    pinPy -. "reads apm.lock.yaml" .-> consumer & agConsumer & ocConsumer
     app --> scaffold & checks & briefing & reviewDue & handoffs & concepts & docs & supersede & verifyPy & pluginPy & doctorPy & kinds
     doctorPy -- "hook and MCP entries,<br/>lock reader" --> pluginPy
     doctorPy -- "plugin_problems" --> antigravityPy
@@ -167,7 +171,13 @@ flowchart LR
 ## The CLI
 
 `src/kmctl/__init__.py` holds the Typer app and only parses, prints and sets
-exit codes. Each verb calls one module:
+exit codes. Before any verb, `main` calls `pin.py`: when the project's
+`apm.lock.yaml` pins another kmctl release, it runs that release through
+`uvx` at the lock's commit with `KMCTL_PINNED=1` and exits with its code
+(ADR 0026). For `kmctl briefing` it hands off only to a release uv has
+cached, and the copy on PATH adds the newer-release line from
+`kmctl/latest-release` in the user's cache folder, which a detached `python
+-m kmctl.pin` refreshes once a day. Each verb calls one module:
 
 | Verb | Module | Writes |
 |---|---|---|
@@ -323,7 +333,8 @@ tag a consumer's `apm.yml` names and a build from a download with no
   `docs.py`, `docs_index.py`, `supersede.py`, `verify.py`, `src/kmctl/plugin.py` (the hook and MCP
   writers), `src/kmctl/antigravity.py` (the Antigravity plugin folder),
   `src/kmctl/opencode.py` (the OpenCode agents, rules and briefing plugin),
-  `src/kmctl/doctor.py` (the install checks),
+  `src/kmctl/doctor.py` (the install checks), `src/kmctl/pin.py` (the
+  hand-off to the lock's pin and the newer-release line),
   `okf.py`, `kinds.py`; `apm/.apm/skills/` (write-docs, handoff,
   continue, audit and the three review skills),
   `apm/.apm/agents/kmctl-auditor.md`, `apm/claude/.apm/instructions/`,

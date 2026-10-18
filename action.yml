@@ -140,10 +140,14 @@ runs:
       if: inputs.mode != 'publish'
       shell: bash
       run: uv tool install "${{ github.action_path }}"
+    # KMCTL_PINNED: run the kmctl this action installed, whatever release the
+    # repository's apm.lock.yaml pins (ADR 0026).
     - name: Check knowledge
       if: inputs.mode == 'checks'
       shell: bash
       working-directory: ${{ inputs.path }}
+      env:
+        KMCTL_PINNED: "1"
       run: bash "${{ github.action_path }}/action/knowledge-ci.sh"
     # The API key reaches a model that runs shell commands, so code from a pull
     # request or fork must never run here (ADR 0005).
@@ -161,6 +165,7 @@ runs:
       shell: bash
       working-directory: ${{ inputs.path }}
       env:
+        KMCTL_PINNED: "1"
         MODEL: ${{ inputs.model }}
         BASE_URL: ${{ inputs.base_url }}
         API_KEY_ENV: ${{ inputs.api_key_env }}

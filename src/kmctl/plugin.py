@@ -111,6 +111,9 @@ class LockDependency(BaseModel):
     resolved_ref: str | None = Field(
         default=None, description="The ref APM installed, such as v0.4.0."
     )
+    resolved_commit: str | None = Field(
+        default=None, description="The commit that ref resolved to."
+    )
     deployed_files: list[str] = Field(
         default_factory=list, description="Files and folders APM wrote for it."
     )

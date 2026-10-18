@@ -1,5 +1,9 @@
 import json
+import os
 import shutil
+import sys
+import time
+from importlib.metadata import version
 from pathlib import Path
 
 import pytest
@@ -258,3 +262,291 @@ def test_briefing_long_handoff_title_keeps_the_budget(tmp_path: Path) -> None:
 
     assert estimate_tokens(out) < TOKEN_BUDGET, estimate_tokens(out)
     assert title not in out
+
+
+# The newer-release line and the not-installed notice (ADR 0026) -----------------
+
+LATEST = "v99.0.0"
+LINE = f"kmctl {LATEST} is out; this project pins"
+
+
+@pytest.fixture
+def update_check(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    """The copy on PATH (KMCTL_PINNED unset) with a fresh cache naming LATEST; returns the cache file."""
+    from kmctl import pin
+
+    monkeypatch.delenv("KMCTL_PINNED")
+    monkeypatch.delenv("KMCTL_NO_UPDATE_CHECK", raising=False)
+    monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path / "cache"))
+    cache = pin.cache_file()
+    cache.parent.mkdir(parents=True)
+    cache.write_text(LATEST + "\n")
+    started: list[object] = []
+    monkeypatch.setattr(pin, "start_refresh", lambda: started.append(1))
+    return cache
+
+
+def _pinned_repo(tmp_path: Path, ref: str) -> Path:
+    """A git repository whose lock pins kmctl at ``ref``."""
+    from test_pin import write_lock
+
+    root = tmp_path / "repo"
+    (root / ".git").mkdir(parents=True)
+    write_lock(root, ref=ref)
+    return root
+
+
+def _own() -> str:
+    """This kmctl's own tag."""
+    return plugin.package_ref()
+
+
+def test_briefing_newer_release_line_in_text(
+    tmp_path: Path, update_check: Path
+) -> None:
+    out = _briefing(_pinned_repo(tmp_path, _own())).stdout
+
+    assert out.rstrip("\n").splitlines()[-1] == (
+        f"{LINE} {_own()}. Tell the user; `just upgrade {LATEST}` moves it."
+    )
+    assert out.count(LINE) == 1
+
+
+def test_briefing_newer_release_key_in_json(tmp_path: Path, update_check: Path) -> None:
+    data = json.loads(_briefing(_pinned_repo(tmp_path, _own()), "--json").stdout)
+
+    assert data["newer_release"] == {"latest": LATEST, "pinned": _own()}
+
+
+def test_briefing_newer_release_line_in_antigravity(
+    tmp_path: Path, update_check: Path
+) -> None:
+    out = _briefing(_pinned_repo(tmp_path, _own()), "--format", "antigravity").stdout
+    text = json.loads(out)["injectSteps"][0]["systemMessage"]["systemMessage"]
+
+    assert text.splitlines()[-1].startswith(LINE)
+
+
+def test_briefing_newer_release_line_for_a_pre_release_pin(
+    tmp_path: Path, update_check: Path
+) -> None:
+    update_check.write_text("v0.6.0\n")
+
+    out = _briefing(_pinned_repo(tmp_path, "v0.6.0rc1")).stdout
+
+    assert "kmctl v0.6.0 is out; this project pins v0.6.0rc1." in out
+
+
+@pytest.mark.parametrize("cached", ["same", "v0.0.1"])
+def test_briefing_newer_release_none_when_not_newer(
+    tmp_path: Path, update_check: Path, cached: str
+) -> None:
+    update_check.write_text((_own() if cached == "same" else cached) + "\n")
+
+    out = _briefing(_pinned_repo(tmp_path, _own())).stdout
+
+    assert "is out; this project pins" not in out
+
+
+@pytest.mark.parametrize("env", ["KMCTL_NO_UPDATE_CHECK", "KMCTL_PINNED"])
+def test_briefing_newer_release_none_when_turned_off(
+    tmp_path: Path, update_check: Path, monkeypatch: pytest.MonkeyPatch, env: str
+) -> None:
+    monkeypatch.setenv(env, "1")
+
+    out = _briefing(_pinned_repo(tmp_path, _own())).stdout
+
+    assert "is out; this project pins" not in out
+
+
+def test_briefing_newer_release_none_without_a_lock(
+    tmp_path: Path, update_check: Path
+) -> None:
+    root = tmp_path / "repo"
+    (root / ".git").mkdir(parents=True)
+
+    assert "is out; this project pins" not in _briefing(root).stdout
+
+
+@pytest.mark.parametrize(
+    ("args", "child"),
+    [
+        ((), "kmctl briefing (kmctl 0.5.1)\nold text\n"),
+        (("--json",), json.dumps({"routing": "old"}) + "\n"),
+        (
+            ("--format", "antigravity"),
+            json.dumps({"injectSteps": [{"systemMessage": {"systemMessage": "old"}}]})
+            + "\n",
+        ),
+    ],
+)
+def test_briefing_newer_release_over_a_handed_off_old_release(
+    tmp_path: Path,
+    update_check: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    args: tuple[str, ...],
+    child: str,
+) -> None:
+    """The copy on PATH adds the line once over an old pinned release's own briefing."""
+    from test_pin import FAKE_UVX, kmctl
+
+    bin_dir = tmp_path / "fakebin"
+    bin_dir.mkdir()
+    (bin_dir / "uvx").write_text(FAKE_UVX.format(python=sys.executable))
+    (bin_dir / "uvx").chmod(0o755)
+    monkeypatch.setenv("FAKE_UVX_LOG", str(tmp_path / "uvx.log"))
+    monkeypatch.setenv("FAKE_UVX_OUT", child)
+    monkeypatch.setenv("PATH", f"{bin_dir}{os.pathsep}{os.environ['PATH']}")
+    root = _pinned_repo(tmp_path, "v0.5.1")
+
+    res = kmctl(root, "briefing", *args)
+
+    assert res.returncode == 0, res.stderr
+    assert res.stdout.count(LINE) == (0 if args == ("--json",) else 1)
+    if args:
+        data = json.loads(res.stdout)
+        if args == ("--json",):
+            assert data["routing"] == "old"
+            assert data["newer_release"] == {"latest": LATEST, "pinned": "v0.5.1"}
+        else:
+            text = data["injectSteps"][0]["systemMessage"]["systemMessage"]
+            assert text.startswith("old\n")
+    else:
+        assert res.stdout.startswith("kmctl briefing (kmctl 0.5.1)\nold text\n")
+
+
+def test_briefing_newer_release_and_not_installed_when_the_pin_is_not_cached(
+    tmp_path: Path, update_check: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The offline probe misses: the copy on PATH briefs and says to run just install."""
+    from test_pin import FAKE_UVX, kmctl
+
+    bin_dir = tmp_path / "fakebin"
+    bin_dir.mkdir()
+    (bin_dir / "uvx").write_text(FAKE_UVX.format(python=sys.executable))
+    (bin_dir / "uvx").chmod(0o755)
+    monkeypatch.setenv("FAKE_UVX_LOG", str(tmp_path / "uvx.log"))
+    monkeypatch.setenv("FAKE_UVX_MISS", "1")
+    monkeypatch.setenv("PATH", f"{bin_dir}{os.pathsep}{os.environ['PATH']}")
+    root = _pinned_repo(tmp_path, "v0.5.1")
+
+    res = kmctl(root, "briefing")
+
+    assert res.returncode == 0, res.stderr
+    assert f"kmctl briefing (kmctl {version('kmctl')})" in res.stdout
+    assert "This project pins kmctl v0.5.1, which is not installed yet" in res.stdout
+    assert "`just install`" in res.stdout
+    assert res.stdout.count(LINE) == 1
+
+
+# The refresh of the newest release -----------------------------------------------
+
+
+def _record_popen(monkeypatch: pytest.MonkeyPatch) -> list[tuple[list[str], dict]]:
+    """Record pin's Popen calls instead of starting a process."""
+    from kmctl import pin
+
+    started: list[tuple[list[str], dict]] = []
+
+    def fake(cmd: list[str], **kwargs: object) -> None:
+        started.append((cmd, kwargs))
+
+    monkeypatch.setattr(pin.subprocess, "Popen", fake)
+    return started
+
+
+@pytest.mark.parametrize("cache", ["missing", "stale"])
+def test_briefing_refresh_starts_detached_when_the_cache_is_old(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, cache: str
+) -> None:
+    import subprocess as sp
+
+    from kmctl import pin
+
+    monkeypatch.delenv("KMCTL_PINNED")
+    monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path / "cache"))
+    if cache == "stale":
+        path = pin.cache_file()
+        path.parent.mkdir(parents=True)
+        path.write_text(LATEST + "\n")
+        old = time.time() - pin.CACHE_SECONDS - 60
+        os.utime(path, (old, old))
+    started = _record_popen(monkeypatch)
+
+    _briefing(_pinned_repo(tmp_path, _own()))
+
+    [(cmd, kwargs)] = started
+    assert cmd[1:] == ["-m", "kmctl.pin"]
+    assert kwargs["start_new_session"] is True
+    for stream in ("stdin", "stdout", "stderr"):
+        assert kwargs[stream] is sp.DEVNULL
+
+
+def test_briefing_refresh_not_started_when_the_cache_is_fresh(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from kmctl import pin
+
+    monkeypatch.delenv("KMCTL_PINNED")
+    monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path / "cache"))
+    pin.cache_file().parent.mkdir(parents=True)
+    pin.cache_file().write_text(LATEST + "\n")
+    started = _record_popen(monkeypatch)
+
+    _briefing(_pinned_repo(tmp_path, _own()))
+
+    assert started == []
+
+
+FAKE_GIT = """#!/bin/sh
+{body}
+"""
+LS_REMOTE = (
+    "aaa\trefs/tags/v0.5.1\n"
+    "bbb\trefs/tags/v0.10.0\n"
+    "ccc\trefs/tags/v0.9.2\n"
+    "ddd\trefs/tags/v0.11.0rc1\n"
+    "eee\trefs/tags/not-a-version\n"
+)
+
+
+def _fake_git(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, body: str) -> None:
+    """Put a git first on PATH that runs the shell ``body``."""
+    bin_dir = tmp_path / "gitbin"
+    bin_dir.mkdir()
+    (bin_dir / "git").write_text(FAKE_GIT.format(body=body))
+    (bin_dir / "git").chmod(0o755)
+    monkeypatch.setenv("PATH", f"{bin_dir}{os.pathsep}{os.environ['PATH']}")
+    monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path / "cache"))
+
+
+def test_briefing_refresh_writes_the_newest_release(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The newest of v0.5.1, v0.10.0 and v0.9.2, skipping v0.11.0rc1."""
+    from kmctl import pin
+
+    listing = tmp_path / "ls-remote.txt"
+    listing.write_text(LS_REMOTE)
+    _fake_git(tmp_path, monkeypatch, f'cat "{listing}"')
+
+    pin.refresh()
+
+    assert pin.cache_file().read_text() == "v0.10.0\n"
+
+
+@pytest.mark.parametrize("body", ["exit 128", "sleep 5"])
+def test_briefing_refresh_leaves_the_cache_on_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, body: str
+) -> None:
+    """A failing or slow git leaves the cache as it was and raises nothing."""
+    from kmctl import pin
+
+    _fake_git(tmp_path, monkeypatch, body)
+    monkeypatch.setattr(pin, "REFRESH_TIMEOUT_SECONDS", 0.5)
+    pin.cache_file().parent.mkdir(parents=True)
+    pin.cache_file().write_text("v0.1.0\n")
+
+    pin.refresh()
+
+    assert pin.cache_file().read_text() == "v0.1.0\n"

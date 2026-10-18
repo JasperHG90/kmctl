@@ -60,6 +60,14 @@ repository's files, and with okf-skills from GitHub.
 uv tool install git+https://github.com/JasperHG90/kmctl@v0.6.0
 ```
 
+One kmctl on your PATH serves every repository. When a repository's
+`apm.lock.yaml` pins another kmctl release, the kmctl on PATH runs that
+pinned release through `uvx`, at the commit the lock records, so each
+repository runs its own kmctl, hooks and skills included. uv keeps each
+pinned release after its first run, so later runs are as fast and work
+offline. Install a newer CLI when you want its own fixes, never once per
+repository.
+
 ### 2. Add the kmctl package
 
 Add the package to `dependencies.apm` in the repository's `apm.yml`, with
@@ -126,13 +134,23 @@ kmctl briefing
 ```
 
 It prints the same briefing the hook prints. If it says `kmctl: command not
-found`, go back to step 1. `kmctl doctor` checks the hook (`claude.hook`)
+found`, go back to step 1.
+
+When a newer release is out than the one `apm.lock.yaml` pins, the briefing
+ends with a line saying so, such as "kmctl v0.8.0 is out; this project pins
+v0.7.0", and the agent tells you. kmctl reads the newest release from
+`kmctl/latest-release` in your cache folder (`$XDG_CACHE_HOME`, by default
+`~/.cache`), which a background `git ls-remote` refreshes once a day, so no
+session start waits on the network. Set `KMCTL_NO_UPDATE_CHECK=1` to turn
+it off. If the briefing says the pinned kmctl is not installed yet, run
+`apm install` and `kmctl plugin patch` again, or the `uvx` command it
+names: a session hook never waits for uv to build a release. `kmctl doctor` checks the hook (`claude.hook`)
 and okf's MCP server (`claude.okf-mcp`) along with the rest; when one is
 missing, check whether `apm approve --pending` lists kmctl's package.
 
-To upgrade, install the CLI at the new tag with `uv tool install --force`,
-set `ref` to the same tag, and run `apm install` and `kmctl plugin patch`
-again. To remove the package, run `kmctl plugin patch --undo`, then
+To upgrade a repository, set `ref` to the new tag and run `apm install`
+and `kmctl plugin patch` again; the kmctl on PATH then runs the new pinned
+release. To remove the package, run `kmctl plugin patch --undo`, then
 `apm uninstall` on kmctl's entry. For OpenCode the order matters:
 `apm uninstall` stops on the agents patch rewrote, and `--undo` deletes
 them first. The steps, with the name `apm uninstall` takes, are in

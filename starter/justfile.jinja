@@ -14,9 +14,16 @@ default:
 # Set up a fresh clone: the kmctl CLI, the APM dependencies, the knowledge folders.
 bootstrap: kmctl install init
 
-# Install the kmctl CLI on your PATH at the pinned release; the session hooks call it.
+# Install the kmctl CLI on your PATH unless one as new as the pin is there, then fetch the pin.
+# The kmctl on PATH runs each project's pinned release, so one install serves every project.
 kmctl:
-    uv tool install --force "{{kmctl_src}}"
+    #!/usr/bin/env bash
+    set -euo pipefail
+    have=$(KMCTL_PINNED=1 kmctl --version 2>/dev/null | awk '{print $2}') || have=""
+    if [ -z "$have" ] || uv run --no-project --quiet --with packaging python -c 'import sys; from packaging.version import Version; sys.exit(0 if Version(sys.argv[1]) < Version(sys.argv[2]) else 1)' "$have" "{{kmctl_ref}}"; then
+        uv tool install --force "{{kmctl_src}}"
+    fi
+    kmctl --version
 
 # Install the APM dependencies in apm.yml for its targets, then what APM cannot install yet.
 install:
