@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "kmctl init writes .okf/summary.md with the sections The project, How it works, What it has settled and Where it stands, in that order, each with a prompt line, and the prompts say to summarise what the knowledge says and link concepts as evidence, not to list them; kmctl schema summary lists the four sections.",
+      "fails_when": "a section is missing, out of order or another name, a prompt asks to link or list each decision, or the schema lists other sections",
+      "command": "uv run pytest tests/test_summary.py -k sections -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "The AGENTS.md block's summary duty, the okf-bundle rule (both package copies and .claude/rules/okf-bundle.md) and docs/reference/commands.md say the summary distils what the knowledge says as a whole and that the indexes list the concepts.",
+      "fails_when": "any of them still describes the summary as theme-by-theme links to each decision, or lacks the distil wording",
+      "command": "uv run pytest tests/test_summary.py -k guidance -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "This repository's .okf/summary.md uses the four sections, is at most 500 words, passes kmctl check, and no section is a list in which most items are one decision link each.",
+      "fails_when": "a section is missing, it is over 500 words, kmctl check fails, or a section's bullets are mostly single-decision links",
+      "command": "uv run pytest tests/test_summary.py -k this_repository -q"
+    },
+    {
+      "id": "r4",
+      "behavior": "A reader can follow the repository's summary as a whole view: it says what kmctl is for, how its parts fit, the principles its decisions settle with their reasons, and where it stands, citing concepts as evidence.",
+      "fails_when": "the reviewer finds it lists decisions rather than distilling them, misstates what the bundle says, or leaves out a part of the design",
+      "judgment": true
+    },
+    {
+      "id": "r5",
+      "behavior": "The full suite and every tier pass.",
+      "fails_when": "any test fails",
+      "command": "uv run pytest -q -m \"not integration or integration\""
+    }
+  ]
+}
