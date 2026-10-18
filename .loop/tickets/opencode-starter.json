@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "opencode-starter",
-  "stage": "stub",
+  "stage": "planning",
   "attempts": 0,
   "plan_rounds": 0,
   "review_rounds": 0,
@@ -37,7 +37,14 @@
     ],
     "priority": 2
   },
-  "history": [],
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-10-18T05:56:02+00:00",
+      "by": "promote"
+    }
+  ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T04:13:13+00:00"
+  "at": "2026-10-18T05:56:02+00:00"
 }
