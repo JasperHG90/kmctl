@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The how-to and ADR 0025 say that after a kmctl release with no template change, `uvx copier update` changes nothing. It does change something: copier rewrites `_commit` in .copier-answers.yml to the new tag, so the project gets a one-line diff to commit at every release. That is the cost the operator accepted, so the docs should say so.",
+      "anchor": "docs/how-to/start-a-repository-with-kmctl-starter.md:66",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "The how-to's table still describes the generated .pre-commit-config.yaml as 'Generic hooks only'. It does not mention the new exclude, which leaves the agent files APM and kmctl plugin patch install (.agents/, .claude/agents|rules|skills/, .opencode/, opencode.json) unchecked. A user who adds a hook and sees it skip those files has nothing to explain why.",
+      "anchor": "docs/how-to/start-a-repository-with-kmctl-starter.md:55",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "3e2a643832016c0c0644674602d416ce7954e70d47d6609a75f2054313e0fd0b",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-18T10:21:58+00:00"
+}
