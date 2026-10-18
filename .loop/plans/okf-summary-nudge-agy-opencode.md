@@ -33,8 +33,11 @@ What changes:
   does; `hook_workspace` in `src/kmctl/briefing.py`), and prints
   `{"injectSteps":[{"systemMessage":{"systemMessage":TEXT}}]}` when the
   summary is behind, `{}` otherwise.
-- **`--format opencode`.** Prints the nudge text alone (or nothing), for the
-  plugin to add.
+- **`--format opencode`.** Reads no stdin: it takes the repository from
+  `--path`, as `kmctl briefing --path` does for the OpenCode plugin, and
+  prints the nudge text alone (or nothing), for the plugin to add. Node's
+  `execFile` leaves a child's stdin open, so a verb that read stdin would
+  wait out the timeout on every tool call (plan review round 1, p1).
 - **Antigravity's hook.** `apm/antigravity/.apm/hooks/hooks.json` gains a
   PostToolUse entry (matcher `*`) running `KMCTL_PINNED=1 kmctl summary
   nudge --format antigravity`, guarded like the SessionStart one so a
@@ -42,11 +45,16 @@ What changes:
   reason okf-summary-nudge gives (no hand-off per tool call).
 - **OpenCode's plugin.** The plugin `src/kmctl/opencode.py` writes to
   .opencode/plugins/kmctl.js registers `ctx.tool.hook("execute.after")`
-  that runs `kmctl summary nudge --format opencode` with `KMCTL_PINNED=1`,
+  that runs `kmctl summary nudge --format opencode --path <project>` with
+  `KMCTL_PINNED=1` and stdin closed (`stdio: ["ignore", "pipe", "ignore"]`),
   asynchronously with its timeout as the briefing does, and appends the text
   as `{type: "text", text}` to `event.result.content` when there is any; it
   never throws and never blocks. `kmctl plugin patch` writes it,
-  `--undo` removes it with the rest, and `kmctl doctor` checks both hooks.
+  `--undo` removes it with the rest, and `kmctl doctor` checks both hooks;
+  APM writes Antigravity's PostToolUse entry in the nested `{matcher,
+  hooks}` form, so doctor's reading of .agents/hooks.json looks inside the
+  groups (`_flat_commands` and `hook_present` in `src/kmctl/antigravity.py`
+  read flat lists today).
 - **Docs.** The nudge's reference and ADR (from okf-summary-nudge) name the
   three harnesses; `docs/how-to/install-kmctl-with-apm.md`'s per-harness
   notes say what the nudge does.
