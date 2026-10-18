@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "slug": "opencode-starter",
+  "stage": "stub",
+  "attempts": 0,
+  "plan_rounds": 0,
+  "review_rounds": 0,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": null,
+  "ask": "j-20261017T214039+0000-9a89bbc5",
+  "split": null,
+  "split_plan_hash": null,
+  "split_hold": false,
+  "commit_sha": null,
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": null,
+  "branch": null,
+  "stamps": [],
+  "signoff": null,
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [],
+  "resigns": [],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [],
+  "round": null,
+  "plan_hash": "a3e23e0d7486e75812decb686d1a72e21159ae4369ce5581383e9cfd1eda5e38",
+  "intent": {
+    "epic": "multi-harness",
+    "depends_on": [
+      "opencode-harness"
+    ],
+    "priority": 2
+  },
+  "history": [],
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-18T04:13:13+00:00"
+}
