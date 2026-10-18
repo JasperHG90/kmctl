@@ -50,11 +50,16 @@ still true; that takes judgment. So kmctl does two things instead:
 
 ## Install
 
-**Starting a new repository?** kmctl-starter, the
-[copier](https://copier.readthedocs.io/) template in this repository
-(`copier.yml` and `starter/`), sets one up with `docs/`, `.okf/` and kmctl's
-package for your agent harness (Claude Code, Antigravity or OpenCode), so you
-can skip the steps below. It needs [uv](https://docs.astral.sh/uv/) and
+Two ways, depending on whether the repository exists yet. Click one to open
+it.
+
+<details>
+<summary><strong>Install with copier</strong>: start a new repository</summary>
+
+kmctl-starter, the [copier](https://copier.readthedocs.io/) template in this
+repository (`copier.yml` and `starter/`), sets one up with `docs/`, `.okf/`
+and kmctl's package for your agent harness (Claude Code, Antigravity or
+OpenCode). It needs [uv](https://docs.astral.sh/uv/) and
 [just](https://just.systems/):
 
 ```
@@ -64,9 +69,15 @@ git init
 just bootstrap
 ```
 
+Move to another kmctl release with `just upgrade vX.Y.Z`.
 [Start a repository with kmctl-starter](docs/how-to/start-a-repository-with-kmctl-starter.md)
-lists what it asks, what it needs, and how to move a project made from the
-old kmctl-starter repository. For an existing repository, follow these steps.
+lists what it asks, what it writes, and how to move a project made from the
+old kmctl-starter repository.
+
+</details>
+
+<details>
+<summary><strong>Install without copier</strong>: add kmctl to an existing repository</summary>
 
 ### You need
 
@@ -223,6 +234,8 @@ Installed kmctl with `kmctl plugin install`, which kmctl 0.3.0 had? Follow
 the steps above: `kmctl plugin patch` removes what the old command wrote, or
 names the `apm uninstall` to run first. The steps with the CI action are in
 [Install the plugin and the CI action](docs/how-to/install-the-plugin-and-the-ci-action.md).
+
+</details>
 
 ## Quick start
 
