@@ -3,7 +3,7 @@
   "slug": "okf-summary-nudge-agy-opencode",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "0eb0b27e7cd7133864065fa8e9299afcfb997e91dcd669037b150e9349a0e09d",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "fd19d3a1b363c32c6fdfcc6e808653617b66313616b6600d81f7b3e60ae1b07e",
+    "started_at": "2026-10-18T21:59:54+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "fd19d3a1b363c32c6fdfcc6e808653617b66313616b6600d81f7b3e60ae1b07e",
   "intent": {
     "epic": null,
     "depends_on": [
@@ -46,5 +65,5 @@
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T21:59:51+00:00"
+  "at": "2026-10-18T21:59:54+00:00"
 }
