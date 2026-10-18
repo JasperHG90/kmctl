@@ -1,0 +1,101 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The briefing plugin's `server` entry point and its experimental.chat.system.transform hook exist only for OpenCode 1.x, which the operator's new requirement (only 2.x is supported) puts out of scope; signed row r5 still requires the 1.x path, so the row must change with the code.",
+      "anchor": "src/kmctl/opencode.py:65",
+      "category": "contract",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r5"
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "Bash maps to the 1.x name `bash`; with 2.x only, the plan's mapping to 2.x's own `shell` applies again, and signed row r1 encodes `bash`, so the row and the TOOLS map must change and be re-checked live on 2.x (r9).",
+      "anchor": "src/kmctl/opencode.py:50",
+      "category": "contract",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "r9's test keeps a 1.x branch (`opencode agent list`, text parsing) and row r9 names 1.x; with 2.x only, the test should drive `opencode debug agents` and fail, not branch, on another version.",
+      "anchor": "tests/test_opencode.py:871",
+      "category": "contract",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r9"
+    },
+    {
+      "id": "f4",
+      "disposition": "open",
+      "claim": "ADR 0024, docs/reference/commands.md, the TOOLS and PLUGIN_SOURCE comments and the r10 docs test all describe 1.x support (two entry points, `bash` read as `shell`, 1.19.3, \"when 1.x goes, server can go\"); they must be rewritten to say kmctl targets OpenCode 2.x only, and the ADR should record that decision.",
+      "anchor": ".okf/decisions/0024-opencode-gets-the-package-from-apm-and-its-agents-rules-and-briefing-from-kmctl-plugin-patch.md:43",
+      "category": "docs",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f5",
+      "disposition": "open",
+      "claim": "write() checks only that opencode.json is a JSON object before writing; with a non-list `instructions` it writes the agents, rules and plugin, then raises, so its docstring (\"nothing is written then\") is false. Reproduced in a scratch repo. Validate `instructions` in the pre-check.",
+      "anchor": "src/kmctl/opencode.py:323",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f6",
+      "disposition": "open",
+      "claim": "unpatch ignores scope, so `kmctl plugin patch --undo --scope user` run in a repository deletes that repository's OpenCode agents, rules, plugin and instructions entry (the same pre-existing behaviour as Antigravity's plugin folder), although the help says OpenCode is patched at project scope only.",
+      "anchor": "src/kmctl/plugin.py:836",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f7",
+      "disposition": "open",
+      "claim": "The doctor-help test checks only each id's suffix (lock, files, hook, okf-mcp ...), which the help already holds for the other harnesses, so dropping opencode.hook or opencode.okf-mcp from the epilog would still pass; r7 says the help lists the new checks.",
+      "anchor": "tests/test_opencode.py:796",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f8",
+      "disposition": "open",
+      "claim": "The install how-to says the plugin \"prints the briefing\"; it adds it to the system prompt.",
+      "anchor": "docs/how-to/install-kmctl-with-apm.md:31",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "9f822e472ba3d4c92faebc19c2d73389bc69cb4239234e725e0e1a12926543ec",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-18T04:59:38+00:00"
+}
