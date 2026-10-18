@@ -1,0 +1,1 @@
+{"ask":"Fix the CI failure on main after starter-in-repo landed: tests/conftest.py tree_repo's first commit starts a background git gc --auto that races copier's local clone (fatal: failed to copy file ... No such file or directory). Turn auto gc off in the scratch repo."}
