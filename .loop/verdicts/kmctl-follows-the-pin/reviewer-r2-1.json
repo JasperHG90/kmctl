@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "ADR 0026 said apm install runs kmctl by tag and fills the uvx cache",
+      "anchor": ".okf/decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins.md:84",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "96647e295268a6a8d0b9d72c801c1ba9b1c9a75c2a3cc892fbe561ed3d543d81",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-18T19:43:06+00:00"
+}
