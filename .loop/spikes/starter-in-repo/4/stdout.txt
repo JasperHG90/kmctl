@@ -1,0 +1,36 @@
+version=0.5.1 scratch=/tmp/tmp.BTDIRltUOX
+--- gitconfig
+[url "http://127.0.0.1:44727/o/kmctl.git"]
+	insteadOf = https://github.com/JasperHG90/kmctl.git
+	insteadOf = https://github.com/JasperHG90/kmctl
+[user]
+	email = t@e.invalid
+	name = t
+=== (a) uv tool install
+kmctl 0.5.1
+(a) PASS marker=/tmp/tmp.BTDIRltUOX/home/uvtools/kmctl/lib/python3.15/site-packages/kmctl/_spike_marker.txt
+=== (b) uvx --from
+kmctl 0.5.1
+(b) PASS marker found
+=== (c) apm install
+[>] Installing dependencies from apm.yml...
+[>] Resolving kmctl-apm...
+[i] Targets: claude  (source: apm.yml)
+  [x] 1 package failed:
+    +- kmctl-apm -- Failed to download dependency JasperHG90/kmctl: Failed to 
+clone repository: HTTPS Git remote must not rewrite to insecure HTTP; inspect 
+matching rules with 'git config --show-origin --get-regexp ^url\..*\.insteadOf$'
+and remove the unsafe rule
+[x] Installation failed with 1 error(s) in 0.4s. No install transaction changes 
+were committed.
+apm rc=1
+--- apm.lock.yaml
+served sha=d6b3097618c266116dbab58e007907101a0d8453
+(c) FAIL
+--- server request log
+      6 REQ GET /o/kmctl.git/info/refs
+      1 REQ-MARK a
+      1 REQ-MARK b
+      1 REQ-MARK c
+     15 REQ POST /o/kmctl.git/git-upload-pack
+result=1

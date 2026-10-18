@@ -42,3 +42,4 @@
 {"ask": "j-20261018T052148+0000-b007e184", "at": "2026-10-18T05:23:19+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "4f41566cfa917288d2ce623542d98fb3232eff41", "subject": "docs: name the opencode.json instructions refusal in the patch reference"}
 {"at": "2026-10-18T05:53:11+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "8fa18b4211a83c1904bdf707fdb59af3af88a2a2", "subject": "Merge remote-tracking branch 'origin/main'"}
 {"at": "2026-10-18T06:01:01+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "54f3eec444bf058d514463714b07d41bd5960868", "subject": "Merge remote-tracking branch 'origin/main'"}
+{"ask": "j-20261018T095453+0000-76e9da62", "at": "2026-10-18T09:57:06+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "6dfd825736e8fec1c96a29e3a71a41f281b365dc", "subject": "test: kmctl init keeps every file the user edited"}
