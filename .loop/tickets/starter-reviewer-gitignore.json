@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "starter-reviewer-gitignore",
-  "stage": "fixing",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
@@ -29,7 +29,7 @@
   "split": "j-20261018T182847+0000-4eec881b",
   "split_plan_hash": "9d160b2a966952ebc13196d2bb839004daba75508763b55d666f16cd6f6e2e59",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "8bed48c3e82ac200270dd97dd7119df519066982",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -158,8 +158,14 @@
       "to": "fixing",
       "at": "2026-10-18T18:51:40+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "done",
+      "at": "2026-10-18T18:57:11+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T18:56:53+00:00"
+  "at": "2026-10-18T18:57:11+00:00"
 }
