@@ -74,7 +74,7 @@ flowchart LR
     subgraph release["releases (ADR 0012)"]
         releaseYml[".github/workflows/release.yml<br/>by hand: version pull request"]
         releaseTag[".github/workflows/release-tag.yml<br/>on an apm/apm.yml change on main"]
-        releasePy["scripts/release.py<br/>current, set, compare"]
+        releasePy["scripts/release.py<br/>current, manifest, set, compare"]
         nextVersion["scripts/next_release_version.py"]
         wheelChecks["scripts/check_wheel.py<br/>scripts/smoke_wheel.py"]
         starter["copier.yml and starter/<br/>the kmctl-starter template (ADR 0025)"]
@@ -313,8 +313,11 @@ tag a consumer's `apm.yml` names and a build from a download with no
   pin, and `kmctl_ref`'s default in `copier.yml`) on `release/vX.Y.Z` and
   opens the version pull request.
 - `.github/workflows/release-tag.yml` runs when a push to `main` changes
-  `apm/apm.yml`. When `scripts/release.py compare` says the version went up, it
-  builds and checks first, then pushes the tag `vX.Y.Z` and publishes the
+  `apm/apm.yml`. It reads the commit before the push with
+  `scripts/release.py manifest`, which reads `apm/apm.yml` alone, so an old
+  commit whose apm.yml copies disagree still has a version to compare and a
+  lowered version still fails. When `scripts/release.py compare` says the
+  version went up, it builds and checks first, then pushes the tag `vX.Y.Z` and publishes the
   GitHub Release with the wheel, the sdist and `SHA256SUMS`. Nothing goes to
   PyPI.
 - The tag is also a release of kmctl-starter, the copier template in

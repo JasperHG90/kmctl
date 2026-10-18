@@ -7,6 +7,7 @@
 Usage::
 
     uv run scripts/release.py current
+    uv run scripts/release.py manifest
     uv run scripts/release.py set VERSION
     uv run scripts/release.py compare OLD NEW
     uv run scripts/release.py is-prerelease VERSION
@@ -14,7 +15,9 @@ Usage::
 ``apm/apm.yml``, kmctl's APM package, carries the one version, and
 ``pyproject.toml`` reads it from there (ADR 0014). APM needs a ``version:`` in
 each apm.yml, so ``set`` writes it and copies it into the root ``apm.yml``;
-``current`` refuses when the copy differs. ``set`` also points the six install lines in the docs, and the
+``current`` refuses when the copy differs. ``manifest`` prints ``apm/apm.yml``'s
+version alone, for ``release-tag.yml``'s read of the commit before a push,
+where an older commit's copies may disagree. ``set`` also points the six install lines in the docs, and the
 APM how-to's CLI install line, at the tag ``vVERSION``, and moves the starter
 template's ``kmctl_ref`` default in ``copier.yml`` to that tag, so the template
 a release tag carries pins that release (ADR 0025). This script never
@@ -106,8 +109,22 @@ def _apm_version(path: Path) -> str | None:
     return match.group(2).strip().strip("'\"") if match else None
 
 
+def manifest_version(repo: Path) -> str:
+    """Return the version ``apm/apm.yml`` declares, whatever the other apm.yml files hold.
+
+    Raises
+    ------
+    ReleaseRefused
+        When ``apm/apm.yml`` is missing or has no version.
+    """
+    version = _apm_version(repo / MANIFEST)
+    if version is None:
+        raise ReleaseRefused(f"{MANIFEST} has no top-level version: line; restore it")
+    return version
+
+
 def current(repo: Path) -> str:
-    """Return the version ``apm/apm.yml`` declares.
+    """Return the version ``apm/apm.yml`` declares, once every copy agrees.
 
     Raises
     ------
@@ -115,9 +132,7 @@ def current(repo: Path) -> str:
         When ``apm/apm.yml`` has no version, or the root apm.yml is missing or
         holds another version.
     """
-    version = _apm_version(repo / MANIFEST)
-    if version is None:
-        raise ReleaseRefused(f"{MANIFEST} has no top-level version: line; restore it")
+    version = manifest_version(repo)
     for rel in APM_FILES:
         found = _apm_version(repo / rel)
         if found != version:
@@ -221,6 +236,10 @@ def main(argv: list[str] | None = None) -> int:
         "current",
         help="print apm/apm.yml's version; refuse when the root apm.yml differs",
     )
+    p_man = sub.add_parser(
+        "manifest",
+        help="print apm/apm.yml's version alone; refuse only when it has none",
+    )
     p_set = sub.add_parser(
         "set",
         help="write the version into both apm.yml files, pin the docs and copier.yml's kmctl_ref",
@@ -233,13 +252,15 @@ def main(argv: list[str] | None = None) -> int:
         "is-prerelease", help="exit 0 for an a, b or rc version, else 1"
     )
     p_pre.add_argument("version", help="the version to test, e.g. 0.2.0rc1")
-    for p in (p_cur, p_set, p_cmp, p_pre):
+    for p in (p_cur, p_man, p_set, p_cmp, p_pre):
         p.add_argument("--repo", type=Path, default=argparse.SUPPRESS)
     args = parser.parse_args(argv)
     repo: Path = args.repo.resolve()
     try:
         if args.cmd == "current":
             print(current(repo))
+        elif args.cmd == "manifest":
+            print(manifest_version(repo))
         elif args.cmd == "set":
             for path in set_version(repo, args.version):
                 print(f"wrote {path}")

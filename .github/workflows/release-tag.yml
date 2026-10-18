@@ -52,7 +52,9 @@ jobs:
             exit 0
           fi
           git worktree add -q --detach "$RUNNER_TEMP/before" "$BEFORE"
-          OLD="$(uv run scripts/release.py --repo "$RUNNER_TEMP/before" current || true)"
+          # The before commit's copies of the version may disagree, so read
+          # apm/apm.yml alone; only a commit with no version there gives an empty OLD.
+          OLD="$(uv run scripts/release.py --repo "$RUNNER_TEMP/before" manifest || true)"
           VERDICT="$(uv run scripts/release.py compare "$OLD" "$VERSION")"
           case "$VERDICT" in
             raised) ;;

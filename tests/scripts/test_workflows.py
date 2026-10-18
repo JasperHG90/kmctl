@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import re
+import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -173,6 +175,59 @@ def test_release_tag_builds_before_it_tags_and_publishes_the_release() -> None:
     assert "uv run scripts/release.py is-prerelease" in runs
     assert "--prerelease" in runs
     assert "--notes-start-tag" in runs
+
+
+def _before_read() -> str:
+    """The line of release-tag.yml's plan step that reads the before commit's version."""
+    [line] = [
+        line.strip()
+        for line in _runs(RELEASE_TAG, "tag").splitlines()
+        if line.strip().startswith("OLD=")
+    ]
+    return line
+
+
+def test_release_tag_reads_the_before_version_from_the_manifest_alone() -> None:
+    """The before read uses ``release.py manifest``, not ``current``, which refuses differing copies."""
+    line = _before_read()
+
+    assert 'scripts/release.py --repo "$RUNNER_TEMP/before" manifest' in line
+    assert " current" not in line
+
+
+def test_release_tag_reports_lowered_when_the_before_root_apm_yml_differs(
+    tmp_path: Path,
+) -> None:
+    """A before commit at 0.3.0 whose root apm.yml says 0.2.9 still makes 0.2.0 lowered.
+
+    The plan step's before read runs in bash against such a folder, with the
+    test's Python in place of ``uv run``, and its OLD goes to ``compare``.
+    """
+    before = tmp_path / "before"
+    (before / MANIFEST).parent.mkdir(parents=True)
+    (before / MANIFEST).write_text("name: kmctl\nversion: 0.3.0\n")
+    (before / "apm.yml").write_text("name: kmctl\nversion: 0.2.9\n")
+    script = _before_read().replace("uv run ", f"{sys.executable} ")
+
+    res = subprocess.run(
+        ["bash", "-c", f'set -euo pipefail\n{script}\nprintf %s "$OLD"'],
+        cwd=ROOT,
+        env={"RUNNER_TEMP": str(tmp_path), "PATH": "/usr/bin:/bin"},
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    verdict = subprocess.run(
+        [sys.executable, "scripts/release.py", "compare", res.stdout, "0.2.0"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert res.returncode == 0, res.stderr
+    assert res.stdout == "0.3.0"
+    assert verdict.stdout == "lowered\n"
 
 
 @pytest.mark.parametrize("path", [RELEASE, RELEASE_TAG], ids=lambda p: p.name)

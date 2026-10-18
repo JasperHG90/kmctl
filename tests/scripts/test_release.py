@@ -232,6 +232,39 @@ def test_release_py_current_refuses_a_missing_apm_version(tmp_path: Path) -> Non
     assert "apm/apm.yml has no top-level version: line" in res.stderr
 
 
+def test_release_py_manifest_reads_a_before_commit_whose_root_apm_yml_differs(
+    tmp_path: Path,
+) -> None:
+    """``manifest`` prints apm/apm.yml's version even when the root apm.yml differs or is gone.
+
+    release-tag.yml reads the before commit this way, so an old commit whose
+    copies disagree still gives its version to ``compare``.
+    """
+    root = _repo(tmp_path, version="0.3.0")
+    _set_apm_version(root / "apm.yml", "0.2.9")
+
+    res = _run(root, "manifest")
+
+    assert res.returncode == 0, res.stderr
+    assert res.stdout == "0.3.0\n"
+    (root / "apm.yml").unlink()
+    assert _run(root, "manifest").stdout == "0.3.0\n"
+
+
+def test_release_py_manifest_refuses_a_before_commit_with_no_version(
+    tmp_path: Path,
+) -> None:
+    """``manifest`` exits nonzero and prints nothing when apm/apm.yml has no version."""
+    root = _repo(tmp_path)
+    (root / MANIFEST).unlink()
+
+    res = _run(root, "manifest")
+
+    assert res.returncode == 1
+    assert res.stdout == ""
+    assert "apm/apm.yml has no top-level version: line" in res.stderr
+
+
 def test_release_py_set_moves_the_pins_from_an_older_tag(tmp_path: Path) -> None:
     """A second ``set`` replaces the older tag on every line instead of appending."""
     root = _repo(tmp_path)
