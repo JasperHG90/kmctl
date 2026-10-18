@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "apm-distribution-reviewer-f1",
-  "stage": "stub",
+  "stage": "planning",
   "attempts": 0,
   "plan_rounds": 0,
   "review_rounds": 0,
@@ -35,7 +35,14 @@
     "depends_on": [],
     "priority": null
   },
-  "history": [],
-  "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
-  "at": "2026-10-16T11:05:39+00:00"
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-10-18T21:44:30+00:00",
+      "by": "promote"
+    }
+  ],
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-18T21:44:30+00:00"
 }
