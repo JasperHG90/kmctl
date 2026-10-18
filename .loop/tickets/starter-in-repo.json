@@ -1,14 +1,40 @@
 {
   "schema_version": "1.0",
   "slug": "starter-in-repo",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "ebe396b7e2a062e18591cb990f0192f7130e4583e9551b657cdb62642280eb82",
+    "tree": "8bbba2d04836064414633613c765de0a54b6030e",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": null,
+        "paths": [
+          ".okf/decisions/0025-the-starter-template-lives-in-kmctl-and-shares-its-release-tags.md",
+          "docs/how-to/start-a-repository-with-kmctl-starter.md"
+        ]
+      },
+      {
+        "finding": "reviewer:f2",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": null,
+        "paths": [
+          "docs/how-to/start-a-repository-with-kmctl-starter.md"
+        ]
+      }
+    ],
+    "at": "2026-10-18T10:25:52+00:00"
+  },
   "ask": "j-20261018T095134+0000-602f7084",
   "split": "j-20261018T100313+0000-ee36d6f4",
   "split_plan_hash": "c65d9390112512eb988e2030cc14cde8a98bbad1634009573ead8a045cf35ad2",
@@ -148,8 +174,14 @@
       "to": "fixing",
       "at": "2026-10-18T10:22:14+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-18T10:25:52+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T10:25:35+00:00"
+  "at": "2026-10-18T10:25:52+00:00"
 }
