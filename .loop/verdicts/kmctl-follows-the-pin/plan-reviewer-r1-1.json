@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The hand-off reads apm.lock.yaml in the current directory, but Antigravity runs its hooks in the folder holding hooks.json (.agents/), which is why the briefing takes the repository from stdin's workspacePaths[0]. In an Antigravity session the PATH kmctl finds no lock, never hands off, and gives its own briefing, so one of the three harnesses does not follow the pin. Reading stdin in the PATH copy to find the workspace uses up the hook JSON before exec, so the pinned child would brief on .agents/. The same gap applies to --path: `kmctl check --path ../other` and `kmctl briefing --path X` follow cwd's pin, not the target's. The plan has to say how the hand-off finds the project (--path, or the workspace from stdin passed on as --path or fed to the child again) and add a test row for it.",
+      "anchor": "apm/antigravity/.apm/hooks/hooks.json:9",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "The newer-release line lives in the pinned copy's briefing, and the PATH copy execs into the pin before the briefing runs. A project pinned at a release from before this one (all of the operator's projects today, and every older pin after this ships) runs a briefing with no update check, so the line never shows to the users it was asked for: 'complain if a new version is out and the user is using an old version'. The plan says only the PATH copy hands off but does not say which copy prints the line. Decide: the PATH copy adds the line before handing off (easy for text; json and antigravity output cannot just take an extra line in front), or accept that only pins at or after this release get it and say so in Done when and the docs.",
+      "anchor": ".loop/plans/kmctl-follows-the-pin.md",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r5"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "37acbb2beb143929051e67aec5498ee264df3093b1a1d92d8b9919cfa1fbca5c"
+  },
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-18T19:02:49+00:00"
+}
