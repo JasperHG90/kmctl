@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "slug": "opencode-harness",
-  "stage": "ready",
-  "attempts": 0,
+  "stage": "building",
+  "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
@@ -17,8 +17,8 @@
   "closed_outside": false,
   "dropped": false,
   "archived": false,
-  "worktree": null,
-  "branch": null,
+  "worktree": "/home/vscode/kmctl.worktrees/opencode-harness",
+  "branch": "loop/opencode-harness",
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
@@ -148,8 +148,14 @@
       "to": "ready",
       "at": "2026-10-18T04:19:12+00:00",
       "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-10-18T04:19:30+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-18T04:19:12+00:00"
+  "at": "2026-10-18T04:19:30+00:00"
 }
