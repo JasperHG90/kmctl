@@ -19,7 +19,9 @@
   "archived": false,
   "worktree": "/home/vscode/kmctl.worktrees/release-cache-off",
   "branch": "loop/release-cache-off",
-  "stamps": [],
+  "stamps": [
+    "51fd73844f6df2b600b6cb5b1b808cff6011d1feb4d2c4271c93dad97c496adf"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
     "hash": "823048fdc50576dcbd487052414368e458c959c547f0256f2a5965b9c0a54dfd",
@@ -101,5 +103,5 @@
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-19T01:07:59+00:00"
+  "at": "2026-10-19T01:12:51+00:00"
 }
