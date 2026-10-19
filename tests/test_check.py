@@ -165,7 +165,7 @@ def test_check_ignores_links_that_leave_the_folder(tmp_path: Path) -> None:
     outside = "- [Outside](../outside.md): elsewhere.\n"
     _write(tmp_path, ".okf/decisions/index.md", decisions + outside)
 
-    assert _findings(tmp_path) == []
+    assert [f for f in _findings(tmp_path) if f["check"] == "index"] == []
 
 
 def test_check_skips_hidden_pages(tmp_path: Path) -> None:
@@ -290,14 +290,45 @@ def test_link_check_okf_links_leaving_bundle(tmp_path: Path) -> None:
     assert findings == [(".okf/decisions/0001-first.md", gone_line)]
 
 
-def test_link_check_ignores_in_bundle_okf_links(tmp_path: Path) -> None:
+def test_link_check_okf_links_inside_bundle(tmp_path: Path) -> None:
     _good_repo(tmp_path)
     path = tmp_path / ".okf/manifesto.md"
     path.write_text(
-        path.read_text() + "\n[gone](decisions/0099-nope.md) and [root](/nope.md)\n"
+        path.read_text()
+        + "\n[first](decisions/0001-first.md) and [root](/decisions/0001-first.md)\n"
+        + "[gone](decisions/0099-nope.md) and [root gone](/nope.md)\n"
+    )
+    gone_line = len(path.read_text().splitlines())
+
+    assert [
+        (f["file"], f["line"], f["message"])
+        for f in _findings(tmp_path)
+        if f["check"] == "link"
+    ] == [
+        (
+            ".okf/manifesto.md",
+            gone_line,
+            "link to decisions/0099-nope.md does not exist",
+        ),
+        (".okf/manifesto.md", gone_line, "link to /nope.md does not exist"),
+    ]
+
+
+def test_link_check_leaves_okf_index_entries_to_the_index_check(
+    tmp_path: Path,
+) -> None:
+    _good_repo(tmp_path)
+    _write(
+        tmp_path,
+        ".okf/decisions/index.md",
+        "# Decisions\n\n- [ADR 0001](0001-first.md): the first.\n"
+        "- [ADR 0099](0099-gone.md): see [gone](0098-gone.md).\n",
     )
 
-    assert _link_findings(tmp_path) == []
+    assert [(f["check"], f["file"], f["line"]) for f in _findings(tmp_path)] == [
+        ("index", ".okf/decisions/index.md", 4),
+        ("link", ".okf/decisions/index.md", 4),
+    ]
 
 
 def test_link_check_skips_urls_and_anchors(tmp_path: Path) -> None:
