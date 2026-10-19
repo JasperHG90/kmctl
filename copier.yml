@@ -55,7 +55,7 @@ kmctl_ref:
     apm.yml, the kmctl CLI the justfile runs, and the knowledge checks in CI,
     so the three always match. The default is the release this template
     comes from.
-  default: v0.11.0
+  default: v0.12.0
   validator: "{% if not (kmctl_ref | regex_search('^v[0-9]+[.][0-9]+[.][0-9]+((a|b|rc)[0-9]+)?$')) %}Pin a release tag such as v0.4.0 or v0.6.0rc1, not a branch: a branch lets the CLI, the package and CI drift apart.{% elif 'opencode' in harnesses and (kmctl_ref[1:].split('.') | map('int') | list) < [0, 5, 1] %}OpenCode needs kmctl v0.5.1 or later, the first release that supports it; pin v0.5.1 or a later tag, not {{ kmctl_ref }}.{% endif %}"
 
 apm_version:
