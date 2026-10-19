@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "drop-summary-nudge",
-  "stage": "building",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 0,
@@ -122,8 +122,14 @@
       "to": "building",
       "at": "2026-10-19T05:12:47+00:00",
       "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-10-19T05:28:55+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-19T05:28:45+00:00"
+  "at": "2026-10-19T05:28:55+00:00"
 }
