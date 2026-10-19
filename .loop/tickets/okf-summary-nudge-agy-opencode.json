@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "okf-summary-nudge-agy-opencode",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
@@ -39,7 +39,7 @@
   "split": "j-20261018T215921+0000-3322bdf7",
   "split_plan_hash": "918de2892d8a2389fcf9e864ad032f4bddd0de16b9eecf10d640fa6294ec3269",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "e831dd661af8561b98a2772ea4f2b685612d339d",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -168,8 +168,14 @@
       "to": "verifying",
       "at": "2026-10-19T00:38:29+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-19T00:43:33+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-19T00:43:28+00:00"
+  "at": "2026-10-19T00:43:33+00:00"
 }
