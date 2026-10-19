@@ -60,3 +60,4 @@
 {"at": "2026-10-19T15:55:58+00:00", "branch": "loop/first-decision-detect", "kind": "commit", "schema_version": "1.0", "sha": "2cb2d27dd005dd7b2467793089e4dcd85f7314a6", "subject": "Merge branch 'main' into loop/first-decision-detect"}
 {"at": "2026-10-19T17:18:29+00:00", "branch": "loop/consumer-surfaces", "kind": "commit", "schema_version": "1.0", "sha": "1ee3069327f4ca1b044ea386522f3148220e9b15", "subject": "Merge branch 'main' into loop/consumer-surfaces"}
 {"at": "2026-10-19T17:29:00+00:00", "branch": "loop/review-due-commit-order", "kind": "commit", "schema_version": "1.0", "sha": "f5c1a897cd6ab56175560eaa76c43dd4bbb378e7", "subject": "Merge branch 'main' into loop/review-due-commit-order"}
+{"at": "2026-10-19T17:42:58+00:00", "branch": "loop/antigravity-apm-audit", "kind": "commit", "schema_version": "1.0", "sha": "dedd43eafad74b10ca196e6e5bca79b431dd10f6", "subject": "Merge branch 'main' into loop/antigravity-apm-audit"}
