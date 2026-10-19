@@ -160,3 +160,13 @@
 - Corrected `decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code` (the kmctl block names the rules folder of each installed harness, the briefing names none, and the package's rules name each other by name, not by a `.claude/` path) and `decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest` (the Antigravity rule copies no longer open with a generated-file comment), from consumer-surfaces.
 - Added `decisions/0032-kmctl-review-due-decides-by-commit-order` with `kmctl new decision`.
 - Corrected `decisions/0006-staleness-from-okf-fields` and `decisions/0023-kmctl-verify-records-a-person-s-check`: `kmctl review due` decides by commit order and lists `edited after verification` (ADR 0032).
+- Corrected `decisions/0014-apm-is-the-only-install-route` and
+  `decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest`
+  (okf's MCP server is `bundle` now, so `apm audit --ci` passes
+  `config-consistency`, and `kmctl plugin patch` no longer removes a
+  server), renamed the server in
+  `decisions/0019-kmctl-plugin-remove-uninstalls-the-package-and-reinstalls-the-harnesses-kept`
+  and `architecture/overview`, and gave
+  `decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity` a consequence:
+  `apm audit --ci` reports `.agents/hooks.json` as drift, and a frozen
+  install on a clean checkout is the drift check (issue #28).

@@ -322,6 +322,23 @@ def test_adversarial_review_off_writes_neither(
     assert deps == [{"git": KMCTL_GIT, "path": "apm", "ref": TAG}]
 
 
+# The drift gate -----------------------------------------------------------------
+
+
+def test_render_writes_the_check_install_recipe(template: Path, tmp_path: Path) -> None:
+    """The justfile's check-install recipe runs a frozen install and fails on any change git sees."""
+    out = tmp_path / "demo"
+    assert _copier(template, out).returncode == 0
+
+    text = (out / "justfile").read_text()
+    recipe = text[text.index("\ncheck-install:") :].split("\n\n")[0]
+    comment = _flat(text[: text.index("\ncheck-install:")].rsplit("\n\n", 1)[1])
+
+    assert "check-install: install-frozen" in recipe
+    assert "git status --porcelain" in recipe
+    assert "clean checkout" in comment
+
+
 # The .gitignore -----------------------------------------------------------------
 
 
@@ -358,11 +375,10 @@ def _run(cmd: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
     return res
 
 
-@pytest.mark.integration
-def test_bootstrap_installs_this_checkout(
-    consumer: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """just bootstrap in a generated project installs this tree's kmctl and package, and its checks pass."""
+def _bootstrap(
+    consumer: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, harnesses: str
+) -> str:
+    """Generate a project for ``harnesses`` into ``consumer`` from this tree and run just bootstrap; return the tree's commit."""
     work = tree_repo(tmp_path / "kmctl")
     commit = _run(["git", "rev-parse", "HEAD"], work).stdout.strip()
     bare = tmp_path / "srv" / "kmctl.git"
@@ -386,7 +402,6 @@ def test_bootstrap_installs_this_checkout(
     (tmp_path / "tools" / "just").symlink_to(JUST)
     bin_dir = Path(os.environ["HOME"]) / ".local" / "bin"
     monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
-    harnesses = "[claude, antigravity, opencode]"
     _run(
         [sys.executable, "-m", "copier", "copy", "--defaults", "--overwrite"]
         + ["--vcs-ref", "HEAD", "--data", "project_name=demo"]
@@ -396,6 +411,17 @@ def test_bootstrap_installs_this_checkout(
     )
 
     _run(["just", "bootstrap"], consumer)
+    return commit
+
+
+@pytest.mark.integration
+def test_bootstrap_installs_this_checkout(
+    consumer: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """just bootstrap in a generated project installs this tree's kmctl and package, and its checks pass."""
+    commit = _bootstrap(
+        consumer, tmp_path, monkeypatch, "[claude, antigravity, opencode]"
+    )
     _run(["git", "add", "-A"], consumer)
     _run(["uvx", "prek@0.5.5", "run", "--all-files"], consumer)
     _run(["kmctl", "check"], consumer)
@@ -422,6 +448,45 @@ def test_bootstrap_installs_this_checkout(
         )
     )
     assert json.loads(Path(receipt).read_text())["vcs_info"]["commit_id"] == commit
+
+    # The drift gate: a fresh clone of the committed project stays clean, and
+    # a committed edit to an installed skill makes the gate fail. The edit is
+    # committed and cloned because the frozen install overwrites an
+    # uncommitted one (spike:antigravity-apm-audit/2).
+    _run(["git", "commit", "-qm", "bootstrap"], consumer)
+    clean = tmp_path / "clean"
+    _run(["git", "clone", "-q", str(consumer), str(clean)], tmp_path)
+    _run(["just", "check-install"], clean)
+    assert _run(["git", "status", "--porcelain"], clean).stdout == ""
+    [skill, *_] = sorted(consumer.glob(".agents/skills/*/SKILL.md"))
+    skill.write_text(skill.read_text() + "a hand edit\n")
+    _run(["git", "commit", "-qam", "edit a skill"], consumer)
+    edited = tmp_path / "edited"
+    _run(["git", "clone", "-q", str(consumer), str(edited)], tmp_path)
+    gate = subprocess.run(
+        ["just", "check-install"],
+        cwd=edited,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert gate.returncode != 0, gate.stdout + gate.stderr
+    assert skill.relative_to(consumer).as_posix() in gate.stdout
+
+
+@pytest.mark.integration
+def test_bootstrap_audit_passes_for_claude_and_antigravity(
+    consumer: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """APM's audit passes on a claude and antigravity project but for drift, which Antigravity's patch causes by design (ADR 0018)."""
+    _bootstrap(consumer, tmp_path, monkeypatch, "[claude, antigravity]")
+
+    # There is no git remote for the policy check.
+    _run(
+        ["uvx", "--from", "apm-cli==0.33.0", "apm", "audit", "--ci"]
+        + ["--no-drift", "--no-policy"],
+        consumer,
+    )
 
 
 # r8: the docs and the decision ----------------------------------------------------

@@ -21,8 +21,8 @@ kmctl out of a repository without APM on PATH. An install leaves files from
 two owners. APM writes kmctl's and okf's skills, agent, rules and okf's
 hooks, and records them in `apm.lock.yaml`
 ([ADR 0014](0014-apm-is-the-only-install-route.md)). kmctl writes the
-SessionStart hook, the `okf-bundle` MCP entry and, for Antigravity,
-`.agents/plugins/kmctl/` ([ADR 0015](0015-antigravity-gets-skills-and-rules-from-apm-and-a-kmctl-plugin-folder.md)).
+SessionStart hook, the `bundle` MCP entry (then named `okf-bundle`) and,
+for Antigravity, `.agents/plugins/kmctl/` ([ADR 0015](0015-antigravity-gets-skills-and-rules-from-apm-and-a-kmctl-plugin-folder.md)).
 
 What APM 0.33.0 does, from the ticket's spikes:
 
@@ -42,7 +42,7 @@ What APM 0.33.0 does, from the ticket's spikes:
 
 `kmctl plugin remove --harness LIST` uninstalls kmctl's entry with APM, then
 removes what kmctl wrote for each harness named: the SessionStart hook and
-the `okf-bundle` server for Claude Code (with `claude mcp remove` at user
+the `bundle` server for Claude Code (with `claude mcp remove` at user
 scope), the plugin folder and an empty `.agents/hooks.json` for
 Antigravity. When some installed harnesses are kept, it installs them again
 with the normal install, from the removed entry's source at its `ref`, so

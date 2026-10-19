@@ -125,3 +125,18 @@ run a kmctl script means nothing. What keeps the copies generated is what
 already guarded them: the pre-commit hook that runs the script on any edit,
 the stale-copy test in `tests/test_apm_package.py`, and the script's
 docstring.
+
+## Correction, 2026-10-19
+
+The Decision declares okf's MCP server as `okf-bundle` and has an install
+remove an `okf-bundle` entry an older kmctl wrote that differs from the
+package's. The package now declares it as `bundle`, okf's own name for it,
+so `apm audit --ci` passes its `config-consistency` check (issue #28,
+spike:antigravity-apm-audit/4). Where the table says `okf-bundle`, read
+`bundle`; the user-scope remove is `claude mcp remove bundle --scope user`.
+`kmctl plugin patch` no longer removes a server: under the name `bundle`
+that step, `drop_old_mcp`, would delete the server okf writes under the
+same name, and only an older kmctl wrote the entry it was for. kmctl has no
+users on those versions. `kmctl doctor`'s Claude Code check passes a
+`bundle` that runs okf's script, kmctl's launcher or not; its Antigravity
+and OpenCode checks still want kmctl's launcher (`src/kmctl/doctor.py`).

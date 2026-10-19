@@ -773,7 +773,7 @@ def _break_plugin(repo: Path) -> None:
         (
             _break_mcp,
             "opencode.okf-mcp",
-            "missing okf's MCP server okf-bundle",
+            "missing okf's MCP server bundle",
             APM_FIX,
         ),
         (_break_plugin, "opencode.hook", f"{PLUGIN_PATH} differs", PATCH_FIX),

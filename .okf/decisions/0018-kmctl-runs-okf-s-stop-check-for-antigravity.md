@@ -92,3 +92,14 @@ The Consequences say a bare `apm install` puts APM's broken handler back
 until the next `kmctl plugin install`. That verb is gone ([ADR 0021](0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest.md)): the next
 `kmctl plugin patch` takes the handler out again (`src/kmctl/plugin.py`),
 and `kmctl doctor` still says when it is back.
+
+## Consequence, 2026-10-19
+
+While kmctl takes APM's okf Stop handler out of `.agents/hooks.json`,
+`apm audit --ci` reports that file as drift for every Antigravity install
+(spike:antigravity-apm-audit/3), and no APM option keeps the handler out at
+install (spike:antigravity-apm-audit/4). CI for Antigravity runs
+`apm audit --ci --no-drift`, and the drift check is a frozen install plus
+`kmctl plugin patch` on a clean checkout that fails when `git status
+--porcelain` prints anything: the starter's `just check-install`
+(`docs/how-to/install-the-plugin-and-the-ci-action.md`, step 4).

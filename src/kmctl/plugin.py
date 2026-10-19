@@ -7,8 +7,8 @@ for Antigravity, the plugin folder of agents ``kmctl.antigravity`` builds and
 the removal of APM's broken okf Stop handler; for OpenCode, the agents
 rewritten into its format, the rules and the briefing plugin
 ``kmctl.opencode`` writes; for Claude Code, it moves older
-installs over (the hook and MCP entry an older kmctl wrote itself, and the
-claude plugin ``kmctl@kmctl``, ADR 0003). It never runs APM.
+installs over (the hook an older kmctl wrote itself, and the claude plugin
+``kmctl@kmctl``, ADR 0003). It never runs APM.
 
 Each step is its own function and prints nothing, so ``kmctl doctor`` and the
 Antigravity harness can reuse the hook entry, the MCP entry and its launcher.
@@ -52,8 +52,9 @@ OLD_PLUGIN = "kmctl@kmctl"
 OLD_MARKETPLACE = "kmctl"
 #: The okf-skills commit apm/apm.yml pins; a test keeps the two equal.
 OKF_COMMIT = "a8b96420de90d102c43cda1693d01ec4f925f2ab"
-#: The name kmctl gives okf's MCP server; it replaces only a server of this name.
-MCP_NAME = "okf-bundle"
+#: The name kmctl gives okf's MCP server. It is okf's own name for it, so one
+#: direct server holds it and apm audit finds that server in the lock (issue #28).
+MCP_NAME = "bundle"
 #: What marks an MCP server as okf's, under whatever name it was added.
 OKF_MCP_SCRIPT = "okf_mcp.py"
 #: The text that marks a settings.json hook as kmctl's.
@@ -518,7 +519,7 @@ def okf_mcp_server() -> dict[str, object]:
     return {"type": "stdio", "command": "sh", "args": ["-c", okf_mcp_launcher()]}
 
 
-def _is_okf_server(server: object) -> bool:
+def is_okf_server(server: object) -> bool:
     """Whether an MCP server entry runs okf's server script."""
     if not isinstance(server, dict):
         return False
@@ -533,7 +534,7 @@ def other_okf_server(servers: object) -> str | None:
     if not isinstance(servers, dict):
         return None
     for name, server in servers.items():
-        if name != MCP_NAME and _is_okf_server(server):
+        if name != MCP_NAME and is_okf_server(server):
             return str(name)
     return None
 
@@ -602,7 +603,7 @@ def drop_old_hook(settings: Path) -> bool:
 
 
 def okf_server_current(server: object) -> bool:
-    """Whether an ``okf-bundle`` entry runs the command and args kmctl's package declares.
+    """Whether a ``bundle`` entry runs the command and args kmctl's package declares.
 
     Only those two count: APM adds keys such as ``type`` of its own.
     """
@@ -611,58 +612,6 @@ def okf_server_current(server: object) -> bool:
         want["command"],
         want["args"],
     )
-
-
-def drop_old_mcp(cwd: Path, scope: Scope) -> tuple[bool, list[str]]:
-    """Take out an ``okf-bundle`` entry an older kmctl wrote that differs from the package's.
-
-    APM skips an MCP server that is already configured, so an entry at an
-    older okf pin would stay; once it is gone, ``apm install`` writes the
-    package's (spike:plugin-patch/1, spike:apm-hands-back/5). At user scope
-    it uses ``claude mcp remove``. Every other server stays.
-
-    Returns
-    -------
-    tuple[bool, list[str]]
-        Whether it removed the entry, and a note when the claude CLI is
-        missing and the entry stays.
-    """
-    if scope == "project":
-        path = cwd / ".mcp.json"
-        if not path.is_file():
-            return False, []
-        data = read_json(path)
-        servers = data.get("mcpServers")
-        if not (
-            isinstance(servers, dict)
-            and MCP_NAME in servers
-            and not okf_server_current(servers[MCP_NAME])
-        ):
-            return False, []
-        del servers[MCP_NAME]
-        _write_json(path, data)
-        return True, []
-    try:
-        servers = read_json(user_mcp_file()).get("mcpServers")
-    except PluginError:
-        servers = None
-    if not (
-        isinstance(servers, dict)
-        and MCP_NAME in servers
-        and not okf_server_current(servers[MCP_NAME])
-    ):
-        return False, []
-    args = ["mcp", "remove", MCP_NAME, "--scope", "user"]
-    if shutil.which("claude") is None:
-        return False, [
-            (
-                f"the claude CLI is not on PATH, so kmctl left an older {MCP_NAME} "
-                f"that APM will not replace; run claude {' '.join(args)}, then "
-                "apm install -g and kmctl plugin patch --scope user again"
-            )
-        ]
-    _require(_run(["claude", *args], cwd), f"claude {' '.join(args)}")
-    return True, []
 
 
 def shown_path(path: Path, cwd: Path) -> str:
@@ -757,9 +706,9 @@ def _harnesses_of(package: LockDependency) -> list[str]:
 def patch(cwd: Path, scope: Scope = "project") -> PatchResult:
     """Add what APM cannot install for kmctl's package yet, for the harnesses APM installed it for.
 
-    It never runs APM. For Claude Code it removes what an older kmctl wrote
-    that APM now writes (``drop_old_hook``, ``drop_old_mcp``) and the old
-    claude plugin ``kmctl@kmctl``; for Antigravity it writes the plugin
+    It never runs APM. For Claude Code it removes the hook an older kmctl
+    wrote that APM now writes (``drop_old_hook``) and the old claude plugin
+    ``kmctl@kmctl``; for Antigravity it writes the plugin
     folder of translated agents and takes APM's broken okf Stop handler out
     of ``.agents/hooks.json`` (ADR 0020); for OpenCode it rewrites the agents
     into OpenCode's format and writes the rules, their ``instructions`` entry
@@ -796,17 +745,9 @@ def patch(cwd: Path, scope: Scope = "project") -> PatchResult:
     harnesses = _harnesses_of(package)
     notes: list[str] = []
     if "claude" in harnesses:
-        again = False
         if drop_old_hook(settings_path(cwd, scope)):
             notes.append("removed the SessionStart hook an older kmctl wrote itself")
-        removed, more = drop_old_mcp(cwd, scope)
-        notes += more
-        if removed:
-            notes.append(f"removed the {MCP_NAME} server an older kmctl wrote")
-            again = True
         notes = remove_old_plugin(cwd, scope) + notes
-        if again:
-            notes.append(f"run apm install{g} again, so APM writes {MCP_NAME}")
     if "antigravity" in harnesses and scope == "project":
         folder = antigravity.write_plugin(cwd)
         notes.append(
