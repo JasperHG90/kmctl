@@ -7,9 +7,9 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-10-19T21:02:51Z
+  at: 2026-10-19T21:32:03Z
   against:
-    - decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins
+    - decisions/0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step
 ---
 
 # Summary: kmctl

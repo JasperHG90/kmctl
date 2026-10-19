@@ -107,5 +107,6 @@ with `--strict`.
 WHY: a reader who trusts an index stops looking when it is wrong.
 
 Adding, renaming or removing a concept updates that section's `index.md`, and
-a new section adds its link to the root index, in the same change.
+a new section adds its link to the root index, in the same change. Rename a
+concept with `kmctl mv OLD NEW`, which also rewrites the links to it.
 </constraint>

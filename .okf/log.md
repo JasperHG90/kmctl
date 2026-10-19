@@ -173,3 +173,5 @@
 - Corrected `decisions/0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step`: `kmctl check` warns on an id in `checked.against` that is not a concept in the bundle, and `kmctl summary ack` leaves out deleted concepts (issue #34).
 - Added `decisions/0033-kmctl-check-fails-on-a-missing-link-target-inside-the-bundle` with `kmctl new decision`.
 - Corrected `decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins`: a handed-off `kmctl --version` names the pin, and `KMCTL_PINNED=1` keeps the bare line (issue #37).
+- Added `decisions/0034-kmctl-mv-renames-a-concept-and-rewrites-the-links-to-it` with `kmctl new decision`.
+- Wrote `decisions/0034-kmctl-mv-renames-a-concept-and-rewrites-the-links-to-it` and updated `architecture/overview` (`mv.py`, `kmctl mv`) for it (issue #36); `summary` still holds (kmctl summary ack).
