@@ -301,3 +301,35 @@ def test_ci_and_release_test_jobs_install_just() -> None:
 
     assert _installs_just_before(CI, "tests", ci_pytest)
     assert _installs_just_before(RELEASE, "test", release_pytest)
+
+
+def _setup_uv_steps(path: Path) -> list[dict[str, Any]]:
+    """Every astral-sh/setup-uv step in the workflow at ``path``, across its jobs."""
+    jobs = yaml.safe_load(path.read_text())["jobs"]
+    return [
+        step
+        for job in jobs.values()
+        for step in job.get("steps", [])
+        if step.get("uses", "").startswith("astral-sh/setup-uv@")
+    ]
+
+
+@pytest.mark.parametrize("path", [RELEASE, RELEASE_TAG], ids=["release", "release-tag"])
+def test_release_workflows_never_restore_the_uv_cache(path: Path) -> None:
+    """A cache entry the audit agent could write on main must never reach a release build (ADR 0017)."""
+    steps = _setup_uv_steps(path)
+
+    assert steps
+    assert all(s.get("with", {}).get("enable-cache") is False for s in steps), steps
+
+
+def test_release_workflows_cache_record_names_the_reason() -> None:
+    """ADR 0017 carries a dated Correction saying the release workflows run without the uv cache."""
+    [adr] = (ROOT / ".okf" / "decisions").glob("0017-*.md")
+    text = " ".join(adr.read_text().split())
+    corrections = text.split("## Correction, ")[1:]
+
+    assert any(
+        "release.yml" in c and "release-tag.yml" in c and "cache" in c
+        for c in corrections
+    )
