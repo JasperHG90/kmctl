@@ -32,16 +32,17 @@ Claude Code, Antigravity and OpenCode.
 
 Four parts ([overview](architecture/overview.md)). The CLI in `src/kmctl/`
 alone writes knowledge. An APM package in `apm/` carries skills, an audit
-agent, four knowledge rules and its hooks; APM installs it and
-`kmctl plugin patch` fills APM's gaps. A GitHub Action runs free checks on
-each pull request and an opt-in LLM audit. A copier template starts new
-projects pinned to a release.
+agent, four knowledge rules and its hooks; APM installs it,
+`kmctl plugin patch` fills the gaps, and projects commit all but
+`apm_modules/` ([ADR 0030](decisions/0030-projects-commit-what-apm-deploys.md)).
+A GitHub Action runs free checks per pull request and an opt-in LLM audit.
+A copier template starts projects pinned to a release.
 
 An agent reads in layers: the SessionStart hook injects `kmctl briefing`,
-the block in `CLAUDE.md` and `AGENTS.md` points to this summary, the summary
-to the indexes, and the indexes to the concepts. When a concept changes
+the `CLAUDE.md` and `AGENTS.md` block points here, this page
+to the indexes, the indexes to the concepts. When a concept changes
 after this page, the briefing and `kmctl review due` say so. Each
-project pins kmctl in `apm.lock.yaml`, and the `kmctl` on PATH hands every
+project pins kmctl in `apm.lock.yaml`; the `kmctl` on PATH hands every
 command to that release
 ([ADR 0026](decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins.md)).
 Handoffs in `.okf/handoffs/` carry unfinished work into the next session
