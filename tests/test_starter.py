@@ -49,9 +49,6 @@ GENERATED = {
     "apm.yml",
     "justfile",
 }
-# Doctor checks a runner cannot pass: no harness CLI, and nobody trusts the
-# folder in Antigravity.
-UNPASSABLE = {"dep.claude", "dep.agy", "dep.opencode", "antigravity.trust"}
 # The reviewer agent from jasperhg90/skills, pinned to the commit that named
 # it .agent.md, the only single-file agent name APM installs
 # (spike:starter-reviewer-gitignore/1, /3).
@@ -412,8 +409,8 @@ def test_bootstrap_installs_this_checkout(
         ).stdout
     )
 
-    failed = {c["id"] for c in report["checks"] if not c["ok"]}
-    assert failed <= UNPASSABLE, report
+    # A missing harness CLI and Antigravity trust only warn, so nothing fails.
+    assert report["ok"], report
     assert (consumer / ".claude" / "agents" / "adversarial-reviewer.md").is_file()
     lock = yaml.safe_load((consumer / "apm.lock.yaml").read_text())
     [kmctl] = [d for d in lock["dependencies"] if d["name"] == "kmctl"]

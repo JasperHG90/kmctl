@@ -582,6 +582,14 @@ fail kmctl.harness: no kmctl harness in this repository; run apm install --targe
 Each `fail` line names what is wrong and, after the `;`, the command that
 fixes it. With one skill file deleted, it printed
 `fail claude.files: .claude/skills/audit/SKILL.md is missing; run apm install --target claude (kmctl's package must be in apm.yml), then kmctl plugin patch`.
+A `warn` line has the same shape but fails nothing, so doctor still exits 0.
+It is for what doctor cannot judge from here. Without `agy` on PATH, for
+example, it prints
+`warn dep.agy: agy is not on PATH (needed only by someone who uses antigravity, which is installed here); install the Antigravity CLI so agy is on PATH`:
+the harnesses installed are shared by everyone on the repository, so only
+someone who uses Antigravity needs `agy`. `antigravity.trust` warns the same
+way, because doctor reads only the agy CLI's trusted folders and does not
+check trust given in the Antigravity IDE.
 For an install made with `apm install -g`, run `kmctl doctor --scope user`.
 After you upgrade kmctl, `claude.lock` fails until you move the `apm.yml`
 ref to the new tag, as in step 6.

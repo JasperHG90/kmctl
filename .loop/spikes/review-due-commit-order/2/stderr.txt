@@ -1,0 +1,5 @@
+Using CPython 3.12.15
+Creating virtual environment at: .venv
+   Building kmctl @ file:///tmp/loopctl-spike-ttmknare/tree
+      Built kmctl @ file:///tmp/loopctl-spike-ttmknare/tree
+Installed 70 packages in 3.29s

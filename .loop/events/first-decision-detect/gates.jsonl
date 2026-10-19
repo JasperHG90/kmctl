@@ -1,0 +1,1 @@
+{"at": "2026-10-19T14:49:01+00:00", "command": "uv run pytest", "exit": 1, "fingerprint": "df1df84da59b9571879d4a2bcbbda459293d38fdfef5d857f72170a5e39aa7c8", "kind": "red", "name": "tests", "note": null, "output": ".loop/events/first-decision-detect/gate-output/1cb4f7b8af8fb381f1160ec2bc063443e6689bb9b25627f4f7d3dd0617558b62.txt", "schema_version": "1.0"}

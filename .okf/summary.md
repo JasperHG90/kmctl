@@ -7,9 +7,9 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-10-19T14:48:13Z
+  at: 2026-10-19T14:35:11Z
   against:
-    - decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code
+    - decisions/0031-a-decision-record-may-be-draft-until-it-is-accepted
 ---
 
 # Summary: kmctl

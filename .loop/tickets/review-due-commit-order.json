@@ -1,35 +1,125 @@
 {
   "schema_version": "1.0",
   "slug": "review-due-commit-order",
-  "stage": "planning",
-  "attempts": 0,
-  "plan_rounds": 0,
-  "review_rounds": 0,
+  "stage": "verifying",
+  "attempts": 1,
+  "plan_rounds": 1,
+  "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
   "fix": null,
   "ask": "j-20261019T142800+0000-163e5ff3",
-  "split": "j-20261019T143047+0000-a2932b70",
-  "split_plan_hash": "20238c337ba435bad4e76c7ae3be042e3181c61f0d9b03827dcc9bc2d30c9e25",
+  "split": "j-20261019T143751+0000-21766bef",
+  "split_plan_hash": "3009b6ac866f9808fc012b2eeafa9f9389401c6444bdbd061c0bdadf7a2785a0",
   "split_hold": false,
   "commit_sha": null,
   "closed_outside": false,
   "dropped": false,
   "archived": false,
-  "worktree": null,
-  "branch": null,
-  "stamps": [],
-  "signoff": null,
+  "worktree": "/home/vscode/kmctl.worktrees/review-due-commit-order",
+  "branch": "loop/review-due-commit-order",
+  "stamps": [
+    "ac341e4ab92a8ab01bce65445eab3eb4895f2d250498c166f157d9b1640961eb",
+    "888e493c2ed528a1d6ce04923414c48c269f37d05a046d0eed87384d2c3ff85d"
+  ],
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "ad4868ccf6b9919b2bbb47196a8079ad62ad1ed2c547d95ff5c634809a930643",
+    "at": "2026-10-19T15:09:39+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "A concept verified on a branch is not due after the branch lands by squash merge, rebase merge or merge commit when nothing changed after the verification.",
+      "fails_when": "review due lists the concept after any of the three landings",
+      "command": "uv run pytest tests/test_review_due.py -q -k not_due_after_landing",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "A concept is due 'source changed' when a commit after its verification commit changes one of its sources.",
+      "fails_when": "the concept is not listed with source changed naming that source",
+      "command": "uv run pytest tests/test_review_due.py -q -k source_changed_after_verification",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "A concept is due 'edited after verification' when a commit after its verification commit changes its body or a front matter field other than verified and stale_after.",
+      "fails_when": "the concept is not listed with that reason, for a body edit or for a description edit",
+      "command": "uv run pytest tests/test_review_due.py -q -k edited_after_verification",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "A commit that only adds a verified entry, with or without --stale-after, leaves the concept off the list; an uncommitted verified entry counts nothing as changed after it.",
+      "fails_when": "the concept is listed after a verify-only commit, with or without stale_after",
+      "command": "uv run pytest tests/test_review_due.py -q -k verify_only_commit",
+      "judgment": false
+    },
+    {
+      "id": "r5",
+      "behavior": "A docs page follows the same two rules, and one without verified uses its own last commit as the baseline, by commit not date.",
+      "fails_when": "a docs page gets a different answer than a concept in the same case, or the unverified baseline compares dates",
+      "command": "uv run pytest tests/test_review_due.py -q -k docs_page",
+      "judgment": false
+    },
+    {
+      "id": "r6",
+      "behavior": "The batched history walk picks the same verification commit as a per-file git log, including across a merge and a rename.",
+      "fails_when": "the batched and per-file walks pick different commits for any file in the test repository",
+      "command": "uv run pytest tests/test_review_due.py -q -k batched_walk",
+      "judgment": false
+    },
+    {
+      "id": "r7",
+      "behavior": "The existing review due tests still pass.",
+      "fails_when": "any test in tests/test_review_due.py fails",
+      "command": "uv run pytest tests/test_review_due.py -q",
+      "judgment": false
+    },
+    {
+      "id": "r8",
+      "behavior": "A new decision records that review due decides by commit order and names the new reason; ADR 0006 and ADR 0023 carry dated corrections pointing to it; the module docstring, the review due help, docs/reference/commands.md and the docs-layout rule say the same.",
+      "fails_when": "the decision or a correction is missing, or any of those surfaces still describes comparing dates",
+      "command": null,
+      "judgment": true
+    }
+  ],
   "resigns": [],
-  "accepted_risks": [],
+  "accepted_risks": [
+    {
+      "risk_hash": "ccea436b2a6216c0d68569d481639d5f8dc74109cdc2237bc6ef7b1db8945f54",
+      "reason": "Commit order with no new field; a verify-then-edit inside one squashed branch is missed, which keeps kmctl on OKF's own fields (ADR 0006, I4)",
+      "by": "human:jasperginn@gmail.com",
+      "at": "2026-10-19T15:07:13+00:00"
+    }
+  ],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "5d7a7753baa02825b4faf86df5569a4e7ef715ebf75185023c906d5ff48fec66",
+  "round": {
+    "kind": "review",
+    "n": 1,
+    "binds": "888e493c2ed528a1d6ce04923414c48c269f37d05a046d0eed87384d2c3ff85d",
+    "started_at": "2026-10-19T15:37:52+00:00",
+    "passes": [
+      "reviewer"
+    ],
+    "tree": "3b74321d788ef3700bdf0f576f608351daba90d2",
+    "plan_hash": "3009b6ac866f9808fc012b2eeafa9f9389401c6444bdbd061c0bdadf7a2785a0",
+    "eval_hash": "ad4868ccf6b9919b2bbb47196a8079ad62ad1ed2c547d95ff5c634809a930643",
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "3009b6ac866f9808fc012b2eeafa9f9389401c6444bdbd061c0bdadf7a2785a0",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -41,8 +131,26 @@
       "to": "planning",
       "at": "2026-10-19T14:29:56+00:00",
       "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-10-19T15:09:04+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-10-19T15:09:42+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-10-19T15:28:40+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.2.2.dev1+gd84319696",
-  "at": "2026-10-19T14:30:47+00:00"
+  "at": "2026-10-19T15:37:52+00:00"
 }

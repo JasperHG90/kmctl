@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {"id": "r1", "behavior": "In a repository installed for claude and antigravity, kmctl doctor with neither claude nor agy on PATH exits 0 and prints warn dep.claude and warn dep.agy.", "fails_when": "doctor exits nonzero, or either line is not a warn line", "command": "uv run pytest tests/test_doctor.py::test_missing_harness_cli_warns -q"},
+    {"id": "r2", "behavior": "With agy on PATH and the folder missing from its trustedWorkspaces, doctor exits 0 with warn antigravity.trust, and the detail says trust given in the Antigravity IDE is not checked.", "fails_when": "doctor exits nonzero, the line is not warn, or the detail does not mention the IDE", "command": "uv run pytest tests/test_doctor.py::test_antigravity_trust_warns_and_names_the_ide -q"},
+    {"id": "r3", "behavior": "With okf@scaccogatto enabled only in the user settings.json under CLAUDE_CONFIG_DIR, a project-scope run exits 1 with fail claude.old-plugin naming that file and the fix claude plugin uninstall okf@scaccogatto --scope user.", "fails_when": "the check passes, does not name the user settings file, or prints another fix", "command": "uv run pytest tests/test_doctor.py::test_old_plugin_found_in_user_settings_at_project_scope -q"},
+    {"id": "r4", "behavior": "kmctl doctor --json gives each check a status of ok, warn or fail, with ok true for a warning.", "fails_when": "a check lacks status, or a warning has ok false", "command": "uv run pytest tests/test_doctor.py::test_json_status_field -q"},
+    {"id": "r5", "behavior": "A user-scope kmctl@kmctl does not mark the claude harness as installed in the project.", "fails_when": "harnesses_found or _kmctl_mark at project scope reports claude from a user-scope plugin alone", "command": "uv run pytest tests/test_doctor.py::test_user_scope_plugin_does_not_mark_project_harness -q"},
+    {"id": "r6", "behavior": "docs/reference/commands.md and the doctor epilog describe the warn outcome, the status field and the changed checks, and no doctor test reads the real ~/.claude or ~/.gemini.", "fails_when": "the docs or epilog still say a missing harness CLI fails, or a test reads the real home folders", "judgment": true}
+  ]
+}

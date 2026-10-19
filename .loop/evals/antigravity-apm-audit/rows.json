@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {"id": "r1", "behavior": "A starter project bootstrapped for claude, antigravity and opencode passes apm audit --ci --no-drift --no-policy (exit 0) after install and kmctl plugin patch.", "fails_when": "the audit exits nonzero", "command": "uv run pytest -m integration tests/test_starter.py::test_bootstrap_installs_this_checkout -q"},
+    {"id": "r2", "behavior": "The starter justfile has a recipe that runs a frozen install, kmctl plugin patch, and fails when git status --porcelain prints anything; on a fresh clone of the committed project it exits 0, and after a committed one-line edit to an installed skill it exits nonzero.", "fails_when": "the recipe is missing from the rendered justfile, exits nonzero on the clean clone, or exits 0 after the committed edit", "command": "uv run pytest tests/test_starter.py -q -k 'recipe or bootstrap' -m 'integration or not integration'"},
+    {"id": "r3", "behavior": "kmctl's MCP server is named bundle everywhere it is declared or checked, and no source, doc or test outside .loop/ and the okf-bundle rule names still uses okf-bundle for the server.", "fails_when": "apm/apm.yml or MCP_NAME is not bundle, or the package tests fail", "command": "uv run pytest tests/test_apm_package.py tests/test_plugin_patch.py tests/test_opencode.py -q"},
+    {"id": "r4", "behavior": "Doctor passes a bundle server that runs okf's script but not kmctl's launcher, and fails a bundle server that runs no okf script.", "fails_when": "either case gets the other outcome", "command": "uv run pytest tests/test_doctor.py -q -k bundle"},
+    {"id": "r5", "behavior": "The install how-to says CI runs apm audit --ci for a Claude Code-only install and apm audit --ci --no-drift plus the gate for Antigravity (and OpenCode if drift fires there), and ADRs 0014, 0018, 0019 and 0020 carry dated corrections or consequences for the rename and the drift; drop_old_mcp is gone.", "fails_when": "the docs give no working CI gate per harness, a correction is missing, or drop_old_mcp still exists", "judgment": true}
+  ]
+}

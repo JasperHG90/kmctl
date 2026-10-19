@@ -1,1 +1,4 @@
 {"at": "2026-10-19T14:32:49+00:00", "command": "/tmp/claude-1000/-home-vscode-kmctl/c37be586-8598-4232-be34-7d43e553b1d7/scratchpad/spike-audit-r3/gate.sh", "exit": 1, "kind": "spike", "n": 1, "schema_version": "1.0"}
+{"at": "2026-10-19T14:33:36+00:00", "command": "/tmp/claude-1000/-home-vscode-kmctl/c37be586-8598-4232-be34-7d43e553b1d7/scratchpad/spike-audit-r3/gate2.sh", "exit": 0, "kind": "spike", "n": 2, "schema_version": "1.0"}
+{"at": "2026-10-19T14:34:57+00:00", "command": "/tmp/claude-1000/-home-vscode-kmctl/c37be586-8598-4232-be34-7d43e553b1d7/scratchpad/spike-audit-r1/audit.sh", "exit": 1, "kind": "spike", "n": 3, "schema_version": "1.0"}
+{"at": "2026-10-19T15:03:07+00:00", "command": "/tmp/claude-1000/-home-vscode-kmctl/c37be586-8598-4232-be34-7d43e553b1d7/scratchpad/spike-audit-r2/spike.sh", "exit": 1, "kind": "spike", "n": 4, "schema_version": "1.0"}

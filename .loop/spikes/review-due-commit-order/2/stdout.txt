@@ -1,0 +1,40 @@
+ok   squash: landed, nothing after verify: got [], want []
+ok   squash: source commit after: got ['source changed: app.py'], want ['source changed: app.py']
+ok   squash: body edit after: got ['edited after verification'], want ['edited after verification']
+ok   squash: other front matter edit: got ['edited after verification'], want ['edited after verification']
+ok   squash: re-verify only: got [], want []
+ok   squash: re-verify with --stale-after: got [], want []
+ok   squash: source change then re-verify: got [], want []
+ok   squash: uncommitted re-verify, nothing counts: got [], want []
+ok   rebase: landed, nothing after verify: got [], want []
+ok   rebase: source commit after: got ['source changed: app.py'], want ['source changed: app.py']
+ok   rebase: body edit after: got ['edited after verification'], want ['edited after verification']
+ok   rebase: other front matter edit: got ['edited after verification'], want ['edited after verification']
+ok   rebase: re-verify only: got [], want []
+ok   rebase: re-verify with --stale-after: got [], want []
+ok   rebase: source change then re-verify: got [], want []
+ok   rebase: uncommitted re-verify, nothing counts: got [], want []
+ok   merge: landed, nothing after verify: got [], want []
+ok   merge: source commit after: got ['source changed: app.py'], want ['source changed: app.py']
+ok   merge: body edit after: got ['edited after verification'], want ['edited after verification']
+ok   merge: other front matter edit: got ['edited after verification'], want ['edited after verification']
+ok   merge: re-verify only: got [], want []
+ok   merge: re-verify with --stale-after: got [], want []
+ok   merge: source change then re-verify: got [], want []
+ok   merge: uncommitted re-verify, nothing counts: got [], want []
+ok   issue18: verified, untouched: got [], want []
+ok   issue18: appended line: got ['edited after verification'], want ['edited after verification']
+ok   never-committed verify: nothing counts: got [], want []
+ok   docs unverified: nothing after page: got [], want []
+ok   docs unverified: source after page: got ['source changed: app.py'], want ['source changed: app.py']
+ok   docs verified: nothing after: got [], want []
+ok   docs verified: source after: got ['source changed: app.py'], want ['source changed: app.py']
+ok   docs verified: body edit: got ['edited after verification'], want ['edited after verification']
+ok   docs verified: re-verify only: got [], want []
+timing: repo 2900 commits, 40 concepts and docs pages, 341 file versions; kmctl review due now 1.257 s
+  (a) per-file git log, whole history parsed: 1.765 s
+  (b) one git log + one cat-file batch, whole history parsed: 0.359 s (308 versions)
+  per-source git diff for all sources: 0.270 s, replacing today's git log -1 calls: 0.683 s
+  added by (b): -0.054 s
+  real walk today (0 verified: []): 0.000 s
+FAILED: none

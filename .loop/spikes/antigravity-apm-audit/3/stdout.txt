@@ -1,0 +1,342 @@
+                ┃ Message                                ┃
+┡━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ [+]      │ lockfile-exists          │ Lockfile present                       │
+│ [+]      │ ref-consistency          │ All dependency refs match lockfile     │
+│ [+]      │ deployment-ledger-owners │ All deployment ledger owners are valid │
+│ [+]      │ deployed-files-present   │ All deployed files present on disk     │
+│ [+]      │ no-orphaned-packages     │ No orphaned packages in lockfile       │
+│ [+]      │ skill-subset-consistency │ Skill subset selections match lockfile │
+│          │ config-consistency       │ 1 MCP config inconsistenc(ies) -- run  │
+│          │                          │ 'apm install' to reconcile             │
+│ [+]      │ content-integrity        │ No critical hidden Unicode or hash     │
+│          │                          │ drift detected                         │
+│ [+]      │ includes-consent         │ No local content deployed -- includes  │
+│          │                          │ consent check skipped                  │
+│ [+]      │ drift                    │ no drift detected against lockfile     │
+└──────────┴──────────────────────────┴────────────────────────────────────────┘
+
+  config-consistency details:
+    - bundle: in manifest but not in lockfile
+
+[x] 1 of 10 check(s) failed
+----- exit 1 -----
+===== [antigravity] kmctl plugin patch =====
+Using CPython 3.12.15
+Creating virtual environment at: /tmp/loopctl-spike-fxjfbawu/tree/.venv
+   Building kmctl @ file:///tmp/loopctl-spike-fxjfbawu/tree
+      Built kmctl @ file:///tmp/loopctl-spike-fxjfbawu/tree
+Installed 70 packages in 1.73s
+note: wrote .agents/plugins/kmctl/ (the agents, which APM does not install for Antigravity yet); Antigravity loads it once you trust this folder
+note: took APM's okf Stop handler out of .agents/hooks.json, where it cannot run; kmctl's package runs okf's check instead
+patched kmctl's package v0.10.0 for antigravity (project scope)
+Next: open this folder in Antigravity, trust it and start a new session, then kmctl doctor
+hooks.json:
+{
+  "apm": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "command -v kmctl >/dev/null 2>&1 || { echo '{}'; exit 0; }; out=$(kmctl briefing --format antigravity 2>/dev/null) && printf '%s\\n' \"$out\" || echo '{}'; exit 0",
+        "timeout": 10
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "in=$(cat); printf '%s' \"$in\" | grep -Eq '\"executionNum\"[[:space:]]*:[[:space:]]*0([^0-9]|$)' || { echo '{}'; exit 0; }; cd .. 2>/dev/null && [ -f .agents/hooks/okf-skills/hooks/okf-stop-check.sh ] || { echo '{}'; exit 0; }; out=$(printf '{}' | bash .agents/hooks/okf-skills/hooks/okf-stop-check.sh 2>/dev/null); case \"$out\" in *'\"decision\":\"block\"'*) printf '%s\\n' \"$out\" | sed 's/\"decision\":\"block\"/\"decision\":\"continue\"/';; *) echo '{}';; esac; exit 0",
+        "timeout": 10
+      }
+    ]
+  }
+}
+----- [antigravity] apm audit --ci  -----
+[>] Replaying install (cache-only)...
+[+] Replayed 4 package(s)
+[>] Diffing scratch vs working tree...
+[!] Drift detected: 1 file(s)
+
+                           [>] APM Policy Compliance                            
+┏━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Status   ┃ Check                    ┃ Message                                ┃
+┡━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ [+]      │ lockfile-exists          │ Lockfile present                       │
+│ [+]      │ ref-consistency          │ All dependency refs match lockfile     │
+│ [+]      │ deployment-ledger-owners │ All deployment ledger owners are valid │
+│ [+]      │ deployed-files-present   │ All deployed files present on disk     │
+│ [+]      │ no-orphaned-packages     │ No orphaned packages in lockfile       │
+│ [+]      │ skill-subset-consistency │ Skill subset selections match lockfile │
+│          │ config-consistency       │ 1 MCP config inconsistenc(ies) -- run  │
+│          │                          │ 'apm install' to reconcile             │
+│          │ drift                    │ drift detected: 1 file(s):             │
+│          │                          │ .agents/hooks.json                     │
+└──────────┴──────────────────────────┴────────────────────────────────────────┘
+
+  config-consistency details:
+    - bundle: in manifest but not in lockfile
+
+  drift details:
+    - modified: .agents/hooks.json
+
+[x] 2 of 8 check(s) failed
+
+[x] Drift detected: 1 file(s)
+
+  modified (1):
+    - .agents/hooks.json
+
+  [i] Run 'apm install' to re-sync deployed files with the lockfile.
+
+----- exit 1 -----
+----- [antigravity] apm audit --ci --no-fail-fast -----
+[!] Could not determine org from git remote; enforcement skipped (set policy.fetch_failure_default=block in apm.yml to fail closed)
+[>] Replaying install (cache-only)...
+[+] Replayed 4 package(s)
+[>] Diffing scratch vs working tree...
+[!] Drift detected: 1 file(s)
+[i] Discovered/untracked: .agents/hooks.json/apm/SessionStart/0 (prompt check: 
+not-applicable; ownership and hash verification are separate)
+[i] Discovered/untracked: .agents/hooks.json/apm/Stop/0 (prompt check: 
+not-applicable; ownership and hash verification are separate)
+
+                           [>] APM Policy Compliance                            
+┏━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Status   ┃ Check                    ┃ Message                                ┃
+┡━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ [+]      │ lockfile-exists          │ Lockfile present                       │
+│ [+]      │ ref-consistency          │ All dependency refs match lockfile     │
+│ [+]      │ deployment-ledger-owners │ All deployment ledger owners are valid │
+│ [+]      │ deployed-files-present   │ All deployed files present on disk     │
+│ [+]      │ no-orphaned-packages     │ No orphaned packages in lockfile       │
+│ [+]      │ skill-subset-consistency │ Skill subset selections match lockfile │
+│          │ config-consistency       │ 1 MCP config inconsistenc(ies) -- run  │
+│          │                          │ 'apm install' to reconcile             │
+│ [+]      │ content-integrity        │ No critical hidden Unicode or hash     │
+│          │                          │ drift detected                         │
+│ [+]      │ includes-consent         │ No local content deployed -- includes  │
+│          │                          │ consent check skipped                  │
+│          │ drift                    │ drift detected: 1 file(s):             │
+│          │                          │ .agents/hooks.json                     │
+└──────────┴──────────────────────────┴────────────────────────────────────────┘
+
+  config-consistency details:
+    - bundle: in manifest but not in lockfile
+
+  drift details:
+    - modified: .agents/hooks.json
+
+[x] 2 of 10 check(s) failed
+
+[x] Drift detected: 1 file(s)
+
+  modified (1):
+    - .agents/hooks.json
+
+  [i] Run 'apm install' to re-sync deployed files with the lockfile.
+
+----- exit 1 -----
+----- [antigravity] apm audit --ci --no-drift --no-fail-fast -----
+[!] Could not determine org from git remote; enforcement skipped (set policy.fetch_failure_default=block in apm.yml to fail closed)
+[!] drift detection skipped (--no-drift); coverage reduced -- hand-edits and missing integrations will not be caught
+[i] Discovered/untracked: .agents/hooks.json/apm/SessionStart/0 (prompt check: 
+not-applicable; ownership and hash verification are separate)
+[i] Discovered/untracked: .agents/hooks.json/apm/Stop/0 (prompt check: 
+not-applicable; ownership and hash verification are separate)
+
+                           [>] APM Policy Compliance                            
+┏━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Status   ┃ Check                    ┃ Message                                ┃
+┡━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ [+]      │ lockfile-exists          │ Lockfile present                       │
+│ [+]      │ ref-consistency          │ All dependency refs match lockfile     │
+│ [+]      │ deployment-ledger-owners │ All deployment ledger owners are valid │
+│ [+]      │ deployed-files-present   │ All deployed files present on disk     │
+│ [+]      │ no-orphaned-packages     │ No orphaned packages in lockfile       │
+│ [+]      │ skill-subset-consistency │ Skill subset selections match lockfile │
+│          │ config-consistency       │ 1 MCP config inconsistenc(ies) -- run  │
+│          │                          │ 'apm install' to reconcile             │
+│ [+]      │ content-integrity        │ No critical hidden Unicode or hash     │
+│          │                          │ drift detected                         │
+│ [+]      │ includes-consent         │ No local content deployed -- includes  │
+│          │                          │ consent check skipped                  │
+└──────────┴──────────────────────────┴────────────────────────────────────────┘
+
+  config-consistency details:
+    - bundle: in manifest but not in lockfile
+
+[x] 1 of 9 check(s) failed
+----- exit 1 -----
+json summary:
+  lockfile-exists passed | Lockfile present []
+  ref-consistency passed | All dependency refs match lockfile []
+  deployment-ledger-owners passed | All deployment ledger owners are valid []
+  deployed-files-present passed | All deployed files present on disk []
+  no-orphaned-packages passed | No orphaned packages in lockfile []
+  skill-subset-consistency passed | Skill subset selections match lockfile []
+  config-consistency FAILED | 1 MCP config inconsistenc(ies) -- run 'apm install' to reconcile ['bundle: in manifest but not in lockfile']
+  content-integrity passed | No critical hidden Unicode or hash drift detected []
+  includes-consent passed | No local content deployed -- includes consent check skipped []
+  drift FAILED | drift detected: 1 file(s): .agents/hooks.json ['modified: .agents/hooks.json']
+===== [claude] apm install --target claude =====
+Successfully configured MCP server 'okf-bundle' for Claude Code
+  + okf-bundle
+|  [+]  okf-bundle -> Claude (configured)
+[*] Configured 1 server
+  [!] 1 file(s) contain hidden characters
+    Run with --verbose to see details
+  [!] [jasperhg90/kmctl/apm/antigravity] Package targets [antigravity] do not 
+overlap authorized active targets; skipping
+  [!] Transitive package 'okf' declares self-defined MCP server 'bundle' 
+(registry: false). Re-declare it in your apm.yml or use --trust-transitive-mcp.
+  [i] Skipped inactive experimental resolver for target 'copilot-cowork' during 
+lockfile reconciliation.
+  [i] Skipped inactive experimental resolver for target 'copilot-app' during 
+lockfile reconciliation.
+[*] Installed 4 APM dependencies and 1 MCP server in 0.8s.
+----- [claude] apm audit --ci --no-fail-fast -----
+[!] Could not determine org from git remote; enforcement skipped (set policy.fetch_failure_default=block in apm.yml to fail closed)
+[>] Replaying install (cache-only)...
+[+] Replayed 4 package(s)
+[>] Diffing scratch vs working tree...
+[+] No drift detected
+[i] Discovered/untracked: .claude/settings.json/hooks/SessionStart/0/hooks/0 
+(prompt check: not-applicable; ownership and hash verification are separate)
+[i] Discovered/untracked: .claude/settings.json/hooks/Stop/0/hooks/0 (prompt 
+check: not-applicable; ownership and hash verification are separate)
+
+                           [>] APM Policy Compliance                            
+┏━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Status   ┃ Check                    ┃ Message                                ┃
+┡━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ [+]      │ lockfile-exists          │ Lockfile present                       │
+│ [+]      │ ref-consistency          │ All dependency refs match lockfile     │
+│ [+]      │ deployment-ledger-owners │ All deployment ledger owners are valid │
+│ [+]      │ deployed-files-present   │ All deployed files present on disk     │
+│ [+]      │ no-orphaned-packages     │ No orphaned packages in lockfile       │
+│ [+]      │ skill-subset-consistency │ Skill subset selections match lockfile │
+│          │ config-consistency       │ 1 MCP config inconsistenc(ies) -- run  │
+│          │                          │ 'apm install' to reconcile             │
+│ [+]      │ content-integrity        │ No critical hidden Unicode or hash     │
+│          │                          │ drift detected                         │
+│ [+]      │ includes-consent         │ No local content deployed -- includes  │
+│          │                          │ consent check skipped                  │
+│ [+]      │ drift                    │ no drift detected against lockfile     │
+└──────────┴──────────────────────────┴────────────────────────────────────────┘
+
+  config-consistency details:
+    - bundle: in manifest but not in lockfile
+
+[x] 1 of 10 check(s) failed
+----- exit 1 -----
+===== [claude] kmctl plugin patch =====
+patched kmctl's package v0.10.0 for claude (project scope)
+Next: start a new Claude Code session, then kmctl doctor
+On branch main
+nothing to commit, working tree clean
+hooks.json:
+(none)
+----- [claude] apm audit --ci  -----
+[>] Replaying install (cache-only)...
+[+] Replayed 4 package(s)
+[>] Diffing scratch vs working tree...
+[+] No drift detected
+
+                           [>] APM Policy Compliance                            
+┏━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Status   ┃ Check                    ┃ Message                                ┃
+┡━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ [+]      │ lockfile-exists          │ Lockfile present                       │
+│ [+]      │ ref-consistency          │ All dependency refs match lockfile     │
+│ [+]      │ deployment-ledger-owners │ All deployment ledger owners are valid │
+│ [+]      │ deployed-files-present   │ All deployed files present on disk     │
+│ [+]      │ no-orphaned-packages     │ No orphaned packages in lockfile       │
+│ [+]      │ skill-subset-consistency │ Skill subset selections match lockfile │
+│          │ config-consistency       │ 1 MCP config inconsistenc(ies) -- run  │
+│          │                          │ 'apm install' to reconcile             │
+│ [+]      │ drift                    │ no drift detected against lockfile     │
+└──────────┴──────────────────────────┴────────────────────────────────────────┘
+
+  config-consistency details:
+    - bundle: in manifest but not in lockfile
+
+[x] 1 of 8 check(s) failed
+----- exit 1 -----
+----- [claude] apm audit --ci --no-fail-fast -----
+[!] Could not determine org from git remote; enforcement skipped (set policy.fetch_failure_default=block in apm.yml to fail closed)
+[>] Replaying install (cache-only)...
+[+] Replayed 4 package(s)
+[>] Diffing scratch vs working tree...
+[+] No drift detected
+[i] Discovered/untracked: .claude/settings.json/hooks/SessionStart/0/hooks/0 
+(prompt check: not-applicable; ownership and hash verification are separate)
+[i] Discovered/untracked: .claude/settings.json/hooks/Stop/0/hooks/0 (prompt 
+check: not-applicable; ownership and hash verification are separate)
+
+                           [>] APM Policy Compliance                            
+┏━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Status   ┃ Check                    ┃ Message                                ┃
+┡━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ [+]      │ lockfile-exists          │ Lockfile present                       │
+│ [+]      │ ref-consistency          │ All dependency refs match lockfile     │
+│ [+]      │ deployment-ledger-owners │ All deployment ledger owners are valid │
+│ [+]      │ deployed-files-present   │ All deployed files present on disk     │
+│ [+]      │ no-orphaned-packages     │ No orphaned packages in lockfile       │
+│ [+]      │ skill-subset-consistency │ Skill subset selections match lockfile │
+│          │ config-consistency       │ 1 MCP config inconsistenc(ies) -- run  │
+│          │                          │ 'apm install' to reconcile             │
+│ [+]      │ content-integrity        │ No critical hidden Unicode or hash     │
+│          │                          │ drift detected                         │
+│ [+]      │ includes-consent         │ No local content deployed -- includes  │
+│          │                          │ consent check skipped                  │
+│ [+]      │ drift                    │ no drift detected against lockfile     │
+└──────────┴──────────────────────────┴────────────────────────────────────────┘
+
+  config-consistency details:
+    - bundle: in manifest but not in lockfile
+
+[x] 1 of 10 check(s) failed
+----- exit 1 -----
+----- [claude] apm audit --ci --no-drift --no-fail-fast -----
+[!] Could not determine org from git remote; enforcement skipped (set policy.fetch_failure_default=block in apm.yml to fail closed)
+[!] drift detection skipped (--no-drift); coverage reduced -- hand-edits and missing integrations will not be caught
+[i] Discovered/untracked: .claude/settings.json/hooks/SessionStart/0/hooks/0 
+(prompt check: not-applicable; ownership and hash verification are separate)
+[i] Discovered/untracked: .claude/settings.json/hooks/Stop/0/hooks/0 (prompt 
+check: not-applicable; ownership and hash verification are separate)
+
+                           [>] APM Policy Compliance                            
+┏━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Status   ┃ Check                    ┃ Message                                ┃
+┡━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│ [+]      │ lockfile-exists          │ Lockfile present                       │
+│ [+]      │ ref-consistency          │ All dependency refs match lockfile     │
+│ [+]      │ deployment-ledger-owners │ All deployment ledger owners are valid │
+│ [+]      │ deployed-files-present   │ All deployed files present on disk     │
+│ [+]      │ no-orphaned-packages     │ No orphaned packages in lockfile       │
+│ [+]      │ skill-subset-consistency │ Skill subset selections match lockfile │
+│          │ config-consistency       │ 1 MCP config inconsistenc(ies) -- run  │
+│          │                          │ 'apm install' to reconcile             │
+│ [+]      │ content-integrity        │ No critical hidden Unicode or hash     │
+│          │                          │ drift detected                         │
+│ [+]      │ includes-consent         │ No local content deployed -- includes  │
+│          │                          │ consent check skipped                  │
+└──────────┴──────────────────────────┴────────────────────────────────────────┘
+
+  config-consistency details:
+    - bundle: in manifest but not in lockfile
+
+[x] 1 of 9 check(s) failed
+----- exit 1 -----
+json summary:
+  lockfile-exists passed | Lockfile present []
+  ref-consistency passed | All dependency refs match lockfile []
+  deployment-ledger-owners passed | All deployment ledger owners are valid []
+  deployed-files-present passed | All deployed files present on disk []
+  no-orphaned-packages passed | No orphaned packages in lockfile []
+  skill-subset-consistency passed | Skill subset selections match lockfile []
+  config-consistency FAILED | 1 MCP config inconsistenc(ies) -- run 'apm install' to reconcile ['bundle: in manifest but not in lockfile']
+  content-integrity passed | No critical hidden Unicode or hash drift detected []
+  includes-consent passed | No local content deployed -- includes consent check skipped []
+  drift passed | no drift detected against lockfile []
+SUMMARY antigravity: before_patch=1 plain=1 all=1 nodrift=1
+SUMMARY claude: before_patch=1 plain=1 all=1 nodrift=1
+MISS: claude audit failed
