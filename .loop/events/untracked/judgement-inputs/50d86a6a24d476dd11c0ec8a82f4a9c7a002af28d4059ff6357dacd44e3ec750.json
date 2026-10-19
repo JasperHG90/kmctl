@@ -1,0 +1,1 @@
+{"ask":"kmctl doctor: stop failing correct setups (CLI per target, Antigravity IDE trust) and find old plugins enabled at user scope during a project-scope run (issues #24, #25)"}
