@@ -22,8 +22,8 @@
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
-    "hash": "2f7ecb49c457fdbffb9bed12202e40a3e3d6ebfca7d55ccd0f516480d2a62cf6",
-    "at": "2026-10-19T05:12:45+00:00"
+    "hash": "392cbce6f600ab317462076ee16dc1d149e0bac8b53f17c06d95a0cd11596f4f",
+    "at": "2026-10-19T05:22:25+00:00"
   },
   "delegation": null,
   "budget_base": null,
@@ -46,7 +46,7 @@
       "id": "r3",
       "behavior": "Nothing under src/, apm/, docs/ or README.md mentions the nudge, and a decision supersedes ADR 0028, restoring the one-hook rule, with I1 naming one hook.",
       "fails_when": "grep -ri nudge matches in those paths, ADR 0028's status is not deprecated, or no decision says it supersedes ADR 0028",
-      "command": "bash -c '! grep -rli nudge src apm docs README.md && grep -q \"status: deprecated\" .okf/decisions/0028-*.md && grep -lq \"Supersedes \\[ADR 0028\" .okf/decisions/0029-*.md'",
+      "command": "bash -c '! git grep -qi nudge -- src apm docs README.md && grep -q \"status: deprecated\" .okf/decisions/0028-*.md && grep -lq \"Supersedes \\[ADR 0028\" .okf/decisions/0029-*.md'",
       "judgment": false
     },
     {
@@ -57,7 +57,22 @@
       "judgment": false
     }
   ],
-  "resigns": [],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+      "reason": "r3 grepped compiled .pyc files under src/; it now uses git grep over tracked files",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r3": [
+            "command"
+          ]
+        }
+      },
+      "at": "2026-10-19T05:22:25+00:00"
+    }
+  ],
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
@@ -108,5 +123,5 @@
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-19T05:12:47+00:00"
+  "at": "2026-10-19T05:22:25+00:00"
 }

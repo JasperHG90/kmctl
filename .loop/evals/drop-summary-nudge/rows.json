@@ -17,7 +17,7 @@
       "id": "r3",
       "behavior": "Nothing under src/, apm/, docs/ or README.md mentions the nudge, and a decision supersedes ADR 0028, restoring the one-hook rule, with I1 naming one hook.",
       "fails_when": "grep -ri nudge matches in those paths, ADR 0028's status is not deprecated, or no decision says it supersedes ADR 0028",
-      "command": "bash -c '! grep -rli nudge src apm docs README.md && grep -q \"status: deprecated\" .okf/decisions/0028-*.md && grep -lq \"Supersedes \\[ADR 0028\" .okf/decisions/0029-*.md'"
+      "command": "bash -c '! git grep -qi nudge -- src apm docs README.md && grep -q \"status: deprecated\" .okf/decisions/0028-*.md && grep -lq \"Supersedes \\[ADR 0028\" .okf/decisions/0029-*.md'"
     },
     {
       "id": "r4",
