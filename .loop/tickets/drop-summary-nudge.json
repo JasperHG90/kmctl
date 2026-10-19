@@ -1,14 +1,58 @@
 {
   "schema_version": "1.0",
   "slug": "drop-summary-nudge",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "6a3ff4dbe42afee8a82063200cae9b38d3b4534a5cdbbcd0cbda6b7d8ba537f1",
+    "tree": "98356fc35c492b7ed116955f2f75018ee885fd29",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": null,
+        "paths": [
+          ".okf/summary.md"
+        ]
+      },
+      {
+        "finding": "reviewer:f2",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": null,
+        "paths": [
+          ".okf/decisions/0029-the-session-briefing-is-kmctl-s-only-hook-again.md"
+        ]
+      },
+      {
+        "finding": "reviewer:f3",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": null,
+        "paths": [
+          ".okf/manifesto.md",
+          "docs/explanation/why-one-hook-and-report-only-audits.md"
+        ]
+      },
+      {
+        "finding": "reviewer:f4",
+        "outcome": "cleared-unreviewed",
+        "by": "fallback",
+        "judgement": "j-20261019T063722+0000-939a223d",
+        "paths": [
+          "tests/test_doctor.py"
+        ]
+      }
+    ],
+    "at": "2026-10-19T06:37:22+00:00"
+  },
   "ask": "j-20261019T051006+0000-e6635eec",
   "split": "j-20261019T051058+0000-3889daa9",
   "split_plan_hash": "16259213e3b00a76040b78e7f3f5bb360d6d6b8a1db5647c539441f198c0a9ee",
@@ -135,8 +179,14 @@
       "to": "fixing",
       "at": "2026-10-19T05:37:25+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-19T06:37:22+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.2.1.dev16+g27435b040.d20261017",
-  "at": "2026-10-19T06:37:12+00:00"
+  "at": "2026-10-19T06:37:22+00:00"
 }
