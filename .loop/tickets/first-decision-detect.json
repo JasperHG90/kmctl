@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "slug": "first-decision-detect",
-  "stage": "ready",
-  "attempts": 0,
+  "stage": "building",
+  "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
@@ -17,8 +17,8 @@
   "closed_outside": false,
   "dropped": false,
   "archived": false,
-  "worktree": null,
-  "branch": null,
+  "worktree": "/home/vscode/kmctl.worktrees/first-decision-detect",
+  "branch": "loop/first-decision-detect",
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
@@ -106,8 +106,14 @@
       "to": "ready",
       "at": "2026-10-19T14:31:24+00:00",
       "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-10-19T14:32:54+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.2.2.dev1+gd84319696",
-  "at": "2026-10-19T14:32:29+00:00"
+  "at": "2026-10-19T14:32:54+00:00"
 }
