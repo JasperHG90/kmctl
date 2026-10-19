@@ -17,6 +17,8 @@ ROOT = Path(__file__).resolve().parents[2]
 WORKFLOWS = ROOT / ".github" / "workflows"
 RELEASE = WORKFLOWS / "release.yml"
 RELEASE_TAG = WORKFLOWS / "release-tag.yml"
+KNOWLEDGE_AUDIT = WORKFLOWS / "knowledge-audit.yml"
+ACTION = ROOT / "action.yml"
 CI = WORKFLOWS / "ci.yml"
 # The job in each workflow that may write; every other job reads only.
 WRITERS = {RELEASE: {"bump"}, RELEASE_TAG: {"tag"}}
@@ -259,7 +261,9 @@ def test_no_workflow_publishes_to_pypi(path: Path) -> None:
     assert "id-token" not in text
 
 
-@pytest.mark.parametrize("path", [RELEASE, RELEASE_TAG], ids=lambda p: p.name)
+@pytest.mark.parametrize(
+    "path", [RELEASE, RELEASE_TAG, KNOWLEDGE_AUDIT, ACTION], ids=lambda p: p.name
+)
 def test_every_action_is_pinned_by_commit_sha(path: Path) -> None:
     """Each ``uses:`` names a 40-character commit SHA with its version as a comment."""
     lines = [line for line in path.read_text().splitlines() if "uses:" in line]
