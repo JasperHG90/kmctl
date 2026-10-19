@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.2.2.dev1+gd84319696
-  at: '2026-10-19T14:35:35+00:00'
+  at: '2026-10-19T14:37:17+00:00'
 slug: review-due-commit-order
 n: 1
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike review-due-commit-order/1
@@ -24,7 +24,10 @@ uv run --frozen python /tmp/claude-1000/-home-vscode-kmctl/c37be586-8598-4232-be
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note review-due-commit-order 1`.
+All 33 rule cases matched (same cases as run 2), so the rule picks the right verification commit after a squash, a rebase+ff and a merge commit.
+Exit 1 came only from the timing check, which counted the per-source `git diff V HEAD` calls as added cost. They replace today's `git log -1` calls, so that check measured the wrong thing; run 2 fixes it.
+Worst case, all 40 concepts and docs pages walking their whole history: one `git log` per file took 1.494 s, one batched `git log --name-only` plus one `git cat-file --batch` took 0.210 s; `review due` itself took 1.094 s on this busy machine.
+Does not settle risk 1 on its own; see run 2.
 
 ## Files
 
