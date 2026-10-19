@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": ".okf/summary.md still says 'When a concept changes after this page, an after-tool hook asks the agent to update it.' That hook is gone, and the summary is the bundle's first page.",
+      "anchor": ".okf/summary.md:42",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "ADR 0029 ends with the line 'Supersedes [ADR 0028](...)' twice.",
+      "anchor": ".okf/decisions/0029-the-session-briefing-is-kmctl-s-only-hook-again.md:63",
+      "category": "nit",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "The manifesto's Out of scope list and the 'Why there is only one hook' explanation still cite ADR 0004 for the one-hook rule and the rejected hooks. ADR 0004 is deprecated and now points only to ADR 0028; ADR 0029 is the current record and repeats the rejection. Cite ADR 0029, or both.",
+      "anchor": ".okf/manifesto.md:133",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "open",
+      "claim": "test_doctor_has_no_nudge_check runs on the claude+antigravity fixture, so a restored opencode.nudge-hook check would not fail it. Row r2's fails_when covers every harness. Add an OpenCode install, or a check against the opencode doctor fixture.",
+      "anchor": "tests/test_doctor.py:1247",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "bc39f53cf26df0fd2e600537dbf3abd695b8bada681c0099b97a09211da27eee",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-19T05:37:07+00:00"
+}
