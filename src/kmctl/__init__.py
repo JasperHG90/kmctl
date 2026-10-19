@@ -466,7 +466,7 @@ def verify(
 
 
 def _register_concept_verb(kind: Kind, example: str) -> None:
-    """Add ``kmctl new KIND`` for one .okf/ section; handoffs also take ``--key``, other kinds ``--source``."""
+    """Add ``kmctl new KIND`` for one .okf/ section; handoffs also take ``--key``, decisions ``--draft``, other kinds ``--source``."""
 
     def command(
         title: Annotated[
@@ -531,6 +531,17 @@ def _register_concept_verb(kind: Kind, example: str) -> None:
                 ),
             ),
         ] = None,
+        draft: Annotated[
+            bool,
+            typer.Option(
+                "--draft",
+                help=(
+                    "Decisions only: write status draft instead of stable, for a choice "
+                    "written down but not yet accepted (ADR 0031). Once it is accepted, "
+                    "set status to stable and add a log.md line that says so."
+                ),
+            ),
+        ] = False,
     ) -> None:
         try:
             result = new_concept(
@@ -541,6 +552,7 @@ def _register_concept_verb(kind: Kind, example: str) -> None:
                 key=key,
                 stale_after=stale_after,
                 sources=sources,
+                draft=draft,
             )
         except ConceptError as error:
             typer.echo(f"kmctl new {kind}: refused: {error}", err=True)
@@ -560,7 +572,12 @@ def _register_concept_verb(kind: Kind, example: str) -> None:
             f"  kmctl new {kind} '{example}' --description 'One sentence.' --json\n\n"
             f"  kmctl new {kind} '{example}' --description 'One sentence.' "
             f"{'--stale-after 3d' if kind == 'handoff' else '--source src/app.py --stale-after 6m'}\n\n"
-            "Writes the structure; you write the prose. The first one creates its section."
+            + (
+                f"  kmctl new {kind} '{example}' --description 'One sentence.' --draft\n\n"
+                if kind == "decision"
+                else ""
+            )
+            + "Writes the structure; you write the prose. The first one creates its section."
         ),
     )(command)
 
