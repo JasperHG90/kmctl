@@ -4,6 +4,8 @@ name = "kmctl"
 dynamic = ["version"]
 description = "Keep a repository's docs/ and OKF knowledge bundle current, across agent harnesses."
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [
     { name = "Jasper Ginn", email = "jasperginn@gmail.com" }
 ]
