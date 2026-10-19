@@ -22,17 +22,17 @@
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
-    "hash": "9ffbfaa4bad02856f51ecc95c1cc2c718c856726c1df083a798ae810c0b8ed5a",
-    "at": "2026-10-19T15:08:54+00:00"
+    "hash": "abae0efae4c524d9fd78dccc88c3f4ff1d53326fb0ebd2c098070d89ecf20938",
+    "at": "2026-10-19T16:27:57+00:00"
   },
   "delegation": null,
   "budget_base": null,
   "signed_rows": [
     {
       "id": "r1",
-      "behavior": "A starter project bootstrapped for claude, antigravity and opencode passes apm audit --ci --no-drift --no-policy (exit 0) after install and kmctl plugin patch.",
-      "fails_when": "the audit exits nonzero",
-      "command": "uv run pytest -m integration tests/test_starter.py::test_bootstrap_installs_this_checkout -q",
+      "behavior": "A starter project bootstrapped for claude and antigravity passes apm audit --ci --no-drift --no-policy (exit 0) after install and kmctl plugin patch. OpenCode is out: APM's content-integrity check flags the agents kmctl plugin patch rewrites, and no audit flag skips it; the install how-to says so and the drift gate covers OpenCode.",
+      "fails_when": "the audit exits nonzero for the claude and antigravity project",
+      "command": "uv run pytest -m integration tests/test_starter.py -q -k audit_passes_for_claude_and_antigravity",
       "judgment": false
     },
     {
@@ -64,7 +64,24 @@
       "judgment": true
     }
   ],
-  "resigns": [],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+      "reason": "r1 named OpenCode, which the plan left to be checked in the build: APM 0.33.0's content-integrity check fails on the three agents kmctl plugin patch rewrites and no audit flag skips it, so r1 covers claude and antigravity (issue #28's scope) and OpenCode goes to a follow-up ticket",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r1": [
+            "behavior",
+            "fails_when",
+            "command"
+          ]
+        }
+      },
+      "at": "2026-10-19T16:27:57+00:00"
+    }
+  ],
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
@@ -115,5 +132,5 @@
     }
   ],
   "by": "process:loopctl/2.2.2.dev1+gd84319696",
-  "at": "2026-10-19T15:37:29+00:00"
+  "at": "2026-10-19T16:27:57+00:00"
 }
