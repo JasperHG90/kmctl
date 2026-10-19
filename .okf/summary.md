@@ -32,7 +32,7 @@ Claude Code, Antigravity and OpenCode.
 
 Four parts ([overview](architecture/overview.md)). The CLI in `src/kmctl/`
 alone writes knowledge. An APM package in `apm/` carries skills, an audit
-agent, four knowledge rules and two hooks; APM installs it and
+agent, four knowledge rules and its hooks; APM installs it and
 `kmctl plugin patch` fills APM's gaps. A GitHub Action runs free checks on
 each pull request and an opt-in LLM audit. A copier template starts new
 projects pinned to a release.
@@ -40,7 +40,7 @@ projects pinned to a release.
 An agent reads in layers: the SessionStart hook injects `kmctl briefing`,
 the block in `CLAUDE.md` and `AGENTS.md` points to this summary, the summary
 to the indexes, and the indexes to the concepts. When a concept changes
-after this page, an after-tool hook asks the agent to update it. Each
+after this page, the briefing and `kmctl review due` say so. Each
 project pins kmctl in `apm.lock.yaml`, and the `kmctl` on PATH hands every
 command to that release
 ([ADR 0026](decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins.md)).
@@ -57,10 +57,10 @@ Handoffs in `.okf/handoffs/` carry unfinished work into the next session
   [ADR 0008](decisions/0008-handoffs-are-okf-concepts.md),
   [ADR 0022](decisions/0022-docs-pages-carry-optional-okf-front-matter-and-generated-folder-indexes.md)).
 - **Inject, don't link.** An agent reads a page only if it
-  knows to look, so knowledge arrives through two hooks that never block,
+  knows to look, so knowledge arrives through a hook that never blocks,
   plus rules where the briefing alone left too few records written
   ([ADR 0002](decisions/0002-briefing-and-rules-injected-by-the-cli.md),
-  [ADR 0028](decisions/0028-two-hooks-the-session-briefing-and-the-summary-nudge.md),
+  [ADR 0029](decisions/0029-the-session-briefing-is-kmctl-s-only-hook-again.md),
   [ADR 0011](decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md)).
   Antigravity also relays okf's Stop check
   ([ADR 0018](decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity.md)).

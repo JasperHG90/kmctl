@@ -7,9 +7,8 @@ paths: ["apm/**", "src/kmctl/**", "pyproject.toml", ".github/workflows/**"]
 kmctl's skills, audit agent and knowledge rules ship in its APM package,
 `apm/`. The user adds its `apm.yml` entry at the tag of the CLI's own
 version, `ref: v<cli version>`, runs `apm install`, then `kmctl plugin patch`,
-so the package and the CLI match (ADR 0001, ADR 0014, ADR 0021). Neither
-of the two hooks kmctl's package ships, the SessionStart briefing and the
-PostToolUse summary nudge, ever blocks (ADR 0028, invariant I1 in
+so the package and the CLI match (ADR 0001, ADR 0014, ADR 0021). The one
+hook kmctl's package ships never blocks (ADR 0029, invariant I1 in
 `.okf/manifesto.md`).
 
 <constraint name="the-package-is-installed-at-the-cli-tag">
@@ -23,12 +22,12 @@ Docs and skills install the package only with the `apm.yml` entry
 </constraint>
 
 <constraint name="the-hook-survives-a-missing-cli">
-WHY: a hook that fails on a missing `kmctl` breaks every session start, or
-every tool call, without telling the user why.
+WHY: a SessionStart hook that fails on a missing `kmctl` breaks every
+session start without telling the user why.
 
-Each hook command checks that `kmctl` is on PATH before calling it. When it
-is missing or fails, the SessionStart hook prints how to install or upgrade
-`kmctl`, the PostToolUse nudge prints `{}`, and both exit 0.
+The hook command checks that `kmctl` is on PATH before calling it. When it
+is missing or fails, the hook prints how to install or upgrade `kmctl` and
+exits 0.
 </constraint>
 
 <constraint name="skills-name-only-shipped-verbs">

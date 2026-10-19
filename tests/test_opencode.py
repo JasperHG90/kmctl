@@ -92,7 +92,6 @@ OPENCODE_IDS = [
     "opencode.rules",
     "opencode.okf-mcp",
     "opencode.hook",
-    "opencode.nudge-hook",
 ]
 PATCH_FIX = "run kmctl plugin patch"
 APM_FIX = (
@@ -610,167 +609,6 @@ def test_briefing_plugin_adds_nothing_and_throws_nothing(
     assert out["pushed"] == []
 
 
-# okf-summary-nudge-agy-opencode r4: the plugin's summary nudge -----------------------
-
-_NUDGE_HARNESS_JS = """\
-// Load the plugin as OpenCode 2.x does, then call its execute.after hook as
-// core's executeTool does after a write, and report what it left.
-const [file, work] = process.argv.slice(2)
-import(file).then(async ({ default: plugin }) => {
-  const out = { setup: "ok", hook: "ok", hooked: false, content: null, ms: null }
-  let after = null
-  const ctx = {
-    location: { directory: work, project: { directory: work } },
-    session: { hook: async () => {} },
-    tool: { hook: async (name, cb) => { if (name === "execute.after") after = cb } },
-  }
-  try { await plugin.setup(ctx) } catch (e) { out.setup = String(e) }
-  if (after) {
-    out.hooked = true
-    const event = {
-      tool: "write",
-      status: "completed",
-      result: { output: {}, content: [{ type: "text", text: "Created file successfully: note.txt" }] },
-    }
-    const start = Date.now()
-    try { await after(event) } catch (e) { out.hook = String(e) }
-    out.ms = Date.now() - start
-    out.content = event.result.content
-    // A failed tool call carries error in place of result.
-    try { await after({ tool: "write", status: "error", error: "boom" }) } catch (e) { out.hook = String(e) }
-  }
-  process.stdout.write(JSON.stringify(out))
-  process.exit(0)
-})
-"""
-#: What the write tool returned before the hook ran.
-_TOOL_TEXT = {"type": "text", "text": "Created file successfully: note.txt"}
-#: A fake kmctl whose nudge reads stdin to its end first, so it blocks while
-#: the plugin leaves its stdin open, and records its env and arguments.
-_NUDGING_KMCTL = """\
-#!/bin/sh
-[ "$1" = summary ] || exit 0
-cat >/dev/null
-printf '%s|%s\\n' "$KMCTL_PINNED" "$*" >> "$HOME/nudge-args"
-printf '  kmctl: .okf/summary.md is behind\\n\\n'
-"""
-
-
-def _run_nudge_hook(tmp_path: Path, kmctl: str | None) -> dict:
-    """Run the plugin's execute.after hook under node with a real child; node's own stdin stays an open pipe."""
-    if NODE is None:
-        pytest.skip("node is not installed")
-    bin_dir = tmp_path / "bin"
-    bin_dir.mkdir()
-    if kmctl is not None:
-        fake = bin_dir / "kmctl"
-        fake.write_text(kmctl)
-        fake.chmod(0o755)
-    plugin_file = tmp_path / "kmctl.mjs"
-    plugin_file.write_text(opencode.PLUGIN_SOURCE)
-    harness = tmp_path / "harness.mjs"
-    harness.write_text(_NUDGE_HARNESS_JS)
-    work = tmp_path / "work"
-    work.mkdir()
-    proc = subprocess.Popen(
-        [NODE, str(harness), plugin_file.as_uri(), str(work)],
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        env={"PATH": f"{bin_dir}:/usr/bin:/bin", "HOME": str(tmp_path)},
-    )
-    try:
-        assert proc.stdout is not None and proc.stderr is not None
-        out, err = proc.stdout.read(), proc.stderr.read()
-        assert proc.wait(timeout=60) == 0, err
-    finally:
-        proc.kill()
-        if proc.stdin:
-            proc.stdin.close()
-    return {**json.loads(out), "work": str(work)}
-
-
-def test_nudge_plugin_appends_the_nudge_once_with_stdin_closed(tmp_path: Path) -> None:
-    out = _run_nudge_hook(tmp_path, _NUDGING_KMCTL)
-
-    assert (out["setup"], out["hook"], out["hooked"]) == ("ok", "ok", True)
-    assert out["content"] == [
-        _TOOL_TEXT,
-        {"type": "text", "text": "kmctl: .okf/summary.md is behind"},
-    ]
-    # An open stdin would hold the fake until the timeout kills it.
-    assert out["ms"] < plugin.HOOK_TIMEOUT * 1000 / 2
-    # The error event, which has no result to add to, runs nothing.
-    calls = (tmp_path / "nudge-args").read_text().splitlines()
-    assert calls == [f"1|summary nudge --format opencode --path {out['work']}"]
-
-
-@pytest.mark.parametrize(
-    "kmctl",
-    [
-        None,
-        "#!/bin/sh\n[ \"$1\" = summary ] || exit 0\necho 'kmctl: text'\nexit 1\n",
-        "#!/bin/sh\nexit 0\n",
-        "#!/bin/sh\nprintf '  \\n\\n'\n",
-    ],
-    ids=["missing", "failing", "silent", "blank"],
-)
-def test_nudge_plugin_leaves_the_result_alone_and_throws_nothing(
-    tmp_path: Path, kmctl: str | None
-) -> None:
-    out = _run_nudge_hook(tmp_path, kmctl)
-
-    assert (out["setup"], out["hook"], out["hooked"]) == ("ok", "ok", True)
-    assert out["content"] == [_TOOL_TEXT]
-
-
-def test_nudge_plugin_source_runs_the_verb_pinned_with_a_timeout() -> None:
-    source = opencode.PLUGIN_SOURCE
-
-    assert 'ctx.tool.hook("execute.after"' in source
-    assert '"summary", "nudge", "--format", "opencode", "--path"' in source
-    assert 'KMCTL_PINNED: "1"' in source
-    assert 'stdio: ["ignore", "pipe", "ignore"]' in source
-    assert f"timeout: {plugin.HOOK_TIMEOUT * 1000}" in source
-
-
-def test_nudge_plugin_patch_writes_it_and_undo_removes_it(repo: Path) -> None:
-    _install(repo)
-    assert 'ctx.tool.hook("execute.after"' in (repo / PLUGIN_PATH).read_text()
-
-    _patch("--undo")
-
-    assert not (repo / PLUGIN_PATH).exists()
-
-
-@pytest.mark.parametrize(
-    ("breaks", "said"),
-    [
-        (
-            lambda r: (r / PLUGIN_PATH).write_text(
-                opencode.PLUGIN_SOURCE.replace('"execute.after"', '"execute.before"')
-            ),
-            f"{PLUGIN_PATH} lacks the execute.after hook that runs kmctl summary nudge",
-        ),
-        (lambda r: (r / PLUGIN_PATH).unlink(), f"{PLUGIN_PATH} is missing"),
-    ],
-    ids=["no-hook", "no-plugin"],
-)
-def test_nudge_doctor_reports_a_plugin_without_the_hook(
-    repo: Path, breaks, said: str
-) -> None:
-    _install(repo)
-    assert _checks(repo)["opencode.nudge-hook"]["ok"]
-    breaks(repo)
-
-    check = _checks(repo)["opencode.nudge-hook"]
-
-    assert check["ok"] is False
-    assert check["detail"] == said
-    assert check["fix"] == PATCH_FIX
-
-
 # r6: --undo, and user scope ---------------------------------------------------------
 
 
@@ -983,7 +821,6 @@ def test_doctor_opencode_ids_are_in_the_help_and_the_reference() -> None:
         "opencode.rules",
         "opencode.okf-mcp",
         "opencode.hook",
-        "opencode.nudge-hook",
     ):
         assert cid in help_text, cid
     assert "dep.opencode" in help_text
@@ -1181,3 +1018,11 @@ def test_docs_install_how_to_and_readme_cover_opencode() -> None:
         "kmctl plugin patch --undo",
     ):
         assert words in how_to, words
+
+
+# drop-summary-nudge r1: the plugin runs nothing after a tool call ----------------
+
+
+def test_plugin_has_no_after_tool_hook() -> None:
+    assert "execute.after" not in opencode.PLUGIN_SOURCE
+    assert '["briefing", "--path", cwd]' in opencode.PLUGIN_SOURCE

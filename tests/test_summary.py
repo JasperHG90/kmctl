@@ -632,3 +632,13 @@ def test_this_repository_records_the_decision_and_the_verb() -> None:
     [record] = [d for d in decisions if "kmctl summary ack" in d and "500" in d]
     assert "summary.md" in record and "commit" in record
     assert "### `kmctl summary ack`" in reference
+
+
+# drop-summary-nudge r2: the summary verbs are ack only --------------------------
+
+
+def test_summary_has_no_nudge_verb() -> None:
+    help_text = _invoke("summary", "--help").output
+    assert "ack" in help_text
+    assert "nudge" not in help_text
+    assert _invoke("summary", "nudge").exit_code != 0

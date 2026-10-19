@@ -15,24 +15,15 @@ history reason.
 writes ``checked`` into the summary's front matter, which is an edit to the
 summary, so the same rule clears it. It claims no person's review; that is
 ``kmctl verify`` (ADR 0023).
-
-``nudge`` is what Claude Code's PostToolUse hook prints right after a tool
-call: the concepts the summary is behind and both ways out. It uses the same
-rule, so git only, and it remembers the last set it named as a hash under the
-git directory, so later calls on the same set stay quiet. It never writes
-``.okf/``.
 """
 
-import hashlib
 import re
 import subprocess
 from dataclasses import dataclass
-from dataclasses import field as dataclass_field
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from kmctl.concepts import _STAMP, ConceptError
 from kmctl.okf import BadFrontMatter, field, front_matter
@@ -43,9 +34,6 @@ SUMMARY = ".okf/summary.md"
 SUMMARY_ID = "summary"
 #: The most words the summary's body may hold, outside its front matter.
 WORD_LIMIT = 500
-
-#: Where the last nudged set's hash goes, as ``git rev-parse --git-path`` takes it.
-NUDGE_STATE = "kmctl/summary-nudge"
 
 #: A path, from the repository root, of a concept whose change the summary follows.
 _CONCEPT = re.compile(
@@ -244,162 +232,3 @@ def ack(root: Path, now: datetime | None = None) -> Acked:
     new = "---\n" + "\n".join(head) + text[end:]
     path.write_text(new, encoding="utf-8")
     return Acked(path=SUMMARY, at=at, against=changed)
-
-
-class _HookPayload(BaseModel):
-    """The JSON object Claude Code sends a PostToolUse hook on stdin, with the field kmctl reads."""
-
-    cwd: str | None = Field(
-        default=None, description="The folder the session runs in: the repository."
-    )
-
-
-class _Context(BaseModel):
-    """What a PostToolUse hook hands Claude Code to add to the model's context."""
-
-    model_config = ConfigDict(populate_by_name=True)
-
-    event: str = Field(
-        default="PostToolUse",
-        alias="hookEventName",
-        description="The hook event this output answers.",
-    )
-    context: str = Field(
-        alias="additionalContext", description="The text the model reads next."
-    )
-
-
-class _HookOutput(BaseModel):
-    """The JSON object a Claude Code PostToolUse hook prints to add context."""
-
-    model_config = ConfigDict(populate_by_name=True)
-
-    specific: _Context = Field(
-        alias="hookSpecificOutput", description="The event's own output."
-    )
-
-
-def as_claude(text: str | None) -> str:
-    """``text`` as the JSON a Claude Code PostToolUse hook prints, or ``{}`` for no nudge."""
-    if text is None:
-        return "{}"
-    return _HookOutput(specific=_Context(context=text)).model_dump_json(by_alias=True)
-
-
-class BadPayload(ValueError):
-    """Hook input on stdin that is empty, not a JSON object, or names no folder."""
-
-
-def payload_cwd(text: str) -> Path | None:
-    """The folder a PostToolUse payload names as ``cwd``, or None when it names none.
-
-    Raises
-    ------
-    BadPayload
-        When ``text`` is empty, not a JSON object, or its ``cwd`` is not a
-        string naming a folder.
-    """
-    try:
-        payload = _HookPayload.model_validate_json(text)
-    except ValidationError as error:
-        raise BadPayload("the hook input is not a JSON object") from error
-    if payload.cwd is None:
-        return None
-    path = Path(payload.cwd)
-    if not path.is_dir():
-        raise BadPayload(f"the hook input's cwd {payload.cwd!r} is not a folder")
-    return path
-
-
-def find_root(start: Path) -> Path:
-    """The folder holding the summary for ``start``: it or a parent, up to the one holding ``.git``.
-
-    It stops at the first folder holding ``.okf/summary.md`` or ``.git``, so a
-    hook run in a subfolder finds the repository, and never reads a parent
-    project's bundle. When neither is found, it is ``start``.
-    """
-    folder = start.resolve()
-    for candidate in (folder, *folder.parents):
-        if (candidate / SUMMARY).is_file() or (candidate / ".git").exists():
-            return candidate
-    return folder
-
-
-def nudge_text(changed: list[str]) -> str:
-    """The nudge for a summary behind the concepts ``changed``: what changed and both ways out."""
-    return (
-        f"kmctl: {SUMMARY} is behind concepts that changed since it: "
-        f"{', '.join(changed)}. If they change what the summary says, update "
-        f"{SUMMARY}; if it still holds, run kmctl summary ack."
-    )
-
-
-@dataclass(frozen=True)
-class Nudge:
-    """What ``nudge`` found: the concepts the summary is behind, and the nudge to give now.
-
-    ``kmctl summary nudge --json`` prints it as is.
-
-    Attributes
-    ----------
-    concepts : list[str]
-        The changed concepts' ids, sorted; empty when the summary is current
-        or the rule cannot be checked.
-    nudge : str | None
-        The nudge, or None to stay quiet: nothing changed, or this set was
-        already named.
-    behind : bool
-        Whether the summary is behind a changed concept: ``concepts`` is not
-        empty.
-    """
-
-    concepts: list[str]
-    nudge: str | None
-    behind: bool = dataclass_field(init=False)
-
-    def __post_init__(self) -> None:
-        """Derive ``behind`` from ``concepts``."""
-        object.__setattr__(self, "behind", bool(self.concepts))
-
-
-def nudge(root: Path) -> Nudge:
-    """What to tell the agent about the summary in ``root`` now.
-
-    It nudges when ``changed_concepts`` lists concepts and this set, against
-    this summary text, is not the one it last nudged about. It then writes
-    the set's hash to ``kmctl/summary-nudge`` under the git directory, so the
-    same set stays quiet and a set that grows, or comes back after the
-    summary changed, nudges again. It reads git and the summary only and
-    writes nothing under ``.okf/``.
-
-    Parameters
-    ----------
-    root : Path
-        The repository root, holding .okf/summary.md.
-
-    Returns
-    -------
-    Nudge
-        The changed concepts, and the nudge text: None when the summary is
-        current, there is no summary or git history, or this set was
-        already named.
-    """
-    changed = changed_concepts(root)
-    if not changed:
-        return Nudge(concepts=[], nudge=None)
-    quiet = Nudge(concepts=changed, nudge=None)
-    where = _git(root, "rev-parse", "--git-path", NUDGE_STATE)
-    if where is None:
-        return quiet
-    state = root / where.strip()
-    key = hashlib.sha256((root / SUMMARY).read_bytes())
-    key.update("\0".join(changed).encode())
-    digest = key.hexdigest()
-    try:
-        if state.read_text(encoding="utf-8").strip() == digest:
-            return quiet
-    except OSError:
-        pass  # no set nudged yet
-    state.parent.mkdir(parents=True, exist_ok=True)
-    state.write_text(digest + "\n", encoding="utf-8")
-    return Nudge(concepts=changed, nudge=nudge_text(changed))

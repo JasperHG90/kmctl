@@ -77,7 +77,6 @@ ALL_IDS = [
     "claude.files",
     "claude.okf-skills",
     "claude.hook",
-    "claude.nudge-hook",
     "claude.okf-mcp",
     "claude.old-plugin",
     "antigravity.lock",
@@ -85,7 +84,6 @@ ALL_IDS = [
     "antigravity.okf-skills",
     "antigravity.plugin",
     "antigravity.hook",
-    "antigravity.nudge-hook",
     "antigravity.apm-hooks",
     "antigravity.okf-mcp",
     "antigravity.trust",
@@ -175,15 +173,9 @@ def _apm_writes(harnesses: tuple[str, ...], scope: str) -> dict[str, str]:
     if "claude" in harnesses:
         # As APM 0.33.0 writes kmctl's package (spike:apm-hands-back/1, /5).
         group = {"matcher": "*", "hooks": [plugin.hook_entry()]}
-        nudge = {"matcher": plugin.NUDGE_MATCHER, "hooks": [plugin.nudge_hook_entry()]}
-        out[".claude/settings.json"] = json.dumps(
-            {"hooks": {"SessionStart": [group], "PostToolUse": [nudge]}}
-        )
+        out[".claude/settings.json"] = json.dumps({"hooks": {"SessionStart": [group]}})
         out[".claude/apm-hooks.json"] = json.dumps(
-            {
-                "SessionStart": [{**group, "_apm_source": "kmctl/claude"}],
-                "PostToolUse": [{**nudge, "_apm_source": "kmctl/claude"}],
-            }
+            {"SessionStart": [{**group, "_apm_source": "kmctl/claude"}]}
         )
         mcp = ".claude/.claude.json" if scope == "user" else ".mcp.json"
         out[mcp] = json.dumps({"mcpServers": {plugin.MCP_NAME: server}})
@@ -195,10 +187,6 @@ def _apm_writes(harnesses: tuple[str, ...], scope: str) -> dict[str, str]:
                 ("Stop", antigravity.STOP_COMMAND),
             )
         }
-        # APM 0.33.0 nests PreToolUse and PostToolUse handlers in matcher
-        # groups for Antigravity and writes the other events flat.
-        nudge = {"type": "command", "command": antigravity.NUDGE_COMMAND, "timeout": 10}
-        hook["PostToolUse"] = [{"matcher": "*", "hooks": [nudge]}]
         out[".agents/hooks.json"] = json.dumps({"apm": hook})
         out[".agents/mcp_config.json"] = json.dumps(
             {"mcpServers": {plugin.MCP_NAME: server}}
@@ -511,43 +499,6 @@ def test_broken_piece_fails_naming_it_and_its_fix(complete: Setup, case: str) ->
     line = _fail_line(result.stdout, cid)
     assert piece in line, line
     assert line.endswith(f"; {fix}"), line
-
-
-def _settings_hooks(repo: Path) -> tuple[Path, dict]:
-    path = repo / ".claude" / "settings.json"
-    return path, json.loads(path.read_text())
-
-
-def test_nudge_hook_present_passes(complete: Setup) -> None:
-    check = _by_id(_doctor()[1])["claude.nudge-hook"]
-
-    assert check["ok"] is True
-    assert "PostToolUse" in check["detail"] and "summary nudge" in check["detail"]
-
-
-def test_nudge_hook_missing_fails_with_the_install_fix(complete: Setup) -> None:
-    path, data = _settings_hooks(complete.repo)
-    del data["hooks"]["PostToolUse"]
-    path.write_text(json.dumps(data))
-
-    result = _kmctl("doctor")
-
-    assert result.exit_code == 1, result.output
-    line = _fail_line(result.stdout, "claude.nudge-hook")
-    assert "PostToolUse hook is missing from .claude/settings.json" in line
-    assert CLAUDE_FIX in line
-    assert _by_id(_doctor()[1])["claude.hook"]["ok"] is True
-
-
-def test_nudge_hook_changed_fails_with_the_update_fix(complete: Setup) -> None:
-    path, data = _settings_hooks(complete.repo)
-    data["hooks"]["PostToolUse"][0]["matcher"] = "Write"
-    path.write_text(json.dumps(data))
-
-    line = _fail_line(_kmctl("doctor").stdout, "claude.nudge-hook")
-
-    assert "is not the one kmctl's package ships" in line
-    assert _update_fix("claude") in line
 
 
 def test_broken_lock_and_hook_still_name_the_harness(complete: Setup) -> None:
@@ -1290,59 +1241,14 @@ def test_fix_names_no_old_verb(setup: Setup) -> None:
             assert not re.search(r"plugin (install|update|remove)", fix), (name, fix)
 
 
-# okf-summary-nudge-agy-opencode r3: the Antigravity nudge hook --------------------
+# drop-summary-nudge r2: no check for a PostToolUse hook --------------------------
 
 
-def _ag_hooks(s: Setup) -> tuple[Path, dict]:
-    path = s.repo / ".agents" / "hooks.json"
-    return path, json.loads(path.read_text())
-
-
-def test_antigravity_nudge_check_passes_on_apms_nested_form(complete: Setup) -> None:
-    _, hooks = _ag_hooks(complete)
-    [group] = hooks["apm"]["PostToolUse"]
-    assert set(group) == {"matcher", "hooks"}
-
-    _, data = _doctor()
-
-    check = _by_id(data)["antigravity.nudge-hook"]
-    assert check["ok"], check
-    assert check["detail"] == (
-        ".agents/hooks.json holds the PostToolUse hook that runs kmctl summary nudge"
-    )
-
-
-def test_antigravity_nudge_check_reads_a_flat_entry_too(complete: Setup) -> None:
-    path, hooks = _ag_hooks(complete)
-    [group] = hooks["apm"]["PostToolUse"]
-    hooks["apm"]["PostToolUse"] = group["hooks"]
-    path.write_text(json.dumps(hooks))
-
-    _, data = _doctor()
-
-    assert _by_id(data)["antigravity.nudge-hook"]["ok"]
-
-
-@pytest.mark.parametrize("change", ["missing", "other-command", "other-event"])
-def test_antigravity_nudge_check_fails_without_the_entry(
-    complete: Setup, change: str
-) -> None:
-    path, hooks = _ag_hooks(complete)
-    groups = hooks["apm"].pop("PostToolUse")
-    if change == "other-command":
-        groups[0]["hooks"][0]["command"] = "kmctl summary nudge"
-        hooks["apm"]["PostToolUse"] = groups
-    elif change == "other-event":
-        hooks["apm"]["PreToolUse"] = groups
-    path.write_text(json.dumps(hooks))
-
-    result, data = _doctor()
-
-    check = _by_id(data)["antigravity.nudge-hook"]
-    assert check["ok"] is False
-    assert check["detail"] == (
-        ".agents/hooks.json lacks the PostToolUse hook that runs kmctl summary nudge"
-    )
-    assert check["fix"] == antigravity.APM_FIX
-    assert _by_id(data)["antigravity.hook"]["ok"]
-    assert result.exit_code == 1
+def test_doctor_has_no_nudge_check(complete: Setup) -> None:
+    ids = _by_id(_doctor()[1])
+    assert "claude.hook" in ids
+    assert not [cid for cid in ids if cid.endswith("nudge-hook")]
+    # The help lists every harness's checks, OpenCode's included.
+    help_text = _kmctl("doctor", "--help").stdout
+    assert "opencode.hook" in help_text
+    assert "nudge" not in help_text

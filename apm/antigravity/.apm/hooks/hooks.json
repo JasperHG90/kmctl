@@ -12,18 +12,6 @@
         ]
       }
     ],
-    "PostToolUse": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "command -v kmctl >/dev/null 2>&1 || { echo '{}'; exit 0; }; out=$(KMCTL_PINNED=1 kmctl summary nudge --format antigravity 2>/dev/null) && printf '%s\\n' \"$out\" || echo '{}'; exit 0",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
     "Stop": [
       {
         "matcher": "*",

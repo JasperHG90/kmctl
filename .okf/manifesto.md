@@ -66,16 +66,15 @@ ADR 0027), `manifesto.md` (the root concept), `decisions/`, `architecture/`, `pr
   four knowledge rules, and it depends on the okf skills for OKF authoring and
   validation. Skills route; `kmctl` decides and writes.
   The package also ships, per harness, the SessionStart hook that relays
-  `kmctl`'s briefing, for Claude Code and Antigravity the PostToolUse hook
-  that runs `kmctl summary nudge` (ADR 0028), okf's MCP server and, for
-  Antigravity, okf's Stop check (ADR 0018), so APM (Agent Package Manager) installs all of it
+  `kmctl`'s briefing (ADR 0029), okf's MCP server and, for Antigravity, okf's
+  Stop check (ADR 0018), so APM (Agent Package Manager) installs all of it
   (ADR 0020). The user adds the package to `apm.yml` at the CLI's own
   version and runs `apm install --target claude` (or `--target
   antigravity`, or `--target opencode`); `kmctl plugin patch` then adds
   only what APM cannot install yet: the agents translated to Antigravity's
   format, in `.agents/plugins/kmctl/` (ADR 0015, ADR 0021), and for
   OpenCode the agents rewritten into its format, the rules and a plugin
-  that relays the briefing and the summary nudge (ADR 0024, ADR 0028). The harnesses are Claude Code,
+  that relays the briefing (ADR 0024). The harnesses are Claude Code,
   Antigravity and OpenCode.
 - **A reusable GitHub Action** (ADR 0005). On every pull request it runs the
   deterministic checks for free. The LLM audit is opt-in and reports only.
@@ -88,26 +87,17 @@ ADR 0027), `manifesto.md` (the root concept), `decisions/`, `architecture/`, `pr
 
 Each is `planned` until the test named for it passes, then `enforced`.
 
-- **I1. Two hooks of its own, and neither breaks a session.** kmctl's own
-  hooks are SessionStart, which prints the briefing, and PostToolUse, which
-  runs `kmctl summary nudge` right after a tool call: in Claude Code after
-  Write, Edit, MultiEdit and Bash calls, in Antigravity after every tool
-  call, and in OpenCode from the plugin's `execute.after` hook (ADR 0028).
-  Neither blocks: each exits 0 even when `kmctl` is missing or fails, and
-  the nudge then prints `{}` (in OpenCode, adds nothing and throws
-  nothing). In Antigravity kmctl
-  also relays okf's opt-in Stop check, which APM's copy cannot run there
-  (ADR 0018); it exits 0 and prints `{}` when
+- **I1. One hook of its own, and it never breaks a session.** kmctl's own
+  hook is SessionStart, and it exits 0 even when `kmctl` is missing or
+  fails. In Antigravity kmctl also relays okf's opt-in Stop check, which
+  APM's copy cannot run there (ADR 0018); it exits 0 and prints `{}` when
   okf's script is missing or fails. Status: enforced by
-  `tests/test_plugin.py` (the package ships one SessionStart and one
-  PostToolUse hook; the SessionStart one exits 0 without `kmctl` and when it
-  fails), `tests/test_summary_nudge.py` (the Claude Code and Antigravity
-  nudge hooks print `{}` and exit 0 without `kmctl` and when the verb is
-  missing) and
+  `tests/test_plugin.py` (the package ships one SessionStart hook; it exits
+  0 without `kmctl` and when it fails) and
   `tests/test_antigravity.py` (Antigravity's SessionStart hook prints `{}`
   and exits 0 in both cases; the okf Stop relay prints `{}` and exits 0
   without a working script) and `tests/test_opencode.py` (OpenCode's
-  plugin adds no briefing and no nudge and throws nothing without a working
+  briefing plugin adds nothing and throws nothing without a working
   `kmctl`).
 - **I2. Audits never write knowledge.** The audit agent, its skills and the
   CI action report findings; they never edit `.okf/` or `docs/` and never
@@ -140,7 +130,7 @@ Each is `planned` until the test named for it passes, then `enforced`.
 
 - A `covers` field mapping concepts to code paths (ADR 0006).
 - Hooks beyond SessionStart: a nudge after code edits, a reminder at Stop,
-  a commit gate (ADR 0004).
+  a commit gate (ADR 0004, ADR 0029).
 - More harnesses than the three in Parts: Hermes and others come later
   (ADR 0014, ADR 0015).
 - Writing `verified` stamps from an audit (ADR 0005).

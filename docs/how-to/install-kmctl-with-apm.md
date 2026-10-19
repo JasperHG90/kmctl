@@ -8,8 +8,8 @@ This page adds kmctl's APM package to a repository's `apm.yml`, for a
 repository that already manages its agent files with
 [APM](https://microsoft.github.io/apm), the Agent Package Manager, or one
 that will. The package holds kmctl's skills, its audit agent, its four
-knowledge rules, the SessionStart hook that prints the kmctl briefing, the
-PostToolUse hook that runs the summary nudge, and okf's MCP server, `okf-bundle`, and brings the okf skills they use. APM
+knowledge rules, the SessionStart hook that prints the kmctl briefing and
+okf's MCP server, `okf-bundle`, and brings the okf skills they use. APM
 installs, upgrades and removes it; `kmctl plugin patch` then adds what APM
 cannot install yet.
 
@@ -23,23 +23,13 @@ in mind:
   limits which packages may run them (an `executables:` block, or the older
   `allowExecutables:`). If it does, `apm approve --pending` lists kmctl's
   package; approve it with `apm approve`.
-- **The summary nudge.** Right after a tool call that leaves a concept in
-  `.okf/` newer than `.okf/summary.md`, `kmctl summary nudge` tells the
-  agent which concepts changed and to update the summary or run
-  `kmctl summary ack`. Claude Code runs it from a PostToolUse hook after
-  Write, Edit, MultiEdit and Bash calls.
 - **Antigravity.** APM does not install the agents for Antigravity yet, and
   writes okf's Antigravity Stop hook with a path that fails.
-  `kmctl plugin patch` adds the agents and removes that hook. APM writes
-  the summary nudge's PostToolUse hook into `.agents/hooks.json`; it runs
-  after every tool call and hands the nudge to the model as an
-  `injectSteps` system message.
+  `kmctl plugin patch` adds the agents and removes that hook.
 - **OpenCode.** APM copies the agents in Claude Code's format, which
   OpenCode skips, and writes no rules or hooks for it.
   `kmctl plugin patch` rewrites the agents, adds the rules and a plugin
-  that adds the briefing to the system prompt. The same plugin's
-  `execute.after` hook runs the summary nudge after every tool call and
-  adds its text to that tool's result. kmctl supports OpenCode 2.x
+  that adds the briefing to the system prompt. kmctl supports OpenCode 2.x
   only. OpenCode has no rules scoped to paths, so it
   loads all four rules in every session.
 
