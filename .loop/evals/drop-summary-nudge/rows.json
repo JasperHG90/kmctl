@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "The Claude and Antigravity packages' hooks.json hold only kmctl's SessionStart hook (Antigravity also keeps its okf Stop check), and the OpenCode plugin kmctl writes has no execute.after hook.",
+      "fails_when": "any shipped hooks.json has a PostToolUse entry, or the OpenCode plugin source contains execute.after",
+      "command": "uv run pytest tests/test_plugin.py tests/test_opencode.py tests/test_apm_package.py -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "kmctl summary nudge no longer exists (kmctl summary --help lists only ack) and kmctl doctor has no nudge-hook check for any harness.",
+      "fails_when": "kmctl summary nudge exits 0, the summary help lists nudge, or doctor --json has a check id ending in nudge-hook",
+      "command": "uv run pytest tests/test_summary.py tests/test_doctor.py -k 'no_nudge' -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "Nothing under src/, apm/, docs/ or README.md mentions the nudge, and a decision supersedes ADR 0028, restoring the one-hook rule, with I1 naming one hook.",
+      "fails_when": "grep -ri nudge matches in those paths, ADR 0028's status is not deprecated, or no decision says it supersedes ADR 0028",
+      "command": "bash -c '! grep -rli nudge src apm docs README.md && grep -q \"status: deprecated\" .okf/decisions/0028-*.md && grep -lq \"Supersedes \\[ADR 0028\" .okf/decisions/0029-*.md'"
+    },
+    {
+      "id": "r4",
+      "behavior": "The full suite and every tier pass.",
+      "fails_when": "any test fails",
+      "command": "uv run pytest -q -m \"not integration or integration\""
+    }
+  ]
+}

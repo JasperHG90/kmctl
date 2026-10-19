@@ -1,17 +1,27 @@
 ---
 type: eval
 title: 'Eval: drop-summary-nudge'
-description: 'Definition of done for drop-summary-nudge: 0 row(s).'
+description: 'Definition of done for drop-summary-nudge: 4 row(s).'
 tags:
 - eval
 generated:
   by: process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014
-  at: '2026-10-19T05:10:18+00:00'
+  at: '2026-10-19T05:12:45+00:00'
 slug: drop-summary-nudge
-signoff: null
+signoff:
+  signer: delegated:jasperginn@gmail.com/claude-opus-5-5
+  hash: 2f7ecb49c457fdbffb9bed12202e40a3e3d6ebfca7d55ccd0f516480d2a62cf6
+  at: '2026-10-19T05:12:45+00:00'
 verified: null
 ---
 
 Rows: rows.json; the fields each row takes: loopctl schema eval-rows.
 
-No rows yet.
+- r1: The Claude and Antigravity packages' hooks.json hold only kmctl's SessionStart hook (Antigravity also keeps its okf Stop check), and the OpenCode plugin kmctl writes has no execute.after hook.
+  Fails when: any shipped hooks.json has a PostToolUse entry, or the OpenCode plugin source contains execute.after
+- r2: kmctl summary nudge no longer exists (kmctl summary --help lists only ack) and kmctl doctor has no nudge-hook check for any harness.
+  Fails when: kmctl summary nudge exits 0, the summary help lists nudge, or doctor --json has a check id ending in nudge-hook
+- r3: Nothing under src/, apm/, docs/ or README.md mentions the nudge, and a decision supersedes ADR 0028, restoring the one-hook rule, with I1 naming one hook.
+  Fails when: grep -ri nudge matches in those paths, ADR 0028's status is not deprecated, or no decision says it supersedes ADR 0028
+- r4: The full suite and every tier pass.
+  Fails when: any test fails
