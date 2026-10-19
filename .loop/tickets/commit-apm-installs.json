@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "commit-apm-installs",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 1,
@@ -13,7 +13,7 @@
   "split": "j-20261019T080314+0000-76fcdf7a",
   "split_plan_hash": "bb20c5a3d57a3f24668cc5a111ab3fb8c29dc2dd19486f2261d25a11f30e9979",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "26e767d0154377f3f04c3a36b8578db72a0f25d8",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -99,8 +99,14 @@
       "to": "verifying",
       "at": "2026-10-19T08:08:40+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-19T08:10:04+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.2.1.dev16+g27435b040.d20261017",
-  "at": "2026-10-19T08:09:54+00:00"
+  "at": "2026-10-19T08:10:04+00:00"
 }
