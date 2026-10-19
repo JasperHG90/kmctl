@@ -813,7 +813,8 @@ app.add_typer(summary_app, name="summary")
         "summary's last commit, or is changed in the working tree while the "
         "summary is not. Editing the summary clears that. When you have read "
         "the changed concepts and the summary still holds, run this instead: it "
-        "writes checked (at: the UTC time to the second, against: those ids) into the "
+        "writes checked (at: the UTC time to the second, against: those ids, less "
+        "any deleted since) into the "
         "summary's front matter, changes no other line and no other file, and "
         "the summary leaves the list. Commit it with the concepts. It is an "
         "agent's word, not a person's review, which is kmctl verify (ADR 0023, "
@@ -849,7 +850,8 @@ def summary_ack(
         typer.echo(f"nothing to ack: {result.path} is current")
         return
     typer.echo(
-        f"checked {result.path} at {result.at} against {', '.join(result.against)}"
+        f"checked {result.path} at {result.at} against "
+        f"{', '.join(result.against) or 'none'}"
     )
     typer.echo(next_step("kmctl review due"))
 

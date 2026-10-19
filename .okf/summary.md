@@ -7,10 +7,9 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-10-19T21:02:51Z
+  at: 2026-10-19T21:32:03Z
   against:
-    - architecture/overview
-    - decisions/0034-kmctl-mv-renames-a-concept-and-rewrites-the-links-to-it
+    - decisions/0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step
 ---
 
 # Summary: kmctl

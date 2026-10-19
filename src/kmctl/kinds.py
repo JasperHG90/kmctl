@@ -404,7 +404,7 @@ _FIELD_SCHEMAS: dict[str, dict[str, Any]] = {
             "against": {
                 "type": "array",
                 "items": {"type": "string"},
-                "description": "The ids of the concepts that had changed, which it was checked against.",
+                "description": "The ids of the concepts that had changed and are still in the bundle, which it was checked against.",
             },
         },
         "description": (
