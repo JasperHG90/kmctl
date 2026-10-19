@@ -173,7 +173,7 @@ def _next_number(section: Path) -> int:
     numbers = [
         int(m.group(1))
         for p in section.glob("*.md")
-        if (m := re.match(r"(\d{4})-", p.name))
+        if (m := re.match(r"(\d{4,})-", p.name))
     ]
     return max(numbers, default=0) + 1
 

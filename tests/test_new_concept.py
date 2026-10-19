@@ -97,6 +97,16 @@ def test_new_numbers_and_dates(tmp_path: Path) -> None:
     assert front_matter(handoff).get("stale_after")
 
 
+def test_new_numbers_past_9999(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    (tmp_path / ".okf/decisions").mkdir(exist_ok=True)
+    (tmp_path / ".okf/decisions/10000-earlier.md").write_text(
+        "---\ntype: decision\n---\n"
+    )
+
+    assert _path(tmp_path, "decision", "Use a queue").name == "10001-use-a-queue.md"
+
+
 def test_new_creates_section(tmp_path: Path) -> None:
     _repo(tmp_path)
 

@@ -223,7 +223,7 @@ def check(
         ),
     ] = False,
 ) -> None:
-    """Check indexes agree with their folders, docs front matter, prototype READMEs and links."""
+    """Check indexes agree with their folders, decision numbers, docs front matter, prototype READMEs and links."""
     if fix:
         created, updated = fix_folder_indexes(path)
         for rel in created + updated:

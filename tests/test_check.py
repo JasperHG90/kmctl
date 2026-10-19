@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner, Result
 
 from kmctl import app
@@ -366,3 +367,144 @@ def test_angle_bracket_with_inner_brackets_is_not_a_link(tmp_path: Path) -> None
     _write(tmp_path, "docs/how-to/install.md", page)
 
     assert [f for f in _findings(tmp_path) if f["check"] == "link"] == []
+
+
+def _decision(title: str, heading: str) -> str:
+    """A decision record's text with ``title`` in its front matter and ``heading`` as its ``#`` line."""
+    return (
+        f'---\ntype: decision\ntitle: "{title}"\ndescription: "A choice."\n'
+        f"---\n\n# {heading}\n"
+    )
+
+
+def _decision_findings(root: Path) -> list[tuple[str, str, int | None, str]]:
+    """The (check, file, line, message) of each error ``kmctl check`` reports for root's decisions."""
+    return [
+        (f["check"], f["file"], f["line"], f["message"])
+        for f in _findings(root)
+        if f["file"].startswith(".okf/decisions/")
+    ]
+
+
+def test_decision_check_title_and_heading_number_must_be_the_files(
+    tmp_path: Path,
+) -> None:
+    _good_repo(tmp_path)
+    _write(
+        tmp_path,
+        ".okf/decisions/index.md",
+        "# Decisions\n\n- [ADR 0001: First](0001-first.md): the first.\n",
+    )
+    _write(
+        tmp_path,
+        ".okf/decisions/0001-first.md",
+        _decision("ADR 0002: First", "ADR 0003: First"),
+    )
+
+    result = _check(tmp_path)
+
+    assert result.exit_code == 1
+    assert _decision_findings(tmp_path) == [
+        (
+            "decision",
+            ".okf/decisions/0001-first.md",
+            None,
+            "title says ADR 0002, but the file is number 0001; make it ADR 0001",
+        ),
+        (
+            "decision",
+            ".okf/decisions/0001-first.md",
+            7,
+            "# heading says ADR 0003, but the file is number 0001; make it ADR 0001",
+        ),
+        (
+            "index",
+            ".okf/decisions/index.md",
+            3,
+            (
+                "entry for 0001-first.md reads 'ADR 0001: First'; make it the "
+                "record's title, 'ADR 0002: First', or 'ADR 0001'"
+            ),
+        ),
+    ]
+
+
+@pytest.mark.parametrize("text", ["ADR 0001", "ADR 0001: First"])
+def test_decision_check_entry_may_be_title_or_number(tmp_path: Path, text: str) -> None:
+    _good_repo(tmp_path)
+    _write(
+        tmp_path,
+        ".okf/decisions/index.md",
+        f"# Decisions\n\n- [{text}](0001-first.md): the first.\n",
+    )
+    _write(
+        tmp_path,
+        ".okf/decisions/0001-first.md",
+        _decision("ADR 0001: First", "ADR 0001: First"),
+    )
+
+    assert _decision_findings(tmp_path) == []
+
+
+@pytest.mark.parametrize("text", ["ADR 0002", "ADR 0001: Old title", "First"])
+def test_decision_check_entry_must_name_its_record(tmp_path: Path, text: str) -> None:
+    _good_repo(tmp_path)
+    _write(
+        tmp_path,
+        ".okf/decisions/index.md",
+        f"# Decisions\n\n- [{text}](0001-first.md): the first.\n",
+    )
+    _write(
+        tmp_path,
+        ".okf/decisions/0001-first.md",
+        _decision("ADR 0001: First", "ADR 0001: First"),
+    )
+
+    assert _decision_findings(tmp_path) == [
+        (
+            "index",
+            ".okf/decisions/index.md",
+            3,
+            (
+                f"entry for 0001-first.md reads '{text}'; make it the "
+                "record's title, 'ADR 0001: First', or 'ADR 0001'"
+            ),
+        )
+    ]
+
+
+def test_decision_check_reads_numbers_past_9999(tmp_path: Path) -> None:
+    _good_repo(tmp_path)
+    _write(
+        tmp_path,
+        ".okf/decisions/index.md",
+        "# Decisions\n\n- [ADR 0001](0001-first.md): the first.\n"
+        "- [ADR 10000](10000-big.md): a big one.\n",
+    )
+    _write(tmp_path, ".okf/decisions/10000-big.md", _decision("ADR 0004: Big", "Big"))
+
+    assert _decision_findings(tmp_path) == [
+        (
+            "decision",
+            ".okf/decisions/10000-big.md",
+            None,
+            "title says ADR 0004, but the file is number 10000; make it ADR 10000",
+        )
+    ]
+
+
+def test_decision_check_skips_headings_in_code(tmp_path: Path) -> None:
+    _good_repo(tmp_path)
+    _write(
+        tmp_path,
+        ".okf/decisions/index.md",
+        "# Decisions\n\n- [ADR 0001](0001-first.md): the first.\n",
+    )
+    _write(
+        tmp_path,
+        ".okf/decisions/0001-first.md",
+        _decision("ADR 0001: First", "ADR 0001: First")
+        + "\n```\n# ADR 0009: Example\n```\n",
+    )
+
+    assert _decision_findings(tmp_path) == []

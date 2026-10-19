@@ -17,7 +17,7 @@ for people. Warnings and refusals go to stderr.
 |---|---|
 | `kmctl init` | Create `docs/`, a starter `.okf/` bundle and a `CLAUDE.md` block; re-run to refresh the block. |
 | `kmctl update` | Same as `kmctl init`. Run it after upgrading kmctl to refresh the `CLAUDE.md` block. |
-| `kmctl check` | Check indexes agree with their folders, docs front matter has its shape, prototypes have a `README.md`, and links resolve; `--fix` writes the generated docs folder indexes first. |
+| `kmctl check` | Check indexes agree with their folders, decision records carry their file's number, docs front matter has its shape, prototypes have a `README.md`, and links resolve; `--fix` writes the generated docs folder indexes first. |
 | `kmctl handoffs` | List the live handoffs in `.okf/handoffs/`, newest first. |
 | `kmctl briefing` | Print the session briefing: where knowledge lives, the skills, what is due, and the rule for reading knowledge. |
 | `kmctl schema` | Print the JSON Schema of one document kind, or list the kinds there are. |
@@ -155,8 +155,9 @@ then `kmctl plugin patch`.
 
 ### `kmctl check`
 
-Check that indexes agree with their folders, that `docs/` page front matter
-has its shape, that each prototype has a `README.md`, and that links resolve.
+Check that indexes agree with their folders, that each decision record
+carries its file's number, that `docs/` page front matter has its shape,
+that each prototype has a `README.md`, and that links resolve.
 A missing `docs/` or `.okf/` is reported as skipped, not failed.
 
 In `docs/`:
@@ -177,6 +178,13 @@ In `docs/`:
   shape (check `front-matter`): `description` a string, `stale_after` a date
   or UTC timestamp, `verified` a list of `{by, at}`, `sources` a list of paths
   or `{resource}` mappings. A page with none passes.
+
+In `.okf/decisions/`, a record `NNNN-slug.md` whose `title` or `#` heading
+starts with `ADR` and a number must carry the file's number `NNNN`; another
+number is an error (check `decision`). The entry in `decisions/index.md` that
+links a record must read the record's `title`, as `kmctl new decision` writes
+it, or just `ADR NNNN`; other text is an error (check `index`), as an entry
+that links a missing file is.
 
 In `.okf/`, the body of `summary.md` (outside its front matter, counted as
 words between spaces) holds at most 500 words; over that is an error naming
