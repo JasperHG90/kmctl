@@ -1,0 +1,131 @@
+{
+  "schema_version": "1.0",
+  "fingerprint": "ab1358dec59a06ed9606439d80bbf208cffbeceeaa480e3a897f847337c6b9a6",
+  "slug": "okf-summary-nudge-agy-opencode",
+  "results": [
+    {
+      "name": "lint",
+      "kind": "gate",
+      "command": "uv run ruff check",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "format",
+      "kind": "gate",
+      "command": "uv run ruff format --check",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "tests",
+      "kind": "gate",
+      "command": "uv run pytest",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "integration",
+      "kind": "gate",
+      "command": "uv run pytest -m integration",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r1",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_summary_nudge.py -k antigravity -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 27,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r2",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_summary_nudge.py -k opencode_format -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 5,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r3",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_summary_nudge.py tests/test_doctor.py -k antigravity_nudge -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 10,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r4",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_opencode.py -k nudge -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 9,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r5",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_summary_nudge.py -k harness_docs -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 4,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r6",
+      "kind": "eval-row",
+      "command": "uv run pytest -q -m \"not integration or integration\"",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 1083,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    }
+  ],
+  "green": true,
+  "at": "2026-10-19T00:19:58+00:00",
+  "commit": null,
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014"
+}
