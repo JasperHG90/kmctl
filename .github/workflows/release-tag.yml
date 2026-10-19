@@ -5,7 +5,8 @@
 # repository's first push) is skipped. The wheel and sdist are built and checked
 # before the tag exists, so a failed build leaves no tag behind; a rerun after a
 # failed publish resumes from the tag it pushed. The GitHub Release carries the
-# wheel, the sdist and their checksums; nothing goes to PyPI.
+# wheel, the sdist and their checksums, with notes from scripts/release_notes.py;
+# nothing goes to PyPI.
 #
 # No concurrency group: a group keeps one pending run and cancels the rest,
 # which would drop the tag of a version merged between two others.
@@ -112,12 +113,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ARGS=(--title "v$VERSION" --verify-tag --generate-notes)
-          PREVIOUS="$( { git tag --list "v*" | grep -xE "v[0-9]+\.[0-9]+\.[0-9]+((a|b|rc)[0-9]+)?" || true; echo "v$VERSION"; } \
-            | sort -V | grep -x -B1 "v$VERSION" | grep -vx "v$VERSION" || true)"
-          if [ -n "$PREVIOUS" ]; then
-            ARGS+=(--notes-start-tag "$PREVIOUS")
-          fi
+          uv run scripts/release_notes.py "v$VERSION" > "$RUNNER_TEMP/notes.md"
+          ARGS=(--title "v$VERSION" --verify-tag --notes-file "$RUNNER_TEMP/notes.md")
           if uv run scripts/release.py is-prerelease "$VERSION"; then
             ARGS+=(--prerelease)
           fi

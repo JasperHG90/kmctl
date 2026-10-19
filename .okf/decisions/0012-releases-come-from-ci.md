@@ -114,3 +114,14 @@ differs from `apm/apm.yml`. `set` also pins the install line in
 pins that release
 ([ADR 0025](0025-the-starter-template-lives-in-kmctl-and-shares-its-release-tags.md)).
 `apm/apm.yml` is still the one version source.
+
+The GitHub Release's notes come from `scripts/release_notes.py`, not
+`gh release create --generate-notes`. GitHub's generated notes list merged
+pull requests, and work lands on `main` as loop merges, so every release up
+to v0.10.0 listed only its own version pull request. The script reads
+`main`'s first-parent history since the tag before: each
+`Merge loop/SLUG: SUMMARY` becomes a bullet under What changed, each other
+commit one under Other changes, and loop state, release, branch-sync and
+manual placeholder commits are left out. It fills the template
+`.github/release-notes.md`, with the install lines for the tag and a compare
+link, and `release-tag.yml` publishes the result with `--notes-file`.
