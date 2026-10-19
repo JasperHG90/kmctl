@@ -1,0 +1,1 @@
+{"ask":"Drop the summary nudge: remove the PostToolUse hooks, the OpenCode execute.after hook, the summary nudge verb and its doctor checks; a new ADR supersedes 0028 and restores the one-hook rule; update docs; release."}
