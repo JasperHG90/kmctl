@@ -24,7 +24,7 @@ import shutil
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from kmctl import antigravity, opencode
 from kmctl.plugin import (
@@ -71,11 +71,22 @@ FOLDERS = {"claude": ".claude", "antigravity": ".agents", "opencode": ".opencode
 #: The agy CLI settings file under HOME that lists the trusted folders.
 AGY_SETTINGS = Path(".gemini") / "antigravity-cli" / "settings.json"
 TRUST_FIX = 'run agy in this folder and choose "Yes, I trust this folder"'
+#: The steps ``remove_old_plugin`` runs for kmctl@kmctl at user scope
+#: (spike:apm-only-install/7); ``kmctl plugin patch --scope user`` refuses
+#: without a user-scope lock, so a project-scope run names these instead.
+USER_PLUGIN_FIX = (
+    f"run claude plugin uninstall {OLD_PLUGIN} --scope user, "
+    "claude plugin prune --scope user --yes, "
+    "claude plugin marketplace remove kmctl --scope user"
+)
 UV_FIX = "install uv (https://docs.astral.sh/uv/)"
 #: The most problems one check line names before it counts the rest.
 SHOWN_PROBLEMS = 5
 #: Seconds the offline APM run and the --online fetch may take.
 TIMEOUT = 60
+
+
+Status = Literal["ok", "warn", "fail"]
 
 
 @dataclass(frozen=True)
@@ -88,20 +99,27 @@ class Check:
         A stable dotted name, such as ``dep.uv`` or ``claude.hook``.
     harness : str | None
         The harness the check belongs to, or None for one that serves all.
-    ok : bool
-        Whether the check passed.
+    status : Status
+        ``ok`` when it passed, ``fail`` when something is wrong, ``warn`` when
+        doctor cannot tell whether it matters here: a harness's CLI that this
+        person may not use, or trust doctor cannot see. A warning fails nothing.
     detail : str
-        What doctor found; for a failure, what is wrong.
+        What doctor found; for a failure or a warning, what is wrong.
     fix : str | None
-        For a failure, the instruction that fixes it, usually ``run kmctl
-        ...``; None when the check passed.
+        For a failure or a warning, the instruction that fixes it, usually
+        ``run kmctl ...``; None when the check passed.
     """
 
     id: str
     harness: str | None
-    ok: bool
+    status: Status
     detail: str
     fix: str | None = None
+
+    @property
+    def ok(self) -> bool:
+        """Whether the check did not fail; a warning is ok."""
+        return self.status != "fail"
 
 
 @dataclass(frozen=True)
@@ -111,7 +129,7 @@ class DoctorResult:
     Attributes
     ----------
     ok : bool
-        Whether every check passed.
+        Whether no check failed; warnings do not count.
     checks : list[Check]
         The checks.
     """
@@ -122,12 +140,17 @@ class DoctorResult:
 
 def _pass(cid: str, harness: str | None, detail: str) -> Check:
     """A passed check."""
-    return Check(cid, harness, True, detail)
+    return Check(cid, harness, "ok", detail)
 
 
 def _fail(cid: str, harness: str | None, detail: str, fix: str) -> Check:
     """A failed check with its fix."""
-    return Check(cid, harness, False, detail, fix)
+    return Check(cid, harness, "fail", detail, fix)
+
+
+def _warn(cid: str, harness: str | None, detail: str, fix: str) -> Check:
+    """A warning with its fix; it fails nothing."""
+    return Check(cid, harness, "warn", detail, fix)
 
 
 def _suffix(scope: Scope) -> str:
@@ -186,10 +209,16 @@ def _settings_files(cwd: Path, scope: Scope) -> list[Path]:
     return [settings_path(cwd, scope), cwd / ".claude" / "settings.local.json"]
 
 
-def _old_plugins(cwd: Path, scope: Scope) -> list[tuple[Path, str]]:
-    """Each (settings file, plugin) where an old claude plugin is enabled."""
+def _old_plugins(
+    cwd: Path, scope: Scope, files: list[Path] | None = None
+) -> list[tuple[Path, str]]:
+    """Each (settings file, plugin) where an old claude plugin is enabled.
+
+    ``files`` defaults to ``_settings_files``, the files that mark a harness at
+    ``scope``.
+    """
     found = []
-    for path in _settings_files(cwd, scope):
+    for path in _settings_files(cwd, scope) if files is None else files:
         enabled = _load(path)[0].get("enabledPlugins")
         if isinstance(enabled, dict):
             found += [(path, p) for p in OLD_PLUGINS if enabled.get(p) is True]
@@ -230,10 +259,21 @@ def harnesses_found(cwd: Path, scope: Scope = "project") -> list[str]:
 
 
 def _tool(cid: str, name: str, harness: str | None, fix: str) -> Check:
-    """Whether ``name`` is on PATH."""
+    """Whether ``name`` is on PATH.
+
+    A harness's CLI (``harness`` set) only warns when missing: doctor never
+    runs it, and the harnesses installed here are shared by everyone on the
+    repository, so it cannot tell whether this person uses that one.
+    """
     found = shutil.which(name)
-    if found is None:
+    if found is None and harness is None:
         return _fail(cid, harness, f"{name} is not on PATH", fix)
+    if found is None:
+        detail = (
+            f"{name} is not on PATH (needed only by someone who uses {harness}, "
+            "which is installed here)"
+        )
+        return _warn(cid, harness, detail, fix)
     return _pass(cid, harness, found)
 
 
@@ -445,32 +485,54 @@ def _claude_mcp(cwd: Path, scope: Scope) -> Check:
     return _fail("claude.okf-mcp", "claude", detail, _install_fix("claude", scope))
 
 
+def _old_plugin_fix(path: Path, names: list[str], cwd: Path, scope: Scope) -> str:
+    """The fix for the old plugins ``names`` enabled in settings file ``path``."""
+    user = settings_path(cwd, "user")
+    if OLD_PLUGIN in names:
+        if scope == "project" and path == user:
+            return USER_PLUGIN_FIX
+        return f"run kmctl plugin patch{_suffix(scope)}"
+    # The install removes okf only as kmctl@kmctl's dependency; on its own it
+    # needs its own uninstall, at the scope of the file that enables it.
+    at = (
+        "user"
+        if path == user
+        else "local"
+        if path.name == "settings.local.json"
+        else "project"
+    )
+    return f"run claude plugin uninstall {names[0]} --scope {at}"
+
+
 def _claude_old_plugin(cwd: Path, scope: Scope) -> Check:
-    """Whether a settings file still enables the claude plugin route before ADR 0014."""
-    found = _old_plugins(cwd, scope)
+    """Whether a settings file still enables the claude plugin route before ADR 0014.
+
+    At project scope it also reads the user settings.json: a plugin enabled
+    there loads in this repository too. That file does not mark the harness
+    here (``_kmctl_mark``).
+    """
+    files = _settings_files(cwd, scope)
+    if scope == "project":
+        files.append(settings_path(cwd, "user"))
+    # In HOME without CLAUDE_CONFIG_DIR the project file is the user file.
+    found = _old_plugins(cwd, scope, list(dict.fromkeys(files)))
     if not found:
         detail = f"no settings file enables {' or '.join(OLD_PLUGINS)}"
         return _pass("claude.old-plugin", "claude", detail)
     named = ", ".join(f"{name} in {shown_path(path, cwd)}" for path, name in found)
-    if any(name == OLD_PLUGIN for _, name in found):
-        fix = f"run kmctl plugin patch{_suffix(scope)}"
-    else:
-        # The install removes okf only as kmctl@kmctl's dependency; on its own it
-        # needs its own uninstall, at the scope of the file that enables it.
-        path, name = found[0]
-        at = (
-            "user"
-            if scope == "user"
-            else "local"
-            if path.name == "settings.local.json"
-            else "project"
+    by_file: dict[Path, list[str]] = {}
+    for path, name in found:
+        by_file.setdefault(path, []).append(name)
+    fixes = list(
+        dict.fromkeys(
+            _old_plugin_fix(path, names, cwd, scope) for path, names in by_file.items()
         )
-        fix = f"run claude plugin uninstall {name} --scope {at}"
+    )
     return _fail(
         "claude.old-plugin",
         "claude",
         f"the old claude plugin is enabled: {named}",
-        fix,
+        ", then ".join(fixes),
     )
 
 
@@ -551,11 +613,14 @@ def _antigravity_trust(cwd: Path) -> Check | None:
     ):
         detail = f"{here} is in trustedWorkspaces of ~/{AGY_SETTINGS.as_posix()}"
         return _pass("antigravity.trust", "antigravity", detail)
+    # Only the agy CLI's list is read: nothing records where the Antigravity
+    # IDE keeps trust, so a folder trusted there is not seen and this warns.
     detail = (
         f"{here} is not in trustedWorkspaces of ~/{AGY_SETTINGS.as_posix()}, so "
-        "Antigravity does not load .agents/"
+        "the agy CLI does not load .agents/ (doctor reads only the agy CLI's "
+        "list and does not check trust given in the Antigravity IDE)"
     )
-    return _fail("antigravity.trust", "antigravity", detail, TRUST_FIX)
+    return _warn("antigravity.trust", "antigravity", detail, TRUST_FIX)
 
 
 def _antigravity_fetch() -> Check:
@@ -724,13 +789,15 @@ def run_doctor(
 
     In order: this kmctl's version (``kmctl.version``); the tools
     (``dep.uv``, ``dep.git``, ``dep.apm``, and ``dep.claude``, ``dep.agy`` or
-    ``dep.opencode`` for each harness found); at project scope, the ``kmctl init`` files
+    ``dep.opencode`` for each harness found, which warn rather than fail
+    when missing); at project scope, the ``kmctl init`` files
     (``init.okf``, ``init.docs``); which harnesses are installed
     (``kmctl.harness``, or ``claude.scope`` when only a user-scope install
     exists); then each harness's checks: ``HARNESS.lock``, ``.files``,
     ``.okf-skills``, ``.okf-mcp``, and for claude ``claude.hook`` and
     ``claude.old-plugin``, for antigravity ``antigravity.plugin``,
-    ``antigravity.hook``, ``antigravity.trust`` (when agy is on PATH) and,
+    ``antigravity.hook``, ``antigravity.trust`` (when agy is on PATH; it
+    warns rather than fails) and,
     with ``online``, ``antigravity.okf-mcp-url``, for opencode
     ``opencode.agents``, ``opencode.rules`` and ``opencode.hook``. ``dep.opencode``
     checks opencode is on PATH when OpenCode is installed.
@@ -748,7 +815,7 @@ def run_doctor(
     Returns
     -------
     DoctorResult
-        Every check, and whether all passed.
+        Every check, and whether none failed; a warning fails nothing.
     """
     cwd = cwd.resolve()
     found = harnesses_found(cwd, scope)
@@ -763,7 +830,10 @@ def run_doctor(
 
 
 def as_json(result: DoctorResult) -> str:
-    """``result`` as one JSON object: ok, and checks with id, harness, ok, detail and fix."""
+    """``result`` as one JSON object: ok, and checks with id, harness, status, ok, detail and fix.
+
+    ``ok`` is true for a warning, so it still means "nothing failed".
+    """
     return json.dumps(
         {
             "ok": result.ok,
@@ -771,6 +841,7 @@ def as_json(result: DoctorResult) -> str:
                 {
                     "id": c.id,
                     "harness": c.harness,
+                    "status": c.status,
                     "ok": c.ok,
                     "detail": c.detail,
                     "fix": c.fix,
@@ -782,8 +853,10 @@ def as_json(result: DoctorResult) -> str:
 
 
 def render(result: DoctorResult) -> str:
-    """One line per check: ``ok   ID: DETAIL`` or ``fail ID: DETAIL; FIX``."""
+    """One line per check: ``ok   ID: DETAIL``, ``warn ID: DETAIL; FIX`` or ``fail ID: DETAIL; FIX``."""
     return "\n".join(
-        f"ok   {c.id}: {c.detail}" if c.ok else f"fail {c.id}: {c.detail}; {c.fix}"
+        f"ok   {c.id}: {c.detail}"
+        if c.status == "ok"
+        else f"{c.status} {c.id}: {c.detail}; {c.fix}"
         for c in result.checks
     )
