@@ -85,6 +85,7 @@ ALL_IDS = [
     "antigravity.okf-skills",
     "antigravity.plugin",
     "antigravity.hook",
+    "antigravity.nudge-hook",
     "antigravity.apm-hooks",
     "antigravity.okf-mcp",
     "antigravity.trust",
@@ -194,6 +195,10 @@ def _apm_writes(harnesses: tuple[str, ...], scope: str) -> dict[str, str]:
                 ("Stop", antigravity.STOP_COMMAND),
             )
         }
+        # APM 0.33.0 nests PreToolUse and PostToolUse handlers in matcher
+        # groups for Antigravity and writes the other events flat.
+        nudge = {"type": "command", "command": antigravity.NUDGE_COMMAND, "timeout": 10}
+        hook["PostToolUse"] = [{"matcher": "*", "hooks": [nudge]}]
         out[".agents/hooks.json"] = json.dumps({"apm": hook})
         out[".agents/mcp_config.json"] = json.dumps(
             {"mcpServers": {plugin.MCP_NAME: server}}
@@ -1283,3 +1288,61 @@ def test_fix_names_no_old_verb(setup: Setup) -> None:
         for check in data["checks"]:
             fix = check.get("fix") or ""
             assert not re.search(r"plugin (install|update|remove)", fix), (name, fix)
+
+
+# okf-summary-nudge-agy-opencode r3: the Antigravity nudge hook --------------------
+
+
+def _ag_hooks(s: Setup) -> tuple[Path, dict]:
+    path = s.repo / ".agents" / "hooks.json"
+    return path, json.loads(path.read_text())
+
+
+def test_antigravity_nudge_check_passes_on_apms_nested_form(complete: Setup) -> None:
+    _, hooks = _ag_hooks(complete)
+    [group] = hooks["apm"]["PostToolUse"]
+    assert set(group) == {"matcher", "hooks"}
+
+    _, data = _doctor()
+
+    check = _by_id(data)["antigravity.nudge-hook"]
+    assert check["ok"], check
+    assert check["detail"] == (
+        ".agents/hooks.json holds the PostToolUse hook that runs kmctl summary nudge"
+    )
+
+
+def test_antigravity_nudge_check_reads_a_flat_entry_too(complete: Setup) -> None:
+    path, hooks = _ag_hooks(complete)
+    [group] = hooks["apm"]["PostToolUse"]
+    hooks["apm"]["PostToolUse"] = group["hooks"]
+    path.write_text(json.dumps(hooks))
+
+    _, data = _doctor()
+
+    assert _by_id(data)["antigravity.nudge-hook"]["ok"]
+
+
+@pytest.mark.parametrize("change", ["missing", "other-command", "other-event"])
+def test_antigravity_nudge_check_fails_without_the_entry(
+    complete: Setup, change: str
+) -> None:
+    path, hooks = _ag_hooks(complete)
+    groups = hooks["apm"].pop("PostToolUse")
+    if change == "other-command":
+        groups[0]["hooks"][0]["command"] = "kmctl summary nudge"
+        hooks["apm"]["PostToolUse"] = groups
+    elif change == "other-event":
+        hooks["apm"]["PreToolUse"] = groups
+    path.write_text(json.dumps(hooks))
+
+    result, data = _doctor()
+
+    check = _by_id(data)["antigravity.nudge-hook"]
+    assert check["ok"] is False
+    assert check["detail"] == (
+        ".agents/hooks.json lacks the PostToolUse hook that runs kmctl summary nudge"
+    )
+    assert check["fix"] == antigravity.APM_FIX
+    assert _by_id(data)["antigravity.hook"]["ok"]
+    assert result.exit_code == 1

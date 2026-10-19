@@ -19,6 +19,7 @@ from test_summary import _commit, _git, _init, _invoke, _new
 
 from kmctl import antigravity, plugin
 from kmctl.okf import field, front_matter
+from kmctl.summary import nudge_text as summary_nudge_text
 
 ROOT = Path(__file__).resolve().parents[1]
 HOOKS = ROOT / "apm" / "claude" / ".apm" / "hooks" / "hooks.json"
@@ -255,6 +256,34 @@ def test_nudges_with_an_explicit_path_and_unusable_stdin(
     assert cid in out
 
 
+@pytest.mark.parametrize("fmt", ["text", "claude", "antigravity"])
+def test_nudges_with_an_explicit_path_and_never_reads_an_open_stdin(
+    repo: Path, tmp_path: Path, fmt: str
+) -> None:
+    """An agent's shell may leave stdin an open pipe; with --path the verb never reads it, so it cannot hang."""
+    cid = _new(repo, "decision", "Use a nudge")
+    proc = subprocess.Popen(
+        [sys.executable, "-c", "from kmctl import main; main()", "summary", "nudge"]
+        + ["--format", fmt, "--path", str(repo)],
+        cwd=tmp_path,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        text=True,
+    )
+    try:
+        code = proc.wait(timeout=20)
+    finally:
+        if proc.poll() is None:
+            proc.kill()
+        assert proc.stdin is not None and proc.stdout is not None
+        proc.stdin.close()
+        out = proc.stdout.read()
+        proc.stdout.close()
+
+    assert code == 0
+    assert cid in out
+
+
 def _json(stdin: str, *args: str) -> dict:
     code, out = _nudge(stdin, "--json", *args, fmt="text")
     assert code == 0, out
@@ -442,12 +471,6 @@ def test_nudge_hook_prints_empty_object_without_kmctl(repo: Path) -> None:
     assert proc.stdout == "{}\n"
 
 
-def test_nudge_hook_is_not_in_the_antigravity_package() -> None:
-    hooks = antigravity.package_hooks("antigravity")["hooks"]
-
-    assert isinstance(hooks, dict) and "PostToolUse" not in hooks
-
-
 # r5: the record --------------------------------------------------------------------
 
 
@@ -492,3 +515,340 @@ def test_record_page_describes_the_nudge_hook(page: str) -> None:
 
     assert "kmctl summary nudge" in text
     assert "PostToolUse" in text
+
+
+# Antigravity and OpenCode (okf-summary-nudge-agy-opencode) -------------------------
+
+AG_HOOKS = ROOT / "apm" / "antigravity" / ".apm" / "hooks" / "hooks.json"
+DECISION = ".okf/decisions/0028-two-hooks-the-session-briefing-and-the-summary-nudge.md"
+
+
+def _agy_payload(workspace: Path | str | None) -> str:
+    """An agy PostToolUse payload after write_to_file, with the fields spike:okf-summary-nudge-agy-opencode/1 recorded."""
+    data: dict[str, object] = {
+        "toolCall": {
+            "name": "write_to_file",
+            "args": {"TargetFile": "/x/.okf/decisions/0001-a.md", "Overwrite": True},
+        },
+        "stepIdx": 2,
+        "error": "",
+        "conversationId": "c",
+        "transcriptPath": "/tmp/t.jsonl",
+        "artifactDirectoryPath": "/tmp/a",
+        "modelName": "gemini",
+    }
+    if workspace is not None:
+        data["workspacePaths"] = [str(workspace)]
+    return json.dumps(data)
+
+
+def _inject(out: str) -> str | None:
+    """The systemMessage of an antigravity-format nudge, or None for ``{}``; it checks the shape."""
+    data = json.loads(out)
+    if data == {}:
+        return None
+    [step] = data["injectSteps"]
+    text = step["systemMessage"]["systemMessage"]
+    assert data == {"injectSteps": [{"systemMessage": {"systemMessage": text}}]}
+    assert isinstance(text, str) and text
+    return text
+
+
+def _agents(root: Path) -> Path:
+    """``root``'s .agents/ folder, where agy runs a workspace hook."""
+    folder = root / ".agents"
+    folder.mkdir(exist_ok=True)
+    return folder
+
+
+@pytest.fixture
+def current(tmp_path: Path) -> Path:
+    """A second committed repository whose summary is current."""
+    (tmp_path / "c").mkdir()
+    return _init(tmp_path / "c")
+
+
+def test_antigravity_nudges_from_workspace_paths_run_in_agents(
+    repo: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    cid = _new(repo, "decision", "Use a nudge")
+    monkeypatch.chdir(_agents(repo))
+
+    code, out = _nudge(_agy_payload(repo), fmt="antigravity")
+
+    assert code == 0
+    assert set(json.loads(out)) == {"injectSteps"}
+    text = _inject(out)
+    assert text is not None
+    assert cid in text and SUMMARY in text and ACK in text
+
+
+def test_antigravity_reads_workspace_paths_not_the_cwd(
+    repo: Path, current: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The cwd is another repository's .agents/; workspacePaths decides both ways."""
+    cid = _new(repo, "decision", "Use a nudge")
+
+    monkeypatch.chdir(_agents(current))
+    assert cid in (_inject(_nudge(_agy_payload(repo), fmt="antigravity")[1]) or "")
+
+    _new(current, "practice", "Nudge often")
+    _commit(current)
+    monkeypatch.chdir(_agents(repo))
+    text = _inject(_nudge(_agy_payload(current), fmt="antigravity")[1]) or ""
+    assert "practices/" in text and cid not in text
+
+
+def test_antigravity_reads_a_file_uri_workspace(
+    repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    cid = _new(repo, "decision", "Use a nudge")
+    monkeypatch.chdir(tmp_path)
+
+    _, out = _nudge(_agy_payload(repo.as_uri()), fmt="antigravity")
+
+    assert cid in (_inject(out) or "")
+
+
+def test_antigravity_is_quiet_when_current_or_repeated(
+    repo: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(_agents(repo))
+    assert _nudge(_agy_payload(repo), fmt="antigravity") == (0, "{}\n")
+
+    _new(repo, "decision", "Use a nudge")
+    assert _inject(_nudge(_agy_payload(repo), fmt="antigravity")[1])
+    assert _nudge(_agy_payload(repo), fmt="antigravity") == (0, "{}\n")
+
+
+AGY_BAD_STDIN = [
+    "",
+    "not json",
+    "[]",
+    '{"workspacePaths": 3}',
+    '{"workspacePaths": []}',
+    '{"workspacePaths": ["/no/such/folder"]}',
+    '{"cwd": "/repo"}',
+]
+
+
+@pytest.mark.parametrize("stdin", AGY_BAD_STDIN)
+def test_antigravity_is_quiet_on_bad_stdin_even_in_agents_of_a_repo_behind(
+    repo: Path, stdin: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _new(repo, "decision", "Use a nudge")
+    monkeypatch.chdir(_agents(repo))
+
+    assert _nudge(stdin, fmt="antigravity") == (0, "{}\n")
+
+
+@pytest.mark.parametrize("stdin", AGY_BAD_STDIN)
+def test_antigravity_falls_back_to_an_explicit_path(
+    repo: Path, tmp_path: Path, stdin: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    cid = _new(repo, "decision", "Use a nudge")
+    monkeypatch.chdir(tmp_path)
+
+    code, out = _nudge(stdin, "--path", str(repo), fmt="antigravity")
+
+    assert code == 0
+    assert cid in (_inject(out) or "")
+
+
+def test_antigravity_is_quiet_outside_git_and_with_json_is_refused(
+    tmp_path: Path, repo: Path
+) -> None:
+    (tmp_path / "plain").mkdir()
+    root = _init(tmp_path / "plain", git=False)
+    _new(root, "decision", "Use a nudge")
+
+    assert _nudge(_agy_payload(root), fmt="antigravity") == (0, "{}\n")
+    code, out = _nudge(_agy_payload(repo), "--json", fmt="antigravity")
+    assert code == 2 and out == ""
+
+
+def _run_kmctl(
+    tmp_path: Path, cwd: Path, *args: str, stdin: int | None = None
+) -> subprocess.Popen[str]:
+    """Start this checkout's kmctl as a hook would, stdin as given (left open for PIPE)."""
+    path = f"{_kmctl_bin(tmp_path)}:/usr/bin:/bin"
+    return subprocess.Popen(
+        ["kmctl", *args],
+        cwd=cwd,
+        stdin=stdin,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        env={"PATH": path, "HOME": str(tmp_path), "KMCTL_PINNED": "1"},
+    )
+
+
+def test_opencode_format_returns_at_once_with_stdin_left_open(
+    repo: Path, tmp_path: Path
+) -> None:
+    """The plugin may leave stdin open; the verb never reads it, so it does not wait."""
+    cid = _new(repo, "decision", "Use a nudge")
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+
+    proc = _run_kmctl(
+        tmp_path,
+        elsewhere,
+        *("summary", "nudge", "--format", "opencode", "--path", str(repo)),
+        stdin=subprocess.PIPE,
+    )
+    try:
+        code = proc.wait(timeout=30)
+    finally:
+        proc.kill()
+    out = proc.stdout.read() if proc.stdout else ""
+    if proc.stdin:
+        proc.stdin.close()
+
+    assert code == 0
+    assert cid in out and SUMMARY in out and ACK in out
+    assert len(out.strip().splitlines()) == 1
+    assert not out.lstrip().startswith("{")
+
+
+def test_opencode_format_prints_the_text_alone_from_path(
+    repo: Path, current: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """--path decides, not the cwd and not a payload on stdin."""
+    cid = _new(repo, "decision", "Use a nudge")
+    monkeypatch.chdir(current)
+
+    code, out = _nudge(_payload(current), "--path", str(repo), fmt="opencode")
+
+    assert code == 0
+    assert out == summary_nudge_text([cid]) + "\n"
+
+
+def test_opencode_format_prints_nothing_when_current_or_repeated(
+    repo: Path, current: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(repo)
+    assert _nudge("", "--path", str(current), fmt="opencode") == (0, "")
+
+    cid = _new(repo, "decision", "Use a nudge")
+    monkeypatch.chdir(current)
+    assert _nudge(_payload(current), "--path", str(repo), fmt="opencode")[1]
+    assert _nudge("", "--path", str(repo), fmt="opencode") == (0, "")
+    assert cid
+
+
+def test_opencode_format_uses_the_cwd_without_path(
+    repo: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    cid = _new(repo, "decision", "Use a nudge")
+    monkeypatch.chdir(repo / ".okf")
+
+    code, out = _nudge("not json", fmt="opencode")
+
+    assert code == 0
+    assert cid in out
+
+
+def test_opencode_format_prints_nothing_without_a_bundle_or_git(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "plain").mkdir()
+    root = _init(tmp_path / "plain", git=False)
+    _new(root, "decision", "Use a nudge")
+
+    assert _nudge("", "--path", str(root), fmt="opencode") == (0, "")
+    assert _nudge("", "--path", str(tmp_path), fmt="opencode") == (0, "")
+
+
+def _ag_groups() -> list[dict]:
+    return json.loads(AG_HOOKS.read_text())["hooks"]["PostToolUse"]
+
+
+def test_antigravity_nudge_hook_ships_in_the_antigravity_package() -> None:
+    [group] = _ag_groups()
+
+    assert group["matcher"] == "*"
+    [entry] = group["hooks"]
+    assert entry == {
+        "type": "command",
+        "command": antigravity.NUDGE_COMMAND,
+        "timeout": plugin.HOOK_TIMEOUT,
+    }
+    assert (
+        "KMCTL_PINNED=1 kmctl summary nudge --format antigravity" in (entry["command"])
+    )
+    assert entry["command"].startswith("command -v kmctl >/dev/null 2>&1 ||")
+    assert entry["command"].endswith("exit 0")
+    assert json.loads(AG_HOOKS.read_text()) == antigravity.package_hooks("antigravity")
+
+
+def test_antigravity_nudge_hook_nudges_in_agents(repo: Path, tmp_path: Path) -> None:
+    cid = _new(repo, "decision", "Use a nudge")
+    path = f"{_kmctl_bin(tmp_path)}:/usr/bin:/bin"
+
+    proc = _hook(antigravity.NUDGE_COMMAND, _agents(repo), path, _agy_payload(repo))
+
+    assert proc.returncode == 0, proc.stderr
+    assert cid in (_inject(proc.stdout) or "")
+
+
+def test_antigravity_nudge_hook_prints_empty_object_without_kmctl(repo: Path) -> None:
+    proc = _hook(
+        antigravity.NUDGE_COMMAND, _agents(repo), "/usr/bin:/bin", _agy_payload(repo)
+    )
+
+    assert proc.returncode == 0
+    assert proc.stdout == "{}\n"
+
+
+def test_antigravity_nudge_hook_prints_empty_object_when_the_verb_fails(
+    repo: Path, tmp_path: Path
+) -> None:
+    """An older kmctl exits 2 with a usage error (and may print to stdout first); the hook prints {} alone."""
+    old = tmp_path / "old"
+    old.mkdir()
+    (old / "kmctl").write_text(
+        "#!/bin/sh\necho partial\necho \"Error: No such command 'nudge'.\" >&2\nexit 2\n"
+    )
+    (old / "kmctl").chmod(0o755)
+
+    proc = _hook(antigravity.NUDGE_COMMAND, _agents(repo), f"{old}:/usr/bin:/bin", "{}")
+
+    assert proc.returncode == 0
+    assert proc.stdout == "{}\n"
+
+
+HARNESS_PAGES = {
+    "docs/reference/commands.md": ("--format antigravity", "--format opencode"),
+    DECISION: ("Antigravity", "OpenCode", "execute.after", "PostToolUse"),
+    "docs/how-to/install-kmctl-with-apm.md": (
+        "kmctl summary nudge",
+        "Antigravity",
+        "OpenCode",
+        "execute.after",
+        "PostToolUse",
+    ),
+}
+
+
+@pytest.mark.parametrize("page", sorted(HARNESS_PAGES))
+def test_harness_docs_name_the_antigravity_and_opencode_nudges(page: str) -> None:
+    text = (ROOT / page).read_text()
+
+    for words in HARNESS_PAGES[page]:
+        assert words in text, words
+
+
+def test_harness_docs_decision_records_the_agy_caveat() -> None:
+    text = (ROOT / DECISION).read_text()
+    correction = text[text.index("## Correction, 2026-10-19") :]
+
+    for words in (
+        "injectSteps",
+        "{}",
+        "spike:okf-summary-nudge-agy-opencode/1",
+        "spike:okf-summary-nudge-agy-opencode/2",
+        "--format antigravity",
+        "--format opencode",
+    ):
+        assert words in correction, words

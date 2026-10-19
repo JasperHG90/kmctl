@@ -85,3 +85,37 @@ the end of a turn") and a commit gate.
   prints `{}` until it is upgraded.
 
 Supersedes [ADR 0004](0004-sessionstart-is-the-only-hook.md).
+
+## Correction, 2026-10-19
+
+Antigravity and OpenCode now get the nudge too, so "for Claude Code only"
+and "Antigravity and OpenCode get no nudge yet" above no longer hold. Both
+harnesses can hand the model text right after a tool call
+(spike:okf-summary-nudge-agy-opencode/1,
+spike:okf-summary-nudge-agy-opencode/2).
+
+- **Antigravity.** `apm/antigravity/.apm/hooks/hooks.json` ships a
+  PostToolUse hook, matcher `*`, that runs `KMCTL_PINNED=1 kmctl summary
+  nudge --format antigravity` after every tool call, with the same guard
+  and 10 s timeout. agy runs it in `.agents/`, so the verb takes the
+  repository from `workspacePaths[0]` on stdin, not the current directory,
+  and prints `{"injectSteps":[{"systemMessage":{"systemMessage":TEXT}}]}`,
+  or `{}`. APM writes the entry nested in a `{matcher, hooks}` group, and
+  `kmctl doctor` reads inside the groups (`antigravity.nudge-hook`).
+  Caveat: agy's hook docs say PostToolUse expects `{}`. kmctl relies on
+  `injectSteps` reaching the model there anyway, which spike 1 saw in agy
+  1.4.0 but agy does not document, so a later agy may drop it; the nudge
+  would then go quiet, and nothing would break.
+- **OpenCode.** The plugin `kmctl plugin patch` writes,
+  `.opencode/plugins/kmctl.js`, registers `ctx.tool.hook("execute.after")`.
+  It runs `kmctl summary nudge --format opencode --path <project>` with
+  `KMCTL_PINNED=1`, stdin closed and the 10 s timeout, and adds any text to
+  that tool's `result.content`, which the model reads once
+(spike:okf-summary-nudge-agy-opencode/2). The
+  opencode format reads no stdin, because Node's `execFile` leaves a
+  child's stdin open and a verb that read it would wait out the timeout on
+  every tool call. The hook never throws. `kmctl doctor` checks it
+  (`opencode.nudge-hook`).
+
+Both run after every tool call, reads included, which costs a kmctl start
+each time; filtering by tool name was left out.

@@ -35,7 +35,7 @@ projects pinned to a release.
 An agent reads in layers: the SessionStart hook injects `kmctl briefing`,
 the block in `CLAUDE.md` and `AGENTS.md` points to this summary, the summary
 to the indexes, and the indexes to the concepts. When a concept changes
-after this page, a PostToolUse hook asks the agent to update it. Each
+after this page, an after-tool hook asks the agent to update it. Each
 project pins kmctl in `apm.lock.yaml`, and the `kmctl` on PATH hands every
 command to that release
 ([ADR 0026](decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins.md)).

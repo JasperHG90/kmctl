@@ -40,6 +40,17 @@ HOOK_COMMAND = (
     "out=$(kmctl briefing --format antigravity 2>/dev/null) "
     "&& printf '%s\\n' \"$out\" || echo '{}'; exit 0"
 )
+#: The command of the package's Antigravity PostToolUse hook: the summary nudge
+#: after every tool call (ADR 0028). agy hands the model the injectSteps it
+#: prints there, though its docs say PostToolUse expects ``{}``
+#: (spike:okf-summary-nudge-agy-opencode/1). KMCTL_PINNED=1 for the reason
+#: ``kmctl.plugin.NUDGE_COMMAND`` gives; a missing kmctl or a failing verb
+#: prints ``{}`` and exits 0 (I1).
+NUDGE_COMMAND = (
+    "command -v kmctl >/dev/null 2>&1 || { echo '{}'; exit 0; }; "
+    "out=$(KMCTL_PINNED=1 kmctl summary nudge --format antigravity 2>/dev/null) "
+    "&& printf '%s\\n' \"$out\" || echo '{}'; exit 0"
+)
 #: okf's Stop hook script as APM deploys it for Antigravity, relative to the
 #: repository.
 OKF_STOP_SCRIPT = ".agents/hooks/okf-skills/hooks/okf-stop-check.sh"
@@ -176,8 +187,9 @@ def package_hooks(harness: str) -> dict[str, object]:
 
     Claude Code gets the briefing's SessionStart hook and the summary
     nudge's PostToolUse hook; Antigravity gets ``HOOK_COMMAND`` at
-    SessionStart and ``STOP_COMMAND`` at Stop. The files in the package must
-    equal these (the tests check it).
+    SessionStart, ``NUDGE_COMMAND`` at PostToolUse after every tool and
+    ``STOP_COMMAND`` at Stop. The files in the package must equal these (the
+    tests check it).
     """
     from kmctl.plugin import NUDGE_MATCHER, hook_entry, nudge_hook_entry
 
@@ -194,8 +206,15 @@ def package_hooks(harness: str) -> dict[str, object]:
             }
         }
     start = {"type": "command", "command": HOOK_COMMAND, "timeout": HOOK_TIMEOUT}
+    nudge = {"type": "command", "command": NUDGE_COMMAND, "timeout": HOOK_TIMEOUT}
     stop = {"type": "command", "command": STOP_COMMAND, "timeout": HOOK_TIMEOUT}
-    return {"hooks": {"SessionStart": group(start), "Stop": group(stop)}}
+    return {
+        "hooks": {
+            "SessionStart": group(start),
+            "PostToolUse": group(nudge),
+            "Stop": group(stop),
+        }
+    }
 
 
 def _runs_okf_stop(handler: object) -> bool:
@@ -385,28 +404,43 @@ def plugin_problems(cwd: Path) -> list[str]:
     ]
 
 
-def _flat_commands(data: dict[str, object], event: str) -> list[str]:
-    """The commands of every ``event`` handler in a parsed Antigravity hooks.json."""
-    return [
-        str(handler.get("command", ""))
+def _commands(data: dict[str, object], event: str) -> list[str]:
+    """The commands of every ``event`` handler in a parsed Antigravity hooks.json.
+
+    APM 0.33.0 writes SessionStart and Stop handlers flat, and PreToolUse and
+    PostToolUse ones nested in ``{matcher, hooks}`` groups; both forms count.
+    """
+    handlers = [
+        item
         for events in data.values()
         if isinstance(events, dict)
-        for handler in events.get(event, [])
-        if isinstance(handler, dict)
+        for item in events.get(event, [])
+        if isinstance(item, dict)
     ]
+    for group in [h for h in handlers if isinstance(h.get("hooks"), list)]:
+        handlers += [h for h in group["hooks"] if isinstance(h, dict)]
+    return [str(h.get("command", "")) for h in handlers if "hooks" not in h]
+
+
+def _hooks_data(cwd: Path) -> dict[str, object]:
+    """APM's hooks.json in ``cwd``, parsed; empty when it is missing or not a JSON object."""
+    try:
+        return _apm_hooks_data(cwd) or {}
+    except PluginError:
+        return {}
 
 
 def hook_present(cwd: Path) -> bool:
     """Whether APM's ``.agents/hooks.json`` in ``cwd`` holds the package's SessionStart and Stop hooks."""
-    try:
-        data = _apm_hooks_data(cwd)
-    except PluginError:
-        return False
-    if data is None:
-        return False
-    return HOOK_COMMAND in _flat_commands(data, "SessionStart") and (
-        STOP_COMMAND in _flat_commands(data, "Stop")
+    data = _hooks_data(cwd)
+    return HOOK_COMMAND in _commands(data, "SessionStart") and (
+        STOP_COMMAND in _commands(data, "Stop")
     )
+
+
+def nudge_hook_present(cwd: Path) -> bool:
+    """Whether APM's ``.agents/hooks.json`` in ``cwd`` holds the package's PostToolUse summary nudge."""
+    return NUDGE_COMMAND in _commands(_hooks_data(cwd), "PostToolUse")
 
 
 def mcp_present(cwd: Path) -> bool:
