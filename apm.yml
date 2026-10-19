@@ -2,7 +2,7 @@
 # Change them there, not in .claude/. Every entry is pinned to one commit;
 # tests/test_repo_apm.py holds the same commit as PINNED.
 name: kmctl
-version: 0.10.0
+version: 0.11.0
 targets: [claude]
 dependencies:
   apm:
