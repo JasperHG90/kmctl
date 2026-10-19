@@ -152,11 +152,24 @@ def served(tmp_path: Path) -> Iterator[str]:
         proc.wait()
 
 
-def _uv_cache() -> str:
-    """The uv cache dir of the real HOME, so the scratch HOME reuses downloads."""
-    return subprocess.run(
-        ["uv", "cache", "dir"], capture_output=True, text=True, check=True
-    ).stdout.strip()
+@pytest.fixture(autouse=True, scope="session")
+def _uv_cache(tmp_path_factory: pytest.TempPathFactory) -> Iterator[None]:
+    """Give the run its own uv cache, and delete it when the run ends.
+
+    Every uvx or uv run a test starts builds an environment that uv keeps in
+    its cache for good: APM's alone is about 60 packages, so the shared cache
+    grew by hundreds of gigabytes over many runs. Downloads now repeat once
+    per run instead.
+    """
+    cache = tmp_path_factory.mktemp("uv-cache")
+    saved = os.environ.get("UV_CACHE_DIR")
+    os.environ["UV_CACHE_DIR"] = str(cache)
+    yield
+    if saved is None:
+        os.environ.pop("UV_CACHE_DIR", None)
+    else:
+        os.environ["UV_CACHE_DIR"] = saved
+    shutil.rmtree(cache, ignore_errors=True)
 
 
 @pytest.fixture(autouse=True)
@@ -184,7 +197,6 @@ def consumer(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
         found = shutil.which(tool)
         assert found, f"{tool} must be on PATH"
         (tools / tool).symlink_to(found)
-    monkeypatch.setenv("UV_CACHE_DIR", os.environ.get("UV_CACHE_DIR") or _uv_cache())
     monkeypatch.setenv("HOME", str(home))
     monkeypatch.setenv("CLAUDE_CONFIG_DIR", str(home / ".claude"))
     monkeypatch.setenv("XDG_DATA_HOME", str(home / ".local" / "share"))
