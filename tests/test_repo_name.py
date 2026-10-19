@@ -14,7 +14,7 @@ from fixtures.fake_tools import FakeTools
 from test_plugin_patch import _kmctl, fakes, home, repo  # noqa: F401
 
 from kmctl import plugin
-from scripts.release import APM_DOC, APM_FILES, COPIER, DOC_FILES, set_version
+from scripts.release import APM_DOC, APM_FILES, COPIER, DOC_FILES, HOOKS, set_version
 
 ROOT = Path(__file__).resolve().parents[1]
 #: Files that describe or detect what an install from the old name holds.
@@ -59,7 +59,7 @@ def test_new_name_in_entry_hooks_and_generated_files() -> None:
 
 def _copy_release_files(dest: Path) -> None:
     """Copy the files ``set_version`` reads and writes into ``dest``."""
-    for rel in (*APM_FILES, APM_DOC, *DOC_FILES, COPIER):
+    for rel in (*APM_FILES, APM_DOC, *DOC_FILES, COPIER, HOOKS):
         (dest / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(ROOT / rel, dest / rel)
 

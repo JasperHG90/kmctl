@@ -9,6 +9,7 @@ test_plugin_patch.py.
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 from importlib.metadata import version
 from pathlib import Path
@@ -103,6 +104,35 @@ def test_hook_exits_zero_when_kmctl_fails(repo: Path, tmp_path: Path) -> None:
 
     assert result.returncode == 0
     assert "kmctl briefing failed" in result.stdout
+
+
+def test_install_hint_names_release(repo: Path, tmp_path: Path) -> None:
+    """Both install hints name the release in apm/apm.yml, in hooks.json and hook_entry() alike, and the hook still exits 0."""
+    manifest = (ROOT / "apm/apm.yml").read_text()
+    [apm_version] = re.findall(r"(?m)^version: (\S+)$", manifest)
+    install = f"git+https://github.com/JasperHG90/kmctl@v{apm_version}"
+    shipped = json.loads((ROOT / "apm/claude/.apm/hooks/hooks.json").read_text())
+    [group] = shipped["hooks"]["SessionStart"]
+    [hook] = group["hooks"]
+    command = plugin.hook_entry()["command"]
+
+    assert hook["command"] == command
+    assert command.count(install) == 2
+    result = _run_hook(command, tmp_path, "/usr/bin:/bin")
+    assert result.returncode == 0
+    assert install in result.stdout
+
+
+def test_read_manifest_and_read_lock_refuse_non_utf8_as_they_do_bad_yaml(
+    tmp_path: Path,
+) -> None:
+    """A non-UTF-8 apm.yml raises PluginError naming it; a non-UTF-8 lock reads as no lock."""
+    (tmp_path / "apm.yml").write_bytes(b"\xff\xfe name: x\n")
+    (tmp_path / "apm.lock.yaml").write_bytes(b"\xff\xfe dependencies: []\n")
+
+    with pytest.raises(plugin.PluginError, match="apm.yml is not valid UTF-8 YAML"):
+        plugin.read_manifest(tmp_path / "apm.yml")
+    assert plugin.read_lock(tmp_path, "project") is None
 
 
 def _launcher_args(script: str, cwd: Path, tmp_path: Path) -> list[str]:

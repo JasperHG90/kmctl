@@ -58,13 +58,15 @@ MCP_NAME = "okf-bundle"
 OKF_MCP_SCRIPT = "okf_mcp.py"
 #: The text that marks a settings.json hook as kmctl's.
 HOOK_MARK = "kmctl briefing"
+#: What the hook's hints install: this CLI's own release, as the package's hooks.json names it.
+HOOK_INSTALL = f"git+https://github.com/{REPO}@v{version('kmctl')}"
 HOOK_COMMAND = (
     "command -v kmctl >/dev/null 2>&1 || { echo '[kmctl] kmctl is not installed, "
     "so there is no knowledge briefing. Install it with: uv tool install "
-    f"git+https://github.com/{REPO}'; exit 0; }}; "
+    f"{HOOK_INSTALL}'; exit 0; }}; "
     "kmctl briefing || echo '[kmctl] kmctl briefing failed; run kmctl briefing in "
     "a terminal to see why, or upgrade with uv tool install --force "
-    f"git+https://github.com/{REPO}.'; exit 0"
+    f"{HOOK_INSTALL}.'; exit 0"
 )
 HOOK_DESCRIPTION = (
     "kmctl: print the knowledge briefing (where knowledge lives, the skills, "
@@ -347,15 +349,15 @@ def read_manifest(path: Path) -> Any:
     Raises
     ------
     PluginError
-        When the file is not a YAML mapping.
+        When the file is not UTF-8 text or not a YAML mapping.
     """
     if not path.is_file():
         return None
     try:
         data = yaml.safe_load(path.read_text(encoding="utf-8"))
-    except yaml.YAMLError as error:
+    except (yaml.YAMLError, UnicodeDecodeError) as error:
         raise PluginError(
-            f"{path} is not valid YAML ({error}); fix it, then run the command again"
+            f"{path} is not valid UTF-8 YAML ({error}); fix it, then run the command again"
         ) from error
     if data is not None and not isinstance(data, dict):
         raise PluginError(
@@ -381,7 +383,7 @@ def read_lock(cwd: Path, scope: Scope) -> Lock | None:
         return None
     try:
         return Lock.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
-    except (yaml.YAMLError, ValidationError):
+    except (yaml.YAMLError, UnicodeDecodeError, ValidationError):
         return None
 
 

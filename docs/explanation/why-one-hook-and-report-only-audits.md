@@ -22,7 +22,8 @@ says where each kind of knowledge lives (`docs/` for people who use the
 project, `.okf/` for people and agents working on it), lists what is due for
 review and which handoffs are live, lists the skills, and gives the one rule
 for reading knowledge. The rules for writing knowledge reach the agent from
-`.claude/rules/`, where APM installs them.
+its harness's rules folder (`.claude/rules/`, `.agents/rules/` or
+`.opencode/rules/`), where the install puts them.
 The hook always exits 0: if kmctl is missing or fails, it prints a one-line
 note and the session goes on.
 

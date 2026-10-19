@@ -210,3 +210,24 @@ bundle still starts with `0001`.
 Rejected: a tag that marks the record kmctl wrote. A migrated log or a
 record written by hand does not carry it, so it fixes only the case kmctl
 wrote itself, and it adds a field to keep.
+
+## Correction, 2026-10-19
+
+The kmctl block no longer says the rules for writing knowledge are in
+`.claude/rules/` for every repository. `kmctl init` and `kmctl update` name
+the rules folder of each harness `harnesses_found` in `src/kmctl/doctor.py`
+reports: `.claude/rules/` for Claude Code, `.agents/rules/` for Antigravity,
+`.opencode/rules/` for OpenCode. When it finds none, as on a first `kmctl
+init` before `apm install`, the block names all three, each with its tool
+(`src/kmctl/scaffold.py`). The briefing's line, which reaches every
+harness, now says "the rules your tool loads cover writing knowledge" and
+names no folder (`src/kmctl/briefing.py`).
+
+The four rules the package installs had the same fault. `okf-bundle` and
+`docs-layout` pointed to each other and to their siblings as
+`.claude/rules/NAME.md`, a path an Antigravity-only install lacks; they now
+name the rule, as "the `docs-layout` rule". `diagrams-stay-current` no
+longer asks the user to edit its globs: a repository whose code lives
+elsewhere adds a rule of its own under another name, since `apm install`
+overwrites the package's file and doctor counts an edit as drift
+(`apm/claude/.apm/instructions/`).

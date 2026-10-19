@@ -3,8 +3,8 @@
 The SessionStart hook in kmctl's APM package relays it, so it is read
 at the start of every session in every harness. It reads state and writes
 nothing, and stays within ``TOKEN_BUDGET`` (invariant I3). The rules for
-writing knowledge are not in it: kmctl's APM package installs them in
-``.claude/rules/``, which reach the system prompt anyway. It carries only
+writing knowledge are not in it: kmctl's APM package installs them in each
+harness's rules folder, which reaches the system prompt anyway. It carries only
 ``RULES``, the guidance those files do not.
 """
 
@@ -29,7 +29,7 @@ from kmctl.summary import changed_concepts
 TOKEN_BUDGET = 500
 CHARS_PER_TOKEN = 4
 
-#: Guidance the knowledge rules kmctl's package installs in .claude/rules/ do not carry.
+#: Guidance the knowledge rules kmctl's package installs do not carry.
 RULES = [
     (
         "unverified-is-a-lead",
@@ -49,7 +49,7 @@ Knowledge in this repository:
   what it rejected; architecture/ the design as diagrams; practices/ lessons;
   proposals/ designs not yet built; prototypes/ spikes; handoffs/ notes on
   where work stopped.
-- Skills do repeatable tasks; .claude/rules/ holds the rules for writing knowledge.
+- Skills do repeatable tasks; the rules your tool loads cover writing knowledge.
 Verbs: kmctl new decision|practice|proposal|prototype|handoff to add a concept;
 kmctl new doc tutorial|how-to|reference|explanation for a docs/ page;
 kmctl check when done (--fix writes docs indexes; never edit one);

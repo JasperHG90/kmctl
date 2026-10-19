@@ -20,7 +20,9 @@ version alone, for ``release-tag.yml``'s read of the commit before a push,
 where an older commit's copies may disagree. ``set`` also points the six install lines in the docs, and the
 APM how-to's CLI install line, at the tag ``vVERSION``, and moves the starter
 template's ``kmctl_ref`` default in ``copier.yml`` to that tag, so the template
-a release tag carries pins that release (ADR 0025). This script never
+a release tag carries pins that release (ADR 0025). It points the two install
+hints in the Claude Code hook's ``hooks.json`` at the tag too, so the hook a
+release tag carries installs that release. This script never
 commits or tags: ``.github/workflows/release.yml`` opens the version pull
 request and ``release-tag.yml`` tags the merge, so there is one release path.
 """
@@ -56,9 +58,18 @@ APM_FILES = (
 APM_DOC = Path("docs/how-to/install-kmctl-with-apm.md")
 #: The starter template's questions, whose ``kmctl_ref`` default ``set`` moves.
 COPIER = Path("copier.yml")
+#: The Claude Code hook, whose two install hints ``set`` points at the release tag.
+HOOKS = Path("apm/claude/.apm/hooks/hooks.json")
+#: How many install hints ``HOOKS`` holds.
+HOOK_HINTS = 2
 _INSTALL = re.compile(
     r"^(\s*uv tool install git\+https://github\.com/JasperHG90/kmctl)(@\S+)?$",
     re.MULTILINE,
+)
+# An install hint in the hook's command, with or without a release tag; the
+# tag stops before the full stop that ends the second hint.
+_HOOK_INSTALL = re.compile(
+    r"(git\+https://github\.com/JasperHG90/kmctl)(@v\d+\.\d+\.\d+(?:(?:a|b|rc)\d+)?)?"
 )
 _USES = re.compile(r"^(\s*- uses: JasperHG90/kmctl)@\S+$", re.MULTILINE)
 # One top-level ``version:`` line, rewritten as text so comments and layout stay;
@@ -157,11 +168,11 @@ def pin_docs(text: str, version: str) -> tuple[str, int]:
 
 
 def set_version(repo: Path, version_text: str) -> list[Path]:
-    """Write the version into the four apm.yml files, pin the docs and copier.yml's default.
+    """Write the version into the four apm.yml files, pin the docs, the hook's hints and copier.yml's default.
 
     Nothing is written unless the version is valid, all six install lines are
-    found, each apm.yml has a ``version:`` line, and ``copier.yml`` has a
-    ``kmctl_ref`` default. ``APM_DOC``'s install line
+    found, each apm.yml has a ``version:`` line, ``copier.yml`` has a
+    ``kmctl_ref`` default and ``HOOKS`` has its two install hints. ``APM_DOC``'s install line
     is pinned too; its "Older installs" example keeps the version it shows.
 
     Returns
@@ -173,8 +184,8 @@ def set_version(repo: Path, version_text: str) -> list[Path]:
     ------
     ReleaseRefused
         When the version is malformed, the docs hold fewer than six install
-        lines, an apm.yml has no ``version:``, or copier.yml has no
-        ``kmctl_ref`` default.
+        lines, an apm.yml has no ``version:``, copier.yml has no
+        ``kmctl_ref`` default, or ``HOOKS`` lacks an install hint.
     """
     version = str(parse_release(version_text))
     docs: dict[Path, str] = {}
@@ -202,9 +213,14 @@ def set_version(repo: Path, version_text: str) -> list[Path]:
         raise ReleaseRefused(
             f"{COPIER} has no kmctl_ref question with a default: line; restore it"
         )
-    for rel, text in {**apm, **docs, COPIER: copier}.items():
+    hooks, count = _HOOK_INSTALL.subn(rf"\g<1>@v{version}", (repo / HOOKS).read_text())
+    if count != HOOK_HINTS:
+        raise ReleaseRefused(
+            f"found {count} of the {HOOK_HINTS} install hints in {HOOKS}; restore the missing one"
+        )
+    for rel, text in {**apm, **docs, COPIER: copier, HOOKS: hooks}.items():
         (repo / rel).write_text(text)
-    return [*APM_FILES, *DOC_FILES, APM_DOC, COPIER]
+    return [*APM_FILES, *DOC_FILES, APM_DOC, COPIER, HOOKS]
 
 
 def compare(old_text: str, new_text: str) -> str:
@@ -242,7 +258,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     p_set = sub.add_parser(
         "set",
-        help="write the version into the four apm.yml files, pin the docs and copier.yml's kmctl_ref",
+        help="write the version into the four apm.yml files, pin the docs, the hook's install hints and copier.yml's kmctl_ref",
     )
     p_set.add_argument("version", help="the release version, e.g. 0.2.0 or 0.2.0rc1")
     p_cmp = sub.add_parser("compare", help="print raised, same, lowered or skip")
