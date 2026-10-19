@@ -1,0 +1,40 @@
+---
+type: verdict
+title: 'Verdict: okf-summary-nudge-agy-opencode reviewer round 1'
+description: 'reviewer verdict for round 1 of okf-summary-nudge-agy-opencode: fix.'
+tags:
+- verdict
+- review
+generated:
+  by: claude-opus/5.5
+  at: '2026-10-19T00:33:52+00:00'
+slug: okf-summary-nudge-agy-opencode
+pass: reviewer
+round: 1
+body_schema: verdict/1
+---
+
+## Summary
+
+The change does what the plan says, and every eval row's test checks its fails_when. The extra --path-wins fix is sound and breaks no row in okf-summary-nudge's signed eval. Two doc sentences are now false: the --path help/reference row, and one README line. Both are plain fixes, so the label is fix.
+
+## Checked
+
+- Ran `loopctl gate stamp` in the worktree myself: lint, format, tests, integration and rows r1 to r6 all pass, `stamp green: ab1358dec59a06ed9606439d80bbf208cffbeceeaa480e3a897f847337c6b9a6`. node v24 is installed, so the r4 node tests ran and were not skipped (9 passed).
+- r1: the tests run from `.agents/` of the repo, and also from another repo's `.agents/` in both directions, so reading the cwd would fail. They check the exact injectSteps shape, the concept, both ways out, a file:// URI, the quiet cases (current, repeated, outside git, seven bad-stdin shapes run in `.agents/` of a repo that is behind, all `{}` and exit 0), and that --json is refused.
+- r2: a real process with stdin left open must return within 30 s with exactly one line of text (not JSON) equal to `nudge_text`. --path beats both the cwd and a payload on stdin. A current repo, a repeat and a repo with no bundle or git print nothing.
+- r3: the package entry equals `package_hooks`, with matcher `*`, KMCTL_PINNED, guard and timeout. The hook command run with kmctl missing, and with a fake old kmctl that prints to stdout and then exits 2, prints `{}` alone. Doctor passes on APM's nested form and on the flat form, and fails when the entry is missing, has another command or sits under another event. `_commands` reads groups correctly and keeps hook_present's behaviour.
+- r4: the node harness loads the real PLUGIN_SOURCE with a fake ctx and a fake kmctl that runs `cat` on stdin first. An open stdin would hold it to the 10 s kill, and the test asserts < 5 s. It asserts the exact appended part, the recorded `KMCTL_PINNED=1` and `--path <work>` args, and only one call, because the error event with no result runs nothing. The missing, failing (prints, then exits 1), silent and blank cases leave content unchanged and throw nothing. Patch/undo and doctor's opencode.nudge-hook are covered. Node's `spawn` supports `timeout`. `cwd` moving out of the try is safe because it uses optional chaining.
+- r5: the pages and the ADR Correction carry the names and the agy caveat. I read the Correction: it is accurate.
+- The --path change: before it, `--path X` with a non-tty stdin read stdin to EOF, so an open pipe hung. Now `path is not None` short-circuits before any read. The only behaviour change is that a valid payload cwd no longer beats an explicit --path. No hook passes --path. okf-summary-nudge's rows r1 to r6 never combine --path with a payload, and its r2 quiet cases (empty or bad stdin) are all without --path, which still raises BadPayload and stays quiet. No earlier test asserted the old order. The new real-process test covers text, claude and antigravity.
+- The builder's calls: separate doctor ids fit the existing per-hook ids (claude.nudge-hook). `{}` with no cwd fallback for antigravity matches signed r1 and spike 1 (the cwd is `.agents/`). Skipping events with no array `result.content` matches spike 2's error shape. Running after every tool call is recorded in the ADR Correction as a cost accepted on purpose. All sound.
+- Consistency: I read the manifesto I1/Parts, overview, summary, explanation page, how-to and commands reference. I grepped for stale "Claude Code only" or "no nudge yet" claims: the ADR's are covered by its Correction, and the README one is f2.
+
+## Findings
+
+- f1 (docs, non-blocking): `src/kmctl/__init__.py` around line 879 ("With --format opencode, always; otherwise only when stdin names no usable folder") and `docs/reference/commands.md:421` contradict the new rule that an explicit --path always wins and stdin is never read. Reword both to say: given, it is the repository and stdin is not read; otherwise the format decides. The help's "Default: the current directory" also does not hold for antigravity, which uses workspacePaths.
+- f2 (docs, non-blocking): `README.md:154` names the nudge hook for Claude Code only. Name all three harnesses (Antigravity from APM, OpenCode from `kmctl plugin patch`'s plugin).
+
+## Notes
+
+`--format text` or `claude` without --path still reads stdin to EOF when it is not a tty. That is the hooks' contract and was unchanged by this ticket. An agent's shell running the bare verb by hand with an open stdin can still hang, but the help now points to --path for that.

@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The --path help and its reference row still say --path is used \"only when stdin names no usable folder\" for formats other than opencode, but the new code makes an explicit --path win and never reads stdin for every format, as the same help's own \"Where the repository comes from\" paragraph says. The two halves of one help screen now disagree.",
+      "anchor": "src/kmctl/__init__.py:879",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "README.md still says APM installs \"for Claude Code a hook that runs kmctl summary nudge after each tool call\"; Antigravity now gets the PostToolUse hook from APM and OpenCode gets the nudge from the plugin patch writes, so the sentence is now false by omission.",
+      "anchor": "README.md:154",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "ab1358dec59a06ed9606439d80bbf208cffbeceeaa480e3a897f847337c6b9a6",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-19T00:33:52+00:00"
+}
