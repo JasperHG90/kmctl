@@ -3,7 +3,7 @@
   "slug": "drop-summary-nudge",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "bdb7d027684f4847cc8a73b2ec0fe3e87f844a88203a00189fee5fba34a7a6d6",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "16259213e3b00a76040b78e7f3f5bb360d6d6b8a1db5647c539441f198c0a9ee",
+    "started_at": "2026-10-19T05:10:59+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "16259213e3b00a76040b78e7f3f5bb360d6d6b8a1db5647c539441f198c0a9ee",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -44,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-19T05:10:58+00:00"
+  "at": "2026-10-19T05:10:59+00:00"
 }
