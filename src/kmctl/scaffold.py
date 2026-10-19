@@ -19,7 +19,6 @@ from pathlib import Path
 from kmctl.concepts import append_log, new_concept
 from kmctl.docs_index import fix_folder_indexes
 from kmctl.kinds import skeleton
-from kmctl.okf import BadFrontMatter, field, front_matter
 
 OKF_VERSION = "0.2"
 
@@ -125,10 +124,10 @@ class ScaffoldResult:
     Paths are relative to the root. ``scaffold`` never edits a kept file, with
     four exceptions, all listed in ``updated``: it adds or replaces the kmctl
     block in CLAUDE.md and AGENTS.md, when it writes the first decision into a
-    kept bundle it adds its index entry and log line, when it writes a
-    manifesto or summary into a kept bundle it adds its root index entry and
-    log line (the page is then listed in ``linked``), and it rewrites a docs/
-    folder index kmctl generated. A new CLAUDE.md
+    kept bundle with no decision record it adds its index entry and log line,
+    when it writes a manifesto or summary into a kept bundle it adds its root
+    index entry and log line (the page is then listed in ``linked``), and it
+    rewrites a docs/ folder index kmctl generated. A new CLAUDE.md
     beside an AGENTS.md holds only ``@AGENTS.md`` and is listed in
     ``created``. A warning names a kept index or log that is not UTF-8, so
     ``scaffold`` could not add a new page to it, and a CLAUDE.md or AGENTS.md symlink left alone
@@ -314,19 +313,6 @@ def _marker_problem(text: str) -> str:
     return f"has {BLOCK_START} without a {BLOCK_END} after it"
 
 
-def _has_first_decision(decisions: Path) -> bool:
-    for path in decisions.glob("*.md"):
-        if path.name == "index.md":
-            continue
-        try:
-            title = str(field(front_matter(path), "title", ""))
-        except BadFrontMatter:
-            continue
-        if re.sub(r"^ADR \d+:\s*", "", title).strip() == FIRST_DECISION:
-            return True
-    return False
-
-
 #: A markdown list item whose text starts with a link: an index entry.
 _ENTRY_LINE = re.compile(r"\s*[-*+]\s+\[")
 
@@ -405,10 +391,15 @@ def _link_new_pages(root: Path, now: datetime, result: ScaffoldResult) -> None:
 
 
 def _write_first_decision(root: Path, now: datetime, result: ScaffoldResult) -> None:
-    """Record the first decision through ``kmctl new decision``'s writer, then fill its sections."""
+    """Record the first decision through ``kmctl new decision``'s writer, then fill its sections.
+
+    It writes nothing when .okf/decisions/ or a folder in it holds any
+    ``*.md`` file other than ``index.md``, whatever its title and even when
+    its front matter does not parse.
+    """
     okf = root / ".okf"
     decisions = okf / "decisions"
-    if decisions.is_dir() and _has_first_decision(decisions):
+    if any(p.name != "index.md" for p in decisions.rglob("*.md")):
         return
     unreadable = [
         p.relative_to(root).as_posix()
@@ -458,8 +449,8 @@ def scaffold(root: Path, now: datetime | None = None) -> ScaffoldResult:
     summary.md; the kmctl block in each CLAUDE.md and AGENTS.md; a new CLAUDE.md when there is
     none, holding only ``@AGENTS.md`` beside an AGENTS.md and the block
     otherwise; and the decision "Keep project knowledge in an OKF bundle" when
-    no record has that title. It writes no rules: those come with kmctl's APM
-    package. A file that exists is kept, except for the kmctl block, the
+    .okf/decisions/ holds no decision record. It writes no rules: those come
+    with kmctl's APM package. A file that exists is kept, except for the kmctl block, the
     first decision's index entry and log line, and the root index entry and
     log line of a manifesto or summary it writes into a kept bundle, so
     ``kmctl check`` passes after it. Each docs/ Diataxis folder's

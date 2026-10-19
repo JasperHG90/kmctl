@@ -85,8 +85,11 @@ Set a repository up. It writes:
   `CLAUDE.md` with an `@AGENTS.md` line, beside an `AGENTS.md`, gets no
   block;
 - the decision "Keep project knowledge in an OKF bundle", with its index
-  entry and log line, when no record in `.okf/decisions/` has that title. In
-  a fresh bundle it is `0001`.
+  entry and log line, when `.okf/decisions/` holds no decision record: no
+  `.md` file other than `index.md`, in it or in a folder inside it. Any other
+  record counts, whatever its title, so a repository that records the same
+  choice in its own words, or moves its decision log into `.okf/decisions/`,
+  gets no copy. In a fresh bundle it is `0001`.
 
 It writes no rules: the four knowledge rules (`okf-bundle`, `docs-layout`,
 `diagrams-stay-current` and `manifesto-invariants`) come with kmctl's skills

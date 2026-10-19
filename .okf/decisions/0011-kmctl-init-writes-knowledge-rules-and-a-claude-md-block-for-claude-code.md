@@ -194,3 +194,19 @@ they sit in the Claude Code sub-package,
 `apm/claude/.apm/instructions/NAME.instructions.md`, with a copy for
 Antigravity in `apm/antigravity/.apm/instructions/`. The rest of that
 correction stands as the 2026-10-17 correction amends it.
+
+## Correction, 2026-10-19
+
+The Decision says init records the first decision when no record has that
+title. A repository that records the same choice under another title, or
+moves its decision log into `.okf/decisions/`, got a new copy on every run,
+numbered after its own records (issue #26). Init and update now write the
+first decision only when `.okf/decisions/` is missing or holds no decision
+record: no `.md` file other than `index.md`, in it or in a folder inside it.
+They no longer read titles, and a record whose front matter does not parse
+still counts (`_write_first_decision` in `src/kmctl/scaffold.py`). A fresh
+bundle still starts with `0001`.
+
+Rejected: a tag that marks the record kmctl wrote. A migrated log or a
+record written by hand does not carry it, so it fixes only the case kmctl
+wrote itself, and it adds a field to keep.
