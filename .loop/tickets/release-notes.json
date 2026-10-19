@@ -3,7 +3,7 @@
   "slug": "release-notes",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -75,8 +75,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "7bd300c711c5fc0c5f4304093fa5feaad2d00952b31e3965caaf96345664b032",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "386d70973c3bbc401591bfab217efda04587e6c5a21f8b09fe12919080517fdb",
+    "started_at": "2026-10-19T12:50:38+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "386d70973c3bbc401591bfab217efda04587e6c5a21f8b09fe12919080517fdb",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -91,5 +110,5 @@
     }
   ],
   "by": "process:loopctl/2.2.1.dev16+g27435b040.d20261017",
-  "at": "2026-10-19T12:50:31+00:00"
+  "at": "2026-10-19T12:50:38+00:00"
 }
