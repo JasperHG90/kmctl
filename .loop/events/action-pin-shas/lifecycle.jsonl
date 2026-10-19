@@ -6,3 +6,4 @@
 {"at": "2026-10-19T14:32:57+00:00", "by": "advance", "from": "ready", "kind": "transition", "schema_version": "1.0", "to": "building"}
 {"at": "2026-10-19T14:43:11+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "building"}
 {"at": "2026-10-19T14:43:20+00:00", "by": "advance", "from": "building", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
+{"at": "2026-10-19T14:43:41+00:00", "binds": "0c25e498e46db5b25e8eb3b12917328c4225f06d1f4599938193d429b9e92017", "kind": "round-start", "n": 1, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "2effc9774f8f697334eac593d483e63306926000"}
