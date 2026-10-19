@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {"id": "r1", "behavior": "kmctl init over a bundle whose .okf/decisions/ holds records with other titles (a copy of this repository's .okf/) writes no decision record and leaves every file under .okf/ byte for byte.", "fails_when": "any new file appears under .okf/decisions/, or any file under .okf/ changes", "command": "uv run pytest tests/test_init.py::test_init_writes_no_first_decision_over_other_records -q"},
+    {"id": "r2", "behavior": "kmctl init over a .okf/decisions/ holding only index.md writes the first decision as 0001.", "fails_when": "no 0001 record with the first decision's title is written", "command": "uv run pytest tests/test_init.py::test_init_writes_first_decision_into_empty_decisions -q"},
+    {"id": "r3", "behavior": "A decision record whose front matter does not parse still counts as a record, so init writes no first decision beside it.", "fails_when": "init writes a first decision when the only record has broken front matter", "command": "uv run pytest tests/test_init.py::test_init_counts_unparseable_record -q"},
+    {"id": "r4", "behavior": "The existing init tests and the rest of the suite pass under the new rule.", "fails_when": "any test in tests/test_init.py fails", "command": "uv run pytest tests/test_init.py -q"},
+    {"id": "r5", "behavior": "ADR 0011 carries a dated Correction stating the empty-folder rule and citing issue #26; the scaffold docstrings, the kmctl init epilog and docs/reference/commands.md state the new rule and none still states the title rule.", "fails_when": "the Correction is missing, or any of those places still describes matching the first decision's title", "judgment": true}
+  ]
+}
