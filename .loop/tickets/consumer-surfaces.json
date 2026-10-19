@@ -1,14 +1,56 @@
 {
   "schema_version": "1.0",
   "slug": "consumer-surfaces",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "8b574b696399fc1d61a186b22f12ab880d07c2d10f63cf7faa7c7bf0dab19e05",
+    "tree": "78c904ae683e9968ba300e34620cabd3cdfe35fe",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "judgement",
+        "judgement": "j-20261019T152608+0000-d6e7a7e2",
+        "paths": [
+          "src/kmctl/plugin.py",
+          "tests/test_init.py",
+          "tests/test_plugin.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f2",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": null,
+        "paths": [
+          ".okf/architecture/overview.md"
+        ]
+      },
+      {
+        "finding": "reviewer:f3",
+        "outcome": "sent-back",
+        "by": "judgement",
+        "judgement": "j-20261019T152610+0000-caa07639",
+        "paths": [
+          ".okf/decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md",
+          ".okf/log.md",
+          "apm/antigravity/.apm/instructions/docs-layout.instructions.md",
+          "apm/antigravity/.apm/instructions/okf-bundle.instructions.md",
+          "apm/claude/.apm/instructions/docs-layout.instructions.md",
+          "apm/claude/.apm/instructions/okf-bundle.instructions.md",
+          "tests/test_apm_package.py"
+        ]
+      }
+    ],
+    "at": "2026-10-19T15:26:10+00:00"
+  },
   "ask": "j-20261019T142805+0000-1620a63f",
   "split": "j-20261019T143154+0000-0ee9a480",
   "split_plan_hash": "331eb55e09ea668bd083103af1205a02d003008a909be50c7d4e4ba52465e06d",
@@ -134,8 +176,14 @@
       "to": "fixing",
       "at": "2026-10-19T15:13:12+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-19T15:26:10+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.2.2.dev1+gd84319696",
-  "at": "2026-10-19T15:19:45+00:00"
+  "at": "2026-10-19T15:26:10+00:00"
 }
