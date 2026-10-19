@@ -52,7 +52,7 @@ copier asks:
 | `.github/workflows/ci.yml` | Two jobs: the pre-commit hooks, and kmctl's checks (`kmctl check` fails the job on a broken bundle; `kmctl review due` goes to the job summary). |
 | `.github/CODEOWNERS` | The owners you named. |
 | `.pre-commit-config.yaml` | Generic hooks only: whitespace, line endings, YAML, TOML and JSON syntax, merge markers, large files, private keys. They skip the agent files APM and `kmctl plugin patch` install (`.agents/`, `.claude/agents/`, `rules/` and `skills/`, `.opencode/`, `opencode.json`), which `apm install` writes again. Run with `just lint` ([prek](https://github.com/j178/prek)). |
-| `.gitignore` | APM's package cache, `apm_modules/`, and common clutter: `.DS_Store` and `Thumbs.db`, editor folders, Python and Node caches and environments, and `.env`. |
+| `.gitignore` | The paths `just bootstrap` installs per user — every skill, rule and agent kmctl's and okf's packages ship, their settings and hook files, `.mcp.json`, `opencode.json` and `.agents/plugins/kmctl/` — so they never enter git. They are named one by one rather than their folders being ignored, so a skill, rule or agent of your own in `.claude/`, `.agents/` or `.opencode/` is still committed. Also APM's package cache, `apm_modules/`, and common clutter: `.DS_Store` and `Thumbs.db`, editor folders, Python and Node caches and environments, and `.env`. Commit `apm.yml` and `apm.lock.yaml`; every clone installs its own copies. |
 | `.copier-answers.yml` | Your answers, so `uvx copier update` can bring in a newer template. |
 
 ## Keep a project current

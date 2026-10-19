@@ -30,6 +30,10 @@ from kmctl.okf import front_matter
 ROOT = Path(__file__).resolve().parents[1]
 TAG = f"v{version('kmctl')}"
 KMCTL_GIT = "https://github.com/JasperHG90/kmctl.git"
+# okf's skills and agents, shipped by the okf-skills commit apm/apm.yml pins.
+# They are not in this tree, so this list has to follow that pin.
+OKF_SKILLS = ("backfill", "okf", "validate", "visualize")
+OKF_AGENTS = ("bundle-weaver.md", "event-analyzer.md")
 HARNESS_SETS = (
     "[claude]",
     "[antigravity]",
@@ -69,6 +73,22 @@ RULE = (
 # Paths a generated project leaves out of git, and paths it commits.
 IGNORED = (
     "apm_modules/x",
+    ".claude/skills/audit/SKILL.md",
+    ".claude/skills/backfill/SKILL.md",
+    ".claude/agents/kmctl-auditor.md",
+    ".claude/agents/adversarial-reviewer.md",
+    ".claude/rules/docs-layout.md",
+    ".claude/settings.json",
+    ".mcp.json",
+    ".agents/skills/okf/SKILL.md",
+    ".agents/rules/okf-bundle.md",
+    ".agents/hooks.json",
+    ".agents/mcp_config.json",
+    ".agents/plugins/kmctl/plugin.json",
+    ".opencode/agents/kmctl-auditor.md",
+    ".opencode/rules/docs-layout.md",
+    ".opencode/plugins/kmctl.js",
+    "opencode.json",
     ".DS_Store",
     "sub/.DS_Store",
     "Thumbs.db",
@@ -89,14 +109,13 @@ COMMITTED = (
     "apm.lock.yaml",
     "AGENTS.md",
     "CLAUDE.md",
-    ".claude/agents/adversarial-reviewer.md",
-    ".claude/settings.json",
-    ".agents/skills/x/SKILL.md",
-    ".opencode/agents/x.md",
-    "opencode.json",
     ".okf/index.md",
     "docs/README.md",
-    ".mcp.json",
+    ".claude/skills/my-skill/SKILL.md",
+    ".claude/rules/my-rule.md",
+    ".claude/agents/my-agent.md",
+    ".agents/rules/my-rule.md",
+    ".opencode/agents/my-agent.md",
 )
 # Found before the consumer fixture narrows PATH.
 JUST = shutil.which("just")
@@ -328,10 +347,10 @@ def test_adversarial_review_off_writes_neither(
 # The .gitignore -----------------------------------------------------------------
 
 
-def test_gitignore_leaves_out_common_paths_and_keeps_installed_files(
+def test_gitignore_leaves_out_clutter_and_the_agent_files_bootstrap_installs(
     template: Path, tmp_path: Path
 ) -> None:
-    """The .gitignore ignores OS, editor, Python and Node clutter, and nothing a project commits."""
+    """The .gitignore ignores clutter and the files `just bootstrap` installs, and nothing a project commits."""
     out = tmp_path / "demo"
     assert _copier(template, out).returncode == 0
     _run(["git", "init", "-q"], out)
@@ -349,6 +368,35 @@ def test_gitignore_leaves_out_common_paths_and_keeps_installed_files(
 
     assert ignored(IGNORED) == set(IGNORED)
     assert ignored(COMMITTED) == set()
+
+
+def test_gitignore_names_every_artifact_the_packages_install() -> None:
+    """Every skill, agent and rule the packages ship is ignored, so a new one cannot slip into git."""
+    ignored = {
+        line
+        for line in (ROOT / "starter" / ".gitignore").read_text().splitlines()
+        if line and not line.startswith("#")
+    }
+    package = ROOT / "apm" / ".apm"
+    skills = {p.name for p in (package / "skills").iterdir()} | set(OKF_SKILLS)
+    agents = {p.name for p in (package / "agents").glob("*.md")} | set(OKF_AGENTS)
+    # The reviewer comes from jasperhg90/skills when the template adds it.
+    agents.add("adversarial-reviewer.md")
+    rules = {
+        p.name.removesuffix(".instructions.md") + ".md"
+        for p in (ROOT / "apm" / "claude" / ".apm" / "instructions").glob(
+            "*.instructions.md"
+        )
+    }
+
+    for name in skills:
+        assert f".claude/skills/{name}/" in ignored
+        assert f".agents/skills/{name}/" in ignored
+    for name in agents:
+        assert f".claude/agents/{name}" in ignored
+    for name in rules:
+        for harness in (".claude", ".agents", ".opencode"):
+            assert f"{harness}/rules/{name}" in ignored
 
 
 # r6: a bootstrap from this checkout ----------------------------------------------

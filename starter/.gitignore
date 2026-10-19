@@ -1,6 +1,66 @@
 # APM's package cache; `just install` restores it.
 apm_modules/
 
+# kmctl's agent artifacts, which `just bootstrap` installs per user from
+# apm.yml. These are the paths its packages ship; anything else you put in
+# these folders (a skill, rule or agent of your own) is committed as usual.
+
+# Claude Code
+.claude/skills/architecture-review/
+.claude/skills/audit/
+.claude/skills/backfill/
+.claude/skills/continue/
+.claude/skills/decision-log-review/
+.claude/skills/handoff/
+.claude/skills/okf/
+.claude/skills/practices-review/
+.claude/skills/validate/
+.claude/skills/visualize/
+.claude/skills/write-docs/
+.claude/agents/adversarial-reviewer.md
+.claude/agents/bundle-weaver.md
+.claude/agents/event-analyzer.md
+.claude/agents/kmctl-auditor.md
+.claude/rules/diagrams-stay-current.md
+.claude/rules/docs-layout.md
+.claude/rules/manifesto-invariants.md
+.claude/rules/okf-bundle.md
+.claude/settings.json
+.claude/apm-hooks.json
+.mcp.json
+
+# Antigravity
+.agents/skills/architecture-review/
+.agents/skills/audit/
+.agents/skills/backfill/
+.agents/skills/continue/
+.agents/skills/decision-log-review/
+.agents/skills/handoff/
+.agents/skills/okf/
+.agents/skills/practices-review/
+.agents/skills/validate/
+.agents/skills/visualize/
+.agents/skills/write-docs/
+.agents/rules/diagrams-stay-current.md
+.agents/rules/docs-layout.md
+.agents/rules/manifesto-invariants.md
+.agents/rules/okf-bundle.md
+.agents/hooks.json
+.agents/hooks/okf-skills/
+.agents/mcp_config.json
+.agents/plugins/kmctl/
+
+# OpenCode
+.opencode/agents/bundle-weaver.md
+.opencode/agents/event-analyzer.md
+.opencode/agents/kmctl-auditor.md
+.opencode/rules/diagrams-stay-current.md
+.opencode/rules/docs-layout.md
+.opencode/rules/manifesto-invariants.md
+.opencode/rules/okf-bundle.md
+.opencode/plugins/kmctl.js
+opencode.json
+
 # Operating systems
 .DS_Store
 Thumbs.db
