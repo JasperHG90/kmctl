@@ -3,7 +3,7 @@
   "slug": "commit-apm-installs",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "7d2418c7ada2097363ec689aa1ab00f19e8191d449f90f7b556b200088dcc70b",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "bb20c5a3d57a3f24668cc5a111ab3fb8c29dc2dd19486f2261d25a11f30e9979",
+    "started_at": "2026-10-19T08:03:19+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "bb20c5a3d57a3f24668cc5a111ab3fb8c29dc2dd19486f2261d25a11f30e9979",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -44,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.2.1.dev16+g27435b040.d20261017",
-  "at": "2026-10-19T08:03:14+00:00"
+  "at": "2026-10-19T08:03:19+00:00"
 }
