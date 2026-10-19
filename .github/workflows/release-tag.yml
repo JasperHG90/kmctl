@@ -32,7 +32,7 @@ jobs:
           fetch-depth: 0
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
-          enable-cache: true
+          enable-cache: false
       # verdict: raised (tag and release), resume (tag here, release missing),
       # or nothing. A tag at another commit fails.
       - name: Decide whether this push releases

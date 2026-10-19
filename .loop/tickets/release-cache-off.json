@@ -1,10 +1,10 @@
 {
   "schema_version": "1.0",
   "slug": "release-cache-off",
-  "stage": "building",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
-  "review_rounds": 0,
+  "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
@@ -13,13 +13,15 @@
   "split": "j-20261019T010456+0000-e54a0f92",
   "split_plan_hash": "14d4e5b995211c3be0ac6d64a33e133b25b67c85665863ae77a4f4aa6d81fe6a",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "eaeb86f677ff2ccc225b1a31ea5874a78607455f",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
   "worktree": "/home/vscode/kmctl.worktrees/release-cache-off",
   "branch": "loop/release-cache-off",
-  "stamps": [],
+  "stamps": [
+    "51fd73844f6df2b600b6cb5b1b808cff6011d1feb4d2c4271c93dad97c496adf"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
     "hash": "823048fdc50576dcbd487052414368e458c959c547f0256f2a5965b9c0a54dfd",
@@ -55,16 +57,16 @@
   "waivers": [],
   "overrides": [],
   "round": {
-    "kind": "plan",
+    "kind": "review",
     "n": 1,
-    "binds": "14d4e5b995211c3be0ac6d64a33e133b25b67c85665863ae77a4f4aa6d81fe6a",
-    "started_at": "2026-10-19T01:04:56+00:00",
+    "binds": "51fd73844f6df2b600b6cb5b1b808cff6011d1feb4d2c4271c93dad97c496adf",
+    "started_at": "2026-10-19T01:12:53+00:00",
     "passes": [
-      "plan-reviewer"
+      "reviewer"
     ],
-    "tree": null,
-    "plan_hash": null,
-    "eval_hash": null,
+    "tree": "c169cfe9ccfbb61cfb0fc99423d14d7e1d7a695e",
+    "plan_hash": "14d4e5b995211c3be0ac6d64a33e133b25b67c85665863ae77a4f4aa6d81fe6a",
+    "eval_hash": "823048fdc50576dcbd487052414368e458c959c547f0256f2a5965b9c0a54dfd",
     "scope": "full",
     "sent_back": [],
     "since": null,
@@ -98,8 +100,20 @@
       "to": "building",
       "at": "2026-10-19T01:07:59+00:00",
       "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-10-19T01:12:52+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-19T01:19:00+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-19T01:07:59+00:00"
+  "at": "2026-10-19T01:19:00+00:00"
 }
