@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "okf-summary-nudge-agy-opencode",
-  "stage": "building",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 0,
@@ -123,8 +123,14 @@
       "to": "building",
       "at": "2026-10-18T23:55:54+00:00",
       "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-10-19T00:20:12+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-19T00:19:58+00:00"
+  "at": "2026-10-19T00:20:12+00:00"
 }
