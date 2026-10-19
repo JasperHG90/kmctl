@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {"id": "r1", "behavior": "Every uses: line in action.yml pins a 40-character commit SHA followed by a # vX.Y.Z comment.", "fails_when": "any uses: line in action.yml has a tag or branch ref, or no version comment", "command": "uv run pytest tests/scripts/test_workflows.py -q -k 'test_every_action_is_pinned_by_commit_sha and action'"},
+    {"id": "r2", "behavior": "Every uses: line in .github/workflows/knowledge-audit.yml pins a 40-character commit SHA followed by a # vX.Y.Z comment.", "fails_when": "any uses: line in knowledge-audit.yml has a tag or branch ref, or no version comment", "command": "uv run pytest tests/scripts/test_workflows.py -q -k 'test_every_action_is_pinned_by_commit_sha and knowledge'"},
+    {"id": "r3", "behavior": "Each pinned SHA is the commit of the release its comment names, and the same action runs at one version across action.yml and the repo's workflows.", "fails_when": "a SHA does not match its tag upstream, or one action is pinned at two versions", "judgment": true}
+  ]
+}

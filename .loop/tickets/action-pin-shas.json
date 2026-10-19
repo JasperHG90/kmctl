@@ -20,10 +20,36 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "483d6b0b274303675a408755317bf250b84a67ee94183acfed02afb5e26985f3",
+    "at": "2026-10-19T14:32:31+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "Every uses: line in action.yml pins a 40-character commit SHA followed by a # vX.Y.Z comment.",
+      "fails_when": "any uses: line in action.yml has a tag or branch ref, or no version comment",
+      "command": "uv run pytest tests/scripts/test_workflows.py -q -k 'test_every_action_is_pinned_by_commit_sha and action'",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "Every uses: line in .github/workflows/knowledge-audit.yml pins a 40-character commit SHA followed by a # vX.Y.Z comment.",
+      "fails_when": "any uses: line in knowledge-audit.yml has a tag or branch ref, or no version comment",
+      "command": "uv run pytest tests/scripts/test_workflows.py -q -k 'test_every_action_is_pinned_by_commit_sha and knowledge'",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "Each pinned SHA is the commit of the release its comment names, and the same action runs at one version across action.yml and the repo's workflows.",
+      "fails_when": "a SHA does not match its tag upstream, or one action is pinned at two versions",
+      "command": null,
+      "judgment": true
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -69,5 +95,5 @@
     }
   ],
   "by": "process:loopctl/2.2.2.dev1+gd84319696",
-  "at": "2026-10-19T14:31:45+00:00"
+  "at": "2026-10-19T14:32:32+00:00"
 }
