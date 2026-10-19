@@ -2,6 +2,6 @@
 # scripts/sync_antigravity_rules.py from apm/claude/; edit those, not these.
 name: kmctl-antigravity
 version: 0.8.0
-description: kmctl's knowledge rules, session briefing hook and okf Stop check for Antigravity.
+description: kmctl's knowledge rules, session briefing hook, summary nudge hook and okf Stop check for Antigravity.
 targets:
   - antigravity

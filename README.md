@@ -150,10 +150,10 @@ package; approve it with `apm approve`.
 ### 4. Install it for your harness
 
 APM installs kmctl's skills and the okf skills, the knowledge rules, a
-session hook that prints kmctl's briefing at the start of every session,
-a hook that runs `kmctl summary nudge` after each tool call (for OpenCode,
-`kmctl plugin patch` adds it to kmctl's plugin),
-and okf's MCP server (`okf-bundle`), which lets the agent search `.okf/`.
+session hook that prints kmctl's briefing at the start of every session, a
+hook that runs `kmctl summary nudge` after each tool call, and okf's MCP
+server (`okf-bundle`), which lets the agent search `.okf/`. For OpenCode,
+`kmctl plugin patch` writes both hooks into kmctl's plugin instead.
 `kmctl plugin patch` then adds what APM cannot install yet. Run it after
 every `apm install`.
 
