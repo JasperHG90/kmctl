@@ -14,8 +14,8 @@ Usage::
 
 ``apm/apm.yml``, kmctl's APM package, carries the one version, and
 ``pyproject.toml`` reads it from there (ADR 0014). APM needs a ``version:`` in
-each apm.yml, so ``set`` writes it and copies it into the root ``apm.yml``;
-``current`` refuses when the copy differs. ``manifest`` prints ``apm/apm.yml``'s
+each apm.yml, so ``set`` writes it into every file in ``APM_FILES``;
+``current`` refuses when one differs. ``manifest`` prints ``apm/apm.yml``'s
 version alone, for ``release-tag.yml``'s read of the commit before a push,
 where an older commit's copies may disagree. ``set`` also points the six install lines in the docs, and the
 APM how-to's CLI install line, at the tag ``vVERSION``, and moves the starter
@@ -129,8 +129,8 @@ def current(repo: Path) -> str:
     Raises
     ------
     ReleaseRefused
-        When ``apm/apm.yml`` has no version, or the root apm.yml is missing or
-        holds another version.
+        When ``apm/apm.yml`` has no version, or another file in ``APM_FILES``
+        is missing or holds another version.
     """
     version = manifest_version(repo)
     for rel in APM_FILES:
@@ -157,7 +157,7 @@ def pin_docs(text: str, version: str) -> tuple[str, int]:
 
 
 def set_version(repo: Path, version_text: str) -> list[Path]:
-    """Write the version into both apm.yml files, pin the docs and copier.yml's default.
+    """Write the version into the four apm.yml files, pin the docs and copier.yml's default.
 
     Nothing is written unless the version is valid, all six install lines are
     found, each apm.yml has a ``version:`` line, and ``copier.yml`` has a
@@ -234,7 +234,7 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="cmd", required=True)
     p_cur = sub.add_parser(
         "current",
-        help="print apm/apm.yml's version; refuse when the root apm.yml differs",
+        help="print apm/apm.yml's version; refuse when another apm.yml differs",
     )
     p_man = sub.add_parser(
         "manifest",
@@ -242,7 +242,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     p_set = sub.add_parser(
         "set",
-        help="write the version into both apm.yml files, pin the docs and copier.yml's kmctl_ref",
+        help="write the version into the four apm.yml files, pin the docs and copier.yml's kmctl_ref",
     )
     p_set.add_argument("version", help="the release version, e.g. 0.2.0 or 0.2.0rc1")
     p_cmp = sub.add_parser("compare", help="print raised, same, lowered or skip")

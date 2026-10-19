@@ -67,8 +67,8 @@ HOOK_COMMAND = (
     f"git+https://github.com/{REPO}.'; exit 0"
 )
 HOOK_DESCRIPTION = (
-    "kmctl: print the knowledge briefing (where knowledge lives, what is due, "
-    "the rules). Never blocks."
+    "kmctl: print the knowledge briefing (where knowledge lives, the skills, "
+    "what is due, one reading rule). Never blocks."
 )
 HOOK_TIMEOUT = 10
 #: The text that marks a settings.json PostToolUse hook as kmctl's summary nudge.

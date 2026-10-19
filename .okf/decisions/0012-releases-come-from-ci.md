@@ -98,3 +98,19 @@ The docs hold six install lines for `scripts/release.py set` to point at
 the release tag, not five: the CI how-to's audit workflow now has a second
 job, which uses the action in `mode: publish`
 ([ADR 0017](0017-the-ci-audit-is-a-standalone-pydanticai-agent-script.md)).
+
+## Correction, 2026-10-19
+
+The 2026-10-16 correction says `scripts/release.py set` copies the version
+to the root `apm.yml` and that `current` refuses when the two differ. `set`
+writes it into four apm.yml files (`APM_FILES`): the root `apm.yml`,
+`apm/apm.yml`, and the two per-harness sub-packages `apm/claude/apm.yml`
+and `apm/antigravity/apm.yml`
+([ADR 0020](0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md)),
+because APM needs a `version:` in each. `current` refuses when any of them
+differs from `apm/apm.yml`. `set` also pins the install line in
+`docs/how-to/install-kmctl-with-apm.md` and moves the `kmctl_ref` default in
+`copier.yml` to `v<version>`, so the starter template a release tag carries
+pins that release
+([ADR 0025](0025-the-starter-template-lives-in-kmctl-and-shares-its-release-tags.md)).
+`apm/apm.yml` is still the one version source.

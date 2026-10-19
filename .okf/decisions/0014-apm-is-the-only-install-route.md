@@ -169,3 +169,36 @@ Antigravity agents and removes APM's broken okf Stop handler.
 users install, upgrade and remove the package with APM's own verbs;
 `kmctl plugin install`, `update` and `remove` are gone, and
 `kmctl plugin patch` adds what APM cannot install yet.
+
+## Correction, 2026-10-19
+
+Four statements above no longer match the code; the decision, that APM is
+the only install route, stands.
+
+- **The package.** The Decision says `apm/apm.yml` depends only on
+  okf-skills and that the 4 rules sit in `apm/.apm/instructions/`. Since
+  [ADR 0020](0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md)
+  `apm/.apm/` holds only the skills and the auditor. The rules sit in the
+  sub-package `apm/claude/.apm/instructions/`, with a copy for Antigravity
+  in `apm/antigravity/.apm/instructions/` that
+  `scripts/sync_antigravity_rules.py` writes, and `apm/apm.yml` depends on
+  `./claude` and `./antigravity` as well as the pinned okf-skills.
+- **The wheel.** It carries more than the skills folder. `pyproject.toml`
+  force-includes `apm/.apm/skills` as `kmctl/_skills`, for `kmctl
+  briefing`; `apm/.apm/agents` as `kmctl/_agents`, for the Antigravity and
+  OpenCode agents `kmctl plugin patch` writes; and
+  `apm/claude/.apm/instructions` as `kmctl/_rules`, for the OpenCode rules.
+- **`kmctl plugin status`** is gone. The `kmctl-doctor` ticket folded it
+  into `kmctl doctor`, whose `claude.lock` check compares the kmctl ref in
+  `apm.lock.yaml` with the CLI's version and whose `claude.hook` check
+  looks for the hook. `kmctl plugin patch` is the only `plugin` command
+  left (ADR 0021).
+- **The tests.** `tests/test_plugin.py` no longer checks an install with a
+  fake `uvx` and `claude`; it tests the hooks the package ships and okf's
+  MCP launcher. No test runs a kmctl install, since kmctl no longer has one
+  (ADR 0021). `tests/test_plugin_patch.py` tests `kmctl plugin patch` with
+  a fake `uvx` and `claude` and checks that it never runs `uvx`. The
+  `integration` tests in `tests/test_apm_package.py` and
+  `tests/test_plugin_patch.py` add kmctl's entry to a scratch `apm.yml`,
+  run the real APM 0.33.0 against this tree served from a local git server,
+  then run `kmctl plugin patch`.

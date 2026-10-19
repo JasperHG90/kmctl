@@ -78,3 +78,12 @@ APM cannot install yet and never runs APM. The CLI still pins the package to
 its own release: the `apm.yml` entry names `ref: v<cli version>`, and
 `kmctl doctor` compares it with the CLI. The decision stands: kmctl is a
 standalone CLI with thin skills.
+
+## Correction, 2026-10-19
+
+The 2026-10-16 correction says the wheel carries only the skills, for
+`kmctl briefing`. `pyproject.toml` force-includes three folders: the skills
+as `kmctl/_skills`, for the briefing; the agents in `apm/.apm/agents` as
+`kmctl/_agents`, for the Antigravity and OpenCode agents `kmctl plugin
+patch` writes; and the rules in `apm/claude/.apm/instructions` as
+`kmctl/_rules`, for the OpenCode rules. The decision stands.

@@ -288,7 +288,7 @@ def _flat(text: str) -> str:
 
 
 def test_docs_decision_matches_the_decision_schema() -> None:
-    """The new decision's front matter validates and its sections are the decision skeleton."""
+    """The new decision's front matter validates and its sections are the decision skeleton, then dated corrections."""
     validator = Draft202012Validator(schema("decision"))
 
     errors = [
@@ -296,7 +296,9 @@ def test_docs_decision_matches_the_decision_schema() -> None:
     ]
 
     assert errors == []
-    assert list(_sections(DECISION.read_text())) == skeleton("decision")
+    sections = list(_sections(DECISION.read_text()))
+    assert sections[:3] == skeleton("decision")
+    assert all(re.fullmatch(r"Correction, \d{4}-\d{2}-\d{2}", s) for s in sections[3:])
     assert front_matter(DECISION)["status"] == "stable"
 
 

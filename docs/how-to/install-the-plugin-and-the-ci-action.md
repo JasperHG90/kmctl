@@ -136,8 +136,9 @@ Next: open this folder in Antigravity, trust it and start a new session, then km
 
 APM writes kmctl's seven skills and okf's four to `.agents/skills/`, the
 four knowledge rules to `.agents/rules/`, okf's MCP server, `okf-bundle`, to
-`.agents/mcp_config.json`, and two hooks to `.agents/hooks.json`: one
-SessionStart hook that runs `kmctl briefing --format antigravity`, and one
+`.agents/mcp_config.json`, and three hooks to `.agents/hooks.json`: one
+SessionStart hook that runs `kmctl briefing --format antigravity`, one
+PostToolUse hook that runs `kmctl summary nudge --format antigravity`, and one
 Stop hook that runs okf's bundle check (it keeps the agent working only when
 `.okf/index.md` sets `upkeep: enforced`). `kmctl plugin patch` then writes
 the folder `.agents/plugins/kmctl/`, which it owns and replaces on every
@@ -207,9 +208,8 @@ jobs:
 
 While the kmctl repository is private, GitHub runs this action only in
 repositories its Actions access setting allows (Settings, Actions, General,
-Access). The ref is the newest release tag, `vX.Y.Z`, once kmctl has a
-release, and `main` until then. Keep it the same as the tag you installed kmctl
-from in step 1.
+Access). The ref is a release tag, `vX.Y.Z`. Keep it the same as the tag you
+installed kmctl from in step 1.
 
 `fetch-depth: 0` gives `kmctl review due` the git history it reads. Per
 `action.yml`, this default `checks` mode installs kmctl, runs `kmctl check` and

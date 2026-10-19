@@ -1,6 +1,6 @@
 # Cut a release by hand (ADR 0012). Pick an increment or type the version; a
 # dry run (the default) resolves, tests and builds, then stops. A real run from
-# main opens a pull request that sets both apm.yml files (apm/apm.yml is the
+# main opens a pull request that sets the four apm.yml files (apm/apm.yml is the
 # one version source) to the version, pins the docs' install lines to its
 # tag and moves the starter template's kmctl_ref default in copier.yml to it
 # (ADR 0025); merging it is the approval, and release-tag.yml tags the merge commit
@@ -204,7 +204,7 @@ jobs:
           git push origin "$BRANCH"
           if ! gh pr create --base main --head "$BRANCH" \
             --title "release: v$VERSION" \
-            --body "Sets both apm.yml files to $VERSION, pins the docs' install lines to v$VERSION and defaults the starter template's kmctl_ref to v$VERSION. Merging this tags v$VERSION and publishes the GitHub Release through release-tag.yml." \
+            --body "Sets the four apm.yml files to $VERSION, pins the docs' install lines to v$VERSION and defaults the starter template's kmctl_ref to v$VERSION. Merging this tags v$VERSION and publishes the GitHub Release through release-tag.yml." \
             >> "$GITHUB_STEP_SUMMARY"; then
             git push origin --delete "$BRANCH" || echo "::warning::Could not delete $BRANCH; delete it by hand."
             echo "::error::Could not open the pull request, so $BRANCH was deleted. Turn on \"Allow GitHub Actions to create and approve pull requests\" in the repository's Actions settings."

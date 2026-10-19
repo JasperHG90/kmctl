@@ -183,3 +183,14 @@ It also has a third kept-file exception. When init or update writes
 `.okf/index.md` does not link it, kmctl inserts that one index entry and
 appends one line to the kept `.okf/log.md`, and changes nothing else in
 either file, so `kmctl check` passes after an update (ADR 0027).
+
+## Correction, 2026-10-19
+
+The second 2026-10-16 correction, the one that says `kmctl init` no longer
+writes the four rules, puts them in kmctl's package as
+`apm/.apm/instructions/NAME.instructions.md`. Since
+[ADR 0020](0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md)
+they sit in the Claude Code sub-package,
+`apm/claude/.apm/instructions/NAME.instructions.md`, with a copy for
+Antigravity in `apm/antigravity/.apm/instructions/`. The rest of that
+correction stands as the 2026-10-17 correction amends it.
