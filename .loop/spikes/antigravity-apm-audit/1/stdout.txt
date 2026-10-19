@@ -1,0 +1,7 @@
+kmctl 0.10.0
+committed files: 96; .agents files: 47; .claude files: 45
+0
+== clean clone porcelain: []
+edited: .agents/skills/architecture-review/SKILL.md
+== uncommitted edit porcelain: []
+== committed edit, fresh clone porcelain: [ M .agents/skills/architecture-review/SKILL.md]
