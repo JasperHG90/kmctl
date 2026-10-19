@@ -65,7 +65,8 @@ def _root(
         help=(
             "Print the kmctl version and exit, as kmctl X.Y.Z. In a project whose "
             "apm.lock.yaml pins another release, it prints the pinned version, "
-            "followed by (pinned by apm.lock.yaml; kmctl X.Y.Z is on PATH)."
+            "followed by (pinned by apm.lock.yaml; kmctl X.Y.Z is on PATH). Set "
+            "KMCTL_PINNED=1 for the bare line, as scripts need."
         ),
     ),
 ) -> None:

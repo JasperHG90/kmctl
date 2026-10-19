@@ -45,7 +45,7 @@ for people. Warnings and refusals go to stderr.
 
 | Option | Meaning |
 |---|---|
-| `--version`, `-V` | Print the kmctl version and exit, as `kmctl X.Y.Z`. In a project whose `apm.lock.yaml` pins another release, it prints the pinned version, followed by `(pinned by apm.lock.yaml; kmctl X.Y.Z is on PATH)` with the version on PATH. |
+| `--version`, `-V` | Print the kmctl version and exit, as `kmctl X.Y.Z`. In a project whose `apm.lock.yaml` pins another release, it prints the pinned version, followed by `(pinned by apm.lock.yaml; kmctl X.Y.Z is on PATH)` with the version on PATH. With `KMCTL_PINNED=1` set, it prints the bare `kmctl X.Y.Z` line, for scripts. |
 | `--install-completion` | Install completion for the current shell. |
 | `--show-completion` | Show completion for the current shell, to copy it or customize the installation. |
 | `--help`, `-h` | Show the help and exit. |
