@@ -162,3 +162,4 @@
 {"at": "2026-10-19T14:29:26+00:00", "judgement": "j-20261019T142810+0000-5dc9de97", "kind": "judgement-link", "schema_version": "1.0", "ticket": "first-decision-detect"}
 {"at": "2026-10-19T14:29:37+00:00", "judgement": "j-20261019T142802+0000-031020d3", "kind": "judgement-link", "schema_version": "1.0", "ticket": "action-pin-shas"}
 {"at": "2026-10-19T14:29:37+00:00", "evidence": "brought back as action-pin-shas", "judgement": "j-20261019T142802+0000-031020d3", "kind": "judgement-label", "label": "loop", "schema_version": "1.0", "source": "outcome"}
+{"at": "2026-10-19T14:29:38+00:00", "judgement": "j-20261019T142812+0000-a3b6dee2", "kind": "judgement-link", "schema_version": "1.0", "ticket": "decision-draft-status"}
