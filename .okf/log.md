@@ -170,3 +170,4 @@
   `decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity` a consequence:
   `apm audit --ci` reports `.agents/hooks.json` as drift, and a frozen
   install on a clean checkout is the drift check (issue #28).
+- Corrected `decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins`: a handed-off `kmctl --version` names the pin, and `KMCTL_PINNED=1` keeps the bare line (issue #37).
