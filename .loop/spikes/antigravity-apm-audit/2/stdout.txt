@@ -1,0 +1,10 @@
+kmctl 0.10.0
+committed files: 96; .agents files: 47; .claude files: 45
+0
+== clean clone porcelain: []
+edited: .agents/skills/architecture-review/SKILL.md
+after frozen only, edit: [ M .agents/hooks.json]
+  [i] Skipped inactive experimental resolver for target 'copilot-cowork' during 
+  [i] Skipped inactive experimental resolver for target 'copilot-app' during 
+== uncommitted edit porcelain: []
+== committed edit, fresh clone porcelain: [ M .agents/skills/architecture-review/SKILL.md]
