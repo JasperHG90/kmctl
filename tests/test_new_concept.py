@@ -174,6 +174,38 @@ def test_new_description_newline_stays_on_one_line(tmp_path: Path) -> None:
     assert "- [Two lines](two-lines.md): First. Second.\n" in index
 
 
+# Draft decisions: --draft
+
+
+def test_new_decision_draft_writes_status_draft(tmp_path: Path) -> None:
+    _repo(tmp_path)
+
+    draft = _path(tmp_path, "decision", "Use a queue", "--draft")
+    accepted = _path(tmp_path, "decision", "Use a cache")
+
+    assert front_matter(draft)["status"] == "draft"
+    assert draft.read_text().count("status:") == 1
+    assert front_matter(accepted)["status"] == "stable"
+    assert _invoke("check", "--path", str(tmp_path)).exit_code == 0
+    check = okf_validate(tmp_path / ".okf")
+    assert check.returncode == 0, check.stdout + check.stderr
+
+
+@pytest.mark.parametrize("kind", ["practice", "proposal", "prototype", "handoff"])
+def test_new_draft_refused_for_other_kinds(tmp_path: Path, kind: str) -> None:
+    _repo(tmp_path)
+    before = {p: p.read_text() for p in (tmp_path / ".okf").rglob("*.md")}
+
+    result = _new(tmp_path, kind, "Refused", "--draft")
+
+    assert result.exit_code == 1
+    assert result.stdout == ""
+    assert result.stderr == (
+        f"kmctl new {kind}: refused: --draft is for decisions only; leave it out\n"
+    )
+    assert {p: p.read_text() for p in (tmp_path / ".okf").rglob("*.md")} == before
+
+
 # Freshness: --stale-after and --source
 
 

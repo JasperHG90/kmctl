@@ -14,7 +14,7 @@ from importlib.metadata import version
 from pathlib import Path
 from typing import Literal
 
-from kmctl.kinds import KINDS, skeleton
+from kmctl.kinds import DRAFT, KINDS, skeleton
 from kmctl.okf import (
     BadFrontMatter,
     as_datetime,
@@ -186,11 +186,13 @@ def _front_matter(
     key: str | None = None,
     stale_after: datetime | None = None,
     sources: list[str] | None = None,
+    draft: bool = False,
 ) -> str:
     """The front matter block for a new or updated concept.
 
     A handoff without ``stale_after`` gets one ``HANDOFF_DAYS`` from ``now``;
-    ``sources`` are written as ``resource`` mappings, in order.
+    ``sources`` are written as ``resource`` mappings, in order. ``draft``
+    writes ``status: draft`` in place of the kind's own status.
     """
     stamp = now.strftime(_STAMP)
     lines = [
@@ -203,7 +205,7 @@ def _front_matter(
         f"  by: process:kmctl/{version('kmctl')}",
         f"  at: {stamp}",
     ]
-    if (status := KINDS[kind].status) is not None:
+    if (status := DRAFT if draft else KINDS[kind].status) is not None:
         lines.append(f"status: {status}")
     if stale_after is None and kind == "handoff":
         stale_after = now + timedelta(days=HANDOFF_DAYS)
@@ -268,6 +270,7 @@ def new_concept(
     key: str | None = None,
     stale_after: str | None = None,
     sources: list[str] | None = None,
+    draft: bool = False,
 ) -> NewConcept:
     """Write a new concept of ``kind`` under ``root``'s .okf/ and index and log it.
 
@@ -295,6 +298,9 @@ def new_concept(
         Not for handoffs: the files or folders the concept describes, written
         in order as its ``sources``. Each must exist, found the way kmctl
         review due finds sources, so a change to one makes the concept due.
+    draft : bool
+        Decisions only: write ``status: draft`` instead of ``stable``, for a
+        choice written down but not yet accepted (ADR 0031).
 
     Returns
     -------
@@ -307,7 +313,8 @@ def new_concept(
     ConceptError
         When .okf/index.md is missing, the description is empty, the title
         names no file, the file already exists, ``key`` is given for a kind
-        other than handoff, ``key`` is empty or blank, ``stale_after`` is
+        other than handoff, ``draft`` is set for a kind other than decision,
+        ``key`` is empty or blank, ``stale_after`` is
         unreadable or not in the future, ``sources`` is given for a handoff,
         or a source names nothing. Nothing is written.
     """
@@ -325,6 +332,8 @@ def new_concept(
         )
     if key is not None and kind != "handoff":
         raise ConceptError("--key is for handoffs only; leave it out")
+    if draft and kind != "decision":
+        raise ConceptError("--draft is for decisions only; leave it out")
     if key is not None and not key.strip():
         raise ConceptError(
             "--key is empty; pass a session id, or leave --key out when there is none"
@@ -392,7 +401,7 @@ def new_concept(
     path.parent.mkdir(parents=True, exist_ok=True)
     body = "\n\n".join(f"## {h}" for h in skeleton(kind))
     path.write_text(
-        _front_matter(kind, title, description, now, key, when, written_sources)
+        _front_matter(kind, title, description, now, key, when, written_sources, draft)
         + f"\n# {title}\n\n{body}\n",
         encoding="utf-8",
     )
