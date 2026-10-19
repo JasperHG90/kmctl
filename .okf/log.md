@@ -155,3 +155,5 @@
 - Added `decisions/0029-the-session-briefing-is-kmctl-s-only-hook-again` with `kmctl new decision`.
 - Superseded `decisions/0028-two-hooks-the-session-briefing-and-the-summary-nudge` with `decisions/0029-the-session-briefing-is-kmctl-s-only-hook-again`.
 - Added `decisions/0030-projects-commit-what-apm-deploys` with `kmctl new decision`.
+- Added `decisions/0032-kmctl-review-due-decides-by-commit-order` with `kmctl new decision`.
+- Corrected `decisions/0006-staleness-from-okf-fields` and `decisions/0023-kmctl-verify-records-a-person-s-check`: `kmctl review due` decides by commit order and lists `edited after verification` (ADR 0032).

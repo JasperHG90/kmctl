@@ -7,9 +7,11 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-10-19T12:56:42Z
+  at: 2026-10-19T15:18:54Z
   against:
-    - decisions/0012-releases-come-from-ci
+    - decisions/0006-staleness-from-okf-fields
+    - decisions/0023-kmctl-verify-records-a-person-s-check
+    - decisions/0032-kmctl-review-due-decides-by-commit-order
 ---
 
 # Summary: kmctl

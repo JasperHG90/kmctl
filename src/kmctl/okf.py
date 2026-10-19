@@ -23,18 +23,40 @@ def front_matter(path: Path) -> dict[str, Any]:
         text = path.read_text(encoding="utf-8")
     except UnicodeDecodeError as error:
         raise BadFrontMatter(f"{path}: not UTF-8 text") from error
+    try:
+        return split_front_matter(text)[0]
+    except BadFrontMatter as error:
+        raise BadFrontMatter(f"{path}: {error}") from error
+
+
+def split_front_matter(text: str) -> tuple[dict[str, Any], str]:
+    """The YAML front matter of a concept's ``text`` (empty when it has none) and the text after it.
+
+    Raises
+    ------
+    BadFrontMatter
+        When the front matter does not parse.
+    """
     if not text.startswith("---\n"):
-        return {}
+        return {}, text
     end = text.find("\n---", 4)
     if end == -1:
-        return {}
+        return {}, text
     try:
         data = yaml.safe_load(text[4:end])
     except yaml.YAMLError as error:
         raise BadFrontMatter(
-            f"{path}: front matter does not parse ({error.__class__.__name__})"
+            f"front matter does not parse ({error.__class__.__name__})"
         ) from error
-    return data if isinstance(data, dict) else {}
+    return (data if isinstance(data, dict) else {}), text[end:]
+
+
+def without(meta: dict[str, Any], keys: set[str]) -> dict[str, Any]:
+    """``meta`` less the top-level ``keys``, to compare two versions of a front matter whole.
+
+    It reads no field by name, so it is no way around ``field``.
+    """
+    return {k: v for k, v in meta.items() if k not in keys}
 
 
 #: The front matter keys kmctl writes or reads (invariant I4), with where each comes
