@@ -66,7 +66,9 @@ pinned release through `uvx`, at the commit the lock records, so each
 repository runs its own kmctl, hooks and skills included. uv keeps each
 pinned release after its first run, so later runs are as fast and work
 offline. Install a newer CLI when you want its own fixes, never once per
-repository.
+repository. In such a repository `kmctl --version` prints the pinned
+version and says where it comes from, for example
+`kmctl 0.10.0 (pinned by apm.lock.yaml; kmctl 0.11.0 is on PATH)`.
 
 ### 2. Add the kmctl package
 

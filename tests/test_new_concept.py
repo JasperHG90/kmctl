@@ -97,6 +97,16 @@ def test_new_numbers_and_dates(tmp_path: Path) -> None:
     assert front_matter(handoff).get("stale_after")
 
 
+def test_new_numbers_past_9999(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    (tmp_path / ".okf/decisions").mkdir(exist_ok=True)
+    (tmp_path / ".okf/decisions/10000-earlier.md").write_text(
+        "---\ntype: decision\n---\n"
+    )
+
+    assert _path(tmp_path, "decision", "Use a queue").name == "10001-use-a-queue.md"
+
+
 def test_new_creates_section(tmp_path: Path) -> None:
     _repo(tmp_path)
 
@@ -172,6 +182,38 @@ def test_new_description_newline_stays_on_one_line(tmp_path: Path) -> None:
 
     index = (tmp_path / ".okf/practices/index.md").read_text()
     assert "- [Two lines](two-lines.md): First. Second.\n" in index
+
+
+# Draft decisions: --draft
+
+
+def test_new_decision_draft_writes_status_draft(tmp_path: Path) -> None:
+    _repo(tmp_path)
+
+    draft = _path(tmp_path, "decision", "Use a queue", "--draft")
+    accepted = _path(tmp_path, "decision", "Use a cache")
+
+    assert front_matter(draft)["status"] == "draft"
+    assert draft.read_text().count("status:") == 1
+    assert front_matter(accepted)["status"] == "stable"
+    assert _invoke("check", "--path", str(tmp_path)).exit_code == 0
+    check = okf_validate(tmp_path / ".okf")
+    assert check.returncode == 0, check.stdout + check.stderr
+
+
+@pytest.mark.parametrize("kind", ["practice", "proposal", "prototype", "handoff"])
+def test_new_draft_refused_for_other_kinds(tmp_path: Path, kind: str) -> None:
+    _repo(tmp_path)
+    before = {p: p.read_text() for p in (tmp_path / ".okf").rglob("*.md")}
+
+    result = _new(tmp_path, kind, "Refused", "--draft")
+
+    assert result.exit_code == 1
+    assert result.stdout == ""
+    assert result.stderr == (
+        f"kmctl new {kind}: refused: --draft is for decisions only; leave it out\n"
+    )
+    assert {p: p.read_text() for p in (tmp_path / ".okf").rglob("*.md")} == before
 
 
 # Freshness: --stale-after and --source

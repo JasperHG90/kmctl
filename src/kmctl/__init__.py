@@ -25,6 +25,7 @@ from kmctl.doctor import render as render_doctor
 from kmctl.doctor import run_doctor
 from kmctl.handoffs import live_handoffs
 from kmctl.kinds import KINDS, schema
+from kmctl.mv import mv as move_concept
 from kmctl.pin import add_notices, briefing_notices, hand_off
 from kmctl.plugin import APM_CLI, PatchResult, PluginError, Scope
 from kmctl.plugin import patch as patch_plugin
@@ -62,7 +63,12 @@ def _root(
         "-V",
         callback=_print_version,
         is_eager=True,
-        help="Print the kmctl version and exit.",
+        help=(
+            "Print the kmctl version and exit, as kmctl X.Y.Z. In a project whose "
+            "apm.lock.yaml pins another release, it prints the pinned version, "
+            "followed by (pinned by apm.lock.yaml; kmctl X.Y.Z is on PATH). Set "
+            "KMCTL_PINNED=1 for the bare line, as scripts need."
+        ),
     ),
 ) -> None:
     """kmctl: keep a repository's docs/ and .okf/ knowledge current."""
@@ -218,7 +224,7 @@ def check(
         ),
     ] = False,
 ) -> None:
-    """Check indexes agree with their folders, docs front matter, prototype READMEs and links."""
+    """Check indexes agree with their folders, decision numbers, docs front matter, prototype READMEs and links."""
     if fix:
         created, updated = fix_folder_indexes(path)
         for rel in created + updated:
@@ -466,7 +472,7 @@ def verify(
 
 
 def _register_concept_verb(kind: Kind, example: str) -> None:
-    """Add ``kmctl new KIND`` for one .okf/ section; handoffs also take ``--key``, other kinds ``--source``."""
+    """Add ``kmctl new KIND`` for one .okf/ section; handoffs also take ``--key``, decisions ``--draft``, other kinds ``--source``."""
 
     def command(
         title: Annotated[
@@ -531,6 +537,17 @@ def _register_concept_verb(kind: Kind, example: str) -> None:
                 ),
             ),
         ] = None,
+        draft: Annotated[
+            bool,
+            typer.Option(
+                "--draft",
+                help=(
+                    "Decisions only: write status draft instead of stable, for a choice "
+                    "written down but not yet accepted (ADR 0031). Once it is accepted, "
+                    "set status to stable and add a log.md line that says so."
+                ),
+            ),
+        ] = False,
     ) -> None:
         try:
             result = new_concept(
@@ -541,6 +558,7 @@ def _register_concept_verb(kind: Kind, example: str) -> None:
                 key=key,
                 stale_after=stale_after,
                 sources=sources,
+                draft=draft,
             )
         except ConceptError as error:
             typer.echo(f"kmctl new {kind}: refused: {error}", err=True)
@@ -560,7 +578,12 @@ def _register_concept_verb(kind: Kind, example: str) -> None:
             f"  kmctl new {kind} '{example}' --description 'One sentence.' --json\n\n"
             f"  kmctl new {kind} '{example}' --description 'One sentence.' "
             f"{'--stale-after 3d' if kind == 'handoff' else '--source src/app.py --stale-after 6m'}\n\n"
-            "Writes the structure; you write the prose. The first one creates its section."
+            + (
+                f"  kmctl new {kind} '{example}' --description 'One sentence.' --draft\n\n"
+                if kind == "decision"
+                else ""
+            )
+            + "Writes the structure; you write the prose. The first one creates its section."
         ),
     )(command)
 
@@ -790,7 +813,8 @@ app.add_typer(summary_app, name="summary")
         "summary's last commit, or is changed in the working tree while the "
         "summary is not. Editing the summary clears that. When you have read "
         "the changed concepts and the summary still holds, run this instead: it "
-        "writes checked (at: the UTC time to the second, against: those ids) into the "
+        "writes checked (at: the UTC time to the second, against: those ids, less "
+        "any deleted since) into the "
         "summary's front matter, changes no other line and no other file, and "
         "the summary leaves the list. Commit it with the concepts. It is an "
         "agent's word, not a person's review, which is kmctl verify (ADR 0023, "
@@ -826,7 +850,8 @@ def summary_ack(
         typer.echo(f"nothing to ack: {result.path} is current")
         return
     typer.echo(
-        f"checked {result.path} at {result.at} against {', '.join(result.against)}"
+        f"checked {result.path} at {result.at} against "
+        f"{', '.join(result.against) or 'none'}"
     )
     typer.echo(next_step("kmctl review due"))
 
@@ -891,6 +916,87 @@ def decision_supersede(
         return
     typer.echo(f"superseded {result.old} with {result.new}")
     typer.echo(next_step("kmctl check"))
+
+
+@app.command(
+    "mv",
+    epilog=(
+        "Examples:\n\n"
+        "  kmctl mv decisions/0008-use-a-queue decisions/0007-use-a-queue\n\n"
+        "  kmctl mv practices/measure-first practices/measure-twice --json\n\n"
+        "  kmctl mv prototypes/parser-speed prototypes/parser-timing\n\n"
+        "It renames the file (a prototype's folder) in its folder, then rewrites "
+        "every link to it in .okf/ and docs/, the section index entry among "
+        "them, as kmctl check finds links: outside code, with the anchor kept. "
+        "A decision whose number changes gets the new number in its title, its "
+        "# heading and the ADR NNNN text of each link to it. The summary's "
+        "checked.against names the new id. It appends a line to .okf/log.md "
+        "and never rewrites an earlier one.\n\n"
+        "It then lists, as not rewritten, each line anywhere in the repository "
+        "but .okf/log.md that still holds the old id or file name, or for a "
+        "renumbered decision its old ADR NNNN: a path in AGENTS.md, a skill or a script, "
+        "or a mention in prose. Fix those by hand.\n\n"
+        "It refuses when NEW exists or, for a decision, when another record "
+        "holds its number. To renumber a run of decisions, move each one to the "
+        "lowest free number, in order: with 0006 free, move 0007 to 0006, then "
+        "0008 to 0007, fixing the listed lines after each move.\n\n"
+        "Exit 1, with the reason on stderr, when kmctl refuses; nothing is "
+        "written then."
+    ),
+)
+def mv_concept(
+    old: Annotated[
+        str,
+        typer.Argument(
+            metavar="decisions/0008-x",
+            help=(
+                "The concept to rename, by its id as kmctl review due prints it: "
+                "its path under .okf/ without .md (a prototype's folder)."
+            ),
+        ),
+    ],
+    new: Annotated[
+        str,
+        typer.Argument(
+            metavar="decisions/0007-x",
+            help=(
+                "Its new id, in the same folder, in kebab-case. A decision's name "
+                "starts with a four-digit number no other record holds."
+            ),
+        ),
+    ],
+    path: Annotated[Path, _PATH_OPTION] = Path("."),
+    as_json: Annotated[
+        bool,
+        typer.Option(
+            "--json",
+            help=(
+                "Print one JSON object (old, new, path, updated, mentions: "
+                "[{file, line, text}]), for scripts."
+            ),
+        ),
+    ] = False,
+) -> None:
+    """Rename a concept in .okf/ and rewrite the links to it in .okf/ and docs/."""
+    try:
+        result = move_concept(path, old, new)
+    except ConceptError as error:
+        typer.echo(f"kmctl mv: refused: {error}", err=True)
+        raise typer.Exit(1) from error
+    if as_json:
+        typer.echo(json.dumps(asdict(result)))
+        return
+    typer.echo(f"moved {result.old} to {result.new} ({result.path})")
+    for rel in result.updated:
+        typer.echo(f"updated {rel}")
+    for m in result.mentions:
+        typer.echo(f"not rewritten  {m.file}:{m.line}  {m.text}")
+    if result.mentions:
+        typer.echo(
+            next_step("fix or keep each line listed as not rewritten", "kmctl check")
+        )
+    else:
+        typer.echo(next_step("kmctl check"))
 
 
 plugin_app = typer.Typer(

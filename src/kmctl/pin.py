@@ -6,7 +6,8 @@ project's lock and, when it pins another release, runs that release's kmctl
 through ``uvx`` at the lock's commit, which uv keeps cached per commit. The
 child runs with ``KMCTL_PINNED=1``, so it runs as itself. The copy on PATH
 (the one without ``KMCTL_PINNED``) also adds the briefing's notices, so a
-project pinned to a release from before the hand-off still gets them.
+project pinned to a release from before the hand-off still gets them, and
+names the lock after a handed-off ``--version``.
 """
 
 from __future__ import annotations
@@ -24,7 +25,7 @@ from pathlib import Path
 import yaml
 from pydantic import ValidationError
 
-from kmctl.plugin import Lock, kmctl_package, package_ref
+from kmctl.plugin import Lock, cli_version, kmctl_package, package_ref
 
 PINNED_ENV = "KMCTL_PINNED"
 NO_UPDATE_CHECK_ENV = "KMCTL_NO_UPDATE_CHECK"
@@ -156,11 +157,13 @@ def hand_off(args: list[str]) -> int | None:
     """Run ``args`` with the project's pinned kmctl and return its exit code, or None to run them here.
 
     Every command but ``briefing`` runs through uvx, which builds the pinned
-    copy when uv has not cached it yet. ``briefing`` runs from session hooks
-    that allow 10 s, so it runs only a cached copy: when the offline probe
-    fails, it returns None and this kmctl gives the briefing, with a notice
-    that the pin is not installed. Over the pinned briefing's output it adds
-    the newer-release notice, in the output's own form.
+    copy when uv has not cached it yet; after the pinned ``--version`` line
+    it says the lock pins it and which kmctl is on PATH. ``briefing`` runs
+    from session hooks that allow 10 s, so it runs only a cached copy: when
+    the offline probe fails, it returns None and this kmctl gives the
+    briefing, with a notice that the pin is not installed. Over the pinned
+    briefing's output it adds the newer-release notice, in the output's own
+    form.
     """
     pin = handoff_pin(args)
     if pin is None:
@@ -169,6 +172,8 @@ def hand_off(args: list[str]) -> int | None:
         command = _uvx(pin, args, offline=False)
         if command is None:
             return None
+        if args[:1] in (["--version"], ["-V"]):
+            return _hand_off_version(command)
         return subprocess.run(command, env=_child_env(), check=False).returncode
     command = _uvx(pin, args, offline=True)
     probe = _uvx(pin, ["--version"], offline=True)
@@ -180,6 +185,24 @@ def hand_off(args: list[str]) -> int | None:
     out = res.stdout
     if res.returncode == 0:
         out = add_notices(out, _format(args), update_notices(pin.ref))
+    sys.stdout.write(out)
+    sys.stdout.flush()
+    return res.returncode
+
+
+def _hand_off_version(command: list[str]) -> int:
+    """Run the pinned ``--version`` and return its exit code, naming the lock and the kmctl on PATH after its line.
+
+    The line keeps ``kmctl X.Y.Z`` first, so a script reading the second word
+    still gets the version. Output from a failed run is passed on as it is.
+    """
+    res = subprocess.run(
+        command, env=_child_env(), stdout=subprocess.PIPE, text=True, check=False
+    )
+    out = res.stdout
+    line = out.removesuffix("\n")
+    if res.returncode == 0 and line.startswith("kmctl ") and "\n" not in line:
+        out = f"{line} (pinned by {LOCK}; kmctl {cli_version()} is on PATH)\n"
     sys.stdout.write(out)
     sys.stdout.flush()
     return res.returncode

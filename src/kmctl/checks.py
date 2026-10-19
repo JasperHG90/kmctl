@@ -22,13 +22,20 @@ The index format, which every kmctl verb that writes an index follows:
   percent-decoded, as GitHub renders it. Reference-style definitions
   (``[ref]: path``) are links, but never index entries.
 - Hidden files and folders (a name starting with ".") are not pages.
+- A decision record, ``.okf/decisions/NNNN-slug.md``, whose ``title`` or
+  ``#`` heading starts with ``ADR`` and a number must carry its file's
+  number (check name ``decision``). The decisions index's entry for a record
+  reads the record's title, or just ``ADR NNNN`` (check name ``index``).
 - Every folder directly under .okf/prototypes/ is a prototype and needs a
   README.md (check name ``prototype``).
-- Every link in docs/, and every .okf/ link that leaves the bundle, must
-  resolve (check name ``link``); links inside .okf/ are the okf validator's.
+- Every link in docs/ and .okf/ must resolve (check name ``link``), links
+  inside the bundle included, although the okf validator only warns about
+  those. A ``log.md`` in .okf/ is left out: it is append-only, so a link
+  there to a concept renamed later could never be fixed.
 - The body of .okf/summary.md, outside its front matter, holds at most
   ``WORD_LIMIT`` words (check name ``summary``). A summary behind the
-  concepts that changed after it is a warning, never a failure.
+  concepts that changed after it is a warning, never a failure, and so is an
+  id in its ``checked.against`` that is not a concept in the bundle.
 - No concept counts are written or checked.
 """
 
@@ -38,6 +45,7 @@ from pathlib import Path
 from typing import Literal
 from urllib.parse import unquote
 
+from kmctl.concepts import link_text
 from kmctl.docs_index import (
     FOLDER_TITLES,
     diataxis_folders,
@@ -45,18 +53,26 @@ from kmctl.docs_index import (
     folder_pages,
     is_generated,
 )
-from kmctl.okf import BadFrontMatter, as_datetime, field, front_matter
-from kmctl.summary import SUMMARY, WORD_LIMIT, body_words, changed_concepts
+from kmctl.okf import (
+    BadFrontMatter,
+    as_datetime,
+    field,
+    front_matter,
+    split_front_matter,
+)
+from kmctl.summary import SUMMARY, WORD_LIMIT, body_words, changed_concepts, in_bundle
 from kmctl.summary import reason as summary_reason
 
 RESERVED = {"index.md", "log.md"}
 _TARGET = r"(<[^<>\n]*>|[^<)\s][^)\s]*)(?:\s+(?:\"[^\"]*\"|'[^']*'))?"
-_ENTRY = re.compile(r"^\s*[-*+]\s+.*?\[[^\]]*\]\(" + _TARGET + r"\)")
+_ENTRY = re.compile(r"^\s*[-*+]\s+.*?\[([^\]]*)\]\(" + _TARGET + r"\)")
 _FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
 _LINK = re.compile(r"!?\[[^\]]*\]\(" + _TARGET + r"\)")
 # A footnote definition ([^1]: text) is not a link.
 _REF_DEF = re.compile(r"^ {0,3}\[(?!\^)[^\]]+\]:\s*(<[^<>\n]*>(?=\s|$)|[^<\s]\S*)")
 _CODE_SPAN = re.compile(r"`[^`]*`")
+_RECORD = re.compile(r"(\d{4,})-.+\.md")
+_ADR = re.compile(r"ADR (\d+)\b")
 
 
 @dataclass(frozen=True)
@@ -137,8 +153,8 @@ def _target(raw: str) -> str:
     return unquote(target)
 
 
-def _entries(index: Path) -> list[tuple[int, str]]:
-    """The (line, target) of each entry in ``index``, by the format in the module docstring.
+def _entries(index: Path) -> list[tuple[int, str, str]]:
+    """The (line, target, link text) of each entry in ``index``, by the format in the module docstring.
 
     Raises
     ------
@@ -151,12 +167,12 @@ def _entries(index: Path) -> list[tuple[int, str]]:
         match = _ENTRY.match(text)
         if not match:
             continue
-        target = _target(match.group(1))
+        target = _target(match.group(2))
         if not target or target.startswith(("/", "mailto:")) or "://" in target:
             continue
         if not (index.parent / target).resolve().is_relative_to(folder):
             continue
-        found.append((number, target))
+        found.append((number, target, match.group(1)))
     return found
 
 
@@ -187,7 +203,7 @@ def _check_index(
         return [Finding("index", _rel(root, index), None, "index is not UTF-8 text")]
     findings = []
     listed = set()
-    for line, target in entries:
+    for line, target, _ in entries:
         path = (index.parent / target).resolve()
         listed.add(path)
         if not path.exists() and path not in missing_ok:
@@ -230,7 +246,7 @@ def _section_concepts(section: Path) -> list[Path]:
 def entry_targets(index: Path) -> list[str]:
     """The target of each entry in ``index``, or none when it is not UTF-8 text."""
     try:
-        return [target for _, target in _entries(index)]
+        return [target for _, target, _ in _entries(index)]
     except _Unreadable:
         return []
 
@@ -374,7 +390,7 @@ def check_docs(root: Path) -> list[Finding]:
 
 
 def check_okf(root: Path) -> list[Finding]:
-    """Check the root index lists every section and root concept, and each section its concepts."""
+    """Check the root index lists every section and root concept, each section its concepts, and decision numbers."""
     okf = root / ".okf"
     if not okf.is_dir():
         return [
@@ -390,7 +406,7 @@ def check_okf(root: Path) -> list[Finding]:
     findings = _check_index(root, root_index, root_concepts)
     try:
         linked: set[Path] | None = {
-            (okf / t).resolve() for _, t in _entries(root_index)
+            (okf / t).resolve() for _, t, _ in _entries(root_index)
         }
     except _Unreadable:
         linked = None  # already reported once; do not report every section as unlinked
@@ -412,6 +428,81 @@ def check_okf(root: Path) -> list[Finding]:
             )
             continue
         findings += _check_index(root, index, _section_concepts(section))
+        if section.name == "decisions":
+            findings += _check_decisions(root, section)
+    return findings
+
+
+def _check_decisions(root: Path, section: Path) -> list[Finding]:
+    """Findings for decision records whose ADR number is not their file's, and index entries that misname them.
+
+    A record's ``title`` or ``#`` heading that starts with ``ADR NNNN`` must
+    carry the number its file name starts with. The section index's entry
+    for a record must read the record's title, or just ``ADR NNNN``. A record
+    whose front matter does not parse is the okf validator's to report.
+    """
+    findings = []
+    records: dict[Path, tuple[str, str | None]] = {}
+    for record in sorted(section.glob("*.md")):
+        match = _RECORD.fullmatch(record.name)
+        if not match:
+            continue
+        number = match.group(1)
+        try:
+            text = _read(record)
+            meta, body = split_front_matter(text)
+        except (_Unreadable, BadFrontMatter):
+            continue
+        title = field(meta, "title")
+        title = title if isinstance(title, str) else None
+        records[record.resolve()] = (number, title)
+        offset = text[: len(text) - len(body)].count("\n")
+        heading = next(
+            (
+                (offset + n, line[2:].strip())
+                for n, line in _prose_lines(body)
+                if line.startswith("# ")
+            ),
+            (None, None),
+        )
+        for name, line, value in (("title", None, title), ("# heading", *heading)):
+            adr = _ADR.match(value or "")
+            if adr and adr.group(1) != number:
+                findings.append(
+                    Finding(
+                        "decision",
+                        _rel(root, record),
+                        line,
+                        f"{name} says ADR {adr.group(1)}, but the file is number "
+                        f"{number}; make it ADR {number}",
+                    )
+                )
+    index = section / "index.md"
+    try:
+        entries = _entries(index)
+    except _Unreadable:
+        return findings  # _check_index already reported it
+    for line, target, text in entries:
+        found = records.get((section / target).resolve())
+        if found is None:
+            continue
+        number, title = found
+        short = f"ADR {number}"
+        if text == short or (title and text == link_text(title)):
+            continue
+        fix = (
+            f"the record's title, '{link_text(title)}', or '{short}'"
+            if title
+            else f"'{short}'"
+        )
+        findings.append(
+            Finding(
+                "index",
+                _rel(root, index),
+                line,
+                f"entry for {target} reads '{text}'; make it {fix}",
+            )
+        )
     return findings
 
 
@@ -442,7 +533,7 @@ def _links(page: Path, skip_entries: bool = False) -> list[tuple[int, str]]:
     """
     found = []
     entries = (
-        {number: target for number, target in _entries(page)} if skip_entries else {}
+        {number: target for number, target, _ in _entries(page)} if skip_entries else {}
     )
     for number, text in _prose_lines(_read(page)):
         skip = entries.get(number)
@@ -460,32 +551,40 @@ def _links(page: Path, skip_entries: bool = False) -> list[tuple[int, str]]:
 
 
 def check_links(root: Path) -> list[Finding]:
-    """Check the links the okf validator does not: every link in docs/, and .okf/ links that leave it.
+    """Check that every link in docs/ and .okf/ resolves to a file or folder that exists.
 
-    In docs/ a relative link resolves from the page's folder and a ``/`` link
-    from the repository root, as GitHub renders them. In .okf/ a ``/`` link
-    resolves from the bundle root (OKF section 6.1) and stays in it, so only
-    relative links that leave the bundle are checked here.
+    A relative link resolves from the page's folder. A ``/`` link resolves
+    from the repository root in docs/, as GitHub renders it, and from the
+    bundle root in .okf/ (OKF section 6.1). OKF tolerates a missing target
+    so a bundle can travel without every concept; in a repository the target
+    is in the same tree, so a missing one fails here. An index entry's own
+    link is left to the index check, which already reports it. A ``log.md``
+    in .okf/ is not checked: it is append-only, so a broken link there
+    cannot be fixed.
     """
     findings = []
     for folder in (root / "docs", root / ".okf"):
         if not folder.is_dir():
             continue
         bundle = folder.name == ".okf"
+        base = folder if bundle else root
+        indexes = (
+            {folder / "index.md", *(p / "index.md" for p in folder.iterdir())}
+            if bundle
+            else {folder / "README.md"}
+        )
         for page in sorted(p for p in folder.rglob("*.md") if _visible(folder, p)):
+            if bundle and page.name == "log.md":
+                continue
             try:
-                links = _links(page, skip_entries=page == folder / "README.md")
+                links = _links(page, skip_entries=page in indexes)
             except _Unreadable:
                 continue  # the index check reports unreadable files
             for line, target in links:
                 if target.startswith("/"):
-                    if bundle:
-                        continue
-                    resolved = (root / target.lstrip("/")).resolve()
+                    resolved = (base / target.lstrip("/")).resolve()
                 else:
                     resolved = (page.parent / target).resolve()
-                    if bundle and resolved.is_relative_to(folder.resolve()):
-                        continue
                 if not resolved.exists():
                     findings.append(
                         Finding(
@@ -499,10 +598,13 @@ def check_links(root: Path) -> list[Finding]:
 
 
 def check_summary(root: Path) -> list[Finding]:
-    """Check the bundle summary: its body fits ``WORD_LIMIT``, and whether it is behind its concepts.
+    """Check the bundle summary: its body fits ``WORD_LIMIT``, whether it is behind, and its ``checked``.
 
     A body over the limit fails. A summary behind its concepts is a warning,
-    never a failure: it is a report, as in kmctl review due (ADR 0027).
+    never a failure: it is a report, as in kmctl review due (ADR 0027). Each
+    id in ``checked.against`` that is not a concept in the bundle is a
+    warning too: ``checked`` records the ack and decides nothing, so a stale
+    id is drift, like a summary behind its concepts.
     """
     path = root / SUMMARY
     if not path.is_file():
@@ -534,6 +636,22 @@ def check_summary(root: Path) -> list[Finding]:
                 "warning",
             )
         )
+    try:
+        against = field(front_matter(path), "checked.against")
+    except BadFrontMatter:
+        against = None  # the okf validator reports front matter that does not parse
+    for cid in against if isinstance(against, list) else []:
+        if not in_bundle(root, str(cid)):
+            findings.append(
+                Finding(
+                    "summary",
+                    SUMMARY,
+                    None,
+                    f"checked.against names {cid}, which is not a concept in the "
+                    "bundle; remove it from the list",
+                    "warning",
+                )
+            )
     return findings
 
 

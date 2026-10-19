@@ -55,7 +55,7 @@ class Acked:
         nothing was written because the summary was not behind.
     against : list[str]
         The concept ids written as ``checked.against``: the ones that had
-        changed since the summary.
+        changed since the summary and are still in the bundle.
     """
 
     path: str
@@ -83,6 +83,12 @@ def concept_id(rel: str) -> str:
     """
     cid = Path(rel).relative_to(".okf").with_suffix("").as_posix()
     return cid.removesuffix("/README") if cid.startswith("prototypes/") else cid
+
+
+def in_bundle(root: Path, cid: str) -> bool:
+    """True when ``cid`` is the id of a concept the summary follows, and it is in ``root``'s bundle."""
+    rel = f".okf/{cid}/README.md" if cid.startswith("prototypes/") else f".okf/{cid}.md"
+    return is_concept(rel) and (root / rel).is_file()
 
 
 def _status_paths(output: str) -> set[str]:
@@ -153,7 +159,7 @@ def body_words(text: str) -> int:
 
 def _with_checked(head: list[str], at: str, against: list[str]) -> list[str]:
     """``head`` (the front matter lines) with ``checked`` set to ``at`` and ``against``, replacing any old one."""
-    block = ["checked:", f"  at: {at}", "  against:"]
+    block = ["checked:", f"  at: {at}", "  against:" if against else "  against: []"]
     block += [f"    - {cid}" for cid in against]
     for i, line in enumerate(head):
         if line.startswith("checked:"):
@@ -166,8 +172,9 @@ def ack(root: Path, now: datetime | None = None) -> Acked:
 
     It writes ``checked.at`` (the UTC time, to the second) and
     ``checked.against`` (the ids
-    ``changed_concepts`` lists) into the summary's front matter, replacing an
-    older ``checked``, and changes no other line and no other file. When the
+    ``changed_concepts`` lists, less those no longer in the bundle, such as a
+    deleted concept) into the summary's front matter, replacing an older
+    ``checked``, and changes no other line and no other file. When the
     summary is not behind, it writes nothing.
 
     Parameters
@@ -183,7 +190,8 @@ def ack(root: Path, now: datetime | None = None) -> Acked:
     -------
     Acked
         The summary's path, the time written (None when nothing was) and the
-        concept ids it was checked against.
+        concept ids it was checked against, which may be none when every
+        changed concept was deleted.
 
     Raises
     ------
@@ -213,6 +221,7 @@ def ack(root: Path, now: datetime | None = None) -> Acked:
         )
     if not changed:
         return Acked(path=SUMMARY, at=None, against=[])
+    changed = [cid for cid in changed if in_bundle(root, cid)]
     text = path.read_text(encoding="utf-8")
     end = text.find("\n---", 4)
     at = now.strftime(_STAMP)
