@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "test_init_counts_unparseable_record and test_init_counts_records_in_subfolders did not assert init's exit code",
+      "anchor": "tests/test_init.py:716",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r3"
+    }
+  ],
+  "binds": {
+    "fingerprint": "b9ae168f864b2a6414f3517f6d8116b7464334d8cdf66d1dddfe9bf3c0fb50ed",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.2.2.dev1+gd84319696",
+  "at": "2026-10-19T15:37:44+00:00"
+}
