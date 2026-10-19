@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "okf-summary-nudge-agy-opencode",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
@@ -94,8 +94,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "918de2892d8a2389fcf9e864ad032f4bddd0de16b9eecf10d640fa6294ec3269",
   "intent": {
@@ -129,8 +129,14 @@
       "to": "verifying",
       "at": "2026-10-19T00:20:12+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-19T00:34:09+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-19T00:20:12+00:00"
+  "at": "2026-10-19T00:34:09+00:00"
 }
