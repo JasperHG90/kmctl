@@ -1,10 +1,10 @@
 {
   "schema_version": "1.0",
   "slug": "action-pin-shas",
-  "stage": "building",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
-  "review_rounds": 0,
+  "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
@@ -13,13 +13,15 @@
   "split": "j-20261019T143004+0000-64b3df69",
   "split_plan_hash": "8519da609d710b6629fa711136294b26ef3957102fe646eca38c270bed5088e7",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "fc5dab879ecc4b2da92733b6039925fe4aa7ad43",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
   "worktree": "/home/vscode/kmctl.worktrees/action-pin-shas",
   "branch": "loop/action-pin-shas",
-  "stamps": [],
+  "stamps": [
+    "0c25e498e46db5b25e8eb3b12917328c4225f06d1f4599938193d429b9e92017"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
     "hash": "483d6b0b274303675a408755317bf250b84a67ee94183acfed02afb5e26985f3",
@@ -55,16 +57,16 @@
   "waivers": [],
   "overrides": [],
   "round": {
-    "kind": "plan",
+    "kind": "review",
     "n": 1,
-    "binds": "8519da609d710b6629fa711136294b26ef3957102fe646eca38c270bed5088e7",
-    "started_at": "2026-10-19T14:30:22+00:00",
+    "binds": "0c25e498e46db5b25e8eb3b12917328c4225f06d1f4599938193d429b9e92017",
+    "started_at": "2026-10-19T14:43:40+00:00",
     "passes": [
-      "plan-reviewer"
+      "reviewer"
     ],
-    "tree": null,
-    "plan_hash": null,
-    "eval_hash": null,
+    "tree": "2effc9774f8f697334eac593d483e63306926000",
+    "plan_hash": "8519da609d710b6629fa711136294b26ef3957102fe646eca38c270bed5088e7",
+    "eval_hash": "483d6b0b274303675a408755317bf250b84a67ee94183acfed02afb5e26985f3",
     "scope": "full",
     "sent_back": [],
     "since": null,
@@ -98,8 +100,20 @@
       "to": "building",
       "at": "2026-10-19T14:32:57+00:00",
       "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-10-19T14:43:20+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-19T15:05:42+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.2.2.dev1+gd84319696",
-  "at": "2026-10-19T14:32:57+00:00"
+  "at": "2026-10-19T15:05:42+00:00"
 }

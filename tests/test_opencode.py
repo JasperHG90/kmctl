@@ -722,11 +722,10 @@ def test_doctor_opencode_runs_its_checks_and_passes_when_patched(repo: Path) -> 
     assert ids == OPENCODE_IDS
     for cid in OPENCODE_IDS:
         assert checks[cid]["ok"], checks[cid]
-    assert checks["dep.opencode"]["ok"] is False
-    assert checks["dep.opencode"]["detail"] == "opencode is not on PATH"
+    assert checks["dep.opencode"]["status"] == "warn"
+    assert checks["dep.opencode"]["detail"].startswith("opencode is not on PATH")
     assert "antigravity.lock" not in checks
-    failing = [c for c in checks.values() if not c["ok"]]
-    assert [c["id"] for c in failing] == ["dep.opencode"]
+    assert all(c["ok"] for c in checks.values()), checks
 
 
 def _break_agents(repo: Path) -> None:

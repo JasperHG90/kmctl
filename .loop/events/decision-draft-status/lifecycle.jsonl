@@ -4,3 +4,9 @@
 {"at": "2026-10-19T14:31:30+00:00", "by": "advance", "from": "planning", "kind": "transition", "schema_version": "1.0", "to": "ready"}
 {"at": "2026-10-19T14:32:33+00:00", "grant": "g6", "hash": "fadf60918f13df2b727ae4da203b2ecb601efd8e2327b15162f41e40f3ff0568", "kind": "signoff", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5", "step": "eval-sign"}
 {"at": "2026-10-19T14:32:59+00:00", "by": "advance", "from": "ready", "kind": "transition", "schema_version": "1.0", "to": "building"}
+{"at": "2026-10-19T14:44:27+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "building"}
+{"at": "2026-10-19T14:44:40+00:00", "by": "advance", "from": "building", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
+{"at": "2026-10-19T14:45:04+00:00", "binds": "fdc42394d86b926972a805b9edf4f6824442fb62fbefa4cbc858283390e25131", "kind": "round-start", "n": 1, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "550abc0f24bea1fb0830483d0e7f12bfb582cbbb"}
+{"at": "2026-10-19T15:07:05+00:00", "dispatched_at": "2026-10-19T14:45:04+00:00", "kind": "round-close", "n": 1, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-19T15:06:48+00:00"}}
+{"at": "2026-10-19T15:07:19+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "64544edf18c557cf1a7929c85460eef61b595402"}
+{"at": "2026-10-19T15:18:25+00:00", "branch": "loop/decision-draft-status", "kind": "land", "schema_version": "1.0", "sha": "24e14f85ef4caeed75c983db7c211e638185626a"}

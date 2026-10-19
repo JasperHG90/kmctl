@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "ADR 0020's Correction now scopes the \"kmctl's launcher or not\" pass to doctor's Claude Code check and says the Antigravity and OpenCode checks still want kmctl's launcher.",
+      "anchor": ".okf/decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md:128",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "f08759ff2c9543ba997b882f5446ba0601eb1d0e9e4f759acc5a0d9fd74dbf75",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.2.2.dev1+gd84319696",
+  "at": "2026-10-19T16:51:57+00:00"
+}

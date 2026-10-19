@@ -1,0 +1,5 @@
+Using CPython 3.12.15
+Creating virtual environment at: .venv
+   Building kmctl @ file:///tmp/loopctl-spike-mobazfce/tree
+      Built kmctl @ file:///tmp/loopctl-spike-mobazfce/tree
+Installed 70 packages in 5.15s

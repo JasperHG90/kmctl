@@ -628,8 +628,18 @@ def _invoke_check(root: Path):
     return CliRunner().invoke(app, ["check", "--path", str(root)])
 
 
+def _copy_bundle_without_decisions(root: Path) -> None:
+    """Copy this repository's .okf/ into ``root`` with no decision records left."""
+    shutil.copytree(ROOT / ".okf", root / ".okf")
+    decisions = root / ".okf" / "decisions"
+    for record in decisions.glob("*.md"):
+        if record.name != "index.md":
+            record.unlink()
+    (decisions / "index.md").write_text("# Decisions\n")
+
+
 def test_init_first_decision_not_written_twice(tmp_path: Path) -> None:
-    shutil.copytree(ROOT / ".okf", tmp_path / ".okf")
+    _copy_bundle_without_decisions(tmp_path)
     _init(tmp_path)
     decisions = tmp_path / ".okf" / "decisions"
     written = sorted(decisions.glob("*-keep-project-knowledge-in-an-okf-bundle.md"))
@@ -641,7 +651,7 @@ def test_init_first_decision_not_written_twice(tmp_path: Path) -> None:
     assert {p.name: p.read_bytes() for p in decisions.iterdir()} == snapshot
 
 
-def test_init_first_decision_kept_when_title_exists(tmp_path: Path) -> None:
+def test_init_first_decision_kept_when_records_exist(tmp_path: Path) -> None:
     _init(tmp_path)
     decisions = tmp_path / ".okf" / "decisions"
     record = decisions / "0001-keep-project-knowledge-in-an-okf-bundle.md"
@@ -667,6 +677,59 @@ def test_init_first_decision_kept_when_title_exists(tmp_path: Path) -> None:
     _init(tmp_path)
 
     assert _snapshot(tmp_path) == before
+
+
+def test_init_writes_no_first_decision_over_other_records(tmp_path: Path) -> None:
+    shutil.copytree(ROOT / ".okf", tmp_path / ".okf")
+    okf = tmp_path / ".okf"
+    assert not list(okf.glob("decisions/*-keep-project-knowledge-in-an-okf-bundle.md"))
+    before = _snapshot(okf)
+
+    result = _init(tmp_path, "--json")
+
+    assert result.exit_code == 0, result.output
+    assert _snapshot(okf) == before
+
+
+def test_init_writes_first_decision_into_empty_decisions(tmp_path: Path) -> None:
+    decisions = tmp_path / ".okf" / "decisions"
+    decisions.mkdir(parents=True)
+    (decisions / "index.md").write_text("# Decisions\n")
+
+    _init(tmp_path)
+
+    assert sorted(p.name for p in decisions.iterdir()) == [
+        "0001-keep-project-knowledge-in-an-okf-bundle.md",
+        "index.md",
+    ]
+    text = (tmp_path / DECISION).read_text()
+    assert f'title: "ADR 0001: {FIRST_DECISION}"' in text
+
+
+def test_init_counts_unparseable_record(tmp_path: Path) -> None:
+    decisions = tmp_path / ".okf" / "decisions"
+    decisions.mkdir(parents=True)
+    (decisions / "index.md").write_text("# Decisions\n\n- [Old](0001-old.md): x.\n")
+    (decisions / "0001-old.md").write_text("---\ntitle: [unclosed\n---\n\n# Old\n")
+
+    result = _init(tmp_path)
+
+    assert result.exit_code == 0, result.output
+    assert sorted(p.name for p in decisions.iterdir()) == ["0001-old.md", "index.md"]
+
+
+def test_init_counts_records_in_subfolders(tmp_path: Path) -> None:
+    decisions = tmp_path / ".okf" / "decisions"
+    (decisions / "old").mkdir(parents=True)
+    (decisions / "index.md").write_text("# Decisions\n")
+    (decisions / "old" / "index.md").write_text("# Old\n")
+    (decisions / "old" / "0001-moved.md").write_text("---\ntitle: Moved\n---\n")
+
+    result = _init(tmp_path)
+
+    assert result.exit_code == 0, result.output
+    assert not list(decisions.rglob("*-keep-project-knowledge-in-an-okf-bundle.md"))
+    assert (decisions / "index.md").read_text() == "# Decisions\n"
 
 
 # Next steps (r4)
@@ -745,9 +808,7 @@ def test_init_first_decision_logged_as_init(tmp_path: Path) -> None:
 
 
 def test_init_reports_kept_files_it_changed_as_updated(tmp_path: Path) -> None:
-    shutil.copytree(ROOT / ".okf", tmp_path / ".okf")
-    for record in (tmp_path / ".okf" / "decisions").glob("*-keep-project-knowledge-*"):
-        record.unlink()
+    _copy_bundle_without_decisions(tmp_path)
 
     result = _init(tmp_path, "--json")
     data = json.loads(result.stdout)
@@ -775,9 +836,7 @@ def test_init_broken_marker_warning_says_what_is_wrong(tmp_path: Path) -> None:
 
 
 def test_init_human_output_names_why_each_file_was_updated(tmp_path: Path) -> None:
-    shutil.copytree(ROOT / ".okf", tmp_path / ".okf")
-    for record in (tmp_path / ".okf" / "decisions").glob("*-keep-project-knowledge-*"):
-        record.unlink()
+    _copy_bundle_without_decisions(tmp_path)
     (tmp_path / "CLAUDE.md").write_text("# Mine\n")
 
     out = _init(tmp_path).stdout

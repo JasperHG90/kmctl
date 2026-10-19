@@ -1,0 +1,70 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.15, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/vscode/kmctl.worktrees/consumer-surfaces
+configfile: pyproject.toml
+plugins: respx-0.23.1, platformdirs-4.13.4, anyio-4.15.1
+collected 1021 items / 1009 deselected / 12 selected
+
+tests/scripts/test_smoke_wheel.py .                                      [  8%]
+tests/test_antigravity.py ..                                             [ 25%]
+tests/test_apm_package.py .                                              [ 33%]
+tests/test_docs_frontmatter.py .                                         [ 41%]
+tests/test_doctor.py ..                                                  [ 58%]
+tests/test_opencode.py .s                                                [ 75%]
+tests/test_pin.py F                                                      [ 83%]
+tests/test_plugin_patch.py .                                             [ 91%]
+tests/test_starter.py .                                                  [100%]
+
+=================================== FAILURES ===================================
+______________________ test_hands_off_through_a_real_uvx _______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-vscode/pytest-5234/test_hands_off_through_a_real_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0xffff7ef75760>
+
+    @pytest.mark.integration
+    def test_hands_off_through_a_real_uvx(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """A lock pinning this tree's commit at another ref runs that commit's kmctl, then from uv's cache offline."""
+        work = tree_repo(tmp_path / "kmctl")
+        commit = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=work,
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+        bare = tmp_path / "srv" / "kmctl.git"
+        subprocess.run(["git", "clone", "-q", "--bare", str(work), str(bare)], check=True)
+        gitconfig = tmp_path / "gitconfig"
+        gitconfig.write_text(
+            f'[url "file://{bare}"]\n'
+            f"\tinsteadOf = {KMCTL_GIT}\n"
+            f"\tinsteadOf = {KMCTL_GIT.removesuffix('.git')}\n"
+        )
+        monkeypatch.setenv("GIT_CONFIG_GLOBAL", str(gitconfig))
+        monkeypatch.setenv("GIT_CONFIG_NOSYSTEM", "1")
+        monkeypatch.setenv("GIT_TERMINAL_PROMPT", "0")
+        monkeypatch.delenv("KMCTL_PINNED")
+        monkeypatch.setenv("KMCTL_NO_UPDATE_CHECK", "1")
+        root = project(tmp_path)
+        write_lock(root, ref=OTHER, commit=commit)
+    
+        first = kmctl(root, "--version")
+        second = kmctl(root, "briefing")
+    
+        assert first.returncode == 0, first.stderr
+        assert first.stdout == f"kmctl {version('kmctl')}\n"
+        # briefing hands off only offline, so it ran from the cache the first run filled.
+        assert second.returncode == 0, second.stderr
+>       assert "not installed yet" not in second.stdout
+E       AssertionError: assert 'not installed yet' not in 'kmctl brief...version`).\n'
+E         
+E         'not installed yet' is contained here:
+E            which is not installed yet, so kmctl v0.10.0 gave this briefing; run `just install` (or `uvx --from git+https://github.com/JasperHG90/kmctl@717c119a205303e067044aa0df84c89e5f5fbb03 kmctl --version`).
+E         ?           +++++++++++++++++
+
+tests/test_pin.py:331: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_pin.py::test_hands_off_through_a_real_uvx - AssertionError:...
+===== 1 failed, 10 passed, 1 skipped, 1009 deselected in 147.90s (0:02:27) =====

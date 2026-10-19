@@ -78,10 +78,10 @@ SKILL_NAMES = (
 )
 #: Each rule's ``paths:`` globs and the sha256 of its body as they were in
 #: src/kmctl/repo_rules/ before the move into the package, or since a change
-#: an ADR names (docs-layout: ADR 0022; okf-bundle: ADR 0027, start at the
-#: summary and keep it current, and its 2026-10-18 correction, the summary
-#: distils the knowledge; diagrams-stay-current, docs-layout and okf-bundle:
-#: ADR 0011's last 2026-10-19 correction, rules named by name, not a .claude/ path).
+#: an ADR names (docs-layout: ADR 0022; okf-bundle: ADR 0031, a decision
+#: record may be draft until it is accepted; diagrams-stay-current, docs-layout
+#: and okf-bundle: ADR 0011's last 2026-10-19 correction, rules named by name,
+#: not a .claude/ path).
 OLD_RULES = {
     "diagrams-stay-current": (
         [".okf/**", "src/**", "lib/**", "app/**", "pkg/**", "cmd/**"],
@@ -97,7 +97,7 @@ OLD_RULES = {
     ),
     "okf-bundle": (
         [".okf/**"],
-        "47e46efb3d5fdbeab2eb02757f5801785248d1a03c50ea6265bdd68ce0bc7647",
+        "7458abfcb4f742c3528088c890615b026ab161322d2d6d96b661c5bccd67c156",
     ),
 }
 
@@ -164,6 +164,19 @@ def test_package_rules_apply_to_the_old_globs_with_the_old_bodies() -> None:
         meta, body = _split((INSTRUCTIONS / f"{name}.instructions.md").read_text())
         assert meta == {"applyTo": ", ".join(globs)}, name
         assert hashlib.sha256(body.encode()).hexdigest() == body_sha, name
+
+
+def test_okf_bundle_rule_allows_draft_status() -> None:
+    """Every okf-bundle rule copy names draft, stable and deprecated (ADR 0031)."""
+    copies = (
+        INSTRUCTIONS / "okf-bundle.instructions.md",
+        AG_INSTRUCTIONS / "okf-bundle.instructions.md",
+        ROOT / ".claude" / "rules" / "okf-bundle.md",
+    )
+    for path in copies:
+        text = " ".join(path.read_text().split())
+        assert "`status` is `stable` or `deprecated`" not in text, path
+        assert "`status` is `draft`, `stable` or `deprecated`" in text, path
 
 
 def test_package_old_layout_is_gone() -> None:

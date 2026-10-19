@@ -1,0 +1,36 @@
+== base
+  audit rc=1
+  config-consistency: FAIL bundle: in manifest but not in lockfile
+  drift: FAIL modified: .agents/hooks.json
+  okf Stop handler in .agents/hooks.json: False; okf skills in .agents: True; okf-stop-check.sh in .agents: True; agy servers: {'agy': {'okf-bundle': 'kmctl launcher'}, 'claude': {'okf-bundle': 'kmctl launcher'}}
+== trust-transitive-mcp
+  audit rc=1
+  config-consistency: pass 
+  drift: FAIL modified: .agents/hooks.json
+  okf Stop handler in .agents/hooks.json: False; okf skills in .agents: True; okf-stop-check.sh in .agents: True; agy servers: {'agy': {'okf-bundle': 'kmctl launcher', 'bundle': 'other'}, 'claude': {'okf-bundle': 'kmctl launcher', 'bundle': 'other'}}
+== rename-okf-bundle-to-bundle
+  audit rc=1
+  config-consistency: pass 
+  drift: FAIL modified: .agents/hooks.json
+  okf Stop handler in .agents/hooks.json: False; okf skills in .agents: True; okf-stop-check.sh in .agents: True; agy servers: {'agy': {'bundle': 'kmctl launcher'}, 'claude': {'bundle': 'kmctl launcher'}}
+== consumer-declares-bundle
+  audit rc=1
+  config-consistency: pass 
+  drift: FAIL modified: .agents/hooks.json
+  okf Stop handler in .agents/hooks.json: False; okf skills in .agents: True; okf-stop-check.sh in .agents: True; agy servers: {'agy': {'bundle': 'other', 'okf-bundle': 'kmctl launcher'}, 'claude': {'bundle': 'other', 'okf-bundle': 'kmctl launcher'}}
+== drop-okf-bundle-consumer-declares
+  audit rc=1
+  config-consistency: pass 
+  drift: FAIL modified: .agents/hooks.json
+  okf Stop handler in .agents/hooks.json: False; okf skills in .agents: True; okf-stop-check.sh in .agents: True; agy servers: {'agy': {'bundle': 'other'}, 'claude': {'bundle': 'other'}}
+== okf-skills-claude-only
+  audit rc=1
+  config-consistency: FAIL bundle: in manifest but not in lockfile
+  drift: pass 
+  okf Stop handler in .agents/hooks.json: False; okf skills in .agents: False; okf-stop-check.sh in .agents: False; agy servers: {'agy': {'okf-bundle': 'kmctl launcher'}, 'claude': {'okf-bundle': 'kmctl launcher'}}
+== okf-skills-skill-subset
+  audit rc=1
+  config-consistency: FAIL bundle: in manifest but not in lockfile
+  drift: FAIL modified: .agents/hooks.json
+  okf Stop handler in .agents/hooks.json: False; okf skills in .agents: True; okf-stop-check.sh in .agents: True; agy servers: {'agy': {'okf-bundle': 'kmctl launcher'}, 'claude': {'okf-bundle': 'kmctl launcher'}}
+variants that clear a check: trust-transitive-mcp(cc ) rename-okf-bundle-to-bundle(cc ) consumer-declares-bundle(cc ) drop-okf-bundle-consumer-declares(cc )

@@ -1,10 +1,10 @@
 {
   "schema_version": "1.0",
   "slug": "decision-draft-status",
-  "stage": "building",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
-  "review_rounds": 0,
+  "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
@@ -13,13 +13,15 @@
   "split": "j-20261019T143008+0000-4d51e7d6",
   "split_plan_hash": "4526fd2b6440b9c93e8b6ee7d95471a7c958f85e21ce0e98212e73da23c55d3f",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "64544edf18c557cf1a7929c85460eef61b595402",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
   "worktree": "/home/vscode/kmctl.worktrees/decision-draft-status",
   "branch": "loop/decision-draft-status",
-  "stamps": [],
+  "stamps": [
+    "fdc42394d86b926972a805b9edf4f6824442fb62fbefa4cbc858283390e25131"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
     "hash": "fadf60918f13df2b727ae4da203b2ecb601efd8e2327b15162f41e40f3ff0568",
@@ -55,16 +57,16 @@
   "waivers": [],
   "overrides": [],
   "round": {
-    "kind": "plan",
+    "kind": "review",
     "n": 1,
-    "binds": "4526fd2b6440b9c93e8b6ee7d95471a7c958f85e21ce0e98212e73da23c55d3f",
-    "started_at": "2026-10-19T14:30:29+00:00",
+    "binds": "fdc42394d86b926972a805b9edf4f6824442fb62fbefa4cbc858283390e25131",
+    "started_at": "2026-10-19T14:45:04+00:00",
     "passes": [
-      "plan-reviewer"
+      "reviewer"
     ],
-    "tree": null,
-    "plan_hash": null,
-    "eval_hash": null,
+    "tree": "550abc0f24bea1fb0830483d0e7f12bfb582cbbb",
+    "plan_hash": "4526fd2b6440b9c93e8b6ee7d95471a7c958f85e21ce0e98212e73da23c55d3f",
+    "eval_hash": "fadf60918f13df2b727ae4da203b2ecb601efd8e2327b15162f41e40f3ff0568",
     "scope": "full",
     "sent_back": [],
     "since": null,
@@ -98,8 +100,20 @@
       "to": "building",
       "at": "2026-10-19T14:32:59+00:00",
       "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-10-19T14:44:40+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-19T15:07:19+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.2.2.dev1+gd84319696",
-  "at": "2026-10-19T14:32:59+00:00"
+  "at": "2026-10-19T15:07:19+00:00"
 }

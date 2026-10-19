@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "antigravity-apm-audit",
+  "n": 4,
+  "command": "/tmp/claude-1000/-home-vscode-kmctl/c37be586-8598-4232-be34-7d43e553b1d7/scratchpad/spike-audit-r2/spike.sh",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/c37be586-8598-4232-be34-7d43e553b1d7/scratchpad/spike-audit-r2/spike.sh",
+      "copy": "files/spike.sh"
+    }
+  ],
+  "where": "worktree",
+  "head": "0862421e0ecb7a22af1d6d62c9f44ce561861a32",
+  "fingerprint": "7db35aab256382f72ae2d88b43f6050cdbd515b1f7b76d3635434b54ae0f5a39",
+  "started_at": "2026-10-19T14:56:50+00:00",
+  "finished_at": "2026-10-19T15:03:06+00:00",
+  "duration_seconds": 376.407,
+  "timeout_seconds": 900.0,
+  "exit": 1,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.2.2.dev1+gd84319696",
+  "moved_from": null
+}

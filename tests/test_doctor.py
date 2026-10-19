@@ -1,4 +1,4 @@
-"""kmctl doctor: one ok or fail line per check, a fix on every failure, read only and offline.
+"""kmctl doctor: one ok, warn or fail line per check, a fix on every warning and failure, read only and offline.
 
 No test without a marker runs the real APM, claude or agy. ``FakeTools``
 stands in for uvx (whose ``apm install`` writes the files, the lock and okf's
@@ -303,6 +303,13 @@ def _fail_line(text: str, cid: str) -> str:
     return lines[0]
 
 
+def _warn_line(text: str, cid: str) -> str:
+    """The warn line of check ``cid`` in doctor's text output."""
+    lines = [line for line in text.splitlines() if line.startswith(f"warn {cid}: ")]
+    assert lines, text
+    return lines[0]
+
+
 # r1: a complete install is all ok ------------------------------------------------
 
 
@@ -540,8 +547,6 @@ def test_broken_settings_json_is_named(complete: Setup) -> None:
     [
         ("uv", "dep.uv", "install uv"),
         ("git", "dep.git", "install git"),
-        ("claude", "dep.claude", "install Claude Code"),
-        ("agy", "dep.agy", "install the Antigravity CLI"),
     ],
 )
 def test_dependency_missing_fails_with_install_hint(
@@ -695,7 +700,7 @@ def test_json_shape_and_ids(complete: Setup) -> None:
     assert set(data) == {"ok", "checks"} and data["ok"] is True
     assert [c["id"] for c in data["checks"]] == ALL_IDS
     for check in data["checks"]:
-        assert set(check) == {"id", "harness", "ok", "detail", "fix"}
+        assert set(check) == {"id", "harness", "status", "ok", "detail", "fix"}
         assert check["fix"] is None and check["detail"]
     harness = {c["id"]: c["harness"] for c in data["checks"]}
     assert harness["dep.uv"] is None and harness["dep.claude"] == "claude"
@@ -857,7 +862,10 @@ def test_doctor_help_names_checks_exit_codes_and_flags() -> None:
         "--online",
         "--scope",
         "--path",
-        "Exit 0 when every check is ok, 1 when any fails, 2 for a usage error",
+        (
+            "Exit 0 when no check fails (a warning fails nothing), 1 when any "
+            "fails, 2 for a usage error"
+        ),
         "writes nothing and uses no network unless --online",
         "uv tool run --offline --from apm-cli==0.33.0 apm --version",
     ):
@@ -997,7 +1005,7 @@ def test_old_plugin_alone_marks_the_claude_harness(setup: Setup) -> None:
 @pytest.mark.parametrize(
     "trusted", [None, "other"], ids=["no-settings", "other-folder"]
 )
-def test_trust_missing_fails_with_trust_fix(
+def test_trust_missing_warns_with_trust_fix(
     complete: Setup, trusted: str | None, tmp_path: Path
 ) -> None:
     settings = complete.home / ".gemini" / "antigravity-cli" / "settings.json"
@@ -1008,8 +1016,8 @@ def test_trust_missing_fails_with_trust_fix(
 
     result = _kmctl("doctor")
 
-    assert result.exit_code == 1
-    line = _fail_line(result.stdout, "antigravity.trust")
+    assert result.exit_code == 0, result.output
+    line = _warn_line(result.stdout, "antigravity.trust")
     assert "trustedWorkspaces" in line
     assert line.endswith(
         '; run agy in this folder and choose "Yes, I trust this folder"'
@@ -1023,7 +1031,7 @@ def test_trust_not_checked_without_agy(complete: Setup) -> None:
     result = _kmctl("doctor")
 
     assert "antigravity.trust" not in result.stdout
-    _fail_line(result.stdout, "dep.agy")
+    _warn_line(result.stdout, "dep.agy")
 
 
 # r7: a real install --------------------------------------------------------------------
@@ -1252,3 +1260,135 @@ def test_doctor_has_no_nudge_check(complete: Setup) -> None:
     help_text = _kmctl("doctor", "--help").stdout
     assert "opencode.hook" in help_text
     assert "nudge" not in help_text
+
+
+# doctor-correct-setups: warn for what doctor cannot judge, the old plugin at user scope
+
+
+def test_missing_harness_cli_warns(complete: Setup) -> None:
+    """A harness CLI this person may not use warns; the run still exits 0."""
+    complete.remove("claude")
+    complete.remove("agy")
+
+    result = _kmctl("doctor")
+
+    assert result.exit_code == 0, result.output
+    claude = _warn_line(result.stdout, "dep.claude")
+    agy = _warn_line(result.stdout, "dep.agy")
+    assert claude.startswith("warn dep.claude: claude is not on PATH (needed only")
+    assert claude.endswith(
+        "; install Claude Code (https://code.claude.com/docs/en/setup)"
+    )
+    assert agy.endswith("; install the Antigravity CLI so agy is on PATH")
+    assert "fail " not in result.stdout
+
+
+def test_antigravity_trust_warns_and_names_the_ide(
+    complete: Setup, tmp_path: Path
+) -> None:
+    _trust(complete, tmp_path / "other")
+
+    result = _kmctl("doctor")
+
+    assert result.exit_code == 0, result.output
+    line = _warn_line(result.stdout, "antigravity.trust")
+    assert "trustedWorkspaces" in line
+    assert "Antigravity IDE" in line
+    assert line.endswith(
+        '; run agy in this folder and choose "Yes, I trust this folder"'
+    )
+
+
+def test_old_plugin_found_in_user_settings_at_project_scope(complete: Setup) -> None:
+    user = complete.home / ".claude" / "settings.json"
+    user.write_text(json.dumps({"enabledPlugins": {"okf@scaccogatto": True}}))
+
+    result = _kmctl("doctor")
+
+    assert result.exit_code == 1
+    line = _fail_line(result.stdout, "claude.old-plugin")
+    assert f"okf@scaccogatto in {user}" in line
+    assert line.endswith("; run claude plugin uninstall okf@scaccogatto --scope user")
+
+
+def test_old_kmctl_plugin_in_user_settings_at_project_scope_names_the_claude_steps(
+    complete: Setup,
+) -> None:
+    """kmctl plugin patch --scope user needs a user-scope lock, so the fix runs claude's own steps."""
+    user = complete.home / ".claude" / "settings.json"
+    user.write_text(json.dumps({"enabledPlugins": {plugin.OLD_PLUGIN: True}}))
+
+    result = _kmctl("doctor")
+
+    line = _fail_line(result.stdout, "claude.old-plugin")
+    assert f"{plugin.OLD_PLUGIN} in {user}" in line
+    assert line.endswith(
+        "; run claude plugin uninstall kmctl@kmctl --scope user, "
+        "claude plugin prune --scope user --yes, "
+        "claude plugin marketplace remove kmctl --scope user"
+    )
+
+
+def test_old_plugin_in_project_and_user_settings_names_both_fixes(
+    complete: Setup,
+) -> None:
+    project = complete.repo / ".claude" / "settings.json"
+    data = json.loads(project.read_text())
+    project.write_text(
+        json.dumps({**data, "enabledPlugins": {plugin.OLD_PLUGIN: True}})
+    )
+    user = complete.home / ".claude" / "settings.json"
+    user.write_text(json.dumps({"enabledPlugins": {"okf@scaccogatto": True}}))
+
+    line = _fail_line(_kmctl("doctor").stdout, "claude.old-plugin")
+
+    assert f"{plugin.OLD_PLUGIN} in .claude/settings.json" in line
+    assert f"okf@scaccogatto in {user}" in line
+    assert line.endswith(
+        f"; {PATCH_FIX}, then run claude plugin uninstall okf@scaccogatto --scope user"
+    )
+
+
+def test_json_status_field(complete: Setup) -> None:
+    complete.remove("claude")
+
+    result, data = _doctor()
+
+    assert result.exit_code == 0, result.output
+    assert data["ok"] is True
+    checks = _by_id(data)
+    assert all(c["status"] in ("ok", "warn", "fail") for c in data["checks"])
+    assert checks["dep.claude"]["status"] == "warn"
+    assert checks["dep.claude"]["ok"] is True
+    assert checks["dep.claude"]["fix"].startswith("install Claude Code")
+    assert checks["dep.uv"]["status"] == "ok" and checks["dep.uv"]["fix"] is None
+
+    (complete.repo / ".claude" / "settings.json").write_text("{}")
+    result, data = _doctor()
+
+    assert result.exit_code == 1
+    hook = _by_id(data)["claude.hook"]
+    assert hook["status"] == "fail" and hook["ok"] is False
+
+
+def test_status_is_on_the_check_for_calling_code(complete: Setup) -> None:
+    complete.remove("agy")
+
+    result = doctor.run_doctor(complete.repo)
+
+    checks = {c.id: c for c in result.checks}
+    assert result.ok
+    assert checks["dep.agy"].status == "warn" and checks["dep.agy"].ok
+    assert checks["dep.uv"].status == "ok"
+
+
+def test_user_scope_plugin_does_not_mark_project_harness(setup: Setup) -> None:
+    """A user-scope kmctl@kmctl is not an install in this repository."""
+    assert _kmctl("init").exit_code == 0
+    (setup.home / ".claude" / "settings.json").write_text(
+        json.dumps({"enabledPlugins": {plugin.OLD_PLUGIN: True}})
+    )
+
+    assert doctor.harnesses_found(setup.repo) == []
+    assert not doctor._kmctl_mark(setup.repo, "project", "claude")
+    assert "claude.old-plugin" not in _kmctl("doctor").stdout

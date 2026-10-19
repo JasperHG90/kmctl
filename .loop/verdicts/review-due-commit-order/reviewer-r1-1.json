@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "_show crashes kmctl review due with ValueError when a missing object's spec contains a space: git cat-file prints 'SPEC missing', which splits into three or more tokens for a path with a space, so int(header[2]) parses b'missing'. Reachable for any verified file with a space in its path whose history holds a commit that deleted it (git log --name-only lists deletions). Reproduced: commit docs/how/my page.md with a verified entry, git rm it, restore it, run kmctl review due --path REPO.",
+      "anchor": "src/kmctl/review_due.py:205",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "The repo's own copy of the docs-layout rule, .claude/rules/docs-layout.md:84, still says a page is listed once 'a source changes after it'. It is a hand-kept kmctl copy (last changed with the package copy in 73b59a92), and the package copy's same line was updated here; update it to match.",
+      "anchor": ".claude/rules/docs-layout.md:84",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "888e493c2ed528a1d6ce04923414c48c269f37d05a046d0eed87384d2c3ff85d",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.2.2.dev1+gd84319696",
+  "at": "2026-10-19T15:44:17+00:00"
+}
