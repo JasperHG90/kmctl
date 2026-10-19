@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "drop-summary-nudge",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 1,
@@ -95,8 +95,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "16259213e3b00a76040b78e7f3f5bb360d6d6b8a1db5647c539441f198c0a9ee",
   "intent": {
@@ -128,8 +128,14 @@
       "to": "verifying",
       "at": "2026-10-19T05:28:55+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-19T05:37:25+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-19T05:28:56+00:00"
+  "at": "2026-10-19T05:37:25+00:00"
 }
