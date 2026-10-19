@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "non-UTF-8 apm.yml or apm.lock.yaml crashed kmctl init through harnesses_found",
+      "anchor": "src/kmctl/plugin.py:358",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "the overview's briefing row named only .claude/rules/",
+      "anchor": ".okf/architecture/overview.md:193",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "rule bodies pointed at .claude/rules/NAME.md, absent in Antigravity-only installs",
+      "anchor": "apm/claude/.apm/instructions/okf-bundle.instructions.md:9",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "open",
+      "claim": "the decision-log-review skill, which the package ships to every harness, still gives `.claude/rules/okf-bundle.md` as its example path, the same Claude-only path f3 removed from the rules",
+      "anchor": "apm/.apm/skills/decision-log-review/SKILL.md:24",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": "reviewer:f3",
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "8b574b696399fc1d61a186b22f12ab880d07c2d10f63cf7faa7c7bf0dab19e05",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.2.2.dev1+gd84319696",
+  "at": "2026-10-19T15:43:08+00:00"
+}

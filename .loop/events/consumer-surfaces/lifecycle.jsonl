@@ -11,3 +11,7 @@
 {"at": "2026-10-19T15:13:12+00:00", "dispatched_at": "2026-10-19T15:03:41+00:00", "kind": "round-close", "n": 1, "outcome": "fail", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-19T15:12:52+00:00"}}
 {"at": "2026-10-19T15:26:10+00:00", "by": "review fixed", "from": "fixing", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
 {"at": "2026-10-19T15:29:24+00:00", "binds": "8b574b696399fc1d61a186b22f12ab880d07c2d10f63cf7faa7c7bf0dab19e05", "kind": "round-start", "n": 2, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "78c904ae683e9968ba300e34620cabd3cdfe35fe"}
+{"at": "2026-10-19T15:43:28+00:00", "by": "review close", "from": "verifying", "kind": "transition", "schema_version": "1.0", "to": "fixing"}
+{"at": "2026-10-19T15:43:28+00:00", "dispatched_at": "2026-10-19T15:29:24+00:00", "kind": "round-close", "n": 2, "outcome": "fail", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-19T15:43:08+00:00"}}
+{"at": "2026-10-19T15:49:04+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "fixing"}
+{"at": "2026-10-19T15:49:15+00:00", "by": "review fixed", "from": "fixing", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
