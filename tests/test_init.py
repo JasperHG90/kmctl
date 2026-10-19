@@ -7,7 +7,7 @@ import pytest
 from conftest import okf_validate
 from typer.testing import CliRunner
 
-from kmctl import app
+from kmctl import app, plugin
 from kmctl.scaffold import (
     FIRST_DECISION,
     MANIFESTO_LINE,
@@ -812,3 +812,71 @@ def test_init_block_names_freshness(tmp_path: Path) -> None:
 
     assert "--source" in block
     assert "--stale-after" in block
+
+
+# consumer-surfaces r4: the block names each installed harness's rules folder (#23)
+
+RULES_FOLDERS = {
+    "claude": ".claude/rules/",
+    "antigravity": ".agents/rules/",
+    "opencode": ".opencode/rules/",
+}
+
+
+def _installed_for(root: Path, *harnesses: str) -> None:
+    """Write the apm.yml ``apm install`` reads, naming kmctl's package for ``harnesses``."""
+    (root / "apm.yml").write_text(
+        json.dumps(
+            {
+                "name": "repo",
+                "version": "0.1.0",
+                "dependencies": {"apm": [plugin.new_entry()]},
+                "targets": list(harnesses),
+            }
+        )
+    )
+
+
+@pytest.mark.parametrize(
+    "harnesses",
+    [("antigravity",), ("claude",), ("opencode",), ("claude", "antigravity")],
+)
+def test_update_block_names_the_rules_folder_of_each_installed_harness(
+    tmp_path: Path, harnesses: tuple[str, ...]
+) -> None:
+    (tmp_path / "AGENTS.md").write_text("# Agents\n")
+    _installed_for(tmp_path, *harnesses)
+
+    result = CliRunner().invoke(app, ["update", "--path", str(tmp_path)])
+
+    assert result.exit_code == 0, result.output
+    block = _block((tmp_path / "AGENTS.md").read_text())
+    for harness, folder in RULES_FOLDERS.items():
+        assert (f"`{folder}`" in block) == (harness in harnesses), (harness, block)
+
+
+def test_init_block_names_every_rules_folder_with_its_tool_when_none_is_found(
+    tmp_path: Path,
+) -> None:
+    _init(tmp_path)
+
+    block = _block((tmp_path / "CLAUDE.md").read_text())
+
+    for folder, tool in zip(
+        RULES_FOLDERS.values(), ("Claude Code", "Antigravity", "OpenCode"), strict=True
+    ):
+        assert f"`{folder}` ({tool})" in block, block
+
+
+@pytest.mark.parametrize("name", ["apm.yml", "apm.lock.yaml"])
+def test_init_over_a_non_utf8_apm_file_still_writes_the_rules_folder_block(
+    tmp_path: Path, name: str
+) -> None:
+    """An apm.yml or apm.lock.yaml that is not UTF-8 counts as no harness found, not a crash."""
+    (tmp_path / name).write_bytes(b"\xff\xfe targets: [antigravity]\n")
+
+    result = _init(tmp_path)
+
+    assert result.exit_code == 0, result.output
+    block = _block((tmp_path / "CLAUDE.md").read_text())
+    assert all(f"`{folder}`" in block for folder in RULES_FOLDERS.values()), block

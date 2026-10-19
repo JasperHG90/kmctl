@@ -12,7 +12,7 @@ Two places hold prose, and they have different readers.
   README.md index, which `kmctl check --fix` generates.
 - `.okf/` is for agents and people working ON this repository: decisions and
   the alternative each rejected, lessons learned the hard way, and proposals
-  not yet built. How to read and extend it is `.claude/rules/okf-bundle.md`.
+  not yet built. How to read and extend it is the `okf-bundle` rule.
   The current design (vision, invariants, values) is the bundle's root
   concept, `.okf/manifesto.md`. It links to the decisions for the why and
   never repeats a decision record.

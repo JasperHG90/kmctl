@@ -155,3 +155,4 @@
 - Added `decisions/0029-the-session-briefing-is-kmctl-s-only-hook-again` with `kmctl new decision`.
 - Superseded `decisions/0028-two-hooks-the-session-briefing-and-the-summary-nudge` with `decisions/0029-the-session-briefing-is-kmctl-s-only-hook-again`.
 - Added `decisions/0030-projects-commit-what-apm-deploys` with `kmctl new decision`.
+- Corrected `decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code` (the kmctl block names the rules folder of each installed harness, the briefing names none, and the package's rules name each other by name, not by a `.claude/` path) and `decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest` (the Antigravity rule copies no longer open with a generated-file comment), from consumer-surfaces.

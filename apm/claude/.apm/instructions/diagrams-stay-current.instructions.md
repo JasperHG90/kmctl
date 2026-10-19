@@ -5,8 +5,10 @@ applyTo: ".okf/**, src/**, lib/**, app/**, pkg/**, cmd/**"
 # Diagrams stay current
 
 The design diagrams in `.okf/architecture/` are believed the way an index is
-believed, so a stale one is worse than none. The `paths:` above name common
-source folders; change them to where this repository's code lives.
+believed, so a stale one is worse than none. The globs above name common
+source folders. When this repository's code lives elsewhere, add a rule of
+your own under another name that names its folders: `apm install` overwrites
+this file, and `kmctl doctor` counts an edit to it as drift.
 
 <constraint name="a-design-change-updates-its-diagram">
 WHY: a diagram nobody updates in the same change is wrong by the next one.

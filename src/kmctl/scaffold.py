@@ -18,6 +18,7 @@ from pathlib import Path
 
 from kmctl.concepts import append_log, new_concept
 from kmctl.docs_index import fix_folder_indexes
+from kmctl.doctor import harnesses_found
 from kmctl.kinds import skeleton
 from kmctl.okf import BadFrontMatter, field, front_matter
 
@@ -28,6 +29,15 @@ BLOCK_START, BLOCK_END = "<!-- kmctl:start -->", "<!-- kmctl:end -->"
 #: The whole of a CLAUDE.md init writes beside an AGENTS.md: Claude Code reads
 #: AGENTS.md only through it, once (ADR 0011).
 AGENTS_IMPORT = "@AGENTS.md\n"
+
+#: Where each harness loads rules from, with the tool's name, for the block.
+RULES_FOLDERS = {
+    "claude": "`.claude/rules/` (Claude Code)",
+    "antigravity": "`.agents/rules/` (Antigravity)",
+    "opencode": "`.opencode/rules/` (OpenCode)",
+}
+#: Where ``block`` names the rules folders in ``BLOCK``.
+RULES_MARK = "{rules}"
 
 BLOCK = f"""{BLOCK_START}
 ## Project knowledge (kmctl)
@@ -41,7 +51,7 @@ BLOCK = f"""{BLOCK_START}
 | The design as diagrams | `.okf/architecture/`, each page with a Depicts section naming the files it covers |
 | Lessons, designs not built, spikes, handoffs | `.okf/practices/`, `.okf/proposals/`, `.okf/prototypes/`, `.okf/handoffs/` |
 
-Start at `.okf/summary.md`, which links down to the rest. The rules for writing knowledge are in `.claude/rules/`.
+Start at `.okf/summary.md`, which links down to the rest. The rules for writing knowledge are in {RULES_MARK}.
 
 Your duties while you work:
 
@@ -204,14 +214,21 @@ def _text(path: Path) -> str | None:
         return None
 
 
-def _with_block(text: str) -> str | None:
-    """``text`` with the kmctl block replaced or appended, or None when its markers are broken."""
+def block(harnesses: list[str]) -> str:
+    """The kmctl block, naming the rules folder of each harness in ``harnesses``, or of all three when it is empty."""
+    folders = [RULES_FOLDERS[h] for h in harnesses or RULES_FOLDERS]
+    rules = ", ".join(folders[:-1]) + " and " if len(folders) > 1 else ""
+    return BLOCK.replace(RULES_MARK, rules + folders[-1])
+
+
+def _with_block(text: str, new: str) -> str | None:
+    """``text`` with the kmctl block replaced by or appended as ``new``, or None when its markers are broken."""
     start, end = text.find(BLOCK_START), text.find(BLOCK_END)
     if start == -1 and end == -1:
-        return text.rstrip("\n") + "\n\n" + BLOCK if text.strip() else BLOCK
+        return text.rstrip("\n") + "\n\n" + new if text.strip() else new
     if start == -1 or end < start or text.count(BLOCK_START) > 1:
         return None
-    return text[:start] + BLOCK.rstrip("\n") + text[end + len(BLOCK_END) :]
+    return text[:start] + new.rstrip("\n") + text[end + len(BLOCK_END) :]
 
 
 def _unsafe_link(root: Path, path: Path) -> str | None:
@@ -247,6 +264,7 @@ def _write_block(root: Path, result: ScaffoldResult) -> None:
     counts as absent, with a warning.
     """
     claude, agents = root / "CLAUDE.md", root / "AGENTS.md"
+    kmctl_block = block(harnesses_found(root))
     has_agents = os.path.lexists(agents)
     unsafe_agents = _unsafe_link(root, agents) if has_agents else None
     # An AGENTS.md that is a folder or another non-file loads nothing, so it
@@ -285,7 +303,7 @@ def _write_block(root: Path, result: ScaffoldResult) -> None:
             result.skipped.append(rel)
             continue
         seen.add(real)
-        new = _with_block(text) if text is not None else None
+        new = _with_block(text, kmctl_block) if text is not None else None
         if new is None:
             why = "is not UTF-8 text" if text is None else _marker_problem(text)
             result.warnings.append(
@@ -300,7 +318,7 @@ def _write_block(root: Path, result: ScaffoldResult) -> None:
             result.updated.append(rel)
     if os.path.lexists(claude) or unsafe_agents is not None:
         return
-    claude.write_text(AGENTS_IMPORT if has_agents else BLOCK, encoding="utf-8")
+    claude.write_text(AGENTS_IMPORT if has_agents else kmctl_block, encoding="utf-8")
     result.created.append("CLAUDE.md")
 
 
@@ -465,7 +483,8 @@ def scaffold(root: Path, now: datetime | None = None) -> ScaffoldResult:
     ``kmctl check`` passes after it. Each docs/ Diataxis folder's
     README.md index is written when missing, or rewritten when kmctl
     generated it and it is out of date. A CLAUDE.md that imports
-    ``@AGENTS.md`` gets no block.
+    ``@AGENTS.md`` gets no block. The block names the rules folder of each
+    harness ``harnesses_found`` reports, or all three when it finds none.
     A CLAUDE.md or AGENTS.md symlink that is dangling or points outside the
     repository is left alone with a warning; when AGENTS.md is such a link and
     there is no CLAUDE.md, no CLAUDE.md is written.

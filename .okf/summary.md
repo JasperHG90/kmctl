@@ -7,9 +7,11 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-10-19T12:56:42Z
+  at: 2026-10-19T14:44:39Z
   against:
-    - decisions/0012-releases-come-from-ci
+    - architecture/overview
+    - decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code
+    - decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest
 ---
 
 # Summary: kmctl

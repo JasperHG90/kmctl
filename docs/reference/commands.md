@@ -68,7 +68,11 @@ Set a repository up. It writes:
   there; the indexes list the concepts;
 - a kmctl block between `<!-- kmctl:start -->` and `<!-- kmctl:end -->` in
   each `CLAUDE.md` and `AGENTS.md` that exists. The block lists where each
-  kind of knowledge lives, says to start at `.okf/summary.md`, and gives the
+  kind of knowledge lives, says to start at `.okf/summary.md`, names the
+  rules folder of each harness kmctl's package is installed for
+  (`.claude/rules/` for Claude Code, `.agents/rules/` for Antigravity,
+  `.opencode/rules/` for OpenCode, as `kmctl doctor` finds them), or all
+  three with their tools when it finds none, and gives the
   agent six duties: record each
   choice with `kmctl new decision`, name the code a concept describes with
   `--source` and give anything time-bound a `--stale-after`, keep
@@ -215,8 +219,9 @@ The state line counts what is due and the live handoffs, and ends with
 `summary current` or `summary behind: N concepts changed` when there is a
 `.okf/summary.md` and git history to tell (`--json`: `state.summary_behind`,
 null otherwise). The rules for writing knowledge are not
-in it: APM puts them in `.claude/rules/` with kmctl's package, and the briefing
-adds only the one they lack. The SessionStart hook in kmctl's APM package,
+in it: APM puts them in each harness's rules folder with kmctl's package, so
+the briefing says only that the rules your tool loads cover them, and adds
+the one rule they lack. The SessionStart hook in kmctl's APM package,
 which APM writes, prints this: Claude Code's runs `kmctl briefing`,
 Antigravity's runs `kmctl briefing --format antigravity`. It reads and never
 writes.
@@ -594,7 +599,9 @@ already hold yours:
   okf's MCP server as `okf-bundle` into `.mcp.json`. At user scope the
   hook goes into the `settings.json` in `$CLAUDE_CONFIG_DIR` (by default
   `~/.claude/`) and the server into the user `.claude.json`. The hook
-  prints how to install kmctl and exits 0 when kmctl is missing or fails.
+  prints how to install kmctl, at the release the package came from
+  (`uv tool install git+https://github.com/JasperHG90/kmctl@vX.Y.Z`), and
+  exits 0 when kmctl is missing or fails.
   Claude Code asks you to approve a project `.mcp.json` server once.
 - For `antigravity`: the skills to `.agents/skills/`; the four rules to
   `.agents/rules/`, each with its globs as one `globs:` string, every

@@ -21,7 +21,7 @@ For each record:
    reverses or narrows it without a supersede link. A later record that
    changes it without saying so is drift on the older record.
 4. Check the record itself against the repository's rules for decision
-   records (for example `.claude/rules/okf-bundle.md`, or the bundle's own
+   records (for example the `okf-bundle` rule, or the bundle's own
    index): the sections it must have (such as Context, Decision with the
    rejected alternative, and Consequences), and front matter fields the spec
    or an ADR does not allow. A missing section or an unapproved field is drift.

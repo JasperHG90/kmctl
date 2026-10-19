@@ -129,6 +129,7 @@ flowchart LR
     scaffold & concepts & docs & supersede -- "skeletons, status values" --> kinds
     kinds -- "ALLOWED_FIELDS" --> okf
     scaffold -- "first decision" --> concepts
+    scaffold -- "harnesses_found:<br/>rules folders for the block" --> doctorPy
     scaffold & concepts & docs & supersede & verifyPy -- "write" --> repo
     scaffold -- "write: CLAUDE.md /<br/>AGENTS.md block" --> agentFiles
     checks & okf -. "read" .-> repo
@@ -187,9 +188,9 @@ cached, and the copy on PATH adds the newer-release line from
 
 | Verb | Module | Writes |
 |---|---|---|
-| `kmctl init`, `kmctl update` (an alias) | `scaffold.py`, with `concepts.py` for the first decision and `docs_index.py` for the docs folder indexes | `docs/README.md`, each docs folder's generated `README.md`, a starter `.okf/` with `summary.md` (ADR 0027), the kmctl block in `CLAUDE.md` and `AGENTS.md`, and decision "Keep project knowledge in an OKF bundle"; it keeps every file that exists except for that block, the decision's index entry and log line (ADR 0011), and a generated docs folder index (ADR 0022). It writes no rules: those come with the package (ADR 0014) |
+| `kmctl init`, `kmctl update` (an alias) | `scaffold.py`, with `concepts.py` for the first decision, `docs_index.py` for the docs folder indexes and `doctor.py`'s `harnesses_found` for the rules folders the block names | `docs/README.md`, each docs folder's generated `README.md`, a starter `.okf/` with `summary.md` (ADR 0027), the kmctl block in `CLAUDE.md` and `AGENTS.md`, and decision "Keep project knowledge in an OKF bundle"; it keeps every file that exists except for that block, the decision's index entry and log line (ADR 0011), and a generated docs folder index (ADR 0022). It writes no rules: those come with the package (ADR 0014) |
 | `kmctl check` | `checks.py`, with `docs_index.py`, and `summary.py` for the summary's word limit and whether it is behind (a warning) | nothing; with `--fix`, each generated docs folder `README.md` that is missing or out of date (ADR 0022) |
-| `kmctl briefing` | `briefing.py`, with `review_due.py`, `handoffs.py`, `summary.py` for whether the summary is current, `kinds.py` for the architecture folder its setup line checks, and `plugin.py` for the skills it names, which the wheel carries as `kmctl/_skills/`; the knowledge rules are in `.claude/rules/`, not the briefing | nothing |
+| `kmctl briefing` | `briefing.py`, with `review_due.py`, `handoffs.py`, `summary.py` for whether the summary is current, `kinds.py` for the architecture folder its setup line checks, and `plugin.py` for the skills it names, which the wheel carries as `kmctl/_skills/`; the knowledge rules are in each harness's rules folder (`.claude/rules/`, `.agents/rules/`, `.opencode/rules/`), not the briefing | nothing |
 | `kmctl review due` | `review_due.py`, with `summary.py` for the summary's one reason, `concepts changed` (ADR 0027) | nothing |
 | `kmctl summary ack` | `summary.py` | `checked` (`at`, `against`) in `.okf/summary.md`'s front matter, and nothing else; an agent's word that the summary holds, not a person's review (ADR 0023, ADR 0027) |
 | `kmctl handoffs` | `handoffs.py` | nothing |
