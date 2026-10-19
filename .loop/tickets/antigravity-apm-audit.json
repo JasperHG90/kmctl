@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "antigravity-apm-audit",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 2,
@@ -29,7 +29,7 @@
   "split": "j-20261019T150530+0000-ce8a7c99",
   "split_plan_hash": "8f06710b130a98dab4b1b897dcd2826f635d19f10a075b78b0cd3cd61d25ca9d",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "b33cc1734921d9360c16b08a2b10ffe5f872823f",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -166,8 +166,14 @@
       "to": "verifying",
       "at": "2026-10-19T16:46:09+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-19T16:52:18+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.2.2.dev1+gd84319696",
-  "at": "2026-10-19T16:52:11+00:00"
+  "at": "2026-10-19T16:52:18+00:00"
 }
