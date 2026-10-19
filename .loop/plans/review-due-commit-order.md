@@ -1,0 +1,37 @@
+---
+type: plan
+title: 'Plan: review-due-commit-order'
+description: "kmctl review due decides source changed by commit order instead of committer dates, so squash and rebase merges keep a verification, and lists a verified concept or docs page whose own text changed after its verification (issues #17, #18)."
+tags:
+- plan
+generated:
+  by: process:loopctl/2.2.2.dev1+gd84319696
+  at: '2026-10-19T14:29:56+00:00'
+slug: review-due-commit-order
+epic: null
+depends_on: []
+priority: null
+---
+
+# review-due-commit-order
+
+Relayed from: none
+
+## Intent
+
+`kmctl review due` compares a source's last committer date (`git log -1 --format=%cI`) with the newest `verified[].at`, which `kmctl verify` writes as the UTC time (ADR 0023): `src/kmctl/review_due.py` does this for concepts and for docs pages. A squash or rebase merge writes new commits dated at merge time, so a concept verified on a branch is `source changed` again once the branch lands (issue #17). And nothing compares the concept's own text with what was verified, so an edit after a verification is never a reason (issue #18). `src/kmctl/summary.py` already solves the same kind of problem with commit order ("Commit order, not dates, decides", ADR 0027); this ticket gives `review due` the same footing.
+
+- **Verification commit.** For a concept or docs page with a `verified` entry, the verification commit is the oldest commit in the file's history whose front matter already holds its current newest `verified[].at`. A squash or rebase carries the entry into the new commit, so the verification commit moves with it. When that entry is not committed yet (only in the working tree), nothing counts as changed after it.
+- **Source changed** (concepts and docs pages): due when the source's content at the verification commit differs from `HEAD` (`git diff --quiet V HEAD -- SOURCE`), instead of comparing dates. A docs page without `verified` keeps its baseline of the page's own last commit, now also by commit rather than date. Uncommitted source edits still count only once committed, as ADR 0023 says.
+- **Edited after verification** (new reason, concepts and docs pages): due when the file at the verification commit and at `HEAD` differ in anything other than the `verified` and `stale_after` fields, which `kmctl verify` writes. The reason reads `edited after verification`, alongside the existing ones; the `--json` shape does not change.
+- No new front matter field: ADR 0006 and invariant I4 keep kmctl on OKF's own fields, so a recorded source blob hash is out (see the fork in Could invalidate).
+- A new decision, written with `kmctl new decision`, records that `review due` decides by commit order and names the new reason; ADR 0006 and ADR 0023 each get a `## Correction, 2026-10-19` section pointing at it, since records are never rewritten (`.claude/rules/okf-bundle.md`). The module docstring of `src/kmctl/review_due.py`, the `kmctl review due` help in `src/kmctl/__init__.py`, `docs/reference/commands.md` (review due and verify sections), the docs-layout rule's last line in `apm/claude/.apm/instructions/docs-layout.instructions.md` (Antigravity copy regenerated) and `.okf/summary.md` say the same.
+
+Measured on main: both issue reproductions hold. After a squash merge of a branch where the source changed before the verification, `review due` lists `decisions/0002-use-app (source changed: app.py)`; after a commit that appends a line to a verified concept, it lists only `summary`, never the concept. `kmctl review due` takes 0.56 s on this repository (2845 commits); the history walk must not make it noticeably slower.
+
+Done when tests in `tests/test_review_due.py` show: a concept verified on a branch is not due after a squash merge, a rebase merge or a merge commit when nothing changed after the verification; it is due `source changed` when a commit after the verification commit changes a source, and `edited after verification` when a commit after it changes the body or another front matter field; a commit that only adds a `verified` entry (or one with `--stale-after`) leaves it off the list; a docs page gets the same two rules; the existing tests still pass; and the gates pass.
+
+## Could invalidate this plan
+
+- Finding the verification commit by walking the file's history may pick the wrong commit after a squash, rebase or merge commit, or make `kmctl review due` too slow on a long history (0.56 s now, 2845 commits). If either holds, the commit-order approach needs another way to anchor the verification. Settled by spike:review-due-commit-order/2: the rule gave the right answer in all 33 cases (squash, rebase plus fast-forward and merge commit landings, issue #18's edit, re-verify with and without `--stale-after`, docs pages), and a batched walk (one `git log --name-only` over all verified files plus one `git cat-file --batch`) costs 0.359 s in the worst case while the `git diff --quiet` calls save more than that over today's `git log -1` calls. A separate `git log` per file costs 1.765 s, so the build uses the batched walk, with a test that it picks the same verification commit as a per-file log (a union pathspec can drop merges and renames).
+- Commit order cannot see order inside one commit: when a branch verifies a concept and then changes its source, a squash merge folds both into one commit, and the change is missed. Only a recorded source hash would catch it, which needs a field outside OKF v0.2 (ADR 0006, I4). The plan accepts that loss; if the operator wants the hash instead, the approach changes. Waiting on the operator.

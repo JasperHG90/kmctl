@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "consumer-surfaces",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 1,
@@ -94,8 +94,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "331eb55e09ea668bd083103af1205a02d003008a909be50c7d4e4ba52465e06d",
   "intent": {
@@ -127,8 +127,14 @@
       "to": "verifying",
       "at": "2026-10-19T15:03:14+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-19T15:13:12+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.2.2.dev1+gd84319696",
-  "at": "2026-10-19T15:03:41+00:00"
+  "at": "2026-10-19T15:13:12+00:00"
 }
