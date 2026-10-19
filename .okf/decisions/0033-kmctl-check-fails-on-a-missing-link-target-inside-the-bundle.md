@@ -59,8 +59,9 @@ Rejected:
 - A `/` link in `.okf/` written to mean the repository root, as GitHub
   renders it, now fails unless the bundle holds that path. OKF reads it from
   the bundle root, so the fix is a relative link.
-- `log.md` is checked like any page. kmctl's own verbs name concepts there in
-  backticks, not links, and the okf-bundle rule asks the same of hand-written
-  lines, so an append-only log rarely holds a link that can break.
-- The okf validator still warns about the same links; the two checks now
-  agree on what is broken, and only kmctl fails on it.
+- `log.md` is not checked. It is append-only, so a link there to a concept
+  renamed later could never be fixed, and the check would fail for good.
+  kmctl's own verbs name concepts there in backticks, not links.
+- The okf validator still warns about missing concept links; kmctl checks
+  every target the validator does, and more (folders, images and other
+  files), and only kmctl fails on them.

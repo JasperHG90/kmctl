@@ -7,9 +7,9 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-10-19T19:43:47Z
+  at: 2026-10-19T21:02:51Z
   against:
-    - decisions/0033-kmctl-check-fails-on-a-missing-link-target-inside-the-bundle
+    - decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins
 ---
 
 # Summary: kmctl
