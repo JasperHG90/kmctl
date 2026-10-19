@@ -9,3 +9,4 @@
 {"at": "2026-10-19T08:08:41+00:00", "binds": "d155424f4d9b4c4cc39654ad4cd6a79e1911d887875780f4684c2627a4c494b3", "kind": "round-start", "n": 1, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "2f6a75f5cfafc5ed6d864fe65dceb1dc8fd48946"}
 {"at": "2026-10-19T08:09:54+00:00", "dispatched_at": "2026-10-19T08:08:41+00:00", "kind": "round-close", "n": 1, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-19T08:09:40+00:00"}}
 {"at": "2026-10-19T08:10:04+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "26e767d0154377f3f04c3a36b8578db72a0f25d8"}
+{"at": "2026-10-19T08:12:46+00:00", "branch": "loop/commit-apm-installs", "kind": "land", "schema_version": "1.0", "sha": "4487cc8eba6ca34b6001dd9a587c1bbdf10ca76c"}
