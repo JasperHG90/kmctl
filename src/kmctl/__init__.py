@@ -62,7 +62,11 @@ def _root(
         "-V",
         callback=_print_version,
         is_eager=True,
-        help="Print the kmctl version and exit.",
+        help=(
+            "Print the kmctl version and exit, as kmctl X.Y.Z. In a project whose "
+            "apm.lock.yaml pins another release, it prints the pinned version, "
+            "followed by (pinned by apm.lock.yaml; kmctl X.Y.Z is on PATH)."
+        ),
     ),
 ) -> None:
     """kmctl: keep a repository's docs/ and .okf/ knowledge current."""
