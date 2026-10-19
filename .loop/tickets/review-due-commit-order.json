@@ -1,26 +1,54 @@
 {
   "schema_version": "1.0",
   "slug": "review-due-commit-order",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
-  "review_rounds": 0,
+  "review_rounds": 2,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "30c2986744c5a6573896d2a2d953c70bbf367cf8980c6fecc26d1027040795ed",
+    "tree": "6f3f77f5b3ecd1c7511a52787622ce99305dff09",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "blocking",
+        "judgement": null,
+        "paths": [
+          "src/kmctl/review_due.py",
+          "tests/test_review_due.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f2",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": "j-20261019T155635+0000-d25d7d6c",
+        "paths": [
+          ".claude/rules/docs-layout.md"
+        ]
+      }
+    ],
+    "at": "2026-10-19T15:56:35+00:00"
+  },
   "ask": "j-20261019T142800+0000-163e5ff3",
   "split": "j-20261019T143751+0000-21766bef",
   "split_plan_hash": "3009b6ac866f9808fc012b2eeafa9f9389401c6444bdbd061c0bdadf7a2785a0",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "60880f19edd23f05d7f91077f42bb45c40a0cd2f",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
   "worktree": "/home/vscode/kmctl.worktrees/review-due-commit-order",
   "branch": "loop/review-due-commit-order",
   "stamps": [
-    "ac341e4ab92a8ab01bce65445eab3eb4895f2d250498c166f157d9b1640961eb"
+    "ac341e4ab92a8ab01bce65445eab3eb4895f2d250498c166f157d9b1640961eb",
+    "888e493c2ed528a1d6ce04923414c48c269f37d05a046d0eed87384d2c3ff85d",
+    "30c2986744c5a6573896d2a2d953c70bbf367cf8980c6fecc26d1027040795ed"
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
@@ -99,16 +127,16 @@
   "waivers": [],
   "overrides": [],
   "round": {
-    "kind": "plan",
-    "n": 1,
-    "binds": "3009b6ac866f9808fc012b2eeafa9f9389401c6444bdbd061c0bdadf7a2785a0",
-    "started_at": "2026-10-19T15:07:24+00:00",
+    "kind": "review",
+    "n": 2,
+    "binds": "30c2986744c5a6573896d2a2d953c70bbf367cf8980c6fecc26d1027040795ed",
+    "started_at": "2026-10-19T16:27:15+00:00",
     "passes": [
-      "plan-reviewer"
+      "reviewer"
     ],
-    "tree": null,
-    "plan_hash": null,
-    "eval_hash": null,
+    "tree": "6f3f77f5b3ecd1c7511a52787622ce99305dff09",
+    "plan_hash": "3009b6ac866f9808fc012b2eeafa9f9389401c6444bdbd061c0bdadf7a2785a0",
+    "eval_hash": "ad4868ccf6b9919b2bbb47196a8079ad62ad1ed2c547d95ff5c634809a930643",
     "scope": "full",
     "sent_back": [],
     "since": null,
@@ -148,8 +176,26 @@
       "to": "verifying",
       "at": "2026-10-19T15:28:40+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-19T15:49:17+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-19T15:56:35+00:00",
+      "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-19T16:33:04+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.2.2.dev1+gd84319696",
-  "at": "2026-10-19T15:28:40+00:00"
+  "at": "2026-10-19T16:33:04+00:00"
 }

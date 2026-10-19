@@ -81,5 +81,7 @@ line, also its index entry), `stale_after` (when to look at it again),
 `sources` (the files it describes) and, once someone has checked it against
 the code, `verified`. These are the OKF fields of those names; give a page
 no other OKF field, and no `type`. `kmctl review due` lists a page once its
-`stale_after` passes or a source changes after it.
+`stale_after` passes, or a commit after the one that holds its newest
+`verified` entry (with none, after its own last commit) changes a source or,
+outside `verified` and `stale_after`, the page itself.
 </constraint>

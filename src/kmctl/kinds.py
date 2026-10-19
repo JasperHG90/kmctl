@@ -375,8 +375,8 @@ _FIELD_SCHEMAS: dict[str, dict[str, Any]] = {
             ]
         },
         "description": (
-            "What it describes; kmctl review due lists it when one changes "
-            "after the last verified date. kmctl new writes --source as resource mappings."
+            "What it describes; kmctl review due lists it when one changes in a "
+            "commit after its verification. kmctl new writes --source as resource mappings."
         ),
     },
     "status": {

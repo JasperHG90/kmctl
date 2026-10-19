@@ -18,7 +18,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts.release import APM_DOC, APM_FILES, COPIER, DOC_FILES, MANIFEST
+from scripts.release import APM_DOC, APM_FILES, COPIER, DOC_FILES, HOOKS, MANIFEST
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "release.py"
@@ -93,7 +93,7 @@ def test_version_source_follows_a_changed_manifest(tmp_path: Path) -> None:
 def _repo(tmp_path: Path, version: str = "0.1.0") -> Path:
     """A git repository holding this repository's apm.yml files, copier.yml and the docs `set` edits."""
     root = tmp_path / "repo"
-    for rel in (*APM_FILES, *DOC_FILES, APM_DOC, COPIER):
+    for rel in (*APM_FILES, *DOC_FILES, APM_DOC, COPIER, HOOKS):
         (root / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(ROOT / rel, root / rel)
     for rel in APM_FILES:
@@ -179,7 +179,7 @@ def test_release_py_set_writes_the_version_and_the_six_doc_lines(
     assert changed == {f"version: {_manifest_version(ROOT)}", "version: 9.9.9"}
     assert _refs(root) == ["v9.9.9"] * 6
     assert res.stdout.splitlines() == [
-        f"wrote {p}" for p in (*APM_FILES, *DOC_FILES, APM_DOC, COPIER)
+        f"wrote {p}" for p in (*APM_FILES, *DOC_FILES, APM_DOC, COPIER, HOOKS)
     ]
 
 
@@ -371,6 +371,27 @@ def test_release_py_set_never_commits_or_tags(tmp_path: Path) -> None:
         ).stdout
         == ""
     )
+
+
+def _hook_refs(root: Path) -> list[str]:
+    """The refs the install hints in the Claude hook's hooks.json name."""
+    text = (root / HOOKS).read_text()
+    return re.findall(
+        r"git\+https://github\.com/JasperHG90/kmctl@(v[0-9a-z.]+?)\.?'", text
+    )
+
+
+def test_release_py_set_rewrites_the_hooks_json_ref(tmp_path: Path) -> None:
+    """``set`` points both install hints in the Claude hook at the new tag, and a second ``set`` moves them."""
+    root = _repo(tmp_path)
+
+    assert _run(root, "set", "0.2.0").returncode == 0
+    assert _hook_refs(root) == ["v0.2.0"] * 2
+    res = _run(root, "set", "0.3.0rc1")
+
+    assert res.returncode == 0, res.stderr
+    assert _hook_refs(root) == ["v0.3.0rc1"] * 2
+    assert f"wrote {HOOKS}" in res.stdout.splitlines()
 
 
 def _kmctl_ref_default(root: Path) -> str:

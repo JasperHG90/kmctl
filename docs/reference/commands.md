@@ -68,7 +68,11 @@ Set a repository up. It writes:
   there; the indexes list the concepts;
 - a kmctl block between `<!-- kmctl:start -->` and `<!-- kmctl:end -->` in
   each `CLAUDE.md` and `AGENTS.md` that exists. The block lists where each
-  kind of knowledge lives, says to start at `.okf/summary.md`, and gives the
+  kind of knowledge lives, says to start at `.okf/summary.md`, names the
+  rules folder of each harness kmctl's package is installed for
+  (`.claude/rules/` for Claude Code, `.agents/rules/` for Antigravity,
+  `.opencode/rules/` for OpenCode, as `kmctl doctor` finds them), or all
+  three with their tools when it finds none, and gives the
   agent six duties: record each
   choice with `kmctl new decision`, name the code a concept describes with
   `--source` and give anything time-bound a `--stale-after`, keep
@@ -85,8 +89,11 @@ Set a repository up. It writes:
   `CLAUDE.md` with an `@AGENTS.md` line, beside an `AGENTS.md`, gets no
   block;
 - the decision "Keep project knowledge in an OKF bundle", with its index
-  entry and log line, when no record in `.okf/decisions/` has that title. In
-  a fresh bundle it is `0001`.
+  entry and log line, when `.okf/decisions/` holds no decision record: no
+  `.md` file other than `index.md`, in it or in a folder inside it. Any other
+  record counts, whatever its title, so a repository that records the same
+  choice in its own words, or moves its decision log into `.okf/decisions/`,
+  gets no copy. In a fresh bundle it is `0001`.
 
 It writes no rules: the four knowledge rules (`okf-bundle`, `docs-layout`,
 `diagrams-stay-current` and `manifesto-invariants`) come with kmctl's skills
@@ -215,8 +222,9 @@ The state line counts what is due and the live handoffs, and ends with
 `summary current` or `summary behind: N concepts changed` when there is a
 `.okf/summary.md` and git history to tell (`--json`: `state.summary_behind`,
 null otherwise). The rules for writing knowledge are not
-in it: APM puts them in `.claude/rules/` with kmctl's package, and the briefing
-adds only the one they lack. The SessionStart hook in kmctl's APM package,
+in it: APM puts them in each harness's rules folder with kmctl's package, so
+the briefing says only that the rules your tool loads cover them, and adds
+the one rule they lack. The SessionStart hook in kmctl's APM package,
 which APM writes, prints this: Claude Code's runs `kmctl briefing`,
 Antigravity's runs `kmctl briefing --format antigravity`. It reads and never
 writes.
@@ -277,10 +285,21 @@ List the concepts in `.okf/` and the pages in `docs/` that are due for
 review, with the reason for each. A source that resolves to no tracked file
 or folder is listed as a notice, not a reason.
 
-A `docs/` page is due when its `stale_after` has passed, or when a commit
-changed one of its `sources` after its last `verified` date or, with none,
-after the page's own last commit. A page with no `verified` entry is not due
-for that alone. A docs page's id is its path without `.md`, such as
+A concept is due when its `stale_after` has passed (`stale_after passed`),
+when it has no `verified` entry (`unverified`), when a commit after its
+verification commit changed one of its `sources` (`source changed: SOURCE`),
+or when such a commit changed the concept itself in its body or any front
+matter field other than `verified` and `stale_after`
+(`edited after verification`). The verification commit is the oldest commit
+whose front matter holds the file's newest `verified` entry, so commit order
+decides, not dates, and a verification made on a branch survives a squash or
+rebase merge (ADR 0032). While that entry is not committed, nothing counts as
+changed after it, and a source edit counts only once it is committed.
+
+A `docs/` page is due when its `stale_after` has passed, or by the same
+`source changed` and `edited after verification` rules. A page with no
+`verified` entry is not due for that alone, and its sources are compared with
+the page's own last commit. A docs page's id is its path without `.md`, such as
 `docs/how-to/install`; a source resolves from the page's folder, then the
 repository root. The `README.md` indexes are left out.
 
@@ -313,8 +332,10 @@ drops it. It appends `{by, at}` to the file's `verified` list, with `at` the
 current UTC time (`2026-10-17T21:30:00Z`), and changes no other line. A
 `verified` field written as one mapping or a flow list is extended in its
 place. A concept also gets a line in `.okf/log.md`. The id then stays off
-`kmctl review due` until its `stale_after` passes or one of its `sources` is
-committed again.
+`kmctl review due` until its `stale_after` passes, or a commit after the one
+that holds the new entry changes one of its `sources` or the file itself
+outside `verified` and `stale_after`. Commit the entry: until then, nothing
+counts as changed after it.
 
 Only a person verifies (ADR 0023). An agent runs it only when the person named
 in `--by` has read the content and asked for it, never on an audit verdict
@@ -586,7 +607,9 @@ already hold yours:
   okf's MCP server as `bundle` into `.mcp.json`. At user scope the
   hook goes into the `settings.json` in `$CLAUDE_CONFIG_DIR` (by default
   `~/.claude/`) and the server into the user `.claude.json`. The hook
-  prints how to install kmctl and exits 0 when kmctl is missing or fails.
+  prints how to install kmctl, at the release the package came from
+  (`uv tool install git+https://github.com/JasperHG90/kmctl@vX.Y.Z`), and
+  exits 0 when kmctl is missing or fails.
   Claude Code asks you to approve a project `.mcp.json` server once.
 - For `antigravity`: the skills to `.agents/skills/`; the four rules to
   `.agents/rules/`, each with its globs as one `globs:` string, every

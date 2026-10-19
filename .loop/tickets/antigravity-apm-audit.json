@@ -1,38 +1,57 @@
 {
   "schema_version": "1.0",
   "slug": "antigravity-apm-audit",
-  "stage": "ready",
-  "attempts": 0,
+  "stage": "done",
+  "attempts": 1,
   "plan_rounds": 1,
-  "review_rounds": 0,
+  "review_rounds": 2,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "f08759ff2c9543ba997b882f5446ba0601eb1d0e9e4f759acc5a0d9fd74dbf75",
+    "tree": "427542f9b0c01e48f8df5cc43d6ae3ca542562fb",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": null,
+        "paths": [
+          ".okf/decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md"
+        ]
+      }
+    ],
+    "at": "2026-10-19T16:46:09+00:00"
+  },
   "ask": "j-20261019T142814+0000-726b7df8",
   "split": "j-20261019T150530+0000-ce8a7c99",
   "split_plan_hash": "8f06710b130a98dab4b1b897dcd2826f635d19f10a075b78b0cd3cd61d25ca9d",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "b33cc1734921d9360c16b08a2b10ffe5f872823f",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
-  "worktree": null,
-  "branch": null,
-  "stamps": [],
+  "worktree": "/home/vscode/kmctl.worktrees/antigravity-apm-audit",
+  "branch": "loop/antigravity-apm-audit",
+  "stamps": [
+    "882a6f3cdff0469ce617a71ca7cd4699bea07bbb437a804792193c73d45028db",
+    "f08759ff2c9543ba997b882f5446ba0601eb1d0e9e4f759acc5a0d9fd74dbf75"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
-    "hash": "9ffbfaa4bad02856f51ecc95c1cc2c718c856726c1df083a798ae810c0b8ed5a",
-    "at": "2026-10-19T15:08:54+00:00"
+    "hash": "abae0efae4c524d9fd78dccc88c3f4ff1d53326fb0ebd2c098070d89ecf20938",
+    "at": "2026-10-19T16:27:57+00:00"
   },
   "delegation": null,
   "budget_base": null,
   "signed_rows": [
     {
       "id": "r1",
-      "behavior": "A starter project bootstrapped for claude, antigravity and opencode passes apm audit --ci --no-drift --no-policy (exit 0) after install and kmctl plugin patch.",
-      "fails_when": "the audit exits nonzero",
-      "command": "uv run pytest -m integration tests/test_starter.py::test_bootstrap_installs_this_checkout -q",
+      "behavior": "A starter project bootstrapped for claude and antigravity passes apm audit --ci --no-drift --no-policy (exit 0) after install and kmctl plugin patch. OpenCode is out: APM's content-integrity check flags the agents kmctl plugin patch rewrites, and no audit flag skips it; the install how-to says so and the drift gate covers OpenCode.",
+      "fails_when": "the audit exits nonzero for the claude and antigravity project",
+      "command": "uv run pytest -m integration tests/test_starter.py -q -k audit_passes_for_claude_and_antigravity",
       "judgment": false
     },
     {
@@ -64,21 +83,38 @@
       "judgment": true
     }
   ],
-  "resigns": [],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+      "reason": "r1 named OpenCode, which the plan left to be checked in the build: APM 0.33.0's content-integrity check fails on the three agents kmctl plugin patch rewrites and no audit flag skips it, so r1 covers claude and antigravity (issue #28's scope) and OpenCode goes to a follow-up ticket",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r1": [
+            "behavior",
+            "fails_when",
+            "command"
+          ]
+        }
+      },
+      "at": "2026-10-19T16:27:57+00:00"
+    }
+  ],
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
   "round": {
-    "kind": "plan",
-    "n": 1,
-    "binds": "8f06710b130a98dab4b1b897dcd2826f635d19f10a075b78b0cd3cd61d25ca9d",
-    "started_at": "2026-10-19T15:06:31+00:00",
+    "kind": "review",
+    "n": 2,
+    "binds": "f08759ff2c9543ba997b882f5446ba0601eb1d0e9e4f759acc5a0d9fd74dbf75",
+    "started_at": "2026-10-19T16:46:25+00:00",
     "passes": [
-      "plan-reviewer"
+      "reviewer"
     ],
-    "tree": null,
-    "plan_hash": null,
-    "eval_hash": null,
+    "tree": "427542f9b0c01e48f8df5cc43d6ae3ca542562fb",
+    "plan_hash": "8f06710b130a98dab4b1b897dcd2826f635d19f10a075b78b0cd3cd61d25ca9d",
+    "eval_hash": "abae0efae4c524d9fd78dccc88c3f4ff1d53326fb0ebd2c098070d89ecf20938",
     "scope": "full",
     "sent_back": [],
     "since": null,
@@ -106,8 +142,38 @@
       "to": "ready",
       "at": "2026-10-19T15:08:19+00:00",
       "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-10-19T15:37:29+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-10-19T16:35:05+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-19T16:41:02+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-19T16:46:09+00:00",
+      "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-19T16:52:18+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.2.2.dev1+gd84319696",
-  "at": "2026-10-19T15:08:54+00:00"
+  "at": "2026-10-19T16:52:18+00:00"
 }

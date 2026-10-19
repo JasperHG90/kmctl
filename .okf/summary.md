@@ -7,13 +7,11 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-10-19T15:48:38Z
+  at: 2026-10-19T17:29:03Z
   against:
-    - architecture/overview
-    - decisions/0014-apm-is-the-only-install-route
-    - decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity
-    - decisions/0019-kmctl-plugin-remove-uninstalls-the-package-and-reinstalls-the-harnesses-kept
-    - decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest
+    - decisions/0006-staleness-from-okf-fields
+    - decisions/0023-kmctl-verify-records-a-person-s-check
+    - decisions/0032-kmctl-review-due-decides-by-commit-order
 ---
 
 # Summary: kmctl

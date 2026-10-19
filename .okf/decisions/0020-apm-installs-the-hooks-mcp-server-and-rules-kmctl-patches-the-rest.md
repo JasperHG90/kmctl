@@ -116,6 +116,18 @@ it never runs APM; when APM must write a piece again, it says to run
 
 ## Correction, 2026-10-19
 
+The Decision says each Antigravity rule copy opens with an HTML comment
+naming its source, the script and this decision. The comment is gone:
+`scripts/sync_antigravity_rules.py` writes each copy as its front matter
+and the Claude body only. APM installs these copies into other
+repositories, where a note telling a maintainer to edit kmctl's source and
+run a kmctl script means nothing. What keeps the copies generated is what
+already guarded them: the pre-commit hook that runs the script on any edit,
+the stale-copy test in `tests/test_apm_package.py`, and the script's
+docstring.
+
+## Correction, 2026-10-19
+
 The Decision declares okf's MCP server as `okf-bundle` and has an install
 remove an `okf-bundle` entry an older kmctl wrote that differs from the
 package's. The package now declares it as `bundle`, okf's own name for it,

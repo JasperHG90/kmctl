@@ -6,19 +6,19 @@ tags:
 - eval
 generated:
   by: process:loopctl/2.2.2.dev1+gd84319696
-  at: '2026-10-19T15:08:54+00:00'
+  at: '2026-10-19T16:27:57+00:00'
 slug: antigravity-apm-audit
 signoff:
   signer: delegated:jasperginn@gmail.com/claude-opus-5-5
-  hash: 9ffbfaa4bad02856f51ecc95c1cc2c718c856726c1df083a798ae810c0b8ed5a
-  at: '2026-10-19T15:08:54+00:00'
+  hash: abae0efae4c524d9fd78dccc88c3f4ff1d53326fb0ebd2c098070d89ecf20938
+  at: '2026-10-19T16:27:57+00:00'
 verified: null
 ---
 
 Rows: rows.json; the fields each row takes: loopctl schema eval-rows.
 
-- r1: A starter project bootstrapped for claude, antigravity and opencode passes apm audit --ci --no-drift --no-policy (exit 0) after install and kmctl plugin patch.
-  Fails when: the audit exits nonzero
+- r1: A starter project bootstrapped for claude and antigravity passes apm audit --ci --no-drift --no-policy (exit 0) after install and kmctl plugin patch. OpenCode is out: APM's content-integrity check flags the agents kmctl plugin patch rewrites, and no audit flag skips it; the install how-to says so and the drift gate covers OpenCode.
+  Fails when: the audit exits nonzero for the claude and antigravity project
 - r2: The starter justfile has a recipe that runs a frozen install, kmctl plugin patch, and fails when git status --porcelain prints anything; on a fresh clone of the committed project it exits 0, and after a committed one-line edit to an installed skill it exits nonzero.
   Fails when: the recipe is missing from the rendered justfile, exits nonzero on the clean clone, or exits 0 after the committed edit
 - r3: kmctl's MCP server is named bundle everywhere it is declared or checked, and no source, doc or test outside .loop/ and the okf-bundle rule names still uses okf-bundle for the server.

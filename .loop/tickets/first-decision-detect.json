@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "first-decision-detect",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 2,
@@ -30,7 +30,7 @@
   "split": "j-20261019T142952+0000-8d502e8d",
   "split_plan_hash": "5a4138e4cc20ad826399af4951b080965ce9d30129929f5ab3b289a8273927a2",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "fa4bc30dd141ba452f8d80c30b8d4efe5faea5de",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -107,8 +107,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "pass"
   },
   "plan_hash": "5a4138e4cc20ad826399af4951b080965ce9d30129929f5ab3b289a8273927a2",
   "intent": {
@@ -152,8 +152,14 @@
       "to": "verifying",
       "at": "2026-10-19T15:29:17+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-19T15:38:12+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.2.2.dev1+gd84319696",
-  "at": "2026-10-19T15:29:22+00:00"
+  "at": "2026-10-19T15:38:12+00:00"
 }

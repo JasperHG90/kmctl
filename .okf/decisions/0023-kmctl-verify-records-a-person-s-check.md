@@ -62,3 +62,12 @@ Rejected:
   finding; it gives the audit no new power.
 - A source edited but not yet committed when the person verifies counts as
   changed again once it is committed, as before.
+
+## Correction, 2026-10-19
+
+`at` no longer decides what changed after a verification: `kmctl review due`
+finds the commit that holds the newest entry and compares from there, and
+lists a file edited after it (`edited after verification`), per
+[ADR 0032](0032-kmctl-review-due-decides-by-commit-order.md). A verify on a
+branch therefore survives a squash or rebase merge. `at` is still written as
+the UTC time; it now identifies the entry.

@@ -12,7 +12,7 @@ Two places hold prose, and they have different readers.
   README.md index, which `kmctl check --fix` generates.
 - `.okf/` is for agents and people working ON this repository: decisions and
   the alternative each rejected, lessons learned the hard way, and proposals
-  not yet built. How to read and extend it is `.claude/rules/okf-bundle.md`.
+  not yet built. How to read and extend it is the `okf-bundle` rule.
   The current design (vision, invariants, values) is the bundle's root
   concept, `.okf/manifesto.md`. It links to the decisions for the why and
   never repeats a decision record.
@@ -77,5 +77,7 @@ line, also its index entry), `stale_after` (when to look at it again),
 `sources` (the files it describes) and, once someone has checked it against
 the code, `verified`. These are the OKF fields of those names; give a page
 no other OKF field, and no `type`. `kmctl review due` lists a page once its
-`stale_after` passes or a source changes after it.
+`stale_after` passes, or a commit after the one that holds its newest
+`verified` entry (with none, after its own last commit) changes a source or,
+outside `verified` and `stale_after`, the page itself.
 </constraint>
