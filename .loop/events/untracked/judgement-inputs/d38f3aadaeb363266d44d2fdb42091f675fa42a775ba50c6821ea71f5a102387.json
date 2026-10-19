@@ -1,0 +1,1 @@
+{"ask":"Record in the OKF bundle that projects commit the files APM deploys (.claude/, .agents/, .opencode/, settings and MCP files) and gitignore only apm_modules/, per APM's guidance; PR #16 was closed for this."}
