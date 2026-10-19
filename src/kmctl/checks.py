@@ -68,7 +68,7 @@ _LINK = re.compile(r"!?\[[^\]]*\]\(" + _TARGET + r"\)")
 # A footnote definition ([^1]: text) is not a link.
 _REF_DEF = re.compile(r"^ {0,3}\[(?!\^)[^\]]+\]:\s*(<[^<>\n]*>(?=\s|$)|[^<\s]\S*)")
 _CODE_SPAN = re.compile(r"`[^`]*`")
-_RECORD = re.compile(r"(\d{4})-.+\.md")
+_RECORD = re.compile(r"(\d{4,})-.+\.md")
 _ADR = re.compile(r"ADR (\d+)\b")
 
 

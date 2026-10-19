@@ -471,3 +471,40 @@ def test_decision_check_entry_must_name_its_record(tmp_path: Path, text: str) ->
             ),
         )
     ]
+
+
+def test_decision_check_reads_numbers_past_9999(tmp_path: Path) -> None:
+    _good_repo(tmp_path)
+    _write(
+        tmp_path,
+        ".okf/decisions/index.md",
+        "# Decisions\n\n- [ADR 0001](0001-first.md): the first.\n"
+        "- [ADR 10000](10000-big.md): a big one.\n",
+    )
+    _write(tmp_path, ".okf/decisions/10000-big.md", _decision("ADR 0004: Big", "Big"))
+
+    assert _decision_findings(tmp_path) == [
+        (
+            "decision",
+            ".okf/decisions/10000-big.md",
+            None,
+            "title says ADR 0004, but the file is number 10000; make it ADR 10000",
+        )
+    ]
+
+
+def test_decision_check_skips_headings_in_code(tmp_path: Path) -> None:
+    _good_repo(tmp_path)
+    _write(
+        tmp_path,
+        ".okf/decisions/index.md",
+        "# Decisions\n\n- [ADR 0001](0001-first.md): the first.\n",
+    )
+    _write(
+        tmp_path,
+        ".okf/decisions/0001-first.md",
+        _decision("ADR 0001: First", "ADR 0001: First")
+        + "\n```\n# ADR 0009: Example\n```\n",
+    )
+
+    assert _decision_findings(tmp_path) == []
