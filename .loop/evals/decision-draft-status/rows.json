@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {"id": "r1", "behavior": "None of the three okf-bundle rule copies (apm claude source, apm antigravity copy, .claude/rules/okf-bundle.md) still says status is stable or deprecated; each names draft, stable and deprecated.", "fails_when": "any copy still has the two-value wording, or lacks draft", "command": "uv run pytest tests/test_apm_package.py -q -k draft_status"},
+    {"id": "r2", "behavior": "The pinned okf-bundle rule hash in tests/test_apm_package.py matches the new body and its comment names the new ADR, and the package tests pass.", "fails_when": "any test in tests/test_apm_package.py fails", "command": "uv run pytest tests/test_apm_package.py -q"},
+    {"id": "r3", "behavior": "A new decision record says a decision may be draft until accepted, how a draft becomes stable (status edit plus a log.md line), and rejects refusing draft in the schema; the rule says the same and tells draft apart from a proposal.", "fails_when": "the record is missing, or the rule or record omits how a draft becomes stable", "judgment": true}
+  ]
+}

@@ -20,10 +20,36 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "fadf60918f13df2b727ae4da203b2ecb601efd8e2327b15162f41e40f3ff0568",
+    "at": "2026-10-19T14:32:33+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "None of the three okf-bundle rule copies (apm claude source, apm antigravity copy, .claude/rules/okf-bundle.md) still says status is stable or deprecated; each names draft, stable and deprecated.",
+      "fails_when": "any copy still has the two-value wording, or lacks draft",
+      "command": "uv run pytest tests/test_apm_package.py -q -k draft_status",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "The pinned okf-bundle rule hash in tests/test_apm_package.py matches the new body and its comment names the new ADR, and the package tests pass.",
+      "fails_when": "any test in tests/test_apm_package.py fails",
+      "command": "uv run pytest tests/test_apm_package.py -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "A new decision record says a decision may be draft until accepted, how a draft becomes stable (status edit plus a log.md line), and rejects refusing draft in the schema; the rule says the same and tells draft apart from a proposal.",
+      "fails_when": "the record is missing, or the rule or record omits how a draft becomes stable",
+      "command": null,
+      "judgment": true
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -69,5 +95,5 @@
     }
   ],
   "by": "process:loopctl/2.2.2.dev1+gd84319696",
-  "at": "2026-10-19T14:31:30+00:00"
+  "at": "2026-10-19T14:32:33+00:00"
 }
