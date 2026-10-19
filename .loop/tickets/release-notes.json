@@ -19,7 +19,9 @@
   "archived": false,
   "worktree": "/home/vscode/kmctl.worktrees/release-notes",
   "branch": "loop/release-notes",
-  "stamps": [],
+  "stamps": [
+    "eecbe12afd86813da5abcdc60971fa5d4eeece434be07231d38c32981cb321b9"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude",
     "hash": "4459f13e449ab550ca16f36dfd74abe7f1f31b65a4bb7d38d05b794e97d165d0",
@@ -122,5 +124,5 @@
     }
   ],
   "by": "process:loopctl/2.2.1.dev16+g27435b040.d20261017",
-  "at": "2026-10-19T12:51:59+00:00"
+  "at": "2026-10-19T12:56:22+00:00"
 }
