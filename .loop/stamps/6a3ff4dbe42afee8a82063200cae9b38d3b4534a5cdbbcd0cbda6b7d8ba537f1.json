@@ -1,0 +1,107 @@
+{
+  "schema_version": "1.0",
+  "fingerprint": "6a3ff4dbe42afee8a82063200cae9b38d3b4534a5cdbbcd0cbda6b7d8ba537f1",
+  "slug": "drop-summary-nudge",
+  "results": [
+    {
+      "name": "lint",
+      "kind": "gate",
+      "command": "uv run ruff check",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "format",
+      "kind": "gate",
+      "command": "uv run ruff format --check",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "tests",
+      "kind": "gate",
+      "command": "uv run pytest",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "integration",
+      "kind": "gate",
+      "command": "uv run pytest -m integration",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r1",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_plugin.py tests/test_opencode.py tests/test_apm_package.py -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 102,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r2",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_summary.py tests/test_doctor.py -k 'no_nudge' -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 2,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r3",
+      "kind": "eval-row",
+      "command": "bash -c '! git grep -qi nudge -- src apm docs README.md && grep -q \"status: deprecated\" .okf/decisions/0028-*.md && grep -lq \"Supersedes \\[ADR 0028\" .okf/decisions/0029-*.md'",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r4",
+      "kind": "eval-row",
+      "command": "uv run pytest -q -m \"not integration or integration\"",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 993,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    }
+  ],
+  "green": true,
+  "at": "2026-10-19T06:37:12+00:00",
+  "commit": null,
+  "by": "process:loopctl/2.2.1.dev16+g27435b040.d20261017"
+}
