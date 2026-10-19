@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "release-notes",
+  "n": 1,
+  "command": "/tmp/claude-1000/-home-vscode-kmctl/68b3e172-a942-4250-bcad-a0618f5282e7/scratchpad/spike-release-notes/ranges.sh",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-kmctl/68b3e172-a942-4250-bcad-a0618f5282e7/scratchpad/spike-release-notes/ranges.sh",
+      "copy": "files/ranges.sh"
+    }
+  ],
+  "where": "worktree",
+  "head": "db8314b6cb5319c7c37ef796ec55a66dc7e35b67",
+  "fingerprint": "c527193f6fd4980e564a70cc5bcae3d0bba2076b51cc37e6773e6341b48891f5",
+  "started_at": "2026-10-19T12:49:37+00:00",
+  "finished_at": "2026-10-19T12:49:37+00:00",
+  "duration_seconds": 0.108,
+  "timeout_seconds": 60.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.2.1.dev16+g27435b040.d20261017",
+  "moved_from": null
+}

@@ -1,0 +1,57 @@
+== root..v0.2.0: Merge loop/ 34, other 14
+   other: Drop the knowledge rules from the briefing
+   other: operator: manual commits
+   other: docs: update
+   other: Measure help text without colour codes in tests
+   other: operator: manual commit
+   other: operator: manual commit
+   other: Add the integration gate for network-tests-retry
+   other: operator: manual commit
+   other: operator: manual commit
+   other: operator: manual commit
+   other: operator: manual commit
+   other: Sample review.again cleared fixes for labels
+   other: Record ADRs 0007-0009, ticket evals and the skill-creator rule
+   other: operator: initial commit
+== v0.2.0..v0.3.0: Merge loop/ 1, other 1
+   other: Strip colour from help in test_update_is_init_alias
+== v0.3.0..v0.4.0: Merge loop/ 20, other 14
+   other: ci: run ruff, kmctl check and OKF validation through prek
+   other: test: strip colour before matching the briefing refusal
+   other: ci: use toiminnot v2.0.0, whose prek action runs prek
+   other: audit: run on DeepSeek V4.1 Flash through Ollama Cloud
+   other: docs: add a tutorial for running the CI agent locally
+   other: docs: fix the briefing help text and version in the commands reference
+   other: docs: say what you need and how to trust the folder for Antigravity
+   other: Add a pre-commit hook that regenerates the Antigravity rules
+   other: Explain APM's executables approval and warn about the okf plugin
+   other: Mark the generated Antigravity rules as generated
+   other: Fix three test comments left from kmctl plugin install
+   other: Correct ADRs 0001, 0002 and 0015 where the code moved on
+   other: operator: manual commit
+   other: operator: manual commit
+== v0.4.0..v0.4.1: Merge loop/ 2, other 5
+   other: docs: link kmctl-starter from the README's install section
+   other: chore; manual commits
+   other: chore; manual commits
+   other: chore; manual commits
+   other: Brief on setup: init, manifesto, architecture
+== v0.4.1..v0.5.0: Merge loop/ 1, other 1
+   other: ci: send the knowledge audit's traces to Langfuse
+== v0.5.0..v0.5.1: Merge loop/ 2, other 1
+   other: docs: name the opencode.json instructions refusal in the patch reference
+== v0.5.1..v0.6.0: Merge loop/ 2, other 2
+   other: test: render the starter from a git+file:// URL, with auto gc off
+   other: test: kmctl init keeps every file the user edited
+== v0.6.0..v0.7.0: Merge loop/ 2, other 4
+   other: ci: install just in the test jobs
+   other: docs: split the README's install into two foldable sections
+   other: docs: move a kmctl-starter project by setting _commit, not by recopy
+   other: docs: README's starter block runs just bootstrap
+== v0.7.0..v0.8.0: Merge loop/ 1, other 0
+== v0.8.0..v0.9.0: Merge loop/ 6, other 2
+   other: test: strip colour codes from the nudge's refusal before matching it
+   other: docs: name the summary nudge hook in the package descriptions and README
+== v0.9.0..v0.9.1: Merge loop/ 2, other 0
+== v0.9.1..v0.10.0: Merge loop/ 1, other 1
+   other: Give each test run its own uv cache and delete it at the end
