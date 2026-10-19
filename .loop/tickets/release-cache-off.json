@@ -20,10 +20,36 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "823048fdc50576dcbd487052414368e458c959c547f0256f2a5965b9c0a54dfd",
+    "at": "2026-10-19T01:07:56+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "Every astral-sh/setup-uv step in .github/workflows/release.yml and .github/workflows/release-tag.yml sets enable-cache: false, so no workflow that tests, builds or publishes a release restores an Actions cache entry another job could have written.",
+      "fails_when": "any setup-uv step in either workflow omits enable-cache or sets it true",
+      "command": "uv run pytest tests/scripts/test_workflows.py -k cache -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "A decision record says why the release workflows run without the uv cache (the audit agent runs shell commands as the runner's user and could write cache entries on main, ADR 0017), as a Correction to ADR 0012 or ADR 0017.",
+      "fails_when": "neither ADR 0012 nor ADR 0017 carries a dated Correction naming the release workflows' cache",
+      "command": "uv run pytest tests/scripts/test_workflows.py -k cache_record -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "The full suite and every tier pass.",
+      "fails_when": "any test fails",
+      "command": "uv run pytest -q -m \"not integration or integration\"",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -63,5 +89,5 @@
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-19T01:07:54+00:00"
+  "at": "2026-10-19T01:07:56+00:00"
 }
