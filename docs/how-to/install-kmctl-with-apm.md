@@ -57,7 +57,7 @@ repository's files, and with okf-skills from GitHub.
 ### 1. Install the kmctl CLI
 
 ```
-uv tool install git+https://github.com/JasperHG90/kmctl@v0.9.1
+uv tool install git+https://github.com/JasperHG90/kmctl@v0.10.0
 ```
 
 One kmctl on your PATH serves every repository. When a repository's
