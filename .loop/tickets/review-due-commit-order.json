@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "review-due-commit-order",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 1,
@@ -116,8 +116,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "3009b6ac866f9808fc012b2eeafa9f9389401c6444bdbd061c0bdadf7a2785a0",
   "intent": {
@@ -149,8 +149,14 @@
       "to": "verifying",
       "at": "2026-10-19T15:28:40+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-10-19T15:49:17+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.2.2.dev1+gd84319696",
-  "at": "2026-10-19T15:37:52+00:00"
+  "at": "2026-10-19T15:49:17+00:00"
 }
