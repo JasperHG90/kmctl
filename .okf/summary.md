@@ -7,9 +7,13 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-10-18T22:02:13Z
+  at: 2026-10-19T01:12:11Z
   against:
     - architecture/overview
+    - decisions/0001-standalone-cli-installs-its-plugin
+    - decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code
+    - decisions/0012-releases-come-from-ci
+    - decisions/0014-apm-is-the-only-install-route
 ---
 
 # Summary: kmctl

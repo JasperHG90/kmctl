@@ -102,7 +102,9 @@ Use `--target antigravity` for Antigravity, `apm install --target opencode`
 for OpenCode, or a list such as `--target claude,antigravity,opencode` for
 more than one. APM writes the SessionStart hook into `.claude/settings.json`
 and okf's MCP server, `okf-bundle`, into `.mcp.json`, along with the skills,
-agent and rules; for Antigravity it writes the same into `.agents/`. For
+agent and rules. For Antigravity it writes the skills, rules, hooks and
+`okf-bundle` into `.agents/`, but not the agents: patch writes those into
+`.agents/plugins/kmctl/`. For
 OpenCode it writes the skills into `.agents/skills/`, the agents into
 `.opencode/agents/` and `okf-bundle` into `opencode.json`; patch then
 rewrites the agents, writes the rules to `.opencode/rules/`, adds them to

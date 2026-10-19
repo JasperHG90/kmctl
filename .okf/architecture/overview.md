@@ -13,9 +13,11 @@ status: stable
 
 kmctl has four parts (manifesto, Parts). The CLI in `src/kmctl/` does every
 step a script can do and is the only part that writes knowledge. The APM
-package in `apm/` (skills, the audit agent and the knowledge rules) and the
-action in `action.yml` and `action/` call the CLI; they hold no logic of
-their own beyond relaying it, and the audit they run reads and reports only.
+package in `apm/` (skills, the audit agent and the knowledge rules) calls the
+CLI and holds no logic of its own beyond relaying it. The action in
+`action.yml` and `action/` calls the CLI in its default checks mode; its
+audit mode runs `action/agent.py`, a whole audit agent of its own that needs
+nothing from kmctl (ADR 0017). Both audits read and report only.
 APM installs the package from the consumer's `apm.yml`, writing its skills,
 SessionStart hooks, okf's MCP server and per-harness rules (ADR 0014,
 ADR 0020); `kmctl plugin patch` then adds the Antigravity agents as the
@@ -165,7 +167,7 @@ flowchart LR
 
     releaseYml -- "next version from v* tags" --> nextVersion
     releaseYml -- "set: version, docs' install lines" --> releasePy
-    releasePy -- "write: version,<br/>and its copy in the root apm.yml" --> apmPkg
+    releasePy -- "write: version,<br/>and its copies in the root apm.yml<br/>and the two sub-packages" --> apmPkg
     releasePy -- "write: kmctl_ref default vX.Y.Z" --> starter
     releaseYml -- "uv build, then check" --> wheelChecks
     releaseYml -- "commits it on release/vX.Y.Z,<br/>gh pr create" --> apmPkg
@@ -210,10 +212,12 @@ fields, its status values and its `##` sections. `kmctl new`, `kmctl new doc`,
 manifesto's sections and the status they write from it, and `kmctl schema`
 prints a JSON Schema built from it, so the schema is what kmctl writes.
 
-`okf.py` is the one reader of OKF front matter. `concepts.py`, `handoffs.py`,
-`review_due.py` and `supersede.py` read fields through it, so the fields kmctl
-uses are the ones the OKF v0.2 spec defines plus `handoff_key` and
-`checked` (I4, ADR 0006, ADR 0009, ADR 0027).
+`okf.py` is the one reader of OKF front matter. `checks.py`, `concepts.py`,
+`docs_index.py`, `handoffs.py`, `review_due.py`, `scaffold.py`, `summary.py`,
+`supersede.py` and `verify.py` read fields through it, and `kinds.py` takes
+its field list from it, so the fields kmctl uses are the ones the OKF v0.2
+spec defines plus `handoff_key` and `checked` (I4, ADR 0006, ADR 0009,
+ADR 0027).
 
 ## The package and its install
 
