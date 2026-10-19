@@ -156,3 +156,4 @@
 - Superseded `decisions/0028-two-hooks-the-session-briefing-and-the-summary-nudge` with `decisions/0029-the-session-briefing-is-kmctl-s-only-hook-again`.
 - Added `decisions/0030-projects-commit-what-apm-deploys` with `kmctl new decision`.
 - Added `decisions/0031-a-decision-record-may-be-draft-until-it-is-accepted` with `kmctl new decision`.
+- Corrected `decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code` (init writes the first decision only when `.okf/decisions/` holds no record, not when no record has its title, issue #26) and updated `decisions/index` to match.
