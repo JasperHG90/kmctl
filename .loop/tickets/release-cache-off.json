@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "release-cache-off",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 1,
@@ -13,7 +13,7 @@
   "split": "j-20261019T010456+0000-e54a0f92",
   "split_plan_hash": "14d4e5b995211c3be0ac6d64a33e133b25b67c85665863ae77a4f4aa6d81fe6a",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "eaeb86f677ff2ccc225b1a31ea5874a78607455f",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -106,8 +106,14 @@
       "to": "verifying",
       "at": "2026-10-19T01:12:52+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-19T01:19:00+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-19T01:18:58+00:00"
+  "at": "2026-10-19T01:19:00+00:00"
 }
