@@ -20,10 +20,36 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "f82d141c2149b258fcda9eca877cd4f8c31d1d356402885f6d2723831894d8f3",
+    "at": "2026-10-19T01:07:56+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "Each mismatch the plan lists is checked against today's code: a real one is fixed (a dated Correction appended to a decision record, never a rewrite; a direct edit to an architecture page or a docs page), one already fixed or not real is left alone and named as such in the commit message; HOOK_DESCRIPTION's wording changes only if nothing matches on that text.",
+      "fails_when": "a listed mismatch that is still real is left unfixed, a decision record's earlier text is rewritten rather than corrected, or a docs or architecture claim the change makes is false",
+      "command": null,
+      "judgment": true
+    },
+    {
+      "id": "r2",
+      "behavior": "kmctl check passes, the bundle passes strict OKF validation, and the summary is not left behind the changed concepts.",
+      "fails_when": "kmctl check or strict validation fails, or kmctl review due lists the summary for the changed concepts",
+      "command": "uv run pytest tests/test_summary.py tests/test_docs_frontmatter.py -k this_repo -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "The full suite and every tier pass.",
+      "fails_when": "any test fails",
+      "command": "uv run pytest -q -m \"not integration or integration\"",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -65,5 +91,5 @@
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-19T01:07:55+00:00"
+  "at": "2026-10-19T01:07:56+00:00"
 }
