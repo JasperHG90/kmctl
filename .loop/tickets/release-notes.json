@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "release-notes",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 1,
@@ -13,7 +13,7 @@
   "split": "j-20261019T125012+0000-1b6626b6",
   "split_plan_hash": "386d70973c3bbc401591bfab217efda04587e6c5a21f8b09fe12919080517fdb",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "0134e8fa62a6733296f1e770e20cefff8f7c9465",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -128,8 +128,14 @@
       "to": "verifying",
       "at": "2026-10-19T12:58:59+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-19T13:02:59+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.2.1.dev16+g27435b040.d20261017",
-  "at": "2026-10-19T13:02:48+00:00"
+  "at": "2026-10-19T13:02:59+00:00"
 }
