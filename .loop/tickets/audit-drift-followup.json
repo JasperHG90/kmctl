@@ -4,7 +4,7 @@
   "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 1,
-  "review_rounds": 0,
+  "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
@@ -57,24 +57,24 @@
   "waivers": [],
   "overrides": [],
   "round": {
-    "kind": "plan",
+    "kind": "review",
     "n": 1,
-    "binds": "0a24a6b52aa1cb1da01d8d6383c91dc1ded9aa29536cb7df4d8c8723453b4ae3",
-    "started_at": "2026-10-19T01:05:05+00:00",
+    "binds": "e6526ff3690b18667bd08fcb3a8c83f88443bd739a60e4240f18627aa8d95939",
+    "started_at": "2026-10-19T01:28:13+00:00",
     "passes": [
-      "plan-reviewer"
+      "reviewer"
     ],
-    "tree": null,
-    "plan_hash": null,
-    "eval_hash": null,
+    "tree": "93560502d839930394ef6299911d66784c78f24b",
+    "plan_hash": "0a24a6b52aa1cb1da01d8d6383c91dc1ded9aa29536cb7df4d8c8723453b4ae3",
+    "eval_hash": "f82d141c2149b258fcda9eca877cd4f8c31d1d356402885f6d2723831894d8f3",
     "scope": "full",
     "sent_back": [],
     "since": null,
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "pass"
+    "closed": false,
+    "outcome": null
   },
   "plan_hash": "0a24a6b52aa1cb1da01d8d6383c91dc1ded9aa29536cb7df4d8c8723453b4ae3",
   "intent": {
@@ -111,5 +111,5 @@
     }
   ],
   "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
-  "at": "2026-10-19T01:28:12+00:00"
+  "at": "2026-10-19T01:28:13+00:00"
 }
