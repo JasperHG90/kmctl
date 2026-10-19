@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "The --path help and its reference row said --path is used only when stdin names no usable folder, contradicting the rule that a given --path wins.",
+      "anchor": "src/kmctl/__init__.py:879",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "README.md said the nudge hook is installed for Claude Code only.",
+      "anchor": "README.md:154",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "4d3fc5b748b47316434bc1ef9222956736530c1dffbb2139d207262d40339012",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.0.0a2.dev1117+g5fdc255a8.d20261014",
+  "at": "2026-10-19T00:43:07+00:00"
+}
