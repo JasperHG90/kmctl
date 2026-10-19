@@ -302,12 +302,15 @@ def _repository_files(root: Path) -> list[Path]:
 
 
 def _mentions(root: Path, terms: tuple[str, ...], old_n: str | None) -> list[Mention]:
-    """The lines in ``root``, but in .okf/log.md, that hold one of ``terms`` or, with ``old_n``, ``ADR OLD_N``."""
+    """The lines in ``root``, but in .okf/log.md and .loop/, that hold one of ``terms`` or, with ``old_n``, ``ADR OLD_N``.
+
+    Both are history, which a move never rewrites.
+    """
     adr = re.compile(rf"\bADR {old_n}\b") if old_n is not None else None
     found = []
     for path in _repository_files(root):
         rel = path.relative_to(root).as_posix()
-        if rel == ".okf/log.md":
+        if rel == ".okf/log.md" or rel.startswith(".loop/"):
             continue
         try:
             text = path.read_text(encoding="utf-8")
@@ -382,7 +385,9 @@ def mv(root: Path, old: str, new: str, now: datetime | None = None) -> Moved:
 
     terms = (old_id, old_path.name + ("/" if old_path.is_dir() else ""))
     old_resolved = old_path.resolve()
-    old_path.rename(new_path)
+    # git mv stages the rename, so a later commit -a keeps the record.
+    if _git(root, "mv", "--", str(old_path), str(new_path)) is None:
+        old_path.rename(new_path)
     new_resolved = new_path.resolve()
     updated = []
     for page in _pages(root):

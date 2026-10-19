@@ -28,15 +28,19 @@ KMCTL_GIT = "https://github.com/JasperHG90/kmctl.git"
 MAIN = "import sys; from kmctl import main; sys.argv[0] = 'kmctl'; main()"
 FAKE_UVX = """#!{python}
 import json, os, sys
+asks_version = "--version" in sys.argv or "-V" in sys.argv
 with open(os.environ["FAKE_UVX_LOG"], "a") as log:
     log.write(json.dumps({{
         "args": sys.argv[1:],
         "cwd": os.getcwd(),
         "pinned": os.environ.get("KMCTL_PINNED"),
-        "stdin": "" if "--version" in sys.argv else sys.stdin.read(),
+        "stdin": "" if asks_version else sys.stdin.read(),
     }}) + "\\n")
-if "--version" in sys.argv:
-    sys.exit(1 if os.environ.get("FAKE_UVX_MISS") else 0)
+if asks_version:
+    if os.environ.get("FAKE_UVX_MISS"):
+        sys.exit(1)
+    sys.stdout.write("kmctl 0.5.1\\n")
+    sys.exit(int(os.environ.get("FAKE_UVX_EXIT", "0")))
 sys.stdout.write(os.environ.get("FAKE_UVX_OUT", "pinned output\\n"))
 sys.exit(int(os.environ.get("FAKE_UVX_EXIT", "0")))
 """
@@ -170,6 +174,41 @@ def test_hands_off_from_agents_with_the_hook_json(
     assert run["args"][4:] == ["briefing", "--format", "antigravity"]
     assert run["stdin"] == hook
     assert run["cwd"] == str(agents)
+
+
+@pytest.mark.parametrize("flag", ["--version", "-V"])
+def test_version_names_the_pin(tmp_path: Path, fake_uvx: Path, flag: str) -> None:
+    """A handed-off --version prints the pinned version, then says the lock pins it and which kmctl is on PATH."""
+    root = project(tmp_path)
+    write_lock(root)
+
+    res = kmctl(root, flag)
+
+    assert res.returncode == 0, res.stderr
+    assert res.stdout == (
+        f"kmctl 0.5.1 (pinned by apm.lock.yaml; kmctl {version('kmctl')} is on PATH)\n"
+    )
+    [call] = calls(fake_uvx)
+    assert call["args"] == ["--from", f"{SOURCE}@{COMMIT}", "kmctl", flag]
+    assert call["pinned"] == "1"
+
+
+def test_version_of_a_failed_pin_is_left_as_is(tmp_path: Path, fake_uvx: Path) -> None:
+    """When the pinned --version fails, kmctl passes on its output and exit code without the note."""
+    root = project(tmp_path)
+    write_lock(root)
+
+    res = subprocess.run(
+        [sys.executable, "-c", MAIN, "--version"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        env={**os.environ, "FAKE_UVX_EXIT": "2"},
+        check=False,
+    )
+
+    assert res.returncode == 2
+    assert res.stdout == "kmctl 0.5.1\n"
 
 
 # r2: when kmctl runs as itself --------------------------------------------------
@@ -325,7 +364,10 @@ def test_hands_off_through_a_real_uvx(
     second = kmctl(root, "briefing")
 
     assert first.returncode == 0, first.stderr
-    assert first.stdout == f"kmctl {version('kmctl')}\n"
+    assert first.stdout == (
+        f"kmctl {version('kmctl')} (pinned by apm.lock.yaml; "
+        f"kmctl {version('kmctl')} is on PATH)\n"
+    )
     # briefing hands off only offline, so it ran from the cache the first run filled.
     assert second.returncode == 0, second.stderr
     assert "not installed yet" not in second.stdout

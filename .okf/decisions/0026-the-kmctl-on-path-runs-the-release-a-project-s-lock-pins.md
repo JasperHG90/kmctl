@@ -88,3 +88,15 @@ Rejected:
 - The update check writes one file outside the repository,
   `kmctl/latest-release` in the user's cache folder; `KMCTL_NO_UPDATE_CHECK=1`
   turns it off.
+
+## Correction, 2026-10-19
+
+When the copy on PATH hands off `--version` or `-V`, it captures the pinned
+child's stdout instead of inheriting it. If the child exits 0 with one
+`kmctl X.Y.Z` line, it prints that line followed by `(pinned by
+apm.lock.yaml; kmctl A.B.C is on PATH)`, so after an upgrade the pinned
+version does not look like a failed install (issue #37). Otherwise it
+passes the output on unchanged. stdin and stderr are still inherited, and
+the exit code passes through. A script that needs the bare line sets
+`KMCTL_PINNED=1`, as `just kmctl` and the CI action do. The rest of this
+decision holds.

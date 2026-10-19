@@ -17,7 +17,7 @@ for people. Warnings and refusals go to stderr.
 |---|---|
 | `kmctl init` | Create `docs/`, a starter `.okf/` bundle and a `CLAUDE.md` block; re-run to refresh the block. |
 | `kmctl update` | Same as `kmctl init`. Run it after upgrading kmctl to refresh the `CLAUDE.md` block. |
-| `kmctl check` | Check indexes agree with their folders, docs front matter has its shape, prototypes have a `README.md`, and links resolve; `--fix` writes the generated docs folder indexes first. |
+| `kmctl check` | Check indexes agree with their folders, decision records carry their file's number, docs front matter has its shape, prototypes have a `README.md`, and links resolve; `--fix` writes the generated docs folder indexes first. |
 | `kmctl handoffs` | List the live handoffs in `.okf/handoffs/`, newest first. |
 | `kmctl briefing` | Print the session briefing: where knowledge lives, the skills, what is due, and the rule for reading knowledge. |
 | `kmctl schema` | Print the JSON Schema of one document kind, or list the kinds there are. |
@@ -46,7 +46,7 @@ for people. Warnings and refusals go to stderr.
 
 | Option | Meaning |
 |---|---|
-| `--version`, `-V` | Print the kmctl version and exit. |
+| `--version`, `-V` | Print the kmctl version and exit, as `kmctl X.Y.Z`. In a project whose `apm.lock.yaml` pins another release, it prints the pinned version, followed by `(pinned by apm.lock.yaml; kmctl X.Y.Z is on PATH)` with the version on PATH. With `KMCTL_PINNED=1` set, it prints the bare `kmctl X.Y.Z` line, for scripts. |
 | `--install-completion` | Install completion for the current shell. |
 | `--show-completion` | Show completion for the current shell, to copy it or customize the installation. |
 | `--help`, `-h` | Show the help and exit. |
@@ -156,8 +156,9 @@ then `kmctl plugin patch`.
 
 ### `kmctl check`
 
-Check that indexes agree with their folders, that `docs/` page front matter
-has its shape, that each prototype has a `README.md`, and that links resolve.
+Check that indexes agree with their folders, that each decision record
+carries its file's number, that `docs/` page front matter has its shape,
+that each prototype has a `README.md`, and that links resolve.
 A missing `docs/` or `.okf/` is reported as skipped, not failed.
 
 In `docs/`:
@@ -179,11 +180,27 @@ In `docs/`:
   or UTC timestamp, `verified` a list of `{by, at}`, `sources` a list of paths
   or `{resource}` mappings. A page with none passes.
 
+In `.okf/decisions/`, a record `NNNN-slug.md` whose `title` or `#` heading
+starts with `ADR` and a number must carry the file's number `NNNN`; another
+number is an error (check `decision`). The entry in `decisions/index.md` that
+links a record must read the record's `title`, as `kmctl new decision` writes
+it, or just `ADR NNNN`; other text is an error (check `index`), as an entry
+that links a missing file is.
+
 In `.okf/`, the body of `summary.md` (outside its front matter, counted as
 words between spaces) holds at most 500 words; over that is an error naming
 the count and the limit (check `summary`). A summary behind the concepts
 that changed after it is a `warning`, never a failure (see
 `kmctl summary ack`).
+
+In both, every markdown link must reach a file or folder that exists (check
+`link`). A relative link resolves from the page's folder. A `/` link
+resolves from the repository root in `docs/`, as GitHub renders it, and from
+the bundle root in `.okf/` (OKF section 6.1). URLs, `mailto:` links, bare
+`#anchor` links and links in code are skipped, and an index entry's own link
+is left to the index check. A `log.md` in `.okf/` is not checked: it is
+append-only, so a broken link there could never be fixed. The okf validator only warns about a missing
+target inside `.okf/`; `kmctl check` fails on it (ADR 0033).
 
 Each finding has a `level`: `error` fails the check, `warning` is printed but
 does not fail it, and `skipped` names a part with nothing to check.
@@ -419,6 +436,7 @@ concept of a kind creates its section and links it from `.okf/index.md`.
 | `--key KEY` | Handoffs only: a session key, for example `$CLAUDE_CODE_SESSION_ID`. A handoff with the same key is updated in place instead of refused (ADR 0009). | none |
 | `--stale-after WHEN` | When `kmctl review due` lists the concept as due, written as `stale_after`. A duration from now: `30d` days, `12w` weeks, `6m` calendar months, `1y` calendar years (a month end past the new month's last day moves back to it). Or a date: `2027-01-15`, read as its midnight UTC, or a timestamp such as `2027-01-15T08:00:00Z`. It must be in the future, so `0d` and today's date are refused. | `14d` for a handoff, none for the rest |
 | `--source PATH` | Not for handoffs: a file or folder the concept describes, written to `sources` as `- resource: PATH`. Repeat it for more; they are written in the order given. It must exist on disk, found the way `kmctl review due` finds sources: from the concept's folder, then `.okf/`, then the repository root, with a leading `/` meaning `.okf/` and `.md` added when needed. Git is not needed, so a file you have not added yet is fine. Once someone verifies the concept, `kmctl review due` lists it when a commit changes a source. | none |
+| `--draft` | Decisions only: write `status: draft` instead of `stable`, for a choice written down but not yet accepted (ADR 0031). Once it is accepted, set `status` to `stable` and add a `log.md` line that says so. kmctl refuses it for the other kinds. | off, so `status: stable` |
 
 Exit code: 1 when kmctl refuses, with the reason on stderr.
 
@@ -475,7 +493,8 @@ Rename a concept in `.okf/` and rewrite the links to it in `.okf/` and
 
 1. Renames the concept's file, or a prototype's folder, within its folder.
    A concept never moves to another folder, so its own relative links still
-   resolve.
+   resolve. A file git tracks is moved with `git mv`, so the
+   rename is staged.
 2. Rewrites every link to it (and, for a prototype, to any file in its
    folder) in each page in `.okf/` and `docs/`, the section index entry
    among them. It finds links as `kmctl check` does: inline links and
@@ -492,7 +511,7 @@ Rename a concept in `.okf/` and rewrite the links to it in `.okf/` and
    links it rewrote. It never rewrites an earlier line, so the old id stays
    in the log's history.
 6. Lists, as not rewritten, each line anywhere in the repository but
-   `.okf/log.md` (the files git does not ignore, or every file outside
+   `.okf/log.md` and `.loop/`, which are history (the files git does not ignore, or every file outside
    `.git/` without git) that still holds the old id or file name (a
    prototype's `folder/`), or, for a renumbered decision, its old
    `ADR NNNN`. These are paths in `AGENTS.md`, a skill or a script, links in

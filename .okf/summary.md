@@ -7,10 +7,10 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-10-19T19:51:54Z
+  at: 2026-10-19T21:02:51Z
   against:
     - architecture/overview
-    - decisions/0033-kmctl-mv-renames-a-concept-and-rewrites-the-links-to-it
+    - decisions/0034-kmctl-mv-renames-a-concept-and-rewrites-the-links-to-it
 ---
 
 # Summary: kmctl

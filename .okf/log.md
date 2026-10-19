@@ -170,5 +170,7 @@
   `decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity` a consequence:
   `apm audit --ci` reports `.agents/hooks.json` as drift, and a frozen
   install on a clean checkout is the drift check (issue #28).
-- Added `decisions/0033-kmctl-mv-renames-a-concept-and-rewrites-the-links-to-it` with `kmctl new decision`.
-- Wrote `decisions/0033-kmctl-mv-renames-a-concept-and-rewrites-the-links-to-it` and updated `architecture/overview` (`mv.py`, `kmctl mv`) for it (issue #36); `summary` still holds (kmctl summary ack).
+- Added `decisions/0033-kmctl-check-fails-on-a-missing-link-target-inside-the-bundle` with `kmctl new decision`.
+- Corrected `decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins`: a handed-off `kmctl --version` names the pin, and `KMCTL_PINNED=1` keeps the bare line (issue #37).
+- Added `decisions/0034-kmctl-mv-renames-a-concept-and-rewrites-the-links-to-it` with `kmctl new decision`.
+- Wrote `decisions/0034-kmctl-mv-renames-a-concept-and-rewrites-the-links-to-it` and updated `architecture/overview` (`mv.py`, `kmctl mv`) for it (issue #36); `summary` still holds (kmctl summary ack).

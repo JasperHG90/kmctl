@@ -1,4 +1,5 @@
 import json
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -264,3 +265,33 @@ def test_mv_cuts_a_long_mention_around_the_match(tmp_path: Path) -> None:
     assert mention["text"] == (
         "..." + "x" * 35 + f" see {OLD_ID} here " + "y" * 87 + "..."
     )
+
+
+def test_mv_stages_a_tracked_rename_and_skips_loop_history(tmp_path: Path) -> None:
+    root = _repo(tmp_path)
+    (root / ".loop").mkdir()
+    (root / ".loop/events.jsonl").write_text(f'{{"concept": "{OLD_ID}"}}\n')
+    git = ["git", "-C", str(root)]
+    subprocess.run([*git, "init", "-q"], check=True)
+    subprocess.run([*git, "add", "-A"], check=True)
+    subprocess.run(
+        [*git, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "c"],
+        check=True,
+    )
+
+    result = _mv(root, OLD_ID, NEW_ID, "--json")
+
+    assert result.exit_code == 0, result.output
+    staged = subprocess.run(
+        [*git, "diff", "--cached", "--name-status", "-M"],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout
+    renames = [
+        line.split("\t")[1:] for line in staged.splitlines() if line.startswith("R")
+    ]
+    assert [OLD, NEW] in renames
+    files = {m["file"] for m in json.loads(result.stdout)["mentions"]}
+    assert "AGENTS.md" in files
+    assert not any(f.startswith(".loop/") for f in files)

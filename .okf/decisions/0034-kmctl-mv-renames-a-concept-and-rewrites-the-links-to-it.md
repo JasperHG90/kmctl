@@ -1,6 +1,6 @@
 ---
 type: decision
-title: "ADR 0033: kmctl mv renames a concept and rewrites the links to it"
+title: "ADR 0034: kmctl mv renames a concept and rewrites the links to it"
 description: "kmctl mv OLD NEW renames a concept within its folder, rewrites the links to it in .okf/ and docs/, renumbers a decision title, and lists the lines elsewhere it did not rewrite."
 tags: [decision]
 generated:
@@ -11,7 +11,7 @@ sources:
   - resource: "src/kmctl/mv.py"
 ---
 
-# ADR 0033: kmctl mv renames a concept and rewrites the links to it
+# ADR 0034: kmctl mv renames a concept and rewrites the links to it
 
 - Status: Accepted
 - Date: 2026-10-19
