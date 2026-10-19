@@ -1,14 +1,30 @@
 {
   "schema_version": "1.0",
   "slug": "consumer-surfaces",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 2,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 2,
+    "fingerprint": "a94ccf7a1bd8ee83bbb6412f82d22bb30bb738e1b3d1814af397ba17207e2eb1",
+    "tree": "38ef91def876a37a04f973536d5e577015e2d214",
+    "decisions": [
+      {
+        "finding": "reviewer:f4",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": "j-20261019T154915+0000-2a0fa2ab",
+        "paths": [
+          "apm/.apm/skills/decision-log-review/SKILL.md"
+        ]
+      }
+    ],
+    "at": "2026-10-19T15:49:15+00:00"
+  },
   "ask": "j-20261019T142805+0000-1620a63f",
   "split": "j-20261019T143154+0000-0ee9a480",
   "split_plan_hash": "331eb55e09ea668bd083103af1205a02d003008a909be50c7d4e4ba52465e06d",
@@ -147,8 +163,14 @@
       "to": "fixing",
       "at": "2026-10-19T15:43:28+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-10-19T15:49:15+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.2.2.dev1+gd84319696",
-  "at": "2026-10-19T15:49:04+00:00"
+  "at": "2026-10-19T15:49:15+00:00"
 }
