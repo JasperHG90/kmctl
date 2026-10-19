@@ -3,7 +3,7 @@
   "slug": "doctor-correct-setups",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "24258aea6f79db4bad0e6a9eca4ccc1bba29dbf87c6405eaf9c41e1d2ef727b9",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "cb12e04805d8ce85124f7b6f367cc1dd20f7ea41ae77041c974edb1d155609ca",
+    "started_at": "2026-10-19T14:31:51+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "cb12e04805d8ce85124f7b6f367cc1dd20f7ea41ae77041c974edb1d155609ca",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -44,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.2.2.dev1+gd84319696",
-  "at": "2026-10-19T14:31:27+00:00"
+  "at": "2026-10-19T14:31:51+00:00"
 }
