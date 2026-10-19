@@ -8,7 +8,7 @@ description: "Why kmctl's only hooks are the session briefing and the summary nu
 
 kmctl exists to keep a repository's knowledge true. So why does what it
 installs do so little? Its own hooks print a briefing when a session starts
-and, in Claude Code, a one-line nudge when a concept changes after the
+and a one-line nudge right after a tool call leaves a concept newer than the
 summary; neither stops anything. Its audit reports what is wrong but fixes
 nothing. (In Antigravity it also relays okf's opt-in Stop check, which is
 okf's, not kmctl's; see below.)
@@ -41,6 +41,12 @@ on the same set is quiet, and it never writes `.okf/`. It exits 0 when
 kmctl is missing or fails, as the briefing's hook does, but where that hook
 prints how to install kmctl, the nudge prints only `{}`, so a tool call gets
 no extra text.
+
+Antigravity and OpenCode get the same nudge after every tool call.
+Antigravity runs it from a PostToolUse hook in `.agents/hooks.json` and
+hands the text to the model as a system message. OpenCode runs it from the
+`execute.after` hook of kmctl's plugin, `.opencode/plugins/kmctl.js`, which
+adds the text to that tool's result, so the model reads it once.
 
 **The audit.** A separate agent checks the knowledge. In a session, `/audit`
 checks what is due: architecture pages against the code, decisions against

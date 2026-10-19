@@ -831,19 +831,28 @@ def summary_ack(
         "Examples:\n\n"
         '  echo \'{"cwd": "/repo", "tool_name": "Bash"}\' | kmctl summary nudge '
         "--format claude\n\n"
+        '  echo \'{"workspacePaths": ["/repo"]}\' | kmctl summary nudge '
+        "--format antigravity\n\n"
+        "  kmctl summary nudge --format opencode --path /repo\n\n"
         "  kmctl summary nudge --path ../other-repo\n\n"
         "  kmctl summary nudge --path ../other-repo --json\n\n"
-        "Claude Code's PostToolUse hook in kmctl's package runs this after every "
-        "Write, Edit, MultiEdit and Bash call, as KMCTL_PINNED=1 kmctl summary "
-        "nudge --format claude, so the kmctl on PATH runs it rather than "
-        "handing it to the project's pin through uvx (ADR 0026). The repository "
-        "is the cwd of the JSON object on stdin. Without a usable cwd (stdin "
-        "a terminal, which is never read, empty, not a JSON object, or with no "
-        "cwd that is a folder) it is --path when you give it, so a script can "
-        "run it with no input; without --path, empty or bad stdin prints "
-        "nothing, as the hook never passes --path, and a payload with no cwd "
-        "uses the current directory. From a subfolder it walks up to the "
-        "folder holding .okf/summary.md or .git.\n\n"
+        "kmctl's package runs this right after a tool call, with "
+        "KMCTL_PINNED=1 so the kmctl on PATH runs it rather than handing it to "
+        "the project's pin through uvx (ADR 0026): Claude Code's PostToolUse "
+        "hook after every Write, Edit, MultiEdit and Bash call (--format "
+        "claude), Antigravity's PostToolUse hook after every tool call "
+        "(--format antigravity), and OpenCode's plugin, .opencode/plugins/"
+        "kmctl.js, after every tool call (--format opencode, ADR 0028).\n\n"
+        "Where the repository comes from. Given --path, it is --path and "
+        "stdin is never read, so a script or an agent's shell that leaves "
+        "stdin open cannot make it wait. Without --path (as the hooks run "
+        "it): --format claude and text read the cwd of the JSON object on "
+        "stdin; --format antigravity reads workspacePaths[0] (agy runs the "
+        "hook in .agents/, so the current directory is not used); --format "
+        "opencode never reads stdin and uses the current directory. Empty "
+        "or bad stdin prints nothing, and a claude payload with no cwd uses "
+        "the current directory. From a subfolder "
+        "it walks up to the folder holding .okf/summary.md or .git.\n\n"
         "It nudges when the summary is behind, by the rule kmctl summary ack "
         "describes (a concept changed after the summary; never log.md, an "
         "index, a handoff or the summary itself), and names the concepts and "
@@ -852,10 +861,10 @@ def summary_ack(
         "kmctl/summary-nudge under the git directory (git rev-parse --git-path), "
         "so the same set stays quiet and a grown one nudges again. It never "
         "writes .okf/.\n\n"
-        "It always exits 0, except exit 2 for --json with --format claude. When "
-        "there is nothing to say, or anything fails (no git, no "
-        ".okf/summary.md, bad stdin without --path), --format claude prints {} "
-        "and --format text prints nothing."
+        "It always exits 0, except exit 2 for --json with --format claude or "
+        "antigravity. When there is nothing to say, or anything fails (no git, "
+        "no .okf/summary.md, bad stdin without --path), --format claude and "
+        "antigravity print {} and --format text and opencode print nothing."
     ),
 )
 def summary_nudge(
@@ -867,23 +876,30 @@ def summary_nudge(
             exists=True,
             file_okay=False,
             help=(
-                "The repository to check when stdin gives no usable cwd (a "
-                "terminal, empty, not a JSON object, or no folder named): an "
-                "existing folder. Default: the current directory, and then "
-                "empty or bad stdin prints nothing."
+                "The repository to check: an existing folder. Given, it wins "
+                "and stdin is never read. Not given, the hook's JSON on stdin "
+                "names it (cwd for claude and text, workspacePaths[0] for "
+                "antigravity) and --format opencode uses the current "
+                "directory; empty or bad stdin prints nothing (with --format "
+                "claude or antigravity, {})."
             ),
         ),
     ] = None,
     output_format: Annotated[
-        Literal["text", "claude"],
+        Literal["text", "claude", "antigravity", "opencode"],
         typer.Option(
             "--format",
             metavar="claude",
             help=(
-                "text (the nudge as one line, or nothing; the default) or claude "
+                "text (the nudge as one line, or nothing; the default); claude "
                 '(one JSON object, {"hookSpecificOutput": {"hookEventName": '
                 '"PostToolUse", "additionalContext": TEXT}}, or {} for no nudge, '
-                "for Claude Code's PostToolUse hook)."
+                "for Claude Code's PostToolUse hook); antigravity (one JSON "
+                'object, {"injectSteps": [{"systemMessage": {"systemMessage": '
+                "TEXT}}]}, or {}, for Antigravity's PostToolUse hook, the "
+                "repository read from workspacePaths[0] on stdin); or opencode "
+                "(the nudge as text, or nothing, for kmctl's OpenCode plugin; it "
+                "reads no stdin and takes the repository from --path)."
             ),
         ),
     ] = "text",
@@ -894,27 +910,35 @@ def summary_nudge(
             help=(
                 "Print one JSON object, {behind, concepts, nudge}, for scripts: "
                 "whether the summary is behind, the changed concept ids, and the "
-                "nudge text, null when it stays quiet. Not with --format claude."
+                "nudge text, null when it stays quiet. Not with --format claude "
+                "or antigravity."
             ),
         ),
     ] = False,
 ) -> None:
     """Print a nudge to update .okf/summary.md when a concept changed after it."""
-    if as_json and output_format == "claude":
+    if as_json and output_format in ("claude", "antigravity"):
         raise typer.BadParameter(
-            "--json prints the nudge's parts and --format claude the hook's "
-            "JSON; give one of them",
+            f"--json prints the nudge's parts and --format {output_format} the "
+            "hook's JSON; give one of them",
             param_hint="'--format'",
         )
     found = NudgeResult(concepts=[], nudge=None)
     try:
-        root = path or Path(".")
-        if not sys.stdin.isatty():
-            try:
+        # An explicit --path wins and stdin is never read, so a script or an
+        # agent's shell that leaves stdin an open pipe cannot make it hang.
+        # The hooks never pass --path; they send their JSON on stdin.
+        if path is not None or output_format == "opencode":
+            root = path or Path(".")
+        elif output_format == "antigravity":
+            workspace = hook_workspace(sys.stdin)
+            if workspace is None:
+                raise BadPayload("the hook input names no workspace folder")
+            root = workspace
+        else:
+            root = Path(".")
+            if not sys.stdin.isatty():
                 root = payload_cwd(sys.stdin.read()) or root
-            except BadPayload:
-                if path is None:
-                    raise
         found = nudge_summary(find_root(root))
     except (OSError, ValueError):  # BadPayload is a ValueError
         pass  # a hook never fails: say nothing
@@ -922,6 +946,8 @@ def summary_nudge(
         typer.echo(json.dumps(asdict(found)))
     elif output_format == "claude":
         typer.echo(as_claude(found.nudge))
+    elif output_format == "antigravity":
+        typer.echo("{}" if found.nudge is None else as_antigravity(found.nudge))
     elif found.nudge is not None:
         typer.echo(found.nudge)
 
@@ -1024,7 +1050,8 @@ _PATCH_EPILOG = (
     "rules to .opencode/rules/, adds .opencode/rules/*.md to the instructions "
     "list of opencode.json (keeping every other key) so OpenCode loads them in "
     "every session, and writes .opencode/plugins/kmctl.js, which adds kmctl "
-    "briefing to each session. apm install puts APM's agents back, so run "
+    "briefing to each session and kmctl summary nudge's text to a tool's "
+    "result after each tool call. apm install puts APM's agents back, so run "
     "patch after every apm install. Running it again changes nothing.\n\n"
     "It refuses, naming the fix, when apm.lock.yaml lists no kmctl package "
     "(add the entry to apm.yml and run apm install), or when apm.yml still names "
@@ -1148,7 +1175,9 @@ _DOCTOR_EPILOG = (
     "kmctl@kmctl or okf@scaccogatto). antigravity.plugin (every file in "
     ".agents/plugins/kmctl/ is what this kmctl writes); antigravity.hook "
     "(.agents/hooks.json holds kmctl's SessionStart hook and okf's Stop "
-    "check); antigravity.apm-hooks (.agents/hooks.json does not run APM's "
+    "check); antigravity.nudge-hook (.agents/hooks.json holds the "
+    "PostToolUse hook that runs kmctl summary nudge, read inside APM's "
+    "matcher groups); antigravity.apm-hooks (.agents/hooks.json does not run APM's "
     "copy of okf's Stop check, which fails there); antigravity.trust (when "
     "agy is on PATH, the "
     "repository is in trustedWorkspaces of "
@@ -1158,7 +1187,9 @@ _DOCTOR_EPILOG = (
     "opencode.okf-skills skip them); opencode.rules (.opencode/rules/ holds "
     "kmctl's rules and opencode.json's instructions lists them); "
     "opencode.okf-mcp (opencode.json declares okf's MCP server); opencode.hook "
-    "(.opencode/plugins/kmctl.js is the briefing plugin this kmctl writes).\n\n"
+    "(.opencode/plugins/kmctl.js is the briefing plugin this kmctl writes); "
+    "opencode.nudge-hook (that plugin has the execute.after hook that runs "
+    "kmctl summary nudge).\n\n"
     "It writes nothing and uses no network unless --online. The only "
     f"command it runs is uv tool run --offline --from {APM_CLI} apm "
     "--version; it never runs claude, agy or opencode."

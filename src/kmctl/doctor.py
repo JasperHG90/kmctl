@@ -532,6 +532,16 @@ def _antigravity_hook(cwd: Path) -> Check:
     return _fail("antigravity.hook", "antigravity", detail, antigravity.APM_FIX)
 
 
+def _antigravity_nudge_hook(cwd: Path) -> Check:
+    """Whether APM's .agents/hooks.json holds the PostToolUse summary nudge kmctl's package ships."""
+    shown = antigravity.APM_HOOKS.as_posix()
+    cid = "antigravity.nudge-hook"
+    what = "the PostToolUse hook that runs kmctl summary nudge"
+    if antigravity.nudge_hook_present(cwd):
+        return _pass(cid, "antigravity", f"{shown} holds {what}")
+    return _fail(cid, "antigravity", f"{shown} lacks {what}", antigravity.APM_FIX)
+
+
 def _antigravity_apm_hooks(cwd: Path) -> Check:
     """Whether APM's hooks.json no longer runs okf's Stop check, which fails in agy."""
     shown = antigravity.APM_HOOKS.as_posix()
@@ -651,6 +661,15 @@ def _opencode_hook(cwd: Path) -> Check:
     return _listed("opencode.hook", opencode.hook_problems(cwd), opencode.FIX, passed)
 
 
+def _opencode_nudge_hook(cwd: Path) -> Check:
+    """Whether the plugin has the execute.after hook that runs the summary nudge."""
+    passed = (
+        f"{opencode.PLUGIN.as_posix()} runs kmctl summary nudge after each tool call"
+    )
+    problems = opencode.nudge_problems(cwd)
+    return _listed("opencode.nudge-hook", problems, opencode.FIX, passed)
+
+
 # One harness, and all of it ------------------------------------------------------
 
 
@@ -694,10 +713,12 @@ def _harness(cwd: Path, scope: Scope, harness: str, online: bool) -> list[Check]
             _opencode_rules(cwd),
             _opencode_mcp(cwd),
             _opencode_hook(cwd),
+            _opencode_nudge_hook(cwd),
         ]
     checks += [
         _antigravity_plugin(cwd),
         _antigravity_hook(cwd),
+        _antigravity_nudge_hook(cwd),
         _antigravity_apm_hooks(cwd),
         _antigravity_mcp(cwd),
     ]
@@ -755,9 +776,11 @@ def run_doctor(
     exists); then each harness's checks: ``HARNESS.lock``, ``.files``,
     ``.okf-skills``, ``.okf-mcp``, and for claude ``claude.hook``,
     ``claude.nudge-hook`` and ``claude.old-plugin``, for antigravity ``antigravity.plugin``,
-    ``antigravity.hook``, ``antigravity.trust`` (when agy is on PATH) and,
+    ``antigravity.hook``, ``antigravity.nudge-hook``, ``antigravity.apm-hooks``,
+    ``antigravity.trust`` (when agy is on PATH) and,
     with ``online``, ``antigravity.okf-mcp-url``, for opencode
-    ``opencode.agents``, ``opencode.rules`` and ``opencode.hook``. ``dep.opencode``
+    ``opencode.agents``, ``opencode.rules``, ``opencode.hook`` and
+    ``opencode.nudge-hook``. ``dep.opencode``
     checks opencode is on PATH when OpenCode is installed.
 
     Parameters

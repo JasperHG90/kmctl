@@ -151,7 +151,8 @@ package; approve it with `apm approve`.
 
 APM installs kmctl's skills and the okf skills, the knowledge rules, a
 session hook that prints kmctl's briefing at the start of every session,
-for Claude Code a hook that runs `kmctl summary nudge` after each tool call,
+a hook that runs `kmctl summary nudge` after each tool call (for OpenCode,
+`kmctl plugin patch` adds it to kmctl's plugin),
 and okf's MCP server (`okf-bundle`), which lets the agent search `.okf/`.
 `kmctl plugin patch` then adds what APM cannot install yet. Run it after
 every `apm install`.

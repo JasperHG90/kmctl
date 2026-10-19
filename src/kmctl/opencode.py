@@ -13,9 +13,11 @@ without a word (spike:opencode-harness/1). kmctl adds the rest:
   ``instructions`` list of ``opencode.json`` names. kmctl writes its four
   rules to ``.opencode/rules/`` and adds ``.opencode/rules/*.md`` to that
   list. Every rule loads in every session.
-- The briefing: a plugin, ``.opencode/plugins/kmctl.js``, that runs
-  ``kmctl briefing`` once and adds its text to the system prompt
-  (spike:opencode-harness/2).
+- The briefing and the summary nudge: a plugin, ``.opencode/plugins/kmctl.js``,
+  that runs ``kmctl briefing`` once and adds its text to the system prompt
+  (spike:opencode-harness/2), and runs ``kmctl summary nudge`` after each
+  tool call and adds its text to that tool's result
+  (spike:okf-summary-nudge-agy-opencode/2, ADR 0028).
 
 Every function here prints nothing. ``files`` says what kmctl writes,
 ``write`` writes it, ``undo`` deletes it, and the ``*_problems`` functions
@@ -60,16 +62,24 @@ APM_FIX = (
     "run apm install --target opencode (kmctl's package must be in apm.yml), "
     "then kmctl plugin patch"
 )
+#: The marker ``nudge_problems`` looks for: the plugin's after-tool hook.
+NUDGE_HOOK = 'ctx.tool.hook("execute.after"'
 #: The plugin OpenCode 2.x loads from ``.opencode/plugins/``: a default export
 #: ``{id, setup}`` (spike:opencode-harness/2). setup starts ``kmctl briefing``
 #: once without waiting for it, and the ``context`` hook adds its text before
-#: each request. OpenCode catches nothing a plugin throws, so every step
-#: swallows its errors: with kmctl missing or failing it adds nothing (I1).
+#: each request. The ``execute.after`` hook runs ``kmctl summary nudge
+#: --format opencode`` after each tool call and adds its text to that tool's
+#: result, which the model reads once (spike:okf-summary-nudge-agy-opencode/2).
+#: It closes the child's stdin, which ``execFile`` would leave open, and sets
+#: KMCTL_PINNED=1 for the reason ``kmctl.plugin.NUDGE_COMMAND`` gives.
+#: OpenCode catches nothing a plugin throws, so every step swallows its
+#: errors: with kmctl missing or failing it adds nothing (I1).
 PLUGIN_SOURCE = f"""\
 // Written by kmctl plugin patch; it rewrites this file. kmctl plugin patch
 // --undo deletes it. It adds kmctl's knowledge briefing to each session and
-// never fails one: without a working kmctl it adds nothing.
-import {{ execFile }} from "node:child_process"
+// its summary nudge to a tool's result, and never fails either: without a
+// working kmctl it adds nothing.
+import {{ execFile, spawn }} from "node:child_process"
 
 const briefing = (cwd) =>
   new Promise((resolve) => {{
@@ -80,6 +90,31 @@ const briefing = (cwd) =>
         {{ cwd, timeout: {HOOK_TIMEOUT * 1000}, windowsHide: true }},
         (error, stdout) => resolve(error ? "" : String(stdout).trim()),
       )
+    }} catch {{
+      resolve("")
+    }}
+  }})
+
+const nudge = (cwd) =>
+  new Promise((resolve) => {{
+    try {{
+      const child = spawn(
+        "kmctl",
+        ["summary", "nudge", "--format", "opencode", "--path", cwd],
+        {{
+          cwd,
+          env: {{ ...process.env, KMCTL_PINNED: "1" }},
+          stdio: ["ignore", "pipe", "ignore"],
+          timeout: {HOOK_TIMEOUT * 1000},
+          windowsHide: true,
+        }},
+      )
+      let out = ""
+      child.stdout.on("data", (chunk) => {{
+        out += chunk
+      }})
+      child.on("error", () => resolve(""))
+      child.on("close", (code) => resolve(code === 0 ? out.trim() : ""))
     }} catch {{
       resolve("")
     }}
@@ -96,13 +131,24 @@ const said = async (text) => {{
 export default {{
   id: "kmctl",
   setup: async (ctx) => {{
+    const where = ctx?.location
+    const cwd = where?.project?.directory ?? where?.directory ?? process.cwd()
     try {{
-      const where = ctx?.location
-      const text = briefing(where?.project?.directory ?? where?.directory ?? process.cwd())
+      const text = briefing(cwd)
       await ctx.session.hook("context", async (event) => {{
         try {{
           const out = await said(text)
           if (out) event.system.push({{ type: "text", text: out }})
+        }} catch {{}}
+      }})
+    }} catch {{}}
+    try {{
+      await {NUDGE_HOOK}, async (event) => {{
+        try {{
+          const content = event?.result?.content
+          if (!Array.isArray(content)) return
+          const out = await nudge(cwd)
+          if (out) content.push({{ type: "text", text: out }})
         }} catch {{}}
       }})
     }} catch {{}}
@@ -452,6 +498,17 @@ def rule_problems(cwd: Path) -> list[str]:
 def hook_problems(cwd: Path) -> list[str]:
     """How the briefing plugin differs from what this kmctl writes."""
     return _problems(cwd, {PLUGIN.as_posix(): PLUGIN_SOURCE})
+
+
+def nudge_problems(cwd: Path) -> list[str]:
+    """Why the plugin in ``cwd`` runs no summary nudge after a tool call: it is missing or lacks ``NUDGE_HOOK``."""
+    path = cwd / PLUGIN
+    shown = PLUGIN.as_posix()
+    if not path.is_file():
+        return [f"{shown} {_SAID['missing']}"]
+    if NUDGE_HOOK not in path.read_text(encoding="utf-8", errors="replace"):
+        return [f"{shown} lacks the execute.after hook that runs kmctl summary nudge"]
+    return []
 
 
 def mcp_present(cwd: Path) -> bool:
