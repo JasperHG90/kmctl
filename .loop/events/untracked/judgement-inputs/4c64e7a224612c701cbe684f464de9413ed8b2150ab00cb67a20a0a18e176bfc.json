@@ -1,0 +1,1 @@
+{"ask":"Stop the test suite filling uv's cache: give each pytest session its own uv cache and delete it at the end."}
