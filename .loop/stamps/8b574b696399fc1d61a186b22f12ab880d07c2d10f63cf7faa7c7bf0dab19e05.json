@@ -43,8 +43,8 @@
       "name": "integration",
       "kind": "gate",
       "command": "uv run pytest -m integration",
-      "exit": 1,
-      "passed": false,
+      "exit": 0,
+      "passed": true,
       "tests_passed": null,
       "note": null,
       "input_fingerprint": null,
@@ -112,8 +112,8 @@
       "cached_from": null
     }
   ],
-  "green": false,
-  "at": "2026-10-19T15:19:44+00:00",
+  "green": true,
+  "at": "2026-10-19T15:25:49+00:00",
   "commit": null,
   "by": "process:loopctl/2.2.2.dev1+gd84319696"
 }
