@@ -28,8 +28,10 @@ The index format, which every kmctl verb that writes an index follows:
   reads the record's title, or just ``ADR NNNN`` (check name ``index``).
 - Every folder directly under .okf/prototypes/ is a prototype and needs a
   README.md (check name ``prototype``).
-- Every link in docs/, and every .okf/ link that leaves the bundle, must
-  resolve (check name ``link``); links inside .okf/ are the okf validator's.
+- Every link in docs/ and .okf/ must resolve (check name ``link``), links
+  inside the bundle included, although the okf validator only warns about
+  those. A ``log.md`` in .okf/ is left out: it is append-only, so a link
+  there to a concept renamed later could never be fixed.
 - The body of .okf/summary.md, outside its front matter, holds at most
   ``WORD_LIMIT`` words (check name ``summary``). A summary behind the
   concepts that changed after it is a warning, never a failure.
@@ -548,32 +550,40 @@ def _links(page: Path, skip_entries: bool = False) -> list[tuple[int, str]]:
 
 
 def check_links(root: Path) -> list[Finding]:
-    """Check the links the okf validator does not: every link in docs/, and .okf/ links that leave it.
+    """Check that every link in docs/ and .okf/ resolves to a file or folder that exists.
 
-    In docs/ a relative link resolves from the page's folder and a ``/`` link
-    from the repository root, as GitHub renders them. In .okf/ a ``/`` link
-    resolves from the bundle root (OKF section 6.1) and stays in it, so only
-    relative links that leave the bundle are checked here.
+    A relative link resolves from the page's folder. A ``/`` link resolves
+    from the repository root in docs/, as GitHub renders it, and from the
+    bundle root in .okf/ (OKF section 6.1). OKF tolerates a missing target
+    so a bundle can travel without every concept; in a repository the target
+    is in the same tree, so a missing one fails here. An index entry's own
+    link is left to the index check, which already reports it. A ``log.md``
+    in .okf/ is not checked: it is append-only, so a broken link there
+    cannot be fixed.
     """
     findings = []
     for folder in (root / "docs", root / ".okf"):
         if not folder.is_dir():
             continue
         bundle = folder.name == ".okf"
+        base = folder if bundle else root
+        indexes = (
+            {folder / "index.md", *(p / "index.md" for p in folder.iterdir())}
+            if bundle
+            else {folder / "README.md"}
+        )
         for page in sorted(p for p in folder.rglob("*.md") if _visible(folder, p)):
+            if bundle and page.name == "log.md":
+                continue
             try:
-                links = _links(page, skip_entries=page == folder / "README.md")
+                links = _links(page, skip_entries=page in indexes)
             except _Unreadable:
                 continue  # the index check reports unreadable files
             for line, target in links:
                 if target.startswith("/"):
-                    if bundle:
-                        continue
-                    resolved = (root / target.lstrip("/")).resolve()
+                    resolved = (base / target.lstrip("/")).resolve()
                 else:
                     resolved = (page.parent / target).resolve()
-                    if bundle and resolved.is_relative_to(folder.resolve()):
-                        continue
                 if not resolved.exists():
                     findings.append(
                         Finding(

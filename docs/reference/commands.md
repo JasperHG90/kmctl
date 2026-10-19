@@ -192,6 +192,15 @@ the count and the limit (check `summary`). A summary behind the concepts
 that changed after it is a `warning`, never a failure (see
 `kmctl summary ack`).
 
+In both, every markdown link must reach a file or folder that exists (check
+`link`). A relative link resolves from the page's folder. A `/` link
+resolves from the repository root in `docs/`, as GitHub renders it, and from
+the bundle root in `.okf/` (OKF section 6.1). URLs, `mailto:` links, bare
+`#anchor` links and links in code are skipped, and an index entry's own link
+is left to the index check. A `log.md` in `.okf/` is not checked: it is
+append-only, so a broken link there could never be fixed. The okf validator only warns about a missing
+target inside `.okf/`; `kmctl check` fails on it (ADR 0033).
+
 Each finding has a `level`: `error` fails the check, `warning` is printed but
 does not fail it, and `skipped` names a part with nothing to check.
 
