@@ -1,0 +1,1 @@
+{"ask":"kmctl init/update: stop re-creating the first decision when the decision log has another title or was migrated (issue #26)"}
