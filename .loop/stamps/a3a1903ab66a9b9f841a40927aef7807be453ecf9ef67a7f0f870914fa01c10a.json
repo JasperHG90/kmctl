@@ -31,8 +31,8 @@
       "name": "tests",
       "kind": "gate",
       "command": "uv run pytest",
-      "exit": 0,
-      "passed": true,
+      "exit": 1,
+      "passed": false,
       "tests_passed": null,
       "note": null,
       "input_fingerprint": null,
@@ -52,8 +52,8 @@
       "cached_from": null
     }
   ],
-  "green": true,
-  "at": "2026-10-19T15:43:03+00:00",
+  "green": false,
+  "at": "2026-10-19T15:48:28+00:00",
   "commit": null,
   "by": "process:loopctl/2.2.2.dev1+gd84319696"
 }
