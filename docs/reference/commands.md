@@ -190,7 +190,10 @@ In `.okf/`, the body of `summary.md` (outside its front matter, counted as
 words between spaces) holds at most 500 words; over that is an error naming
 the count and the limit (check `summary`). A summary behind the concepts
 that changed after it is a `warning`, never a failure (see
-`kmctl summary ack`).
+`kmctl summary ack`). So is each id in the summary's `checked.against` that
+is not a concept in the bundle, for example after a concept is renamed or
+deleted: remove it from the list, or let the next `kmctl summary ack`
+rewrite it.
 
 In both, every markdown link must reach a file or folder that exists (check
 `link`). A relative link resolves from the page's folder. A `/` link
@@ -398,7 +401,9 @@ checked:
 into the summary's front matter, with `at` the UTC time to the second
 (a second later when the last ack wrote the same time and ids, so the file
 always changes) and `against`
-the ids `kmctl review due` listed, replacing an older `checked`. It changes
+the ids `kmctl review due` listed, less any concept no longer in the bundle
+(a deleted one), replacing an older `checked`; `against: []` when every one
+was deleted. It changes
 no other line and no other file. That is an edit to the summary, so the
 summary leaves the list; commit it with the concepts. It is an agent's word
 that the summary holds, not a person's review, which is `kmctl verify`
@@ -410,8 +415,8 @@ prints `nothing to ack`.
 | `--path DIR` | The repository to write in: an existing folder. | `.` |
 | `--json` | Print one JSON object (`path`, `at`, `against`); `at` is null when nothing was written. | off |
 
-Output: `checked .okf/summary.md at TIME against ID, ...`, then
-`Next: kmctl review due`.
+Output: `checked .okf/summary.md at TIME against ID, ...` (`against none`
+when the list is empty), then `Next: kmctl review due`.
 
 Exit code: 1 when kmctl refuses, with the reason on stderr: there is no
 `.okf/summary.md`, its front matter is unreadable or lacks `type: summary`,
