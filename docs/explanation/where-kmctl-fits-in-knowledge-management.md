@@ -93,7 +93,7 @@ an architecture page still matches the code; that takes judgment. And the top
 layers, the principles everything else rests on, should stay in people's
 hands. kmctl automates what a script can check and leaves the judging to an
 agent that reports and a person who decides. See
-[Why two hooks and report-only audits](why-one-hook-and-report-only-audits.md).
+[Why one hook and report-only audits](why-one-hook-and-report-only-audits.md).
 
 **Get one repository right first.** A shared layer is only as good as what
 feeds it. If every repository keeps `docs/` and `.okf/` in the same shape, a

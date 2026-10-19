@@ -676,3 +676,15 @@ def test_antigravity_rules_pre_commit_hook_regenerates_them() -> None:
     ):
         assert pattern.search(path), path
     assert not pattern.search("apm/.apm/skills/audit/SKILL.md")
+
+
+# drop-summary-nudge r1: kmctl ships no hook after a tool call --------------------
+
+
+@pytest.mark.parametrize("harness", ["claude", "antigravity"])
+def test_package_ships_no_post_tool_use_hook(harness: str) -> None:
+    hooks = json.loads(
+        (PACKAGE / harness / ".apm" / "hooks" / "hooks.json").read_text()
+    )["hooks"]
+    assert "PostToolUse" not in hooks
+    assert "SessionStart" in hooks

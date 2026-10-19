@@ -1,15 +1,14 @@
 ---
-description: "Why kmctl's only hooks are the session briefing and the summary nudge, and why audits only report."
+description: "Why the session briefing is the only hook and why audits only report."
 ---
 
-# Why two hooks and report-only audits
+# Why one hook and report-only audits
 
 ## The question
 
 kmctl exists to keep a repository's knowledge true. So why does what it
-installs do so little? Its own hooks print a briefing when a session starts
-and a one-line nudge right after a tool call leaves a concept newer than the
-summary; neither stops anything. Its audit reports what is wrong but fixes
+installs do so little? Its own hook prints a briefing when a session starts
+and never stops anything, and its audit reports what is wrong but fixes
 nothing. (In Antigravity it also relays okf's opt-in Stop check, which is
 okf's, not kmctl's; see below.)
 This page explains why kmctl stops there.
@@ -29,24 +28,6 @@ note and the session goes on.
 
 Because the hook prints whatever the CLI prints, upgrading kmctl updates the
 briefing. The hook carries no copy of the briefing to drift out of date.
-
-**The summary nudge.** In Claude Code, a second hook runs after every Write,
-Edit, MultiEdit and Bash call (a PostToolUse hook). It runs
-`kmctl summary nudge`, which asks git whether a concept in `.okf/` changed after
-`.okf/summary.md`. When one did, the agent reads one line naming the changed
-concepts and its two ways out: update the summary, or run `kmctl summary ack`
-when it still holds. Changes to `log.md`, an index, a handoff or the summary
-itself never count. It names each set of changes once, so the next tool call
-on the same set is quiet, and it never writes `.okf/`. It exits 0 when
-kmctl is missing or fails, as the briefing's hook does, but where that hook
-prints how to install kmctl, the nudge prints only `{}`, so a tool call gets
-no extra text.
-
-Antigravity and OpenCode get the same nudge after every tool call.
-Antigravity runs it from a PostToolUse hook in `.agents/hooks.json` and
-hands the text to the model as a system message. OpenCode runs it from the
-`execute.after` hook of kmctl's plugin, `.opencode/plugins/kmctl.js`, which
-adds the text to that tool's result, so the model reads it once.
 
 **The audit.** A separate agent checks the knowledge. In a session, `/audit`
 checks what is due: architecture pages against the code, decisions against
@@ -85,11 +66,11 @@ alone left agents writing no architecture pages. The briefing now carries
 only the one rule those files lack
 ([ADR 0011](../../.okf/decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md)).
 
-**Why there are only two hooks.** Three more hooks were considered and
-rejected
-([ADR 0004](../../.okf/decisions/0004-sessionstart-is-the-only-hook.md)):
+**Why there is only one hook.** Three more hooks were considered and rejected
+([ADR 0004](../../.okf/decisions/0004-sessionstart-is-the-only-hook.md),
+[ADR 0029](../../.okf/decisions/0029-the-session-briefing-is-kmctl-s-only-hook-again.md)):
 
-- a nudge after each code edit, naming the pages that describe that file;
+- a prompt after each code edit, naming the pages that describe that file;
 - a reminder when a session stops, if covered code changed;
 - a gate that refuses a commit until the pages describing the changed code
   are verified.
@@ -99,17 +80,13 @@ any page wrong, so the gate would refuse often for nothing, and people learn
 to work around a gate like that. kmctl adds a hook or a gate
 only when a count shows it catches something.
 
-The summary nudge is not the rejected code-edit nudge. It watches the bundle,
-not the code, and the rule it applies is a fact git can check: a concept
-changed after the summary did. One in six of this repository's Write, Edit,
-MultiEdit and Bash calls touches `.okf/`, and the briefing reports a stale
-summary only at the next session start. The operator asked for it "Not at
-the end of a turn. Just when anything in .okf changes", so it is a PostToolUse
-hook, not a Stop reminder
-([ADR 0028](../../.okf/decisions/0028-two-hooks-the-session-briefing-and-the-summary-nudge.md)).
-It runs the `kmctl` on PATH rather than the release the project pins, because
-starting the pinned copy through uvx after every tool call would be too slow
-for a hook.
+A fourth hook shipped for a while and was dropped: after each tool call, it
+told the agent when a concept in `.okf/` had changed after `.okf/summary.md`.
+The summary distils what is on disk, so a later agent can bring it up to date
+as well as the one that changed a concept, and the briefing, the CLAUDE.md
+block and `kmctl review due` already say when it is behind. The hook made
+every tool call wait for kmctl to start
+([ADR 0029](../../.okf/decisions/0029-the-session-briefing-is-kmctl-s-only-hook-again.md)).
 
 One Stop hook does ship, for Antigravity only, and it is okf's, not kmctl's.
 okf's package has an opt-in check that can send the agent back to work at

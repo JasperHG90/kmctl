@@ -91,8 +91,7 @@ Next: start a new Claude Code session, then kmctl doctor
 
 APM writes kmctl's seven skills and okf's four to `.claude/skills/`, the
 audit agent to `.claude/agents/`, the four knowledge rules to
-`.claude/rules/`, the SessionStart hook and the PostToolUse hook that runs
-`kmctl summary nudge` into `.claude/settings.json`, and
+`.claude/rules/`, the SessionStart hook into `.claude/settings.json`, and
 okf's MCP server, `okf-bundle`, into `.mcp.json`. Commit `apm.yml` and
 `apm.lock.yaml`; APM adds its download folder, `apm_modules/`, to
 `.gitignore`.
@@ -136,9 +135,8 @@ Next: open this folder in Antigravity, trust it and start a new session, then km
 
 APM writes kmctl's seven skills and okf's four to `.agents/skills/`, the
 four knowledge rules to `.agents/rules/`, okf's MCP server, `okf-bundle`, to
-`.agents/mcp_config.json`, and three hooks to `.agents/hooks.json`: one
-SessionStart hook that runs `kmctl briefing --format antigravity`, one
-PostToolUse hook that runs `kmctl summary nudge --format antigravity`, and one
+`.agents/mcp_config.json`, and two hooks to `.agents/hooks.json`: one
+SessionStart hook that runs `kmctl briefing --format antigravity`, and one
 Stop hook that runs okf's bundle check (it keeps the agent working only when
 `.okf/index.md` sets `upkeep: enforced`). `kmctl plugin patch` then writes
 the folder `.agents/plugins/kmctl/`, which it owns and replaces on every
@@ -165,10 +163,7 @@ this folder". Trust matches the exact folder, so trust the repository root.
 
 Start a new Claude Code session in the repository. Claude Code asks once
 whether to use the `okf-bundle` server from `.mcp.json`. The SessionStart
-hook prints `kmctl briefing` at the start of each session. After a tool call
-that leaves a concept in `.okf/` newer than `.okf/summary.md`, the
-PostToolUse hook asks the agent to update the summary or run `kmctl summary
-ack`.
+hook prints `kmctl briefing` at the start of each session.
 
 For Antigravity, open the trusted repository folder and start a new
 session. The SessionStart hook in `.agents/hooks.json` adds the same
@@ -560,7 +555,6 @@ ok   claude.lock: apm.lock.yaml has kmctl's package at v0.3.0
 ok   claude.files: 33 kmctl paths match apm.lock.yaml
 ok   claude.okf-skills: 21 okf-skills paths match apm.lock.yaml
 ok   claude.hook: .claude/settings.json holds the SessionStart hook kmctl's package ships
-ok   claude.nudge-hook: .claude/settings.json holds the PostToolUse hook that runs kmctl summary nudge
 ok   claude.okf-mcp: .mcp.json declares okf's MCP server okf-bundle
 ok   claude.old-plugin: no settings file enables kmctl@kmctl or okf@scaccogatto
 ok   antigravity.lock: apm.lock.yaml has kmctl's package at v0.3.0
@@ -597,5 +591,5 @@ shows the `kmctl check` and `kmctl review due` reports. For the audit, run the
 "knowledge audit" workflow by hand from the repository's Actions tab.
 
 All options of these commands are in [Commands](../reference/commands.md).
-Why kmctl has two hooks and the audit only reports is in
-[Why two hooks and report-only audits](../explanation/why-one-hook-and-report-only-audits.md).
+Why kmctl has one hook and the audit only reports is in
+[Why one hook and report-only audits](../explanation/why-one-hook-and-report-only-audits.md).

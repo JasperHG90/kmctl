@@ -71,22 +71,6 @@ HOOK_DESCRIPTION = (
     "what is due, one reading rule). Never blocks."
 )
 HOOK_TIMEOUT = 10
-#: The text that marks a settings.json PostToolUse hook as kmctl's summary nudge.
-NUDGE_MARK = "kmctl summary nudge"
-#: The tool calls after which Claude Code runs the nudge.
-NUDGE_MATCHER = "Write|Edit|MultiEdit|Bash"
-#: KMCTL_PINNED=1 makes every copy on PATH run the nudge itself: a hand-off to
-#: the project's pin would start uvx after every tool call (ADR 0026). A copy
-#: without the verb exits 2, and the guard prints {} instead.
-NUDGE_COMMAND = (
-    "command -v kmctl >/dev/null 2>&1 || { echo '{}'; exit 0; }; "
-    "KMCTL_PINNED=1 kmctl summary nudge --format claude 2>/dev/null "
-    "|| echo '{}'; exit 0"
-)
-NUDGE_DESCRIPTION = (
-    "kmctl: after a tool call, when a concept in .okf/ changed after "
-    ".okf/summary.md, ask to update it or run kmctl summary ack. Never blocks."
-)
 #: The most characters of a tool's output a PluginError carries.
 CAUSE_CAP = 400
 
@@ -445,16 +429,6 @@ def hook_entry() -> dict[str, object]:
     }
 
 
-def nudge_hook_entry() -> dict[str, object]:
-    """The PostToolUse hook kmctl's package ships: relay ``kmctl summary nudge``, never block (I1)."""
-    return {
-        "type": "command",
-        "description": NUDGE_DESCRIPTION,
-        "command": NUDGE_COMMAND,
-        "timeout": HOOK_TIMEOUT,
-    }
-
-
 def read_json(path: Path) -> dict[str, Any]:
     """The JSON object in ``path``, or an empty one when the file is missing.
 
@@ -503,23 +477,6 @@ def kmctl_hooks(path: Path) -> list[dict[str, Any]]:
         if isinstance(group, dict) and isinstance(group.get("hooks"), list)
         for hook in group["hooks"]
         if _is_kmctl_hook(hook)
-    ]
-
-
-def nudge_hooks(path: Path) -> list[tuple[object, dict[str, Any]]]:
-    """Every PostToolUse hook in the settings.json at ``path`` that runs ``kmctl summary nudge``, with its group's matcher."""
-    try:
-        data = read_json(path)
-    except PluginError:
-        return []
-    hooks = data.get("hooks")
-    groups = hooks.get("PostToolUse") if isinstance(hooks, dict) else None
-    return [
-        (group.get("matcher"), hook)
-        for group in (groups if isinstance(groups, list) else [])
-        if isinstance(group, dict) and isinstance(group.get("hooks"), list)
-        for hook in group["hooks"]
-        if isinstance(hook, dict) and NUDGE_MARK in str(hook.get("command", ""))
     ]
 
 

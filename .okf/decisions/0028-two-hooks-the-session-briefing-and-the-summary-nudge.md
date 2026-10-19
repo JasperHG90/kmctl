@@ -6,7 +6,7 @@ tags: [adr, decision, okf]
 generated:
   by: process:kmctl/0.8.0
   at: 2026-10-18T23:11:18Z
-status: stable
+status: deprecated
 sources:
   - resource: "src/kmctl/summary.py"
   - resource: "apm/claude/.apm/hooks/hooks.json"
@@ -119,3 +119,7 @@ spike:okf-summary-nudge-agy-opencode/2).
 
 Both run after every tool call, reads included, which costs a kmctl start
 each time; filtering by tool name was left out.
+
+## Correction, 2026-10-19
+
+Superseded by [ADR 0029](0029-the-session-briefing-is-kmctl-s-only-hook-again.md).

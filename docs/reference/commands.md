@@ -24,9 +24,8 @@ for people. Warnings and refusals go to stderr.
 | `kmctl review` | Find knowledge that is due for review. Verbs: `due`. |
 | `kmctl review due` | List the concepts in `.okf/` and the pages in `docs/` that are due for review, with the reason for each. |
 | `kmctl verify` | Record that a person checked a concept or docs page, so `kmctl review due` drops it. |
-| `kmctl summary` | Keep `.okf/summary.md`, the bundle's first page, in step with its concepts. Verbs: `ack`, `nudge`. |
+| `kmctl summary` | Keep `.okf/summary.md`, the bundle's first page, in step with its concepts. Verbs: `ack`. |
 | `kmctl summary ack` | Record that `.okf/summary.md` still holds after the concepts that changed since it. |
-| `kmctl summary nudge` | Print a nudge to update `.okf/summary.md` when a concept changed after it. |
 | `kmctl new` | Create a `.okf/` concept or a `docs/` page with its structure. Needs a repository set up by `kmctl init`. |
 | `kmctl new decision` | Create a decision in `.okf/` with its front matter, skeleton, index entry and log line. |
 | `kmctl new practice` | Create a practice in `.okf/`, the same way. |
@@ -381,53 +380,6 @@ Exit code: 1 when kmctl refuses, with the reason on stderr: there is no
 or there is no git history to tell what changed (not a repository, or a
 shallow clone).
 
-### `kmctl summary nudge`
-
-Print a nudge to update `.okf/summary.md` when a concept changed after it.
-kmctl's package runs it right after a tool call, in each harness:
-
-| Harness | What runs it | Command |
-|---|---|---|
-| Claude Code | the PostToolUse hook, after every Write, Edit, MultiEdit and Bash call, with the hook's JSON on stdin | `KMCTL_PINNED=1 kmctl summary nudge --format claude` |
-| Antigravity | the PostToolUse hook in `.agents/hooks.json`, after every tool call, with agy's JSON on stdin; agy runs it in `.agents/` | `KMCTL_PINNED=1 kmctl summary nudge --format antigravity` |
-| OpenCode | the `execute.after` hook of `.opencode/plugins/kmctl.js`, after every tool call, with stdin closed; it adds the text to that tool's result | `kmctl summary nudge --format opencode --path DIR`, with `KMCTL_PINNED=1` set |
-
-`KMCTL_PINNED=1` makes the `kmctl` on PATH
-run it itself rather than hand it to the release the project pins through
-uvx, which would be too slow after every tool call (ADR 0026, ADR 0028).
-
-Where the repository comes from: given `--path`, it is `--path`, and stdin
-is never read, so a script or an agent's shell that leaves stdin open
-cannot make it wait (`kmctl summary nudge --path ../other-repo`). Without
-`--path`, as the hooks run it, it depends on the format. With `--format
-claude` or `text` it is the `cwd` of the JSON object on stdin, and a
-payload with no `cwd` uses the current directory. With `--format
-antigravity` it is `workspacePaths[0]` of the JSON object on stdin (a
-`file://` URI is read as its path); the current directory, agy's
-`.agents/`, is never used. `--format opencode` never reads stdin and uses
-the current directory. Empty or bad stdin prints nothing.
-From a subfolder it walks up to the folder holding `.okf/summary.md` or
-`.git`. It nudges when the
-summary is behind by the rule under `kmctl review due` (a concept changed
-after the summary; never `log.md`, an index, a handoff or the summary
-itself), naming the changed concepts and both ways out: update
-`.okf/summary.md`, or `kmctl summary ack`. It asks git only. It remembers
-the set it last named as a hash in `kmctl/summary-nudge` under the git
-directory (`git rev-parse --git-path kmctl/summary-nudge`), so the same set
-stays quiet and a grown set nudges again. It never writes `.okf/`.
-
-| Option | Meaning | Default |
-|---|---|---|
-| `--path DIR` | The repository to check: an existing folder. Given, it wins and stdin is never read. | none: the hook's JSON on stdin names the repository (`--format opencode`: the current directory); empty or bad stdin prints nothing |
-| `--format FORMAT` | `text` (the nudge as one line, or nothing); `claude` (one JSON object, `{"hookSpecificOutput": {"hookEventName": "PostToolUse", "additionalContext": TEXT}}`, or `{}` for no nudge); `antigravity` (one JSON object, `{"injectSteps": [{"systemMessage": {"systemMessage": TEXT}}]}`, or `{}`); or `opencode` (the nudge as one line, or nothing, reading no stdin). | `text` |
-| `--json` | Print one JSON object, `{"behind": BOOL, "concepts": [ID, ...], "nudge": TEXT}`, for scripts: whether the summary is behind, the changed concept ids, and the nudge, `null` when it stays quiet (nothing changed, or this set was already named). Not with `--format claude` or `antigravity`. | off |
-
-Exit code: 0, or 2 when `--json` is given with `--format claude` or
-`antigravity`. When there is nothing to say, or anything fails (no git, no
-`.okf/summary.md`, bad stdin without `--path`), `--format claude` and
-`antigravity` print `{}`, `--format text` and `opencode` print nothing, and
-`--json` prints `behind: false`.
-
 ### `kmctl new decision`, `kmctl new practice`, `kmctl new proposal`, `kmctl new prototype`, `kmctl new handoff`
 
 `kmctl new KIND 'Title' --description 'One sentence.'`
@@ -573,11 +525,9 @@ It runs, in order:
      rules scoped to paths, so it loads every rule in every session.
    - writes `.opencode/plugins/kmctl.js`, a plugin that runs
      `kmctl briefing --path REPO` once per OpenCode start, without waiting
-     for it, and adds its output to the system prompt. Its `execute.after`
-     hook runs `kmctl summary nudge --format opencode --path REPO` after
-     each tool call, with stdin closed and `KMCTL_PINNED=1`, and adds any
-     text to that tool's result. kmctl supports OpenCode 2.x only. Without
-     a working `kmctl` it adds nothing and throws nothing.
+     for it, and adds its output to the system prompt. kmctl supports
+     OpenCode 2.x only. Without a working `kmctl` it adds nothing and
+     throws nothing.
 
    `apm install` writes APM's agents back over the rewritten ones, so run
    patch after every `apm install`. It refuses, leaving every file as it
@@ -724,12 +674,10 @@ installed gets no checks.
 | `claude.files`, `antigravity.files`, `opencode.files` | each | Every path the lock lists for kmctl's package for the harness (under `.claude/`; under `.agents/`; or under `.opencode/` and `.agents/skills/`) exists, and each file matches the sha256 the lock records. This covers the skills, the rules and, for `claude`, the agent. For `opencode` it skips the agents patch rewrites, which `opencode.agents` checks. | `apm install --target H (kmctl's package must be in apm.yml), then kmctl plugin patch` |
 | `claude.okf-skills`, `antigravity.okf-skills`, `opencode.okf-skills` | each | The same for okf's skills (and, for `opencode`, without its rewritten agents). | `apm install --target H (kmctl's package must be in apm.yml), then kmctl plugin patch` |
 | `claude.hook` | claude | `.claude/settings.json` (at user scope, the one in `$CLAUDE_CONFIG_DIR`) holds exactly the SessionStart hook kmctl's package ships, which APM writes. | when missing, `apm install --target claude (kmctl's package must be in apm.yml), then kmctl plugin patch`; when changed, `set kmctl's ref in apm.yml to vVERSION, run apm install --target claude, then kmctl plugin patch` |
-| `claude.nudge-hook` | claude | `.claude/settings.json` (at user scope, the one in `$CLAUDE_CONFIG_DIR`) holds exactly the PostToolUse hook kmctl's package ships, with matcher `Write\|Edit\|MultiEdit\|Bash`, which runs `kmctl summary nudge` (ADR 0028). | the same as `claude.hook` |
 | `claude.okf-mcp` | claude | `.mcp.json` (at user scope, `.claude.json` in `$CLAUDE_CONFIG_DIR`, by default `~/.claude.json`) declares `okf-bundle` with the command and args kmctl's package declares (keys APM adds, such as `type`, are not compared), or another server that runs `okf_mcp.py`. | the same as `claude.hook` |
 | `claude.old-plugin` | claude | No settings file (`.claude/settings.json` or `.claude/settings.local.json`; at user scope, `settings.json` in `$CLAUDE_CONFIG_DIR`) enables `kmctl@kmctl` or `okf@scaccogatto`. | `kmctl plugin patch` when `kmctl@kmctl` is enabled (it removes okf too when okf came as its dependency); otherwise `claude plugin uninstall okf@scaccogatto --scope SCOPE`, the scope of the file that enables it |
 | `antigravity.plugin` | antigravity | Every file under `.agents/plugins/kmctl/` is what this kmctl writes, `plugin.json` and the translated agents, with none missing or extra. Fails with `apm_modules/ is missing` when okf's agents cannot be read to compare. | `kmctl plugin patch`; for a missing `apm_modules/`, `apm install --target antigravity (kmctl's package must be in apm.yml), then kmctl plugin patch` |
 | `antigravity.hook` | antigravity | `.agents/hooks.json` holds the SessionStart hook (`kmctl briefing --format antigravity`) and the okf Stop check that kmctl's package ships, which APM writes. | `apm install --target antigravity (kmctl's package must be in apm.yml), then kmctl plugin patch` |
-| `antigravity.nudge-hook` | antigravity | `.agents/hooks.json` holds the PostToolUse hook kmctl's package ships, which runs `kmctl summary nudge --format antigravity` (ADR 0028). APM writes it nested in a `{matcher, hooks}` group, and doctor reads inside the groups. | `apm install --target antigravity (kmctl's package must be in apm.yml), then kmctl plugin patch` |
 | `antigravity.apm-hooks` | antigravity | `.agents/hooks.json` does not run `okf-stop-check.sh`. APM writes okf's Stop handler there with a path agy cannot find, so it fails at the end of every turn; every `apm install` puts it back. It also fails when the file is not a JSON object, which agy cannot load. | `kmctl plugin patch`; for a file that is not a JSON object, repair it by hand first |
 | `antigravity.okf-mcp` | antigravity | `.agents/mcp_config.json` declares okf's MCP server `okf-bundle` with the command and args kmctl's package declares, which APM writes. | `apm install --target antigravity (kmctl's package must be in apm.yml), then kmctl plugin patch` |
 | `antigravity.trust` | antigravity | Checked only when `agy` is on PATH: the repository is in `trustedWorkspaces` of `~/.gemini/antigravity-cli/settings.json`. Antigravity loads `.agents/` only from a trusted folder. | run `agy` in the folder and choose "Yes, I trust this folder" |
@@ -738,7 +686,6 @@ installed gets no checks.
 | `opencode.rules` | opencode | `.opencode/rules/` holds kmctl's four rules as this kmctl writes them, and the `instructions` list of `opencode.json` holds `.opencode/rules/*.md`. | `kmctl plugin patch` |
 | `opencode.okf-mcp` | opencode | `opencode.json` declares okf's MCP server `okf-bundle` as a local server running the command kmctl's package declares, which APM writes. | `apm install --target opencode (kmctl's package must be in apm.yml), then kmctl plugin patch` |
 | `opencode.hook` | opencode | `.opencode/plugins/kmctl.js` is the briefing plugin this kmctl writes. | `kmctl plugin patch` |
-| `opencode.nudge-hook` | opencode | `.opencode/plugins/kmctl.js` has the `execute.after` hook that runs `kmctl summary nudge --format opencode` after each tool call (ADR 0028). | `kmctl plugin patch` |
 
 `VERSION` is this kmctl's version. With `--scope user`, a fix runs
 `apm install -g` and `kmctl plugin patch --scope user`, and the `init.`,

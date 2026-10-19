@@ -42,10 +42,9 @@ still true; that takes judgment. So kmctl does two things instead:
 - **An APM package** for Claude Code, Antigravity and OpenCode, which
   [APM](https://microsoft.github.io/apm) installs: an audit agent, a skill
   for writing `docs/` pages, `/handoff` and `/continue` to save and resume
-  work between sessions, and the knowledge rules, plus a SessionStart hook
-  that prints the briefing and, for Claude Code, a PostToolUse hook that asks
-  the agent to update `.okf/summary.md` after a concept changes. `kmctl
-  plugin patch` adds the few pieces APM cannot install yet.
+  work between sessions, and the knowledge rules, plus one SessionStart hook
+  that prints the briefing. `kmctl plugin patch` adds the few pieces APM
+  cannot install yet.
 - **A GitHub Action** that runs `kmctl check` on every pull request for free,
   and an opt-in audit you run by hand or on a schedule.
 
@@ -150,10 +149,10 @@ package; approve it with `apm approve`.
 ### 4. Install it for your harness
 
 APM installs kmctl's skills and the okf skills, the knowledge rules, a
-session hook that prints kmctl's briefing at the start of every session, a
-hook that runs `kmctl summary nudge` after each tool call, and okf's MCP
-server (`okf-bundle`), which lets the agent search `.okf/`. For OpenCode,
-`kmctl plugin patch` writes both hooks into kmctl's plugin instead.
+session hook that prints kmctl's briefing at the start of every session,
+and okf's MCP server (`okf-bundle`), which lets the agent search `.okf/`.
+For OpenCode, `kmctl plugin patch` writes the session hook into kmctl's
+plugin instead.
 `kmctl plugin patch` then adds what APM cannot install yet. Run it after
 every `apm install`.
 
@@ -356,7 +355,7 @@ The [docs index](docs/README.md) links each folder's index. The pages:
 - How-to: [Install the plugin and the CI action](docs/how-to/install-the-plugin-and-the-ci-action.md)
 - How-to: [Install kmctl with APM](docs/how-to/install-kmctl-with-apm.md)
 - Reference: [Commands](docs/reference/commands.md)
-- Explanation: [Why two hooks and report-only audits](docs/explanation/why-one-hook-and-report-only-audits.md)
+- Explanation: [Why one hook and report-only audits](docs/explanation/why-one-hook-and-report-only-audits.md)
 - Explanation: [Where kmctl fits in knowledge management](docs/explanation/where-kmctl-fits-in-knowledge-management.md)
 
 ## Working on kmctl
