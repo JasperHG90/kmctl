@@ -7,9 +7,9 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-10-19T12:56:42Z
+  at: 2026-10-19T14:35:11Z
   against:
-    - decisions/0012-releases-come-from-ci
+    - decisions/0031-a-decision-record-may-be-draft-until-it-is-accepted
 ---
 
 # Summary: kmctl

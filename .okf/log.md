@@ -155,3 +155,4 @@
 - Added `decisions/0029-the-session-briefing-is-kmctl-s-only-hook-again` with `kmctl new decision`.
 - Superseded `decisions/0028-two-hooks-the-session-briefing-and-the-summary-nudge` with `decisions/0029-the-session-briefing-is-kmctl-s-only-hook-again`.
 - Added `decisions/0030-projects-commit-what-apm-deploys` with `kmctl new decision`.
+- Added `decisions/0031-a-decision-record-may-be-draft-until-it-is-accepted` with `kmctl new decision`.
