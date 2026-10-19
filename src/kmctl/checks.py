@@ -28,7 +28,8 @@ The index format, which every kmctl verb that writes an index follows:
   resolve (check name ``link``); links inside .okf/ are the okf validator's.
 - The body of .okf/summary.md, outside its front matter, holds at most
   ``WORD_LIMIT`` words (check name ``summary``). A summary behind the
-  concepts that changed after it is a warning, never a failure.
+  concepts that changed after it is a warning, never a failure, and so is an
+  id in its ``checked.against`` that is not a concept in the bundle.
 - No concept counts are written or checked.
 """
 
@@ -46,7 +47,7 @@ from kmctl.docs_index import (
     is_generated,
 )
 from kmctl.okf import BadFrontMatter, as_datetime, field, front_matter
-from kmctl.summary import SUMMARY, WORD_LIMIT, body_words, changed_concepts
+from kmctl.summary import SUMMARY, WORD_LIMIT, body_words, changed_concepts, in_bundle
 from kmctl.summary import reason as summary_reason
 
 RESERVED = {"index.md", "log.md"}
@@ -499,10 +500,12 @@ def check_links(root: Path) -> list[Finding]:
 
 
 def check_summary(root: Path) -> list[Finding]:
-    """Check the bundle summary: its body fits ``WORD_LIMIT``, and whether it is behind its concepts.
+    """Check the bundle summary: its body fits ``WORD_LIMIT``, whether it is behind, and its ``checked``.
 
     A body over the limit fails. A summary behind its concepts is a warning,
-    never a failure: it is a report, as in kmctl review due (ADR 0027).
+    never a failure: it is a report, as in kmctl review due (ADR 0027). Each
+    id in ``checked.against`` that is not a concept in the bundle is a
+    warning too, since ``checked`` is the record that freshness rule reads.
     """
     path = root / SUMMARY
     if not path.is_file():
@@ -534,6 +537,22 @@ def check_summary(root: Path) -> list[Finding]:
                 "warning",
             )
         )
+    try:
+        against = field(front_matter(path), "checked.against")
+    except BadFrontMatter:
+        against = None  # the okf validator reports front matter that does not parse
+    for cid in against if isinstance(against, list) else []:
+        if not in_bundle(root, str(cid)):
+            findings.append(
+                Finding(
+                    "summary",
+                    SUMMARY,
+                    None,
+                    f"checked.against names {cid}, which is not a concept in the "
+                    "bundle; remove it from the list",
+                    "warning",
+                )
+            )
     return findings
 
 

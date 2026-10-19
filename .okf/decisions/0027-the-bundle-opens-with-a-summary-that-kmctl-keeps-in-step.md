@@ -118,3 +118,18 @@ records cited as evidence, and what works or is open. The prompts `kmctl
 init` writes under each say so, and the indexes still list every concept.
 The rest of this decision holds: one summary, at most 500 words, kept in
 step by commit order and `kmctl summary ack`.
+
+## Correction, 2026-10-19
+
+`checked.against` could name a concept that does not exist, and `kmctl
+check` passed (issue #34). A rename or deletion after an ack leaves the old
+id there, and `kmctl summary ack` itself wrote the id of a concept deleted
+since the summary. `kmctl check` now reports each id in `checked.against`
+that is not a concept in the bundle, as a warning: `checked` is the record
+the freshness rule reads, and freshness never fails the check, so a rename
+or deletion in ordinary work does not fail CI either. An error, like the
+word limit, was rejected for that reason. `kmctl summary ack` now writes
+only the changed ids still in the bundle, `against: []` when every one was
+deleted, so its own output never draws the warning. When the summary is
+current, ack still writes nothing, so a stale id added by hand stays until
+someone removes it. The rest of this decision holds.

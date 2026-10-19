@@ -512,6 +512,80 @@ def test_checked_fields_read_through_okf_field(tmp_path: Path) -> None:
     assert set(field(meta, "checked")) == {"at", "against"}
 
 
+def test_check_warns_on_checked_against_a_concept_that_does_not_exist(
+    tmp_path: Path,
+) -> None:
+    """The reproduction in kmctl#34: an id added by hand under checked.against."""
+    root = _init(tmp_path)
+    cid = _new(root, "decision", "Use a queue")
+    _commit(root)
+    assert _ack(root).exit_code == 0
+    path = root / SUMMARY
+    text = path.read_text(encoding="utf-8")
+    path.write_text(
+        text.replace(
+            f"    - {cid}\n", f"    - {cid}\n    - decisions/0099-does-not-exist\n"
+        ),
+        encoding="utf-8",
+    )
+    _commit(root, "ack")
+
+    result = _invoke("check", "--path", str(root), "--json")
+    text = _invoke("check", "--path", str(root)).stdout
+
+    assert result.exit_code == 0, result.stdout
+    assert [f for f in json.loads(result.stdout) if f["check"] == "summary"] == [
+        {
+            "check": "summary",
+            "file": SUMMARY,
+            "line": None,
+            "message": (
+                "checked.against names decisions/0099-does-not-exist, which is "
+                "not a concept in the bundle; remove it from the list"
+            ),
+            "level": "warning",
+        }
+    ]
+    assert "all checks passed, 1 warning" in text
+
+
+def test_ack_leaves_out_a_concept_that_was_deleted(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    kept = _new(root, "decision", "Use a queue")
+    _commit(root)
+    assert _ack(root).exit_code == 0
+    _commit(root, "ack")
+    (first,) = (root / ".okf/decisions").glob("0001-*.md")
+    first.unlink()
+    _append(root, f".okf/{kept}.md", "An edit.\n")
+    _commit(root, "delete 0001")
+
+    result = _ack(root, "--json")
+
+    assert result.exit_code == 0, result.output
+    assert json.loads(result.stdout)["against"] == [kept]
+    assert field(front_matter(root / SUMMARY), "checked.against") == [kept]
+    check = _invoke("check", "--path", str(root), "--json")
+    assert [f for f in json.loads(check.stdout) if f["check"] == "summary"] == []
+
+
+def test_ack_after_only_a_deletion_writes_an_empty_list(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    (first,) = (root / ".okf/decisions").glob("0001-*.md")
+    first.unlink()
+    _commit(root, "delete 0001")
+
+    result = _ack(root)
+
+    assert result.exit_code == 0, result.output
+    first_line = result.stdout.splitlines()[0]
+    assert re.fullmatch(
+        rf"checked {SUMMARY} at {STAMP.pattern} against none", first_line
+    )
+    assert front_matter(root / SUMMARY)["checked"]["against"] == []
+    assert _summary_reasons(root) is None
+
+
 def test_checked_named_in_invariant_i4() -> None:
     manifesto = (ROOT / ".okf" / "manifesto.md").read_text(encoding="utf-8")
     i4 = manifesto[manifesto.index("- **I4.") :].split("\n- **", 1)[0]
