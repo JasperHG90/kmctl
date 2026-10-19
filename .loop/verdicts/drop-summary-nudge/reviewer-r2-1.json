@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": ".okf/summary.md said an after-tool hook asks the agent to update the summary.",
+      "anchor": ".okf/summary.md:43",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "ADR 0029 repeated its Supersedes line.",
+      "anchor": ".okf/decisions/0029-the-session-briefing-is-kmctl-s-only-hook-again.md:63",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "The manifesto's out-of-scope list and the explanation page cited only ADR 0004.",
+      "anchor": ".okf/manifesto.md:133",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "resolved",
+      "claim": "test_doctor_has_no_nudge_check did not cover OpenCode.",
+      "anchor": "tests/test_doctor.py:1247",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "6a3ff4dbe42afee8a82063200cae9b38d3b4534a5cdbbcd0cbda6b7d8ba537f1",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.2.1.dev16+g27435b040.d20261017",
+  "at": "2026-10-19T06:38:18+00:00"
+}
