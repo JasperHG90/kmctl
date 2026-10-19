@@ -14,6 +14,7 @@ from pathlib import Path
 
 import pytest
 import yaml
+from conftest import plain
 from test_action import _kmctl_bin
 from test_summary import _commit, _git, _init, _invoke, _new
 
@@ -322,7 +323,8 @@ def test_quiet_json_with_format_claude_is_refused(repo: Path) -> None:
 
     assert result.exit_code == 2
     assert result.stdout == ""
-    assert "--json" in result.stderr and "--format" in result.stderr
+    refusal = plain(result.stderr)
+    assert "--json" in refusal and "--format" in refusal
 
 
 def _tree(root: Path) -> dict[str, bytes]:
