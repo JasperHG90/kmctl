@@ -88,10 +88,13 @@ kmctl's own verbs write their log line; a hand edit writes its own.
 
 A decision gets a record at the moment it is made, in the same change that
 acts on it. The record carries Context, Decision (with the rejected
-alternative) and Consequences. `status` is `stable` or `deprecated`. A
-record is never rewritten: a correction is an appended
-`## Correction, YYYY-MM-DD` section, and a reversal is written in both
-records (`kmctl decision supersede` does this).
+alternative) and Consequences. `status` is `draft`, `stable` or
+`deprecated`. A `draft` record holds a choice written down but not yet
+accepted; a proposal in `proposals/` weighs options before there is a
+choice. Once the choice is accepted, the record's `status` becomes `stable`
+and a line in `log.md` says so. Beyond that, a record is never rewritten: a
+correction is an appended `## Correction, YYYY-MM-DD` section, and a
+reversal is written in both records (`kmctl decision supersede` does this).
 
 <constraint name="okf-changes-are-validated">
 WHY: a malformed concept still renders and still reads as knowledge.
