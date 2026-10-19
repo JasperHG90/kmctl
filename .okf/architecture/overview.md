@@ -55,6 +55,7 @@ flowchart LR
         docs["docs.py<br/>new doc"]
         docsIndex["docs_index.py<br/>docs folder indexes"]
         supersede["supersede.py<br/>decision supersede"]
+        mvPy["mv.py<br/>mv"]
         verifyPy["verify.py<br/>verify"]
         summaryPy["summary.py<br/>summary ack; when<br/>summary.md is behind"]
         pluginPy["plugin.py<br/>plugin patch"]
@@ -110,7 +111,7 @@ flowchart LR
     app -- "main: before any verb" --> pinPy
     pinPy -- "Lock, kmctl_package,<br/>package_ref" --> pluginPy
     pinPy -. "reads apm.lock.yaml" .-> consumer & agConsumer & ocConsumer
-    app --> scaffold & checks & briefing & reviewDue & handoffs & concepts & docs & supersede & verifyPy & summaryPy & pluginPy & doctorPy & kinds
+    app --> scaffold & checks & briefing & reviewDue & handoffs & concepts & docs & supersede & mvPy & verifyPy & summaryPy & pluginPy & doctorPy & kinds
     reviewDue & checks & briefing -- "changed_concepts" --> summaryPy
     summaryPy -. "git log, diff, status" .-> repo
     summaryPy -- "write: checked in .okf/summary.md" --> repo
@@ -122,7 +123,9 @@ flowchart LR
     briefing -- "skills_dir: names the package's skills" --> pluginPy
     briefing -- "ARCHITECTURE: the setup line" --> kinds
     concepts & handoffs & reviewDue & supersede & verifyPy & summaryPy --> okf
-    docs & supersede & verifyPy --> concepts
+    docs & supersede & verifyPy & mvPy --> concepts
+    mvPy -- "link parsing" --> checks
+    mvPy -- "git ls-files: mentions" --> summaryPy
     checks & docs & scaffold -- "generate, compare" --> docsIndex
     app -- "check --fix" --> docsIndex
     docsIndex & checks --> okf
@@ -130,7 +133,7 @@ flowchart LR
     kinds -- "ALLOWED_FIELDS" --> okf
     scaffold -- "first decision" --> concepts
     scaffold -- "harnesses_found:<br/>rules folders for the block" --> doctorPy
-    scaffold & concepts & docs & supersede & verifyPy -- "write" --> repo
+    scaffold & concepts & docs & supersede & mvPy & verifyPy -- "write" --> repo
     scaffold -- "write: CLAUDE.md /<br/>AGENTS.md block" --> agentFiles
     checks & okf -. "read" .-> repo
     docsIndex -- "write: docs/FOLDER/README.md" --> repo
@@ -198,6 +201,7 @@ cached, and the copy on PATH adds the newer-release line from
 | `kmctl new decision`, `practice`, `proposal`, `prototype`, `handoff` | `concepts.py`, with `okf.py` to find each `--source` the way `review_due.py` does | the concept, its section index entry and a log line; `--stale-after` and `--source` write its `stale_after` and `sources` |
 | `kmctl new doc` | `docs.py`, with `docs_index.py` | the page with its front matter, its folder's generated `README.md`, and a `docs/README.md` link to the folder when missing (ADR 0022) |
 | `kmctl decision supersede` | `supersede.py` | both decision records and a log line |
+| `kmctl mv` | `mv.py`, with `checks.py` to find links as `kmctl check` does and `concepts.py` for the name check and the log line | the renamed concept (its file, or a prototype's folder), each `.okf/` and `docs/` page with a link to it, a decision's new number in its `title` and heading, the summary's `checked.against`, and a log line; lines elsewhere that still name it are listed, not rewritten (ADR 0033) |
 | `kmctl verify` | `verify.py`, with `concepts.py` for `--stale-after` and the log line | a `verified` entry (and, with `--stale-after`, `stale_after`) in one concept or docs page, and a log line for a concept; only a person verifies, never an audit (ADR 0005, ADR 0023) |
 | `kmctl plugin patch` | `plugin.py`, with `antigravity.py` for the plugin folder and `opencode.py` for OpenCode | never runs APM, only `claude` to remove the old plugin: reads `apm.lock.yaml`; refuses an `apm.yml` that names the package the v0.3.0 way, naming the `apm uninstall`; for claude, removes the hook an older kmctl wrote and the old claude plugin `kmctl@kmctl`; for antigravity, writes `.agents/plugins/kmctl/` with the translated agents and takes APM's broken okf Stop handler out of `.agents/hooks.json` (ADR 0018, ADR 0020, ADR 0021); for opencode, rewrites the three agents in `.opencode/agents/`, writes `.opencode/rules/`, the `instructions` entry in `opencode.json` and `.opencode/plugins/kmctl.js` (ADR 0024); `--undo` deletes the plugin folder and the OpenCode files, and with `--scope user` deletes nothing in the repository and names them |
 | `kmctl doctor` | `doctor.py`, with `plugin.py` for the hook, MCP entries and lock reader, `antigravity.py` for the folder comparison and `opencode.py` for the OpenCode files | nothing; it reads `apm.yml`, `apm.lock.yaml` and the files it lists, the settings files, `.mcp.json`, `.agents/plugins/kmctl/`, `.opencode/`, `opencode.json` and agy's trust list, and runs only `uv tool run --offline --from apm-cli==0.33.0 apm --version`; `--online` fetches okf's MCP script URL |
@@ -338,11 +342,11 @@ tag a consumer's `apm.yml` names and a build from a download with no
 - Verbs: `kmctl init`, `kmctl update`, `kmctl check`, `kmctl briefing` (and `--format antigravity`), `kmctl review due`,
   `kmctl handoffs`, `kmctl new decision`, `kmctl new practice`,
   `kmctl new proposal`, `kmctl new prototype`, `kmctl new handoff`,
-  `kmctl new doc`, `kmctl schema`, `kmctl decision supersede`, `kmctl verify`, `kmctl summary ack`, `kmctl plugin patch`,
+  `kmctl new doc`, `kmctl schema`, `kmctl decision supersede`, `kmctl mv`, `kmctl verify`, `kmctl summary ack`, `kmctl plugin patch`,
   `kmctl doctor`.
 - Modules: `src/kmctl/__init__.py`, `scaffold.py`, `checks.py`,
   `briefing.py`, `review_due.py`, `handoffs.py`, `concepts.py`,
-  `docs.py`, `docs_index.py`, `supersede.py`, `verify.py`, `summary.py` (the
+  `docs.py`, `docs_index.py`, `supersede.py`, `mv.py`, `verify.py`, `summary.py` (the
   summary's freshness rule and ack), `src/kmctl/plugin.py` (the hook and MCP
   writers), `src/kmctl/antigravity.py` (the Antigravity plugin folder),
   `src/kmctl/opencode.py` (the OpenCode agents, rules and briefing plugin),

@@ -35,6 +35,7 @@ for people. Warnings and refusals go to stderr.
 | `kmctl new doc` | Create a `docs/` page in its Diataxis folder with a skeleton and its index entry. |
 | `kmctl decision` | Change decision records in `.okf/decisions/`. Verbs: `supersede`. |
 | `kmctl decision supersede` | Mark one decision superseded by another and link the two records both ways. |
+| `kmctl mv` | Rename a concept in `.okf/` and rewrite the links to it in `.okf/` and `docs/`. |
 | `kmctl plugin` | Finish installing kmctl's APM package for an agent harness. APM (Agent Package Manager) installs the package from `apm.yml`: the skills, audit agent, knowledge rules, session hooks and okf's MCP server. Verb: `patch`. `kmctl doctor` checks the install. |
 | `kmctl plugin patch` | Add what APM cannot install yet for kmctl's package; run it after `apm install`. |
 | `kmctl doctor` | Check kmctl's tools, its installed package per harness and the `kmctl init` files. |
@@ -462,6 +463,70 @@ Correction section. Write the new record first with `kmctl new decision`.
 | `--by NEW` | The number of the decision that replaces it. Required. | |
 | `--path DIR` | The repository to write in: an existing folder. | `.` |
 | `--json` | Print one JSON object (`old`, `new`) with both concept ids. | off |
+
+Exit code: 1 when kmctl refuses, with the reason on stderr.
+
+### `kmctl mv`
+
+`kmctl mv OLD NEW`
+
+Rename a concept in `.okf/` and rewrite the links to it in `.okf/` and
+`docs/`. It runs, in order:
+
+1. Renames the concept's file, or a prototype's folder, within its folder.
+   A concept never moves to another folder, so its own relative links still
+   resolve.
+2. Rewrites every link to it (and, for a prototype, to any file in its
+   folder) in each page in `.okf/` and `docs/`, the section index entry
+   among them. It finds links as `kmctl check` does: inline links and
+   reference definitions, outside code fences and code spans. A link keeps
+   its form (relative, or `/` from the bundle root in `.okf/` and the
+   repository root in `docs/`), its anchor and its angle brackets.
+3. For a decision whose number changes, writes the new number for
+   `ADR NNNN` in its `title` and `#` heading, and in the text of each link
+   to it: `[ADR 0007](0007-use-a-queue.md)` becomes
+   `[ADR 0006](0006-use-a-queue.md)`.
+4. Writes the new id for the old one in the `checked.against` list of
+   `.okf/summary.md`.
+5. Appends a line to `.okf/log.md` naming both ids and each concept whose
+   links it rewrote. It never rewrites an earlier line, so the old id stays
+   in the log's history.
+6. Lists, as not rewritten, each line anywhere in the repository but
+   `.okf/log.md` (the files git does not ignore, or every file outside
+   `.git/` without git) that still holds the old id or file name (a
+   prototype's `folder/`), or, for a renumbered decision, its old
+   `ADR NNNN`. These are paths in `AGENTS.md`, a skill or a script, links in
+   code, `sources` in front matter, and mentions in prose. Fix or keep each
+   one by hand. A line longer than 160 characters is cut around the match.
+
+It refuses, writing nothing, when `OLD` names no concept in a section (the
+summary and manifesto keep their names, and `index` and `log` are not
+concepts), when `NEW` is the same id, is in another folder, is not
+kebab-case or exists, and, in `decisions/`, when `NEW` does not start with a
+four-digit number or another record holds that number.
+
+To renumber a run of decisions, move each one to the lowest free number, in
+order, and fix the listed lines after each move. With `0006` free and
+`0007` and `0008` after it:
+
+```
+kmctl mv decisions/0007-use-a-queue decisions/0006-use-a-queue
+kmctl mv decisions/0008-use-a-stream decisions/0007-use-a-stream
+```
+
+Moving `0008` first would be refused, since `0007` still holds the number.
+
+| Argument or option | Meaning | Default |
+|---|---|---|
+| `OLD` | The concept to rename, by its id as `kmctl review due` prints it: its path under `.okf/` without `.md` (`decisions/0008-use-a-queue`), or a prototype's folder (`prototypes/parser-speed`). Required. | |
+| `NEW` | Its new id, in the same folder, in kebab-case. A decision's name starts with a four-digit number no other record holds. Required. | |
+| `--path DIR` | The repository to write in: an existing folder. | `.` |
+| `--json` | Print one JSON object: `old` and `new` (the ids), `path` (the new file from the repository root), `updated` (each file it rewrote, sorted, without `.okf/log.md`) and `mentions` (`[{"file", "line", "text"}]`, the lines not rewritten). | off |
+
+Output: `moved OLD to NEW (PATH)`, an `updated FILE` line for each file
+rewritten, a `not rewritten  FILE:LINE  TEXT` line for each mention, then
+`Next: fix or keep each line listed as not rewritten, then kmctl check`, or
+`Next: kmctl check` when there is none.
 
 Exit code: 1 when kmctl refuses, with the reason on stderr.
 

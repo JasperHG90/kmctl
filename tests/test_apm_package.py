@@ -82,7 +82,8 @@ SKILL_NAMES = (
 #: by commit order and when it is edited after verification; okf-bundle: ADR
 #: 0031, a decision record may be draft until it is accepted;
 #: diagrams-stay-current, docs-layout and okf-bundle: ADR 0011's last
-#: 2026-10-19 correction, rules named by name, not a .claude/ path).
+#: 2026-10-19 correction, rules named by name, not a .claude/ path;
+#: okf-bundle: ADR 0033, rename a concept with kmctl mv).
 OLD_RULES = {
     "diagrams-stay-current": (
         [".okf/**", "src/**", "lib/**", "app/**", "pkg/**", "cmd/**"],
@@ -98,7 +99,7 @@ OLD_RULES = {
     ),
     "okf-bundle": (
         [".okf/**"],
-        "7458abfcb4f742c3528088c890615b026ab161322d2d6d96b661c5bccd67c156",
+        "df73e31a274b657ecf4e5818c83633d7869cc93438a596b23f659765b5906b61",
     ),
 }
 

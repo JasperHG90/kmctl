@@ -170,3 +170,5 @@
   `decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity` a consequence:
   `apm audit --ci` reports `.agents/hooks.json` as drift, and a frozen
   install on a clean checkout is the drift check (issue #28).
+- Added `decisions/0033-kmctl-mv-renames-a-concept-and-rewrites-the-links-to-it` with `kmctl new decision`.
+- Wrote `decisions/0033-kmctl-mv-renames-a-concept-and-rewrites-the-links-to-it` and updated `architecture/overview` (`mv.py`, `kmctl mv`) for it (issue #36); `summary` still holds (kmctl summary ack).
