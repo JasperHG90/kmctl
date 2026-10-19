@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.2.2.dev1+gd84319696
-  at: '2026-10-19T15:03:07+00:00'
+  at: '2026-10-19T15:03:21+00:00'
 slug: antigravity-apm-audit
 n: 4
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike antigravity-apm-audit/4
@@ -24,7 +24,10 @@ The command exited 1:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note antigravity-apm-audit 4`.
+Exit 1: the risk is real for `config-consistency`, not for `drift`. Seven variants, each a claude+antigravity install of this checkout's `apm/` served from a file:// copy, then `kmctl plugin patch`, then `apm audit --ci --no-policy --no-fail-fast` (APM 0.33.0). The base case fails both checks, as issue #28 says.
+`config-consistency` passes when kmctl's `apm/apm.yml` renames `okf-bundle` to `bundle`: only one server `bundle`, holding kmctl's launcher, in .mcp.json and .agents/mcp_config.json. It also passes with `apm install --trust-transitive-mcp` or with the consumer re-declaring okf's `bundle`, but those add okf's own server config next to `okf-bundle` (or in its place, when the package drops it).
+`drift` on .agents/hooks.json still fails in every variant that keeps okf's skills under .agents/. No option keeps okf's Stop handler out at install: a `skills:` subset on okf-skills still deploys the hook. `targets: [claude]` on okf-skills clears drift, but it also drops okf's skills and okf-stop-check.sh from .agents/, and kmctl's Stop wrapper needs that script.
+Settles risk 2: kmctl can clear `config-consistency` itself (rename the server), but not `drift`. Limits: one run; okf-skills came from GitHub at a8b96420; kmctl's other code that names `okf-bundle` (doctor, patch) was not checked against the rename.
 
 ## Files
 
