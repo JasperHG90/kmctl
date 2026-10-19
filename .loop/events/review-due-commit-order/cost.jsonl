@@ -1,0 +1,1 @@
+{"at": "2026-10-19T14:35:36+00:00", "command": "uv run --frozen python /tmp/claude-1000/-home-vscode-kmctl/c37be586-8598-4232-be34-7d43e553b1d7/scratchpad/spike-review-due/commit_order.py", "exit": 1, "kind": "spike", "n": 1, "schema_version": "1.0"}
