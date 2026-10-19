@@ -101,7 +101,7 @@ which packages may run them, with an `executables:` block (or the older
 package; approve it with `apm approve`.
 
 > **Warning: uninstall the okf plugin first.** kmctl's package brings okf's
-> skills and its MCP server, `okf-bundle`. If you also have the okf plugin
+> skills and its MCP server, `bundle`. If you also have the okf plugin
 > for Claude Code (`okf@scaccogatto`), you get okf twice: its skills and a
 > second okf MCP server. Remove it at each scope it is installed at:
 >
@@ -114,7 +114,7 @@ package; approve it with `apm approve`.
 
 APM installs kmctl's skills and the okf skills, the knowledge rules, a
 session hook that prints kmctl's briefing at the start of every session,
-and okf's MCP server (`okf-bundle`), which lets the agent search `.okf/`.
+and okf's MCP server (`bundle`), which lets the agent search `.okf/`.
 For OpenCode, `kmctl plugin patch` writes the session hook into kmctl's
 plugin instead.
 `kmctl plugin patch` then adds what APM cannot install yet. Run it after
@@ -200,7 +200,7 @@ uvx --from apm-cli==0.33.0 apm uninstall github.com/JasperHG90/kmctl/apm
 OpenCode the rewritten agents, the rules, their `instructions` entry and
 the plugin. Run it first: `apm uninstall` stops on an agent patch rewrote. For
 a user-scope install, run `apm uninstall -g` with the same name, then
-`claude mcp remove okf-bundle --scope user`, because APM leaves okf's MCP
+`claude mcp remove bundle --scope user`, because APM leaves okf's MCP
 server in your user `.claude.json`.
 
 Installed kmctl with `kmctl plugin install`, which kmctl 0.3.0 had? Follow

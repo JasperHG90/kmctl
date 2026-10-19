@@ -355,6 +355,20 @@ def test_all_ok_with_another_okf_mcp_server(complete: Setup) -> None:
     assert "'okf'" in _by_id(data)["claude.okf-mcp"]["detail"]
 
 
+def test_all_ok_with_okf_own_bundle_server(complete: Setup) -> None:
+    """A bundle server that runs okf's script, as okf itself declares it, passes without kmctl's launcher."""
+    path = complete.repo / ".mcp.json"
+    own = {"command": "uv", "args": ["run", "${CLAUDE_PLUGIN_ROOT}/servers/okf_mcp.py"]}
+    path.write_text(json.dumps({"mcpServers": {"bundle": own}}))
+
+    result, data = _doctor()
+
+    assert result.exit_code == 0, result.output
+    assert _by_id(data)["claude.okf-mcp"]["detail"] == (
+        ".mcp.json declares okf's MCP server bundle"
+    )
+
+
 # r2: a broken piece fails with its name and its fix --------------------------------
 
 
@@ -447,14 +461,14 @@ BREAKS: dict[str, tuple[Callable[[Path], None], str, str, str]] = {
     "mcp": (
         lambda r: (r / ".mcp.json").write_text("{}"),
         "claude.okf-mcp",
-        "okf's MCP server okf-bundle is missing from .mcp.json",
+        "okf's MCP server bundle is missing from .mcp.json",
         CLAUDE_FIX,
     ),
-    "mcp-changed": (
-        lambda r: _edit(r / ".mcp.json", '"sh"', '"bash"'),
+    "bundle-runs-no-okf-script": (
+        lambda r: _edit(r / ".mcp.json", "okf_mcp.py", "other.py"),
         "claude.okf-mcp",
-        "okf-bundle in .mcp.json is not the one kmctl's package declares",
-        _update_fix("claude"),
+        "okf's MCP server bundle in .mcp.json is not the one kmctl's package declares",
+        f"take bundle out of .mcp.json, then {CLAUDE_FIX}",
     ),
     "lock": (
         lambda r: (r / "apm.lock.yaml").unlink(),
@@ -627,7 +641,7 @@ def _user_install(s: Setup) -> None:
     """Install claude at user scope; the fake claude cannot add the MCP server, so write it."""
     _install(s, ("claude",), "--scope", "user")
     plugin.user_mcp_file().write_text(
-        json.dumps({"mcpServers": {"okf-bundle": plugin.okf_mcp_server()}})
+        json.dumps({"mcpServers": {plugin.MCP_NAME: plugin.okf_mcp_server()}})
     )
 
 
@@ -1068,7 +1082,7 @@ def test_doctor_after_a_real_install_exits_zero(
 def test_hands_back_real_install_over_an_old_one_then_uninstall(
     consumer: Path, served: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Over a consumer an older kmctl set up, APM delivers one recorded hook and okf-bundle; uninstall leaves only kmctl's plugin folder."""
+    """Over a consumer an older kmctl set up, APM delivers one recorded hook and okf's MCP server; uninstall leaves only kmctl's plugin folder."""
     fakes = FakeTools(tmp_path / "fakes", tools=("claude",))
     monkeypatch.setenv("PATH", f"{fakes.bin}:{os.environ['PATH']}")
     settings = consumer / ".claude" / "settings.json"
@@ -1076,16 +1090,8 @@ def test_hands_back_real_install_over_an_old_one_then_uninstall(
     settings.write_text(
         json.dumps({"hooks": {"SessionStart": [{"hooks": [plugin.hook_entry()]}]}})
     )
-    stale = {
-        "command": "sh",
-        "args": ["-c", "exec uv run https://example.invalid/old.py"],
-    }
-    (consumer / ".mcp.json").write_text(
-        json.dumps({"mcpServers": {"okf-bundle": stale}})
-    )
 
-    first = apm_install(consumer, served, "claude,antigravity")
-    assert "run apm install again, so APM writes okf-bundle" in first
+    apm_install(consumer, served, "claude,antigravity")
     apm_install(consumer, served, "claude,antigravity")
 
     assert len(plugin.kmctl_hooks(settings)) == 1
@@ -1098,7 +1104,7 @@ def test_hands_back_real_install_over_an_old_one_then_uninstall(
     lock = yaml.safe_load((consumer / "apm.lock.yaml").read_text())
     assert plugin.MCP_NAME in lock["mcp_servers"]
     assert plugin.okf_server_current(
-        json.loads((consumer / ".mcp.json").read_text())["mcpServers"]["okf-bundle"]
+        json.loads((consumer / ".mcp.json").read_text())["mcpServers"][plugin.MCP_NAME]
     )
     assert antigravity.hook_present(consumer)
     assert antigravity.mcp_present(consumer)

@@ -17,8 +17,10 @@ dependencies:
   mcp:
     # okf's MCP server, declared here because APM skips a transitive
     # dependency's server; the launcher runs okf_mcp.py at the okf-skills
-    # commit above for the nearest .okf/ (kmctl.plugin.okf_mcp_launcher).
-    - name: okf-bundle
+    # commit above for the nearest .okf/ (kmctl.plugin.okf_mcp_launcher). It
+    # has okf's own name for it, bundle, so apm audit finds okf's server in
+    # the lock (issue #28).
+    - name: bundle
       registry: false
       transport: stdio
       command: sh

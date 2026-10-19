@@ -28,7 +28,8 @@ README = ROOT / "README.md"
 COMMANDS = ROOT / "docs" / "reference" / "commands.md"
 DECISIONS = ROOT / ".okf" / "decisions"
 OLD_GROUP = {"hooks": [plugin.hook_entry()]}
-STALE = {"command": "sh", "args": ["-c", "exec uv run https://example.invalid/old.py"]}
+#: okf's own server entry, which okf-skills declares as bundle.
+OKF_OWN = {"command": "uv", "args": ["run", "${CLAUDE_PLUGIN_ROOT}/servers/okf_mcp.py"]}
 
 
 @pytest.fixture
@@ -133,7 +134,7 @@ def test_patch_writes_nothing_for_a_harness_apm_did_not_install(
     assert "for claude (project scope)" in result.stdout
 
 
-def test_patch_claude_takes_out_an_older_kmctls_hook_and_stale_server(
+def test_patch_claude_takes_out_an_older_kmctls_hook_and_keeps_every_server(
     repo: Path, fakes: FakeTools
 ) -> None:
     _apm_install(repo, ("claude",))
@@ -141,18 +142,15 @@ def test_patch_claude_takes_out_an_older_kmctls_hook_and_stale_server(
     data = json.loads(settings.read_text())
     data["hooks"]["SessionStart"].insert(0, OLD_GROUP)
     settings.write_text(json.dumps(data))
-    mine = {"command": "my-server"}
-    (repo / ".mcp.json").write_text(
-        json.dumps({"mcpServers": {"okf-bundle": STALE, "mine": mine}})
-    )
+    # okf declares its own server under the name kmctl gives it.
+    servers = {"mcpServers": {plugin.MCP_NAME: OKF_OWN, "mine": {"command": "x"}}}
+    (repo / ".mcp.json").write_text(json.dumps(servers))
 
     result = _patch()
 
     assert len(plugin.kmctl_hooks(settings)) == 1
-    assert json.loads((repo / ".mcp.json").read_text()) == {
-        "mcpServers": {"mine": mine}
-    }
-    assert "run apm install again, so APM writes okf-bundle" in result.stdout
+    assert json.loads((repo / ".mcp.json").read_text()) == servers
+    assert "run apm install" not in result.stdout
 
 
 def test_patch_claude_user_scope_uses_the_user_files(
@@ -164,15 +162,14 @@ def test_patch_claude_user_scope_uses_the_user_files(
     data["hooks"]["SessionStart"].append(OLD_GROUP)
     settings.write_text(json.dumps(data))
     (home / ".claude" / ".claude.json").write_text(
-        json.dumps({"mcpServers": {"okf-bundle": STALE}})
+        json.dumps({"mcpServers": {plugin.MCP_NAME: OKF_OWN}})
     )
 
     result = _patch("--scope", "user")
 
     assert len(plugin.kmctl_hooks(settings)) == 1
-    removes = [c.args for c in fakes.calls("claude") if c.args[:2] == ["mcp", "remove"]]
-    assert removes == [["mcp", "remove", "okf-bundle", "--scope", "user"]]
-    assert "run apm install -g again" in result.stdout
+    assert not [c for c in fakes.calls("claude") if c.args[:2] == ["mcp", "remove"]]
+    assert "run apm install" not in result.stdout
     assert not (repo / ".agents").exists()
 
 
@@ -392,7 +389,7 @@ def test_patch_docs_readme_installs_per_harness() -> None:
         "trust",
         "kmctl plugin patch --undo",
         "apm uninstall",
-        "claude mcp remove okf-bundle --scope user",
+        "claude mcp remove bundle --scope user",
     ):
         assert step in flat, step
     assert re.search(r"[Uu]pgrad", install)
@@ -615,21 +612,6 @@ def test_patch_claude_with_nothing_recorded_drops_every_kmctl_hook(
     _patch()
 
     assert json.loads(settings.read_text()) == {"x": 1}
-
-
-def test_patch_claude_user_scope_keeps_a_current_server(
-    repo: Path, fakes: FakeTools, home: Path
-) -> None:
-    _apm_install(home, ("claude",), "user")
-    current = {**plugin.okf_mcp_server(), "type": "stdio"}
-    (home / ".claude" / ".claude.json").write_text(
-        json.dumps({"mcpServers": {"okf-bundle": current}})
-    )
-
-    result = _patch("--scope", "user")
-
-    assert not [c for c in fakes.calls("claude") if c.args[:2] == ["mcp", "remove"]]
-    assert "run apm install" not in result.stdout
 
 
 @pytest.mark.parametrize(

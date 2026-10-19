@@ -441,7 +441,7 @@ def test_docs_apm_page_says_what_a_hand_added_entry_gets() -> None:
     text = _flat(PAGE.read_text())
     commands = "\n".join(FENCE.findall(PAGE.read_text()))
 
-    assert "okf-bundle" in text
+    assert "`bundle`" in text
     assert "SessionStart" in text
     assert "kmctl plugin patch" in text
     assert "- JasperHG90/Knowledge-management/apm#v" in commands
@@ -510,7 +510,7 @@ def test_consumer_gets_the_package_hook_and_okf_but_no_dev_items(
     ]
     assert len([c for c in commands if "kmctl briefing" in c]) == 1
     servers = json.loads((consumer / ".mcp.json").read_text())["mcpServers"]
-    assert list(servers) == ["okf-bundle"]
+    assert list(servers) == ["bundle"]
     dev = set(_dev_items())
     assert len(dev) == 16
     written = [p.relative_to(consumer).parts for p in consumer.rglob("*")]
@@ -538,6 +538,9 @@ def _hooks(harness: str) -> dict:
 def test_split_package_declares_okf_mcp_at_the_pin() -> None:
     [server] = _load(PACKAGE / "apm.yml")["dependencies"]["mcp"]
 
+    # okf-skills declares its own server as bundle; one direct server of that
+    # name keeps apm audit's config-consistency check passing (issue #28).
+    assert plugin.MCP_NAME == "bundle"
     assert server == {
         "name": plugin.MCP_NAME,
         "registry": False,
@@ -666,7 +669,6 @@ def test_hands_back_docs_pages_say_apm_writes_them(page: Path) -> None:
         "merges one SessionStart hook",
         "plugins/kmctl/rules",
         "kmctl-okf-stop",
-        "okf's MCP server as `bundle`",
         "declares `okf-bundle` in `.mcp.json`",
     ):
         assert stale not in text, (page.name, stale)

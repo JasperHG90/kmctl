@@ -156,3 +156,13 @@
 - Superseded `decisions/0028-two-hooks-the-session-briefing-and-the-summary-nudge` with `decisions/0029-the-session-briefing-is-kmctl-s-only-hook-again`.
 - Added `decisions/0030-projects-commit-what-apm-deploys` with `kmctl new decision`.
 - Added `decisions/0031-a-decision-record-may-be-draft-until-it-is-accepted` with `kmctl new decision`.
+- Corrected `decisions/0014-apm-is-the-only-install-route` and
+  `decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest`
+  (okf's MCP server is `bundle` now, so `apm audit --ci` passes
+  `config-consistency`, and `kmctl plugin patch` no longer removes a
+  server), renamed the server in
+  `decisions/0019-kmctl-plugin-remove-uninstalls-the-package-and-reinstalls-the-harnesses-kept`
+  and `architecture/overview`, and gave
+  `decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity` a consequence:
+  `apm audit --ci` reports `.agents/hooks.json` as drift, and a frozen
+  install on a clean checkout is the drift check (issue #28).

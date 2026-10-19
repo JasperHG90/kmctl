@@ -92,7 +92,7 @@ Next: start a new Claude Code session, then kmctl doctor
 APM writes kmctl's seven skills and okf's four to `.claude/skills/`, the
 audit agent to `.claude/agents/`, the four knowledge rules to
 `.claude/rules/`, the SessionStart hook into `.claude/settings.json`, and
-okf's MCP server, `okf-bundle`, into `.mcp.json`. Commit `apm.yml` and
+okf's MCP server, `bundle`, into `.mcp.json`. Commit `apm.yml` and
 `apm.lock.yaml`; APM adds its download folder, `apm_modules/`, to
 `.gitignore`.
 
@@ -105,11 +105,9 @@ kmctl plugin patch --scope user
 ```
 
 Running `kmctl plugin patch` again changes nothing. If the repository still
-has the old claude plugin `kmctl@kmctl`, or the hook and `okf-bundle` server
-an older kmctl wrote itself, patch removes them and prints a `note:` line
-for each, so APM's copies are the only ones. When it removes an older
-`okf-bundle`, its last note says to run `apm install` again, so APM writes
-the package's server.
+has the old claude plugin `kmctl@kmctl`, or the hook an older kmctl wrote
+itself, patch removes them and prints a `note:` line for each, so APM's
+copies are the only ones.
 
 If `apm.yml` still names kmctl the way kmctl 0.3.0 and older did, patch
 refuses and names the `apm uninstall` to run first; see
@@ -134,7 +132,7 @@ Next: open this folder in Antigravity, trust it and start a new session, then km
 ```
 
 APM writes kmctl's seven skills and okf's four to `.agents/skills/`, the
-four knowledge rules to `.agents/rules/`, okf's MCP server, `okf-bundle`, to
+four knowledge rules to `.agents/rules/`, okf's MCP server, `bundle`, to
 `.agents/mcp_config.json`, and two hooks to `.agents/hooks.json`: one
 SessionStart hook that runs `kmctl briefing --format antigravity`, and one
 Stop hook that runs okf's bundle check (it keeps the agent working only when
@@ -143,7 +141,9 @@ the folder `.agents/plugins/kmctl/`, which it owns and replaces on every
 run, with the audit agent and okf's two agents in Antigravity's format, and
 takes out of `.agents/hooks.json` a broken copy of okf's Stop check that APM
 also writes. APM writes that copy again on every `apm install`, so run
-`kmctl plugin patch` after each one. okf's MCP server runs with `uv run`, so
+`kmctl plugin patch` after each one. Because of that, `apm audit --ci`
+reports `.agents/hooks.json` as drift; step 4 says what to run in CI
+instead. okf's MCP server runs with `uv run`, so
 it needs `uv` on PATH wherever Antigravity runs. Antigravity installs per
 repository only, so there is no user-scope install for it.
 
@@ -162,7 +162,7 @@ this folder". Trust matches the exact folder, so trust the repository root.
 ### 3. Start a new session
 
 Start a new Claude Code session in the repository. Claude Code asks once
-whether to use the `okf-bundle` server from `.mcp.json`. The SessionStart
+whether to use the `bundle` server from `.mcp.json`. The SessionStart
 hook prints `kmctl briefing` at the start of each session.
 
 For Antigravity, open the trusted repository folder and start a new
@@ -232,6 +232,39 @@ due     manifesto  (unverified)
 ````
 
 Concepts that are due are reported, never failed.
+
+To also check in CI that the committed agent files match `apm.lock.yaml`,
+add a job that runs APM's audit, the one that fits your harnesses:
+
+- **Claude Code only:** `uvx --from apm-cli==0.33.0 apm audit --ci`
+  passes on a clean install.
+- **Antigravity:** run `uvx --from apm-cli==0.33.0 apm audit --ci --no-drift`
+  and the install check below. The audit's `drift` check always reports
+  `.agents/hooks.json`, because `kmctl plugin patch` takes okf's broken
+  Stop handler out of it after every install (ADR 0018). `--no-drift`
+  skips that check, and the install check catches the drift it would
+  have caught.
+- **OpenCode:** run the install check alone. `apm audit --ci` fails even
+  with `--no-drift`: both `drift` and `content-integrity` report the three
+  agents in `.opencode/agents/` that `kmctl plugin patch` rewrites into
+  OpenCode's format, and no option skips `content-integrity`.
+
+The install check runs a frozen install and `kmctl plugin patch` on the
+fresh checkout, then fails if git sees any change:
+
+```
+uvx --from apm-cli==0.33.0 apm install --frozen
+kmctl plugin patch
+test -z "$(git status --porcelain)" || { git status --porcelain; exit 1; }
+```
+
+It works because the project commits what APM installs (ADR 0030), so a
+committed hand edit to an installed skill shows as a change. Run it
+only on a clean checkout, as CI has: on a working tree, the frozen install
+overwrites an uncommitted edit without a word. A project made from the
+starter template has it as `just check-install`. While the kmctl repository
+is private, the job needs a token that can read it for the install to fetch
+kmctl's package, which is why the starter's workflow leaves the job out.
 
 ### 5. Optional: turn on the audit
 
@@ -521,7 +554,7 @@ For a user-scope install, run `apm uninstall -g` with the same name, then
 remove okf's MCP server, which APM leaves in your user `.claude.json`:
 
 ```
-claude mcp remove okf-bundle --scope user
+claude mcp remove bundle --scope user
 ```
 
 Run `kmctl doctor` afterwards to see what is left.
@@ -555,7 +588,7 @@ ok   claude.lock: apm.lock.yaml has kmctl's package at v0.3.0
 ok   claude.files: 33 kmctl paths match apm.lock.yaml
 ok   claude.okf-skills: 21 okf-skills paths match apm.lock.yaml
 ok   claude.hook: .claude/settings.json holds the SessionStart hook kmctl's package ships
-ok   claude.okf-mcp: .mcp.json declares okf's MCP server okf-bundle
+ok   claude.okf-mcp: .mcp.json declares okf's MCP server bundle
 ok   claude.old-plugin: no settings file enables kmctl@kmctl or okf@scaccogatto
 ok   antigravity.lock: apm.lock.yaml has kmctl's package at v0.3.0
 ok   antigravity.files: 32 kmctl paths match apm.lock.yaml
@@ -563,7 +596,7 @@ ok   antigravity.okf-skills: 19 okf-skills paths match apm.lock.yaml
 ok   antigravity.plugin: .agents/plugins/kmctl/ holds what this kmctl writes
 ok   antigravity.hook: .agents/hooks.json holds kmctl's SessionStart hook and okf's Stop check
 ok   antigravity.apm-hooks: .agents/hooks.json runs no okf Stop check
-ok   antigravity.okf-mcp: .agents/mcp_config.json declares okf's MCP server okf-bundle
+ok   antigravity.okf-mcp: .agents/mcp_config.json declares okf's MCP server bundle
 ok   antigravity.trust: …/repo is in trustedWorkspaces of ~/.gemini/antigravity-cli/settings.json
 ```
 

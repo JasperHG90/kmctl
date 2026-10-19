@@ -172,7 +172,7 @@ users install, upgrade and remove the package with APM's own verbs;
 
 ## Correction, 2026-10-19
 
-Four statements above no longer match the code; the decision, that APM is
+Five statements above no longer match the code; the decision, that APM is
 the only install route, stands.
 
 - **The package.** The Decision says `apm/apm.yml` depends only on
@@ -202,3 +202,13 @@ the only install route, stands.
   `tests/test_plugin_patch.py` add kmctl's entry to a scratch `apm.yml`,
   run the real APM 0.33.0 against this tree served from a local git server,
   then run `kmctl plugin patch`.
+- **okf's MCP server's name.** The Decision names it `okf-bundle`.
+  kmctl's package now declares it as `bundle`, okf's own name for it
+  (`apm/apm.yml`, `MCP_NAME` in `src/kmctl/plugin.py`). okf-skills declares
+  its own server `bundle`, APM skips a dependency's server, and
+  `apm audit --ci` then failed `config-consistency` on `bundle`, "in
+  manifest but not in lockfile", for every harness (issue #28,
+  spike:antigravity-apm-audit/3). With one direct server of that name,
+  holding kmctl's launcher, the check passes, and APM writes kmctl's
+  launcher to `.mcp.json` and `.agents/mcp_config.json`
+  (spike:antigravity-apm-audit/4).

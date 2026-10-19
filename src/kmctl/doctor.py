@@ -44,11 +44,11 @@ from kmctl.plugin import (
     harnesses_marked,
     harnesses_of_path,
     hook_entry,
+    is_okf_server,
     kmctl_files,
     kmctl_hooks,
     kmctl_package,
     okf_mcp_url,
-    okf_server_current,
     other_okf_server,
     package_ref,
     read_json,
@@ -463,7 +463,12 @@ def _claude_hook(cwd: Path, scope: Scope) -> Check:
 
 
 def _claude_mcp(cwd: Path, scope: Scope) -> Check:
-    """Whether okf's MCP server is declared for Claude Code: kmctl's okf-bundle, or another okf server."""
+    """Whether okf's MCP server is declared for Claude Code: a bundle server, or another, that runs okf's script.
+
+    okf declares its own server under the name kmctl gives it, so a
+    ``bundle`` that runs okf's script passes whether or not it is kmctl's
+    launcher; only one that runs no okf script is not okf's.
+    """
     path = cwd / ".mcp.json" if scope == "project" else user_mcp_file()
     shown = shown_path(path, cwd)
     data, broken = _load(path)
@@ -471,7 +476,7 @@ def _claude_mcp(cwd: Path, scope: Scope) -> Check:
         return _fail("claude.okf-mcp", "claude", f"{shown} {broken}", f"fix {shown}")
     servers = data.get("mcpServers")
     own = servers.get(MCP_NAME) if isinstance(servers, dict) else None
-    if okf_server_current(own):
+    if is_okf_server(own):
         detail = f"{shown} declares okf's MCP server {MCP_NAME}"
         return _pass("claude.okf-mcp", "claude", detail)
     other = other_okf_server(servers)
@@ -479,8 +484,15 @@ def _claude_mcp(cwd: Path, scope: Scope) -> Check:
         detail = f"{shown} declares okf's MCP server as {other!r}"
         return _pass("claude.okf-mcp", "claude", detail)
     if own is not None:
+        # APM skips a server that is already configured, so this one must go first.
         detail = f"okf's MCP server {MCP_NAME} in {shown} is not the one kmctl's package declares"
-        return _fail("claude.okf-mcp", "claude", detail, _update_fix("claude", scope))
+        remove = (
+            f"take {MCP_NAME} out of {shown}"
+            if scope == "project"
+            else f"run claude mcp remove {MCP_NAME} --scope user"
+        )
+        fix = f"{remove}, then {_install_fix('claude', scope)}"
+        return _fail("claude.okf-mcp", "claude", detail, fix)
     detail = f"okf's MCP server {MCP_NAME} is missing from {shown}"
     return _fail("claude.okf-mcp", "claude", detail, _install_fix("claude", scope))
 

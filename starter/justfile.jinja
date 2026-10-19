@@ -35,6 +35,18 @@ install-frozen:
     {{apm}} install --frozen
     {{kmctl}} plugin patch
 
+# Fail when a frozen install changes a committed file, such as a hand edit to an installed skill.
+# Run it on a clean checkout, as in CI: the install overwrites an uncommitted edit without a word.
+check-install: install-frozen
+    #!/usr/bin/env bash
+    set -euo pipefail
+    changed=$(git status --porcelain)
+    if [ -n "$changed" ]; then
+        printf '%s\n' "$changed"
+        echo "the committed files above differ from what apm.lock.yaml installs; make the change in the package they come from, and commit what just install-frozen writes" >&2
+        exit 1
+    fi
+
 # Resolve the dependencies again and rewrite apm.lock.yaml without installing.
 lock:
     {{apm}} lock

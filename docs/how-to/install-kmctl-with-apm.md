@@ -9,7 +9,7 @@ repository that already manages its agent files with
 [APM](https://microsoft.github.io/apm), the Agent Package Manager, or one
 that will. The package holds kmctl's skills, its audit agent, its four
 knowledge rules, the SessionStart hook that prints the kmctl briefing and
-okf's MCP server, `okf-bundle`, and brings the okf skills they use. APM
+okf's MCP server, `bundle`, and brings the okf skills they use. APM
 installs, upgrades and removes it; `kmctl plugin patch` then adds what APM
 cannot install yet.
 
@@ -91,12 +91,12 @@ kmctl plugin patch
 Use `--target antigravity` for Antigravity, `apm install --target opencode`
 for OpenCode, or a list such as `--target claude,antigravity,opencode` for
 more than one. APM writes the SessionStart hook into `.claude/settings.json`
-and okf's MCP server, `okf-bundle`, into `.mcp.json`, along with the skills,
+and okf's MCP server, `bundle`, into `.mcp.json`, along with the skills,
 agent and rules. For Antigravity it writes the skills, rules, hooks and
-`okf-bundle` into `.agents/`, but not the agents: patch writes those into
+`bundle` into `.agents/`, but not the agents: patch writes those into
 `.agents/plugins/kmctl/`. For
 OpenCode it writes the skills into `.agents/skills/`, the agents into
-`.opencode/agents/` and `okf-bundle` into `opencode.json`; patch then
+`.opencode/agents/` and `bundle` into `opencode.json`; patch then
 rewrites the agents, writes the rules to `.opencode/rules/`, adds them to
 the `instructions` list in `opencode.json`, and writes the briefing plugin
 `.opencode/plugins/kmctl.js`. `apm install` puts APM's agents back, so run
@@ -112,7 +112,7 @@ repository only.
 ### 3. Start a new session
 
 Start a new Claude Code session in the repository. Claude Code asks once
-whether to use the `okf-bundle` server from `.mcp.json`. The SessionStart
+whether to use the `bundle` server from `.mcp.json`. The SessionStart
 hook prints the kmctl briefing at the start of each session.
 
 For Antigravity, trust the repository root: open it in the IDE and accept
@@ -157,11 +157,11 @@ release. To remove the package, run `kmctl plugin patch --undo`, then
 `apm uninstall` stops on the agents patch rewrote, and `--undo` deletes
 them first. The steps, with the name `apm uninstall` takes, are in
 [Install the plugin and the CI action](install-the-plugin-and-the-ci-action.md#7-to-remove-kmctl).
-After `apm uninstall -g`, APM leaves `okf-bundle` in your user
+After `apm uninstall -g`, APM leaves `bundle` in your user
 `.claude.json`; remove it with:
 
 ```
-claude mcp remove okf-bundle --scope user
+claude mcp remove bundle --scope user
 ```
 
 ## Older installs
@@ -183,6 +183,5 @@ version in the old entry does not matter.
 
 A repository installed with `kmctl plugin install`, which kmctl 0.3.0 had,
 needs no extra step: after `apm install`, `kmctl plugin patch` removes the
-SessionStart hook and the `okf-bundle` server that older kmctl wrote itself,
-and the old claude plugin `kmctl@kmctl`. When it removes `okf-bundle`, it
-says to run `apm install` again, so APM writes the package's server.
+SessionStart hook that older kmctl wrote itself and the old claude plugin
+`kmctl@kmctl`.

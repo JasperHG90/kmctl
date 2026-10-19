@@ -113,3 +113,18 @@ an older kmctl wrote that APM now writes. That verb is gone ([ADR 0021](0021-apm
 `kmctl plugin patch` does the removing, after the user's `apm install`, and
 it never runs APM; when APM must write a piece again, it says to run
 `apm install` again (`src/kmctl/plugin.py`).
+
+## Correction, 2026-10-19
+
+The Decision declares okf's MCP server as `okf-bundle` and has an install
+remove an `okf-bundle` entry an older kmctl wrote that differs from the
+package's. The package now declares it as `bundle`, okf's own name for it,
+so `apm audit --ci` passes its `config-consistency` check (issue #28,
+spike:antigravity-apm-audit/4). Where the table says `okf-bundle`, read
+`bundle`; the user-scope remove is `claude mcp remove bundle --scope user`.
+`kmctl plugin patch` no longer removes a server: under the name `bundle`
+that step, `drop_old_mcp`, would delete the server okf writes under the
+same name, and only an older kmctl wrote the entry it was for. kmctl has no
+users on those versions. `kmctl doctor`'s Claude Code check passes a
+`bundle` that runs okf's script, kmctl's launcher or not; its Antigravity
+and OpenCode checks still want kmctl's launcher (`src/kmctl/doctor.py`).
