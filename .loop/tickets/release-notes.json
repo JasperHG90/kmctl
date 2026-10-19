@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "release-notes",
-  "stage": "planning",
+  "stage": "ready",
   "attempts": 0,
   "plan_rounds": 1,
   "review_rounds": 0,
@@ -107,8 +107,14 @@
       "to": "planning",
       "at": "2026-10-19T12:48:28+00:00",
       "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-10-19T12:51:51+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.2.1.dev16+g27435b040.d20261017",
-  "at": "2026-10-19T12:51:50+00:00"
+  "at": "2026-10-19T12:51:51+00:00"
 }
