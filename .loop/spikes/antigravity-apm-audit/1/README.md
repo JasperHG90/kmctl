@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.2.2.dev1+gd84319696
-  at: '2026-10-19T14:32:49+00:00'
+  at: '2026-10-19T14:33:50+00:00'
 slug: antigravity-apm-audit
 n: 1
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike antigravity-apm-audit/1
@@ -24,7 +24,8 @@ The command exited 1:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note antigravity-apm-audit 1`.
+Superseded by spike:antigravity-apm-audit/2, which uses the same setup. Its exit 1 comes from one extra check, not from risk 3. With kmctl 0.10.0 at baf863e8, served by file:// insteadOf and installed by apm 0.33.0 for claude+antigravity (96 tracked files: 47 under .agents, 45 under .claude, apm_modules/ ignored), a fresh clone stayed clean after `apm install --frozen` + `kmctl plugin patch`, and a committed hand edit to .agents/skills/architecture-review/SKILL.md showed as ` M`.
+The extra check: an uncommitted edit to that file in the working tree is overwritten without a word, so `git status --porcelain` comes out empty. The gate catches only committed edits.
 
 ## Files
 
