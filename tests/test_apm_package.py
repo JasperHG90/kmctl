@@ -78,10 +78,11 @@ SKILL_NAMES = (
 )
 #: Each rule's ``paths:`` globs and the sha256 of its body as they were in
 #: src/kmctl/repo_rules/ before the move into the package, or since a change
-#: an ADR names (docs-layout: ADR 0022; okf-bundle: ADR 0031, a decision
-#: record may be draft until it is accepted; diagrams-stay-current, docs-layout
-#: and okf-bundle: ADR 0011's last 2026-10-19 correction, rules named by name,
-#: not a .claude/ path).
+#: an ADR names (docs-layout: ADR 0022, and ADR 0032, review due lists a page
+#: by commit order and when it is edited after verification; okf-bundle: ADR
+#: 0031, a decision record may be draft until it is accepted;
+#: diagrams-stay-current, docs-layout and okf-bundle: ADR 0011's last
+#: 2026-10-19 correction, rules named by name, not a .claude/ path).
 OLD_RULES = {
     "diagrams-stay-current": (
         [".okf/**", "src/**", "lib/**", "app/**", "pkg/**", "cmd/**"],
@@ -89,7 +90,7 @@ OLD_RULES = {
     ),
     "docs-layout": (
         ["docs/**", ".okf/**", "README.md"],
-        "356d0bd34602b4a7464effb34847a7d1c05a90ff66195d991113a3e116b78df9",
+        "e9cd2563e261f451a395a7ed25a737ee5aee5e509aef331886baf3525e63d2d8",
     ),
     "manifesto-invariants": (
         [".okf/manifesto.md", "tests/**", "test/**"],

@@ -285,10 +285,21 @@ List the concepts in `.okf/` and the pages in `docs/` that are due for
 review, with the reason for each. A source that resolves to no tracked file
 or folder is listed as a notice, not a reason.
 
-A `docs/` page is due when its `stale_after` has passed, or when a commit
-changed one of its `sources` after its last `verified` date or, with none,
-after the page's own last commit. A page with no `verified` entry is not due
-for that alone. A docs page's id is its path without `.md`, such as
+A concept is due when its `stale_after` has passed (`stale_after passed`),
+when it has no `verified` entry (`unverified`), when a commit after its
+verification commit changed one of its `sources` (`source changed: SOURCE`),
+or when such a commit changed the concept itself in its body or any front
+matter field other than `verified` and `stale_after`
+(`edited after verification`). The verification commit is the oldest commit
+whose front matter holds the file's newest `verified` entry, so commit order
+decides, not dates, and a verification made on a branch survives a squash or
+rebase merge (ADR 0032). While that entry is not committed, nothing counts as
+changed after it, and a source edit counts only once it is committed.
+
+A `docs/` page is due when its `stale_after` has passed, or by the same
+`source changed` and `edited after verification` rules. A page with no
+`verified` entry is not due for that alone, and its sources are compared with
+the page's own last commit. A docs page's id is its path without `.md`, such as
 `docs/how-to/install`; a source resolves from the page's folder, then the
 repository root. The `README.md` indexes are left out.
 
@@ -321,8 +332,10 @@ drops it. It appends `{by, at}` to the file's `verified` list, with `at` the
 current UTC time (`2026-10-17T21:30:00Z`), and changes no other line. A
 `verified` field written as one mapping or a flow list is extended in its
 place. A concept also gets a line in `.okf/log.md`. The id then stays off
-`kmctl review due` until its `stale_after` passes or one of its `sources` is
-committed again.
+`kmctl review due` until its `stale_after` passes, or a commit after the one
+that holds the new entry changes one of its `sources` or the file itself
+outside `verified` and `stale_after`. Commit the entry: until then, nothing
+counts as changed after it.
 
 Only a person verifies (ADR 0023). An agent runs it only when the person named
 in `--by` has read the content and asked for it, never on an audit verdict

@@ -48,3 +48,13 @@ The record had no Consequences section; this adds it.
   outside git it is skipped with a note.
 - A code change to a file not listed in a concept's `sources` flags
   nothing.
+
+## Correction, 2026-10-19
+
+"Changed in git after its last verified date" now means after the commit
+that holds the newest `verified` entry, not after its date, and a concept is
+also due when its own text changed after that commit outside `verified` and
+`stale_after` (`edited after verification`).
+[ADR 0032](0032-kmctl-review-due-decides-by-commit-order.md) records why: a
+squash or rebase merge dates its commits at merge time. The rule still uses
+only OKF's own fields.

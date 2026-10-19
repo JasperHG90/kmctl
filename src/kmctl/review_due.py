@@ -1,17 +1,22 @@
-"""Which concepts in .okf/ and pages in docs/ are due for review, and why (ADR 0006, ADR 0022).
+"""Which concepts in .okf/ and pages in docs/ are due for review, and why (ADR 0006, ADR 0022, ADR 0032).
 
 A concept is due when its ``stale_after`` has passed, when it has no
-``verified`` entry, or when a tracked file in its ``sources`` changed in git
-after its last verified date. Handoffs are short-lived notes, never verified,
+``verified`` entry, when a tracked file in its ``sources`` changed in a
+commit after its verification commit (``source changed``), or when the
+concept itself did, outside ``verified`` and ``stale_after``, the fields
+``kmctl verify`` writes (``edited after verification``). Commit order, not
+dates, decides (ADR 0032): the verification commit is the oldest commit in
+the file's history whose front matter holds its newest ``verified[].at``, so
+a squash or rebase merge carries it along. While that entry is not
+committed, nothing counts as changed after it. Handoffs are short-lived notes, never verified,
 so they are left out of those checks and listed only once expired. The
 bundle summary, ``.okf/summary.md``, is never verified either: it is due
 only when concepts changed after it (``kmctl.summary``, ADR 0027), with the
 reason ``concepts changed: ID, ...``.
 
-A docs/ page is due when its ``stale_after`` has passed, or when a tracked
-file in its ``sources`` changed after its last verified date or, with none,
-after the page's own last commit. A docs page without ``verified`` is not due
-for that alone. Its id is its path without ``.md``, such as
+A docs/ page is due when its ``stale_after`` has passed, or by the same two
+history rules as a concept. A page without ``verified`` is not due for that
+alone, and its sources are compared with the page's own last commit. Its id is its path without ``.md``, such as
 ``docs/how-to/install``, so it cannot clash with a concept id. README.md
 files in docs/ are indexes and are left out.
 """
@@ -29,11 +34,15 @@ from kmctl.okf import (
     front_matter,
     has_passed,
     source_candidates,
+    split_front_matter,
+    without,
 )
 from kmctl.summary import SUMMARY_ID, changed_concepts
 from kmctl.summary import reason as summary_reason
 
 RESERVED = {"index.md", "log.md"}
+#: The front matter fields ``kmctl verify`` writes, which an edit after verification ignores.
+VERIFY_FIELDS = {"verified", "stale_after"}
 
 
 @dataclass(frozen=True)
@@ -68,8 +77,9 @@ class ExpiredHandoff:
 class ReviewDue:
     """The result of ``review_due``: what is due, what could not be checked, expired handoffs.
 
-    ``history_skipped`` says why the source-changed reason was not checked
-    (a shallow clone, or no git repository), or is None when it was.
+    ``history_skipped`` says why the reasons that need git history, source
+    changed and edited after verification, were not checked (a shallow
+    clone, or no git repository), or is None when they were.
     """
 
     due: list[Due] = dataclasses.field(default_factory=list)
@@ -111,8 +121,8 @@ def _resolve(
 ) -> str | None:
     """The tracked file or folder a source names, by OKF §6.2, or None.
 
-    A folder counts when git tracks a file under it; ``git log -- folder``
-    then gives its last change.
+    A folder counts when git tracks a file under it; ``git diff -- folder``
+    then sees a change to any file under it.
     """
     for rel in source_candidates(root, okf, concept, resource):
         if rel in tracked or any(t.startswith(rel + "/") for t in tracked):
@@ -139,14 +149,191 @@ def _docs_pages(docs: Path) -> list[Path]:
     )
 
 
-def _docs_due(
-    root: Path, docs: Path, now: datetime, tracked: set[str], result: ReviewDue
-) -> None:
-    """Add each docs/ page that is due to ``result``, by the rules in the module docstring.
+@dataclass
+class _Check:
+    """A concept or docs page whose git history decides some of its reasons.
 
-    A source resolves from the page's folder, then the repository root; a
+    ``newest`` is its newest ``verified`` time in the working tree, or None for
+    a docs page without one, which is checked against its own last commit.
+    ``sources`` pairs each source as written with the tracked path it names.
+    Reasons are added to ``reasons``, the list its ``Due`` entry holds.
+    """
+
+    rel: str
+    newest: datetime | None
+    sources: list[tuple[str, str]]
+    reasons: list[str]
+
+
+def _parsed(text: str) -> tuple[dict[str, object], str] | None:
+    """A file's front matter and the text after it, or None when it does not parse."""
+    try:
+        return split_front_matter(text)
+    except BadFrontMatter:
+        return None
+
+
+def _verified_at(text: str) -> list[datetime | None]:
+    """The ``verified[].at`` times in a file's ``text``; none when its front matter does not parse."""
+    parsed = _parsed(text)
+    return [as_datetime(d) for d in field(parsed[0], "verified[].at")] if parsed else []
+
+
+def _outside_verify(text: str | None) -> tuple[object, str] | None:
+    """``text`` without the fields kmctl verify writes, to compare two versions by."""
+    if text is None:
+        return None
+    parsed = _parsed(text)
+    if parsed is None:
+        return None, text
+    return without(parsed[0], VERIFY_FIELDS), parsed[1]
+
+
+def _show(root: Path, specs: list[str]) -> list[str | None]:
+    """The text of each ``REV:./PATH`` in ``specs`` from one ``git cat-file --batch``; None when missing."""
+    if not specs:
+        return []
+    proc = subprocess.run(
+        ["git", "-C", str(root), "cat-file", "--batch"],
+        input="".join(spec + "\n" for spec in specs).encode(),
+        capture_output=True,
+        check=False,
+    )
+    data, out, i = proc.stdout, [], 0
+    for _ in specs:
+        nl = data.find(b"\n", i)
+        header = data[i:nl]
+        i = nl + 1
+        # "SPEC missing" (or "SPEC ambiguous") echoes the spec, which may hold
+        # spaces, so it is told apart by its end, not by counting fields.
+        if nl == -1 or header.endswith((b" missing", b" ambiguous")):
+            out.append(None)
+            continue
+        size = int(header.split()[2])
+        out.append(data[i : i + size].decode("utf-8", errors="replace"))
+        i += size + 1
+    return out
+
+
+def _history(root: Path, rels: list[str]) -> dict[str, list[str]]:
+    """The commits that changed each of ``rels``, newest first, from one ``git log``.
+
+    ``--cc`` lists a merge for a file that differs from every parent, as a
+    ``git log`` of that file alone does. One walk can still follow a
+    different side of a merge than that file's own log would, when the same
+    change reached both sides (a cherry-pick); both sides then hold the
+    entry (ADR 0032).
+    """
+    listed = _git(
+        root,
+        *("log", "--cc", "--name-only", "-z", "--relative", "--format=@%H", "--"),
+        *rels,
+    )
+    history: dict[str, list[str]] = {rel: [] for rel in rels}
+    commit = ""
+    for item in (listed or "").split("\0"):
+        item = item.lstrip("\n")
+        if item in history:
+            history[item].append(commit)
+        elif item.startswith("@"):
+            commit = item[1:]
+    return history
+
+
+def verification_commits(root: Path, newest: dict[str, datetime]) -> dict[str, str]:
+    """The verification commit of each file in ``newest``, by one history walk for all of them.
+
+    Parameters
+    ----------
+    root : Path
+        The repository root.
+    newest : dict[str, datetime]
+        Each file's path from ``root``, with its newest ``verified`` time in
+        the working tree.
+
+    Returns
+    -------
+    dict[str, str]
+        For each file whose newest entry is committed, the oldest commit in
+        its history whose front matter holds that time. A file whose entry
+        is not committed yet is left out.
+    """
+    history = _history(root, list(newest)) if newest else {}
+    specs = [(rel, commit) for rel, commits in history.items() for commit in commits]
+    texts = _show(root, [f"{commit}:./{rel}" for rel, commit in specs])
+    found = {}
+    # The log is newest first, so the last commit that holds the entry is the oldest.
+    for (rel, commit), text in zip(specs, texts, strict=True):
+        if text is not None and newest[rel] in _verified_at(text):
+            found[rel] = commit
+    return found
+
+
+def _changed(root: Path, base: str, source: str) -> bool:
+    """True when ``source`` differs between commit ``base`` and HEAD."""
+    proc = subprocess.run(
+        ["git", "-C", str(root), "diff", "--quiet", base, "HEAD", "--", source],
+        capture_output=True,
+        check=False,
+    )
+    return proc.returncode == 1
+
+
+def _check_history(root: Path, checks: list[_Check]) -> None:
+    """Add ``source changed`` and ``edited after verification`` reasons, by commit order.
+
+    The baseline is the file's verification commit or, for a docs page
+    without ``verified``, its own last commit. A source is changed when it
+    differs between the baseline and HEAD. A verified file is edited when it
+    differs between its verification commit and HEAD outside the fields
+    kmctl verify writes. A file with no baseline gets neither reason.
+    """
+    commits = verification_commits(
+        root, {c.rel: c.newest for c in checks if c.newest is not None}
+    )
+    edits = [c for c in checks if c.rel in commits]
+    texts = _show(
+        root,
+        [
+            spec
+            for c in edits
+            for spec in (f"{commits[c.rel]}:./{c.rel}", f"HEAD:./{c.rel}")
+        ],
+    )
+    edited = {
+        c.rel
+        for c, verified, head in zip(edits, texts[::2], texts[1::2], strict=True)
+        if _outside_verify(verified) != _outside_verify(head)
+    }
+    for c in checks:
+        if c.newest is not None:
+            base = commits.get(c.rel)
+        else:
+            base = _git(root, "log", "-1", "--format=%H", "--", c.rel) or None
+        if base is None:
+            continue
+        for resource, source in c.sources:
+            if _changed(root, base, source):
+                c.reasons.append(f"source changed: {resource}")
+        if c.rel in edited:
+            c.reasons.append("edited after verification")
+
+
+def _docs_due(
+    root: Path,
+    docs: Path,
+    now: datetime,
+    tracked: set[str],
+    result: ReviewDue,
+    checks: list[_Check],
+) -> list[Due]:
+    """Each docs/ page with the reasons known so far, by the rules in the module docstring.
+
+    A page whose history decides more reasons is added to ``checks``. A
+    source resolves from the page's folder, then the repository root; a
     leading ``/`` is from the repository root.
     """
+    entries = []
     for path in _docs_pages(docs):
         rel = path.relative_to(root).as_posix()
         pid = path.relative_to(root).with_suffix("").as_posix()
@@ -157,30 +344,25 @@ def _docs_due(
                 Notice(pid, rel, "", f"front matter unreadable: {error}")
             )
             continue
-        reasons = []
+        entry = Due(pid, rel, [])
+        entries.append(entry)
         if has_passed(field(meta, "stale_after"), now):
-            reasons.append("stale_after passed")
-        resources = [
-            r for r in _sources(field(meta, "sources[].resource")) if "://" not in r
-        ]
-        if resources and result.history_skipped is None:
-            baseline = _last_verified(field(meta, "verified[].at")) or as_datetime(
-                _git(root, "log", "-1", "--format=%cI", "--", rel)
-            )
-            for resource in resources:
-                source = _resolve(root, root, path, resource, tracked)
-                if source is None:
-                    result.notices.append(
-                        Notice(pid, rel, resource, "source not resolved")
-                    )
-                    continue
-                changed = as_datetime(
-                    _git(root, "log", "-1", "--format=%cI", "--", source)
-                )
-                if baseline is not None and changed is not None and changed > baseline:
-                    reasons.append(f"source changed: {resource}")
-        if reasons:
-            result.due.append(Due(pid, rel, reasons))
+            entry.reasons.append("stale_after passed")
+        if result.history_skipped is not None:
+            continue
+        newest = _last_verified(field(meta, "verified[].at"))
+        sources = []
+        for resource in _sources(field(meta, "sources[].resource")):
+            if "://" in resource:
+                continue
+            source = _resolve(root, root, path, resource, tracked)
+            if source is None:
+                result.notices.append(Notice(pid, rel, resource, "source not resolved"))
+                continue
+            sources.append((resource, source))
+        if newest is not None or sources:
+            checks.append(_Check(rel, newest, sources, entry.reasons))
+    return entries
 
 
 def review_due(root: Path, now: datetime | None = None) -> ReviewDue:
@@ -209,11 +391,11 @@ def review_due(root: Path, now: datetime | None = None) -> ReviewDue:
     # -z keeps paths unquoted, so non-ASCII names match.
     listed = _git(root, "ls-files", "-z") if result.history_skipped is None else None
     tracked = set(filter(None, listed.split("\0"))) if listed else set()
-    if docs.is_dir():
-        _docs_due(root, docs, now, tracked, result)
-    if not okf.is_dir():
-        return result
-    for path in _concepts(okf):
+    checks: list[_Check] = []
+    entries = (
+        _docs_due(root, docs, now, tracked, result, checks) if docs.is_dir() else []
+    )
+    for path in _concepts(okf) if okf.is_dir() else []:
         cid = path.relative_to(okf).with_suffix("").as_posix()
         rel = path.relative_to(root).as_posix()
         try:
@@ -232,30 +414,28 @@ def review_due(root: Path, now: datetime | None = None) -> ReviewDue:
         if cid == SUMMARY_ID:
             changed = changed_concepts(root)
             if changed:
-                result.due.append(Due(cid, rel, [summary_reason(changed)]))
+                entries.append(Due(cid, rel, [summary_reason(changed)]))
             continue
-        reasons = []
+        entry = Due(cid, rel, [])
+        entries.append(entry)
         if has_passed(field(meta, "stale_after"), now):
-            reasons.append("stale_after passed")
+            entry.reasons.append("stale_after passed")
         verified_at = _last_verified(field(meta, "verified[].at"))
         if verified_at is None:
-            reasons.append("unverified")
+            entry.reasons.append("unverified")
+        if result.history_skipped is not None:
+            continue
+        sources = []
         for resource in _sources(field(meta, "sources[].resource")):
             if "://" in resource:
-                continue
-            if result.history_skipped is not None:
                 continue
             source = _resolve(root, okf, path, resource, tracked)
             if source is None:
                 result.notices.append(Notice(cid, rel, resource, "source not resolved"))
                 continue
-            changed = as_datetime(_git(root, "log", "-1", "--format=%cI", "--", source))
-            if (
-                verified_at is not None
-                and changed is not None
-                and changed > verified_at
-            ):
-                reasons.append(f"source changed: {resource}")
-        if reasons:
-            result.due.append(Due(cid, rel, reasons))
+            sources.append((resource, source))
+        if verified_at is not None:
+            checks.append(_Check(rel, verified_at, sources, entry.reasons))
+    _check_history(root, checks)
+    result.due = [d for d in entries if d.reasons]
     return result
