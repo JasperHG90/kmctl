@@ -68,7 +68,11 @@ Set a repository up. It writes:
   there; the indexes list the concepts;
 - a kmctl block between `<!-- kmctl:start -->` and `<!-- kmctl:end -->` in
   each `CLAUDE.md` and `AGENTS.md` that exists. The block lists where each
-  kind of knowledge lives, says to start at `.okf/summary.md`, and gives the
+  kind of knowledge lives, says to start at `.okf/summary.md`, names the
+  rules folder of each harness kmctl's package is installed for
+  (`.claude/rules/` for Claude Code, `.agents/rules/` for Antigravity,
+  `.opencode/rules/` for OpenCode, as `kmctl doctor` finds them), or all
+  three with their tools when it finds none, and gives the
   agent six duties: record each
   choice with `kmctl new decision`, name the code a concept describes with
   `--source` and give anything time-bound a `--stale-after`, keep
@@ -85,8 +89,11 @@ Set a repository up. It writes:
   `CLAUDE.md` with an `@AGENTS.md` line, beside an `AGENTS.md`, gets no
   block;
 - the decision "Keep project knowledge in an OKF bundle", with its index
-  entry and log line, when no record in `.okf/decisions/` has that title. In
-  a fresh bundle it is `0001`.
+  entry and log line, when `.okf/decisions/` holds no decision record: no
+  `.md` file other than `index.md`, in it or in a folder inside it. Any other
+  record counts, whatever its title, so a repository that records the same
+  choice in its own words, or moves its decision log into `.okf/decisions/`,
+  gets no copy. In a fresh bundle it is `0001`.
 
 It writes no rules: the four knowledge rules (`okf-bundle`, `docs-layout`,
 `diagrams-stay-current` and `manifesto-invariants`) come with kmctl's skills
@@ -215,8 +222,9 @@ The state line counts what is due and the live handoffs, and ends with
 `summary current` or `summary behind: N concepts changed` when there is a
 `.okf/summary.md` and git history to tell (`--json`: `state.summary_behind`,
 null otherwise). The rules for writing knowledge are not
-in it: APM puts them in `.claude/rules/` with kmctl's package, and the briefing
-adds only the one they lack. The SessionStart hook in kmctl's APM package,
+in it: APM puts them in each harness's rules folder with kmctl's package, so
+the briefing says only that the rules your tool loads cover them, and adds
+the one rule they lack. The SessionStart hook in kmctl's APM package,
 which APM writes, prints this: Claude Code's runs `kmctl briefing`,
 Antigravity's runs `kmctl briefing --format antigravity`. It reads and never
 writes.
@@ -607,7 +615,9 @@ already hold yours:
   okf's MCP server as `okf-bundle` into `.mcp.json`. At user scope the
   hook goes into the `settings.json` in `$CLAUDE_CONFIG_DIR` (by default
   `~/.claude/`) and the server into the user `.claude.json`. The hook
-  prints how to install kmctl and exits 0 when kmctl is missing or fails.
+  prints how to install kmctl, at the release the package came from
+  (`uv tool install git+https://github.com/JasperHG90/kmctl@vX.Y.Z`), and
+  exits 0 when kmctl is missing or fails.
   Claude Code asks you to approve a project `.mcp.json` server once.
 - For `antigravity`: the skills to `.agents/skills/`; the four rules to
   `.agents/rules/`, each with its globs as one `globs:` string, every
@@ -650,8 +660,11 @@ leaves `okf-bundle` in the user `.claude.json`; remove it with
 
 Check that kmctl's tools, its installed package for each harness and the
 `kmctl init` files are in place. It prints one line per check on stdout,
-`ok   ID: DETAIL` or `fail ID: WHAT IS WRONG; THE FIX`, where the fix is the
-command to run (or, for trust, what to do in Antigravity).
+`ok   ID: DETAIL`, `warn ID: WHAT IS WRONG; THE FIX` or
+`fail ID: WHAT IS WRONG; THE FIX`, where the fix is the command to run (or,
+for trust, what to do in Antigravity). A `warn` line is for something doctor
+cannot judge from here, a harness's CLI this person may not use or trust it
+cannot see; it fails nothing.
 
 It writes nothing and uses no network unless `--online`. It reads files,
 and the one command it runs is
@@ -670,15 +683,15 @@ Antigravity and OpenCode), the kmctl hook or an old kmctl plugin in
 reported by name rather than hiding the harness. A harness that is not
 installed gets no checks.
 
-| Check | Harness | Passes when | Fix on failure |
+| Check | Harness | Passes when | Fix on failure or warning |
 |---|---|---|---|
 | `kmctl.version` | all | Always; the detail is this kmctl's version, which the other checks compare against. | none |
 | `dep.uv` | all | `uv` is on PATH. | install uv |
 | `dep.git` | all | `git` is on PATH. | install git |
 | `dep.apm` | all | `uv tool run --offline --from apm-cli==0.33.0 apm --version` exits 0. | `uvx --from apm-cli==0.33.0 apm --version`, which downloads it once |
-| `dep.claude` | claude | `claude` is on PATH. | install Claude Code |
-| `dep.agy` | antigravity | `agy` is on PATH. | install the Antigravity CLI |
-| `dep.opencode` | opencode | `opencode` is on PATH. | install OpenCode |
+| `dep.claude` | claude | `claude` is on PATH. Warns, not fails, when it is not: doctor never runs it, and the harnesses installed here are shared by everyone on the repository, so only someone who uses Claude Code needs it. | install Claude Code |
+| `dep.agy` | antigravity | `agy` is on PATH. Warns, not fails, when it is not, as `dep.claude`; the Antigravity IDE puts no `agy` on PATH. | install the Antigravity CLI |
+| `dep.opencode` | opencode | `opencode` is on PATH. Warns, not fails, when it is not, as `dep.claude`. | install OpenCode |
 | `init.okf` | all, project scope | `.okf/index.md` exists. | `kmctl init` |
 | `init.docs` | all, project scope | `docs/README.md` exists. | `kmctl init` |
 | `kmctl.harness` | all | A harness is installed; the detail names them. | `apm install --target claude (kmctl's package must be in apm.yml), then kmctl plugin patch` |
@@ -688,12 +701,12 @@ installed gets no checks.
 | `claude.okf-skills`, `antigravity.okf-skills`, `opencode.okf-skills` | each | The same for okf's skills (and, for `opencode`, without its rewritten agents). | `apm install --target H (kmctl's package must be in apm.yml), then kmctl plugin patch` |
 | `claude.hook` | claude | `.claude/settings.json` (at user scope, the one in `$CLAUDE_CONFIG_DIR`) holds exactly the SessionStart hook kmctl's package ships, which APM writes. | when missing, `apm install --target claude (kmctl's package must be in apm.yml), then kmctl plugin patch`; when changed, `set kmctl's ref in apm.yml to vVERSION, run apm install --target claude, then kmctl plugin patch` |
 | `claude.okf-mcp` | claude | `.mcp.json` (at user scope, `.claude.json` in `$CLAUDE_CONFIG_DIR`, by default `~/.claude.json`) declares `okf-bundle` with the command and args kmctl's package declares (keys APM adds, such as `type`, are not compared), or another server that runs `okf_mcp.py`. | the same as `claude.hook` |
-| `claude.old-plugin` | claude | No settings file (`.claude/settings.json` or `.claude/settings.local.json`; at user scope, `settings.json` in `$CLAUDE_CONFIG_DIR`) enables `kmctl@kmctl` or `okf@scaccogatto`. | `kmctl plugin patch` when `kmctl@kmctl` is enabled (it removes okf too when okf came as its dependency); otherwise `claude plugin uninstall okf@scaccogatto --scope SCOPE`, the scope of the file that enables it |
+| `claude.old-plugin` | claude | No settings file enables `kmctl@kmctl` or `okf@scaccogatto`: `.claude/settings.json`, `.claude/settings.local.json` and the user `settings.json` in `$CLAUDE_CONFIG_DIR` (a plugin enabled there loads in every repository); at user scope, only the user `settings.json`. The detail names each file. A plugin in the user file does not mark Claude Code as installed in the repository. | per file: `kmctl plugin patch` when `kmctl@kmctl` is enabled (it removes okf too when okf came as its dependency); for `kmctl@kmctl` in the user file at project scope, `claude plugin uninstall kmctl@kmctl --scope user, claude plugin prune --scope user --yes, claude plugin marketplace remove kmctl --scope user`; otherwise `claude plugin uninstall okf@scaccogatto --scope SCOPE`, the scope of the file that enables it |
 | `antigravity.plugin` | antigravity | Every file under `.agents/plugins/kmctl/` is what this kmctl writes, `plugin.json` and the translated agents, with none missing or extra. Fails with `apm_modules/ is missing` when okf's agents cannot be read to compare. | `kmctl plugin patch`; for a missing `apm_modules/`, `apm install --target antigravity (kmctl's package must be in apm.yml), then kmctl plugin patch` |
 | `antigravity.hook` | antigravity | `.agents/hooks.json` holds the SessionStart hook (`kmctl briefing --format antigravity`) and the okf Stop check that kmctl's package ships, which APM writes. | `apm install --target antigravity (kmctl's package must be in apm.yml), then kmctl plugin patch` |
 | `antigravity.apm-hooks` | antigravity | `.agents/hooks.json` does not run `okf-stop-check.sh`. APM writes okf's Stop handler there with a path agy cannot find, so it fails at the end of every turn; every `apm install` puts it back. It also fails when the file is not a JSON object, which agy cannot load. | `kmctl plugin patch`; for a file that is not a JSON object, repair it by hand first |
 | `antigravity.okf-mcp` | antigravity | `.agents/mcp_config.json` declares okf's MCP server `okf-bundle` with the command and args kmctl's package declares, which APM writes. | `apm install --target antigravity (kmctl's package must be in apm.yml), then kmctl plugin patch` |
-| `antigravity.trust` | antigravity | Checked only when `agy` is on PATH: the repository is in `trustedWorkspaces` of `~/.gemini/antigravity-cli/settings.json`. Antigravity loads `.agents/` only from a trusted folder. | run `agy` in the folder and choose "Yes, I trust this folder" |
+| `antigravity.trust` | antigravity | Checked only when `agy` is on PATH: the repository is in `trustedWorkspaces` of `~/.gemini/antigravity-cli/settings.json`. Antigravity loads `.agents/` only from a trusted folder. Warns, not fails, when it is not: doctor reads only the agy CLI's list and does not check trust given in the Antigravity IDE. | run `agy` in the folder and choose "Yes, I trust this folder" |
 | `antigravity.okf-mcp-url` | antigravity | With `--online` only: okf's MCP script URL, which the MCP server runs with `uv run`, answers HTTP 200. | check the network, then run it again |
 | `opencode.agents` | opencode | Each agent in `.opencode/agents/` is kmctl's translation into OpenCode's format. It fails after a bare `apm install`, which puts APM's Claude-format copies back; fails with `apm_modules/ is missing` when okf's agents cannot be read. | `kmctl plugin patch`; for a missing `apm_modules/`, `apm install --target opencode (kmctl's package must be in apm.yml), then kmctl plugin patch` |
 | `opencode.rules` | opencode | `.opencode/rules/` holds kmctl's four rules as this kmctl writes them, and the `instructions` list of `opencode.json` holds `.opencode/rules/*.md`. | `kmctl plugin patch` |
@@ -711,10 +724,10 @@ a repository.
 | `--path DIR` | The repository to check: an existing folder. | `.` |
 | `--scope SCOPE` | `project` (the install in this repository) or `user` (the install `apm install -g` made: `~/.apm/` and `$CLAUDE_CONFIG_DIR`, by default `~/.claude`). | `project` |
 | `--online` | Also check that okf's MCP script URL can be fetched. The only check that uses the network. | off |
-| `--json` | Print one JSON object, `{"ok": bool, "checks": [{"id", "harness", "ok", "detail", "fix"}]}`. `harness` is `null` for a check that serves all harnesses; `fix` is `null` for a passed check. The ids are the ones in the table. | off |
+| `--json` | Print one JSON object, `{"ok": bool, "checks": [{"id", "harness", "status", "ok", "detail", "fix"}]}`. `status` is `ok`, `warn` or `fail`; `ok` is true unless the status is `fail`, so the top-level `ok` means nothing failed. `harness` is `null` for a check that serves all harnesses; `fix` is `null` for a passed check. The ids are the ones in the table. | off |
 
-Exit code: 0 when every check is ok, 1 when any fails, 2 for a usage
-error such as a `--path` that is not a folder.
+Exit code: 0 when no check fails (a warning fails nothing), 1 when any
+fails, 2 for a usage error such as a `--path` that is not a folder.
 
 ### Environment
 

@@ -7,3 +7,6 @@
 {"at": "2026-10-19T15:01:20+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "building"}
 {"at": "2026-10-19T15:01:30+00:00", "by": "advance", "from": "building", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
 {"at": "2026-10-19T15:01:55+00:00", "binds": "8597aa4f7d4291a1fa65a12fc54304ecaaf9044a396884910d30ac845ea04854", "kind": "round-start", "n": 1, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "3d7248630e946c23e65622429d46a20e13575514"}
+{"at": "2026-10-19T15:17:29+00:00", "dispatched_at": "2026-10-19T15:01:55+00:00", "kind": "round-close", "n": 1, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-19T15:17:12+00:00"}}
+{"at": "2026-10-19T15:17:40+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "4baf5bbc4bcd0e40d7ae228b28081f40affac46d"}
+{"at": "2026-10-19T15:37:08+00:00", "branch": "loop/doctor-correct-setups", "kind": "land", "schema_version": "1.0", "sha": "642d7236aa10dae9d5ed857562de9c10160a9151"}

@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "doctor-correct-setups",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 1,
@@ -13,7 +13,7 @@
   "split": "j-20261019T143127+0000-fc6e9839",
   "split_plan_hash": "cb12e04805d8ce85124f7b6f367cc1dd20f7ea41ae77041c974edb1d155609ca",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "4baf5bbc4bcd0e40d7ae228b28081f40affac46d",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -94,8 +94,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "pass"
   },
   "plan_hash": "cb12e04805d8ce85124f7b6f367cc1dd20f7ea41ae77041c974edb1d155609ca",
   "intent": {
@@ -127,8 +127,14 @@
       "to": "verifying",
       "at": "2026-10-19T15:01:30+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-10-19T15:17:40+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.2.2.dev1+gd84319696",
-  "at": "2026-10-19T15:01:55+00:00"
+  "at": "2026-10-19T15:17:40+00:00"
 }

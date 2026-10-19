@@ -45,8 +45,25 @@ def test_briefing_has_three_parts(tmp_path: Path) -> None:
     assert "Knowledge in this repository" in out
     assert "Verbs:" in out
     assert "due for review" in out
-    assert ".claude/rules/" in out
     assert "unverified-is-a-lead" in out
+
+
+#: The briefing's rules line before consumer-surfaces, which named Claude Code's folder alone.
+OLD_RULES_LINE = "- Skills do repeatable tasks; .claude/rules/ holds the rules for writing knowledge."
+
+
+def test_briefing_rules_line_names_no_one_harness_folder(tmp_path: Path) -> None:
+    """The rules line names no harness's folder, and is no longer than the line it replaced (#23, I3)."""
+    out = _briefing(_repo(tmp_path)).stdout
+    [line] = [
+        x for x in out.splitlines() if x.startswith("- Skills do repeatable tasks")
+    ]
+
+    assert ".claude/rules/ holds" not in out
+    for folder in (".claude/rules/", ".agents/rules/", ".opencode/rules/"):
+        assert folder not in line, folder
+    assert "rules" in line
+    assert len(line) <= len(OLD_RULES_LINE)
 
 
 def test_briefing_state_counts(tmp_path: Path) -> None:

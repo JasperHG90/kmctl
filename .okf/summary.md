@@ -7,11 +7,11 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-10-19T15:18:54Z
+  at: 2026-10-19T17:18:35Z
   against:
-    - decisions/0006-staleness-from-okf-fields
-    - decisions/0023-kmctl-verify-records-a-person-s-check
-    - decisions/0032-kmctl-review-due-decides-by-commit-order
+    - architecture/overview
+    - decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code
+    - decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest
 ---
 
 # Summary: kmctl

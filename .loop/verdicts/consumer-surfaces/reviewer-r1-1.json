@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "kmctl init and kmctl update now read apm.yml and apm.lock.yaml through harnesses_found, and a non-UTF-8 apm.yml ends init with a UnicodeDecodeError traceback after it has written docs/README.md and the .okf/ starter but before the block and the first decision. read_manifest and read_lock catch YAML errors but not decode errors.",
+      "anchor": "src/kmctl/scaffold.py:267",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "The kmctl briefing row of the verb table in the architecture overview still says \"the knowledge rules are in `.claude/rules/`, not the briefing\", which this change makes false for Antigravity and OpenCode. The change edits the row just above it.",
+      "anchor": ".okf/architecture/overview.md:193",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "The Antigravity rule copies still point readers at `.claude/rules/okf-bundle.md`, `.claude/rules/docs-layout.md`, `.claude/rules/manifesto-invariants.md` and `.claude/rules/diagrams-stay-current.md`. Those files do not exist in a repository installed only for Antigravity. This is the",
+      "anchor": "apm/antigravity/.apm/instructions/okf-bundle.instructions.md:9",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "0189c6348148eb1356aef965f6a632b03e34ae113cc73249f82f1f77dd7f4f76",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.2.2.dev1+gd84319696",
+  "at": "2026-10-19T15:12:52+00:00"
+}

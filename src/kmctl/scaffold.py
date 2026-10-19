@@ -18,8 +18,8 @@ from pathlib import Path
 
 from kmctl.concepts import append_log, new_concept
 from kmctl.docs_index import fix_folder_indexes
+from kmctl.doctor import harnesses_found
 from kmctl.kinds import skeleton
-from kmctl.okf import BadFrontMatter, field, front_matter
 
 OKF_VERSION = "0.2"
 
@@ -28,6 +28,15 @@ BLOCK_START, BLOCK_END = "<!-- kmctl:start -->", "<!-- kmctl:end -->"
 #: The whole of a CLAUDE.md init writes beside an AGENTS.md: Claude Code reads
 #: AGENTS.md only through it, once (ADR 0011).
 AGENTS_IMPORT = "@AGENTS.md\n"
+
+#: Where each harness loads rules from, with the tool's name, for the block.
+RULES_FOLDERS = {
+    "claude": "`.claude/rules/` (Claude Code)",
+    "antigravity": "`.agents/rules/` (Antigravity)",
+    "opencode": "`.opencode/rules/` (OpenCode)",
+}
+#: Where ``block`` names the rules folders in ``BLOCK``.
+RULES_MARK = "{rules}"
 
 BLOCK = f"""{BLOCK_START}
 ## Project knowledge (kmctl)
@@ -41,7 +50,7 @@ BLOCK = f"""{BLOCK_START}
 | The design as diagrams | `.okf/architecture/`, each page with a Depicts section naming the files it covers |
 | Lessons, designs not built, spikes, handoffs | `.okf/practices/`, `.okf/proposals/`, `.okf/prototypes/`, `.okf/handoffs/` |
 
-Start at `.okf/summary.md`, which links down to the rest. The rules for writing knowledge are in `.claude/rules/`.
+Start at `.okf/summary.md`, which links down to the rest. The rules for writing knowledge are in {RULES_MARK}.
 
 Your duties while you work:
 
@@ -125,10 +134,10 @@ class ScaffoldResult:
     Paths are relative to the root. ``scaffold`` never edits a kept file, with
     four exceptions, all listed in ``updated``: it adds or replaces the kmctl
     block in CLAUDE.md and AGENTS.md, when it writes the first decision into a
-    kept bundle it adds its index entry and log line, when it writes a
-    manifesto or summary into a kept bundle it adds its root index entry and
-    log line (the page is then listed in ``linked``), and it rewrites a docs/
-    folder index kmctl generated. A new CLAUDE.md
+    kept bundle with no decision record it adds its index entry and log line,
+    when it writes a manifesto or summary into a kept bundle it adds its root
+    index entry and log line (the page is then listed in ``linked``), and it
+    rewrites a docs/ folder index kmctl generated. A new CLAUDE.md
     beside an AGENTS.md holds only ``@AGENTS.md`` and is listed in
     ``created``. A warning names a kept index or log that is not UTF-8, so
     ``scaffold`` could not add a new page to it, and a CLAUDE.md or AGENTS.md symlink left alone
@@ -204,14 +213,21 @@ def _text(path: Path) -> str | None:
         return None
 
 
-def _with_block(text: str) -> str | None:
-    """``text`` with the kmctl block replaced or appended, or None when its markers are broken."""
+def block(harnesses: list[str]) -> str:
+    """The kmctl block, naming the rules folder of each harness in ``harnesses``, or of all three when it is empty."""
+    folders = [RULES_FOLDERS[h] for h in harnesses or RULES_FOLDERS]
+    rules = ", ".join(folders[:-1]) + " and " if len(folders) > 1 else ""
+    return BLOCK.replace(RULES_MARK, rules + folders[-1])
+
+
+def _with_block(text: str, new: str) -> str | None:
+    """``text`` with the kmctl block replaced by or appended as ``new``, or None when its markers are broken."""
     start, end = text.find(BLOCK_START), text.find(BLOCK_END)
     if start == -1 and end == -1:
-        return text.rstrip("\n") + "\n\n" + BLOCK if text.strip() else BLOCK
+        return text.rstrip("\n") + "\n\n" + new if text.strip() else new
     if start == -1 or end < start or text.count(BLOCK_START) > 1:
         return None
-    return text[:start] + BLOCK.rstrip("\n") + text[end + len(BLOCK_END) :]
+    return text[:start] + new.rstrip("\n") + text[end + len(BLOCK_END) :]
 
 
 def _unsafe_link(root: Path, path: Path) -> str | None:
@@ -247,6 +263,7 @@ def _write_block(root: Path, result: ScaffoldResult) -> None:
     counts as absent, with a warning.
     """
     claude, agents = root / "CLAUDE.md", root / "AGENTS.md"
+    kmctl_block = block(harnesses_found(root))
     has_agents = os.path.lexists(agents)
     unsafe_agents = _unsafe_link(root, agents) if has_agents else None
     # An AGENTS.md that is a folder or another non-file loads nothing, so it
@@ -285,7 +302,7 @@ def _write_block(root: Path, result: ScaffoldResult) -> None:
             result.skipped.append(rel)
             continue
         seen.add(real)
-        new = _with_block(text) if text is not None else None
+        new = _with_block(text, kmctl_block) if text is not None else None
         if new is None:
             why = "is not UTF-8 text" if text is None else _marker_problem(text)
             result.warnings.append(
@@ -300,7 +317,7 @@ def _write_block(root: Path, result: ScaffoldResult) -> None:
             result.updated.append(rel)
     if os.path.lexists(claude) or unsafe_agents is not None:
         return
-    claude.write_text(AGENTS_IMPORT if has_agents else BLOCK, encoding="utf-8")
+    claude.write_text(AGENTS_IMPORT if has_agents else kmctl_block, encoding="utf-8")
     result.created.append("CLAUDE.md")
 
 
@@ -312,19 +329,6 @@ def _marker_problem(text: str) -> str:
     if starts == 0:
         return f"has {BLOCK_END} with no {BLOCK_START} before it"
     return f"has {BLOCK_START} without a {BLOCK_END} after it"
-
-
-def _has_first_decision(decisions: Path) -> bool:
-    for path in decisions.glob("*.md"):
-        if path.name == "index.md":
-            continue
-        try:
-            title = str(field(front_matter(path), "title", ""))
-        except BadFrontMatter:
-            continue
-        if re.sub(r"^ADR \d+:\s*", "", title).strip() == FIRST_DECISION:
-            return True
-    return False
 
 
 #: A markdown list item whose text starts with a link: an index entry.
@@ -405,10 +409,15 @@ def _link_new_pages(root: Path, now: datetime, result: ScaffoldResult) -> None:
 
 
 def _write_first_decision(root: Path, now: datetime, result: ScaffoldResult) -> None:
-    """Record the first decision through ``kmctl new decision``'s writer, then fill its sections."""
+    """Record the first decision through ``kmctl new decision``'s writer, then fill its sections.
+
+    It writes nothing when .okf/decisions/ or a folder in it holds any
+    ``*.md`` file other than ``index.md``, whatever its title and even when
+    its front matter does not parse.
+    """
     okf = root / ".okf"
     decisions = okf / "decisions"
-    if decisions.is_dir() and _has_first_decision(decisions):
+    if any(p.name != "index.md" for p in decisions.rglob("*.md")):
         return
     unreadable = [
         p.relative_to(root).as_posix()
@@ -458,14 +467,15 @@ def scaffold(root: Path, now: datetime | None = None) -> ScaffoldResult:
     summary.md; the kmctl block in each CLAUDE.md and AGENTS.md; a new CLAUDE.md when there is
     none, holding only ``@AGENTS.md`` beside an AGENTS.md and the block
     otherwise; and the decision "Keep project knowledge in an OKF bundle" when
-    no record has that title. It writes no rules: those come with kmctl's APM
-    package. A file that exists is kept, except for the kmctl block, the
+    .okf/decisions/ holds no decision record. It writes no rules: those come
+    with kmctl's APM package. A file that exists is kept, except for the kmctl block, the
     first decision's index entry and log line, and the root index entry and
     log line of a manifesto or summary it writes into a kept bundle, so
     ``kmctl check`` passes after it. Each docs/ Diataxis folder's
     README.md index is written when missing, or rewritten when kmctl
     generated it and it is out of date. A CLAUDE.md that imports
-    ``@AGENTS.md`` gets no block.
+    ``@AGENTS.md`` gets no block. The block names the rules folder of each
+    harness ``harnesses_found`` reports, or all three when it finds none.
     A CLAUDE.md or AGENTS.md symlink that is dangling or points outside the
     repository is left alone with a warning; when AGENTS.md is such a link and
     there is no CLAUDE.md, no CLAUDE.md is written.

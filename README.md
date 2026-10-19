@@ -230,7 +230,7 @@ still true; that takes judgment. So kmctl does two things instead:
 | Docs for people who use the project | `docs/`, sorted into `tutorials/`, `how-to/`, `reference/` and `explanation/` | users |
 | Decisions, architecture, practices, proposals, handoffs | `.okf/`, an OKF v0.2 bundle | people and agents working on the project |
 | Repeatable tasks | skills | agents |
-| Standing guidance | rules in `.claude/rules/` | agents |
+| Standing guidance | rules in `.claude/rules/`, `.agents/rules/` or `.opencode/rules/`, by harness | agents |
 
 ## What you get
 

@@ -7,3 +7,15 @@
 {"at": "2026-10-19T15:03:09+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "building"}
 {"at": "2026-10-19T15:03:14+00:00", "by": "advance", "from": "building", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
 {"at": "2026-10-19T15:03:41+00:00", "binds": "0189c6348148eb1356aef965f6a632b03e34ae113cc73249f82f1f77dd7f4f76", "kind": "round-start", "n": 1, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "33ffff1a8f6eb0bba30d420708a7db1c0d39f8c9"}
+{"at": "2026-10-19T15:13:12+00:00", "by": "review close", "from": "verifying", "kind": "transition", "schema_version": "1.0", "to": "fixing"}
+{"at": "2026-10-19T15:13:12+00:00", "dispatched_at": "2026-10-19T15:03:41+00:00", "kind": "round-close", "n": 1, "outcome": "fail", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-19T15:12:52+00:00"}}
+{"at": "2026-10-19T15:26:10+00:00", "by": "review fixed", "from": "fixing", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
+{"at": "2026-10-19T15:29:24+00:00", "binds": "8b574b696399fc1d61a186b22f12ab880d07c2d10f63cf7faa7c7bf0dab19e05", "kind": "round-start", "n": 2, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "78c904ae683e9968ba300e34620cabd3cdfe35fe"}
+{"at": "2026-10-19T15:43:28+00:00", "by": "review close", "from": "verifying", "kind": "transition", "schema_version": "1.0", "to": "fixing"}
+{"at": "2026-10-19T15:43:28+00:00", "dispatched_at": "2026-10-19T15:29:24+00:00", "kind": "round-close", "n": 2, "outcome": "fail", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-19T15:43:08+00:00"}}
+{"at": "2026-10-19T15:49:04+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "fixing"}
+{"at": "2026-10-19T15:49:15+00:00", "by": "review fixed", "from": "fixing", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
+{"at": "2026-10-19T16:26:56+00:00", "binds": "a94ccf7a1bd8ee83bbb6412f82d22bb30bb738e1b3d1814af397ba17207e2eb1", "kind": "round-start", "n": 3, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "38ef91def876a37a04f973536d5e577015e2d214"}
+{"at": "2026-10-19T16:32:26+00:00", "dispatched_at": "2026-10-19T16:26:56+00:00", "kind": "round-close", "n": 3, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-19T16:32:14+00:00"}}
+{"at": "2026-10-19T16:32:36+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "080e7a72b659bf5a89bf6cd4ec68350d14998cc9"}
+{"at": "2026-10-19T17:25:03+00:00", "branch": "loop/consumer-surfaces", "kind": "land", "schema_version": "1.0", "sha": "9ec98cc3c9d03d65426c929357c91357fb692343"}
