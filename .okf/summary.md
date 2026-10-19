@@ -7,9 +7,9 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-10-18T22:02:13Z
+  at: 2026-10-19T01:08:38Z
   against:
-    - architecture/overview
+    - decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script
 ---
 
 # Summary: kmctl

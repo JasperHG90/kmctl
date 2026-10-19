@@ -163,3 +163,15 @@ a 64-request audit sent 166 spans (33 MB) and all reached Langfuse with
 input, output and usage (spike:langfuse-traces/2 in `.loop/`). The keys are
 not in the shell tool's environment. A trace holds what the agent read, so
 it goes only where the repository's readers may look.
+
+## Correction, 2026-10-19
+
+The release workflows run without the uv cache. The audit agent runs shell
+commands as the runner's user, with passwordless sudo on GitHub-hosted
+runners, so it could read the job's runtime token and save Actions cache
+entries for `main`. `.github/workflows/release.yml` and
+`.github/workflows/release-tag.yml` test, build and publish the wheel on
+`main`, so a poisoned entry restored there could end up in a release. Every
+`astral-sh/setup-uv` step in both now sets `enable-cache: false`, as CI's
+already did; `tests/scripts/test_workflows.py` checks it. The cost is
+download time on each release run.
