@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "scripts/release_notes.py lists each Merge loop/SLUG: SUMMARY on main's first-parent history between the previous tag and the given tag under Changes, and each other commit under Other changes.",
+      "fails_when": "a loop merge in the range is missing from Changes or lands under Other changes, a plain commit is missing from Other changes, or a commit outside the range appears",
+      "command": "uv run pytest tests/scripts/test_release_notes.py -k 'sections' -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "The notes leave out loop: state commits, release: commits, release pull request merges, Merge remote-tracking branch, merges of main into a branch, and operator: manual / chore; manual placeholder commits.",
+      "fails_when": "any of those subjects appears in the printed notes",
+      "command": "uv run pytest tests/scripts/test_release_notes.py -k 'skips' -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "The notes come from .github/release-notes.md filled with the version, an install line pinned to the tag, and a compare link to the previous tag; the first release has no compare link; an unknown tag exits nonzero naming it.",
+      "fails_when": "the output lacks the template's headings, the install line does not name vVERSION, the compare link names the wrong previous tag or appears for the first release, or an unknown tag exits 0",
+      "command": "uv run pytest tests/scripts/test_release_notes.py -k 'template or first or unknown' -q"
+    },
+    {
+      "id": "r4",
+      "behavior": "release-tag.yml writes the notes with scripts/release_notes.py and publishes with --notes-file, not --generate-notes.",
+      "fails_when": "release-tag.yml contains --generate-notes, or its publish step does not pass a notes file produced by scripts/release_notes.py",
+      "command": "uv run pytest tests/scripts/test_workflows.py -k 'notes' -q"
+    },
+    {
+      "id": "r5",
+      "behavior": "On this repository, the script's notes for v0.10.0 list drop-summary-nudge under Changes and the uv cache commit under Other changes, with no loop: or release: lines.",
+      "fails_when": "drop-summary-nudge is missing, the uv cache commit is missing, or a line starts with loop: or release:",
+      "command": "bash -c 'out=$(uv run scripts/release_notes.py v0.10.0) && grep -q drop-summary-nudge <<<\"$out\" && grep -q \"own uv cache\" <<<\"$out\" && ! grep -Eq \"(^|[-*] )(loop|release): \" <<<\"$out\"'"
+    },
+    {
+      "id": "r6",
+      "behavior": "ADR 0012 says where the release notes come from.",
+      "fails_when": "ADR 0012 does not name scripts/release_notes.py",
+      "command": "grep -q release_notes.py .okf/decisions/0012-releases-come-from-ci.md"
+    }
+  ]
+}
