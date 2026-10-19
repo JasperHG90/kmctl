@@ -512,7 +512,10 @@ its `vX.Y.Z` tag. To move to a newer one:
    ```
 
    `--force` replaces the kmctl you have. `kmctl --version` then prints the
-   new version.
+   new version, except in a repository whose `apm.lock.yaml` still pins the
+   old one: there it prints the pinned version, followed by
+   `(pinned by apm.lock.yaml; kmctl X.Y.Z is on PATH)`, until step 2 moves
+   the pin.
 
 2. In each repository where you installed kmctl's package, set `ref` in
    kmctl's `apm.yml` entry to the same tag, then run the `apm install` line

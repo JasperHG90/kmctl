@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+import pytest
 from typer.testing import CliRunner, Result
 
 from kmctl import app
@@ -159,13 +160,13 @@ def test_check_ignores_entries_in_code_fences(tmp_path: Path) -> None:
     assert _findings(tmp_path) == []
 
 
-def test_check_ignores_links_that_leave_the_folder(tmp_path: Path) -> None:
+def test_index_check_ignores_entries_that_leave_the_folder(tmp_path: Path) -> None:
     _good_repo(tmp_path)
     decisions = (tmp_path / ".okf/decisions/index.md").read_text()
     outside = "- [Outside](../outside.md): elsewhere.\n"
     _write(tmp_path, ".okf/decisions/index.md", decisions + outside)
 
-    assert _findings(tmp_path) == []
+    assert [f for f in _findings(tmp_path) if f["check"] == "index"] == []
 
 
 def test_check_skips_hidden_pages(tmp_path: Path) -> None:
@@ -290,14 +291,45 @@ def test_link_check_okf_links_leaving_bundle(tmp_path: Path) -> None:
     assert findings == [(".okf/decisions/0001-first.md", gone_line)]
 
 
-def test_link_check_ignores_in_bundle_okf_links(tmp_path: Path) -> None:
+def test_link_check_okf_links_inside_bundle(tmp_path: Path) -> None:
     _good_repo(tmp_path)
     path = tmp_path / ".okf/manifesto.md"
     path.write_text(
-        path.read_text() + "\n[gone](decisions/0099-nope.md) and [root](/nope.md)\n"
+        path.read_text()
+        + "\n[first](decisions/0001-first.md) and [root](/decisions/0001-first.md)\n"
+        + "[gone](decisions/0099-nope.md) and [root gone](/nope.md)\n"
+    )
+    gone_line = len(path.read_text().splitlines())
+
+    assert [
+        (f["file"], f["line"], f["message"])
+        for f in _findings(tmp_path)
+        if f["check"] == "link"
+    ] == [
+        (
+            ".okf/manifesto.md",
+            gone_line,
+            "link to decisions/0099-nope.md does not exist",
+        ),
+        (".okf/manifesto.md", gone_line, "link to /nope.md does not exist"),
+    ]
+
+
+def test_link_check_leaves_okf_index_entries_to_the_index_check(
+    tmp_path: Path,
+) -> None:
+    _good_repo(tmp_path)
+    _write(
+        tmp_path,
+        ".okf/decisions/index.md",
+        "# Decisions\n\n- [ADR 0001](0001-first.md): the first.\n"
+        "- [ADR 0099](0099-gone.md): see [gone](0098-gone.md).\n",
     )
 
-    assert _link_findings(tmp_path) == []
+    assert [(f["check"], f["file"], f["line"]) for f in _findings(tmp_path)] == [
+        ("index", ".okf/decisions/index.md", 4),
+        ("link", ".okf/decisions/index.md", 4),
+    ]
 
 
 def test_link_check_skips_urls_and_anchors(tmp_path: Path) -> None:
@@ -364,5 +396,156 @@ def test_angle_bracket_with_inner_brackets_is_not_a_link(tmp_path: Path) -> None
     _good_repo(tmp_path)
     page = "# Install\n\n[x](<a>b.md>)\n\n[r]: <a>b.md>\n"
     _write(tmp_path, "docs/how-to/install.md", page)
+
+    assert [f for f in _findings(tmp_path) if f["check"] == "link"] == []
+
+
+def _decision(title: str, heading: str) -> str:
+    """A decision record's text with ``title`` in its front matter and ``heading`` as its ``#`` line."""
+    return (
+        f'---\ntype: decision\ntitle: "{title}"\ndescription: "A choice."\n'
+        f"---\n\n# {heading}\n"
+    )
+
+
+def _decision_findings(root: Path) -> list[tuple[str, str, int | None, str]]:
+    """The (check, file, line, message) of each error ``kmctl check`` reports for root's decisions."""
+    return [
+        (f["check"], f["file"], f["line"], f["message"])
+        for f in _findings(root)
+        if f["file"].startswith(".okf/decisions/")
+    ]
+
+
+def test_decision_check_title_and_heading_number_must_be_the_files(
+    tmp_path: Path,
+) -> None:
+    _good_repo(tmp_path)
+    _write(
+        tmp_path,
+        ".okf/decisions/index.md",
+        "# Decisions\n\n- [ADR 0001: First](0001-first.md): the first.\n",
+    )
+    _write(
+        tmp_path,
+        ".okf/decisions/0001-first.md",
+        _decision("ADR 0002: First", "ADR 0003: First"),
+    )
+
+    result = _check(tmp_path)
+
+    assert result.exit_code == 1
+    assert _decision_findings(tmp_path) == [
+        (
+            "decision",
+            ".okf/decisions/0001-first.md",
+            None,
+            "title says ADR 0002, but the file is number 0001; make it ADR 0001",
+        ),
+        (
+            "decision",
+            ".okf/decisions/0001-first.md",
+            7,
+            "# heading says ADR 0003, but the file is number 0001; make it ADR 0001",
+        ),
+        (
+            "index",
+            ".okf/decisions/index.md",
+            3,
+            (
+                "entry for 0001-first.md reads 'ADR 0001: First'; make it the "
+                "record's title, 'ADR 0002: First', or 'ADR 0001'"
+            ),
+        ),
+    ]
+
+
+@pytest.mark.parametrize("text", ["ADR 0001", "ADR 0001: First"])
+def test_decision_check_entry_may_be_title_or_number(tmp_path: Path, text: str) -> None:
+    _good_repo(tmp_path)
+    _write(
+        tmp_path,
+        ".okf/decisions/index.md",
+        f"# Decisions\n\n- [{text}](0001-first.md): the first.\n",
+    )
+    _write(
+        tmp_path,
+        ".okf/decisions/0001-first.md",
+        _decision("ADR 0001: First", "ADR 0001: First"),
+    )
+
+    assert _decision_findings(tmp_path) == []
+
+
+@pytest.mark.parametrize("text", ["ADR 0002", "ADR 0001: Old title", "First"])
+def test_decision_check_entry_must_name_its_record(tmp_path: Path, text: str) -> None:
+    _good_repo(tmp_path)
+    _write(
+        tmp_path,
+        ".okf/decisions/index.md",
+        f"# Decisions\n\n- [{text}](0001-first.md): the first.\n",
+    )
+    _write(
+        tmp_path,
+        ".okf/decisions/0001-first.md",
+        _decision("ADR 0001: First", "ADR 0001: First"),
+    )
+
+    assert _decision_findings(tmp_path) == [
+        (
+            "index",
+            ".okf/decisions/index.md",
+            3,
+            (
+                f"entry for 0001-first.md reads '{text}'; make it the "
+                "record's title, 'ADR 0001: First', or 'ADR 0001'"
+            ),
+        )
+    ]
+
+
+def test_decision_check_reads_numbers_past_9999(tmp_path: Path) -> None:
+    _good_repo(tmp_path)
+    _write(
+        tmp_path,
+        ".okf/decisions/index.md",
+        "# Decisions\n\n- [ADR 0001](0001-first.md): the first.\n"
+        "- [ADR 10000](10000-big.md): a big one.\n",
+    )
+    _write(tmp_path, ".okf/decisions/10000-big.md", _decision("ADR 0004: Big", "Big"))
+
+    assert _decision_findings(tmp_path) == [
+        (
+            "decision",
+            ".okf/decisions/10000-big.md",
+            None,
+            "title says ADR 0004, but the file is number 10000; make it ADR 10000",
+        )
+    ]
+
+
+def test_decision_check_skips_headings_in_code(tmp_path: Path) -> None:
+    _good_repo(tmp_path)
+    _write(
+        tmp_path,
+        ".okf/decisions/index.md",
+        "# Decisions\n\n- [ADR 0001](0001-first.md): the first.\n",
+    )
+    _write(
+        tmp_path,
+        ".okf/decisions/0001-first.md",
+        _decision("ADR 0001: First", "ADR 0001: First")
+        + "\n```\n# ADR 0009: Example\n```\n",
+    )
+
+    assert _decision_findings(tmp_path) == []
+
+
+def test_link_check_skips_the_append_only_log(tmp_path: Path) -> None:
+    _good_repo(tmp_path)
+    _write(
+        tmp_path, ".okf/log.md", "# Log\n\n- Added [Gone](decisions/0099-gone.md).\n"
+    )
+    _write(tmp_path, ".okf/decisions/log.md", "# Log\n\n- See [Gone](0099-gone.md).\n")
 
     assert [f for f in _findings(tmp_path) if f["check"] == "link"] == []

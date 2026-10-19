@@ -569,6 +569,18 @@ def test_ack_leaves_out_a_concept_that_was_deleted(tmp_path: Path) -> None:
     assert [f for f in json.loads(check.stdout) if f["check"] == "summary"] == []
 
 
+def test_ack_after_a_rename_names_only_the_new_id(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    (first,) = (root / ".okf/decisions").glob("0001-*.md")
+    _git(root, "mv", str(first), str(first.with_name("0001-renamed.md")))
+    _commit(root, "rename 0001")
+
+    result = _ack(root, "--json")
+
+    assert result.exit_code == 0, result.output
+    assert json.loads(result.stdout)["against"] == ["decisions/0001-renamed"]
+
+
 def test_ack_after_only_a_deletion_writes_an_empty_list(tmp_path: Path) -> None:
     root = _init(tmp_path)
     (first,) = (root / ".okf/decisions").glob("0001-*.md")
