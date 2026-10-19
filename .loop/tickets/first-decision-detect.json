@@ -3,7 +3,7 @@
   "slug": "first-decision-detect",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "5757f0af24359455b86bf14ecd7518f76988e650ab80cc5fe5c93ac50c1039a8",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "5a4138e4cc20ad826399af4951b080965ce9d30129929f5ab3b289a8273927a2",
+    "started_at": "2026-10-19T14:30:13+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "5a4138e4cc20ad826399af4951b080965ce9d30129929f5ab3b289a8273927a2",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -44,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.2.2.dev1+gd84319696",
-  "at": "2026-10-19T14:29:52+00:00"
+  "at": "2026-10-19T14:30:13+00:00"
 }
