@@ -174,7 +174,21 @@ def test_release_tag_builds_before_it_tags_and_publishes_the_release() -> None:
     assert "dist/*" in steps[order[3]]["run"]
     assert "uv run scripts/release.py is-prerelease" in runs
     assert "--prerelease" in runs
-    assert "--notes-start-tag" in runs
+
+
+def test_release_tag_publishes_the_notes_script_output() -> None:
+    """The Release body is scripts/release_notes.py's output, not GitHub's pull-request list."""
+    steps = _steps(RELEASE_TAG, "tag")
+    runs = _runs(RELEASE_TAG, "tag")
+    publish = steps[_index(steps, 'gh release create "v$VERSION"')]["run"]
+
+    assert "--generate-notes" not in runs
+    assert (
+        'uv run scripts/release_notes.py "v$VERSION" > "$RUNNER_TEMP/notes.md"'
+        in publish
+    )
+    assert '--notes-file "$RUNNER_TEMP/notes.md"' in publish
+    assert publish.index("release_notes.py") < publish.index("gh release create")
 
 
 def _before_read() -> str:
