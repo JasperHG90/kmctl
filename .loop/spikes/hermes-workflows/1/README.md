@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.2.2.dev82+g0ed6ce5f1.d20261019
-  at: '2026-10-20T08:30:41+00:00'
+  at: '2026-10-20T08:30:55+00:00'
 slug: hermes-workflows
 n: 1
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike hermes-workflows/1
@@ -24,7 +24,9 @@ true
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note hermes-workflows 1`.
+A probe, not evidence: `true` ran to test whether the eval-sign-guard hook lets
+any spike through, after it refused `sh`/`bash`-wrapped commands. It answers
+no plan risk. Risk 1's evidence is spike 2.
 
 ## Files
 
