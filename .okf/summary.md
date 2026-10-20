@@ -7,9 +7,9 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-10-19T21:32:03Z
+  at: 2026-10-20T07:36:40Z
   against:
-    - decisions/0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step
+    - decisions/0012-releases-come-from-ci
 ---
 
 # Summary: kmctl
