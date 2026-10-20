@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "No run: line in either Hermes workflow expands a step output; Apply triage reads the response file from a quoted $RESPONSE_FILE set in env",
+      "fails_when": "any run: in hermes-interactive.yaml or hermes-issue-triage.yaml contains '${{ steps.', or Apply triage's env lacks RESPONSE_FILE or its run does not quote \"$RESPONSE_FILE\"",
+      "command": "uv run pytest tests/scripts/test_workflows.py -k hermes_step_outputs -q"
+    }
+  ]
+}
