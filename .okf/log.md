@@ -175,3 +175,8 @@
 - Corrected `decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins`: a handed-off `kmctl --version` names the pin, and `KMCTL_PINNED=1` keeps the bare line (issue #37).
 - Added `decisions/0034-kmctl-mv-renames-a-concept-and-rewrites-the-links-to-it` with `kmctl new decision`.
 - Wrote `decisions/0034-kmctl-mv-renames-a-concept-and-rewrites-the-links-to-it` and updated `architecture/overview` (`mv.py`, `kmctl mv`) for it (issue #36); `summary` still holds (kmctl summary ack).
+
+## 2026-10-20
+
+- Added `decisions/0035-kmctl-s-repository-answers-and-triages-with-hermes` with `kmctl new decision`.
+- Wrote `decisions/0035-kmctl-s-repository-answers-and-triages-with-hermes` and added the Hermes workflows to `architecture/overview`.

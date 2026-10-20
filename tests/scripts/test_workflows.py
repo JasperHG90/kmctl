@@ -20,6 +20,10 @@ RELEASE_TAG = WORKFLOWS / "release-tag.yml"
 KNOWLEDGE_AUDIT = WORKFLOWS / "knowledge-audit.yml"
 ACTION = ROOT / "action.yml"
 CI = WORKFLOWS / "ci.yml"
+HERMES_INTERACTIVE = WORKFLOWS / "hermes-interactive.yaml"
+HERMES_TRIAGE = WORKFLOWS / "hermes-issue-triage.yaml"
+PROMPTS = ROOT / ".github" / "prompts"
+MEMBERS = 'contains(fromJSON(\'["MEMBER","OWNER","COLLABORATOR"]\'), github.event.comment.author_association)'
 # The job in each workflow that may write; every other job reads only.
 WRITERS = {RELEASE: {"bump"}, RELEASE_TAG: {"tag"}}
 
@@ -262,7 +266,9 @@ def test_no_workflow_publishes_to_pypi(path: Path) -> None:
 
 
 @pytest.mark.parametrize(
-    "path", [RELEASE, RELEASE_TAG, KNOWLEDGE_AUDIT, ACTION], ids=lambda p: p.name
+    "path",
+    [RELEASE, RELEASE_TAG, KNOWLEDGE_AUDIT, ACTION, HERMES_INTERACTIVE, HERMES_TRIAGE],
+    ids=lambda p: p.name,
 )
 def test_every_action_is_pinned_by_commit_sha(path: Path) -> None:
     """Each ``uses:`` names a 40-character commit SHA with its version as a comment."""
@@ -351,3 +357,54 @@ def test_release_workflows_cache_record_names_the_reason() -> None:
         "release.yml" in c and "release-tag.yml" in c and "cache" in c
         for c in corrections
     )
+
+
+def test_hermes_trigger_is_slash_hermes_from_a_member() -> None:
+    """Hermes answers a member's /hermes comment; @hermes would mention another account."""
+    job = _load(HERMES_INTERACTIVE)["jobs"]["respond"]
+    hermes = next(s for s in job["steps"] if "hermes-interactive" in s.get("uses", ""))
+
+    assert hermes["with"]["trigger_phrase"] == "/hermes"
+    assert "contains(github.event.comment.body, '/hermes')" in job["if"]
+    assert MEMBERS in job["if"]
+
+
+def test_hermes_trigger_for_triage_is_an_opened_issue_or_a_member_s_slash_triage() -> (
+    None
+):
+    """Triage runs on a new issue, by hand, or on a member's /triage comment."""
+    data = _load(HERMES_TRIAGE)
+    condition = data["jobs"]["triage"]["if"]
+
+    assert set(data["on"]) == {"issues", "issue_comment", "workflow_dispatch"}
+    assert data["on"]["issues"]["types"] == ["opened"]
+    assert "startsWith(github.event.comment.body, '/triage')" in condition
+    assert MEMBERS in condition
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        HERMES_INTERACTIVE,
+        HERMES_TRIAGE,
+        PROMPTS / "interactive-system.md",
+        PROMPTS / "issue-triage-system.md",
+    ],
+    ids=lambda p: p.name,
+)
+def test_hermes_trigger_never_says_at_hermes(path: Path) -> None:
+    """No workflow or prompt says @hermes."""
+    assert "@hermes" not in path.read_text().lower()
+
+
+def test_hermes_trusted_prompt_and_skills_come_from_the_default_branch() -> None:
+    """A pull request cannot rewrite the instructions of the agent that holds the key."""
+    steps = _steps(HERMES_INTERACTIVE, "respond")
+    trusted = next(
+        s for s in steps if s.get("with", {}).get("path") == ".hermes-trusted"
+    )
+    hermes = next(s for s in steps if "hermes-interactive" in s.get("uses", ""))
+
+    assert trusted["with"]["ref"] == "${{ github.event.repository.default_branch }}"
+    assert hermes["with"]["system_prompt_file"].startswith(".hermes-trusted/")
+    assert hermes["with"]["skills_dir"].startswith(".hermes-trusted/")

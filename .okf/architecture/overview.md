@@ -362,6 +362,10 @@ tag a consumer's `apm.yml` names and a build from a download with no
   `scripts/release.py`, `scripts/next_release_version.py`,
   `scripts/check_wheel.py`, `scripts/smoke_wheel.py`, `apm/apm.yml`,
   `copier.yml` and `starter/`.
+- Repository agents (ADR 0035): `.github/workflows/hermes-interactive.yaml`
+  (`/hermes`), `.github/workflows/hermes-issue-triage.yaml` and
+  `scripts/hermes_triage.py`, with their prompts in `.github/prompts/` and the
+  okf skill in `.github/skills/`.
 - APM: `apm/apm.yml` and its pinned `scaccogatto/okf-skills`; the
   consumer's `apm.yml`, `.claude/settings.json`, `.mcp.json`, `.opencode/`
   and `opencode.json`.
