@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "slug": "hermes-workflows",
-  "stage": "ready",
-  "attempts": 0,
+  "stage": "building",
+  "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
@@ -17,8 +17,8 @@
   "closed_outside": false,
   "dropped": false,
   "archived": false,
-  "worktree": null,
-  "branch": null,
+  "worktree": "/home/vscode/kmctl.worktrees/hermes-workflows",
+  "branch": "loop/hermes-workflows",
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/planner",
@@ -120,8 +120,14 @@
       "to": "ready",
       "at": "2026-10-20T08:35:15+00:00",
       "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-10-20T08:35:25+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.2.2.dev82+g0ed6ce5f1.d20261019",
-  "at": "2026-10-20T08:35:15+00:00"
+  "at": "2026-10-20T08:35:25+00:00"
 }
