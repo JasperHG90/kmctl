@@ -408,3 +408,22 @@ def test_hermes_trusted_prompt_and_skills_come_from_the_default_branch() -> None
     assert trusted["with"]["ref"] == "${{ github.event.repository.default_branch }}"
     assert hermes["with"]["system_prompt_file"].startswith(".hermes-trusted/")
     assert hermes["with"]["skills_dir"].startswith(".hermes-trusted/")
+
+
+@pytest.mark.parametrize(
+    "path", [HERMES_INTERACTIVE, HERMES_TRIAGE], ids=lambda p: p.name
+)
+def test_hermes_step_outputs_never_expand_into_a_shell_line(path: Path) -> None:
+    """A step output reaches a script through env, so no run: line is built from one."""
+    for job in _load(path)["jobs"]:
+        assert "${{ steps." not in _runs(path, job)
+
+
+def test_hermes_step_outputs_apply_triage_reads_a_quoted_response_file() -> None:
+    """Apply triage takes the response file from RESPONSE_FILE, quoted."""
+    step = next(
+        s for s in _steps(HERMES_TRIAGE, "triage") if s.get("name") == "Apply triage"
+    )
+
+    assert step["env"]["RESPONSE_FILE"] == "${{ steps.hermes.outputs.response_file }}"
+    assert '"$RESPONSE_FILE"' in step["run"]
