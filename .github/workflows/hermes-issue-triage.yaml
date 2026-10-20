@@ -1,0 +1,111 @@
+name: Hermes Issue Triage
+
+on:
+  issues:
+    types: [opened]
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      issue-number:
+        description: Issue number to triage (required when running manually).
+        required: true
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: hermes-issue-triage-${{ github.event.issue.number || inputs.issue-number }}
+  cancel-in-progress: true
+
+jobs:
+  triage:
+    if: >-
+      github.event_name == 'issues' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request == null && contains(fromJSON('["MEMBER","OWNER","COLLABORATOR"]'), github.event.comment.author_association) && (startsWith(github.event.comment.body, '/triage') || startsWith(github.event.comment.body, '/Triage') || startsWith(github.event.comment.body, '/TRIAGE')))
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # One area label per top-level part of the repo. The labels are created,
+      # offered to the agent and accepted from this one list.
+      TRIAGE_AREAS: src action apm starter tests scripts docs okf ci
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - id: issue
+        run: echo "number=${{ github.event.issue.number || inputs.issue-number }}" >> "$GITHUB_OUTPUT"
+
+      - name: Fetch issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUM: ${{ steps.issue.outputs.number }}
+          ISSUE_JSON: ${{ runner.temp }}/issue.json
+          ISSUE_MD: ${{ runner.temp }}/issue.md
+        run: |
+          set -euo pipefail
+          gh issue view "$ISSUE_NUM" \
+            --json number,title,body,labels,author \
+            > "$ISSUE_JSON"
+          jq -r '
+            "# Issue #\(.number)\n\n" +
+            "## Title\n\(.title)\n\n" +
+            "## Author\n@\(.author.login)\n\n" +
+            "## Existing labels\n\(if (.labels|length) > 0 then (.labels | map(.name) | join(", ")) else "(none)" end)\n\n" +
+            "## Body\n\(.body // "(empty)")\n"
+          ' "$ISSUE_JSON" > "$ISSUE_MD"
+          {
+            echo
+            echo "## Allowed labels"
+            echo "Type: bug, enhancement, rfc, question, documentation"
+            echo -n "Area:"
+            for area in $TRIAGE_AREAS; do echo -n " area/$area"; done
+            echo
+            echo "Area names are top-level folders, except area/okf (.okf/) and area/ci (.github/)."
+          } >> "$ISSUE_MD"
+
+      - name: Ensure triage labels exist
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          ensure() {
+            local out rc=0
+            out=$(gh label create "$1" --color "$2" --description "$3" 2>&1) || rc=$?
+            if [ $rc -ne 0 ] && ! printf '%s' "$out" | grep -q "already exists"; then
+              echo "::warning::failed to create label $1: $out"
+            fi
+          }
+          ensure "priority/critical"   "b60205" "Urgent — blocks users or core functionality"
+          ensure "priority/high"       "d93f0b" "Important — should be addressed soon"
+          ensure "priority/medium"     "fbca04" "Normal priority"
+          ensure "priority/low"        "0e8a16" "Nice to have"
+          ensure "rfc"                 "5319e7" "Request for Comments"
+          ensure "question"            "cc317c" "Further information is requested"
+          ensure "documentation"       "0075ca" "Improvements or additions to documentation"
+          for area in $TRIAGE_AREAS; do
+            ensure "area/$area" "1d76db" "Affects $area"
+          done
+
+      - id: hermes
+        uses: JasperHG90/toiminnot/actions/hermes@551e8a6cbb23aba74045fa3578bf4c14ffb92893 # v1.2.0
+        with:
+          system_prompt_file: .github/prompts/issue-triage-system.md
+          skills_dir: .github/skills
+          user_message: '@${{ runner.temp }}/issue.md'
+          api_key: ${{ secrets.OLLAMA_API_KEY }}
+          model: deepseek-v4.1-flash
+          max_iterations: '12'
+          quiet_mode: 'false'
+
+      # Strips the trailer, cuts the comment to about 200 tokens and applies
+      # only the allowed labels (ADR 0035).
+      - name: Apply triage
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE_NUM: ${{ steps.issue.outputs.number }}
+        run: python3 scripts/hermes_triage.py "${{ steps.hermes.outputs.response_file }}"

@@ -7,9 +7,10 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-10-19T21:32:03Z
+  at: 2026-10-20T08:38:07Z
   against:
-    - decisions/0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step
+    - architecture/overview
+    - decisions/0035-kmctl-s-repository-answers-and-triages-with-hermes
 ---
 
 # Summary: kmctl
