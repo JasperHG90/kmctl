@@ -7,9 +7,10 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-10-20T07:36:40Z
+  at: 2026-10-20T09:09:13Z
   against:
-    - decisions/0012-releases-come-from-ci
+    - architecture/overview
+    - decisions/0035-kmctl-s-repository-answers-and-triages-with-hermes
 ---
 
 # Summary: kmctl
