@@ -3,7 +3,7 @@
   "slug": "hermes-workflows-reviewer-f2",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -40,8 +40,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "1925dcef4ff1c1aba6bca709da9ab5e684fe932f7bdd972add5cc2d75ceaec93",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "c65e8f6526de2ceda22341a375f447f0b2a6fc80ae3546ec615d27bce3be5991",
+    "started_at": "2026-10-20T12:50:51+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "c65e8f6526de2ceda22341a375f447f0b2a6fc80ae3546ec615d27bce3be5991",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -56,5 +75,5 @@
     }
   ],
   "by": "process:loopctl/2.2.2.dev82+g0ed6ce5f1.d20261019",
-  "at": "2026-10-20T12:50:50+00:00"
+  "at": "2026-10-20T12:50:51+00:00"
 }
