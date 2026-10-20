@@ -1,0 +1,86 @@
+{
+  "schema_version": "1.0",
+  "slug": "hermes-workflows",
+  "plan_hash": "fba5123f3013af2798ba43e16fe1bad7b9d111e1d6a2c7b7e4ab8c7d80fb6dc4",
+  "problems": [
+    {
+      "id": "P1",
+      "text": "kmctl's repository has no agent that answers questions on issues and pull requests or triages new issues."
+    },
+    {
+      "id": "P2",
+      "text": "A Hermes triage comment can run to thousands of words, too long to read on every issue."
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "Members get answers and triage on kmctl's own issues and pull requests without leaving GitHub."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "O1",
+      "change": "/hermes answers a member's comment on an issue or pull request",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "new:.github/workflows/hermes-interactive.yaml",
+        "new:.github/prompts/interactive-system.md",
+        "new:.github/skills/okf/SKILL.md",
+        "new:.github/skills/okf/references/SPEC.md",
+        "new:.github/skills/okf/references/APACHE-2.0.txt"
+      ],
+      "checked_by": "tests/scripts/test_workflows.py checks the trigger, the member gate, the trusted checkout and SHA pins",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O2",
+      "change": "New issues get a triage comment under 200 tokens and allowed labels",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P2",
+      "fixes_index": 1,
+      "needs": [
+        "O1"
+      ],
+      "needs_index": [
+        0
+      ],
+      "touches": [
+        "new:.github/workflows/hermes-issue-triage.yaml",
+        "new:.github/prompts/issue-triage-system.md",
+        "new:scripts/hermes_triage.py"
+      ],
+      "checked_by": "tests/scripts/test_hermes_triage.py runs the script on long and labelled responses",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O3",
+      "change": "An ADR records why kmctl's repository runs Hermes beside action/agent.py",
+      "kind": "support",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [
+        "O1"
+      ],
+      "needs_index": [
+        0
+      ],
+      "touches": [
+        "new:.okf/decisions/0035-kmctl-s-repository-answers-and-triages-with-hermes.md",
+        ".okf/decisions/index.md"
+      ],
+      "checked_by": "the okf-validate and kmctl-check hooks",
+      "seen_by": "nobody"
+    }
+  ]
+}
