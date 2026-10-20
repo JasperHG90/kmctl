@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "ADR 0035 said neither job runs on a fork's pull request with the key.",
+      "anchor": ".okf/decisions/0035-kmctl-s-repository-answers-and-triages-with-hermes.md:71",
+      "category": "docs",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "The Apply triage step interpolates steps.hermes.outputs.response_file straight into the shell line instead of passing it through env and quoting it. Deferred to stub ticket hermes-workflows-reviewer-f2.",
+      "anchor": ".github/workflows/hermes-issue-triage.yaml:111",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "91afacb820bdfd5291de66aba49290365e6fbdbf9ca470f659632d9d19de86a5",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.2.2.dev82+g0ed6ce5f1.d20261019",
+  "at": "2026-10-20T09:03:52+00:00"
+}

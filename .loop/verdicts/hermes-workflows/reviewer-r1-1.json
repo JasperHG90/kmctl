@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "ADR 0035 says neither job runs on a fork's pull request with the key, but a member's /hermes in a fork PR's conversation fires issue_comment, which runs in the base repository with OLLAMA_API_KEY and checks out refs/pull/N/head, so Hermes reads the fork's code with the key in its environment. The workflow's own comment tells people to do exactly that.",
+      "anchor": ".okf/decisions/0035-kmctl-s-repository-answers-and-triages-with-hermes.md:66",
+      "category": "docs",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "The Apply triage step interpolates steps.hermes.outputs.response_file straight into the shell line; the source workflow passed it through env (RESPONSE_FILE). Pass it via env and quote \"$RESPONSE_FILE\", as GitHub's hardening guide asks.",
+      "anchor": ".github/workflows/hermes-issue-triage.yaml:111",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "2a50e69f179ea4617a4fb0cefff91479d773d3580ca283698b20ae1b35593b5f",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.2.2.dev82+g0ed6ce5f1.d20261019",
+  "at": "2026-10-20T08:55:17+00:00"
+}

@@ -1,8 +1,9 @@
 """Release notes from main's first-parent history, filled into ``.github/release-notes.md`` (ADR 0012).
 
-Work lands on main as ``Merge loop/SLUG: SUMMARY`` commits, not pull requests,
-so ``scripts/release_notes.py`` reads those merges and the plain commits beside
-them in place of GitHub's generated pull-request list.
+Most work lands on main as ``Merge loop/SLUG: SUMMARY`` commits, not pull
+requests, so ``scripts/release_notes.py`` reads those merges, the pull request
+merges a sync with GitHub's main brings in, and the plain commits beside them
+in place of GitHub's generated pull-request list.
 """
 
 from __future__ import annotations
@@ -46,6 +47,30 @@ def _merge(repo: Path, branch: str, subject: str, inside: str) -> None:
     _commit(repo, inside)
     _git(repo, "switch", "-q", "main")
     _git(repo, "merge", "-q", "--no-ff", "-m", subject, branch)
+
+
+def _pull_request(repo: Path, base: str, number: int, title: str) -> None:
+    """Merge a one-commit pull request into ``base`` as GitHub does, with its title in the body."""
+    _git(repo, "switch", "-q", "-c", f"pr/{number}", base)
+    _commit(repo, title)
+    _git(repo, "switch", "-q", base)
+    subject = f"Merge pull request #{number} from JasperHG90/pr/{number}"
+    _git(repo, "merge", "-q", "--no-ff", "-m", f"{subject}\n\n{title}", f"pr/{number}")
+
+
+def _sync(repo: Path, into: str, source: str) -> None:
+    """Merge ``source`` into ``into`` as ``git pull`` does when both have moved on."""
+    _git(repo, "switch", "-q", into)
+    _commit(repo, "loop: stamp")
+    _git(
+        repo,
+        "merge",
+        "-q",
+        "--no-ff",
+        "-m",
+        "Merge remote-tracking branch 'origin/main'",
+        source,
+    )
 
 
 def _notes(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
@@ -124,6 +149,99 @@ def test_skips_loop_release_and_placeholder_commits(repo: Path, subject: str) ->
     assert res.returncode == 0, res.stderr
     assert subject not in res.stdout
     assert "Merge pull request" not in res.stdout
+
+
+def test_lists_pull_requests_a_sync_brings_in(repo: Path) -> None:
+    """A pull request merged on GitHub and pulled into main is a What changed bullet with its title."""
+    _git(repo, "branch", "github")
+    _pull_request(repo, "github", 5, "Add a gadget")
+    _pull_request(repo, "github", 6, "Fix the gadget")
+    _sync(repo, "main", "github")
+    _git(repo, "tag", "-a", "v0.3.0", "-m", "kmctl 0.3.0")
+
+    res = _notes(repo, "v0.3.0")
+
+    assert res.returncode == 0, res.stderr
+    assert _section(res.stdout, "What changed").strip() == (
+        "- Add a gadget (#5)\n- Fix the gadget (#6)"
+    )
+
+
+def test_lists_pull_requests_of_a_sync_inside_a_sync(repo: Path) -> None:
+    """A sync that reached GitHub's main brings its own pull requests in too, in merge order."""
+    _git(repo, "branch", "github")
+    _git(repo, "branch", "elsewhere")
+    _pull_request(repo, "github", 5, "Add a gadget")
+    _pull_request(repo, "elsewhere", 7, "Add a gizmo")
+    _sync(repo, "github", "elsewhere")
+    _pull_request(repo, "github", 6, "Fix the gadget")
+    _sync(repo, "main", "github")
+    _git(repo, "tag", "-a", "v0.3.0", "-m", "kmctl 0.3.0")
+
+    res = _notes(repo, "v0.3.0")
+
+    assert res.returncode == 0, res.stderr
+    assert _section(res.stdout, "What changed").strip() == (
+        "- Add a gadget (#5)\n- Add a gizmo (#7)\n- Fix the gadget (#6)"
+    )
+
+
+def test_leaves_out_pull_requests_of_the_release_before(repo: Path) -> None:
+    """A sync that brings in the previous release does not list that release's pull requests again."""
+    _git(repo, "branch", "github")
+    _pull_request(repo, "github", 5, "Add a gadget")
+    _git(repo, "tag", "-a", "v0.3.0", "-m", "kmctl 0.3.0", "github")
+    _sync(repo, "main", "github")
+    _pull_request(repo, "main", 6, "Fix the gadget")
+    _git(repo, "tag", "-a", "v0.4.0", "-m", "kmctl 0.4.0")
+
+    res = _notes(repo, "v0.4.0")
+
+    assert res.returncode == 0, res.stderr
+    assert _section(res.stdout, "What changed").strip() == "- Fix the gadget (#6)"
+
+
+def test_lists_a_pull_request_once_when_a_sync_inside_a_sync_holds_it(
+    repo: Path,
+) -> None:
+    """A sync inside a sync that brings back a pull request main already has lists it once."""
+    _git(repo, "branch", "elsewhere")
+    _pull_request(repo, "main", 5, "Add a gadget")
+    _sync(repo, "elsewhere", "main")
+    _sync(repo, "main", "elsewhere")
+    _git(repo, "tag", "-a", "v0.3.0", "-m", "kmctl 0.3.0")
+
+    res = _notes(repo, "v0.3.0")
+
+    assert res.returncode == 0, res.stderr
+    assert _section(res.stdout, "What changed").strip() == "- Add a gadget (#5)"
+
+
+def test_lists_a_pull_request_once_when_its_commit_is_also_on_main(repo: Path) -> None:
+    """A commit made on main and also merged on GitHub as a pull request shows once, as the pull request."""
+    _git(repo, "branch", "github")
+    _commit(repo, "License kmctl under MIT")
+    _git(repo, "switch", "-q", "github")
+    _git(
+        repo,
+        "merge",
+        "-q",
+        "--no-ff",
+        "-m",
+        "Merge pull request #30 from JasperHG90/pr/mit-license\n\nLicense kmctl under MIT",
+        "main",
+    )
+    _sync(repo, "main", "github")
+    _git(repo, "tag", "-a", "v0.3.0", "-m", "kmctl 0.3.0")
+
+    res = _notes(repo, "v0.3.0")
+
+    assert res.returncode == 0, res.stderr
+    assert (
+        _section(res.stdout, "What changed").strip()
+        == "- License kmctl under MIT (#30)"
+    )
+    assert _section(res.stdout, "Other changes").strip() == "None."
 
 
 def test_template_fills_version_install_and_compare(repo: Path) -> None:

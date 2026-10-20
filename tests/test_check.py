@@ -448,13 +448,36 @@ def test_decision_check_title_and_heading_number_must_be_the_files(
             7,
             "# heading says ADR 0003, but the file is number 0001; make it ADR 0001",
         ),
+    ]
+
+
+def test_decision_check_entry_is_told_the_corrected_title(tmp_path: Path) -> None:
+    _good_repo(tmp_path)
+    _write(
+        tmp_path,
+        ".okf/decisions/index.md",
+        "# Decisions\n\n- [ADR 0099: Something](0001-first.md): the first.\n",
+    )
+    _write(
+        tmp_path,
+        ".okf/decisions/0001-first.md",
+        _decision("ADR 0002: First", "ADR 0001: First"),
+    )
+
+    assert _decision_findings(tmp_path) == [
+        (
+            "decision",
+            ".okf/decisions/0001-first.md",
+            None,
+            "title says ADR 0002, but the file is number 0001; make it ADR 0001",
+        ),
         (
             "index",
             ".okf/decisions/index.md",
             3,
             (
-                "entry for 0001-first.md reads 'ADR 0001: First'; make it the "
-                "record's title, 'ADR 0002: First', or 'ADR 0001'"
+                "entry for 0001-first.md reads 'ADR 0099: Something'; make it the "
+                "record's title, 'ADR 0001: First', or 'ADR 0001'"
             ),
         ),
     ]

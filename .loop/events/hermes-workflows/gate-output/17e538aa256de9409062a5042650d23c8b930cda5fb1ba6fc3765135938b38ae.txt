@@ -1,0 +1,43 @@
+warning: `VIRTUAL_ENV=/home/vscode/workspace/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+unformatted: File would be reformatted
+  --> scripts/hermes_triage.py:59:19
+   |
+58 |         except json.JSONDecodeError as e:
+   -             print(f"::warning::could not parse hermes-triage trailer: {e}", file=sys.stderr)
+59 +             print(
+60 +                 f"::warning::could not parse hermes-triage trailer: {e}",
+61 +                 file=sys.stderr,
+62 +             )
+63 |
+   |
+
+unformatted: File would be reformatted
+  --> tests/scripts/test_hermes_triage.py:15:11
+   |
+14 | AREAS = "src action apm starter tests scripts docs okf ci".split()
+   - TRAILER = '<!-- hermes-triage: {"priority":"high","labels":["bug","area/src","made-up"]} -->'
+15 + TRAILER = (
+16 +     '<!-- hermes-triage: {"priority":"high","labels":["bug","area/src","made-up"]} -->'
+17 + )
+18 |
+   |
+
+unformatted: File would be reformatted
+   --> tests/scripts/test_workflows.py:372:87
+    |
+371 |
+    - def test_hermes_trigger_for_triage_is_an_opened_issue_or_a_member_s_slash_triage() -> None:
+372 + def test_hermes_trigger_for_triage_is_an_opened_issue_or_a_member_s_slash_triage() -> (
+373 +     None
+374 + ):
+375 |     """Triage runs on a new issue, by hand, or on a member's /triage comment."""
+--------------------------------------------------------------------------------
+402 |     steps = _steps(HERMES_INTERACTIVE, "respond")
+    -     trusted = next(s for s in steps if s.get("with", {}).get("path") == ".hermes-trusted")
+403 +     trusted = next(
+404 +         s for s in steps if s.get("with", {}).get("path") == ".hermes-trusted"
+405 +     )
+406 |     hermes = next(s for s in steps if "hermes-interactive" in s.get("uses", ""))
+    |
+
+3 files would be reformatted, 123 files already formatted

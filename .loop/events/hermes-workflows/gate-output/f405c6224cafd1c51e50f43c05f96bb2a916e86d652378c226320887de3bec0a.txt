@@ -1,0 +1,20 @@
+warning: `VIRTUAL_ENV=/home/vscode/workspace/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+SIM905 [*] Consider using a list literal instead of `str.split`
+  --> tests/scripts/test_hermes_triage.py:14:9
+   |
+12 | WORKFLOW = ROOT / ".github" / "workflows" / "hermes-issue-triage.yaml"
+13 | PROMPT = ROOT / ".github" / "prompts" / "issue-triage-system.md"
+14 | AREAS = "src action apm starter tests scripts docs okf ci".split()
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+15 | TRAILER = '<!-- hermes-triage: {"priority":"high","labels":["bug","area/src","made-up"]} -->'
+   |
+help: Replace with list literal
+   |
+13 | PROMPT = ROOT / ".github" / "prompts" / "issue-triage-system.md"
+   - AREAS = "src action apm starter tests scripts docs okf ci".split()
+14 + AREAS = ["src", "action", "apm", "starter", "tests", "scripts", "docs", "okf", "ci"]
+15 | TRAILER = '<!-- hermes-triage: {"priority":"high","labels":["bug","area/src","made-up"]} -->'
+   |
+
+Found 1 error.
+[*] 1 fixable with `--fix`.

@@ -7,7 +7,7 @@
 # scripts/release.py set writes it into every kmctl apm.yml, and pyproject.toml
 # reads it.
 name: kmctl
-version: 0.12.0
+version: 0.12.1
 description: kmctl's skills, audit agent, knowledge rules and session hooks, with the okf skills and MCP server they use.
 dependencies:
   apm:
