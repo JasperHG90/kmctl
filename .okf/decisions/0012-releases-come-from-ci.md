@@ -125,3 +125,18 @@ commit one under Other changes, and loop state, release, branch-sync and
 manual placeholder commits are left out. It fills the template
 `.github/release-notes.md`, with the install lines for the tag and a compare
 link, and `release-tag.yml` publishes the result with `--notes-file`.
+
+## Correction, 2026-10-20
+
+The 2026-10-19 correction says the release notes read only `main`'s
+first-parent history and leave branch syncs out. Pull requests merged on
+GitHub reach the local `main` through a sync such as
+`Merge remote-tracking branch 'origin/main'`, so v0.12.0's notes listed none
+of its six pull requests (issue #45). `scripts/release_notes.py` now also
+reads the first-parent history each such sync brought in, except commits
+that the release before or the history already read holds. Each
+`Merge pull request #N` there, other than the release pull request, becomes
+a What changed bullet with the title GitHub wrote in the merge's body, as
+`TITLE (#N)`. A plain commit with the same text as a listed pull request's
+title is left out, so a change committed to `main` and also merged as a pull
+request shows once.
