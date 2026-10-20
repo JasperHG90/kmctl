@@ -70,3 +70,4 @@
 {"ask": "j-20261020T083745+0000-e68b8987", "at": "2026-10-20T08:44:11+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "6413797351cc75ae46c02f5a991e7af09d5e13f1", "subject": "Add a rule: releases come from CI and always carry notes"}
 {"at": "2026-10-20T08:52:19+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "3a440eb413aa77fad3dccdbb72216e609aa5ca35", "subject": "Merge branch 'main' of https://github.com/JasperHG90/kmctl"}
 {"at": "2026-10-20T08:52:40+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "cae94caf8bd0ad2bbfcd6bdfba3bd46ee4654e17", "subject": "Merge remote-tracking branch 'origin/main'"}
+{"at": "2026-10-20T09:09:07+00:00", "branch": "loop/hermes-workflows", "kind": "commit", "schema_version": "1.0", "sha": "54c16dbda1dd7695be40bddcdbe04af4ad4e4d64", "subject": "Merge branch 'main' into loop/hermes-workflows"}
