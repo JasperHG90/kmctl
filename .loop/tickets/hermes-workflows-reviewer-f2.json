@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "hermes-workflows-reviewer-f2",
-  "stage": "planning",
+  "stage": "ready",
   "attempts": 0,
   "plan_rounds": 1,
   "review_rounds": 0,
@@ -72,8 +72,14 @@
       "to": "planning",
       "at": "2026-10-20T12:50:38+00:00",
       "by": "promote"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-10-20T12:51:47+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.2.2.dev82+g0ed6ce5f1.d20261019",
-  "at": "2026-10-20T12:51:46+00:00"
+  "at": "2026-10-20T12:51:47+00:00"
 }
