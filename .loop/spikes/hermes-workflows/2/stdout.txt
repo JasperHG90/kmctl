@@ -1,0 +1,17 @@
+✓ starter
+  trim trailing whitespace...............................................Passed
+  fix end of files.......................................................Passed
+  mixed line ending......................................................Passed
+  check yaml.............................................................Passed
+  check toml.........................................(no files to check)Skipped
+  check json.........................................(no files to check)Skipped
+  check for merge conflicts..............................................Passed
+  check for case conflicts...............................................Passed
+  check for added large files............................................Passed
+  detect private key.....................................................Passed
+✓ <workspace>
+  generate the Antigravity rules.........................................Passed
+  kmctl check --fix......................................................Passed
+  ruff check.............................................................Passed
+  ruff format............................................................Passed
+  okf validate --strict..................................................Passed

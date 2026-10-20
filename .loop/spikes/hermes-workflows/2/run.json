@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "hermes-workflows",
+  "n": 2,
+  "command": "python3 /home/vscode/scratch/hermes-spike/check_hooks.py",
+  "scripts": [
+    {
+      "source": "/home/vscode/scratch/hermes-spike/check_hooks.py",
+      "copy": "files/check_hooks.py"
+    }
+  ],
+  "where": "worktree",
+  "head": "47418e92abdc9bc7ca53698359c7eb4957b6a5ae",
+  "fingerprint": "1a29b4ee157424974c67a7163843bfb72388ab4eef51148ed3f90c1a6d1e2869",
+  "started_at": "2026-10-20T08:31:03+00:00",
+  "finished_at": "2026-10-20T08:31:08+00:00",
+  "duration_seconds": 4.565,
+  "timeout_seconds": 600.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.2.2.dev82+g0ed6ce5f1.d20261019",
+  "moved_from": null
+}
