@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "Both Hermes workflows start on /hermes or /triage from a member, and no workflow or prompt says @hermes",
+      "fails_when": "hermes-interactive.yaml's trigger_phrase or job condition is not /hermes, either job runs for a comment from someone outside MEMBER, OWNER or COLLABORATOR, or '@hermes' appears in either workflow or prompt",
+      "command": "uv run pytest tests/scripts/test_workflows.py -k hermes_trigger -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "hermes-interactive.yaml reads its prompt and skills from the default branch, never from the pull request",
+      "fails_when": "system_prompt_file or skills_dir points outside the checkout of the default branch",
+      "command": "uv run pytest tests/scripts/test_workflows.py -k hermes_trusted -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "Every action in both Hermes workflows is pinned by commit SHA",
+      "fails_when": "a uses: line in either workflow names a tag or branch instead of a 40-character SHA with its version comment",
+      "command": "uv run pytest tests/scripts/test_workflows.py -k 'pinned_by_commit_sha and hermes' -q"
+    },
+    {
+      "id": "r4",
+      "behavior": "scripts/hermes_triage.py cuts a triage comment longer than 800 characters (about 200 tokens) at a line break and keeps it at most 800 characters",
+      "fails_when": "a 2000-character response is posted longer than 800 characters, or is cut in the middle of a line",
+      "command": "uv run pytest tests/scripts/test_hermes_triage.py -k cut -q"
+    },
+    {
+      "id": "r5",
+      "behavior": "scripts/hermes_triage.py applies only allowed labels and the priority label from the trailer, and strips the trailer from the comment",
+      "fails_when": "a label outside the type, area/* or priority/* lists is applied, the priority label is missing, or the trailer appears in the posted comment",
+      "command": "uv run pytest tests/scripts/test_hermes_triage.py -k labels -q"
+    },
+    {
+      "id": "r6",
+      "behavior": "The triage system prompt asks for a comment under 200 tokens, and the workflow's area labels match kmctl's top-level layout",
+      "fails_when": "issue-triage-system.md does not state the 200-token limit, or TRIAGE_AREAS names a folder kmctl does not have",
+      "command": "uv run pytest tests/scripts/test_hermes_triage.py -k 'prompt or areas' -q"
+    },
+    {
+      "id": "r7",
+      "behavior": "An ADR records why kmctl's repository runs Hermes for /hermes and triage beside action/agent.py, which ADR 0017 chose for the audit",
+      "fails_when": "no accepted ADR covers the Hermes workflows, or it contradicts ADR 0017's audit decision",
+      "judgment": true
+    }
+  ]
+}
