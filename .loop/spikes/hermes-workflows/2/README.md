@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.2.2.dev82+g0ed6ce5f1.d20261019
-  at: '2026-10-20T08:31:08+00:00'
+  at: '2026-10-20T08:31:19+00:00'
 slug: hermes-workflows
 n: 2
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike hermes-workflows/2
@@ -24,7 +24,11 @@ python3 /home/vscode/scratch/hermes-spike/check_hooks.py
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note hermes-workflows 2`.
+The risk does not hold. In a throwaway worktree of HEAD, the script copied
+the workspace okf skill (SKILL.md and references/), both prompts and both
+Hermes workflows into .github/, staged them, and `uvx prek run --all-files`
+exited 0: every hook passed, including kmctl check --fix, ruff and
+okf validate --strict. The copy commits as it is.
 
 ## Files
 
