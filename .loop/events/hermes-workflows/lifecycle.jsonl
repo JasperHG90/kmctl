@@ -16,3 +16,4 @@
 {"at": "2026-10-20T08:59:44+00:00", "binds": "91afacb820bdfd5291de66aba49290365e6fbdbf9ca470f659632d9d19de86a5", "kind": "round-start", "n": 2, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "1505aa1d4883c7e34b911052a2a97177a09b5b15"}
 {"at": "2026-10-20T09:04:24+00:00", "dispatched_at": "2026-10-20T08:59:44+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-20T09:03:52+00:00"}}
 {"at": "2026-10-20T09:04:43+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "32dc92df7cc926160151580f7d6e16b1d3867d9a"}
+{"at": "2026-10-20T09:16:22+00:00", "branch": "loop/hermes-workflows", "kind": "land", "schema_version": "1.0", "sha": "76d22599bf2403aa1bb06c8e351533698d15dddc"}
