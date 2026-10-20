@@ -1,10 +1,10 @@
 {
   "schema_version": "1.0",
   "slug": "hermes-workflows",
-  "stage": "building",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 1,
-  "review_rounds": 0,
+  "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
@@ -20,7 +20,8 @@
   "worktree": "/home/vscode/kmctl.worktrees/hermes-workflows",
   "branch": "loop/hermes-workflows",
   "stamps": [
-    "53b10a4ec62d4cff804bc9932c7f0281afa4aa88c354d70242706f26950eb04d"
+    "53b10a4ec62d4cff804bc9932c7f0281afa4aa88c354d70242706f26950eb04d",
+    "2a50e69f179ea4617a4fb0cefff91479d773d3580ca283698b20ae1b35593b5f"
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/planner",
@@ -85,24 +86,24 @@
   "waivers": [],
   "overrides": [],
   "round": {
-    "kind": "plan",
+    "kind": "review",
     "n": 1,
-    "binds": "fba5123f3013af2798ba43e16fe1bad7b9d111e1d6a2c7b7e4ab8c7d80fb6dc4",
-    "started_at": "2026-10-20T08:32:24+00:00",
+    "binds": "2a50e69f179ea4617a4fb0cefff91479d773d3580ca283698b20ae1b35593b5f",
+    "started_at": "2026-10-20T08:48:44+00:00",
     "passes": [
-      "plan-reviewer"
+      "reviewer"
     ],
-    "tree": null,
-    "plan_hash": null,
-    "eval_hash": null,
+    "tree": "6c09c910340549ff13d732e510eb80363c38da0a",
+    "plan_hash": "fba5123f3013af2798ba43e16fe1bad7b9d111e1d6a2c7b7e4ab8c7d80fb6dc4",
+    "eval_hash": "f1fe5224e237fce1a27509f347c66141fab3a4e6534fb6cc97d6d1c79d02b6bb",
     "scope": "full",
     "sent_back": [],
     "since": null,
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "pass"
+    "closed": false,
+    "outcome": null
   },
   "plan_hash": "fba5123f3013af2798ba43e16fe1bad7b9d111e1d6a2c7b7e4ab8c7d80fb6dc4",
   "intent": {
@@ -128,8 +129,14 @@
       "to": "building",
       "at": "2026-10-20T08:35:25+00:00",
       "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-10-20T08:48:43+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.2.2.dev82+g0ed6ce5f1.d20261019",
-  "at": "2026-10-20T08:44:45+00:00"
+  "at": "2026-10-20T08:48:44+00:00"
 }
