@@ -1,0 +1,1 @@
+{"ask":"I want /home/vscode/workspace/.github/workflows/hermes-interactive.yaml /home/vscode/workspace/.github/workflows/hermes-issue-triage.yaml to be included in kmctl as well. Keep the issue triage under 200 tokens output. @Hermes is awkward because it refers to another org. Maybe we can use /hermes instead?"}
