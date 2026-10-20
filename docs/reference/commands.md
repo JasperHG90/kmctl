@@ -185,7 +185,9 @@ starts with `ADR` and a number must carry the file's number `NNNN`; another
 number is an error (check `decision`). The entry in `decisions/index.md` that
 links a record must read the record's `title`, as `kmctl new decision` writes
 it, or just `ADR NNNN`; other text is an error (check `index`), as an entry
-that links a missing file is.
+that links a missing file is. When the title starts with the wrong number,
+the entry is checked against that title with `ADR NNNN` in its place, and a
+wrong entry is told that corrected title.
 
 In `.okf/`, the body of `summary.md` (outside its front matter, counted as
 words between spaces) holds at most 500 words; over that is an error naming

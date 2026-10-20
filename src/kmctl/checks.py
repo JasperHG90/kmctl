@@ -438,7 +438,9 @@ def _check_decisions(root: Path, section: Path) -> list[Finding]:
 
     A record's ``title`` or ``#`` heading that starts with ``ADR NNNN`` must
     carry the number its file name starts with. The section index's entry
-    for a record must read the record's title, or just ``ADR NNNN``. A record
+    for a record must read the record's title, or just ``ADR NNNN``; a title
+    that starts with the wrong ``ADR NNNN`` counts, and is suggested, with
+    the file's number in its place. A record
     whose front matter does not parse is the okf validator's to report.
     """
     findings = []
@@ -455,7 +457,9 @@ def _check_decisions(root: Path, section: Path) -> list[Finding]:
             continue
         title = field(meta, "title")
         title = title if isinstance(title, str) else None
-        records[record.resolve()] = (number, title)
+        adr = _ADR.match(title or "")
+        wanted = f"ADR {number}{title[adr.end() :]}" if title and adr else title
+        records[record.resolve()] = (number, wanted)
         offset = text[: len(text) - len(body)].count("\n")
         heading = next(
             (
