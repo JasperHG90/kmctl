@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "slug": "hermes-workflows-reviewer-f2",
+  "plan_hash": "c65e8f6526de2ceda22341a375f447f0b2a6fc80ae3546ec615d27bce3be5991",
+  "problems": [
+    {
+      "id": "P1",
+      "text": "A step output is expanded into the Apply triage shell line instead of read from the environment."
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "The Hermes workflows run no shell line built from step outputs."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "O1",
+      "change": "Apply triage reads the response file path from RESPONSE_FILE",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        ".github/workflows/hermes-issue-triage.yaml",
+        "tests/scripts/test_workflows.py"
+      ],
+      "checked_by": "tests/scripts/test_workflows.py checks no run: in either Hermes workflow expands a step output",
+      "seen_by": "nobody"
+    }
+  ]
+}
