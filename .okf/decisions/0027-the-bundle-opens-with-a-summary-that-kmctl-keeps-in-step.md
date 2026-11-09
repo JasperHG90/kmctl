@@ -41,9 +41,9 @@ to come out of words already there (spike:okf-summary/2).
   `.okf/index.md`. It is the `summary` kind in `kinds.py`; `kmctl schema
   summary` prints it, and `kmctl new` does not offer it, since there is one.
   It holds no counts or due lists, which kmctl computes.
-- **At most 500 words.** `kmctl check` fails a body (outside the front
+- **At most 500 words.** `kmctl check` warns about a body (outside the front
   matter) over 500 words, counted as words between spaces, and names the
-  count. The operator moved from 250 to 750 to 500: enough for a theme per
+  count; `--strict` fails it (amended 2026-11-09). The operator moved from 250 to 750 to 500: enough for a theme per
   section, short enough to read at every session start.
 - **Freshness by commit order.** The summary is behind when a concept (the
   manifesto, a decision, practice, proposal, prototype `README.md` or
@@ -134,3 +134,13 @@ only the changed ids still in the bundle, `against: []` when every one was
 deleted, so its own output never draws the warning. When the summary is
 current, ack still writes nothing, so a stale id added by hand stays until
 someone removes it. The rest of this decision holds.
+
+## Amendment, 2026-11-09
+
+A body over 500 words is now a warning, not an error, and `kmctl check
+--strict` fails on it, as on every warning. A summary 19 words over the
+limit failed a user's CI for a reason that wants an edit, not a blocked
+merge, and the error drew the same answer the stale `checked.against` id
+did in the correction above: drift in a record is a warning. `--strict` is
+off by default, so a repository that wants the hard limit opts in. The rest
+of this decision holds.

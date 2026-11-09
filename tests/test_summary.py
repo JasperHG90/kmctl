@@ -173,23 +173,35 @@ def test_init_summary_is_not_a_kmctl_new_kind(tmp_path: Path) -> None:
 # r2: the word limit ------------------------------------------------------------
 
 
-@pytest.mark.parametrize(("words", "fails"), [(500, False), (501, True)])
-def test_word_limit(tmp_path: Path, words: int, fails: bool) -> None:
+@pytest.mark.parametrize(("words", "warns"), [(500, False), (501, True)])
+def test_word_limit_warns(tmp_path: Path, words: int, warns: bool) -> None:
     _init(tmp_path, git=False)
     _set_body(tmp_path, _body(words))
 
     result = _invoke("check", "--path", str(tmp_path), "--json")
     findings = [f for f in json.loads(result.stdout) if f["check"] == "summary"]
 
-    assert (result.exit_code == 1) is fails, result.stdout
-    if fails:
+    assert result.exit_code == 0, result.stdout
+    if warns:
         [finding] = findings
-        assert finding["level"] == "error"
+        assert finding["level"] == "warning"
         assert finding["file"] == SUMMARY
         assert "501 words" in finding["message"]
         assert "500" in finding["message"].replace("501", "")
     else:
         assert findings == []
+
+
+@pytest.mark.parametrize(("words", "fails"), [(500, False), (501, True)])
+def test_word_limit_fails_with_strict(tmp_path: Path, words: int, fails: bool) -> None:
+    _init(tmp_path, git=False)
+    _set_body(tmp_path, _body(words))
+
+    result = _invoke("check", "--path", str(tmp_path), "--strict")
+
+    assert (result.exit_code == 1) is fails, result.stdout
+    if fails:
+        assert "(failing: --strict)" in result.stdout
 
 
 def test_word_limit_ignores_front_matter(tmp_path: Path) -> None:

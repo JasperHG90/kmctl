@@ -186,8 +186,10 @@ app.command(
         "  kmctl check\n\n"
         "  kmctl check --fix\n\n"
         "  kmctl check --path ../other-repo --json\n\n"
+        "  kmctl check --strict\n\n"
         "Exit 0 when nothing fails, 1 when a check fails. A warning (such as "
-        "docs/README.md not linking a docs/ folder) is printed but does not fail. "
+        "docs/README.md not linking a docs/ folder, or a summary over 500 words) "
+        "is printed but does not fail, unless --strict is given. "
         "A missing docs/ or .okf/ is reported as skipped, not failed. The "
         "kmctl-check pre-commit hook runs this command."
     ),
@@ -223,6 +225,16 @@ def check(
             ),
         ),
     ] = False,
+    strict: Annotated[
+        bool,
+        typer.Option(
+            "--strict",
+            help=(
+                "Fail (exit 1) on warnings too, such as a summary over 500 words or "
+                "behind its concepts. Default: off, so warnings print and pass."
+            ),
+        ),
+    ] = False,
 ) -> None:
     """Check indexes agree with their folders, decision numbers, docs front matter, prototype READMEs and links."""
     if fix:
@@ -241,8 +253,10 @@ def check(
         summary = f"{len(errors)} failed" if errors else "all checks passed"
         if warnings:
             summary += f", {len(warnings)} warning{'s' if len(warnings) > 1 else ''}"
+            if strict:
+                summary += " (failing: --strict)"
         typer.echo(summary)
-    if errors:
+    if errors or (strict and warnings):
         raise typer.Exit(1)
 
 
