@@ -33,9 +33,9 @@ The index format, which every kmctl verb that writes an index follows:
   those. A ``log.md`` in .okf/ is left out: it is append-only, so a link
   there to a concept renamed later could never be fixed.
 - The body of .okf/summary.md, outside its front matter, holds at most
-  ``WORD_LIMIT`` words (check name ``summary``). A summary behind the
-  concepts that changed after it is a warning, never a failure, and so is an
-  id in its ``checked.against`` that is not a concept in the bundle.
+  ``WORD_LIMIT`` words (check name ``summary``); a longer one is a warning.
+  So is a summary behind the concepts that changed after it, and an id in
+  its ``checked.against`` that is not a concept in the bundle.
 - No concept counts are written or checked.
 """
 
@@ -604,8 +604,9 @@ def check_links(root: Path) -> list[Finding]:
 def check_summary(root: Path) -> list[Finding]:
     """Check the bundle summary: its body fits ``WORD_LIMIT``, whether it is behind, and its ``checked``.
 
-    A body over the limit fails. A summary behind its concepts is a warning,
-    never a failure: it is a report, as in kmctl review due (ADR 0027). Each
+    A body over the limit is a warning: a summary a few words long is a
+    reason to cut, not to fail CI. A summary behind its concepts is a
+    warning too: it is a report, as in kmctl review due (ADR 0027). Each
     id in ``checked.against`` that is not a concept in the bundle is a
     warning too: ``checked`` records the ack and decides nothing, so a stale
     id is drift, like a summary behind its concepts.
@@ -626,6 +627,7 @@ def check_summary(root: Path) -> list[Finding]:
                 None,
                 f"body has {words} words, over the limit of {WORD_LIMIT}; "
                 "cut it, and link down to the concepts for the detail",
+                "warning",
             )
         )
     changed = changed_concepts(root)

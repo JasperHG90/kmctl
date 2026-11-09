@@ -190,11 +190,10 @@ the entry is checked against that title with `ADR NNNN` in its place, and a
 wrong entry is told that corrected title.
 
 In `.okf/`, the body of `summary.md` (outside its front matter, counted as
-words between spaces) holds at most 500 words; over that is an error naming
-the count and the limit (check `summary`). A summary behind the concepts
-that changed after it is a `warning`, never a failure (see
-`kmctl summary ack`). So is each id in the summary's `checked.against` that
-is not a concept in the bundle, for example after a concept is renamed or
+words between spaces) holds at most 500 words; over that is a `warning`
+naming the count and the limit (check `summary`). A summary behind the
+concepts that changed after it is a `warning` too (see `kmctl summary ack`).
+So is each id in the summary's `checked.against` that is not a concept in the bundle, for example after a concept is renamed or
 deleted: remove it from the list, or let the next `kmctl summary ack`
 rewrite it.
 
@@ -208,15 +207,18 @@ append-only, so a broken link there could never be fixed. The okf validator only
 target inside `.okf/`; `kmctl check` fails on it (ADR 0033).
 
 Each finding has a `level`: `error` fails the check, `warning` is printed but
-does not fail it, and `skipped` names a part with nothing to check.
+does not fail it unless you pass `--strict`, and `skipped` names a part with
+nothing to check.
 
 | Option | Meaning | Default |
 |---|---|---|
 | `--path DIR` | The repository to check: an existing folder. | `.` |
 | `--fix` | First write each generated docs folder index that is missing or out of date, printing `fixed PATH` for each (on stderr with `--json`), then check. It changes no other file: not `docs/README.md`, not a hand-written folder index, not `.okf/`. | off |
 | `--json` | Print a JSON list of findings (`check`, `file`, `line`, `message`, `level`). | off |
+| `--strict` | Fail on warnings too, such as a summary over 500 words or behind its concepts. | off |
 
-Exit codes: 0 when nothing fails (warnings included), 1 when a check fails.
+Exit codes: 0 when nothing fails (warnings included, unless `--strict`), 1
+when a check fails or, with `--strict`, when there is a warning.
 
 As a pre-commit hook: kmctl's repository offers the hook `kmctl-check`,
 which runs `kmctl check` once per commit, without file names. Add

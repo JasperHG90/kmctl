@@ -224,7 +224,7 @@ KINDS: dict[str, DocumentKind] = {
         purpose="the bundle's first page: what the knowledge says as a whole, citing its concepts",
         detail=(
             "There is one, and kmctl init writes it. Its body is at most 500 "
-            "words, which kmctl check enforces, and holds no counts or due "
+            "words, which kmctl check warns about (fails with --strict), and holds no counts or due "
             "lists. kmctl review due lists it, with the concepts that changed, "
             "when a concept changed after the summary's last commit; editing it "
             "or kmctl summary ack, which writes checked, clears that. It is "
