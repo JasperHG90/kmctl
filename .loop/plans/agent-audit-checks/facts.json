@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "agent-audit-checks",
-  "plan_hash": "e82a8b2f83c57acd2f23b55078aa8d2108d93a5d8cec94ed720c4d4425efff09",
+  "plan_hash": "5d44f1aa8c5042af56d1e496ffefe5bd3f2b662ef8843dd6dc4e0b2ba87c2bf0",
   "problems": [
     {
       "id": "P1",
@@ -23,7 +23,7 @@
   "goals": [
     {
       "id": "G1",
-      "text": "A coding agent writes, tries and stores a claim's check through kmctl verbs, with base kmctl's four dependencies unchanged"
+      "text": "A coding agent, using its harness's own model, writes, tries and stores a claim's check through `kmctl audit checks`, with no model call in kmctl and base kmctl's four dependencies unchanged"
     },
     {
       "id": "G2",
@@ -97,7 +97,7 @@
     },
     {
       "id": "O4",
-      "change": "The store keeps checks, their reads and results, and reruns a check only when its claim or reads change",
+      "change": "The store keeps each check's claim, steps, reads and last run with step detail, and reruns a check only when its claim or reads change",
       "kind": "support",
       "goal": "G2",
       "goal_index": 1,
@@ -114,12 +114,12 @@
       "touches": [
         "new:src/kmctl/claims/check_store.py"
       ],
-      "checked_by": "`new:tests/test_claims_check_store.py` (the new user_version steps open a fresh database and a claims-only one; an unchanged repository reruns nothing; an edited read file, a newly matching glob file and a changed claim each rerun only their check; a mutation score is reused until its key moves)",
+      "checked_by": "`new:tests/test_claims_check_store.py` (the new user_version steps open a fresh database and a claims-only one; an unchanged repository reruns nothing; an edited read file, a newly matching glob file and a changed claim each rerun only their check; a mutation score is reused until its key moves; a check's claim, steps and last step detail read back by check id)",
       "seen_by": "calling code"
     },
     {
       "id": "O5",
-      "change": "The `kmctl checks` group lets an agent take claims with `todo`, test drafts with `try`, store checks with `submit` and rerun them with `run`",
+      "change": "`kmctl audit checks` lets an agent take claims with `todo`, test drafts with `try`, store checks with `submit` and rerun them with `run`",
       "kind": "behaviour",
       "goal": "G1",
       "goal_index": 0,
@@ -138,14 +138,14 @@
         3
       ],
       "touches": [
-        "kmctl checks todo",
-        "kmctl checks try",
-        "kmctl checks submit",
-        "kmctl checks run",
-        "kmctl checks list",
+        "kmctl audit checks todo",
+        "kmctl audit checks try",
+        "kmctl audit checks submit",
+        "kmctl audit checks run",
+        "kmctl audit checks list",
         "src/kmctl/__init__.py"
       ],
-      "checked_by": "`new:tests/test_checks_cli.py` (the fixture-repository flow in the intent; submit refuses a weak check naming its survivors, a failing check without drift, a stale claim id, a malformed answer and a code step without the extra, each with one stderr line and the fix, keeping good answers in the same file; try writes nothing; run exits 0 when a check fails; no tracked or unignored file changes) and `tests/test_help.py`",
+      "checked_by": "`new:tests/test_checks_cli.py` (the fixture-repository flow in the intent; submit refuses a weak check naming its survivors, a failing check without drift, a stale claim id, a malformed answer and a code step without the extra, each with one stderr line and the fix, keeping good answers in the same file; try writes nothing; run exits 0 when a check fails; no tracked or unignored file changes; no verb opens a network connection) and `tests/test_help.py`",
       "seen_by": "operator"
     },
     {
