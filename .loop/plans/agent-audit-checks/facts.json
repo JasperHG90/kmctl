@@ -1,0 +1,177 @@
+{
+  "schema_version": "1.0",
+  "slug": "agent-audit-checks",
+  "plan_hash": "e82a8b2f83c57acd2f23b55078aa8d2108d93a5d8cec94ed720c4d4425efff09",
+  "problems": [
+    {
+      "id": "P1",
+      "text": "Checks exist only in the untracked prototype, written by a langchain model loop, so no coding agent can write, test or store one through kmctl"
+    },
+    {
+      "id": "P2",
+      "text": "Nothing reruns a stored check only when its claim or the files it reads change, so every pass would run every check"
+    },
+    {
+      "id": "P3",
+      "text": "A check can hold without testing its claim (25 of 161 in the prototype's pilot noticed no change), and nothing keeps such a check out of the store"
+    },
+    {
+      "id": "P4",
+      "text": "A check writer shown too few lines guesses code it never saw, the prototype writer's main failure, and cannot run a draft before storing it"
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "A coding agent writes, tries and stores a claim's check through kmctl verbs, with base kmctl's four dependencies unchanged"
+    },
+    {
+      "id": "G2",
+      "text": "Stored checks rerun with no model, only when their claim or the files they read changed"
+    },
+    {
+      "id": "G3",
+      "text": "Only checks that notice a change to the code they read are stored"
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "O1",
+      "change": "Base kmctl holds the step DSL and a model-free runner, with code and query steps behind `kmctl[audit]`",
+      "kind": "support",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "new:src/kmctl/claims/steps.py",
+        "pyproject.toml",
+        "uv.lock"
+      ],
+      "checked_by": "`new:tests/test_claims_steps.py` (each step holds and fails on a fixture git repository; markdown, `.okf/` and untracked files are never read; a code step tests presence only; with ast-grep-py and jmespath hidden, code and query steps report skipped and the other five run)",
+      "seen_by": "calling code"
+    },
+    {
+      "id": "O2",
+      "change": "Each claim comes with the lines around its anchors and the check instructions",
+      "kind": "support",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P4",
+      "fixes_index": 3,
+      "needs": [
+        "O1"
+      ],
+      "needs_index": [
+        0
+      ],
+      "touches": [
+        "new:src/kmctl/claims/anchors.py",
+        "new:src/kmctl/claims/lines.py",
+        "new:src/kmctl/claims/check_instructions.py"
+      ],
+      "checked_by": "`new:tests/test_claims_lines.py` (a claim naming a path, a flag and a Python name gets lines around each; a claim naming nothing gets keyword windows from its concept's sources; Python definitions resolve without the extra)",
+      "seen_by": "calling code"
+    },
+    {
+      "id": "O3",
+      "change": "Mutation testing marks a holding check weak when it notices no change or matched only comments",
+      "kind": "support",
+      "goal": "G3",
+      "goal_index": 2,
+      "fixes": "P3",
+      "fixes_index": 2,
+      "needs": [
+        "O1"
+      ],
+      "needs_index": [
+        0
+      ],
+      "touches": [
+        "new:src/kmctl/claims/mutate.py"
+      ],
+      "checked_by": "`new:tests/test_claims_mutate.py` (a grep on a comment is weak, a code step on the condition kills its mutants, unparsable mutants are dropped, nothing is written to disk)",
+      "seen_by": "calling code"
+    },
+    {
+      "id": "O4",
+      "change": "The store keeps checks, their reads and results, and reruns a check only when its claim or reads change",
+      "kind": "support",
+      "goal": "G2",
+      "goal_index": 1,
+      "fixes": "P2",
+      "fixes_index": 1,
+      "needs": [
+        "O1",
+        "O3"
+      ],
+      "needs_index": [
+        0,
+        2
+      ],
+      "touches": [
+        "new:src/kmctl/claims/check_store.py"
+      ],
+      "checked_by": "`new:tests/test_claims_check_store.py` (the new user_version steps open a fresh database and a claims-only one; an unchanged repository reruns nothing; an edited read file, a newly matching glob file and a changed claim each rerun only their check; a mutation score is reused until its key moves)",
+      "seen_by": "calling code"
+    },
+    {
+      "id": "O5",
+      "change": "The `kmctl checks` group lets an agent take claims with `todo`, test drafts with `try`, store checks with `submit` and rerun them with `run`",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [
+        "O1",
+        "O2",
+        "O3",
+        "O4"
+      ],
+      "needs_index": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "touches": [
+        "kmctl checks todo",
+        "kmctl checks try",
+        "kmctl checks submit",
+        "kmctl checks run",
+        "kmctl checks list",
+        "src/kmctl/__init__.py"
+      ],
+      "checked_by": "`new:tests/test_checks_cli.py` (the fixture-repository flow in the intent; submit refuses a weak check naming its survivors, a failing check without drift, a stale claim id, a malformed answer and a code step without the extra, each with one stderr line and the fix, keeping good answers in the same file; try writes nothing; run exits 0 when a check fails; no tracked or unignored file changes) and `tests/test_help.py`",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O6",
+      "change": "A decision record, the manifesto, the architecture overview and the command reference describe checks, the extra and the weak bar",
+      "kind": "support",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [
+        "O5"
+      ],
+      "needs_index": [
+        4
+      ],
+      "touches": [
+        ".okf/manifesto.md",
+        ".okf/architecture/overview.md",
+        ".okf/decisions/index.md",
+        ".okf/summary.md",
+        ".okf/log.md",
+        "docs/reference/commands.md"
+      ],
+      "checked_by": "`kmctl check`, strict OKF validation in the pre-commit hooks, and the docs tests",
+      "seen_by": "operator"
+    }
+  ]
+}
