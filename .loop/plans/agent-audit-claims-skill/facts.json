@@ -1,15 +1,15 @@
 {
   "schema_version": "1.0",
   "slug": "agent-audit-claims-skill",
-  "plan_hash": "b981398ba033a3fad33f94677c92a9c0cbc085628ee491085e02ca550365deac",
+  "plan_hash": "c72f19a2d4d6faceb165b03a08b64fceb084394930be8ed18d3d052006d7e1ef",
   "problems": [
     {
       "id": "P1",
-      "text": "No skill or agent drives the `kmctl claims` verbs, so a session that wants a bundle's claims must do the extraction itself and hold every claim in its own context"
+      "text": "No skill or agent drives the `kmctl audit claims` verbs, so a session that wants a bundle's claims must do the extraction itself and hold every claim in its own context"
     },
     {
       "id": "P2",
-      "text": "I2 says audits never write knowledge, but a subagent's shell cannot be limited to `kmctl claims` commands in Antigravity (spike:agent-audit-claims/1), so the extractor can hold I2 only by its instructions"
+      "text": "I2 says audits never write knowledge, but a subagent's shell cannot be limited to `kmctl audit claims` commands in Antigravity (spike:agent-audit-claims/1), so the extractor can hold I2 only by its instructions"
     }
   ],
   "goals": [
@@ -25,7 +25,7 @@
   "outcomes": [
     {
       "id": "O1",
-      "change": "The extract-claims skill dispatches a Haiku extractor agent that runs `kmctl claims todo` and `kmctl claims submit` and returns a summary",
+      "change": "The extract-claims skill dispatches a Haiku extractor agent that runs `kmctl audit claims todo` and `kmctl audit claims submit` and returns a summary",
       "kind": "behaviour",
       "goal": "G1",
       "goal_index": 0,
