@@ -1,1 +1,2 @@
 {"at": "2026-11-11T08:07:17+00:00", "kind": "register", "schema_version": "1.0", "stage": "planning"}
+{"at": "2026-11-11T08:21:33+00:00", "kind": "drop", "reason": "extraction is the claims skill's Haiku subagent; the CLI calls no model to extract", "schema_version": "1.0"}
