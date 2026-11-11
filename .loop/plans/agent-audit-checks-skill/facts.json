@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "agent-audit-checks-skill",
-  "plan_hash": "091f667506766dbeba6e2897bc4cf0be260289bb38e91015522852c3dc9604f2",
+  "plan_hash": "02725dde0ccb185c4e31a2623d5c8755eb7f0023ce4be88b8e939f1b4ab1873d",
   "problems": [
     {
       "id": "P1",
