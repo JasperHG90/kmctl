@@ -7,10 +7,9 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-10-20T09:09:13Z
+  at: 2026-11-05T18:38:31Z
   against:
-    - architecture/overview
-    - decisions/0035-kmctl-s-repository-answers-and-triages-with-hermes
+    - prototypes/audit-agent
 ---
 
 # Summary: kmctl

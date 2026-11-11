@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "agent-audit-claims",
+  "n": 1,
+  "command": "/private/tmp/claude-502/spike-agent-audit-claims-1/spike.sh",
+  "scripts": [
+    {
+      "source": "/private/tmp/claude-502/spike-agent-audit-claims-1/spike.sh",
+      "copy": "files/spike.sh"
+    }
+  ],
+  "where": "worktree",
+  "head": "7999e1540464ce6559c6e8cf3bd1840848688d3f",
+  "fingerprint": "8fd72d79fe97c81c17a8fd4ef66893060e2d3804bb2166b21e120cf044618ec4",
+  "started_at": "2026-11-11T07:37:47+00:00",
+  "finished_at": "2026-11-11T07:37:50+00:00",
+  "duration_seconds": 2.468,
+  "timeout_seconds": 180.0,
+  "exit": 1,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "moved_from": null
+}

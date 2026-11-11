@@ -1,0 +1,42 @@
+# Where this folder lands in OpenViking. The directory must already exist:
+# create it with `ov mkdir <uri>`. Every file is written to
+# <root_uri>/<its path relative to this folder>.
+[sync]
+root_uri = "viking://user/jasper/resources/projects/kmctl"
+
+# Extensions to sync. Anything else is ignored.
+include_extensions = [
+    ".md", ".txt", ".csv", ".yaml", ".yml", ".toml", ".html", ".pdf", ".pptx", ".docx", ".png"
+]
+
+# Folders to sync, relative to this one, e.g. ["projects", "areas/work"].
+# Empty means everything here. The exclude rules still apply inside them.
+include_folders = [".okf", "docs", ".loop/plans", ".loop/verdicts"]
+
+# Files per batch-write request. The server caps this at 256.
+max_operations_per_batch = 64
+
+# Wait for the server to index each batch before moving on. Turn it off for a
+# faster run that leaves new content unsearchable for a while.
+wait_for_indexing = true
+
+[sync.exclude]
+# Glob patterns, matched against every path component and the whole path.
+base = [".git", ".obsidian", ".trash", ".venv", "__pycache__", "node_modules"]
+extends_exclude = []
+
+# Exact folder names, at any depth.
+ignore_folders = []
+
+# A Markdown file whose frontmatter carries `ov: skip` is never sent.
+frontmatter_skip_key = "ov"
+frontmatter_skip_value = "skip"
+
+[watch]
+# "events" reacts to filesystem events; "poll" rescans on a timer.
+mode = "events"
+debounce_seconds = 5
+poll_interval_seconds = 300
+
+# Event mode also rescans this often, to catch anything the events missed.
+reconcile_interval_seconds = 900

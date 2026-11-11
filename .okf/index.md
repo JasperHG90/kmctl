@@ -15,3 +15,4 @@ this bundle is `.claude/rules/okf-bundle.md`.
   rejected.
 - [Architecture](architecture/index.md): the parts of kmctl and how they
   connect, as a diagram.
+- [Prototypes](prototypes/index.md): the prototypes.

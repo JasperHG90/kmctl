@@ -1,0 +1,24 @@
+== 1. kmctl translate_agent on tools: Read, Bash(kmctl claims:*)
+REFUSED: the agent claims-runner.md uses the Claude tool 'Bash(kmctl claims:*)', which kmctl has no Antigravity tool for; upgrade kmctl, or report it at https://github.com/JasperHG90/kmctl/issues
+-> translation refuses the scoped Bash entry
+
+== 2. agy 1.5.5: agent commandExecutionPolicy values
+  commandExecutionPolicy: off                -> agents loaded: 1 | no agent findings
+  commandExecutionPolicy: auto               -> agents loaded: 1 | no agent findings
+  commandExecutionPolicy: eager              -> agents loaded: 1 | no agent findings
+  commandExecutionPolicy: "kmctl claims"     -> agents loaded: 0 | invalid command execution policy: "kmctl claims". The loader skips this agent
+  commandExecutionPolicy: "kmctl claims:*"   -> agents loaded: 0 | invalid command execution policy: "kmctl claims:*". The loader skips this agent
+  (only off/auto/eager load: the policy is all-or-nothing, not a command allowlist)
+
+== 3. agy validator on unknown tool and key spellings (silently accepted => no evidence they work)
+  tools: run_command(kmctl claims:*) -> agents loaded: 1 | no agent findings
+  allowedCommands: [kmctl claims]    -> agents loaded: 1 | no agent findings
+
+== 4. agy binary: YAML keys mentioning allow/deny/permission/command
+  yaml:"command
+  yaml:"commandExecutionPolicy
+
+== 5. Claude Code 2.1.322 (Claude Code): live subagent run
+  SKIPPED: claude is not logged in from this sandbox, so no live run
+
+fail=1
