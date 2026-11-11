@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "agent-audit-claims",
-  "plan_hash": "6a18dbc13581be75fc64eb441f1d28e03aac9175f975e52345743b8a5453d36e",
+  "plan_hash": "c5267961e1f470c95a702efdb314fc7fd59794b3e0fce70375f079d682f333e7",
   "problems": [
     {
       "id": "P1",
@@ -13,13 +13,13 @@
     },
     {
       "id": "P3",
-      "text": "No claim schema is enforced on what an agent writes, so agent claims and the later automatic extractor's claims could take different shapes"
+      "text": "No claim schema is enforced on what an agent writes, so claims from different agents and passes could take different shapes"
     }
   ],
   "goals": [
     {
       "id": "G1",
-      "text": "A coding agent extracts a bundle's claims through kmctl verbs, with base kmctl's dependencies unchanged"
+      "text": "A coding agent, using its harness's own model, extracts a bundle's claims through `kmctl audit` verbs, with no model call in kmctl and base kmctl's dependencies unchanged"
     },
     {
       "id": "G2",
@@ -72,7 +72,7 @@
     },
     {
       "id": "O3",
-      "change": "The `kmctl claims` group lets an agent take sections with `todo`, store its answer with `submit` and read claims back with `list`",
+      "change": "A new `kmctl audit` group whose `claims` verbs let an agent take sections with `todo`, store its answer with `submit` and read claims back with `list`",
       "kind": "behaviour",
       "goal": "G1",
       "goal_index": 0,
@@ -87,17 +87,17 @@
         1
       ],
       "touches": [
-        "kmctl claims todo",
-        "kmctl claims submit",
-        "kmctl claims list",
+        "kmctl audit claims todo",
+        "kmctl audit claims submit",
+        "kmctl audit claims list",
         "src/kmctl/__init__.py"
       ],
-      "checked_by": "`new:tests/test_claims_cli.py` (todo: first run lists every section, after submits none, an edited section is the only one listed and its old claims are gone, a removed concept's claims are gone; submit: a valid answer is stored, a stale key, a missing sentence verdict and a malformed answer each refuse with one stderr line naming the fix, good sections in a mixed file are kept; list: counts per kind, one concept's claims, `--kind`, `--json` shape; no tracked or unignored file changes after any verb) and `tests/test_help.py`",
+      "checked_by": "`new:tests/test_claims_cli.py` (todo: first run lists every section, after submits none, an edited section is the only one listed and its old claims are gone, a removed concept's claims are gone; submit: a valid answer is stored, a stale key, a missing sentence verdict and a malformed answer each refuse with one stderr line naming the fix, good sections in a mixed file are kept; list: counts per kind, one concept's claims, `--kind`, `--json` shape; no tracked or unignored file changes after any verb; no verb opens a network connection) and `tests/test_help.py`",
       "seen_by": "operator"
     },
     {
       "id": "O4",
-      "change": "A decision record, the manifesto, the architecture overview and the command reference describe the claims verbs and store",
+      "change": "A decision record, the manifesto, the architecture overview and the command reference describe the `kmctl audit` group, the claims verbs and the store",
       "kind": "support",
       "goal": "G1",
       "goal_index": 0,
