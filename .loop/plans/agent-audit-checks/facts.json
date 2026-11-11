@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "agent-audit-checks",
-  "plan_hash": "5d44f1aa8c5042af56d1e496ffefe5bd3f2b662ef8843dd6dc4e0b2ba87c2bf0",
+  "plan_hash": "3a130717ecffb737c44dc0048bb513343d7e393983e225ed17295162a5cd6cbd",
   "problems": [
     {
       "id": "P1",
