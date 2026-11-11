@@ -1,0 +1,62 @@
+[project]
+name = "audit-cli"
+version = "0.1.0"
+description = "Read a repository, chunk its .okf/ bundle and extract checkable claims into SQLite."
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.20.1",
+    "ast-grep-py>=0.51.1",
+    "httpx>=0.28.1",
+    "jmespath>=1.1.0",
+    "langchain-core>=1.7.6",
+    "langchain-openai>=1.7.4",
+    "langchain-text-splitters>=1.1.3",
+    "langgraph>=1.2.20",
+    "langsmith>=0.14.17",
+    "magika>=1.0.3",
+    "openai>=3.46.0",
+    "platformdirs>=4.14.5",
+    "pydantic>=2.14.3",
+    "python-dotenv>=1.2.4",
+    "python-frontmatter>=1.3.0",
+    "pyyaml>=6.0.3",
+    "structlog>=26.1.0",
+    "tenacity>=9.2.1",
+    "tqdm>=4.70.1",
+    "tree-sitter-language-pack>=1.25.0",
+    "typer>=0.28.0",
+]
+
+[project.scripts]
+audit = "audit_cli.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/audit_cli"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["tests"]
+addopts = "--strict-markers -p no:cacheprovider"
+
+[dependency-groups]
+dev = [
+    "mypy>=2.4.1",
+    "pytest>=9.2.0",
+    "respx>=0.23.1",
+    "ruff>=0.17.4",
+    "types-jmespath>=1.1.0.20260724",
+    "types-pyyaml>=6.0.12.20261103",
+    "types-tqdm>=4.70.0.20261106",
+]
+
+[tool.ruff]
+line-length = 120
+
+[tool.mypy]
+strict = true
+plugins = ["pydantic.mypy"]
+mypy_path = "tests"
