@@ -1,0 +1,86 @@
+{
+  "schema_version": "1.0",
+  "slug": "agent-audit-decide",
+  "plan_hash": "ff95ef2c74ff67cf10f543c0be75a98772829a877b14b5c5084239b5ea8eb3eb",
+  "problems": [
+    {
+      "id": "P1",
+      "text": "No kmctl command can ask a decision model whether a failed check shows drift, whether lines show a claim true, or whether a check tests its claim, so an agent has no second opinion it can call"
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "An agent or skill asks an optional decision model about a stored check or claim with one kmctl command, and nothing is asked unless the operator switched the question on"
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "O1",
+      "change": "Decision settings load per question, off by default, with a provider and model each and keys read only from named variables",
+      "kind": "support",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "[decisions.providers.NAME]",
+        "[decisions.failure]",
+        "[decisions.judge]",
+        "[decisions.link]",
+        "new:tests/test_decide.py"
+      ],
+      "checked_by": "tests in `new:tests/test_decide.py` (all questions off with no file; a question switched on without a known provider or a model refuses naming the key; a missing key variable refuses naming the variable and not a value)",
+      "seen_by": "calling code"
+    },
+    {
+      "id": "O2",
+      "change": "`kmctl decide failure|judge|link` asks the configured model about stored checks and claims and stores each answer under its asked key",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [
+        "O1"
+      ],
+      "needs_index": [
+        0
+      ],
+      "touches": [
+        "kmctl decide",
+        "new:src/kmctl/decide.py",
+        "src/kmctl/__init__.py"
+      ],
+      "checked_by": "`new:tests/test_decide.py` on respx (each question's state and answer shape, the link score from level probabilities, a repeat sends no request, a changed check result asks again, several ids under `max_calls`, 503 then 200 retries, a 401 and an answer missing a question raise `DecisionError` as one stderr line, a question that is off refuses naming its table, without the extra it refuses naming the install command, the key appears in no output, no tracked or unignored file changes) and `tests/test_help.py`",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O3",
+      "change": "A decision record, the manifesto, the architecture overview and the command reference describe `kmctl decide`",
+      "kind": "support",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [
+        "O2"
+      ],
+      "needs_index": [
+        1
+      ],
+      "touches": [
+        ".okf/manifesto.md",
+        ".okf/architecture/overview.md",
+        ".okf/decisions/index.md",
+        ".okf/summary.md",
+        ".okf/log.md",
+        "docs/reference/commands.md"
+      ],
+      "checked_by": "`kmctl check`, strict OKF validation in the pre-commit hooks, and the docs tests",
+      "seen_by": "operator"
+    }
+  ]
+}
