@@ -40,3 +40,14 @@ Rejected:
 
 - The okf validator accepts unknown keys, so bundles stay conformant.
 - Adding any other extension field needs its own ADR.
+
+## Correction, 2026-11-11
+
+`handoff_key` is no longer the only extension field.
+[ADR 0027](0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step.md)
+added `checked` (`checked.at`, `checked.against`) on the summary, and
+`src/kmctl/okf.py` lists both. The rule stands: each extension field needs
+its own ADR.
+
+Found by the first `kmctl audit checks` run over the whole bundle
+([ADR 0038](0038-checks-are-step-data-that-kmctl-reruns-and-only-checks-that-notice-a-change-are-stored.md)).

@@ -72,8 +72,10 @@ SKILL_NAMES = (
     "audit",
     "continue",
     "decision-log-review",
+    "extract-claims",
     "handoff",
     "practices-review",
+    "write-checks",
     "write-docs",
 )
 #: Each rule's ``paths:`` globs and the sha256 of its body as they were in
@@ -149,11 +151,13 @@ def test_package_depends_only_on_a_pinned_okf() -> None:
 
 
 def test_package_holds_the_skills_and_the_agent() -> None:
-    """The 7 skills and the auditor sit under apm/.apm/, nothing else beside them."""
+    """The 9 skills and the three agents sit under apm/.apm/, nothing else beside them."""
     assert sorted(p.name for p in SKILLS.iterdir()) == list(SKILL_NAMES)
     assert all((SKILLS / name / "SKILL.md").is_file() for name in SKILL_NAMES)
     assert sorted(p.name for p in (DOT_APM / "agents").iterdir()) == [
-        "kmctl-auditor.md"
+        "kmctl-auditor.md",
+        "kmctl-check-writer.md",
+        "kmctl-claims-extractor.md",
     ]
     assert sorted(p.name for p in DOT_APM.iterdir()) == ["agents", "skills"]
 
@@ -240,6 +244,8 @@ def test_wheel_reports_the_set_version_and_carries_the_skills(tmp_path: Path) ->
     }
     assert want <= names
     assert "kmctl/_agents/kmctl-auditor.md" in names
+    assert "kmctl/_agents/kmctl-claims-extractor.md" in names
+    assert "kmctl/_agents/kmctl-check-writer.md" in names
     # The rules, which kmctl plugin patch writes for OpenCode (ADR 0024).
     rules = sorted((ROOT / "apm" / "claude" / ".apm" / "instructions").glob("*.md"))
     assert len(rules) == 4
@@ -517,7 +523,7 @@ def test_consumer_gets_the_package_hook_and_okf_but_no_dev_items(
     servers = json.loads((consumer / ".mcp.json").read_text())["mcpServers"]
     assert list(servers) == ["bundle"]
     dev = set(_dev_items())
-    assert len(dev) == 16
+    assert len(dev) == 14  # 13 rules and the frontend-design skill
     written = [p.relative_to(consumer).parts for p in consumer.rglob("*")]
     assert [
         "/".join(parts)
@@ -716,3 +722,20 @@ def test_package_ships_no_post_tool_use_hook(harness: str) -> None:
     )["hooks"]
     assert "PostToolUse" not in hooks
     assert "SessionStart" in hooks
+
+
+@pytest.mark.parametrize(
+    ("agent", "group"),
+    [("kmctl-claims-extractor", "claims"), ("kmctl-check-writer", "checks")],
+)
+def test_shell_agents_carry_the_guard_hook(agent: str, group: str) -> None:
+    """In Claude Code a PreToolUse hook holds the agent's shell to kmctl audit GROUP commands (ADR 0040)."""
+    meta = yaml.safe_load(
+        (DOT_APM / "agents" / f"{agent}.md").read_text().split("---")[1]
+    )
+
+    [entry] = meta["hooks"]["PreToolUse"]
+    assert entry["matcher"] == "Bash"
+    assert entry["hooks"] == [
+        {"type": "command", "command": f"kmctl audit guard --allow {group}"}
+    ]

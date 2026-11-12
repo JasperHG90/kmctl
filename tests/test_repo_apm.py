@@ -1,7 +1,8 @@
 """This repository installs its upstream rules and skills with APM.
 
-apm.yml lists them, pinned to one jasperhg90/skills commit, and apm.lock.yaml
-records what `apm install` resolved. These tests read those files and the
+apm.yml lists them, the rules pinned to one jasperhg90/skills commit and
+each skill to its own source commit, and apm.lock.yaml records what
+`apm install` resolved. These tests read those files and the
 installed rules; they make no network calls.
 """
 
@@ -38,7 +39,11 @@ RULES = {
     "prek-code-quality",
 }
 
-SKILLS = {"agent-creator", "rule-creator", "generate-art"}
+#: Each skill's apm.yml path and the commit it is pinned to. To repin: change
+#: it here and in apm.yml, then rerun `apm install`.
+SKILLS = {
+    "anthropics/skills/skills/frontend-design": "2c5958ecac7cee2b583967a2c4981d0f4a75c579",
+}
 
 #: sha256 of the AGENTS.md guidelines text as it stood between its old markers.
 GUIDELINES_SHA256 = "a16a4f36531df0ecc8b4f64b6d1dcf04148dcf181bbe794ac4254faec6fb2984"
@@ -59,15 +64,15 @@ def _split(entry: str) -> tuple[str, str]:
 
 def test_manifest_lists_every_rule_and_skill() -> None:
     paths = {_split(e)[0] for e in _entries()}
-    want = {f"{SOURCE}/rules/{r}.instructions.md" for r in RULES} | {
-        f"{SOURCE}/skills/tools/{s}" for s in SKILLS
-    }
+    want = {f"{SOURCE}/rules/{r}.instructions.md" for r in RULES} | set(SKILLS)
     assert paths == want
 
 
 def test_manifest_pins_every_entry() -> None:
-    unpinned = [e for e in _entries() if _split(e)[1] != PINNED]
-    assert not unpinned, f"entries not pinned to {PINNED}: {unpinned}"
+    unpinned = [
+        e for e in _entries() if _split(e)[1] != SKILLS.get(_split(e)[0], PINNED)
+    ]
+    assert not unpinned, f"entries not pinned to their commit: {unpinned}"
 
 
 def test_manifest_targets_claude() -> None:
@@ -79,7 +84,8 @@ def test_manifest_lock_pins_commit_and_hashes() -> None:
     deps = lock["dependencies"]
     assert len(deps) == len(RULES) + len(SKILLS)
     for dep in deps:
-        assert dep["resolved_commit"] == PINNED, dep
+        path = f"{dep['repo_url']}/{dep.get('virtual_path')}"
+        assert dep["resolved_commit"] == SKILLS.get(path, PINNED), dep
         hashes = dep.get("deployed_file_hashes") or {}
         assert hashes, f"{dep.get('virtual_path')} has no file hashes"
         assert all(re.fullmatch(r"sha256:[0-9a-f]{64}", h) for h in hashes.values())

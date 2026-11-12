@@ -38,6 +38,13 @@ ROOT = Path(__file__).resolve().parents[1]
 SKILLS = ROOT / "apm" / ".apm" / "skills"
 SKILL_NAMES = sorted(p.name for p in SKILLS.iterdir() if p.is_dir())
 AUDITOR = ROOT / "apm" / ".apm" / "agents" / "kmctl-auditor.md"
+EXTRACTOR = ROOT / "apm" / ".apm" / "agents" / "kmctl-claims-extractor.md"
+CHECK_WRITER = ROOT / "apm" / ".apm" / "agents" / "kmctl-check-writer.md"
+KMCTL_AGENTS = {
+    "kmctl-auditor": AUDITOR,
+    "kmctl-check-writer": CHECK_WRITER,
+    "kmctl-claims-extractor": EXTRACTOR,
+}
 INSTRUCTIONS = ROOT / "apm" / "claude" / ".apm" / "instructions"
 RULE_NAMES = sorted(
     p.name.removesuffix(".instructions.md") for p in INSTRUCTIONS.glob("*.md")
@@ -49,7 +56,13 @@ INSTALL_HOW_TO = ROOT / "docs" / "how-to" / "install-kmctl-with-apm.md"
 README = ROOT / "README.md"
 REF = f"v{version('kmctl')}"
 OKF_AGENTS = "apm_modules/scaccogatto/okf-skills/agents"
-AGENT_NAMES = ["bundle-weaver", "event-analyzer", "kmctl-auditor"]
+AGENT_NAMES = [
+    "bundle-weaver",
+    "event-analyzer",
+    "kmctl-auditor",
+    "kmctl-check-writer",
+    "kmctl-claims-extractor",
+]
 AGENT_PATHS = [f".opencode/agents/{n}.md" for n in AGENT_NAMES]
 RULE_PATHS = [f".opencode/rules/{n}.md" for n in RULE_NAMES]
 PLUGIN_PATH = ".opencode/plugins/kmctl.js"
@@ -145,7 +158,8 @@ def _apm_writes(antigravity: bool = False) -> dict[str, str]:
         f".agents/skills/{s}/SKILL.md": (SKILLS / s / "SKILL.md").read_text()
         for s in SKILL_NAMES
     }
-    files[".opencode/agents/kmctl-auditor.md"] = AUDITOR.read_text()
+    for name, path in KMCTL_AGENTS.items():
+        files[f".opencode/agents/{name}.md"] = path.read_text()
     okf_files = {".agents/skills/okf/SKILL.md": "okf\n"}
     for name, text in OKF_SOURCES.items():
         okf_files[f".opencode/agents/{name}.md"] = text
@@ -313,11 +327,15 @@ def test_translate_refuses_an_agent_without_tools() -> None:
 # r2: what patch writes ----------------------------------------------------------
 
 
-def test_patch_rewrites_the_three_agents(repo: Path) -> None:
+def test_patch_rewrites_the_agents(repo: Path) -> None:
     _install(repo)
 
     for name in AGENT_NAMES:
-        source = AUDITOR.read_text() if name == "kmctl-auditor" else OKF_SOURCES[name]
+        source = (
+            KMCTL_AGENTS[name].read_text()
+            if name in KMCTL_AGENTS
+            else OKF_SOURCES[name]
+        )
         have = (repo / ".opencode" / "agents" / f"{name}.md").read_text()
         assert have == opencode.translate_agent(source, name), name
     meta, _ = _split((repo / ".opencode/agents/kmctl-auditor.md").read_text())

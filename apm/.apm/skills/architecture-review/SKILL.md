@@ -1,6 +1,6 @@
 ---
 name: architecture-review
-description: Review instructions for .okf/architecture/ pages, used through /audit and its kmctl-auditor agent - does each design page and diagram still match the code it describes? Use through /audit; read directly when someone asks how architecture pages are judged.
+description: "Review instructions for .okf/architecture/ pages. The kmctl-auditor agent follows them through /audit: does each design page and diagram still match the code it describes? Use through /audit; read directly when someone asks how architecture pages are judged."
 ---
 
 # Architecture review: does the design still match the code?

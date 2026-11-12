@@ -87,8 +87,8 @@ The [decision index](decisions/index.md) lists every record.
 
 ## Where it stands
 
-All four parts work, for the three harnesses. Invariants I1, I3 and I4 are
-enforced by tests; I2, that audits never write knowledge, is still
-`planned`. No practices, proposals or prototypes are recorded, and many
-concepts have no `verified` entry, so `kmctl review due` lists them. Work in
-flight lives in `.loop/` tickets, outside the bundle.
+All four parts work, for three harnesses. I1, I3 and I4 are enforced by
+tests; I2 is `planned`. Agents extract claims and write checks
+that kmctl reruns with no model; an opt-in decision model and people's
+reviews judge them ([the audit pipeline](architecture/audit-pipeline.md)).
+Many concepts lack a `verified` entry. Work in flight lives in `.loop/`.

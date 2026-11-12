@@ -1,6 +1,9 @@
 """The package's skills have the layout their tickets promise."""
 
+import re
 from pathlib import Path
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILLS = ROOT / "apm" / ".apm" / "skills"
@@ -81,3 +84,60 @@ def test_write_docs_grader_joins_metadata(tmp_path: Path) -> None:
     assert "wrong-prompt" in proc.stdout
     assert not (it / "no-metadata" / "with_skill" / "grading.json").exists()
     assert not (it / "wrong-prompt" / "with_skill" / "grading.json").exists()
+
+
+AGENTS = ROOT / "apm" / ".apm" / "agents"
+#: ``kmctl`` followed by its words and flags, up to the first word that is neither.
+COMMAND = re.compile(r"\bkmctl((?: +(?:[a-z][a-z-]*|--[a-z][a-z-]*|-(?= )))+)")
+#: Code: fenced blocks and inline code spans, where a file names a command to run.
+CODE = re.compile(r"```.*?```|`[^`\n]+`", re.DOTALL)
+
+
+def _named_commands(text: str) -> list[list[str]]:
+    """Each ``kmctl ...`` command a skill or agent names in its code, as its words."""
+    code = "\n".join(CODE.findall(text))
+    return [m.group(1).split() for m in COMMAND.finditer(code)]
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        SKILLS / "extract-claims" / "SKILL.md",
+        AGENTS / "kmctl-claims-extractor.md",
+        SKILLS / "write-checks" / "SKILL.md",
+        AGENTS / "kmctl-check-writer.md",
+    ],
+    ids=lambda p: p.parent.name if p.name == "SKILL.md" else p.stem,
+)
+def test_every_named_kmctl_command_exists(path: Path) -> None:
+    """Each command and flag the skill or agent names is in the CLI (skills-name-only-real-verbs)."""
+    from typer.main import get_command
+
+    from kmctl import app
+
+    named = _named_commands(path.read_text())
+    assert named, "the file names no kmctl command"
+    for words in named:
+        command = get_command(app)
+        for word in (w for w in words if not w.startswith("--")):
+            if not hasattr(command, "commands"):
+                break  # a verb's argument
+            assert word in command.commands, f"kmctl {' '.join(words)}: no {word!r}"
+            command = command.commands[word]
+        known = {o for p in command.params for o in p.opts}
+        flags = {w for w in words if w.startswith("--")}
+        assert flags <= known, f"kmctl {' '.join(words)}: {flags - known}"
+
+
+@pytest.mark.parametrize(
+    "path",
+    sorted(SKILLS.glob("*/SKILL.md")) + sorted(AGENTS.glob("*.md")),
+    ids=lambda p: p.parent.name if p.name == "SKILL.md" else p.stem,
+)
+def test_front_matter_parses_with_a_name_and_description(path: Path) -> None:
+    """A description with an unquoted ': ' breaks the YAML, and every harness then skips the skill."""
+    import yaml
+
+    meta = yaml.safe_load(path.read_text().split("---")[1])
+
+    assert isinstance(meta, dict) and meta.get("name") and meta.get("description")

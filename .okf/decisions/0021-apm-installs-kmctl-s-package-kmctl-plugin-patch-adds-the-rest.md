@@ -71,3 +71,19 @@ Rejected:
 - ADR 0019 is superseded; ADR 0014 points here for the route.
 
 Supersedes [ADR 0019](0019-kmctl-plugin-remove-uninstalls-the-package-and-reinstalls-the-harnesses-kept.md).
+
+## Correction, 2026-11-11
+
+`--undo` no longer deletes `.agents/plugins/kmctl/` alone. Since
+[ADR 0024](0024-opencode-gets-the-package-from-apm-and-its-agents-rules-and-briefing-from-kmctl-plugin-patch.md)
+it also deletes what patch wrote for OpenCode (`opencode.undo` in
+`src/kmctl/plugin.py`): the rewritten agents, `.opencode/rules/`, the
+`instructions` entry and `.opencode/plugins/kmctl.js`.
+
+The repository is now `JasperHG90/kmctl`: the `apm.yml` entry kmctl
+suggests is `{git: https://github.com/JasperHG90/kmctl.git, path: apm,
+ref: vVERSION}`, and kmctl still reads the old `Knowledge-management` URL
+(`OLD_REPO` in `src/kmctl/plugin.py`).
+
+Found by the first `kmctl audit checks` run over the whole bundle
+([ADR 0038](0038-checks-are-step-data-that-kmctl-reruns-and-only-checks-that-notice-a-change-are-stored.md)).

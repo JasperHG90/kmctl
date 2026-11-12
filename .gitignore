@@ -20,3 +20,4 @@ apm_modules/
 
 .ov-sync.db
 .vscode
+.devcontainer/.env

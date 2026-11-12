@@ -1,6 +1,23 @@
 lockfile_version: '1'
-apm_version: 0.33.0
+apm_version: 0.35.0
 dependencies:
+- repo_url: anthropics/skills
+  name: frontend-design
+  host: github.com
+  resolved_commit: 2c5958ecac7cee2b583967a2c4981d0f4a75c579
+  resolved_ref: 2c5958ecac7cee2b583967a2c4981d0f4a75c579
+  version: unknown
+  virtual_path: skills/frontend-design
+  is_virtual: true
+  package_type: claude_skill
+  deployed_files:
+  - .claude/skills/frontend-design
+  - .claude/skills/frontend-design/LICENSE.txt
+  - .claude/skills/frontend-design/SKILL.md
+  deployed_file_hashes:
+    .claude/skills/frontend-design/LICENSE.txt: sha256:0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594
+    .claude/skills/frontend-design/SKILL.md: sha256:d91970639e9f5c37682ac7ab60094d35f1c7c1f38d731bd56396563aee10c1d3
+  content_hash: sha256:89496d5dd00f4810205f351759594fc2742bf8eea85a2f2b2d1de59f4bd91576
 - repo_url: jasperhg90/skills
   name: skills-async-python
   host: github.com
@@ -183,65 +200,6 @@ dependencies:
   deployed_file_hashes:
     .claude/rules/uv-installer.md: sha256:1b82b90fe4caa6e484f6210b619e6bb2c7bf35e13f7739930243b5546c8f4685
   content_hash: sha256:9f378be3cbaae1a485e9148904c99b1f440df45a2e78d730242c5e0c11c94fe2
-- repo_url: jasperhg90/skills
-  name: agent-creator
-  host: github.com
-  resolved_commit: 7a5e072ae8aad76caa9c13645317347c64cce729
-  resolved_ref: 7a5e072ae8aad76caa9c13645317347c64cce729
-  version: unknown
-  virtual_path: skills/tools/agent-creator
-  is_virtual: true
-  package_type: claude_skill
-  deployed_files:
-  - .claude/skills/agent-creator
-  - .claude/skills/agent-creator/README.md
-  - .claude/skills/agent-creator/SKILL.md
-  - .claude/skills/agent-creator/agents/grader.md
-  - .claude/skills/agent-creator/references/agent-design-guide.md
-  - .claude/skills/agent-creator/references/agent-template.md
-  deployed_file_hashes:
-    .claude/skills/agent-creator/README.md: sha256:228fd1378154d365cd7c8af93706ad25634bccbc24e5f0f684213ccc9c4c1d14
-    .claude/skills/agent-creator/SKILL.md: sha256:30cac6f8555d69db7bb3082524b3908399a1a3d7c93131d8fc68de16af2bbc75
-    .claude/skills/agent-creator/agents/grader.md: sha256:f4b8105617960359bc469984233a2159e947114411fbbc79c44b5765a34c1f88
-    .claude/skills/agent-creator/references/agent-design-guide.md: sha256:e8aff12a4fff76a888faf0bf90fff3fdf134c9bcb60b7adda0e1762629881543
-    .claude/skills/agent-creator/references/agent-template.md: sha256:a2221b6825fac5ea93fe5a00a4bd41a7def999fdeefa3ffa558e3398c453f03f
-  content_hash: sha256:2927a2805a9d9cd60f2747c5c3a857280091873fe4eb60a48dbce32354104b8d
-- repo_url: jasperhg90/skills
-  name: generate-art
-  host: github.com
-  resolved_commit: 7a5e072ae8aad76caa9c13645317347c64cce729
-  resolved_ref: 7a5e072ae8aad76caa9c13645317347c64cce729
-  version: unknown
-  virtual_path: skills/tools/generate-art
-  is_virtual: true
-  package_type: claude_skill
-  deployed_files:
-  - .claude/skills/generate-art
-  - .claude/skills/generate-art/README.md
-  - .claude/skills/generate-art/SKILL.md
-  - .claude/skills/generate-art/scripts/generate_art.py
-  deployed_file_hashes:
-    .claude/skills/generate-art/README.md: sha256:287e105b65855c859324942f53e4c36ab0f7598625d0c12edf3f04fb29998b13
-    .claude/skills/generate-art/SKILL.md: sha256:e14fc33345471e0d7c225750e0a85cbe272f886f617f1af58da3855195e9c54c
-    .claude/skills/generate-art/scripts/generate_art.py: sha256:13f6662e1d5e15751b240d1fe3b44bfa2873f040350c91a0eadaf79f17433887
-  content_hash: sha256:4896ffc8608c731d3d47022744267ac60e6f2482fc54f26c43a141941a527ec6
-- repo_url: jasperhg90/skills
-  name: rule-creator
-  host: github.com
-  resolved_commit: 7a5e072ae8aad76caa9c13645317347c64cce729
-  resolved_ref: 7a5e072ae8aad76caa9c13645317347c64cce729
-  version: unknown
-  virtual_path: skills/tools/rule-creator
-  is_virtual: true
-  package_type: claude_skill
-  deployed_files:
-  - .claude/skills/rule-creator
-  - .claude/skills/rule-creator/README.md
-  - .claude/skills/rule-creator/SKILL.md
-  deployed_file_hashes:
-    .claude/skills/rule-creator/README.md: sha256:8938211550c167508bd4f95caaa500dd0feb621ba0a4d3e39e6e57d217d6f47e
-    .claude/skills/rule-creator/SKILL.md: sha256:43cbf46a44a558abce03cd0cc770244ee926d28d753317738c22603d8cfe1550
-  content_hash: sha256:2017a7a4082080fa6d3c059415a2cf003f81819673fdb4d062db80db09ae9eb0
 deployments:
 - kind: project-relative
   target: claude
@@ -362,118 +320,28 @@ deployments:
   content_hash: sha256:1b82b90fe4caa6e484f6210b619e6bb2c7bf35e13f7739930243b5546c8f4685
 - kind: project-relative
   target: claude
-  value: .claude/skills/agent-creator
+  value: .claude/skills/frontend-design
   runtime: null
   scope: project
   owners:
-  - jasperhg90/skills/skills/tools/agent-creator
-  active_owner: jasperhg90/skills/skills/tools/agent-creator
+  - anthropics/skills/skills/frontend-design
+  active_owner: anthropics/skills/skills/frontend-design
   content_hash: null
 - kind: project-relative
   target: claude
-  value: .claude/skills/agent-creator/README.md
+  value: .claude/skills/frontend-design/LICENSE.txt
   runtime: null
   scope: project
   owners:
-  - jasperhg90/skills/skills/tools/agent-creator
-  active_owner: jasperhg90/skills/skills/tools/agent-creator
-  content_hash: sha256:228fd1378154d365cd7c8af93706ad25634bccbc24e5f0f684213ccc9c4c1d14
+  - anthropics/skills/skills/frontend-design
+  active_owner: anthropics/skills/skills/frontend-design
+  content_hash: sha256:0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594
 - kind: project-relative
   target: claude
-  value: .claude/skills/agent-creator/SKILL.md
+  value: .claude/skills/frontend-design/SKILL.md
   runtime: null
   scope: project
   owners:
-  - jasperhg90/skills/skills/tools/agent-creator
-  active_owner: jasperhg90/skills/skills/tools/agent-creator
-  content_hash: sha256:30cac6f8555d69db7bb3082524b3908399a1a3d7c93131d8fc68de16af2bbc75
-- kind: project-relative
-  target: claude
-  value: .claude/skills/agent-creator/agents/grader.md
-  runtime: null
-  scope: project
-  owners:
-  - jasperhg90/skills/skills/tools/agent-creator
-  active_owner: jasperhg90/skills/skills/tools/agent-creator
-  content_hash: sha256:f4b8105617960359bc469984233a2159e947114411fbbc79c44b5765a34c1f88
-- kind: project-relative
-  target: claude
-  value: .claude/skills/agent-creator/references/agent-design-guide.md
-  runtime: null
-  scope: project
-  owners:
-  - jasperhg90/skills/skills/tools/agent-creator
-  active_owner: jasperhg90/skills/skills/tools/agent-creator
-  content_hash: sha256:e8aff12a4fff76a888faf0bf90fff3fdf134c9bcb60b7adda0e1762629881543
-- kind: project-relative
-  target: claude
-  value: .claude/skills/agent-creator/references/agent-template.md
-  runtime: null
-  scope: project
-  owners:
-  - jasperhg90/skills/skills/tools/agent-creator
-  active_owner: jasperhg90/skills/skills/tools/agent-creator
-  content_hash: sha256:a2221b6825fac5ea93fe5a00a4bd41a7def999fdeefa3ffa558e3398c453f03f
-- kind: project-relative
-  target: claude
-  value: .claude/skills/generate-art
-  runtime: null
-  scope: project
-  owners:
-  - jasperhg90/skills/skills/tools/generate-art
-  active_owner: jasperhg90/skills/skills/tools/generate-art
-  content_hash: null
-- kind: project-relative
-  target: claude
-  value: .claude/skills/generate-art/README.md
-  runtime: null
-  scope: project
-  owners:
-  - jasperhg90/skills/skills/tools/generate-art
-  active_owner: jasperhg90/skills/skills/tools/generate-art
-  content_hash: sha256:287e105b65855c859324942f53e4c36ab0f7598625d0c12edf3f04fb29998b13
-- kind: project-relative
-  target: claude
-  value: .claude/skills/generate-art/SKILL.md
-  runtime: null
-  scope: project
-  owners:
-  - jasperhg90/skills/skills/tools/generate-art
-  active_owner: jasperhg90/skills/skills/tools/generate-art
-  content_hash: sha256:e14fc33345471e0d7c225750e0a85cbe272f886f617f1af58da3855195e9c54c
-- kind: project-relative
-  target: claude
-  value: .claude/skills/generate-art/scripts/generate_art.py
-  runtime: null
-  scope: project
-  owners:
-  - jasperhg90/skills/skills/tools/generate-art
-  active_owner: jasperhg90/skills/skills/tools/generate-art
-  content_hash: sha256:13f6662e1d5e15751b240d1fe3b44bfa2873f040350c91a0eadaf79f17433887
-- kind: project-relative
-  target: claude
-  value: .claude/skills/rule-creator
-  runtime: null
-  scope: project
-  owners:
-  - jasperhg90/skills/skills/tools/rule-creator
-  active_owner: jasperhg90/skills/skills/tools/rule-creator
-  content_hash: null
-- kind: project-relative
-  target: claude
-  value: .claude/skills/rule-creator/README.md
-  runtime: null
-  scope: project
-  owners:
-  - jasperhg90/skills/skills/tools/rule-creator
-  active_owner: jasperhg90/skills/skills/tools/rule-creator
-  content_hash: sha256:8938211550c167508bd4f95caaa500dd0feb621ba0a4d3e39e6e57d217d6f47e
-- kind: project-relative
-  target: claude
-  value: .claude/skills/rule-creator/SKILL.md
-  runtime: null
-  scope: project
-  owners:
-  - jasperhg90/skills/skills/tools/rule-creator
-  active_owner: jasperhg90/skills/skills/tools/rule-creator
-  content_hash: sha256:43cbf46a44a558abce03cd0cc770244ee926d28d753317738c22603d8cfe1550
+  - anthropics/skills/skills/frontend-design
+  active_owner: anthropics/skills/skills/frontend-design
+  content_hash: sha256:d91970639e9f5c37682ac7ab60094d35f1c7c1f38d731bd56396563aee10c1d3

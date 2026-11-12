@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "The APM package and the wheel carry the write-checks skill and the kmctl-check-writer agent, whose front matter sets model: haiku and tools Read and Bash.",
+      "fails_when": "the skill or agent is missing from the package or wheel, or the agent's model is not haiku or its tools differ",
+      "command": "uv run pytest tests/test_apm_package.py -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "Every kmctl command the skill and the agent name exists in the CLI.",
+      "fails_when": "the skill or agent names a kmctl command or flag the CLI does not have",
+      "command": "uv run pytest tests/test_skills.py -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "The skill tells the main agent to delegate to the check writer and keep only its summary; the agent's instructions say it takes claims with kmctl audit checks todo, explores the repository, tests drafts with try until they hold and are not weak, submits a check or a reason, writes only through kmctl audit checks, never edits .okf/, docs/ or a verified stamp, and returns a short summary.",
+      "fails_when": "the skill has the main agent write checks itself, or the agent's instructions lack the try-before-submit loop, the write-only-through-kmctl rule or the summary shape",
+      "judgment": true
+    },
+    {
+      "id": "r4",
+      "behavior": "The skill's skill-creator evals ran and their results are recorded in evals/results.md.",
+      "fails_when": "evals/evals.json or evals/results.md is missing, or results.md records no run",
+      "judgment": true
+    },
+    {
+      "id": "r5",
+      "behavior": "kmctl plugin patch translates the check writer for Antigravity with view_file and run_command, and for OpenCode; the auditor's and extractor's translations are unchanged.",
+      "fails_when": "translation refuses the check writer, the Antigravity agent lacks run_command, or the auditor's or extractor's translated output changes",
+      "command": "uv run pytest tests/test_antigravity.py tests/test_opencode.py -q"
+    },
+    {
+      "id": "r6",
+      "behavior": "The briefing stays within its token budget with both new skills listed, and the manifesto names the skill and agent.",
+      "fails_when": "test_briefing_token_budget fails, or the manifesto's Parts omit write-checks or kmctl-check-writer",
+      "command": "uv run pytest tests/test_briefing.py::test_briefing_token_budget -q && grep -q write-checks .okf/manifesto.md && grep -q kmctl-check-writer .okf/manifesto.md"
+    },
+    {
+      "id": "r7",
+      "behavior": "kmctl check and the strict OKF validation pass on the changed .okf/ concepts and docs/ pages, with every touched concept named in .okf/log.md.",
+      "fails_when": "kmctl check exits nonzero, or the pre-commit OKF validation reports an error on .okf/",
+      "command": "uv run kmctl check && just lint"
+    },
+    {
+      "id": "r8",
+      "behavior": "The repository's own gates stay green: lint, types and the full default test suite.",
+      "fails_when": "just lint or just test exits nonzero",
+      "command": "just lint && just test"
+    }
+  ]
+}

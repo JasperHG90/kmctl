@@ -103,3 +103,19 @@ install (spike:antigravity-apm-audit/4). CI for Antigravity runs
 `kmctl plugin patch` on a clean checkout that fails when `git status
 --porcelain` prints anything: the starter's `just check-install`
 (`docs/how-to/install-the-plugin-and-the-ci-action.md`, step 4).
+
+## Correction, 2026-11-11
+
+The plugin folder no longer has a hook named `kmctl-okf-stop`. Since
+[ADR 0020](0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md)
+the Stop handler ships in the Antigravity sub-package's `hooks.json` as an
+unnamed `Stop` entry whose command is `STOP_COMMAND` in
+`src/kmctl/antigravity.py`. What it does on a stop is unchanged.
+
+kmctl also writes more than the Antigravity agents: since
+[ADR 0024](0024-opencode-gets-the-package-from-apm-and-its-agents-rules-and-briefing-from-kmctl-plugin-patch.md)
+`kmctl plugin patch` writes OpenCode's agents, rules, `instructions` entry
+and briefing plugin too.
+
+Found by the first `kmctl audit checks` run over the whole bundle
+([ADR 0038](0038-checks-are-step-data-that-kmctl-reruns-and-only-checks-that-notice-a-change-are-stored.md)).

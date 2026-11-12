@@ -1,4 +1,65 @@
 {
   "schema_version": "1.0",
-  "rows": []
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "The section cutter splits a fixture bundle into stable section ids and numbered sentences, keeps code fences whole, carries correction context, skips deprecated concepts, and gives each section a change key that moves when its text, its concept's title or the extraction instructions change and only then.",
+      "fails_when": "a section id or sentence split differs from the fixture's expected output, a fence is split, a deprecated concept yields sections, or a key stays the same after a text, title or instructions change (or moves without one)",
+      "command": "uv run pytest tests/test_claims_sections.py -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "The store opens .kmctl/audit.sqlite at the repository root, writes .kmctl/.gitignore holding `*`, upgrades a fresh and an older-version database to the newest schema step, and takes two writers at once.",
+      "fails_when": "the database is created anywhere else, git status --porcelain is not empty after a write, an older database does not open at the newest user_version, or a second concurrent writer fails",
+      "command": "uv run pytest tests/test_claims_store.py -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "kmctl audit claims todo --json lists every section on a first run, none after each is submitted, only an edited section after an edit (its old claims gone), and drops a removed concept's claims; each listed section carries its key, numbered sentences and the extraction instructions.",
+      "fails_when": "todo lists a section whose key is unchanged and submitted, misses an edited section, keeps claims of an edited or removed section, or omits the instructions or key from its JSON",
+      "command": "uv run pytest tests/test_claims_cli.py -k todo -q"
+    },
+    {
+      "id": "r4",
+      "behavior": "kmctl audit claims submit validates the agent's answer against the same Pydantic models, stores it, and refuses a stale key, a missing sentence verdict or a malformed answer with one stderr line naming the fix and a nonzero exit, while keeping the good sections of a mixed file.",
+      "fails_when": "an invalid answer is stored, a refusal prints more or less than one line or no fix, the exit is 0 on refusal, or a valid section in the same file is lost",
+      "command": "uv run pytest tests/test_claims_cli.py -k submit -q"
+    },
+    {
+      "id": "r5",
+      "behavior": "kmctl audit claims list shows counts per kind, one concept's claims, filters by --kind, and prints a stable --json shape.",
+      "fails_when": "a count, filter or concept view is wrong, or the --json keys differ from the documented shape",
+      "command": "uv run pytest tests/test_claims_cli.py -k list -q"
+    },
+    {
+      "id": "r6",
+      "behavior": "No kmctl audit claims verb changes a tracked or unignored file or opens a network connection.",
+      "fails_when": "git status --porcelain is not empty after any verb, or any verb opens a socket",
+      "command": "uv run pytest tests/test_claims_cli.py -k 'tree or network' -q"
+    },
+    {
+      "id": "r7",
+      "behavior": "kmctl audit and kmctl audit claims --help name every verb and flag with an example, fit 80 columns, and base kmctl still has only its four dependencies.",
+      "fails_when": "a verb or flag is missing from the help, the help test fails, or pyproject.toml's base dependencies list anything beyond httpx, pydantic, pyyaml and typer",
+      "command": "uv run pytest tests/test_help.py -q && python3 -c \"import tomllib,sys; d=tomllib.load(open('pyproject.toml','rb'))['project']['dependencies']; sys.exit(0 if sorted(x.split('>')[0].split('=')[0].split('[')[0] for x in d)==['httpx','pydantic','pyyaml','typer'] else 1)\""
+    },
+    {
+      "id": "r8",
+      "behavior": "A new decision record explains the kmctl audit group, the in-repo git-ignored store and the rejected alternatives (per-user data folder, committed file, a model call in the CLI); the manifesto, architecture overview and docs/reference/commands.md describe the claims verbs.",
+      "fails_when": "no new decision record names the store and its rejected alternatives, or commands.md lacks kmctl audit claims todo, submit or list",
+      "command": "bash -c 'grep -q \"kmctl audit claims todo\" docs/reference/commands.md && grep -q \"kmctl audit claims submit\" docs/reference/commands.md && grep -q \"kmctl audit claims list\" docs/reference/commands.md && grep -lq \"audit.sqlite\" .okf/decisions/*.md'"
+    },
+    {
+      "id": "r9",
+      "behavior": "kmctl check and the strict OKF validation pass on the changed .okf/ concepts and docs/ pages, with every touched concept named in .okf/log.md.",
+      "fails_when": "kmctl check exits nonzero, or the pre-commit OKF validation reports an error on .okf/",
+      "command": "uv run kmctl check && just lint"
+    },
+    {
+      "id": "r10",
+      "behavior": "The repository's own gates stay green: lint, types and the full default test suite.",
+      "fails_when": "just lint or just test exits nonzero",
+      "command": "just lint && just test"
+    }
+  ]
 }

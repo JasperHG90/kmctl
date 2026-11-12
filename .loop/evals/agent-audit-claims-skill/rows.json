@@ -1,4 +1,59 @@
 {
   "schema_version": "1.0",
-  "rows": []
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "The APM package and the wheel carry the extract-claims skill and the kmctl-claims-extractor agent, whose front matter sets model: haiku and tools Read and Bash.",
+      "fails_when": "the skill or agent is missing from the package or wheel, or the agent's model is not haiku or its tools differ",
+      "command": "uv run pytest tests/test_apm_package.py -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "Every kmctl command the skill and the agent name exists in the CLI.",
+      "fails_when": "the skill or agent names a kmctl command or flag the CLI does not have",
+      "command": "uv run pytest tests/test_skills.py -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "The skill tells the main agent to delegate to the extractor and keep only its summary; the agent's instructions say it runs kmctl audit claims todo and submit, re-asks refused sections, writes only through kmctl audit claims, never edits .okf/, docs/ or a verified stamp, and returns a short summary (sections, claims by kind, refusals).",
+      "fails_when": "the skill has the main agent read or submit claims itself, or the agent's instructions lack the write-only-through-kmctl rule or the summary shape",
+      "judgment": true
+    },
+    {
+      "id": "r4",
+      "behavior": "The skill's skill-creator evals ran and their results are recorded in evals/results.md.",
+      "fails_when": "evals/evals.json or evals/results.md is missing, or results.md records no run",
+      "judgment": true
+    },
+    {
+      "id": "r5",
+      "behavior": "kmctl plugin patch translates the extractor for Antigravity with view_file and run_command and without commandExecutionPolicy off, and for OpenCode; the auditor's translations are unchanged.",
+      "fails_when": "translation refuses the extractor, the Antigravity agent lacks run_command or has commandExecutionPolicy off, or the auditor's translated output changes",
+      "command": "uv run pytest tests/test_antigravity.py tests/test_opencode.py -q"
+    },
+    {
+      "id": "r6",
+      "behavior": "The briefing stays within its token budget with the new skill listed.",
+      "fails_when": "test_briefing_token_budget fails",
+      "command": "uv run pytest tests/test_briefing.py::test_briefing_token_budget -q"
+    },
+    {
+      "id": "r7",
+      "behavior": "The manifesto narrows I2 to the kmctl-auditor and the CI action's audit, adds a Value that the claims and checks agents write only through kmctl audit claims and kmctl audit checks, names the skill and agent in its Parts, and a decision record cites spike agent-audit-claims/1 with the rejected alternatives (MCP-only tools, Claude Code-only restriction, file handoff); the architecture overview's Depicts entry for I2 matches.",
+      "fails_when": "I2 still claims every audit agent has no shell, the Value is missing, the decision record does not cite the spike, or the overview's I2 entry disagrees with the manifesto",
+      "judgment": true
+    },
+    {
+      "id": "r8",
+      "behavior": "kmctl check and the strict OKF validation pass on the changed .okf/ concepts and docs/ pages, with every touched concept named in .okf/log.md.",
+      "fails_when": "kmctl check exits nonzero, or the pre-commit OKF validation reports an error on .okf/",
+      "command": "uv run kmctl check && just lint"
+    },
+    {
+      "id": "r9",
+      "behavior": "The repository's own gates stay green: lint, types and the full default test suite.",
+      "fails_when": "just lint or just test exits nonzero",
+      "command": "just lint && just test"
+    }
+  ]
 }

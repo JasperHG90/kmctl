@@ -57,14 +57,36 @@ ADR 0027), `manifesto.md` (the root concept), `decisions/`, `architecture/`, `pr
   ack`, ADR 0027), check indexes, docs front matter and links
   (`kmctl check --fix` writes the generated `docs/` folder indexes, and the
   `kmctl-check` pre-commit hook runs the check, ADR 0022), and list live
-  and expired handoffs.
+  and expired handoffs. Its `kmctl audit` group holds the audit verbs:
+  `kmctl audit claims todo`, `submit` and `list` hand a coding agent a
+  bundle's sections, validate its verdicts against one schema and keep the
+  claims in a git-ignored store, `.kmctl/audit.sqlite`; kmctl calls no
+  model for them (ADR 0036). `kmctl audit checks todo`, `try`, `submit`,
+  `run` and `list` turn those claims into checks, steps kmctl reruns with
+  no model when the files they read change; `submit` refuses a weak check,
+  one that notices no change to the code it matched, and code and query
+  steps need the `kmctl[audit]` extra (ADR 0038). `kmctl audit judge`
+  is the one model call kmctl makes: off by default, it asks a decision
+  model set in a per-user `audit.toml` whether a failed check shows drift,
+  whether lines show a claim true, or whether a check tests its claim, and
+  caches each answer in the store (ADR 0039). `kmctl audit ui` serves a
+  page on 127.0.0.1 where a person reviews claims and checks: a thumbs up
+  or down and a note on either, their own verdict on whether a claim holds,
+  and a second opinion from that model. A thumbs down, or a verdict the
+  check disagrees with, goes back to the agent with the next `todo`
+  (ADR 0041).
 - **An APM package**, `apm/`, which APM installs from the user's `apm.yml`
   entry (ADR 0014, ADR 0021). It holds an
   audit agent with three review skills (architecture, decision log,
   practices), a skill for writing Diataxis docs, `/handoff` and `/continue`,
   which write and read back handoffs in `.okf/handoffs/` (ADR 0008), and the
   four knowledge rules, and it depends on the okf skills for OKF authoring and
-  validation. Skills route; `kmctl` decides and writes.
+  validation. `/extract-claims` hands the bundle's changed sections to the
+  `kmctl-claims-extractor` agent (Haiku, Read and a shell), which stores
+  claims through `kmctl audit claims` and returns only a summary;
+  `/write-checks` hands the claims with no check to the
+  `kmctl-check-writer` agent, built the same way, which tries and stores
+  checks through `kmctl audit checks`. Skills route; `kmctl` decides and writes.
   The package also ships, per harness, the SessionStart hook that relays
   `kmctl`'s briefing (ADR 0029), okf's MCP server and, for Antigravity, okf's
   Stop check (ADR 0018), so APM (Agent Package Manager) installs all of it
@@ -99,9 +121,12 @@ Each is `planned` until the test named for it passes, then `enforced`.
   without a working script) and `tests/test_opencode.py` (OpenCode's
   briefing plugin adds nothing and throws nothing without a working
   `kmctl`).
-- **I2. Audits never write knowledge.** The audit agent, its skills and the
-  CI action report findings; they never edit `.okf/` or `docs/` and never
-  write a `verified` stamp. Status: planned.
+- **I2. The audit agent and the CI audit never write knowledge.** The
+  `kmctl-auditor` agent has no shell and no write tool, and nothing the CI
+  action's audit changes is committed or pushed (the step that runs the
+  audit agent holds no GitHub token; only the later publish step does),
+  so neither writes `.okf/`, `docs/` or a `verified` stamp (ADR 0037).
+  Status: planned.
 - **I3. The briefing comes from the CLI and fits a budget.** The hook prints
   what `kmctl` prints, so upgrading the CLI updates the briefing, and it
   stays under 500 tokens (estimated at four characters a token). Status: enforced by `tests/test_briefing.py::test_briefing_token_budget`.
@@ -125,12 +150,18 @@ Each is `planned` until the test named for it passes, then `enforced`.
   catches something.
 - **Plain language** in everything kmctl prints and every page it writes.
 - **Every skill is made with the skill-creator skill** (ADR 0007).
+- **The claims and checks agents write only through `kmctl audit`.** They
+  have a shell. In Claude Code a hook in their front matter (`kmctl audit
+  guard`) blocks any command but `kmctl audit claims` or `kmctl audit
+  checks`; Antigravity and OpenCode have no per-agent hook, so there their
+  instructions hold the rule. They never write `.okf/`, `docs/` or a
+  `verified` stamp (ADR 0037, ADR 0040).
 
 ## Out of scope for now
 
 - A `covers` field mapping concepts to code paths (ADR 0006).
-- Hooks beyond SessionStart: a nudge after code edits, a reminder at Stop,
-  a commit gate (ADR 0004, ADR 0029).
+- Hooks of kmctl's own beyond SessionStart: a nudge after code edits, a
+  reminder at Stop, a commit gate (ADR 0004, ADR 0029).
 - More harnesses than the three in Parts: Hermes and others come later
   (ADR 0014, ADR 0015).
 - Writing `verified` stamps from an audit (ADR 0005).

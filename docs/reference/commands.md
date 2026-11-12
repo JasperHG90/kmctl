@@ -39,6 +39,18 @@ for people. Warnings and refusals go to stderr.
 | `kmctl plugin` | Finish installing kmctl's APM package for an agent harness. APM (Agent Package Manager) installs the package from `apm.yml`: the skills, audit agent, knowledge rules, session hooks and okf's MCP server. Verb: `patch`. `kmctl doctor` checks the install. |
 | `kmctl plugin patch` | Add what APM cannot install yet for kmctl's package; run it after `apm install`. |
 | `kmctl doctor` | Check kmctl's tools, its installed package per harness and the `kmctl init` files. |
+| `kmctl audit` | Audit what the `.okf/` bundle claims about the repository. Groups: `claims` and `checks`; verbs: `judge` and `ui`. kmctl calls no model except `judge`: a coding agent reads what these verbs hand out and submits its answers. |
+| `kmctl audit claims todo` | List the bundle's sections that have no claims extracted for their current text. |
+| `kmctl audit claims submit` | Store an agent's verdicts and claims for sections that `todo` handed out. |
+| `kmctl audit claims list` | Show the stored claims: counts per concept and kind, or each claim. |
+| `kmctl audit checks todo` | List the stored claims that have no check or current reason, with the lines they are about. |
+| `kmctl audit checks try` | Run draft checks and show whether each holds and which changes it would miss. |
+| `kmctl audit checks submit` | Store checks and reasons for claims, refusing weak and failing checks. |
+| `kmctl audit checks run` | Rerun the stored checks whose files changed, with no model, and report each claim's status. |
+| `kmctl audit checks list` | Show each claim's check status, strength and why. |
+| `kmctl audit judge` | Ask the configured decision model one question about stored checks or a claim. |
+| `kmctl audit ui` | Serve a local page to review claims and checks and give feedback on them. |
+| `kmctl audit guard` | Allow a Bash call only when it is one `kmctl audit` command, as a PreToolUse hook. |
 
 ## Details
 
@@ -814,6 +826,315 @@ a repository.
 
 Exit code: 0 when no check fails (a warning fails nothing), 1 when any
 fails, 2 for a usage error such as a `--path` that is not a folder.
+
+### `kmctl audit claims todo`
+
+`kmctl audit claims todo [PATH] [--limit N] [--json]`
+
+List the bundle's sections that have no claims extracted for their current
+text. `PATH` is a repository holding `.okf/`, a bundle folder, or one
+concept file to narrow the scope (default: the current directory).
+
+It cuts each live concept into its `#`, `##` and `###` sections (a `#`
+inside a code fence is not a header) and splits each into numbered
+sentences: a code block or table is one sentence. Deprecated concepts,
+`index.md`, `log.md` and `prototypes/` are skipped. Each section has an id,
+`concept#slug`, and a key covering its text, its concept's id, title,
+status and type, the earlier sections and the extraction instructions.
+The earlier sections are in the key because a claim may cite their
+sentences, so editing one section also hands out the sections after it in
+the same concept.
+
+It then refreshes the store: a section whose key moved, or that is gone,
+loses its stored claims. It lists the sections with no extraction at their
+current key.
+
+| Option | Meaning |
+|---|---|
+| `--limit N` | Hand out at most N sections; the counts still cover all. |
+| `--json` | One JSON object: `instructions` (once), `counts` (`up_to_date`, `pending`, `new`, `changed`, `removed`), `concepts` (each concept with pending sections: `concept`, `path`, `sections`, beyond `--limit` too), `sections` (each with `id`, `key`, `concept`, `type`, `status`, `title`, `section`, `sentences` as `n` and `text`, `earlier`, `corrections`; a correction section's `corrections` holds only the corrections after it) and `next`. |
+
+Without `--json` it prints the counts, a `pending FILE  (N sections)` line
+per concept with pending sections and, when any are pending, a `Next:` line
+naming `kmctl audit claims submit`.
+
+### `kmctl audit claims submit`
+
+`kmctl audit claims submit [FILE|-] [--path PATH] [--by NAME] [--json]`
+
+Store an agent's verdicts and claims. The input, from `FILE` or stdin
+(`-`, the default), is one section answer or a JSON list of them:
+
+```json
+{"section": "manifesto#parts", "key": "f21d0132d11e1d33", "sentences": [
+  {"n": 1, "how_to_check": "read src/kmctl/__init__.py", "reason": "names the CLI",
+   "kind": "point", "claims": [{"claim": "kmctl is a standalone CLI.",
+   "quantifier": "exists", "refers_to": []}]}
+]}
+```
+
+`kind` is `point`, `structural`, `broad`, `subjective`, `external` or
+`none`; `quantifier` is `exists`, `all` or `none`. A claim's id is a hash of
+its concept and text.
+
+It refuses, as one stderr line naming the fix, a section the store does not
+know or whose key is stale (run `todo` again), an answer that leaves a
+sentence without a verdict (naming the numbers), gives one twice or names
+one out of range, a kind other than `none` with no claim, and a malformed
+answer. The good sections of the same input are still stored. It exits 1
+when any section is refused.
+
+| Option | Meaning |
+|---|---|
+| `--path PATH` | The repository whose store to write (default: the current directory). |
+| `--by NAME` | Who wrote the answers, recorded with each section (default: `agent`). |
+| `--json` | One JSON object: `stored` (`section`, `claims`) and `refused` (`section`, `reason`). |
+
+### `kmctl audit claims list`
+
+`kmctl audit claims list [PATH] [--kind KIND] [--claims] [--json]`
+
+Show the stored claims. It reads only the store (creating it when absent);
+run `todo` first to bring it in line with the bundle.
+
+| Option | Meaning |
+|---|---|
+| `--kind KIND` | Only claims of this kind. |
+| `--claims` | Each claim, with its sentence, kind, quantifier, how to check and reason. |
+| `--json` | One JSON object: `documents` (`concept`, `sections`, `extracted`, `claims` per kind) and `totals`; with `--claims`, `claims` (each with `id`, `section`, `concept`, `n`, `sentence`, `kind`, `claim`, `quantifier`, `how_to_check`, `reason`, `refers_to`). |
+
+### `kmctl audit checks todo`
+
+`kmctl audit checks todo [PATH] [--limit N] [--brief] [--json]`
+
+List the stored point, structural and broad claims with no check, and those
+whose reason is stale because a file the claim's anchors named changed. A
+claim's id follows its text. When re-extraction rewords a claim, its check
+or reason moves to the one claim made from the same sentence and is run
+again; with no such claim, or more than one, the answer is dropped and the
+claim comes back here.
+
+| Option | Meaning |
+|---|---|
+| `--limit N` | Hand out at most N claims; the counts still cover all. |
+| `--brief` | Leave `instructions` and `answer_schema` out of `--json`, for an agent's rounds after the first. |
+| `--json` | One JSON object: `instructions` and `answer_schema` (once), `counts` (`claims`, `checks`, `reasons`, `pending`, `pruned`, `carried`), `concepts` (`concept`, `path`, `claims`), `claims` (each with `id`, `concept`, `section`, `kind`, `quantifier`, `claim`, `sentence`, `how_to_check`, `anchors` and `lines`; a sentence over 800 characters, usually a table, is cut to the lines that share the most words with the claim, and a claim with no backticked span of its own resolves only those lines' spans) and `next`. |
+
+Each claim's `anchors` are its backticked spans resolved to a path, a
+command, a flag or a name; `lines` are the lines around them, or keyword
+windows from its concept's `sources` and the files it names.
+
+### `kmctl audit checks try`
+
+`kmctl audit checks try [FILE|-] [--path PATH] [--json]`
+
+Run draft answers. For each check it says whether every step holds and what
+it saw, and, when it holds, changes the lines it matched in memory (flip a
+boolean, change a number or string, swap `==`, negate a condition, delete a
+statement, rename a definition or YAML key, change a YAML value) to see whether it
+notices. It writes nothing, not even the store, and exits 0.
+
+An answer is a check, or a reason no check fits:
+
+```json
+{"claim": "5daa573f16f0", "strength": "exact", "why": "the write itself",
+ "steps": [{"op": "code", "pattern": "open(\"out.txt\", $$$A)", "paths": "src/tool.py"}]}
+{"claim": "0369c52d377b", "reason": "No code reads config.toml."}
+```
+
+Steps: `file` (`path`, `exists`), `grep` (`pattern`, `paths`, `present`),
+`code` (an ast-grep `pattern` and `paths`; presence only), `query` (a
+JMESPath `query` over YAML, TOML or JSON `paths`, with `expect` and
+`value`), `definition` (`name`, `paths`, `defined`), `imports` (`path`,
+`module`, `imported`) and `help` (`command`, `pattern`, `present`). A step
+reads only git-tracked files outside `.okf/`, `docs/` and `.kmctl/`, and
+never a `README.md`, `CLAUDE.md`, `AGENTS.md` or `CHANGELOG.md`, which
+restate the knowledge. Other markdown, such as a skill, an agent file or a
+prompt, is read: it is what the code runs. A `help` step runs a
+tracked argparse script through `uv run --no-project --offline --script`, or
+a pyproject script from the repository's `.venv` or `PATH`; it never runs
+`uv run` on the project, which would create `.venv` or rewrite `uv.lock`. A
+check that fails because the claim is wrong carries
+`drift`, one sentence on what the code does instead.
+
+### `kmctl audit checks submit`
+
+`kmctl audit checks submit [FILE|-] [--path PATH] [--by NAME] [--json]`
+
+Run and measure each answer as `try` does, and store it. It refuses, as one
+stderr line naming the fix:
+
+- a weak check: one that holds but noticed none of the changes, or matched
+  only comments or docstrings; the line names the changes it missed;
+- a failing check without `drift`, a holding check with `drift`, and
+  `drift` on a check whose step could not run;
+- an unknown or stale claim id;
+- a code or query step without the `kmctl[audit]` extra;
+- a malformed answer.
+
+The other answers in the same input are stored, reasons included. A check
+with no change to try is stored as not measured. It exits 1 when any answer
+is refused.
+
+### `kmctl audit checks run`
+
+`kmctl audit checks run [PATH] [--all] [--json]`
+
+Rerun each stored check whose files changed: the content of a file it
+reads, or the files its globs match (`--all` reruns every one). A holding
+check is measured again when its steps or reads moved, and a skipped check
+reruns once the extra is there. It calls no model. Each claim's status is
+`holds`, `not measured` (holds, but had no change to try), `weak`, `fails`,
+`drift`, `skipped` (needs the extra), `reason`, `stale reason` (a file the
+claim's anchors named changed, so `todo` hands it out again) or `no check`. It exits 0 whatever the checks find,
+and 1 only when it cannot run.
+
+### `kmctl audit checks list`
+
+`kmctl audit checks list [PATH] [--status STATUS] [--json]`
+
+Show each claim's status as the last `run` or `submit` left it, with its
+strength, why, drift or reason and mutation score (`killed/mutants`, or
+`not measured`). `--status` keeps one status.
+
+### `kmctl audit ui`
+
+`kmctl audit ui [PATH] [--port PORT] [--by NAME] [--config FILE] [--no-open]`
+
+Serve a page on 127.0.0.1 that shows each document of the bundle with its
+claims, their checks and how sure each check is, read live from
+`.kmctl/audit.sqlite`. It opens the page in a browser and runs until
+Ctrl-C.
+
+On each claim you can:
+
+| Control | What it does |
+|---|---|
+| Thumbs up or down on the claim | Rates the extracted claim. A thumbs down hands its section out again in `kmctl audit claims todo`, with your note. |
+| Thumbs up or down on the check or reason | Rates the answer. A thumbs down hands the claim out again, first, in `kmctl audit checks todo`, with your note. |
+| Note | Free text kept with the rating. It goes to the agent the next time the item is handed out; on its own it sends nothing back. |
+| Your verdict: Claim holds, Claim is false | Your own reading of the claim. It counts over the check's while the files it was given on are unchanged (those the check read, or the files behind the claim's lines when no check read any). When the check says the opposite, or you say false and no check decides the claim yet, the claim goes back to `kmctl audit checks todo`. |
+| Ask for a second opinion | Asks the decision model `kmctl audit judge` uses: `link` for a check that holds, `failure` for one that fails, `claim` for a reason or no answer. Needs the `kmctl[audit]` extra and the question switched on in `audit.toml`. |
+
+The agent's next `submit` for that section or claim marks the feedback
+answered, whatever it answered; the page then says so, and still shows a
+verdict the check disagrees with. In the `--json` output of both `todo`
+verbs, an item with feedback no agent has answered carries `feedback`
+(what you said and, for a check, the answer you judged), and `examples`
+lists answers people gave a thumbs up. Each page load refreshes the stored
+sections as `kmctl audit claims todo` does. Each save is a new row in the store's `feedback` table,
+so the history stays.
+
+The server answers only requests whose Host is `127.0.0.1` or `localhost`,
+and takes writes only as JSON from its own page.
+
+| Option | Meaning |
+|---|---|
+| `PATH` | The repository, its bundle or a path in it (default: the current directory). |
+| `--port PORT` | The port on 127.0.0.1; `0` picks any free one (default: `8765`). A taken port refuses, naming `--port 0`. |
+| `--by NAME` | The name your feedback is stored under (default: `human`). |
+| `--config FILE` | The `audit.toml` to read for a second opinion, instead of the per-user one. |
+| `--no-open` | Print the address without opening a browser. |
+
+### `kmctl audit guard`
+
+`kmctl audit guard --allow claims|checks`
+
+A Claude Code PreToolUse hook. The `kmctl-claims-extractor` and
+`kmctl-check-writer` agents run it from their front matter before each Bash
+call. It reads the hook's JSON on stdin and lets the call through only when
+it is one `kmctl audit claims` (or `checks`) command, optionally after
+`cd DIR &&`, optionally fed by one quoted heredoc (`<<'ANSWERS'`) whose body
+is data. A pipe, redirect, second command, unquoted heredoc or command
+substitution is blocked: exit 2, with the reason on stderr. Calls to other
+tools pass. Antigravity and OpenCode have no per-agent hook, so there the
+agents' instructions hold the same rule.
+
+| Option | Meaning |
+|---|---|
+| `--allow GROUP` | The `kmctl audit` group the agent may run: `claims` or `checks`. Anything else exits 2. |
+
+### `kmctl audit judge`
+
+`kmctl audit judge QUESTION ID... [--path PATH] [--config FILE] [--json]`
+
+Ask a decision model one question; the one model call kmctl makes, and only
+for a question switched on in the settings file.
+
+| Question | Takes | Prints |
+|---|---|---|
+| `failure` | check ids of failed checks | `chance` the claim is false, `cause`: `claim_false`, `check_wrong` or `unclear` |
+| `claim` | one claim id, with the lines to judge on stdin | `chance` the lines show it true, `verdict`: `true`, `false` or `not_shown` |
+| `link` | check ids | `score` from 0 (unrelated) to 1 (tests the claim itself), `level`: `unrelated`, `keyword`, `nearby` or `the claim` |
+
+kmctl builds the state from the store: the claim, its sentence, the check's
+steps and what its last run saw. It posts `{model, state, questions}` to the
+provider's `base_url` with the key as a bearer token, retries timeouts, 429
+(after its `Retry-After`, up to a minute) and 5xx, and keeps at most `max_calls` requests in flight. Each answer is
+kept in `.kmctl/audit.sqlite` under a hash of the question, model and
+state, so asking again sends nothing (`cached: true`) until the check, its
+result or the model changes. A question that is off, a missing key
+variable, a 4xx and an answer missing a question each refuse in one stderr
+line; exit 1 when any id is refused.
+
+| Option | Meaning |
+|---|---|
+| `--path PATH` | The repository whose store to read (default: the current directory). |
+| `--config FILE` | The settings file to read instead of the per-user one, for CI. |
+| `--json` | A JSON list: per id `question`, `id`, `model`, `cached`, and `chance` and `cause`, `chance` and `verdict`, or `score` and `level`. |
+
+#### Settings: `audit.toml`
+
+The file is `$XDG_CONFIG_HOME/kmctl/audit.toml` (`~/.config/kmctl/audit.toml`
+when the variable is unset), or the file `--config` or `KMCTL_AUDIT_CONFIG`
+names. With no file, every question is off. An unknown key refuses, naming
+it.
+
+```toml
+[decisions]
+timeout = 60     # seconds one call may take
+max_calls = 4    # calls in flight at once
+
+[decisions.providers.clef]
+base_url = "https://gateway.example/v1/decisions"
+api_key_env = "CLEF_API_KEY"   # the variable that holds the key
+
+[decisions.failure]   # also [decisions.claim] and [decisions.link]
+enabled = true
+provider = "clef"     # a name under [decisions.providers]
+model = "jev-latest"
+```
+
+A question switched on must name a provider under `[decisions.providers]`
+and a model. The key is read only from the variable `api_key_env` names,
+and is never printed, stored or put in an error.
+
+#### Tracing
+
+Set `LANGSMITH_TRACING=true` to trace each call as a LangSmith `llm` span;
+LangSmith reads `LANGSMITH_API_KEY` and `LANGSMITH_PROJECT` itself. It is off
+otherwise.
+
+#### The `kmctl[audit]` extra
+
+Code steps need ast-grep-py and query steps jmespath, and `kmctl audit
+judge` needs tenacity (and langsmith for tracing). Install kmctl with the
+extra to use them:
+
+```
+uv tool install --force 'kmctl[audit] @ git+https://github.com/JasperHG90/kmctl@vX.Y.Z'
+```
+
+Without it, those steps report `skipped`, `submit` refuses them, and
+`kmctl audit judge` refuses naming this command.
+
+#### The store
+
+The `kmctl audit` verbs keep their state in `.kmctl/audit.sqlite` at the
+repository root (git's top level, else the bundle's parent). kmctl creates
+`.kmctl/` with a `.gitignore` holding `*`, so git ignores the folder and
+your own `.gitignore` is never edited. Each checkout has its own store, and
+the verbs write nothing else: never `.okf/` or `docs/`.
 
 ### Environment
 

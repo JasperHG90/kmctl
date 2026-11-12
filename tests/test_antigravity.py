@@ -37,6 +37,8 @@ ROOT = Path(__file__).resolve().parents[1]
 DOT_APM = ROOT / "apm" / ".apm"
 SKILLS = DOT_APM / "skills"
 AUDITOR = DOT_APM / "agents" / "kmctl-auditor.md"
+EXTRACTOR = DOT_APM / "agents" / "kmctl-claims-extractor.md"
+CHECK_WRITER = DOT_APM / "agents" / "kmctl-check-writer.md"
 INSTRUCTIONS = ROOT / "apm" / "claude" / ".apm" / "instructions"
 DECISIONS = ROOT / ".okf" / "decisions"
 MANIFESTO = ROOT / ".okf" / "manifesto.md"
@@ -86,6 +88,8 @@ PLUGIN_FILES = [
     "agents/bundle-weaver.md",
     "agents/event-analyzer.md",
     "agents/kmctl-auditor.md",
+    "agents/kmctl-check-writer.md",
+    "agents/kmctl-claims-extractor.md",
     "plugin.json",
 ]
 
@@ -228,6 +232,20 @@ def test_translate_auditor_is_read_only_subagent() -> None:
         "subagent": True,
         "model": "inherit",
         "commandExecutionPolicy": "off",
+    }
+
+
+@pytest.mark.parametrize("agent", [EXTRACTOR, CHECK_WRITER], ids=lambda p: p.stem)
+def test_translate_shell_agents_read_and_run_commands(agent: Path) -> None:
+    meta, _ = _split(antigravity.translate_agent(agent.read_text(), agent.name))
+
+    assert meta == {
+        "name": agent.stem,
+        "description": _split(agent.read_text())[0]["description"],
+        "tools": ["view_file", "run_command"],
+        "mainAgent": False,
+        "subagent": True,
+        "model": "inherit",
     }
 
 
@@ -613,7 +631,7 @@ def test_plugin_problems_without_apm_modules_raise_the_fix(
 
 
 @pytest.mark.integration
-def test_agy_validate_counts_three_agents(
+def test_agy_validate_counts_five_agents(
     repo: Path, fakes: FakeTools, home: Path
 ) -> None:
     if AGY is None:
@@ -635,7 +653,7 @@ def test_agy_validate_counts_three_agents(
 
     assert proc.returncode == 0, proc.stderr + proc.stdout
     report = json.loads(proc.stdout)
-    assert report["components"]["agents"] == 3
+    assert report["components"]["agents"] == 5
     assert report["components"]["hooks"] == 0
     assert report["components"]["mcpServers"] == 0
     assert report["components"]["rules"] == 0

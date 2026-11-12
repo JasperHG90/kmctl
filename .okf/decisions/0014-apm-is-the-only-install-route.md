@@ -212,3 +212,13 @@ the only install route, stands.
   holding kmctl's launcher, the check passes, and APM writes kmctl's
   launcher to `.mcp.json` and `.agents/mcp_config.json`
   (spike:antigravity-apm-audit/4).
+
+## Correction, 2026-11-11
+
+The 2026-10-17 amendment says kmctl writes only the Antigravity agents.
+Since [ADR 0024](0024-opencode-gets-the-package-from-apm-and-its-agents-rules-and-briefing-from-kmctl-plugin-patch.md)
+`kmctl plugin patch` also writes OpenCode's files: the agents in OpenCode's
+format, the rules, their `instructions` entry and the briefing plugin.
+
+Found by the first `kmctl audit checks` run over the whole bundle
+([ADR 0038](0038-checks-are-step-data-that-kmctl-reruns-and-only-checks-that-notice-a-change-are-stored.md)).

@@ -20,6 +20,14 @@ dependencies = [
 [project.scripts]
 kmctl = "kmctl:main"
 
+[project.optional-dependencies]
+audit = [
+    "ast-grep-py>=0.51.2",
+    "jmespath>=1.1.0",
+    "langsmith>=0.14.17",
+    "tenacity>=9.2.1",
+]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
@@ -43,9 +51,12 @@ packages = ["src/kmctl"]
 
 [dependency-groups]
 dev = [
+    "ast-grep-py>=0.51.2",
     "copier>=9.19.1",
     "ipykernel>=7.4.0",
+    "jmespath>=1.1.0",
     "jsonschema>=4.26.0",
+    "langsmith>=0.14.17",
     "opentelemetry-exporter-otlp-proto-http==1.45.1",
     "opentelemetry-sdk==1.45.1",
     "packaging>=26.3",
@@ -53,6 +64,7 @@ dev = [
     "pytest>=9.1.1",
     "respx>=0.23.1",
     "ruff>=0.17.0",
+    "tenacity>=9.2.1",
 ]
 
 # uv rebuilds kmctl when either file changes, so a local uv run picks up a

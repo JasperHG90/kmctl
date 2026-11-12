@@ -134,3 +134,13 @@ Consequences name, no longer exists ([ADR 0021](0021-apm-installs-kmctl-s-packag
 --target antigravity`, then `kmctl plugin patch`, which writes
 `.agents/plugins/kmctl/` (the translated agents). A fresh clone needs the
 same two steps.
+
+## Correction, 2026-11-11
+
+kmctl no longer writes agents for Antigravity alone. Since
+[ADR 0024](0024-opencode-gets-the-package-from-apm-and-its-agents-rules-and-briefing-from-kmctl-plugin-patch.md)
+`kmctl plugin patch` also rewrites the package's agents into OpenCode's
+format (`opencode.write` in `src/kmctl/plugin.py`).
+
+Found by the first `kmctl audit checks` run over the whole bundle
+([ADR 0038](0038-checks-are-step-data-that-kmctl-reruns-and-only-checks-that-notice-a-change-are-stored.md)).

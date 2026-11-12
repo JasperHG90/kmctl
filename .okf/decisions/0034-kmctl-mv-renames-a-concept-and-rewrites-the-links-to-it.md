@@ -75,3 +75,18 @@ Rejected:
   the concept is, not its name.
 - The move is a plain rename, not `git mv`: `git status` shows a deleted
   file and an untracked one until both are staged, and a rename after.
+
+## Correction, 2026-11-11
+
+- `kmctl mv` renames with `git mv` when git tracks the file, and falls back
+  to a plain rename only when git refuses (`src/kmctl/mv.py`), so the
+  rename is staged. The Consequences' "plain rename, not `git mv`" no
+  longer holds.
+- The rejected alternative's reason, that `kmctl check` does not check
+  links inside `.okf/`, no longer holds:
+  [ADR 0033](0033-kmctl-check-fails-on-a-missing-link-target-inside-the-bundle.md)
+  makes it fail on a missing link target inside the bundle. Rewriting the
+  links on a rename is still kmctl mv's job.
+
+Found by the first `kmctl audit checks` run over the whole bundle
+([ADR 0038](0038-checks-are-step-data-that-kmctl-reruns-and-only-checks-that-notice-a-change-are-stored.md)).

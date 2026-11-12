@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "The per-user audit.toml loads from XDG_CONFIG_HOME or ~/.config, --config and KMCTL_AUDIT_CONFIG win, every question is off with no file, and a misspelt key, a question on without a known provider or model, or a missing key variable each refuse naming the key or variable and never its value.",
+      "fails_when": "the wrong file is read, a question is on by default, a bad setting is accepted, or a refusal prints a key's value",
+      "command": "uv run pytest tests/test_audit_settings.py -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "The kmctl[audit] extra gains tenacity and langsmith; tracing is off with LANGSMITH_TRACING unset and wraps calls when it is true; help loads without the extra.",
+      "fails_when": "the extra lacks tenacity or langsmith, tracing runs with the variable unset or not with it set, or kmctl --help fails without the extra",
+      "command": "uv run pytest tests/test_judge.py -k tracing -q && uv run pytest tests/test_help.py -q && python3 -c \"import tomllib,sys; a=' '.join(tomllib.load(open('pyproject.toml','rb'))['project']['optional-dependencies']['audit']); sys.exit(0 if 'tenacity' in a and 'langsmith' in a else 1)\""
+    },
+    {
+      "id": "r3",
+      "behavior": "kmctl audit judge failure|claim|link ID... --json asks the configured endpoint each question with the planned state and answer shape, turns link level probabilities into a 0 to 1 score, caches each answer under its asked key so a repeat sends no request, and asks again when a check's result changes.",
+      "fails_when": "a request's body or the parsed answer differs from the question's shape, the link score is wrong, a repeat sends a request, or a changed result is answered from cache",
+      "command": "uv run pytest tests/test_judge.py -k 'shape or score or cache' -q"
+    },
+    {
+      "id": "r4",
+      "behavior": "kmctl audit judge keeps at most max_calls requests in flight, retries a 503, and turns a 401 or an answer missing a question into one stderr line with a nonzero exit.",
+      "fails_when": "more than max_calls requests run at once, a 503 is not retried, or a 401 or incomplete answer crashes or prints more than one line",
+      "command": "uv run pytest tests/test_judge.py -k 'limit or retry or error' -q"
+    },
+    {
+      "id": "r5",
+      "behavior": "kmctl audit judge refuses a question that is off naming its settings table, refuses without the extra naming the install command, never prints a key, and changes no tracked or unignored file.",
+      "fails_when": "an off question is asked, the missing extra crashes, a key appears in any output, or git status --porcelain is not empty after the verb",
+      "command": "uv run pytest tests/test_judge.py -k 'off or extra or key or tree' -q"
+    },
+    {
+      "id": "r6",
+      "behavior": "A decision record, the manifesto, the architecture overview and docs/reference/commands.md describe kmctl audit judge as the one optional model call, off by default.",
+      "fails_when": "commands.md lacks kmctl audit judge, or no decision record says judge is optional and off by default",
+      "command": "bash -c 'grep -q \"kmctl audit judge\" docs/reference/commands.md && grep -lq \"audit judge\" .okf/decisions/*.md'"
+    },
+    {
+      "id": "r7",
+      "behavior": "kmctl check and the strict OKF validation pass on the changed .okf/ concepts and docs/ pages, with every touched concept named in .okf/log.md.",
+      "fails_when": "kmctl check exits nonzero, or the pre-commit OKF validation reports an error on .okf/",
+      "command": "uv run kmctl check && just lint"
+    },
+    {
+      "id": "r8",
+      "behavior": "The repository's own gates stay green: lint, types and the full default test suite.",
+      "fails_when": "just lint or just test exits nonzero",
+      "command": "just lint && just test"
+    }
+  ]
+}

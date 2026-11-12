@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>kmctl audit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* A proofreader's desk: cool paper, blue-pencil selection, and one mark per
+     kind of coverage. The marks are the loud part; everything else stays quiet. */
+  :root {
+    --paper: #eef1f5; --sheet: #ffffff; --ink: #17202b; --soft: #5b6676; --rule: #d5dbe3;
+    --pencil: #2747d6; --pencil-wash: #e3e9ff;
+    --drift: #c4302b; --drift-wash: #fbe4e2;
+    --unchecked: #a86a12; --unchecked-wash: #fbeed3;
+    --reason: #6a48c0; --reason-wash: #ece6fa;
+    --checked: #2c7a4d; --checked-wash: #dff1e5;
+    --pending: #7b8594; --pending-wash: #e3e7ec;
+    --quiet: #c3cad4;
+    --tag-claims: #d9534f; --tag-checks: #3d9a63; --tag-conf: #d9a520;
+    --ui: "Schibsted Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --text: "Source Serif 4", Georgia, "Times New Roman", serif;
+    --code: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #10151c; --sheet: #171e27; --ink: #e6ebf2; --soft: #94a0b1; --rule: #2a3441;
+      --pencil: #8ea5ff; --pencil-wash: #222d55;
+      --drift: #ff8f87; --drift-wash: #3b1f1f;
+      --unchecked: #eebb62; --unchecked-wash: #382b14;
+      --reason: #b9a4ff; --reason-wash: #2a2347;
+      --checked: #7fd3a0; --checked-wash: #17301f;
+      --pending: #9aa5b4; --pending-wash: #252d38;
+      --quiet: #3a4554;
+      --tag-claims: #e0706c; --tag-checks: #58b47e; --tag-conf: #e0b440;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 14px/1.45 var(--ui);
+         display: flex; flex-direction: column; }
+  button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-align: left; }
+  :focus-visible { outline: 2px solid var(--pencil); outline-offset: 2px; border-radius: 4px; }
+  code { font-family: var(--code); font-size: .86em; }
+
+  /* Top bar */
+  .bar { display: flex; align-items: center; gap: 20px; padding: 10px 20px; border-bottom: 1px solid var(--rule); flex: none; }
+  .bar h1 { margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -.01em; white-space: nowrap; }
+  .totals { display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--soft); font-size: 13px; flex: 1; }
+  .totals b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .totals .bad b { color: var(--drift); }
+  .stamp { color: var(--soft); font-size: 12px; white-space: nowrap; }
+
+  .desk { display: grid; grid-template-columns: 290px minmax(0, 1fr) 400px; flex: 1; min-height: 0; }
+  .desk > section { overflow: auto; min-height: 0; }
+
+  /* Left: documents */
+  .docs { padding: 14px 10px 24px 14px; border-right: 1px solid var(--rule); }
+  .filter { width: 100%; padding: 7px 10px; border: 1px solid var(--rule); border-radius: 7px;
+            background: var(--sheet); color: var(--ink); font: inherit; }
+  .filter::placeholder { color: var(--soft); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 6px; }
+  .chip { padding: 2px 10px; border-radius: 99px; border: 1px solid var(--rule); font-size: 12px; color: var(--soft); }
+  .chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+  .folder { margin: 16px 0 4px 8px; font-size: 12px; font-weight: 600; color: var(--soft); }
+  .doc { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 8px; align-items: baseline;
+         width: 100%; padding: 6px 8px; border-radius: 7px; }
+  .doc:hover { background: var(--sheet); }
+  .doc[aria-current="true"] { background: var(--sheet); box-shadow: inset 3px 0 0 var(--pencil); }
+  .doc .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+  .doc .count { font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .doc .count.drift { color: var(--drift); } .doc .count.unchecked { color: var(--unchecked); }
+  .doc .count.pending { color: var(--pending); }
+  .meter { grid-column: 1 / -1; display: flex; height: 4px; border-radius: 2px; overflow: hidden; background: var(--quiet); }
+  .meter i { display: block; }
+  .none-found { color: var(--soft); padding: 12px 8px; }
+
+  /* Middle: the document */
+  .viewer { background: var(--sheet); }
+  .viewer-head { position: sticky; top: 0; z-index: 2; background: var(--sheet); padding: 18px 40px 10px;
+                 border-bottom: 1px solid var(--rule); }
+  .viewer-head h2 { margin: 0; font: 600 24px/1.2 var(--text); letter-spacing: -.01em; }
+  .path { color: var(--soft); font-size: 12px; margin-top: 2px; }
+  .strip { display: flex; gap: 1px; height: 18px; margin: 12px 0 8px; }
+  .strip button { flex: 1 1 0; min-width: 2px; border-radius: 1px; background: var(--quiet); }
+  .strip button:hover { transform: scaleY(1.35); }
+  .strip button.on { outline: 2px solid var(--pencil); outline-offset: 1px; }
+  .strip .gap { flex: 0 0 5px; }
+  .key { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--soft); }
+  .key button { display: inline-flex; align-items: center; gap: 6px; }
+  .key button:hover { color: var(--ink); }
+  .key i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+  .key b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .key .hint { margin-left: auto; }
+  kbd { font: 500 11px var(--ui); border: 1px solid var(--rule); border-radius: 4px; padding: 0 4px; }
+
+  .page { padding: 8px 40px 80px; max-width: 78ch; font: 16.5px/1.68 var(--text); }
+  .sec { padding: 14px 0 6px; }
+  .sec-head { display: flex; align-items: baseline; gap: 10px; width: 100%; margin-bottom: 4px; font-family: var(--ui); }
+  .sec-head .crumb { color: var(--soft); font-size: 12px; }
+  .sec-head .title { font-size: 15px; font-weight: 700; }
+  .sec-head .tally { margin-left: auto; font-size: 12px; color: var(--soft); white-space: nowrap; }
+  .sec-head:hover .title { color: var(--pencil); }
+  .sec.on { box-shadow: -14px 0 0 var(--sheet), -17px 0 0 var(--pencil); }
+  .sec.on .sec-head .title { color: var(--pencil); }
+  .flag-pending { font-size: 11px; font-weight: 600; color: var(--pending); background: var(--pending-wash); padding: 1px 8px; border-radius: 99px; }
+
+  .s { cursor: pointer; border-radius: 2px; text-underline-offset: 4px; text-decoration-thickness: 1.5px;
+       -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+  .s:hover { background: var(--pencil-wash); }
+  .brk { display: block; height: 6px; }
+  .s.cov-checked { text-decoration: underline solid color-mix(in srgb, var(--checked) 55%, transparent); text-decoration-thickness: 1px; }
+  .s.cov-reason { text-decoration: underline dotted var(--reason); text-decoration-thickness: 2px; }
+  .s.cov-unchecked { text-decoration: underline dashed var(--unchecked); background: var(--unchecked-wash); }
+  .s.cov-drift { text-decoration: underline wavy var(--drift); background: var(--drift-wash); }
+  .s.cov-pending { background: var(--pending-wash); }
+  .s.cov-none, .s.cov-uncheckable { color: var(--soft); }
+  .s.on, .s.on:hover { background: var(--pencil-wash); box-shadow: 0 2px 0 var(--pencil); }
+  .s.block.on { box-shadow: 0 0 0 2px var(--pencil); }
+  .s.block { display: block; margin: 10px 0; padding: 8px 12px; text-decoration: none; overflow-x: auto;
+             border-left: 3px solid var(--quiet); border-radius: 0 6px 6px 0; background: var(--paper);
+             font: 13px/1.5 var(--ui); color: var(--ink); }
+  .s.block.cov-checked { border-left-color: var(--checked); } .s.block.cov-reason { border-left-color: var(--reason); }
+  .s.block.cov-unchecked { border-left-color: var(--unchecked); } .s.block.cov-drift { border-left-color: var(--drift); }
+  .s.block.cov-pending { border-left-color: var(--pending); }
+  .s.block pre { margin: 0; font: 12.5px/1.5 var(--code); white-space: pre; }
+  .s.block table { border-collapse: collapse; width: 100%; }
+  .s.block th, .s.block td { text-align: left; vertical-align: top; padding: 4px 12px 4px 0; border-bottom: 1px solid var(--rule); }
+  .s.block th { font-weight: 600; }
+
+  /* Right: claims, checks, confidence */
+  .detail { padding: 16px 16px 60px 8px; border-left: 1px solid var(--rule); }
+  .where { margin: 0 0 12px 30px; font-size: 13px; color: var(--soft); }
+  .where b { color: var(--ink); font-weight: 600; }
+  /* One card per claim: the claim, its check and its confidence stacked on one coloured edge. */
+  .claim { position: relative; margin: 0 0 14px 22px; background: var(--sheet); border-radius: 0 8px 8px 0; }
+  .claim::before { content: ""; position: absolute; left: -15px; top: 10px; width: 16px; height: 26px;
+                   background: var(--tag-claims); clip-path: polygon(100% 0, 100% 100%, 0 50%); }
+  .part { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 0 6px; padding: 10px 14px 10px 10px;
+          border-left: 4px solid var(--hue); }
+  .part + .part { border-top: 1px solid var(--rule); }
+  .part.p-claim { --hue: var(--tag-claims); border-radius: 0 8px 0 0; }
+  .part.p-check { --hue: var(--tag-checks); }
+  .part.p-conf { --hue: var(--tag-conf); }
+  .part .label { font-size: 12px; font-weight: 700; color: var(--hue); padding-top: 1px; }
+  .part .what { font-size: 13.5px; }
+  .part .sub { color: var(--soft); font-size: 12px; margin-top: 4px; display: flex; flex-wrap: wrap; gap: 2px 10px; align-items: center; }
+  .part .dim { color: var(--soft); }
+  .claim.shut .part:not(.p-claim) { display: none; }
+  .claim.fold .p-claim { cursor: pointer; }
+  .claim.fold .p-claim:hover { background: var(--pencil-wash); }
+  .to-sentence { color: var(--pencil); font-size: 12px; font-weight: 600; }
+  .to-sentence:hover { text-decoration: underline; }
+  .status { font-weight: 600; padding: 0 7px; border-radius: 99px; font-size: 11px; white-space: nowrap; }
+  .st-checked { color: var(--checked); background: var(--checked-wash); }
+  .st-reason { color: var(--reason); background: var(--reason-wash); }
+  .st-unchecked { color: var(--unchecked); background: var(--unchecked-wash); }
+  .st-drift { color: var(--drift); background: var(--drift-wash); }
+  .st-none { color: var(--soft); background: var(--pending-wash); }
+  .steps { margin: 6px 0 0; padding: 0; list-style: none; }
+  .steps li { font: 12px/1.5 var(--code); padding: 4px 8px; margin-top: 3px; background: var(--paper); border-radius: 5px;
+              overflow-wrap: anywhere; }
+  .steps li b { font-weight: 500; color: var(--tag-checks); }
+  .drift-note { margin-top: 6px; padding: 6px 8px; border-radius: 5px; background: var(--drift-wash); color: var(--drift); font-size: 12.5px; }
+  .note { margin: 6px 0 0; font-size: 12.5px; color: var(--soft); line-height: 1.5; }
+  .note b, .part .what b { color: var(--ink); font-weight: 600; }
+  .missed ul ul { margin: 0 0 4px; }
+  .missed { margin-top: 6px; font-size: 12px; color: var(--soft); }
+  .missed summary { cursor: pointer; }
+  .missed ul { margin: 4px 0 0; padding-left: 16px; overflow-wrap: anywhere; }
+  .gauge { display: flex; gap: 2px; margin-top: 6px; }
+  .gauge i { flex: 1; max-width: 22px; height: 6px; border-radius: 2px; background: var(--quiet); }
+  .gauge i.hit { background: var(--tag-conf); }
+  .blank { color: var(--soft); font-size: 13.5px; margin: 0 0 0 30px; line-height: 1.6; }
+  .start { margin: 60px 20px 0 30px; color: var(--soft); font-size: 14px; line-height: 1.6; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .cards { animation: settle .14s ease-out; }
+    .strip button { transition: transform .08s; }
+    @keyframes settle { from { opacity: .4; transform: translateX(6px); } }
+  }
+  @media (max-width: 1080px) { .desk { grid-template-columns: 240px minmax(0, 1fr) 340px; } .viewer-head, .page { padding-left: 24px; padding-right: 24px; } }
+  @media (max-width: 860px) {
+    body { height: auto; display: block; }
+    .desk { display: block; }
+    .desk > section { overflow: visible; }
+    .docs { border-right: 0; border-bottom: 1px solid var(--rule); max-height: 40vh; overflow: auto !important; }
+    .viewer-head { position: static; }
+    .viewer-head, .page { padding-left: 16px; padding-right: 16px; }
+    .detail { border-left: 0; border-top: 1px solid var(--rule); padding: 16px; }
+    .bar { flex-wrap: wrap; gap: 6px 16px; padding: 10px 16px; }
+    .key .hint { display: none; }
+  }
+</style>
+</head>
+<body>
+<header class="bar">
+  <h1>kmctl audit</h1>
+  <div class="totals" id="totals"></div>
+  <span class="stamp" id="stamp"></span>
+</header>
+<main class="desk">
+  <section class="docs" aria-label="Documents">
+    <input class="filter" id="filter" type="search" placeholder="Find a document" aria-label="Find a document">
+    <div class="chips" id="chips"></div>
+    <nav id="tree"></nav>
+  </section>
+  <section class="viewer" id="viewer" aria-label="Document">
+    <div class="viewer-head" id="head"></div>
+    <article class="page" id="page"></article>
+  </section>
+  <section class="detail" id="detail" aria-label="Claims and checks"></section>
+</main>
+<script src="data.js"></script>
+<script>
+const DATA = window.AUDIT;
+
+// Coverage kinds in the order they are drawn and listed, worst first.
+const KINDS = [
+  ["drift", "drift", "--drift"],
+  ["unchecked", "not checked", "--unchecked"],
+  ["pending", "needs extraction", "--pending"],
+  ["reason", "reason only", "--reason"],
+  ["checked", "checked", "--checked"],
+];
+const KIND_LABEL = Object.fromEntries(KINDS.map(([k, label]) => [k, label]));
+const STATUS_KIND = {
+  "holds": "checked", "not measured": "checked", "reason": "reason", "drift": "drift", "fails": "drift",
+  "no check": "unchecked", "stale reason": "unchecked", "weak": "unchecked", "skipped": "unchecked",
+  "not run": "unchecked", "not checkable": "none",
+};
+const CHIPS = [["all", "All"], ["drift", "Drift"], ["unchecked", "Not checked"], ["outdated", "Needs extraction"]];
+
+let current = null;      // the open document
+let selection = null;    // {section, n} with n null for a whole section
+let chip = "all";
+let nodes = {};          // "section|n" -> {s: sentence node, tick: strip node}; "section" -> section node
+
+const el = (tag, attrs = {}, ...kids) => {
+  const node = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v == null || v === false) continue;
+    if (k === "class") node.className = v; else if (k.startsWith("on")) node[k] = v; else node.setAttribute(k, v);
+  }
+  for (const kid of kids.flat()) if (kid != null && kid !== false) node.append(kid);
+  return node;
+};
+const $ = (id) => document.getElementById(id);
+const cov = (s) => (s.coverage === "not checkable" ? "uncheckable" : s.coverage);
+const plural = (n, one, many = one + "s") => `${n.toLocaleString()} ${n === 1 ? one : many}`;
+
+/* ---------- markdown, just enough for a sentence ---------- */
+function inline(text) {
+  const out = [];
+  for (const part of text.split(/(`[^`\n]+`|\*\*[^*\n]+\*\*|\[[^\]\n]+\]\([^)\s]+\))/)) {
+    if (!part) continue;
+    if (part.startsWith("`")) out.push(el("code", {}, part.slice(1, -1)));
+    else if (part.startsWith("**")) out.push(el("strong", {}, part.slice(2, -2)));
+    else if (part.startsWith("[")) out.push(part.slice(1, part.indexOf("](")));
+    else out.push(part);
+  }
+  return out;
+}
+function block(text) {
+  if (text.startsWith("```")) return el("pre", {}, text.replace(/^```[^\n]*\n?/, "").replace(/\n?```\s*$/, ""));
+  const lines = text.split("\n").filter((l) => l.trim());
+  if (lines.length < 2 || !lines.every((l) => l.trim().startsWith("|"))) return null;
+  const cells = (l) => l.trim().replace(/^\||\|$/g, "").split(/(?<!\\)\|/).map((c) => c.trim().replace(/\\\|/g, "|"));
+  const rows = lines.filter((l) => !/^[\s|:-]+$/.test(l)).map(cells);
+  return el("table", {},
+    el("thead", {}, el("tr", {}, rows[0].map((c) => el("th", {}, inline(c))))),
+    el("tbody", {}, rows.slice(1).map((r) => el("tr", {}, r.map((c) => el("td", {}, inline(c)))))));
+}
+
+/* ---------- top bar ---------- */
+function renderBar() {
+  const t = { claims: 0, checked: 0, reason: 0, unchecked: 0, drift: 0 };
+  for (const d of DATA.concepts) for (const sec of d.sections) for (const s of sec.sentences) for (const c of s.claims) {
+    const kind = STATUS_KIND[c.status];
+    if (kind === "none") continue;
+    t.claims++; t[kind]++;
+  }
+  const waiting = DATA.concepts.filter((d) => d.outdated).length;
+  const part = (n, label, bad) => el("span", { class: bad && n ? "bad" : null }, el("b", {}, n.toLocaleString()), " " + label);
+  $("totals").append(...[
+    part(DATA.concepts.length, "documents"), part(t.claims, "checkable claims"), part(t.checked, "checked"),
+    part(t.reason, "reason only"), t.unchecked ? part(t.unchecked, "not checked") : null, part(t.drift, "drift", true),
+    waiting ? part(waiting, "need extraction") : null].filter(Boolean));
+  const when = new Date(DATA.generated);
+  $("stamp").textContent = "Exported " + when.toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  $("stamp").title = "Refresh with: uv run python .okf/prototypes/audit-ui/export.py";
+}
+
+/* ---------- left: documents ---------- */
+function meter(counts) {
+  const total = Object.values(counts).reduce((a, b) => a + b, 0) || 1;
+  return el("span", { class: "meter" }, KINDS.map(([k, , hue]) =>
+    counts[k] ? el("i", { style: `flex: ${counts[k] / total} 0 0; background: var(${hue})` }) : null),
+    el("i", { style: `flex: ${((counts.none || 0) + (counts["not checkable"] || 0)) / total} 0 0` }));
+}
+function renderChips() {
+  const count = (k) => (k === "all" ? DATA.concepts.length : DATA.concepts.filter((d) => d.state === k).length);
+  $("chips").replaceChildren(...CHIPS.filter(([k]) => k === "all" || count(k)).map(([k, label]) =>
+    el("button", { class: "chip", "aria-pressed": String(chip === k), onclick: () => { chip = k; renderChips(); renderTree(); } },
+      `${label} ${count(k)}`)));
+}
+function renderTree() {
+  const q = $("filter").value.trim().toLowerCase();
+  const tree = $("tree");
+  tree.replaceChildren();
+  let folder;
+  for (const doc of DATA.concepts) {
+    if (chip !== "all" && doc.state !== chip) continue;
+    if (q && !doc.concept.toLowerCase().includes(q) && !doc.title.toLowerCase().includes(q)) continue;
+    const parts = doc.concept.split("/");
+    const here = parts.length > 1 ? parts.slice(0, -1).join("/") : "";
+    if (here !== folder) tree.append(el("div", { class: "folder" }, here || "Top level"));
+    folder = here;
+    const c = doc.counts;
+    const flag = doc.outdated ? ["pending", "outdated"] : c.drift ? ["drift", String(c.drift)] : c.unchecked ? ["unchecked", String(c.unchecked)] : null;
+    tree.append(el("button", {
+        class: "doc", "aria-current": String(current === doc),
+        title: `${doc.title}\n${KINDS.filter(([k]) => c[k]).map(([k, label]) => `${c[k]} ${label}`).join(", ")}`,
+        onclick: () => go(doc.concept),
+      },
+      el("span", { class: "name" }, parts.at(-1).replace(/^(\d{4})-/, "$1 ").replace(/-/g, " ")),
+      flag ? el("span", { class: "count " + flag[0] }, flag[1]) : null,
+      meter(c)));
+  }
+  if (!tree.children.length) tree.append(el("p", { class: "none-found" }, "No document matches. Clear the search or pick All."));
+}
+
+/* ---------- middle: the document ---------- */
+function renderDoc() {
+  nodes = {};
+  const head = $("head"), page = $("page");
+  head.replaceChildren(); page.replaceChildren();
+  if (!current) return;
+  const strip = el("div", { class: "strip", role: "group", "aria-label": "Every sentence in this document, in order" });
+  current.sections.forEach((sec, i) => {
+    if (i) strip.append(el("span", { class: "gap" }));
+    const kinds = {};
+    const body = el("div", { class: "sec", id: "sec-" + i });
+    const names = sec.name.split(" > ");
+    const tally = el("span", { class: "tally" });
+    body.append(el("button", { class: "sec-head", onclick: () => select(sec.id) },
+      names.length > 2 ? el("span", { class: "crumb" }, names.slice(1, -1).join(" / ")) : null,
+      el("span", { class: "title" }, names.at(-1)),
+      sec.pending ? el("span", { class: "flag-pending" }, "needs extraction") : null, tally));
+    const text = el("div", {});
+    for (const s of sec.sentences) {
+      kinds[s.coverage] = (kinds[s.coverage] || 0) + 1;
+      const hue = KINDS.find(([k]) => k === s.coverage)?.[2];
+      const label = `${KIND_LABEL[s.coverage] || (s.claims.length ? "not checkable" : "no claim")}: ${s.text.slice(0, 90)}`;
+      const big = block(s.text);
+      const node = el(big ? "div" : "span", {
+        class: `s cov-${cov(s)}` + (big ? " block" : ""), tabindex: "0", role: "button",
+        title: s.claims.length ? plural(s.claims.length, "claim") : (s.reason || "No claim"),
+        onclick: () => select(sec.id, s.n),
+        onkeydown: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(sec.id, s.n); } },
+      }, big || inline(s.text));
+      const tick = el("button", { title: label, "aria-label": label, style: hue ? `background: var(${hue})` : null,
+        onclick: () => select(sec.id, s.n, true) });
+      nodes[`${sec.id}|${s.n}`] = { s: node, tick };
+      strip.append(tick);
+      if (!big && /^\s*([-*]|\d+\.)\s/.test(s.text)) text.append(el("span", { class: "brk" }));
+      text.append(node, big ? "" : " ");
+    }
+    const worst = KINDS.find(([k]) => kinds[k] && k !== "checked" && k !== "reason");
+    tally.textContent = worst ? `${kinds[worst[0]]} ${worst[1]}` : "";
+    if (worst) tally.style.color = `var(${worst[2]})`;
+    body.append(text);
+    nodes[sec.id] = body;
+    page.append(body);
+  });
+  const c = current.counts;
+  head.append(
+    el("h2", {}, current.title), el("div", { class: "path" }, `.okf/${current.concept}.md`), strip,
+    el("div", { class: "key" },
+      KINDS.filter(([k]) => c[k]).map(([k, label, hue]) =>
+        el("button", { title: `Go to the next sentence marked ${label}`, onclick: () => next(k) },
+          el("i", { style: `background: var(${hue})` }), el("b", {}, String(c[k])), label)),
+      el("span", { class: "hint" }, el("kbd", {}, "j"), " ", el("kbd", {}, "k"), " next and previous claim")));
+  $("viewer").scrollTop = 0;
+}
+
+function flat() {
+  return current.sections.flatMap((sec) => sec.sentences.map((s) => ({ sec, s })));
+}
+function next(kind, back = false) {
+  const all = flat().filter(({ s }) => (kind ? s.coverage === kind : s.claims.length));
+  if (!all.length) return;
+  const order = flat();
+  const at = selection && selection.n != null
+    ? order.findIndex(({ sec, s }) => sec.id === selection.section && s.n === selection.n)
+    : selection ? order.findIndex(({ sec }) => sec.id === selection.section) - (back ? 0 : 1)
+    : (back ? order.length : -1);
+  const rank = (x) => order.indexOf(x);
+  const hit = back ? all.filter((x) => rank(x) < at).at(-1) || all.at(-1) : all.find((x) => rank(x) > at) || all[0];
+  select(hit.sec.id, hit.s.n, true);
+}
+
+function select(section, n = null, scroll = false) {
+  selection = section ? { section, n } : null;
+  for (const [key, node] of Object.entries(nodes)) {
+    if (node.s) {
+      const on = selection && key === `${selection.section}|${selection.n}`;
+      const inSec = selection && selection.n == null && key.startsWith(selection.section + "|");
+      node.s.classList.toggle("on", !!on);
+      node.tick.classList.toggle("on", !!(on || inSec));
+    } else node.classList.toggle("on", !!(selection && selection.n == null && key === selection.section));
+  }
+  if (scroll && selection) nodes[`${section}|${n}`]?.s.scrollIntoView({ block: "center", behavior: "smooth" });
+  renderCards();
+  writeHash();
+}
+
+/* ---------- right: claims, checks, confidence ---------- */
+function stepLine(step) {
+  const { op, ...rest } = step;
+  const args = Object.entries(rest).filter(([, v]) => v != null && v !== "" && !(Array.isArray(v) && !v.length))
+    .map(([k, v]) => `${k} ${typeof v === "string" ? v : JSON.stringify(v)}`).join("   ");
+  return el("li", {}, el("b", {}, op), "  " + args);
+}
+function part(kind, label, ...kids) {
+  return el("div", { class: "part p-" + kind }, el("span", { class: "label" }, label), el("div", {}, kids));
+}
+// What a check's strength means, in the reader's words.
+const STRENGTH = {
+  exact: ["Exact check", "if these steps pass, the claim is true."],
+  proxy: ["Indirect check", "the steps show the code is there, not that it behaves as claimed. Read the code to be sure."],
+};
+function missed(list) {
+  // "path:line: what changed" (or "path: what changed") grouped by file, then by kind of edit.
+  const files = new Map();
+  for (const m of list) {
+    const [, path, line, what] = m.match(/^(.+?)(?::(\d+))?: (.+)$/) || [null, "other", null, m];
+    const kinds = files.get(path) || files.set(path, new Map()).get(path);
+    (kinds.get(what) || kinds.set(what, []).get(what)).push(Number(line));
+  }
+  return el("ul", {}, [...files].map(([path, kinds]) => el("li", {}, el("code", {}, path),
+    el("ul", {}, [...kinds].map(([what, lines]) => {
+      const at = lines.filter(Boolean).sort((x, y) => x - y);
+      return el("li", {}, what.replace(/^an? /, ""), at.length ? ` at line${at.length > 1 ? "s" : ""} ${at.join(", ")}` : "");
+    })))));
+}
+function confidence(k) {
+  const q = k.quality, n = q ? q.mutants : 0, shown = Math.min(n, 16);
+  const [name, means] = STRENGTH[k.strength] || [k.strength, ""];
+  const share = n ? q.killed / n : 0;
+  const level = !n ? "Not measured" : share >= 2 / 3 ? "High" : share >= 1 / 3 ? "Medium" : "Low";
+  return part("conf", "Confidence",
+    el("div", { class: "what" }, el("b", {}, level), n ? `: it caught ${q.killed} of ${plural(n, "trial edit")}` : ""),
+    n ? el("div", { class: "gauge", role: "img", "aria-label": `${q.killed} of ${n}` },
+      Array.from({ length: shown }, (_, i) => el("i", { class: i < Math.round(share * shown) ? "hit" : "" }))) : null,
+    el("p", { class: "note" }, n
+      ? `kmctl made ${plural(n, "small edit")} to the code this check reads, one at a time, and ran the check again each time. The check failed on ${q.killed}, so ${
+          q.killed === n ? "any of those changes would show up as drift." : `${n - q.killed === 1 ? "one such change" : `${n - q.killed} such changes`} would go unnoticed.`}`
+      : "kmctl found nothing in the files this check reads that it could edit to test the check."),
+    el("p", { class: "note" }, el("b", {}, name), ": " + means),
+    q && q.survived.length ? el("details", { class: "missed" },
+      el("summary", {}, `Show the ${plural(q.survived.length, "edit")} it did not catch`), missed(q.survived)) : null,
+    el("div", { class: "sub" }, el("span", {}, "written by " + k.by)));
+}
+function claimCard(sec, c, fold) {
+  const k = c.check;
+  const card = el("div", { class: "claim" + (fold ? " fold shut" : "") });
+  const head = part("claim", "Claim", el("div", { class: "what" }, c.text),
+    el("div", { class: "sub" }, el("span", { class: "status st-" + STATUS_KIND[c.status] }, c.status),
+      el("span", {}, c.kind), el("span", {}, c.quantifier), el("code", {}, c.id),
+      fold ? el("button", { class: "to-sentence", onclick: (e) => { e.stopPropagation(); select(sec.id, c.n, true); } }, "Show sentence") : null));
+  if (fold) {
+    head.setAttribute("role", "button"); head.setAttribute("tabindex", "0"); head.setAttribute("aria-expanded", "false");
+    const flip = () => head.setAttribute("aria-expanded", String(!card.classList.toggle("shut")));
+    head.onclick = flip;
+    head.onkeydown = (e) => { if (e.target === head && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); flip(); } };
+  }
+  card.append(head);
+  if (c.status === "not checkable") {
+    card.append(part("check", "Check", el("div", { class: "what dim" }, "Not checkable: an opinion or a fact outside this repository.")));
+  } else if (!k) {
+    card.append(part("check", "Check", el("div", { class: "what dim" }, "No check or reason stored yet. Run kmctl audit checks todo.")));
+  } else if (k.kind === "reason") {
+    card.append(part("check", "Reason", el("div", { class: "what" }, k.reason)),
+      part("conf", "Confidence", el("div", { class: "what dim" }, "Not measured: a reason has no check to run.")));
+  } else {
+    const q = k.quality, tried = q && q.mutants, shown = tried ? Math.min(q.mutants, 16) : 0;
+    card.append(
+      part("check", "Check", el("div", { class: "what" }, k.why), el("ul", { class: "steps" }, k.steps.map(stepLine)),
+        k.results.length ? el("div", { class: "sub" }, k.results.map((r) => el("span", {}, r))) : null,
+        k.drift ? el("div", { class: "drift-note" }, k.drift) : null),
+      confidence(k));
+  }
+  return card;
+}
+function renderCards() {
+  const box = $("detail");
+  box.replaceChildren();
+  const sec = current?.sections.find((s) => s.id === selection?.section);
+  if (!sec) {
+    box.append(el("p", { class: "start" },
+      "Click a sentence to see the claims kmctl read from it. Each claim shows the check that tests it and how sure that check is. Click a heading to see the whole section."));
+    return;
+  }
+  const whole = selection.n == null;
+  const sentences = sec.sentences.filter((s) => whole || s.n === selection.n);
+  const claims = sentences.flatMap((s) => s.claims.map((c) => ({ ...c, n: s.n })));
+  const fold = whole && claims.length > 3;
+  const why = sentences.map((s) => s.reason).find(Boolean);
+  const names = sec.name.split(" > ");
+  box.append(el("div", { class: "cards" },
+    el("p", { class: "where" }, el("b", {}, names.at(-1)),
+      whole ? `, whole section, ${plural(claims.length, "claim")}` : `, sentence ${selection.n} of ${sec.sentences.length}, ${plural(claims.length, "claim")}`,
+      fold ? ". Click a claim to open its check." : ""),
+    claims.length ? claims.map((c) => claimCard(sec, c, fold)) : el("p", { class: "blank" },
+      sec.pending ? "This text changed since kmctl last read it. Run kmctl audit claims todo to extract it again."
+        : why ? `No claim here: ${why}` : "kmctl found nothing to check in this text.")));
+  box.scrollTop = 0;
+}
+
+/* ---------- routing ---------- */
+function writeHash() {
+  if (!current) return;
+  const p = new URLSearchParams({ c: current.concept });
+  if (selection) { p.set("s", selection.section); if (selection.n != null) p.set("n", selection.n); }
+  setHash("#" + p, true);
+}
+// Some browsers refuse history calls on a file:// page, so fall back to the plain hash.
+let quiet = false;
+function setHash(hash, replace) {
+  try { history[replace ? "replaceState" : "pushState"](null, "", hash); }
+  catch { quiet = true; if (replace) location.replace(hash); else location.hash = hash; }
+}
+function go(concept) { setHash("#" + new URLSearchParams({ c: concept }), false); route(); }
+function route() {
+  const p = new URLSearchParams(location.hash.slice(1));
+  const worst = DATA.concepts.find((d) => d.state === "drift") || DATA.concepts.find((d) => d.state !== "ok");
+  current = DATA.concepts.find((d) => d.concept === p.get("c")) || worst || DATA.concepts[0] || null;
+  renderTree(); renderDoc();
+  const sec = current?.sections.find((s) => s.id === p.get("s"));
+  if (sec) select(sec.id, p.has("n") ? Number(p.get("n")) : null, true); else { selection = null; renderCards(); }
+  document.querySelector('.doc[aria-current="true"]')?.scrollIntoView({ block: "nearest" });
+}
+
+if (!DATA) {
+  $("page").append(el("p", {}, "There is no data.js next to this page yet. Run ",
+    el("code", {}, "uv run python .okf/prototypes/audit-ui/export.py"), " from the repository root, then reload."));
+} else {
+  renderBar(); renderChips();
+  $("filter").oninput = renderTree;
+  window.onhashchange = () => { if (quiet) quiet = false; else route(); };
+  document.onkeydown = (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    const typing = e.target.matches?.("input, textarea");
+    if (e.key === "Escape") { if (typing) e.target.blur(); else select(null); return; }
+    if (typing) return;
+    if (e.key === "/") { e.preventDefault(); $("filter").focus(); }
+    else if (e.key === "j") next(null);
+    else if (e.key === "k") next(null, true);
+  };
+  route();
+}
+</script>
+</body>
+</html>

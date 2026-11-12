@@ -140,3 +140,11 @@ a What changed bullet with the title GitHub wrote in the merge's body, as
 `TITLE (#N)`. A plain commit with the same text as a listed pull request's
 title is left out, so a change committed to `main` and also merged as a pull
 request shows once.
+
+## Correction, 2026-11-11
+
+The first release has landed. The workflows and `action.yml` now pin each
+action to a commit SHA, and no `uses:` line names `@main`.
+
+Found by the first `kmctl audit checks` run over the whole bundle
+([ADR 0038](0038-checks-are-step-data-that-kmctl-reruns-and-only-checks-that-notice-a-change-are-stored.md)).
