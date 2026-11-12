@@ -267,3 +267,9 @@
 - Updated `manifesto`, `architecture/audit-pipeline` and `architecture/overview` for `kmctl audit ui` and the `feedback` table (verb, modules, flow step 7), and `summary` for the review page.
 - Updated `prototypes/audit-ui`: the page moved into the package as `kmctl audit ui`.
 - Corrected `architecture/audit-pipeline`'s open issues: dropped the uncounted claim that writers gave reasons when short on context, and said what the 4 false drifts do and do not show.
+- Added `decisions/0042-code-coverage-counts-the-lines-a-check-matched` (draft): steps record the lines they matched, and `kmctl audit coverage` and the page's code view count a line as covered when a check matched it; listed it in `decisions/index`.
+- Updated `manifesto`, `architecture/audit-pipeline` (flow step 8, the coverage verb and module) and `architecture/overview` for `kmctl audit coverage` and the code view.
+- Fixed three drifts the audit found: `architecture/overview` now says `scripts/release.py set` copies the version from `apm/apm.yml` into the other apm.yml files, and `architecture/audit-pipeline` says claims todo also hands out sections a person sent back, and that only grep, code, definition and import steps record matched lines.
+- Added `prototypes/token-costs`: measured what kmctl's audit agents cost from 141 real runs (extraction $0.0068 per section, check writing $0.0081 per claim on Haiku 5.5) and the per-session context the briefing and knowledge rules add.
+- Fixed three more drifts in `architecture/overview`'s table of what each verb writes: the checks verbs also write `.kmctl/.gitignore` when missing, `kmctl audit coverage` creates an empty store when there is none, and `kmctl audit ui` refreshes the sections and claims tables on each page load.
+- Fixed a drift in `architecture/overview`: `kmctl audit checks run` also reruns a check whose last run was skipped, and every check with `--all`.

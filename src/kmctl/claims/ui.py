@@ -20,7 +20,7 @@ from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Literal
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
@@ -28,6 +28,7 @@ from kmctl.audit_settings import Question, Settings, load, settings_path
 from kmctl.claims import AuditError
 from kmctl.claims.check_store import check
 from kmctl.claims.check_verbs import CHECKABLE, lines_for, status_row
+from kmctl.claims.coverage import FileCoverage, code_files, coverage
 from kmctl.claims.feedback import (
     Feedback,
     FeedbackIn,
@@ -39,7 +40,7 @@ from kmctl.claims.feedback import (
 )
 from kmctl.claims.models import Claim
 from kmctl.claims.sections import cut, resolve_target
-from kmctl.claims.steps import Repository
+from kmctl.claims.steps import Repository, Span
 from kmctl.claims.store import Store
 from kmctl.claims.verbs import todo
 from kmctl.judge import Judgement
@@ -78,7 +79,19 @@ class CheckView(BaseModel):
     by: str = Field(description="Who submitted it.")
     steps: list[dict[str, object]]
     results: list[str] = Field(description="What each step saw on its last run.")
+    passed: list[bool] = Field(
+        default_factory=list,
+        description="Whether each step held on its last run, in step order.",
+    )
+    holds: bool | None = Field(
+        default=None,
+        description="Whether the whole check held on its last run; None when it has not run.",
+    )
     quality: QualityView | None
+    reads: list[str] = Field(
+        default_factory=list,
+        description="The files the check read on its last run, for checks that test whole files.",
+    )
 
 
 class FeedbackView(BaseModel):
@@ -126,6 +139,10 @@ class ClaimView(BaseModel):
     opinion: Judgement | None = Field(
         description="The decision model's kept answer to that question, for the claim as it is now."
     )
+    code: list[Span] = Field(
+        default_factory=list,
+        description="The code lines its check matched on its last run.",
+    )
 
 
 class SentenceView(BaseModel):
@@ -163,6 +180,17 @@ class DocumentView(BaseModel):
     state: str = Field(description="outdated, drift, unchecked or ok.")
 
 
+class CodeView(BaseModel):
+    """The repository's code and the lines the claims' checks matched."""
+
+    lines: int = Field(description="Non-blank lines of code.")
+    covered: int = Field(description="Of those, lines a check matched.")
+    stale: int = Field(
+        description="Checks whose files changed since their last run; their lines are not counted."
+    )
+    files: list[FileCoverage]
+
+
 class AuditView(BaseModel):
     """Everything the page shows, read from the store when it loads."""
 
@@ -172,6 +200,14 @@ class AuditView(BaseModel):
         description="The decision model questions switched on in the settings."
     )
     concepts: list[DocumentView]
+    code: CodeView
+
+
+class FileText(BaseModel):
+    """One code file's text, for the code view."""
+
+    path: str
+    text: str
 
 
 class OpinionRequest(BaseModel):
@@ -228,9 +264,12 @@ def _check_view(store: Store, claim_id: str) -> CheckView | None:
         by=found.submitted_by,
         steps=[s.model_dump(mode="json") for s in found.steps],
         results=[r.detail for r in found.results],
+        passed=[r.holds for r in found.results],
+        holds=found.holds,
         quality=None
         if q is None
         else QualityView(mutants=q.mutants, killed=q.killed, survived=q.survived),
+        reads=sorted(found.reads),
     )
 
 
@@ -279,7 +318,20 @@ def _claim_view(
         },
         ask=ask,
         opinion=opinion if opinion is not None and opinion.question == ask else None,
+        code=_spans(store, claim.id) if row is not None else [],
     )
+
+
+def _spans(store: Store, claim_id: str) -> list[Span]:
+    """The lines a claim's check matched on its last run, each span once."""
+    found = check(store, claim_id)
+    if found is None:
+        return []
+    seen: dict[tuple[str, int, int], Span] = {}
+    for result in found.results:
+        for span in result.spans:
+            seen.setdefault((span.path, span.start, span.end), span)
+    return list(seen.values())
 
 
 def _settings(config: Path | None) -> Settings | None:
@@ -355,6 +407,7 @@ def build(root: Path, by: str = "human", config: Path | None = None) -> AuditVie
     target = resolve_target(root)
     repo = Repository(target.root)
     settings = _settings(config)
+    measured = coverage(target.root)
     concepts: dict[str, DocumentView] = {}
     with Store(target.root) as store:
         pending = store.pending_sections()
@@ -426,6 +479,12 @@ def build(root: Path, by: str = "human", config: Path | None = None) -> AuditVie
         by=by,
         questions=_enabled(settings),
         concepts=sorted(concepts.values(), key=lambda d: d.concept),
+        code=CodeView(
+            lines=measured.lines,
+            covered=measured.covered,
+            stale=measured.stale,
+            files=measured.by_file,
+        ),
     )
 
 
@@ -439,6 +498,21 @@ def sentence_coverage(pending: bool, claims: list[ClaimView]) -> str:
     if not marks:
         return "not checkable"
     return next(name for name, _ in COVERAGE if name in marks)
+
+
+def file_text(root: Path, path: str) -> FileText:
+    """One code file's text, for the code view; only files that count as code are served.
+
+    Raises
+    ------
+    AuditError
+        When ``path`` is not one of the repository's code files.
+    """
+    target = resolve_target(root)
+    repo = Repository(target.root)
+    if path not in set(code_files(repo)):
+        raise AuditError(f"{path!r} is not a code file of this repository")
+    return FileText(path=path, text=repo.text(path))
 
 
 def claim_view(root: Path, claim_id: str, config: Path | None = None) -> ClaimView:
@@ -610,6 +684,14 @@ class _Handler(BaseHTTPRequestHandler):
         if path == "/":
             page = importlib.resources.files("kmctl.claims").joinpath(PAGE)
             self._send(HTTPStatus.OK, page.read_bytes(), "text/html; charset=utf-8")
+        elif path == "/api/file":
+            asked = parse_qs(urlsplit(self.path).query).get("path", [""])[0]
+            try:
+                shown = file_text(self.server.root, asked)
+            except AuditError as error:
+                self._error(HTTPStatus.NOT_FOUND, str(error))
+                return
+            self._send(HTTPStatus.OK, shown.model_dump_json().encode())
         elif path == "/api/data":
             try:
                 view = build(self.server.root, self.server.by, self.server.config)

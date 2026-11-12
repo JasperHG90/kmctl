@@ -28,7 +28,8 @@ reruns it. The choices are in
 [ADR 0038](../decisions/0038-checks-are-step-data-that-kmctl-reruns-and-only-checks-that-notice-a-change-are-stored.md),
 [ADR 0039](../decisions/0039-kmctl-audit-judge-asks-an-optional-decision-model-off-by-default.md)
 [ADR 0040](../decisions/0040-the-audit-pipeline-holds-its-agents-by-a-hook-and-keeps-answers-through-rewording.md)
-and [ADR 0041](../decisions/0041-people-review-claims-and-checks-on-a-local-page-and-their-feedback-goes-back-to-the-agents.md);
+[ADR 0041](../decisions/0041-people-review-claims-and-checks-on-a-local-page-and-their-feedback-goes-back-to-the-agents.md)
+and [ADR 0042](../decisions/0042-code-coverage-counts-the-lines-a-check-matched.md);
 [the overview](overview.md) places it among kmctl's other parts.
 
 ```mermaid
@@ -53,6 +54,7 @@ flowchart TB
         krun["checks run<br/>rerun on changed reads"]
         judge["judge failure | claim | link<br/>optional decision model"]
         ui["ui<br/>local page on 127.0.0.1"]
+        cover["coverage<br/>lines checks matched"]
     end
 
     person(["a person reviewing"])
@@ -80,6 +82,9 @@ flowchart TB
     ui -- "feedback" --> store
     ui -- "second opinion" --> judge
     store -- "open feedback, examples" --> ctodo
+    store --> cover
+    code --> cover
+    cover --> ui
     guard -. "blocks any other shell command" .-> extractor
     guard -. "blocks any other shell command" .-> writer
 ```
@@ -89,8 +94,8 @@ flowchart TB
 1. **Sections.** `kmctl audit claims todo` cuts each live concept at its
    `#` to `###` headers into numbered sentences. A section's key hashes its
    text, its concept's id, title, status and type, the sections before it
-   and the extraction instructions; only sections whose key moved are
-   handed out.
+   and the extraction instructions; it hands out the sections whose key
+   moved and those a person sent back from `kmctl audit ui`.
 2. **Claims.** The extractor gives every sentence a verdict (kind,
    quantifier, standalone claims) and pipes them to `kmctl audit claims
    submit`, which refuses a stale key, a missing or doubled sentence and a
@@ -121,6 +126,11 @@ flowchart TB
    claim out again, first, in `checks todo`. Any feedback rides along when
    its item is handed out, and the agent's next submit marks it answered.
    Answers people liked go to agents as examples.
+8. **Coverage.** Grep, code, definition and import steps record the lines
+   they matched; file, query and help steps test whole files. `kmctl audit
+   coverage` counts a line of code as covered when a stored check matched
+   it on its last run, and the page's code view marks those lines and
+   shows the claims behind each one (ADR 0042).
 
 ## What keeps it honest
 
@@ -174,11 +184,12 @@ Still open:
   `kmctl audit claims list`, `kmctl audit checks todo`,
   `kmctl audit checks try`, `kmctl audit checks submit`,
   `kmctl audit checks run`, `kmctl audit checks list`, `kmctl audit judge`,
-  `kmctl audit ui`, `kmctl audit guard`.
+  `kmctl audit ui`, `kmctl audit coverage`, `kmctl audit guard`.
 - Modules: `src/kmctl/claims/` (`sections.py`, `instructions.py`,
   `models.py`, `store.py`, `verbs.py`, `steps.py`, `anchors.py`,
   `lines.py`, `mutate.py`, `check_instructions.py`, `check_store.py`,
-  `check_verbs.py`, `guard.py`, `feedback.py`, `ui.py`, `ui.html`),
+  `check_verbs.py`, `guard.py`, `feedback.py`, `ui.py`, `ui.html`,
+  `coverage.py`),
   `src/kmctl/judge.py`,
   `src/kmctl/audit_settings.py`, `src/kmctl/tracing.py`;
   `apm/.apm/skills/extract-claims/`, `apm/.apm/skills/write-checks/`,

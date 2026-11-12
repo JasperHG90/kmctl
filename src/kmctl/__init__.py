@@ -1253,7 +1253,8 @@ audit_app = typer.Typer(
         "Audit what the .okf/ bundle claims about the repository. Groups: claims "
         "(extract them), checks (test them; needs claims from kmctl audit claims). "
         "Verbs: judge (an optional decision model's opinion; off by default), "
-        "ui (a local page to review claims and checks and give feedback). "
+        "ui (a local page to review claims and checks and give feedback), "
+        "coverage (how much of the code the checks match). "
         "kmctl calls no model except judge: a coding agent reads what these "
         "verbs hand out and submits its answers. State lives in .kmctl/audit.sqlite, which "
         "ignores itself in git. Needs a repository with an .okf/ bundle (kmctl init)."
@@ -2009,6 +2010,79 @@ def audit_judge(
             )
     if failed:
         raise typer.Exit(1)
+
+
+@audit_app.command(
+    "coverage",
+    epilog=(
+        "Examples:\n\n"
+        "  kmctl audit coverage\n\n"
+        "  kmctl audit coverage --files 10\n\n"
+        "  kmctl audit coverage --json\n\n"
+        "A line is covered when the last run of a stored check matched it: a "
+        "grep line, the whole node a code pattern matched, a definition or an "
+        "import. A file a check only reads (file, query and help steps) is read, "
+        "not covered. The code is every file a check may read, without tests, "
+        "fixtures, evals, lock files and the folders harnesses install packages "
+        "into; blank lines do not count. A check whose files changed since its "
+        "last run is stale and its lines are not counted until kmctl audit "
+        "checks run reruns it. Run kmctl audit checks run --all once when checks "
+        "were stored before kmctl recorded matched lines. kmctl "
+        "audit ui shows the same numbers line by line."
+    ),
+)
+def audit_coverage(
+    path: Annotated[
+        Path,
+        typer.Argument(
+            metavar="[.|.okf]",
+            help="The repository to measure: it, its bundle or a path in it. Default: the current directory.",
+        ),
+    ] = Path("."),
+    files: Annotated[
+        int,
+        typer.Option(
+            "--files",
+            metavar="10",
+            min=0,
+            help="How many of the largest files with no matched line to list. Default: 5.",
+        ),
+    ] = 5,
+    as_json: Annotated[
+        bool,
+        typer.Option(
+            "--json",
+            help="Print one JSON object: lines, covered, files, files_read, stale, and by_file with "
+            "each file's lines, covered, hits per line and read_by.",
+        ),
+    ] = False,
+) -> None:
+    """Show how much of the repository's code the claims' checks match, line by line."""
+    from kmctl.claims import AuditError
+    from kmctl.claims.coverage import coverage
+
+    try:
+        measured = coverage(path)
+    except AuditError as error:
+        _refuse("coverage", str(error))
+        return
+    if as_json:
+        typer.echo(measured.model_dump_json())
+        return
+    typer.echo(
+        f"{measured.covered:,} of {measured.lines:,} lines of code matched by a check "
+        f"({measured.share:.1%}); {measured.files_read} of {measured.files} files read by one"
+    )
+    if measured.stale:
+        typer.echo(
+            f"{measured.stale} checks ran on files that changed since, so their lines are not "
+            "counted; run kmctl audit checks run to rerun them"
+        )
+    bare = sorted(
+        (f for f in measured.by_file if not f.covered), key=lambda f: -f.lines
+    )
+    for f in bare[:files]:
+        typer.echo(f"no line matched  {f.path}  ({f.lines} lines)")
 
 
 @audit_app.command(

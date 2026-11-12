@@ -263,3 +263,79 @@ def test_a_bad_content_length_is_refused_not_dropped(
     assert res.status == 411
     assert "Content-Length" in json.loads(res.read())["error"]
     conn.close()
+
+
+def test_the_page_carries_code_coverage_and_each_check_s_matched_lines(
+    repo: Path, ids: dict[str, str]
+) -> None:
+    view = build(repo).model_dump()
+    tool = next(f for f in view["code"]["files"] if f["path"] == "src/tool.py")
+
+    assert view["code"]["covered"] >= 2
+    assert sorted(tool["hits"]) == [10, 11]
+    assert claim_in(view, ids["exits"])["code"] == [
+        {"path": "src/tool.py", "start": 10, "end": 11}
+    ]
+
+
+@pytest.mark.parametrize(
+    ("path", "status"),
+    [
+        ("src/tool.py", 200),
+        ("README.md", 404),
+        (".okf/tool.md", 404),
+        ("../../etc/passwd", 404),
+    ],
+    ids=["code", "readme", "knowledge", "outside"],
+)
+def test_only_code_files_are_served(
+    client: httpx.Client, path: str, status: int
+) -> None:
+    res = client.get("/api/file", params={"path": path})
+
+    assert res.status_code == status
+    if status == 200:
+        assert "sys.exit(1)" in res.json()["text"]
+
+
+def test_the_page_still_loads_when_a_tracked_file_is_deleted(
+    client: httpx.Client, repo: Path
+) -> None:
+    (repo / "src" / "tool.py").unlink()
+
+    data = client.get("/api/data")
+    shown = client.get("/api/file", params={"path": "src/tool.py"})
+
+    assert data.status_code == 200
+    assert shown.status_code == 404
+
+
+def test_a_check_that_tests_whole_files_still_names_the_files_it_read(
+    repo: Path, ids: dict[str, str]
+) -> None:
+    exists = {"op": "file", "path": "src/tool.py"}
+    check_verbs.submit(
+        repo,
+        json.dumps(
+            [
+                {
+                    "claim": ids["exits"],
+                    "steps": [exists, CODE],
+                    "strength": "exact",
+                    "why": "w",
+                }
+            ]
+        ),
+    )
+
+    shown = claim_in(build(repo).model_dump(), ids["exits"])
+
+    assert "src/tool.py" in shown["check"]["reads"]
+
+
+def test_the_page_says_whether_a_check_holds_and_which_steps_passed(
+    repo: Path, ids: dict[str, str]
+) -> None:
+    shown = claim_in(build(repo).model_dump(), ids["exits"])["check"]
+
+    assert (shown["holds"], shown["passed"]) == (True, [True])

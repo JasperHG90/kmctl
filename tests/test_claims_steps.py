@@ -165,3 +165,35 @@ def test_markdown_outside_the_knowledge_is_read(repo: Repository) -> None:
         Repository(repo.root),
         {"op": "grep", "pattern": "tool tidy --all", "paths": "skills/**/SKILL.md"},
     )
+
+
+@pytest.mark.parametrize(
+    ("step", "spans"),
+    [
+        (
+            {"op": "grep", "pattern": "MAX_RETRIES", "paths": "src/tool.py"},
+            [(4, 4), (9, 9)],
+        ),
+        (
+            {
+                "op": "code",
+                "pattern": "if len(sys.argv) > 2: $$$B",
+                "paths": "src/tool.py",
+            },
+            [(10, 11)],
+        ),
+        ({"op": "definition", "name": "main", "paths": "src/tool.py"}, [(7, 12)]),
+        ({"op": "imports", "path": "src/tool.py", "module": "sys"}, [(2, 2)]),
+        ({"op": "file", "path": "src/tool.py"}, []),
+    ],
+    ids=["grep lines", "code node", "definition", "import", "file has none"],
+)
+def test_each_step_records_the_lines_it_matched(
+    repo: Repository, step: dict, spans: list[tuple[int, int]]
+) -> None:
+    result = run_step(repo, STEP.validate_python(step))
+
+    assert result.holds, result.detail
+    assert [(s.path, s.start, s.end) for s in result.spans] == [
+        ("src/tool.py", a, b) for a, b in spans
+    ]

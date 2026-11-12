@@ -39,7 +39,7 @@ for people. Warnings and refusals go to stderr.
 | `kmctl plugin` | Finish installing kmctl's APM package for an agent harness. APM (Agent Package Manager) installs the package from `apm.yml`: the skills, audit agent, knowledge rules, session hooks and okf's MCP server. Verb: `patch`. `kmctl doctor` checks the install. |
 | `kmctl plugin patch` | Add what APM cannot install yet for kmctl's package; run it after `apm install`. |
 | `kmctl doctor` | Check kmctl's tools, its installed package per harness and the `kmctl init` files. |
-| `kmctl audit` | Audit what the `.okf/` bundle claims about the repository. Groups: `claims` and `checks`; verbs: `judge` and `ui`. kmctl calls no model except `judge`: a coding agent reads what these verbs hand out and submits its answers. |
+| `kmctl audit` | Audit what the `.okf/` bundle claims about the repository. Groups: `claims` and `checks`; verbs: `judge`, `ui` and `coverage`. kmctl calls no model except `judge`: a coding agent reads what these verbs hand out and submits its answers. |
 | `kmctl audit claims todo` | List the bundle's sections that have no claims extracted for their current text. |
 | `kmctl audit claims submit` | Store an agent's verdicts and claims for sections that `todo` handed out. |
 | `kmctl audit claims list` | Show the stored claims: counts per concept and kind, or each claim. |
@@ -49,6 +49,7 @@ for people. Warnings and refusals go to stderr.
 | `kmctl audit checks run` | Rerun the stored checks whose files changed, with no model, and report each claim's status. |
 | `kmctl audit checks list` | Show each claim's check status, strength and why. |
 | `kmctl audit judge` | Ask the configured decision model one question about stored checks or a claim. |
+| `kmctl audit coverage` | Show how much of the repository's code the claims' checks match, line by line. |
 | `kmctl audit ui` | Serve a local page to review claims and checks and give feedback on them. |
 | `kmctl audit guard` | Allow a Bash call only when it is one `kmctl audit` command, as a PreToolUse hook. |
 
@@ -1025,8 +1026,15 @@ lists answers people gave a thumbs up. Each page load refreshes the stored
 sections as `kmctl audit claims todo` does. Each save is a new row in the store's `feedback` table,
 so the history stays.
 
+The Code tab shows the repository's code instead: each file with the share
+of its lines a check matched, the file with matched lines marked (red where
+a matching check fails), and, for a clicked line, the claims whose
+checks matched it. A check's card lists the lines it matched, each a link
+into the code. `kmctl audit coverage` gives the same numbers.
+
 The server answers only requests whose Host is `127.0.0.1` or `localhost`,
-and takes writes only as JSON from its own page.
+takes writes only as JSON from its own page, and serves the text only of
+files that count as code.
 
 | Option | Meaning |
 |---|---|
@@ -1035,6 +1043,35 @@ and takes writes only as JSON from its own page.
 | `--by NAME` | The name your feedback is stored under (default: `human`). |
 | `--config FILE` | The `audit.toml` to read for a second opinion, instead of the per-user one. |
 | `--no-open` | Print the address without opening a browser. |
+
+### `kmctl audit coverage`
+
+`kmctl audit coverage [PATH] [--files N] [--json]`
+
+Show how much of the repository's code the claims' checks match. A line is
+covered when the last run of a stored check matched it: a grep line, the
+whole node a code pattern matched, a definition or an import. A file that
+file, query and help steps only read is "read", not covered. The code is
+every file a check may read that is on disk, without tests, fixtures,
+evals, lock files and the folders harnesses install packages into
+(`.github/skills/`, `.github/agents/`, `.agents/`, `.opencode/`); blank
+lines do not count. A check whose files changed since its last run is
+stale: its lines are not counted, and the output says how many, until
+`kmctl audit checks run` reruns it.
+
+```
+2,101 of 18,642 lines of code matched by a check (11.3%); 104 of 107 files read by one
+no line matched  scripts/next_release_version.py  (144 lines)
+```
+
+Checks stored before kmctl recorded matched lines have none until they run
+again: run `kmctl audit checks run --all` once.
+
+| Option | Meaning |
+|---|---|
+| `PATH` | The repository, its bundle or a path in it (default: the current directory). |
+| `--files N` | How many of the largest files with no matched line to list (default: 5). |
+| `--json` | One JSON object: `lines`, `covered`, `files`, `files_read`, `stale`, and `by_file` with each file's `lines`, `covered`, `hits` (per line: `claims`, `drift`) and `read_by`. |
 
 ### `kmctl audit guard`
 

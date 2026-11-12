@@ -165,6 +165,13 @@
   .steps li { font: 12px/1.5 var(--code); padding: 4px 8px; margin-top: 3px; background: var(--paper); border-radius: 5px;
               overflow-wrap: anywhere; }
   .steps li b { font-weight: 500; color: var(--tag-checks); }
+  .steps li.failed { box-shadow: inset 3px 0 0 var(--drift); }
+  .steps .mark { display: inline-block; margin-right: 8px; font: 600 11px var(--ui); }
+  .steps .mark.ok { color: var(--checked); } .steps .mark.bad { color: var(--drift); }
+  .steps .saw { margin-top: 3px; color: var(--soft); font-family: var(--ui); font-size: 11.5px; }
+  .verdict { margin: 0 0 6px; font-size: 14px; font-weight: 700; }
+  .verdict span { font-weight: 400; color: var(--soft); }
+  .verdict.ok { color: var(--checked); } .verdict.bad { color: var(--drift); } .verdict.pending { color: var(--unchecked); }
   .drift-note { margin-top: 6px; padding: 6px 8px; border-radius: 5px; background: var(--drift-wash); color: var(--drift); font-size: 12.5px; }
   .note { margin: 6px 0 0; font-size: 12.5px; color: var(--soft); line-height: 1.5; }
   .note b, .part .what b { color: var(--ink); font-weight: 600; }
@@ -175,6 +182,41 @@
   .gauge { display: flex; gap: 2px; margin-top: 6px; }
   .gauge i { flex: 1; max-width: 22px; height: 6px; border-radius: 2px; background: var(--quiet); }
   .gauge i.hit { background: var(--tag-conf); }
+  /* Documents or code: two views of the same claims. */
+  .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; padding: 2px; margin-bottom: 10px;
+           border-radius: 8px; background: var(--rule); }
+  .modes button { padding: 5px 0; border-radius: 6px; text-align: center; font-size: 13px; font-weight: 600; color: var(--soft); }
+  .modes button[aria-selected="true"] { background: var(--sheet); color: var(--ink); box-shadow: 0 1px 2px rgb(0 0 0 / .08); }
+  .doc .pct { font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--soft); }
+  .doc .pct.some { color: var(--checked); }
+  /* The code view: a quiet listing with one coloured mark per matched line. */
+  .page.code-page { max-width: none; padding: 0; font: inherit; }
+  .code { padding: 8px 0 80px; font: 12.5px/1.6 var(--code); counter-reset: none; }
+  .ln { display: grid; grid-template-columns: 56px 4px minmax(0, 1fr); align-items: stretch; cursor: default; }
+  .ln .no { padding-right: 12px; text-align: right; color: var(--quiet); user-select: none; }
+  .ln .mk { border-radius: 1px; }
+  .ln .tx { padding: 0 16px 0 12px; white-space: pre; overflow: hidden; text-overflow: ellipsis; }
+  .ln.hit { cursor: pointer; }
+  .ln.hit .mk { background: color-mix(in srgb, var(--checked) 70%, transparent); }
+  .ln.hit .tx { background: color-mix(in srgb, var(--checked-wash) 55%, transparent); }
+  .ln.drift .mk { background: var(--drift); }
+  .ln.drift .tx { background: var(--drift-wash); }
+  .ln.hit:hover .tx { background: var(--pencil-wash); }
+  .ln.on .tx { background: var(--pencil-wash); box-shadow: inset 0 -1px 0 var(--pencil); }
+  .ln.on .no { color: var(--pencil); font-weight: 600; }
+  .code-key { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--soft); margin-top: 8px; }
+  .code-key b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .code-key i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; margin-right: 6px; vertical-align: -1px; }
+  .code-links { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px 8px; font-size: 12px; }
+  .code-links button { font: 500 11.5px var(--code); color: var(--pencil); }
+  .code-links button:hover { text-decoration: underline; }
+  .readers { margin: 0 0 0 30px; font-size: 13px; color: var(--soft); line-height: 1.55; }
+  .readers summary { cursor: pointer; }
+  .readers ul { margin: 6px 0 0; padding-left: 18px; }
+  .readers li { margin: 3px 0; }
+  .readers button { display: inline; color: var(--ink); text-align: left; }
+  .readers button:hover { color: var(--pencil); text-decoration: underline; }
+
   /* Feedback: thumbs, a verdict and a note under each part; quiet until used. */
   .fb { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; }
   .fb-btn { display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px; border-radius: 6px;
@@ -233,7 +275,8 @@
   <span class="stamp" id="stamp"></span>
 </header>
 <main class="desk">
-  <section class="docs" aria-label="Documents">
+  <section class="docs" aria-label="Documents and code">
+    <div class="modes" id="modes" role="tablist"></div>
     <input class="filter" id="filter" type="search" placeholder="Find a document" aria-label="Find a document">
     <div class="chips" id="chips"></div>
     <nav id="tree"></nav>
@@ -275,6 +318,7 @@ const el = (tag, attrs = {}, ...kids) => {
 const $ = (id) => document.getElementById(id);
 const cov = (s) => (s.coverage === "not checkable" ? "uncheckable" : s.coverage);
 const plural = (n, one, many = one + "s") => `${n.toLocaleString()} ${n === 1 ? one : many}`;
+const pctOf = (part, whole) => (whole ? `${(100 * part / whole).toFixed(part && part / whole < 0.1 ? 1 : 0)}%` : "0%");
 
 /* ---------- markdown, just enough for a sentence ---------- */
 function inline(text) {
@@ -312,7 +356,11 @@ function renderBar() {
   $("totals").replaceChildren(...[
     part(DATA.concepts.length, "documents"), part(t.claims, "checkable claims"), part(t.checked, "checked"),
     part(t.reason, "reason only"), t.unchecked ? part(t.unchecked, "not checked") : null, part(t.drift, "drift", true),
-    waiting ? part(waiting, "need extraction") : null].filter(Boolean));
+    waiting ? part(waiting, "need extraction") : null,
+    el("span", { title: "Lines of code a check matched on its last run, out of all non-blank lines of code (tests, lock files and installed packages left out)" },
+      el("b", {}, pctOf(DATA.code.covered, DATA.code.lines)), " of code covered"),
+    DATA.code.stale ? el("span", { title: "These checks ran on files that have changed since, so their lines are not counted. Run kmctl audit checks run, then Reload." },
+      el("b", {}, String(DATA.code.stale)), DATA.code.stale === 1 ? " stale check" : " stale checks") : null].filter(Boolean));
   const when = new Date(DATA.generated);
   $("stamp").replaceChildren("Read " + when.toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }),
     el("button", { class: "reload", title: "Read the store again, after an agent's run", onclick: () => load() }, "Reload"));
@@ -325,13 +373,22 @@ function meter(counts) {
     counts[k] ? el("i", { style: `flex: ${counts[k] / total} 0 0; background: var(${hue})` }) : null),
     el("i", { style: `flex: ${((counts.none || 0) + (counts["not checkable"] || 0)) / total} 0 0` }));
 }
+function renderModes() {
+  const tab = (m, label) => el("button", { role: "tab", "aria-selected": String(mode === m),
+    onclick: () => { if (mode !== m) { mode === "docs" ? goCode(codeFile?.path || firstCodeFile()) : go(current?.concept || DATA.concepts[0]?.concept); } } }, label);
+  $("modes").replaceChildren(tab("docs", "Documents"), tab("code", `Code ${pctOf(DATA.code.covered, DATA.code.lines)}`));
+  $("filter").placeholder = mode === "code" ? "Find a file" : "Find a document";
+  $("filter").setAttribute("aria-label", $("filter").placeholder);
+}
 function renderChips() {
+  if (mode === "code") return renderCodeChips();
   const count = (k) => (k === "all" ? DATA.concepts.length : DATA.concepts.filter((d) => d.state === k).length);
   $("chips").replaceChildren(...CHIPS.filter(([k]) => k === "all" || count(k)).map(([k, label]) =>
     el("button", { class: "chip", "aria-pressed": String(chip === k), onclick: () => { chip = k; renderChips(); renderTree(); } },
       `${label} ${count(k)}`)));
 }
 function renderTree() {
+  if (mode === "code") return renderCodeTree();
   const q = $("filter").value.trim().toLowerCase();
   const tree = $("tree");
   tree.replaceChildren();
@@ -443,11 +500,22 @@ function select(section, n = null, scroll = false) {
 }
 
 /* ---------- right: claims, checks, confidence ---------- */
-function stepLine(step) {
+function stepLine(step, passed, saw) {
   const { op, ...rest } = step;
   const args = Object.entries(rest).filter(([, v]) => v != null && v !== "" && !(Array.isArray(v) && !v.length))
     .map(([k, v]) => `${k} ${typeof v === "string" ? v : JSON.stringify(v)}`).join("   ");
-  return el("li", {}, el("b", {}, op), "  " + args);
+  return el("li", { class: passed === false ? "failed" : null },
+    passed == null ? null : el("span", { class: "mark " + (passed ? "ok" : "bad"), "aria-label": passed ? "passed" : "failed" }, passed ? "✓ passed" : "✗ failed"),
+    el("b", {}, op), "  " + args,
+    saw ? el("div", { class: "saw" }, "saw: " + saw) : null);
+}
+// The check's result in words, first thing in the Check part.
+function verdictLine(k) {
+  const n = k.passed.length, failed = k.passed.filter((p) => !p).length;
+  if (k.holds == null) return el("div", { class: "verdict pending" }, "Not run yet. Run kmctl audit checks run.");
+  if (k.holds) return el("div", { class: "verdict ok" }, "✓ Holds", el("span", {}, n === 1 ? ": its step passed on the last run." : `: all ${n} steps passed on the last run.`));
+  return el("div", { class: "verdict bad" }, k.drift ? "✗ Fails: the claim is wrong" : "✗ Fails",
+    el("span", {}, `: ${failed} of ${n} steps failed on the last run.`));
 }
 function part(kind, label, ...kids) {
   return el("div", { class: "part p-" + kind }, el("span", { class: "label" }, label), el("div", {}, kids));
@@ -471,6 +539,18 @@ function missed(list) {
       return el("li", {}, what.replace(/^an? /, ""), at.length ? ` at line${at.length > 1 ? "s" : ""} ${at.join(", ")}` : "");
     })))));
 }
+// Why a check got no trial edits, in the reader's words: a limit of the method, not of the check.
+function unmeasured(k) {
+  const wants = (s) => s.present !== false && s.exists !== false && s.defined !== false && s.imported !== false;
+  const positive = k.steps.filter(wants);
+  if (!positive.length)
+    return "Every step checks that something is absent, so no line matched and there was nothing to edit. The check still fails if the thing appears.";
+  if (positive.every((s) => s.op === "help"))
+    return "Help steps run the real command from disk, and kmctl's trial edits happen in memory, so they cannot reach it. The check still fails if the help text changes.";
+  if (positive.every((s) => ["help", "file", "query"].includes(s.op)))
+    return "These steps test whole files (that they exist, or a value in a config file), and kmctl only edits lines a step matched.";
+  return "kmctl has no trial edit for the lines this check matched (prose, or a value inside a string), so it could not test whether the check notices a change.";
+}
 function confidence(k, c) {
   const q = k.quality, n = q ? q.mutants : 0, shown = Math.min(n, 16);
   const [name, means] = STRENGTH[k.strength] || [k.strength, ""];
@@ -483,7 +563,7 @@ function confidence(k, c) {
     el("p", { class: "note" }, n
       ? `kmctl made ${plural(n, "small edit")} to the code this check reads, one at a time, and ran the check again each time. The check failed on ${q.killed}, so ${
           q.killed === n ? "any of those changes would show up as drift." : `${n - q.killed === 1 ? "one such change" : `${n - q.killed} such changes`} would go unnoticed.`}`
-      : "kmctl found nothing in the files this check reads that it could edit to test the check."),
+      : unmeasured(k)),
     el("p", { class: "note" }, el("b", {}, name), ": " + means),
     q && q.survived.length ? el("details", { class: "missed" },
       el("summary", {}, `Show the ${plural(q.survived.length, "edit")} it did not catch`), missed(q.survived)) : null,
@@ -518,8 +598,11 @@ function replaceClaim(view) {
     for (const sc of doc.sections) for (const x of sc.sentences) doc.counts[x.coverage] = (doc.counts[x.coverage] || 0) + 1;
     doc.state = doc.outdated ? "outdated" : doc.counts.drift ? "drift" : doc.counts.unchecked ? "unchecked" : "ok";
   }
+  indexClaims();
+  renderBar();
+  if (mode === "code") { renderCodeCards(); return; }
   const top = $("viewer").scrollTop;
-  renderBar(); renderChips(); renderTree(); renderDoc();
+  renderChips(); renderTree(); renderDoc();
   $("viewer").scrollTop = top;
   select(selection?.section ?? null, selection?.n ?? null);
 }
@@ -648,17 +731,23 @@ function opinion(c) {
 function statusChip(c) {
   if (c.human) return el("span", { class: "status st-" + (c.human === "false" ? "drift" : "checked"), title: "Your verdict, which counts over the check's" },
     c.human === "false" ? "you: false" : "you: holds");
+  // "not measured" means the check holds but got no trial edits; the chip says what the check found, the confidence row says the rest.
+  if (c.status === "not measured") return el("span", { class: "status st-checked", title: "The check holds; kmctl could not trial-edit it, see Confidence" }, "holds");
   return el("span", { class: "status st-" + c.coverage }, c.status);
 }
 
-function claimCard(sec, c, fold) {
+function claimCard(sec, c, fold, fromCode = false) {
   const k = c.check;
   const shut = fold && !openCards.has(c.id);
   const card = el("div", { class: "claim" + (fold ? " fold" : "") + (shut ? " shut" : "") });
   const head = part("claim", "Claim", el("div", { class: "what" }, c.text),
     el("div", { class: "sub" }, statusChip(c),
       el("span", {}, c.kind), el("span", {}, c.quantifier), el("code", {}, c.id),
-      fold ? el("button", { class: "to-sentence", onclick: (e) => { e.stopPropagation(); select(sec.id, c.n, true); } }, "Show sentence") : null));
+      fold || fromCode ? el("button", { class: "to-sentence", onclick: (e) => {
+        e.stopPropagation();
+        if (fromCode) { setHash("#" + new URLSearchParams({ c: claimById[c.id].doc.concept, s: sec.id, n: c.n }), false); route(); }
+        else select(sec.id, c.n, true);
+      } }, fromCode ? "Show in document" : "Show sentence") : null));
   if (fold) {
     head.setAttribute("role", "button"); head.setAttribute("tabindex", "0"); head.setAttribute("aria-expanded", String(!shut));
     const flip = () => {
@@ -687,9 +776,9 @@ function claimCard(sec, c, fold) {
       part("conf", "Confidence", el("div", { class: "what dim" }, "Not measured: a reason has no check to run."), opinion(c)));
   } else {
     card.append(
-      part("check", "Check", el("div", { class: "what" }, k.why), el("ul", { class: "steps" }, k.steps.map(stepLine)),
-        k.results.length ? el("div", { class: "sub" }, k.results.map((r) => el("span", {}, r))) : null,
-        k.drift ? el("div", { class: "drift-note" }, k.drift) : null, feedback(c, "check"), verdictNotes),
+      part("check", "Check", verdictLine(k), el("div", { class: "what" }, k.why),
+        el("ul", { class: "steps" }, k.steps.map((step, i) => stepLine(step, k.passed[i], k.results[i]))),
+        k.drift ? el("div", { class: "drift-note" }, k.drift) : null, codeLinks(c), feedback(c, "check"), verdictNotes),
       confidence(k, c));
   }
   return card;
@@ -726,8 +815,204 @@ function renderCards() {
   box.scrollTop = moved ? 0 : top;
 }
 
+/* ---------- code: files, lines and the claims that matched them ---------- */
+let mode = "docs";           // "docs" or "code"
+let codeFile = null;         // the open file's coverage entry
+let codeLine = null;         // the selected line
+let codeChip = "all";
+let codeNodes = {};          // line number -> row node
+const fileText = {};         // path -> text, fetched once
+let claimById = {};          // claim id -> {doc, sec, claim}
+
+function indexClaims() {
+  claimById = {};
+  for (const doc of DATA.concepts) for (const sec of doc.sections) for (const s of sec.sentences) for (const c of s.claims)
+    if (!claimById[c.id]) claimById[c.id] = { doc, sec, claim: c };
+}
+const firstCodeFile = () => (DATA.code.files.find((f) => Object.values(f.hits).some((h) => h.drift)) || DATA.code.files.find((f) => f.covered) || DATA.code.files[0])?.path;
+const driftLines = (f) => Object.values(f.hits).filter((h) => h.drift).length;
+
+function codeLinks(c) {
+  if (!c.code?.length) {
+    // A check that tests whole files (file, query, help steps) has no lines; link the code files it read.
+    const known = new Set(DATA.code.files.map((f) => f.path));
+    const read = (c.check?.reads || []).filter((p) => known.has(p));
+    if (!read.length) return null;
+    return el("div", { class: "code-links", title: "This check tests whole files, so it matched no particular lines" },
+      el("span", { class: "dim" }, "Reads:"),
+      read.slice(0, 6).map((p) => el("button", { onclick: () => goCode(p) }, p.split("/").at(-1))),
+      read.length > 6 ? el("span", { class: "dim" }, `and ${read.length - 6} more`) : null);
+  }
+  return el("div", { class: "code-links" }, el("span", { class: "dim" }, "Matched:"),
+    c.code.slice(0, 8).map((sp) => el("button", { title: "Show these lines in the code view", onclick: () => goCode(sp.path, sp.start) },
+      `${sp.path.split("/").at(-1)}:${sp.start}${sp.end > sp.start ? "–" + sp.end : ""}`)),
+    c.code.length > 8 ? el("span", { class: "dim" }, `and ${c.code.length - 8} more`) : null);
+}
+
+const CODE_CHIPS = [["all", "All"], ["drift", "Drift"], ["none", "No lines matched"]];
+function codeChipOf(f) { return driftLines(f) ? "drift" : f.covered ? "some" : "none"; }
+function renderCodeChips() {
+  const count = (k) => (k === "all" ? DATA.code.files.length : DATA.code.files.filter((f) => codeChipOf(f) === k).length);
+  $("chips").replaceChildren(...CODE_CHIPS.filter(([k]) => k === "all" || count(k)).map(([k, label]) =>
+    el("button", { class: "chip", "aria-pressed": String(codeChip === k), onclick: () => { codeChip = k; renderCodeChips(); renderCodeTree(); } },
+      `${label} ${count(k)}`)));
+}
+function renderCodeTree() {
+  const q = $("filter").value.trim().toLowerCase();
+  const tree = $("tree");
+  tree.replaceChildren();
+  let folder;
+  for (const f of DATA.code.files) {
+    if (codeChip !== "all" && codeChipOf(f) !== codeChip) continue;
+    if (q && !f.path.toLowerCase().includes(q)) continue;
+    const parts = f.path.split("/");
+    const here = parts.length > 1 ? parts.slice(0, -1).join("/") : "";
+    if (here !== folder) tree.append(el("div", { class: "folder" }, here || "Top level"));
+    folder = here;
+    const drift = driftLines(f);
+    tree.append(el("button", {
+        class: "doc", "aria-current": String(codeFile === f),
+        title: `${f.path}\n${f.covered} of ${f.lines} lines matched by a check${drift ? `, ${drift} in drift` : ""}; read by ${plural(f.read_by.length, "check")}`,
+        onclick: () => goCode(f.path),
+      },
+      el("span", { class: "name" }, parts.at(-1)),
+      drift ? el("span", { class: "count drift" }, String(drift)) : el("span", { class: "pct" + (f.covered ? " some" : "") }, pctOf(f.covered, f.lines)),
+      el("span", { class: "meter" },
+        drift ? el("i", { style: `flex: ${drift / (f.lines || 1)} 0 0; background: var(--drift)` }) : null,
+        el("i", { style: `flex: ${(f.covered - drift) / (f.lines || 1)} 0 0; background: var(--checked)` }),
+        el("i", { style: `flex: ${(f.lines - f.covered) / (f.lines || 1)} 0 0` }))));
+  }
+  if (!tree.children.length) tree.append(el("p", { class: "none-found" }, "No file matches. Clear the search or pick All."));
+}
+
+async function renderCode() {
+  codeNodes = {};
+  const head = $("head"), page = $("page");
+  head.replaceChildren(); page.replaceChildren();
+  page.classList.add("code-page");
+  if (!codeFile) return;
+  const f = codeFile, drift = driftLines(f);
+  const strip = el("div", { class: "strip", role: "group", "aria-label": "Every block of this file, in order, as wide as its lines" });
+  head.append(el("h2", {}, f.path.split("/").at(-1)), el("div", { class: "path" }, f.path), strip,
+    el("div", { class: "key" },
+      drift ? el("button", { title: "Go to the next line a failing check matched", onclick: () => nextLine(false, true) },
+        el("i", { style: "background: var(--drift)" }), el("b", {}, String(drift)), "matched by a failing check") : null,
+      el("button", { title: "Go to the next matched line", onclick: () => nextLine() },
+        el("i", { style: "background: var(--checked)" }), el("b", {}, String(f.covered - drift)), `of ${f.lines} lines matched`),
+      el("span", {}, `read by ${plural(f.read_by.length, "check")}`),
+      el("span", { class: "hint" }, el("kbd", {}, "j"), " ", el("kbd", {}, "k"), " next and previous matched line")));
+  if (!(f.path in fileText)) {
+    page.append(el("p", { class: "blank" }, "Reading the file…"));
+    try {
+      const res = await fetch("/api/file?" + new URLSearchParams({ path: f.path }));
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `the server answered ${res.status}`);
+      fileText[f.path] = data.text;
+    } catch (e) {
+      page.replaceChildren(el("p", { class: "blank" }, `Could not read ${f.path}: ${e.message}`));
+      return;
+    }
+    if (codeFile !== f) return;  // the reader moved on while it loaded
+  }
+  const box = el("div", { class: "code", role: "list" });
+  fileText[f.path].split("\n").forEach((line, i) => {
+    const n = i + 1, hit = f.hits[n];
+    const row = el("div", { class: "ln" + (hit ? " hit" : "") + (hit?.drift ? " drift" : ""), role: "listitem",
+        title: hit ? `${plural(hit.claims.length, "claim")}${hit.drift ? ", a check failing" : ""}` : null,
+        onclick: () => selectLine(n) },
+      el("span", { class: "no" }, String(n)), el("span", { class: "mk" }), el("span", { class: "tx" }, line || " "));
+    codeNodes[n] = row;
+    box.append(row);
+  });
+  page.replaceChildren(box);
+  codeBlocks = blocksOf(fileText[f.path], f);
+  strip.replaceChildren(...codeBlocks.map((b) => {
+    const size = b.lines;
+    const label = `lines ${b.start}–${b.end}: ${b.matched ? `${b.matched} of ${size} matched${b.failing ? `, ${b.failing} by a failing check` : ""}` : "none matched"}`;
+    // Shade by the share of its lines a check matched, so one matched line does not paint a whole function.
+    const share = Math.round(100 * b.matched / size);
+    b.tick = el("button", { title: label, "aria-label": label,
+      style: `flex: ${b.end - b.start + 1} 1 0;` + (b.failing ? " background: var(--drift)"
+        : b.matched ? ` background: color-mix(in srgb, var(--checked) ${Math.max(share, 25)}%, var(--quiet))` : ""),
+      onclick: () => selectLine(b.first ?? b.start, true) });
+    return b.tick;
+  }));
+  if (codeLine) selectLine(codeLine, true);
+}
+// Runs of lines between blank lines: about a function, a class or a config section in any language.
+let codeBlocks = [];
+function blocksOf(text, f) {
+  const out = [];
+  let cur = null;
+  text.split("\n").forEach((line, i) => {
+    const n = i + 1;
+    if (!line.trim()) { cur = null; return; }
+    if (!cur) { cur = { start: n, end: n, lines: 0, matched: 0, failing: 0, first: null }; out.push(cur); }
+    cur.end = n;
+    cur.lines++;
+    const hit = f.hits[n];
+    if (hit) { cur.matched++; if (hit.drift) cur.failing++; if (cur.first == null) cur.first = n; }
+  });
+  return out;
+}
+function selectLine(n, scroll = false) {
+  codeLine = n;
+  for (const [k, row] of Object.entries(codeNodes)) row.classList.toggle("on", Number(k) === n);
+  for (const b of codeBlocks) b.tick?.classList.toggle("on", n >= b.start && n <= b.end);
+  if (scroll) codeNodes[n]?.scrollIntoView({ block: "center" });
+  renderCodeCards();
+  writeHash();
+}
+function nextLine(back = false, failingOnly = false) {
+  if (!codeFile) return;
+  const lines = Object.keys(codeFile.hits).map(Number).filter((n) => !failingOnly || codeFile.hits[n].drift).sort((a, b) => a - b);
+  if (!lines.length) return;
+  const at = codeLine ?? (back ? Infinity : 0);
+  const hit = back ? lines.filter((x) => x < at).at(-1) ?? lines.at(-1) : lines.find((x) => x > at) ?? lines[0];
+  selectLine(hit, true);
+}
+let shownCodeKey = null;
+function renderCodeCards() {
+  const box = $("detail");
+  const keyNow = `${codeFile?.path}|${codeLine}`;
+  const moved = keyNow !== shownCodeKey;
+  shownCodeKey = keyNow;
+  if (moved) { openCards = new Set(); editing = null; }
+  const top = box.scrollTop;
+  box.replaceChildren();
+  if (!codeFile) return;
+  const hit = codeLine != null ? codeFile.hits[codeLine] : null;
+  const readers = codeFile.read_by.filter((id) => claimById[id] && !(hit?.claims || []).includes(id));
+  const cards = el("div", { class: "cards" + (moved ? " moved" : "") });
+  if (codeLine == null) {
+    cards.append(el("p", { class: "start" }, "Click a marked line to see the claims whose checks matched it. ",
+      `${plural(Object.keys(codeFile.hits).length, "line")} in this file ${Object.keys(codeFile.hits).length === 1 ? "is" : "are"} matched; the rest are only read, or not read at all.`));
+  } else {
+    const claims = (hit?.claims || []).map((id) => claimById[id]).filter(Boolean);
+    const fold = claims.length > 3;
+    cards.append(el("p", { class: "where" }, el("b", {}, `Line ${codeLine}`),
+      claims.length ? `, matched by ${plural(claims.length, "claim")}` : ", matched by no check"),
+      ...claims.map(({ sec, claim }) => claimCard(sec, claim, fold, true)));
+  }
+  if (readers.length) cards.append(el("details", { class: "readers" },
+    el("summary", {}, `${plural(readers.length, "other check")} read${readers.length === 1 ? "s" : ""} this file without matching ${codeLine == null ? "a line" : "this line"}`),
+    el("ul", {}, readers.slice(0, 40).map((id) => {
+      const { sec, claim, doc } = claimById[id];
+      return el("li", {}, el("button", { onclick: () => { setHash("#" + new URLSearchParams({ c: doc.concept, s: sec.id, n: claim.n }), false); route(); } }, claim.text));
+    })), readers.length > 40 ? el("p", {}, `and ${readers.length - 40} more`) : null));
+  box.append(cards);
+  box.scrollTop = moved ? 0 : top;
+}
+
 /* ---------- routing ---------- */
 function writeHash() {
+  if (mode === "code") {
+    if (!codeFile) return;
+    const p = new URLSearchParams({ f: codeFile.path });
+    if (codeLine != null) p.set("l", codeLine);
+    setHash("#" + p, true);
+    return;
+  }
   if (!current) return;
   const p = new URLSearchParams({ c: current.concept });
   if (selection) { p.set("s", selection.section); if (selection.n != null) p.set("n", selection.n); }
@@ -740,8 +1025,29 @@ function setHash(hash, replace) {
   catch { quiet = true; if (replace) location.replace(hash); else location.hash = hash; }
 }
 function go(concept) { setHash("#" + new URLSearchParams({ c: concept }), false); route(); }
+function goCode(path, line = null) {
+  const p = new URLSearchParams({ f: path });
+  if (line != null) p.set("l", line);
+  setHash("#" + p, false); route();
+}
 function route() {
   const p = new URLSearchParams(location.hash.slice(1));
+  const nextMode = p.has("f") ? "code" : "docs";
+  if (nextMode !== mode) { mode = nextMode; $("filter").value = ""; }
+  renderModes(); renderChips();
+  $("page").classList.remove("code-page");
+  if (mode !== "code") { codeNodes = {}; codeBlocks = []; shownCodeKey = null; }  // the document view replaces the code rows
+  if (mode === "code") {
+    const f = DATA.code.files.find((x) => x.path === p.get("f")) || DATA.code.files.find((x) => x.path === firstCodeFile());
+    const same = f === codeFile;
+    codeFile = f || null;
+    codeLine = p.has("l") ? Number(p.get("l")) : null;
+    renderTree();
+    if (same && codeNodes[1]) { if (codeLine != null) selectLine(codeLine, true); else { for (const r of Object.values(codeNodes)) r.classList.remove("on"); renderCodeCards(); } }
+    else { $("viewer").scrollTop = 0; renderCode(); renderCodeCards(); }
+    document.querySelector('.doc[aria-current="true"]')?.scrollIntoView({ block: "nearest" });
+    return;
+  }
   const worst = DATA.concepts.find((d) => d.state === "drift") || DATA.concepts.find((d) => d.state !== "ok");
   current = DATA.concepts.find((d) => d.concept === p.get("c")) || worst || DATA.concepts[0] || null;
   renderTree(); renderDoc();
@@ -762,7 +1068,8 @@ async function load() {
     $("page").replaceChildren(el("p", {}, `Could not read the audit store: ${e.message}. Is kmctl audit ui still running? Start it again, then reload this page.`));
     return;
   }
-  renderBar(); renderChips(); route();
+  indexClaims();
+  renderBar(); route();
 }
 
 $("filter").oninput = () => DATA && renderTree();
@@ -770,11 +1077,11 @@ window.onhashchange = () => { if (quiet) quiet = false; else if (DATA) route(); 
 document.onkeydown = (e) => {
   if (e.metaKey || e.ctrlKey || e.altKey || !DATA) return;
   const typing = e.target.matches?.("input, textarea");
-  if (e.key === "Escape") { if (typing) e.target.blur(); else select(null); return; }
+  if (e.key === "Escape") { if (typing) e.target.blur(); else if (mode === "code") { if (codeFile) goCode(codeFile.path); } else select(null); return; }
   if (typing) return;
   if (e.key === "/") { e.preventDefault(); $("filter").focus(); }
-  else if (e.key === "j") next(null);
-  else if (e.key === "k") next(null, true);
+  else if (e.key === "j") mode === "code" ? nextLine() : next(null);
+  else if (e.key === "k") mode === "code" ? nextLine(true) : next(null, true);
 };
 load();
 </script>

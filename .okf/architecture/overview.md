@@ -222,9 +222,10 @@ cached, and the copy on PATH adds the newer-release line from
 | `kmctl verify` | `verify.py`, with `concepts.py` for `--stale-after` and the log line | a `verified` entry (and, with `--stale-after`, `stale_after`) in one concept or docs page, and a log line for a concept; only a person verifies, never an audit (ADR 0005, ADR 0023) |
 | `kmctl plugin patch` | `plugin.py`, with `antigravity.py` for the plugin folder and `opencode.py` for OpenCode | never runs APM, only `claude` to remove the old plugin: reads `apm.lock.yaml`; refuses an `apm.yml` that names the package the v0.3.0 way, naming the `apm uninstall`; for claude, removes the hook an older kmctl wrote and the old claude plugin `kmctl@kmctl`; for antigravity, writes `.agents/plugins/kmctl/` with the translated agents and takes APM's broken okf Stop handler out of `.agents/hooks.json` (ADR 0018, ADR 0020, ADR 0021); for opencode, rewrites the three agents in `.opencode/agents/`, writes `.opencode/rules/`, the `instructions` entry in `opencode.json` and `.opencode/plugins/kmctl.js` (ADR 0024); `--undo` deletes the plugin folder and the OpenCode files, and with `--scope user` deletes nothing in the repository and names them |
 | `kmctl audit claims todo`, `submit`, `list` | `claims/verbs.py`, with `claims/sections.py` (the section cutter and keys, reading front matter through `okf.py`), `claims/instructions.py`, `claims/models.py` (the answer schema) and `claims/store.py` | only `.kmctl/audit.sqlite` and `.kmctl/.gitignore` (`*`), never `.okf/` or `docs/`; no model call (ADR 0036) |
-| `kmctl audit checks todo`, `try`, `submit`, `run`, `list` | `claims/check_verbs.py`, with `claims/steps.py` (the step DSL and runner), `claims/anchors.py` and `claims/lines.py` (what a claim names and the lines around it), `claims/mutate.py` (the weak bar), `claims/check_instructions.py` and `claims/check_store.py` | only `.kmctl/audit.sqlite`; `try` writes nothing; no model call; code and query steps load ast-grep-py and jmespath from the `kmctl[audit]` extra (ADR 0038) |
+| `kmctl audit checks todo`, `try`, `submit`, `run`, `list` | `claims/check_verbs.py`, with `claims/steps.py` (the step DSL and runner), `claims/anchors.py` and `claims/lines.py` (what a claim names and the lines around it), `claims/mutate.py` (the weak bar), `claims/check_instructions.py` and `claims/check_store.py` | only `.kmctl/`: `audit.sqlite`, and its `.gitignore` when missing; `try` writes nothing; no model call; code and query steps load ast-grep-py and jmespath from the `kmctl[audit]` extra (ADR 0038) |
 | `kmctl audit judge` | `judge.py`, with `audit_settings.py` (the per-user `audit.toml`), `tracing.py` (opt-in LangSmith) and `claims/check_store.py` for the state | only the `decisions` table in `.kmctl/audit.sqlite`; the one model call kmctl makes, off until a question is switched on; httpx with tenacity retries from the `kmctl[audit]` extra (ADR 0039) |
-| `kmctl audit ui` | `claims/ui.py` (the server and the page's data), `claims/ui.html` (the page), `claims/feedback.py`, with `claims/check_verbs.py` for each claim's status and `judge.py` for a second opinion | only `.kmctl/audit.sqlite`: the `feedback` and `decisions` tables, and each page load refreshes the stored sections as `kmctl audit claims todo` does; a server on 127.0.0.1 that answers only local Hosts and writes only JSON from its own Origin; a second opinion is the `judge` call, off until a question is switched on (ADR 0041) |
+| `kmctl audit coverage` | `claims/coverage.py`, reading each stored check's last run from `claims/check_store.py` and the code files from `claims/steps.py` | nothing in a repository that has a store; it reads `.kmctl/audit.sqlite` and the tracked files, and creates `.kmctl/` with an empty store only when there is none (ADR 0042) |
+| `kmctl audit ui` | `claims/ui.py` (the server and the page's data), `claims/ui.html` (the page), `claims/feedback.py`, with `claims/check_verbs.py` for each claim's status and `judge.py` for a second opinion | only `.kmctl/audit.sqlite`: the `feedback` and `decisions` tables, and on each page load the `sections` and `claims` tables, which it refreshes as `kmctl audit claims todo` does; a server on 127.0.0.1 that answers only local Hosts and writes only JSON from its own Origin; a second opinion is the `judge` call, off until a question is switched on (ADR 0041) |
 | `kmctl doctor` | `doctor.py`, with `plugin.py` for the hook, MCP entries and lock reader, `antigravity.py` for the folder comparison and `opencode.py` for the OpenCode files | nothing; it reads `apm.yml`, `apm.lock.yaml` and the files it lists, the settings files, `.mcp.json`, `.agents/plugins/kmctl/`, `.opencode/`, `opencode.json` and agy's trust list, and runs only `uv tool run --offline --from apm-cli==0.33.0 apm --version`; `--online` fetches okf's MCP script URL |
 
 The claims flow: `kmctl audit claims todo` cuts each live concept into
@@ -237,12 +238,13 @@ claims list` reads them back. The store's schema moves by ordered steps in
 `PRAGMA user_version` (ADR 0036). `kmctl audit checks` turns stored
 claims into checks: `todo` hands out each claim with its anchors and lines,
 `submit` runs and mutation-tests each check and refuses a weak one, and
-`run` reruns a check only when the files it reads change (ADR 0038).
+`run` reruns a check when the files it reads change or its last run was skipped, and every check with `--all` (ADR 0038).
 `kmctl audit judge` builds a state from the store and asks a decision model,
 when the person switched that question on (ADR 0039). `kmctl audit ui`
 serves a local page where a person gives claims and checks a thumbs up or
 down, a note and their own verdict; open feedback comes back with the next
-`todo` (ADR 0041). The whole pipeline,
+`todo` (ADR 0041). Its code view and `kmctl audit coverage` show which
+lines of code the checks matched (ADR 0042). The whole pipeline,
 with its guard hook and its limits, is [the audit pipeline](audit-pipeline.md).
 
 `kinds.py` holds the one table of document kinds: each kind's front matter
@@ -353,8 +355,9 @@ install kmctl from the action's own checkout.
 
 ## Releases
 
-The version is written once, in `apm/apm.yml`; `pyproject.toml` reads it
-with hatchling's `regex` version source, so `kmctl --version`, the package
+`apm/apm.yml` holds the one version, and `scripts/release.py set` copies
+it into the root, Claude and Antigravity `apm.yml` files; `pyproject.toml`
+reads it from `apm/apm.yml` with hatchling's `regex` version source, so `kmctl --version`, the package
 tag a consumer's `apm.yml` names and a build from a download with no
 `.git` agree (ADR 0012, ADR 0014).
 
@@ -394,7 +397,7 @@ tag a consumer's `apm.yml` names and a build from a download with no
   `kmctl doctor`, `kmctl audit claims todo`, `kmctl audit claims submit`,
   `kmctl audit claims list`, `kmctl audit checks todo`, `kmctl audit checks try`,
   `kmctl audit checks submit`, `kmctl audit checks run`, `kmctl audit checks list`,
-  `kmctl audit judge`, `kmctl audit ui`, `kmctl audit guard`.
+  `kmctl audit judge`, `kmctl audit ui`, `kmctl audit coverage`, `kmctl audit guard`.
 - Modules: `src/kmctl/__init__.py`, `scaffold.py`, `checks.py`,
   `briefing.py`, `review_due.py`, `handoffs.py`, `concepts.py`,
   `docs.py`, `docs_index.py`, `supersede.py`, `mv.py`, `verify.py`, `summary.py` (the

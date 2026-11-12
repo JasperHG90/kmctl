@@ -32,6 +32,8 @@ from pydantic import BaseModel, ConfigDict, Field
 from kmctl.claims import AuditError
 
 MAX_HITS = 30
+#: The most matched spans a step keeps, so a broad pattern cannot bloat the store.
+MAX_SPANS = 200
 INSTALL = "uv tool install --force 'kmctl[audit] @ git+https://github.com/JasperHG90/kmctl@vX.Y.Z'"
 SKIPPED = "skipped: needs kmctl[audit]"
 TEST_DIRS = {
@@ -233,6 +235,14 @@ Step = Annotated[AnyStep, Field(discriminator="op")]
 NEEDS_EXTRA: tuple[type[_Step], ...] = (CodeStep, QueryStep)
 
 
+class Span(BaseModel):
+    """Lines of one file a step matched, 1-based and inclusive."""
+
+    path: str
+    start: int
+    end: int
+
+
 class StepResult(BaseModel):
     """Whether one step held, and what it saw."""
 
@@ -243,6 +253,11 @@ class StepResult(BaseModel):
     skipped: bool = Field(
         default=False,
         description="True when it needs kmctl[audit], which is not installed.",
+    )
+    spans: list[Span] = Field(
+        default_factory=list,
+        description="The lines it matched: grep lines, code nodes, definitions and imports; "
+        "empty for steps that test whole files.",
     )
 
 
@@ -448,8 +463,41 @@ def python_definitions(source: str) -> set[str]:
     return names
 
 
-def find_code(repo: Repository, pattern: str, files: list[str]) -> list[str]:
-    """Where code matching an ast-grep pattern sits in ``files``, as ``path:line: text``.
+def python_definition_lines(source: str, name: str) -> list[tuple[int, int]]:
+    """The first and last line of each function, class or assignment in a Python file that defines ``name``."""
+    found: list[tuple[int, int]] = []
+    for node in ast.walk(ast.parse(source)):
+        if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef):
+            hit = node.name == name
+        elif isinstance(node, ast.Assign | ast.AnnAssign):
+            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+            hit = any(isinstance(t, ast.Name) and t.id == name for t in targets)
+        else:
+            continue
+        if hit:
+            found.append((node.lineno, node.end_lineno or node.lineno))
+    return sorted(found)
+
+
+def python_import_lines(source: str, module: str) -> list[tuple[int, int]]:
+    """The lines of each import statement in a Python file that imports top-level ``module``."""
+    found: list[tuple[int, int]] = []
+    for node in ast.walk(ast.parse(source)):
+        if (
+            isinstance(node, ast.Import)
+            and any(a.name.split(".")[0] == module for a in node.names)
+            or (
+                isinstance(node, ast.ImportFrom)
+                and node.module
+                and node.module.split(".")[0] == module
+            )
+        ):
+            found.append((node.lineno, node.end_lineno or node.lineno))
+    return sorted(found)
+
+
+def find_code(repo: Repository, pattern: str, files: list[str]) -> dict[str, Span]:
+    """Where code matching an ast-grep pattern sits in ``files``: each ``path:line: text`` with the lines its node spans.
 
     A trailing ``, $$$`` run also matches no arguments. Files in a language
     the pattern does not parse in are skipped. In shell and Ruby, a match
@@ -471,7 +519,7 @@ def find_code(repo: Repository, pattern: str, files: list[str]) -> list[str]:
         raise ValueError(f"no source file in a known language among {files[:5]}")
     patterns = {pattern, TRAILING_REST.sub(")", pattern)}
     shell_variables = SINGLE.findall(pattern)
-    hits: dict[str, None] = {}
+    hits: dict[str, Span] = {}
     parses = {
         language: paths
         for language, paths in by_language.items()
@@ -495,8 +543,11 @@ def find_code(repo: Repository, pattern: str, files: list[str]) -> list[str]:
                     first = (
                         node.text().splitlines()[0].strip()[:120] if node.text() else ""
                     )
-                    hits[f"{path}:{node.range().start.line + 1}: {first}"] = None
-    return list(hits)
+                    where = node.range()
+                    hits[f"{path}:{where.start.line + 1}: {first}"] = Span(
+                        path=path, start=where.start.line + 1, end=where.end.line + 1
+                    )
+    return hits
 
 
 def run_step(repo: Repository, step: AnyStep) -> StepResult:
@@ -541,21 +592,24 @@ def _run(repo: Repository, step: AnyStep) -> StepResult:
         raise ValueError(f"no readable tracked file matches {glob!r}")
     if isinstance(step, GrepStep):
         pattern = re.compile(step.pattern)
-        hits = [
-            f"{f}:{n}: {line.strip()[:120]}"
+        matched = [
+            (f, n, line)
             for f in files
             for n, line in enumerate(repo.text(f).splitlines(), 1)
             if pattern.search(line)
         ]
+        hits = [f"{f}:{n}: {line.strip()[:120]}" for f, n, line in matched]
         return StepResult(
             holds=bool(hits) == step.present,
             detail=f"{len(hits)} lines: {hits[:MAX_HITS]}",
+            spans=[Span(path=f, start=n, end=n) for f, n, _ in matched[:MAX_SPANS]],
         )
     if isinstance(step, CodeStep):
         found_code = find_code(repo, step.pattern, files)
         return StepResult(
             holds=bool(found_code),
-            detail=f"{len(found_code)} matches: {found_code[:MAX_HITS]}",
+            detail=f"{len(found_code)} matches: {list(found_code)[:MAX_HITS]}",
+            spans=list(found_code.values())[:MAX_SPANS],
         )
     if isinstance(step, QueryStep):
         jmespath = extra("jmespath")
@@ -571,7 +625,13 @@ def _run(repo: Repository, step: AnyStep) -> StepResult:
             if f.endswith(".py") and step.name in python_definitions(repo.text(f))
         ]
         return StepResult(
-            holds=bool(where) == step.defined, detail=f"defined in {where[:5]}"
+            holds=bool(where) == step.defined,
+            detail=f"defined in {where[:5]}",
+            spans=[
+                Span(path=f, start=a, end=b)
+                for f in where
+                for a, b in python_definition_lines(repo.text(f), step.name)
+            ][:MAX_SPANS],
         )
     importing = [
         f
@@ -581,6 +641,11 @@ def _run(repo: Repository, step: AnyStep) -> StepResult:
     return StepResult(
         holds=bool(importing) == step.imported,
         detail=f"imported by {importing[:5]} of {len(files)} files",
+        spans=[
+            Span(path=f, start=a, end=b)
+            for f in importing
+            for a, b in python_import_lines(repo.text(f), step.module)
+        ][:MAX_SPANS],
     )
 
 

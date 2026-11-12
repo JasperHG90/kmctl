@@ -74,7 +74,8 @@ ADR 0027), `manifesto.md` (the root concept), `decisions/`, `architecture/`, `pr
   or down and a note on either, their own verdict on whether a claim holds,
   and a second opinion from that model. A thumbs down, or a verdict the
   check disagrees with, goes back to the agent with the next `todo`
-  (ADR 0041).
+  (ADR 0041). Its code view, and `kmctl audit coverage`, show which lines
+  of code a check matched, and what share of the code that is (ADR 0042).
 - **An APM package**, `apm/`, which APM installs from the user's `apm.yml`
   entry (ADR 0014, ADR 0021). It holds an
   audit agent with three review skills (architecture, decision log,
