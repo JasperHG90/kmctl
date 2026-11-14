@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "kmctl-to-packages",
-  "plan_hash": "3f7fe085cefc47fb53cd8cfe918e529bcce7b3be40557cf36be845339a96b8e0",
+  "plan_hash": "e00907b0150676b7d33f954e6afabca8ce4a13bb5e410cd408804c69e2e51287",
   "problems": [
     {
       "id": "P1",
@@ -172,7 +172,7 @@
     },
     {
       "id": "O6",
-      "change": "The release workflows build and check kmctl from packages/kmctl",
+      "change": "The release workflows build and check kmctl from packages/kmctl, and CI's starter job follows the moved test",
       "kind": "behaviour",
       "goal": "G3",
       "goal_index": 2,
@@ -187,11 +187,12 @@
       "touches": [
         ".github/workflows/release.yml",
         ".github/workflows/release-tag.yml",
+        ".github/workflows/ci.yml",
         "scripts/check_wheel.py",
         "tests/scripts/test_workflows.py",
         "tests/scripts/test_check_wheel.py"
       ],
-      "checked_by": "`tests/scripts/test_workflows.py` pins `uv build --package kmctl` and the check_wheel pyproject path in both workflows; a Release dry run on the branch passes the build and smoke-test job",
+      "checked_by": "`tests/scripts/test_workflows.py` pins `uv build --package kmctl` and the check_wheel pyproject path in both workflows, and that ci.yml's starter job runs packages/kmctl/tests/test_starter.py (ci-per-package later splits the rest of ci.yml); a Release dry run on the branch passes the build and smoke-test job",
       "seen_by": "operator"
     },
     {
