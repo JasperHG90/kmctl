@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "release-per-package",
-  "plan_hash": "b41e2cb7312cd49a9a1cc51bb9bbbc8d3b004b027a50fd997f069cdd41443e01",
+  "plan_hash": "b820da51e625c7a4c1d68a1b4b9e0f7c233efd8f5235387c45bb506e01ab3862",
   "problems": [
     {
       "id": "P1",
@@ -50,7 +50,7 @@
         "packages/kmaudit/pyproject.toml",
         "uv.lock"
       ],
-      "checked_by": "a test that `scripts/release.py --package kmaudit current` prints the VERSION file's value and the pyproject declares version dynamic with a regex source on that file; `uv lock --check` passes with no kmaudit version line",
+      "checked_by": "a test that `scripts/release.py --package kmaudit current` prints the VERSION file's value, that the file holds `0.1.0.dev0` and `release.py compare '' 0.1.0.dev0` prints `skip` (so the landing push releases nothing), and that the pyproject declares version dynamic with a regex source on that file; `uv lock --check` passes with no kmaudit version line",
       "seen_by": "nobody"
     },
     {
@@ -105,7 +105,7 @@
     },
     {
       "id": "O4",
-      "change": "The Release run takes a package, drafts its notes to a file, and commits that file into the version pull request and its body",
+      "change": "The Release run takes a package, drafts its notes to a file, and commits that file into the version pull request and its body with a Drafted-From trailer",
       "kind": "behaviour",
       "goal": "G2",
       "goal_index": 1,
@@ -123,7 +123,7 @@
         ".github/workflows/release.yml",
         "tests/scripts/test_workflows.py"
       ],
-      "checked_by": "workflow tests that the inputs are `package` (choice kmctl, kmaudit), increment, prerelease, version and dry_run; that resolve passes `--package` and checks the family's tag on origin; that build runs `uv build --package` for the chosen package and the per-package wheel checks; that a draft step writes `release_notes.py` output to the notes file path before the bump step, as its own step a later step can replace; that bump opens `release/TAG`, stages the notes file with every file `release.py set` wrote, and passes the same file to `gh pr create --body-file`; and that a dry run still drafts the notes and shows them in the step summary",
+      "checked_by": "workflow tests that the inputs are `package` (choice kmctl, kmaudit), increment, prerelease, version and dry_run; that resolve passes `--package` and checks the family's tag on origin; that build runs `uv build --package` for the chosen package and the per-package wheel checks; that a notes job, which runs in dry runs too, writes `release_notes.py` output to the notes file as its own step a later step can replace, shows it in the step summary and uploads it as an artifact; that bump needs that job, downloads the artifact, checks out the exact commit the draft was made from, opens `release/TAG` on it, stages the notes file with every file `release.py set` wrote, writes a `Drafted-From: <sha>` trailer in the commit message, and passes a body holding the notes file and the same trailer to `gh pr create --body-file`",
       "seen_by": "operator"
     },
     {
@@ -148,7 +148,7 @@
         ".okf/decisions/0012-releases-come-from-ci.md",
         ".okf/architecture/overview.md"
       ],
-      "checked_by": "workflow tests that the push paths are `apm/apm.yml` and `packages/kmaudit/VERSION`; that the tag job runs once per package (matrix) comparing that package's version before and after; that the step refusing a missing or blank .github/release-notes/TAG.md runs before `git tag -a`; that `gh release create` uses `--notes-file` on that committed file with no call to `release_notes.py` and no `--generate-notes`; that kmctl passes `--latest` and kmaudit `--latest=false`; and that ADR 0012 carries a dated Correction naming the package input, the tag families, the VERSION file and the committed notes file, checked by `tests/scripts/test_release_docs.py`",
+      "checked_by": "workflow tests that the push paths are `apm/apm.yml` and `packages/kmaudit/VERSION`; that the tag job runs once per package (matrix) comparing that package's version before and after; that the step refusing a missing or blank .github/release-notes/TAG.md runs before `git tag -a`; that `gh release create` uses `--notes-file` on that committed file with no call to `release_notes.py` and no `--generate-notes`; that kmctl passes `--latest` and kmaudit `--latest=false`; that a step finds the drafted commit as the parent of the merge's second parent for a two-parent merge, else from the `Drafted-From` trailer of the pushed commit, and, run in bash against a scratch repo, writes a `::warning::` and a step-summary section naming a package commit that landed between the drafted commit and the merge's first parent while the published notes file stays byte for byte the reviewed one; and that ADR 0012 carries a dated Correction naming the package input, the tag families, the VERSION file and the committed notes file, checked by `tests/scripts/test_release_docs.py`",
       "seen_by": "operator"
     }
   ]
