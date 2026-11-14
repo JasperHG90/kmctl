@@ -1,0 +1,309 @@
+ndle, so apm audit --ci passes its lockfile check, and a frozen-install gate now catches the drift Antigravity's patch causes (issue #28). (`antigravity-apm-audit`)
+  D: - License kmctl under MIT (#30)
+  R: - License kmctl under MIT (#30)
+--- response:
+## What changed
+
+- The decision record now tells projects to commit the files the APM and kmctl plugin patch deploys, and to gitignore only apm_modules/. (`commit-apm-installs`)
+- Each GitHub Release now gets notes built from main's history between its tag and the previous one, from a template, instead of GitHub's pull-request list. (`release-notes`)
+- The composite action's inner actions and knowledge-audit.yml's are now pinned to commit SHAs, and the pins are tested. (`action-pin-shas`)
+- The okf-bundle rule now allows a draft decision status, matching the schema and OKF v0.2, and explains how a draft becomes stable. (`decision-draft-status`)
+- kmctl doctor now warns instead of failing for a harness CLI you may not use and for Antigravity trust it cannot see, and its project-scope run now finds an old claude plugin enabled in your user settings file. (`doctor-correct-setups`)
+- kmctl init and update now write the first decision only when .okf/decisions/ holds no decision record, not when no record has its title. (`first-decision-detect`)
+- Four fixes to what kmctl ships into your repository (issues 20 to 23): the hook's install hint, the diagrams rule, the Antigravity rule comment and the block's rules folder. (`consumer-surfaces`)
+- kmctl review due now decides source changed by commit order instead of committer dates, so squash and rebase merges keep a verification, and it now lists a verified concept or docs page whose own text changed after its verification (issues #17, #18). (`review-due-commit-order`)
+- okf's MCP server okf-bundle is now named bundle, so apm audit --ci passes its lockfile check, and a frozen-install gate now catches the drift Antigravity's patch causes (issue #28). (`antigravity-apm-audit`)
+- License kmctl under MIT (#30)
+
+## Other changes
+
+- README: put Install second, right after the introduction
+
+## Install
+
+```sh
+uv tool install git+https://github.com/JasperHG90/kmctl@v0.11.0
+```
+
+In a workflow:
+
+```yaml
+- uses: JasperHG90/kmctl@v0.11.0
+```
+
+**Full diff**: https://github.com/JasperHG90/kmctl/compare/v0.10.0...v0.11.0
+
+===== B v0.11.0 run 3: exit 0, KEPT
+tool calls (0): []
+--- bullets (draft -> rewrite):
+  D: - A decision records that projects commit the files APM and kmctl plugin patch deploy and gitignore only apm_modules/. (`commit-apm-installs`)
+  R: - Projects now commit the files that APM and the kmctl plugin patch deploy, and ignore only `apm_modules/`. (`commit-apm-installs`)
+  D: - Each GitHub Release carries notes built from main's history between its tag and the one before, from a template, instead of GitHub's pull-request list. (`release-notes`)
+  R: - GitHub Releases now include notes generated from the commits between the tag and the previous one using a template, instead of GitHub's pull-request list. (`release-notes`)
+  D: - Pin the composite action's inner actions, and knowledge-audit.yml's, to commit SHAs and test the pins. (`action-pin-shas`)
+  R: - The composite action now pins its inner actions to commit SHAs, with a test that checks the pins. (`action-pin-shas`)
+  D: - The okf-bundle rule allows a draft decision status, as the schema and OKF v0.2 do, and says how a draft becomes stable. (`decision-draft-status`)
+  R: - The okf-bundle rule now accepts a draft decision status, matching the schema and OKF v0.2, and explains how a draft becomes stable. (`decision-draft-status`)
+  D: - kmctl doctor warns instead of failing for a harness CLI this person may not use and for Antigravity trust it cannot see, and its project-scope run finds an old claude plugin enabled in the user settings file. (`doctor-correct-setups`)
+  R: - kmctl doctor now warns instead of failing when a harness CLI isn't in use or it can't see Antigravity trust, and its project-scope run detects an old claude plugin enabled in the user settings file. (`doctor-correct-setups`)
+  D: - kmctl init and update write the first decision only when .okf/decisions/ holds no decision record, not when no record has its title. (`first-decision-detect`)
+  R: - kmctl init and update now write the first decision only when `.okf/decisions/` holds no decision record, not when no record has its title. (`first-decision-detect`)
+  D: - Fix four things kmctl ships into consumer repositories (issues 20 to 23), the hook's install hint, the diagrams rule, the Antigravity rule comment and the block's rules folder. (`consumer-surfaces`)
+  R: - Four fixes to what kmctl ships into consumer repositories: the hook's install hint, the diagrams rule, the Antigravity rule comment and the block's rules folder. (`consumer-surfaces`)
+  D: - kmctl review due decides source changed by commit order instead of committer dates, so squash and rebase merges keep a verification, and lists a verified concept or docs page whose own text changed after its verification (issues #17, #18). (`review-due-commit-order`)
+  R: - kmctl review due now decides whether a source changed by commit order rather than committer dates, so squash and rebase merges keep their verification, and it lists a verified concept or docs page whose own text changed after verification. (`review-due-commit-order`)
+  D: - Rename okf's MCP server okf-bundle to bundle so apm audit --ci passes its lockfile check, and give a frozen-install gate for the drift Antigravity's patch causes (issue #28). (`antigravity-apm-audit`)
+  R: - okf's MCP server is now called `bundle` instead of `okf-bundle`, so `apm audit --ci` passes its lockfile check, and a frozen-install gate catches the drift Antigravity's patch causes. (`antigravity-apm-audit`)
+  D: - License kmctl under MIT (#30)
+  R: - kmctl is now licensed under MIT (#30)
+--- response:
+## What changed
+
+- Projects now commit the files that APM and the kmctl plugin patch deploy, and ignore only `apm_modules/`. (`commit-apm-installs`)
+- GitHub Releases now include notes generated from the commits between the tag and the previous one using a template, instead of GitHub's pull-request list. (`release-notes`)
+- The composite action now pins its inner actions to commit SHAs, with a test that checks the pins. (`action-pin-shas`)
+- The okf-bundle rule now accepts a draft decision status, matching the schema and OKF v0.2, and explains how a draft becomes stable. (`decision-draft-status`)
+- kmctl doctor now warns instead of failing when a harness CLI isn't in use or it can't see Antigravity trust, and its project-scope run detects an old claude plugin enabled in the user settings file. (`doctor-correct-setups`)
+- kmctl init and update now write the first decision only when `.okf/decisions/` holds no decision record, not when no record has its title. (`first-decision-detect`)
+- Four fixes to what kmctl ships into consumer repositories: the hook's install hint, the diagrams rule, the Antigravity rule comment and the block's rules folder. (`consumer-surfaces`)
+- kmctl review due now decides whether a source changed by commit order rather than committer dates, so squash and rebase merges keep their verification, and it lists a verified concept or docs page whose own text changed after verification. (`review-due-commit-order`)
+- okf's MCP server is now called `bundle` instead of `okf-bundle`, so `apm audit --ci` passes its lockfile check, and a frozen-install gate catches the drift Antigravity's patch causes. (`antigravity-apm-audit`)
+- kmctl is now licensed under MIT (#30)
+
+## Other changes
+
+- README: put Install second, right after the introduction
+
+## Install
+
+```sh
+uv tool install git+https://github.com/JasperHG90/kmctl@v0.11.0
+```
+
+In a workflow:
+
+```yaml
+- uses: JasperHG90/kmctl@v0.11.0
+```
+
+**Full diff**: https://github.com/JasperHG90/kmctl/compare/v0.10.0...v0.11.0
+
+===== B v0.10.0 run 1: exit 0, KEPT
+tool calls (0): []
+--- bullets (draft -> rewrite):
+  D: - kmctl stops shipping the PostToolUse summary nudge for all three harnesses and goes back to one hook, the session briefing. (`drop-summary-nudge`)
+  R: - kmctl now installs a single hook, the session briefing, instead of adding a summary prompt after every tool use. (`drop-summary-nudge`)
+--- response:
+## What changed
+
+- kmctl now installs a single hook, the session briefing, instead of adding a summary prompt after every tool use. (`drop-summary-nudge`)
+
+## Other changes
+
+- Give each test run its own uv cache and delete it at the end
+
+## Install
+
+```sh
+uv tool install git+https://github.com/JasperHG90/kmctl@v0.10.0
+```
+
+In a workflow:
+
+```yaml
+- uses: JasperHG90/kmctl@v0.10.0
+```
+
+**Full diff**: https://github.com/JasperHG90/kmctl/compare/v0.9.1...v0.10.0
+
+===== B v0.10.0 run 2: exit 0, KEPT
+tool calls (0): []
+--- bullets (draft -> rewrite):
+  D: - kmctl stops shipping the PostToolUse summary nudge for all three harnesses and goes back to one hook, the session briefing. (`drop-summary-nudge`)
+  R: - kmctl no longer installs the PostToolUse summary nudge in any harness; only the session briefing hook remains. (`drop-summary-nudge`)
+--- response:
+## What changed
+
+- kmctl no longer installs the PostToolUse summary nudge in any harness; only the session briefing hook remains. (`drop-summary-nudge`)
+
+## Other changes
+
+- Give each test run its own uv cache and delete it at the end
+
+## Install
+
+```sh
+uv tool install git+https://github.com/JasperHG90/kmctl@v0.10.0
+```
+
+In a workflow:
+
+```yaml
+- uses: JasperHG90/kmctl@v0.10.0
+```
+
+**Full diff**: https://github.com/JasperHG90/kmctl/compare/v0.9.1...v0.10.0
+
+===== B v0.10.0 run 3: exit 0, KEPT
+tool calls (0): []
+--- bullets (draft -> rewrite):
+  D: - kmctl stops shipping the PostToolUse summary nudge for all three harnesses and goes back to one hook, the session briefing. (`drop-summary-nudge`)
+  R: - kmctl now installs only the session briefing hook and no longer adds the separate summary nudge. (`drop-summary-nudge`)
+--- response:
+## What changed
+
+- kmctl now installs only the session briefing hook and no longer adds the separate summary nudge. (`drop-summary-nudge`)
+
+## Other changes
+
+- Give each test run its own uv cache and delete it at the end
+
+## Install
+
+```sh
+uv tool install git+https://github.com/JasperHG90/kmctl@v0.10.0
+```
+
+In a workflow:
+
+```yaml
+- uses: JasperHG90/kmctl@v0.10.0
+```
+
+**Full diff**: https://github.com/JasperHG90/kmctl/compare/v0.9.1...v0.10.0
+
+===== B v0.9.0 run 1: exit 0, KEPT
+tool calls (0): []
+--- bullets (draft -> rewrite):
+  D: - Deferred hardening from verify-verb, reviewer finding f4 in review round 1. (`verify-verb-reviewer-f4`)
+  R: - Deferred hardening from verify-verb, reviewer finding f4 in review round 1. (`verify-verb-reviewer-f4`)
+  D: - Deferred hardening from verify-verb, reviewer finding f6 in review round 3. (`verify-verb-reviewer-f6`)
+  R: - Deferred hardening from verify-verb, reviewer finding f6 in review round 3. (`verify-verb-reviewer-f6`)
+  D: - The bundle's summary distils what the knowledge says and keeps a whole view of the project, rather than listing the decisions, which the indexes do. (`okf-summary-holistic`)
+  R: - The bundle summary now describes what the knowledge says and keeps a whole view of the project, while the indexes list the individual decisions. (`okf-summary-holistic`)
+  D: - Deferred hardening from apm-distribution, reviewer finding f1 in review round 1. (`apm-distribution-reviewer-f1`)
+  R: - Deferred hardening from apm-distribution, reviewer finding f1 in review round 1. (`apm-distribution-reviewer-f1`)
+  D: - Right after the agent changes a concept in .okf/, a Claude Code PostToolUse hook asks it to update .okf/summary.md or ack it as still right. (`okf-summary-nudge`)
+  R: - In Claude Code, a hook now asks the agent to update .okf/summary.md or confirm it is still accurate right after it changes a concept in .okf/. (`okf-summary-nudge`)
+  D: - Antigravity and OpenCode get the summary nudge right after a tool call changes a concept, through agy's PostToolUse hook and OpenCode's execute.after plugin hook. (`okf-summary-nudge-agy-opencode`)
+  R: - Antigravity and OpenCode now get the same summary nudge right after a tool call changes a concept. (`okf-summary-nudge-agy-opencode`)
+--- response:
+## What changed
+
+- Deferred hardening from verify-verb, reviewer finding f4 in review round 1. (`verify-verb-reviewer-f4`)
+- Deferred hardening from verify-verb, reviewer finding f6 in review round 3. (`verify-verb-reviewer-f6`)
+- The bundle summary now describes what the knowledge says and keeps a whole view of the project, while the indexes list the individual decisions. (`okf-summary-holistic`)
+- Deferred hardening from apm-distribution, reviewer finding f1 in review round 1. (`apm-distribution-reviewer-f1`)
+- In Claude Code, a hook now asks the agent to update .okf/summary.md or confirm it is still accurate right after it changes a concept in .okf/. (`okf-summary-nudge`)
+- Antigravity and OpenCode now get the same summary nudge right after a tool call changes a concept. (`okf-summary-nudge-agy-opencode`)
+
+## Other changes
+
+- docs: name the summary nudge hook in the package descriptions and README
+- test: strip colour codes from the nudge's refusal before matching it
+
+## Install
+
+```sh
+uv tool install git+https://github.com/JasperHG90/kmctl@v0.9.0
+```
+
+In a workflow:
+
+```yaml
+- uses: JasperHG90/kmctl@v0.9.0
+```
+
+**Full diff**: https://github.com/JasperHG90/kmctl/compare/v0.8.0...v0.9.0
+
+===== B v0.9.0 run 2: exit 0, KEPT
+tool calls (0): []
+--- bullets (draft -> rewrite):
+  D: - Deferred hardening from verify-verb, reviewer finding f4 in review round 1. (`verify-verb-reviewer-f4`)
+  R: - Deferred hardening from verify-verb, reviewer finding f4 in review round 1. (`verify-verb-reviewer-f4`)
+  D: - Deferred hardening from verify-verb, reviewer finding f6 in review round 3. (`verify-verb-reviewer-f6`)
+  R: - Deferred hardening from verify-verb, reviewer finding f6 in review round 3. (`verify-verb-reviewer-f6`)
+  D: - The bundle's summary distils what the knowledge says and keeps a whole view of the project, rather than listing the decisions, which the indexes do. (`okf-summary-holistic`)
+  R: - The summary now gives a whole-project view of what the bundle's knowledge says, while the indexes list the individual decisions. (`okf-summary-holistic`)
+  D: - Deferred hardening from apm-distribution, reviewer finding f1 in review round 1. (`apm-distribution-reviewer-f1`)
+  R: - Deferred hardening from apm-distribution, reviewer finding f1 in review round 1. (`apm-distribution-reviewer-f1`)
+  D: - Right after the agent changes a concept in .okf/, a Claude Code PostToolUse hook asks it to update .okf/summary.md or ack it as still right. (`okf-summary-nudge`)
+  R: - In Claude Code, the agent is now asked to update .okf/summary.md or confirm it is still accurate right after it changes a concept in .okf/. (`okf-summary-nudge`)
+  D: - Antigravity and OpenCode get the summary nudge right after a tool call changes a concept, through agy's PostToolUse hook and OpenCode's execute.after plugin hook. (`okf-summary-nudge-agy-opencode`)
+  R: - Antigravity and OpenCode now nudge the agent to update the summary right after a tool call changes a concept. (`okf-summary-nudge-agy-opencode`)
+--- response:
+## What changed
+
+- Deferred hardening from verify-verb, reviewer finding f4 in review round 1. (`verify-verb-reviewer-f4`)
+- Deferred hardening from verify-verb, reviewer finding f6 in review round 3. (`verify-verb-reviewer-f6`)
+- The summary now gives a whole-project view of what the bundle's knowledge says, while the indexes list the individual decisions. (`okf-summary-holistic`)
+- Deferred hardening from apm-distribution, reviewer finding f1 in review round 1. (`apm-distribution-reviewer-f1`)
+- In Claude Code, the agent is now asked to update .okf/summary.md or confirm it is still accurate right after it changes a concept in .okf/. (`okf-summary-nudge`)
+- Antigravity and OpenCode now nudge the agent to update the summary right after a tool call changes a concept. (`okf-summary-nudge-agy-opencode`)
+
+## Other changes
+
+- docs: name the summary nudge hook in the package descriptions and README
+- test: strip colour codes from the nudge's refusal before matching it
+
+## Install
+
+```sh
+uv tool install git+https://github.com/JasperHG90/kmctl@v0.9.0
+```
+
+In a workflow:
+
+```yaml
+- uses: JasperHG90/kmctl@v0.9.0
+```
+
+**Full diff**: https://github.com/JasperHG90/kmctl/compare/v0.8.0...v0.9.0
+
+===== B v0.9.0 run 3: exit 0, KEPT
+tool calls (0): []
+--- bullets (draft -> rewrite):
+  D: - Deferred hardening from verify-verb, reviewer finding f4 in review round 1. (`verify-verb-reviewer-f4`)
+  R: - Deferred hardening from verify-verb, reviewer finding f4 in review round 1. (`verify-verb-reviewer-f4`)
+  D: - Deferred hardening from verify-verb, reviewer finding f6 in review round 3. (`verify-verb-reviewer-f6`)
+  R: - Deferred hardening from verify-verb, reviewer finding f6 in review round 3. (`verify-verb-reviewer-f6`)
+  D: - The bundle's summary distils what the knowledge says and keeps a whole view of the project, rather than listing the decisions, which the indexes do. (`okf-summary-holistic`)
+  R: - The bundle's summary now gives a whole view of the project instead of listing decisions, which the indexes already do. (`okf-summary-holistic`)
+  D: - Deferred hardening from apm-distribution, reviewer finding f1 in review round 1. (`apm-distribution-reviewer-f1`)
+  R: - Deferred hardening from apm-distribution, reviewer finding f1 in review round 1. (`apm-distribution-reviewer-f1`)
+  D: - Right after the agent changes a concept in .okf/, a Claude Code PostToolUse hook asks it to update .okf/summary.md or ack it as still right. (`okf-summary-nudge`)
+  R: - After the agent changes a concept in .okf/, a Claude Code hook now asks it to update .okf/summary.md or confirm the summary is still accurate. (`okf-summary-nudge`)
+  D: - Antigravity and OpenCode get the summary nudge right after a tool call changes a concept, through agy's PostToolUse hook and OpenCode's execute.after plugin hook. (`okf-summary-nudge-agy-opencode`)
+  R: - Antigravity and OpenCode now get the summary nudge right after a tool call changes a concept. (`okf-summary-nudge-agy-opencode`)
+--- response:
+## What changed
+
+- Deferred hardening from verify-verb, reviewer finding f4 in review round 1. (`verify-verb-reviewer-f4`)
+- Deferred hardening from verify-verb, reviewer finding f6 in review round 3. (`verify-verb-reviewer-f6`)
+- The bundle's summary now gives a whole view of the project instead of listing decisions, which the indexes already do. (`okf-summary-holistic`)
+- Deferred hardening from apm-distribution, reviewer finding f1 in review round 1. (`apm-distribution-reviewer-f1`)
+- After the agent changes a concept in .okf/, a Claude Code hook now asks it to update .okf/summary.md or confirm the summary is still accurate. (`okf-summary-nudge`)
+- Antigravity and OpenCode now get the summary nudge right after a tool call changes a concept. (`okf-summary-nudge-agy-opencode`)
+
+## Other changes
+
+- docs: name the summary nudge hook in the package descriptions and README
+- test: strip colour codes from the nudge's refusal before matching it
+
+## Install
+
+```sh
+uv tool install git+https://github.com/JasperHG90/kmctl@v0.9.0
+```
+
+In a workflow:
+
+```yaml
+- uses: JasperHG90/kmctl@v0.9.0
+```
+
+**Full diff**: https://github.com/JasperHG90/kmctl/compare/v0.8.0...v0.9.0
+
+===== SUMMARY
+A {'max_iterations': '40', 'enabled_toolsets': '', 'disabled_toolsets': ''}: kept 15/15; failures {}; runs using tools 9; runs changing checkout 0; flagged reversal bullets 0
+B {'max_iterations': '3', 'enabled_toolsets': '', 'disabled_toolsets': 'browser,clarify,code_execution,delegation,file,memory,project,session_search,skills,terminal,todo,tts,web,vision'}: kept 15/15; failures {}; runs using tools 0; runs changing checkout 0; flagged reversal bullets 0
