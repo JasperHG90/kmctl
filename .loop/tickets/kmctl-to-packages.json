@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "kmctl-to-packages",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 4,
   "review_rounds": 1,
@@ -123,8 +123,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "97efc292a06a3688bd249ce74fe0a35115c061c958ca07658a64d85ab9697e5c",
   "intent": {
@@ -162,8 +162,14 @@
       "to": "verifying",
       "at": "2026-11-14T20:37:47+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-14T20:44:28+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T20:37:49+00:00"
+  "at": "2026-11-14T20:44:28+00:00"
 }
