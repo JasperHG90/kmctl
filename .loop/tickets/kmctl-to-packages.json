@@ -20,7 +20,8 @@
   "worktree": "/home/vscode/workspace.worktrees/kmctl-to-packages",
   "branch": "loop/kmctl-to-packages",
   "stamps": [
-    "1967960450a15cb2fd6c60f6a838ec971a7cb7ebd14044692dcce5ddcac57d15"
+    "1967960450a15cb2fd6c60f6a838ec971a7cb7ebd14044692dcce5ddcac57d15",
+    "261e99c2e676c50ee4c9c2f765ac5baa41768703ee4deffcb527097ff8b69ab5"
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
@@ -171,5 +172,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T20:44:28+00:00"
+  "at": "2026-11-14T20:49:42+00:00"
 }
