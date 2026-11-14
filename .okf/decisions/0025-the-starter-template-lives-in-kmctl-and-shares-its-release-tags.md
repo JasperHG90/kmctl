@@ -10,7 +10,7 @@ status: stable
 sources:
   - resource: "copier.yml"
   - resource: "scripts/release.py"
-  - resource: "tests/test_starter.py"
+  - resource: "packages/kmctl/tests/test_starter.py"
 ---
 
 # ADR 0025: The starter template lives in kmctl and shares its release tags

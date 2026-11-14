@@ -13,12 +13,13 @@ Usage::
     uv run scripts/release.py is-prerelease VERSION
 
 ``apm/apm.yml``, kmctl's APM package, carries the one version, and
-``pyproject.toml`` reads it from there (ADR 0014). APM needs a ``version:`` in
+``packages/kmctl/pyproject.toml`` reads it from there (ADR 0014). APM needs a ``version:`` in
 each apm.yml, so ``set`` writes it into every file in ``APM_FILES``;
 ``current`` refuses when one differs. ``manifest`` prints ``apm/apm.yml``'s
 version alone, for ``release-tag.yml``'s read of the commit before a push,
 where an older commit's copies may disagree. ``set`` also points the six install lines in the docs, and the
-APM how-to's CLI install line, at the tag ``vVERSION``, and moves the starter
+APM how-to's CLI install line, at the tag ``vVERSION``, each kmctl install
+line building from ``packages/kmctl`` (ADR 0044), and moves the starter
 template's ``kmctl_ref`` default in ``copier.yml`` to that tag, so the template
 a release tag carries pins that release (ADR 0025). It points the two install
 hints in the Claude Code hook's ``hooks.json`` at the tag too, so the hook a
@@ -36,7 +37,7 @@ from pathlib import Path
 
 from packaging.version import InvalidVersion, Version
 
-#: The one version source, which pyproject.toml's [tool.hatch.version] reads.
+#: The one version source, which packages/kmctl/pyproject.toml's [tool.hatch.version] reads.
 MANIFEST = Path("apm/apm.yml")
 #: The docs whose install lines ``set`` points at the release tag.
 DOC_FILES = (
@@ -62,18 +63,23 @@ COPIER = Path("copier.yml")
 HOOKS = Path("apm/claude/.apm/hooks/hooks.json")
 #: How many install hints ``HOOKS`` holds.
 HOOK_HINTS = 2
+#: The folder releases after v0.12.1 build kmctl from (ADR 0044); ``set``
+#: writes it after the tag on every install line and hint.
+SUBDIRECTORY = "#subdirectory=packages/kmctl"
 _INSTALL = re.compile(
-    r"^(\s*uv tool install git\+https://github\.com/JasperHG90/kmctl)(@\S+)?$",
+    r"^(\s*uv tool install git\+https://github\.com/JasperHG90/kmctl)(@[^\s#]+)?"
+    r"(#subdirectory=packages/kmctl)?$",
     re.MULTILINE,
 )
-# An install hint in the hook's command, with or without a release tag; the
-# tag stops before the full stop that ends the second hint.
+# An install hint in the hook's command, with or without a release tag and
+# the subdirectory; the tag stops before the full stop that ends the second hint.
 _HOOK_INSTALL = re.compile(
     r"(git\+https://github\.com/JasperHG90/kmctl)(@v\d+\.\d+\.\d+(?:(?:a|b|rc)\d+)?)?"
+    r"(#subdirectory=packages/kmctl)?"
 )
 _USES = re.compile(r"^(\s*- uses: JasperHG90/kmctl)@\S+$", re.MULTILINE)
 # One top-level ``version:`` line, rewritten as text so comments and layout stay;
-# pyproject.toml's [tool.hatch.version] reads the same line.
+# packages/kmctl/pyproject.toml's [tool.hatch.version] reads the same line.
 _APM_VERSION = re.compile(r"^(version: )(.*)$", re.MULTILINE)
 # The ``default:`` line of the top-level ``kmctl_ref:`` question, past its
 # indented help lines.
@@ -162,7 +168,7 @@ def pin_docs(text: str, version: str) -> tuple[str, int]:
     tuple[str, int]
         The new text and how many lines it pinned.
     """
-    text, installs = _INSTALL.subn(rf"\g<1>@v{version}", text)
+    text, installs = _INSTALL.subn(rf"\g<1>@v{version}{SUBDIRECTORY}", text)
     text, uses = _USES.subn(rf"\g<1>@v{version}", text)
     return text, installs + uses
 
@@ -213,7 +219,9 @@ def set_version(repo: Path, version_text: str) -> list[Path]:
         raise ReleaseRefused(
             f"{COPIER} has no kmctl_ref question with a default: line; restore it"
         )
-    hooks, count = _HOOK_INSTALL.subn(rf"\g<1>@v{version}", (repo / HOOKS).read_text())
+    hooks, count = _HOOK_INSTALL.subn(
+        rf"\g<1>@v{version}{SUBDIRECTORY}", (repo / HOOKS).read_text()
+    )
     if count != HOOK_HINTS:
         raise ReleaseRefused(
             f"found {count} of the {HOOK_HINTS} install hints in {HOOKS}; restore the missing one"

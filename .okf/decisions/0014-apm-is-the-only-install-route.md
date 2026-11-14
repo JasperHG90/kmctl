@@ -9,7 +9,7 @@ generated:
 status: stable
 sources:
   - resource: "apm"
-  - resource: "src/kmctl/plugin.py"
+  - resource: "packages/kmctl/src/kmctl/plugin.py"
 ---
 
 # ADR 0014: APM is the only install route

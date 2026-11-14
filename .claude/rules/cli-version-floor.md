@@ -1,5 +1,5 @@
 ---
-paths: ["apm/**", "src/kmctl/**", "pyproject.toml", ".github/workflows/**"]
+paths: ["apm/**", "packages/kmctl/src/kmctl/**", "packages/kmctl/pyproject.toml", ".github/workflows/**"]
 ---
 
 # The package matches the CLI

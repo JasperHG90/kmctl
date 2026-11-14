@@ -74,7 +74,7 @@ your clone:
 
 ```
 Check the `kmctl review due` section of docs/reference/commands.md against
-the code in src/kmctl/ that defines that command: its options, their
+the code in packages/kmctl/src/kmctl/ that defines that command: its options, their
 defaults and what it prints.
 ```
 
@@ -104,8 +104,8 @@ a count by severity:
 
 ```
 Audited the `kmctl review due` section in `docs/reference/commands.md`
-against its implementation in `src/kmctl/__init__.py` and
-`src/kmctl/review_due.py`. The command name, purpose, due conditions for
+against its implementation in `packages/kmctl/src/kmctl/__init__.py` and
+`packages/kmctl/src/kmctl/review_due.py`. The command name, purpose, due conditions for
 docs pages, `--path` option and default, exit code, and JSON payload fields
 all hold. However, the options table documents `--as-json` instead of
 `--json`.
@@ -119,7 +119,7 @@ summary column:
 
 | Severity | Finding | Claim | Contradicted by | Fix |
 |---|---|---|---|---|
-| high | Incorrect JSON option flag name --as-json | `docs/reference/commands.md:257` | `src/kmctl/__init__.py:276`, `src/kmctl/__init__.py:292-298` | Change `--as-json` to `--json` in the options table of the `kmctl review due` section to match the CLI flag defined in Typer. |
+| high | Incorrect JSON option flag name --as-json | `docs/reference/commands.md:257` | `packages/kmctl/src/kmctl/__init__.py:276`, `packages/kmctl/src/kmctl/__init__.py:292-298` | Change `--as-json` to `--json` in the options table of the `kmctl review due` section to match the CLI flag defined in Typer. |
 
 That is the line you broke. Last comes the checked list: what the agent
 compared, what it compared it against and the lines it read. Something that
@@ -128,8 +128,8 @@ example:
 
 ```
 - `--path option name, description, and default value` against
-  src/kmctl/__init__.py:282-291: `docs/reference/commands.md:256`,
-  `src/kmctl/__init__.py:282-291`
+  packages/kmctl/src/kmctl/__init__.py:282-291: `docs/reference/commands.md:256`,
+  `packages/kmctl/src/kmctl/__init__.py:282-291`
 ```
 
 ### 7. Check the finding yourself
@@ -139,7 +139,7 @@ the lines that contradict it, using the numbers in your own report:
 
 ```
 sed -n 257p docs/reference/commands.md
-sed -n 292,298p src/kmctl/__init__.py
+sed -n 292,298p packages/kmctl/src/kmctl/__init__.py
 ```
 
 ```

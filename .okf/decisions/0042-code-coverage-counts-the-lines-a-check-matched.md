@@ -8,10 +8,10 @@ generated:
   at: 2026-11-12T12:30:00Z
 status: draft
 sources:
-  - resource: "src/kmctl/claims/coverage.py"
-  - resource: "src/kmctl/claims/steps.py"
-  - resource: "src/kmctl/claims/ui.py"
-  - resource: "src/kmctl/claims/ui.html"
+  - resource: "packages/kmaudit/src/kmaudit/coverage.py"
+  - resource: "packages/kmaudit/src/kmaudit/steps.py"
+  - resource: "packages/kmaudit/src/kmaudit/ui.py"
+  - resource: "packages/kmaudit/src/kmaudit/ui.html"
 ---
 
 # ADR 0042: Code coverage counts the lines a check matched

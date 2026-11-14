@@ -8,12 +8,12 @@ generated:
   at: 2026-11-11T13:30:41Z
 status: stable
 sources:
-  - resource: "src/kmctl/claims/guard.py"
-  - resource: "src/kmctl/claims/sections.py"
-  - resource: "src/kmctl/claims/check_store.py"
-  - resource: "src/kmctl/claims/check_verbs.py"
-  - resource: "src/kmctl/claims/steps.py"
-  - resource: "src/kmctl/claims/mutate.py"
+  - resource: "packages/kmaudit/src/kmaudit/guard.py"
+  - resource: "packages/kmaudit/src/kmaudit/sections.py"
+  - resource: "packages/kmaudit/src/kmaudit/check_store.py"
+  - resource: "packages/kmaudit/src/kmaudit/check_verbs.py"
+  - resource: "packages/kmaudit/src/kmaudit/steps.py"
+  - resource: "packages/kmaudit/src/kmaudit/mutate.py"
   - resource: "apm/.apm/agents/kmctl-claims-extractor.md"
   - resource: "apm/.apm/agents/kmctl-check-writer.md"
 ---

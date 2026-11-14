@@ -4,8 +4,8 @@
 # Code only: APM writes no agents for Antigravity) and the okf skills, plus
 # okf's MCP server below; ./claude and ./antigravity add each harness's rules
 # and hooks. The version below is the one release version (ADR 0012):
-# scripts/release.py set writes it into every kmctl apm.yml, and pyproject.toml
-# reads it.
+# scripts/release.py set writes it into every kmctl apm.yml, and
+# packages/kmctl/pyproject.toml reads it.
 name: kmctl
 version: 0.12.1
 description: kmctl's skills, audit agent, knowledge rules and session hooks, with the okf skills and MCP server they use.

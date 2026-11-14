@@ -1,15 +1,16 @@
 # /// script
 # requires-python = ">=3.12"
 # ///
-"""Check that a built wheel carries the package data pyproject force-includes: the skills and agents.
+"""Check that a built wheel carries the package data kmctl's pyproject adds: the skills, agents and rules.
 
 Usage::
 
-    uv run scripts/check_wheel.py dist/kmctl-*.whl [--pyproject pyproject.toml]
+    uv run scripts/check_wheel.py dist/kmctl-*.whl [--pyproject packages/kmctl/pyproject.toml]
 
-The expected entries come from ``pyproject.toml``'s wheel ``force-include``
-table, so the release build and the packaging config cannot disagree about
-what a wheel holds (ADR 0001, ADR 0012).
+The expected entries come from the pyproject's ``apm-include`` table, which
+``packages/kmctl/hatch_build.py`` copies into the wheel (ADR 0044), so the
+release build and the packaging config cannot disagree about what a wheel
+holds (ADR 0001, ADR 0012).
 """
 
 from __future__ import annotations
@@ -22,13 +23,16 @@ from pathlib import Path
 
 
 def expected_entries(pyproject: Path) -> list[str]:
-    """Return the wheel paths pyproject force-includes.
+    """Return the wheel paths the pyproject's build hook adds.
 
     A directory source maps to a ``<target>/`` prefix; a file maps to its path.
+    Sources are relative to the repository's ``apm/``, two folders above the
+    package.
     """
     data = tomllib.loads(pyproject.read_text())
-    table = data["tool"]["hatch"]["build"]["targets"]["wheel"]["force-include"]
-    root = pyproject.parent
+    wheel = data["tool"]["hatch"]["build"]["targets"]["wheel"]
+    table = wheel["hooks"]["custom"]["apm-include"]
+    root = pyproject.parent / ".." / ".." / "apm"
     return [
         f"{target}/" if (root / source).is_dir() else str(target)
         for source, target in table.items()
@@ -60,8 +64,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--pyproject",
         type=Path,
-        default=Path("pyproject.toml"),
-        help="the pyproject.toml whose force-include table lists the entries",
+        default=Path("packages/kmctl/pyproject.toml"),
+        help="the pyproject.toml whose apm-include table lists the entries",
     )
     args = parser.parse_args(argv)
     expected = expected_entries(args.pyproject.resolve())

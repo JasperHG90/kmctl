@@ -8,8 +8,8 @@ generated:
   at: 2026-10-17T08:00:22Z
 status: deprecated
 sources:
-  - resource: "src/kmctl/plugin.py"
-  - resource: "src/kmctl/doctor.py"
+  - resource: "packages/kmctl/src/kmctl/plugin.py"
+  - resource: "packages/kmctl/src/kmctl/doctor.py"
 ---
 
 # ADR 0019: kmctl plugin remove uninstalls the package and reinstalls the harnesses kept

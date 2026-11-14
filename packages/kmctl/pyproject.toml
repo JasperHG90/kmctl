@@ -1,0 +1,54 @@
+[project]
+name = "kmctl"
+# apm/apm.yml carries the one version (ADR 0012); see [tool.hatch.version].
+dynamic = ["version"]
+description = "Keep a repository's docs/ and OKF knowledge bundle current, across agent harnesses."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    { name = "Jasper Ginn", email = "jasperginn@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "httpx>=0.28.1",
+    "pydantic>=2.14.1",
+    "pyyaml>=6.0.3",
+    "typer>=0.27.3",
+]
+
+[project.scripts]
+kmctl = "kmctl:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# Read from the APM package, not git, so a build from a download with no .git
+# (as action.yml installs) still has the release version (ADR 0012). An sdist
+# carries the version in PKG-INFO, so it needs no copy of apm.yml.
+[tool.hatch.version]
+source = "regex"
+path = "../../apm/apm.yml"
+pattern = '(?m)^version: (?P<version>[^\s#]+)'
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/kmctl"]
+
+# The skills ship inside the release, so kmctl briefing can list them (ADR 0001),
+# and the agents, which kmctl translates for Antigravity (ADR 0015).
+# hatch_build.py copies each apm/ folder (key) to its wheel path (value), from
+# ../../apm in a checkout or from the sdist's own apm/ (ADR 0044).
+[tool.hatch.build.targets.wheel.hooks.custom]
+apm-include = { ".apm/skills" = "kmctl/_skills", ".apm/agents" = "kmctl/_agents", "claude/.apm/instructions" = "kmctl/_rules" }
+
+# The sdist carries the same folders, so a wheel built from it has them.
+[tool.hatch.build.targets.sdist.force-include]
+"../../apm/.apm/skills" = "apm/.apm/skills"
+"../../apm/.apm/agents" = "apm/.apm/agents"
+"../../apm/claude/.apm/instructions" = "apm/claude/.apm/instructions"
+
+# uv rebuilds kmctl when either file changes, so a local uv run picks up a
+# version bump in apm/apm.yml.
+[tool.uv]
+cache-keys = [{ file = "pyproject.toml" }, { file = "../../apm/apm.yml" }]

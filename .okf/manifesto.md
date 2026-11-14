@@ -44,7 +44,8 @@ ADR 0027), `manifesto.md` (the root concept), `decisions/`, `architecture/`, `pr
 
 ## Parts
 
-- **`kmctl`, a standalone CLI** (ADR 0001). It serves the briefing that is
+- **`kmctl`, a standalone CLI** (ADR 0001), a package in `packages/kmctl/`
+  of this repository beside kmaudit (ADR 0044). It serves the briefing that is
   injected into context, adds what APM cannot install yet for its package
   (`kmctl plugin patch`, ADR 0021) and checks the install (`kmctl doctor`,
   which writes nothing), and does the bookkeeping a
@@ -117,11 +118,11 @@ Each is `planned` until the test named for it passes, then `enforced`.
   fails. In Antigravity kmctl also relays okf's opt-in Stop check, which
   APM's copy cannot run there (ADR 0018); it exits 0 and prints `{}` when
   okf's script is missing or fails. Status: enforced by
-  `tests/test_plugin.py` (the package ships one SessionStart hook; it exits
+  `packages/kmctl/tests/test_plugin.py` (the package ships one SessionStart hook; it exits
   0 without `kmctl` and when it fails) and
-  `tests/test_antigravity.py` (Antigravity's SessionStart hook prints `{}`
+  `packages/kmctl/tests/test_antigravity.py` (Antigravity's SessionStart hook prints `{}`
   and exits 0 in both cases; the okf Stop relay prints `{}` and exits 0
-  without a working script) and `tests/test_opencode.py` (OpenCode's
+  without a working script) and `packages/kmctl/tests/test_opencode.py` (OpenCode's
   briefing plugin adds nothing and throws nothing without a working
   `kmctl`).
 - **I2. The audit agent and the CI audit never write knowledge.** The
@@ -132,7 +133,7 @@ Each is `planned` until the test named for it passes, then `enforced`.
   Status: planned.
 - **I3. The briefing comes from the CLI and fits a budget.** The hook prints
   what `kmctl` prints, so upgrading the CLI updates the briefing, and it
-  stays under 500 tokens (estimated at four characters a token). Status: enforced by `tests/test_briefing.py::test_briefing_token_budget`.
+  stays under 500 tokens (estimated at four characters a token). Status: enforced by `packages/kmctl/tests/test_briefing.py::test_briefing_token_budget`.
 - **I4. kmctl reads OKF as it is.** It uses the fields the OKF v0.2 spec
   defines (`stale_after`, `verified`, `sources`, `status`) plus the extension
   fields an ADR names. There are two: `handoff_key` (ADR 0009) and
@@ -140,7 +141,7 @@ Each is `planned` until the test named for it passes, then `enforced`.
   (ADR 0006). `docs/` pages may carry four of those
   fields (`description`, `stale_after`, `verified`, `sources`) with their OKF
   meaning, and nothing else of OKF: `docs/` is not a bundle (ADR 0022).
-  Status: enforced by `tests/test_okf_fields.py` (written keys, and reads through
+  Status: enforced by `packages/kmctl/tests/test_okf_fields.py` (written keys, and reads through
   `okf.field`).
 
 ## Values
