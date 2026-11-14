@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-mcp",
-  "plan_hash": "4876e54c0a058751f32308644d50acf50206cd74b795b735198c7294864416ee",
+  "plan_hash": "86961df6f435c8ef92f8c960c1ddb2d4438318d7a3512111672cb5fc9fc302d9",
   "problems": [
     {
       "id": "P1",
@@ -34,6 +34,9 @@
         "packages/kmaudit/src/kmaudit/cli.py",
         "packages/kmaudit/src/kmaudit/verbs.py",
         "packages/kmaudit/src/kmaudit/judge.py",
+        "packages/kmaudit/src/kmaudit/anchors.py",
+        "packages/kmaudit/src/kmaudit/namespaces.py",
+        "packages/kmaudit/src/kmaudit/steps.py",
         "packages/kmaudit/pyproject.toml",
         "uv.lock",
         "new:packages/kmaudit/tests/test_mcp.py"
