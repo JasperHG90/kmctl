@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "CI's tests job still runs pytest on `directory: tests` only, so after the move the 190-odd audit tests now under packages/kmaudit/tests no longer run in CI on any pull request. Before this change they ran there, under tests/.",
+      "anchor": ".github/workflows/ci.yml:55",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "PREVIOUS_HASHES carries a store keyed under the old full-text hash over to whatever GUIDANCE hashes to today. If a later ticket changes GUIDANCE and leaves the tuple alone, a store last refreshed before this change keeps answers extracted under the old guidance. Nothing tells the next editor to empty it, and no test fails if they forget.",
+      "anchor": "packages/kmaudit/src/kmaudit/instructions.py:132",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "Text that now says something false about who does the work. kmaudit/__init__.py's docstring still says \"kmctl calls no model here\" and tells agents to submit with \"kmctl audit claims submit\" (split over a line break, so r6's grep misses it). Both SKILL.md files open with \"kmctl calls no model here\". The review page (ui.html) tells users that \"kmctl\" made the trial edits, found nothing to check, read the claims and could not trial-edit.",
+      "anchor": "packages/kmaudit/src/kmaudit/__init__.py:3",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "c82a2043ba2aeb52f349239284c143345980de6179ece326eb9060b876231a30",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T12:45:02+00:00"
+}
