@@ -1,0 +1,6 @@
+warning: `VIRTUAL_ENV=/home/vscode/workspace/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+Using CPython 3.12.16
+Creating virtual environment at: .venv
+   Building kmctl @ file:///tmp/loopctl-spike-3284vium/tree
+      Built kmctl @ file:///tmp/loopctl-spike-3284vium/tree
+Installed 104 packages in 1.44s
