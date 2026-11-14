@@ -9,9 +9,15 @@
     },
     {
       "id": "r2",
-      "behavior": "Claims submitted for the docs namespace are invisible to the .okf namespace and the reverse: `kmaudit claims list` on each shows only its own, and `.kmaudit/` holds one store file per namespace.",
-      "fails_when": "a claim from one namespace is listed, counted or handed out under the other, or both namespaces write one file",
+      "behavior": "Claims submitted with `kmaudit claims submit - --path docs` land in the docs namespace and are invisible to .okf, and the reverse: `kmaudit claims list` on each shows only its own, and `.kmaudit/` holds one store file per namespace; `todo --json` prints its namespace and a next step that spells `--path FOLDER`.",
+      "fails_when": "a claim from one namespace is listed, counted or handed out under the other, both namespaces write one file, submit without the right --path stores into another namespace silently, or todo's JSON lacks the namespace or the --path in its next step",
       "command": "uv run pytest packages/kmaudit/tests/test_namespaces.py -k apart -q"
+    },
+    {
+      "id": "r2b",
+      "behavior": "A path inside an existing namespace narrows it: `kmaudit claims todo docs/sub/page.md` and `kmaudit claims todo docs/sub` mean the docs namespace scoped to those files and open no store of their own; opening a folder that holds an existing namespace is refused on stderr naming that namespace, exit 1.",
+      "fails_when": "a subfolder or file of docs opens a second store, scopes to anything but its own files, or opening the parent of an existing namespace succeeds or exits 0",
+      "command": "uv run pytest packages/kmaudit/tests/test_namespaces.py -k maps -q"
     },
     {
       "id": "r3",
@@ -48,6 +54,12 @@
       "behavior": "The review page (`kmaudit ui FOLDER`) and `kmaudit coverage FOLDER` work for a plain folder namespace: the page shows that folder's pages and their claims, and coverage counts code outside it.",
       "fails_when": "the page data for a docs namespace holds no docs page, or coverage counts a file inside the audited folder as code",
       "command": "uv run pytest packages/kmaudit/tests/test_namespaces.py -k page_and_coverage -q"
+    },
+    {
+      "id": "r9",
+      "behavior": "The extract-claims and write-checks agents and skills pass the folder as --path to every kmaudit verb that writes.",
+      "fails_when": "an agent or skill names `kmaudit claims submit`, `kmaudit checks try` or `kmaudit checks submit` without --path",
+      "command": "uv run pytest tests/test_skills.py -k path -q"
     }
   ]
 }
