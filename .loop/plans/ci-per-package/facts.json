@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "ci-per-package",
-  "plan_hash": "828e91a261742e5a91e601130876ff4bed35e2e10036d73ebc61fa48a1237598",
+  "plan_hash": "2ab1658a3ecccff6f4268a1b5b1c442b09d296d6cdd2b013dee86162e117c467",
   "problems": [
     {
       "id": "P1",
@@ -9,31 +9,23 @@
     },
     {
       "id": "P2",
-      "text": "main's ruleset requires a status check named `tests`, which only that one job reports, so splitting the job without a stand-in blocks every merge"
-    },
-    {
-      "id": "P3",
       "text": "once the tests are split, nothing checks that CI's test jobs and the loop's `uv run pytest` gate still run the same tests"
     }
   ],
   "goals": [
     {
       "id": "G1",
-      "text": "The CI workflow is named `CI` and reports kmctl, kmaudit and the repository's own tests as separate jobs"
+      "text": "The CI workflow is named `CI` and reports kmctl, kmaudit and the repository's own tests as separate jobs, while main's required checks `prek`, `knowledge` and `tests` keep reporting"
     },
     {
       "id": "G2",
-      "text": "Pull requests stay mergeable under the existing ruleset with no settings change"
-    },
-    {
-      "id": "G3",
       "text": "CI and the loop's gates run the same tests, both packages included"
     }
   ],
   "outcomes": [
     {
       "id": "O1",
-      "change": "ci.yml is named CI and runs one pytest job per package plus the repo tests",
+      "change": "ci.yml is named CI, runs one pytest job per package plus the repo tests, and a tests job keeps the required check",
       "kind": "behaviour",
       "goal": "G1",
       "goal_index": 0,
@@ -46,12 +38,12 @@
         "tests/test_ci.py",
         "tests/scripts/test_workflows.py"
       ],
-      "checked_by": "`tests/test_ci.py` pinning the name, the job order and needs (prek, knowledge, then kmctl, kmaudit, repo, starter), and each test job's pytest step and directory; `tests/scripts/test_workflows.py` checking the `repo` job installs just before pytest",
+      "checked_by": "`tests/test_ci.py` pinning the name, the job order and needs (prek, knowledge, then kmctl, kmaudit, repo, starter, and tests after the three test jobs), each test job's pytest step and directory, and the `tests` job's needs, `if: always()`, its failure unless each result is success, and no `name:` on `prek`, `knowledge` or `tests`; `tests/scripts/test_workflows.py` checking the `kmctl` job installs just before pytest and the `starter` job runs packages/kmctl/tests/test_starter.py with `-m integration`",
       "seen_by": "operator"
     },
     {
       "id": "O2",
-      "change": "An aggregate tests job stands in for the required check",
+      "change": "A test pins that the CI test jobs split what the gate collects, by count",
       "kind": "support",
       "goal": "G2",
       "goal_index": 1,
@@ -64,30 +56,9 @@
         0
       ],
       "touches": [
-        ".github/workflows/ci.yml",
         "tests/test_ci.py"
       ],
-      "checked_by": "a test in `tests/test_ci.py` that the `tests` job needs `kmctl`, `kmaudit` and `repo`, runs `if: always()`, fails unless each result is success, and that `prek`, `knowledge` and `tests` carry no `name:`",
-      "seen_by": "operator"
-    },
-    {
-      "id": "O3",
-      "change": "A test pins that the CI test jobs partition what the gate collects",
-      "kind": "support",
-      "goal": "G3",
-      "goal_index": 2,
-      "fixes": "P3",
-      "fixes_index": 2,
-      "needs": [
-        "O1"
-      ],
-      "needs_index": [
-        0
-      ],
-      "touches": [
-        "tests/test_ci.py"
-      ],
-      "checked_by": "a test that collects with the `tests` gate's command from `.loop/config.toml` (and `just test` in `justfile`, both `uv run pytest`), then asserts every collected test sits under exactly one CI test job's directory, every job directory collects at least one test, and both `packages/kmctl` and `packages/kmaudit` appear",
+      "checked_by": "a test that runs `--collect-only` once per CI test job's directory and once with the `tests` gate's command from `.loop/config.toml` (and `just test` in `justfile`, both `uv run pytest`), then asserts each job collects at least one test, the per-job counts sum to the gate's count, the per-job test ids are disjoint and their union equals the gate's ids, and both `packages/kmctl` and `packages/kmaudit` appear",
       "seen_by": "nobody"
     }
   ]
