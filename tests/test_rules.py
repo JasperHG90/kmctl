@@ -24,6 +24,7 @@ PLANNED = (
     "docs/",
     "packages/",
     ".github/workflows/",
+    ".github/release-notes/",
     "action.yml",
 )
 
