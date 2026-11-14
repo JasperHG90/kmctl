@@ -320,9 +320,9 @@ def _installs_just_before(path: Path, job: str, pytest_step: int) -> bool:
     )
 
 
-def test_ci_and_release_test_jobs_install_just() -> None:
-    """The default tier runs the template's just recipes (packages/kmctl/tests/test_starter.py), so both test jobs install just first."""
-    ci = _steps(CI, "tests")
+def test_ci_kmctl_and_release_test_jobs_install_just() -> None:
+    """The default tier runs the template's just recipes (packages/kmctl/tests/test_starter.py), so kmctl's CI job and the release test job install just first."""
+    ci = _steps(CI, "kmctl")
     [ci_pytest] = [
         i for i, s in enumerate(ci) if "toiminnot/actions/pytest@" in s.get("uses", "")
     ]
@@ -331,7 +331,7 @@ def test_ci_and_release_test_jobs_install_just() -> None:
         i for i, s in enumerate(release) if s.get("run") == "uv run pytest"
     ]
 
-    assert _installs_just_before(CI, "tests", ci_pytest)
+    assert _installs_just_before(CI, "kmctl", ci_pytest)
     assert _installs_just_before(RELEASE, "test", release_pytest)
 
 
