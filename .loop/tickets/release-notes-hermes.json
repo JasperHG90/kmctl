@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "release-notes-hermes",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
@@ -82,8 +82,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "213a6358e28669d2d88b5c36be82ebd299210ce3d217b988cf86fec3a4264a26",
   "intent": {
@@ -115,8 +115,14 @@
       "to": "verifying",
       "at": "2026-11-14T22:05:49+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-14T22:10:49+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T22:05:50+00:00"
+  "at": "2026-11-14T22:10:49+00:00"
 }
