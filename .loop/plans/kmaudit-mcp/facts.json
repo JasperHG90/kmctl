@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-mcp",
-  "plan_hash": "4a3568e1f1e469705f68021f706561e8ce8463a9fa4a7af4b032b641237c55ef",
+  "plan_hash": "4876e54c0a058751f32308644d50acf50206cd74b795b735198c7294864416ee",
   "problems": [
     {
       "id": "P1",
@@ -33,11 +33,12 @@
         "new:packages/kmaudit/src/kmaudit/mcp_server.py",
         "packages/kmaudit/src/kmaudit/cli.py",
         "packages/kmaudit/src/kmaudit/verbs.py",
+        "packages/kmaudit/src/kmaudit/judge.py",
         "packages/kmaudit/pyproject.toml",
         "uv.lock",
         "new:packages/kmaudit/tests/test_mcp.py"
       ],
-      "checked_by": "a test that starts `kmaudit mcp` through the SDK's stdio client in a fixture repository, lists the tools, runs claims_todo, claims_submit and claims_list for a namespace, gets a refused submit back as a tool error naming the fix, and that a default claims_todo result on a 200-section folder stays under 25,000 tokens (bytes / 4)",
+      "checked_by": "a test that starts `kmaudit mcp` through the SDK's stdio client in a fixture repository, lists the tools, runs claims_todo, claims_submit and claims_list for a namespace, gets an unknown folder back as a tool error naming the fix and a mixed submit batch back as a result listing what it refused, and that a default claims_todo result on a 200-section folder stays under 25,000 tokens (bytes / 4)",
       "seen_by": "operator"
     },
     {
