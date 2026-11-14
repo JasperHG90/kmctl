@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "release-skill",
-  "stage": "building",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 0,
@@ -129,8 +129,14 @@
       "to": "building",
       "at": "2026-11-14T22:21:55+00:00",
       "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-14T22:30:13+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T22:30:11+00:00"
+  "at": "2026-11-14T22:30:13+00:00"
 }
