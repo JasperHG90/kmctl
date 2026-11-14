@@ -74,6 +74,7 @@ def repository_root(path: Path) -> Path:
     try:
         out = subprocess.run(
             ["git", "-C", str(start), "rev-parse", "--show-toplevel"],
+            stdin=subprocess.DEVNULL,
             capture_output=True,
             text=True,
             check=True,

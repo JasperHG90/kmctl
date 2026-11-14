@@ -13,11 +13,13 @@ imported only when a question is asked.
 
 import asyncio
 import hashlib
+import importlib.util
 import json
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Any
+from pathlib import Path
+from typing import Any, cast
 
 import httpx
 from pydantic import BaseModel, Field, ValidationError
@@ -487,3 +489,79 @@ async def judge(
             raise r
         out.append(r)
     return out
+
+
+class JudgeEntry(BaseModel):
+    """One id's outcome: its judgement, or why it got none."""
+
+    id: str = Field(description="The check or claim id asked about.")
+    judgement: Judgement | None = Field(
+        default=None, description="The answer, when there is one."
+    )
+    error: str | None = Field(
+        default=None, description="Why this id got no answer, with the fix."
+    )
+
+
+class JudgeResult(BaseModel):
+    """What ``run_judge`` answers: one entry per id, in the order asked."""
+
+    entries: list[JudgeEntry]
+
+
+async def run_judge(
+    folder: Path,
+    question: str,
+    ids: list[str],
+    lines: str = "",
+    config: Path | None = None,
+) -> JudgeResult:
+    """Check the question, load the settings and ask it about each id in the namespace ``folder`` names.
+
+    ``kmaudit judge`` and the MCP server's ``judge`` tool both await this.
+
+    Raises
+    ------
+    AuditError
+        When the question is unknown or off, the claim question gets other
+        than one id, a needed library is missing, the settings do not read,
+        or ``folder`` names no namespace; the message names the fix.
+    sqlite3.Error
+        When the store cannot be read.
+    """
+    from kmaudit.sections import resolve_target
+    from kmaudit.settings import QUESTIONS, load, settings_path
+    from kmaudit.tracing import tracing_on
+
+    if question not in QUESTIONS:
+        raise AuditError(f"unknown question {question!r}; use failure, claim or link")
+    if question == "claim" and len(ids) != 1:
+        raise AuditError(
+            "the claim question takes one claim id, with its lines on stdin"
+        )
+    if importlib.util.find_spec("tenacity") is None:
+        raise AuditError(
+            f"kmaudit judge needs tenacity, which kmaudit installs; reinstall it: {INSTALL}"
+        )
+    if tracing_on() and importlib.util.find_spec("langsmith") is None:
+        raise AuditError(
+            f"LANGSMITH_TRACING=true needs langsmith from the kmaudit[tracing] extra; {INSTALL}"
+        )
+    settings = load(config)
+    asked = cast(Question, question)
+    if not settings.decisions.question(asked).enabled:
+        raise AuditError(
+            f"the {question} question is off; switch it on under [decisions.{question}] "
+            f"(enabled, provider, model) in {settings.source or settings_path(config)}"
+        )
+    target = resolve_target(folder)
+    with Store(target.root, target.namespace) as store:
+        results = await judge(store, settings, asked, ids, lines)
+    return JudgeResult(
+        entries=[
+            JudgeEntry(id=i, judgement=r)
+            if isinstance(r, Judgement)
+            else JudgeEntry(id=i, error=str(r))
+            for i, r in zip(ids, results, strict=True)
+        ]
+    )

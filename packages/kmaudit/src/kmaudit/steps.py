@@ -285,6 +285,7 @@ class Repository:
         try:
             out = subprocess.run(
                 ["git", "-C", str(root), "ls-files", "-z"],
+                stdin=subprocess.DEVNULL,
                 capture_output=True,
                 text=True,
                 check=True,
@@ -433,6 +434,7 @@ class Repository:
             done = subprocess.run(
                 [*run, "--help"],
                 cwd=self.root,
+                stdin=subprocess.DEVNULL,
                 capture_output=True,
                 text=True,
                 env=env,

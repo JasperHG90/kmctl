@@ -23,10 +23,11 @@ Every command takes `--help`; every command that prints results takes
 | `kmaudit namespaces` | List the repository's namespaces: each audited folder with its counts. |
 | `kmaudit briefing` | Print each namespace's audit state and the next step, changing nothing. |
 | `kmaudit guard` | Allow a Bash call only when it is one `kmaudit` command, as a PreToolUse hook. |
+| `kmaudit mcp` | Serve the verbs as MCP tools over stdio, for a harness that speaks MCP. |
 
 ## `kmaudit claims todo`
 
-`kmaudit claims todo [PATH] [--limit N] [--json]`
+`kmaudit claims todo [PATH] [--limit N] [--brief] [--json]`
 
 List the folder's sections that have no claims extracted for their current
 text. `PATH` is the folder of markdown docs to audit, or a folder or page
@@ -51,6 +52,7 @@ current key.
 | Option | Meaning |
 |---|---|
 | `--limit N` | Hand out at most N sections; the counts still cover all. |
+| `--brief` | Leave `instructions` out of `--json` (and any key whose value is null), for the rounds after the first. |
 | `--json` | One JSON object: `instructions` (once), `counts` (`up_to_date`, `pending`, `new`, `changed`, `removed`), `concepts` (each concept with pending sections: `concept`, `path`, `sections`, beyond `--limit` too), `sections` (each with `id`, `key`, `concept`, `type`, `status`, `title`, `section`, `sentences` as `n` and `text`, `earlier`, `corrections`; a correction section's `corrections` holds only the corrections after it), `namespace` and `next`, which spells `--path NAMESPACE`. |
 
 Without `--json` it prints the counts, a `pending FILE  (N sections)` line
@@ -321,6 +323,49 @@ agents' instructions hold the same rule.
 | Option | Meaning |
 |---|---|
 | `--allow GROUP` | The `kmaudit` group the agent may run: `claims` or `checks`. Anything else exits 2. |
+
+## `kmaudit mcp`
+
+`kmaudit mcp`
+
+Serve kmaudit's verbs as the tools of an MCP server over stdio. A harness
+that speaks MCP starts it and talks to it over stdin and stdout; you do not
+run it by hand. The [README](../README.md#mcp-server) says how to add it to
+Claude Code, Codex, Antigravity and a LangGraph agent.
+
+Every tool takes `folder`, the namespace, as the CLI takes its path:
+absolute, or relative to the directory the harness starts the server in.
+Pass an absolute path when the harness may start the server outside the
+repository. Each tool returns the JSON the matching verb prints with
+`--json`. A call refused as a whole (a folder that does not exist, answers
+that are not JSON) comes back as a tool error whose text is the verb's
+refusal line, naming the fix, and the server keeps running. A submit that
+stores some answers and refuses others is not an error: its result lists
+each refused answer under `refused`, with the fix. The verbs run in a
+worker thread, except `judge`, which awaits its model calls on the event
+loop; every subprocess they start gets no stdin, since stdin
+carries the MCP messages.
+
+| Tool | Arguments | Same as |
+|---|---|---|
+| `namespaces` | `folder` (default `.`) | `kmaudit namespaces --json` |
+| `claims_todo` | `folder`, `limit` (default 5), `brief` | `kmaudit claims todo --limit 5 --json` |
+| `claims_submit` | `folder`, `answers` (a list of section answers, or its JSON text), `by` | `kmaudit claims submit --path FOLDER --json` |
+| `claims_list` | `folder`, `kind`, `claims` | `kmaudit claims list --json` |
+| `checks_todo` | `folder`, `limit` (default 5), `brief` | `kmaudit checks todo --limit 5 --json` |
+| `checks_try` | `folder`, `answers` | `kmaudit checks try --path FOLDER --json` |
+| `checks_submit` | `folder`, `answers`, `by` | `kmaudit checks submit --path FOLDER --json` |
+| `checks_run` | `folder`, `all` | `kmaudit checks run --json` |
+| `checks_list` | `folder`, `status` | `kmaudit checks list --json` |
+| `coverage` | `folder` | `kmaudit coverage --json` |
+| `judge` | `folder`, `question` (`failure`, `claim` or `link`), `ids`, `lines` (the claim question's lines) | `kmaudit judge --json`, but one entry per id: `{entries: [{id, judgement}` or `{id, error}]}` |
+
+The todo tools hand out 5 items unless given `limit`, so one result stays
+well under a harness's limit on tool output (Claude Code warns past about
+25,000 tokens). Pass `brief` after the first round to leave out the
+instructions and answer schema the agent already has. `checks_run` can take
+minutes on a large folder; raise the harness's tool timeout if it gives up
+first.
 
 ## `kmaudit judge`
 
