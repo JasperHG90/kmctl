@@ -141,7 +141,10 @@
   "plan_hash": "e5a42ec8021f7487f5b571378a515eafc1aa7b6b42710d0554036dfaaffa9211",
   "intent": {
     "epic": "docs",
-    "depends_on": [],
+    "depends_on": [
+      "audit-agent-and-skills",
+      "ci-audit"
+    ],
     "priority": 13
   },
   "history": [
@@ -188,6 +191,6 @@
       "by": "done"
     }
   ],
-  "by": "process:loopctl/2.0.1.dev86+g9641fa018.d20261015",
-  "at": "2026-10-15T13:43:08+00:00"
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T11:30:29+00:00"
 }

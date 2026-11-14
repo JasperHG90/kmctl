@@ -10,3 +10,4 @@
 {"at": "2026-10-19T08:09:54+00:00", "dispatched_at": "2026-10-19T08:08:41+00:00", "kind": "round-close", "n": 1, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-19T08:09:40+00:00"}}
 {"at": "2026-10-19T08:10:04+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "26e767d0154377f3f04c3a36b8578db72a0f25d8"}
 {"at": "2026-10-19T08:12:46+00:00", "branch": "loop/commit-apm-installs", "kind": "land", "schema_version": "1.0", "sha": "4487cc8eba6ca34b6001dd9a587c1bbdf10ca76c"}
+{"at": "2026-11-14T11:30:31+00:00", "by": "reconcile", "kind": "state-write", "schema_version": "1.0", "stage": "done"}

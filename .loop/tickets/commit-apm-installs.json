@@ -73,7 +73,7 @@
   "intent": {
     "epic": null,
     "depends_on": [],
-    "priority": null
+    "priority": 2
   },
   "history": [
     {
@@ -107,6 +107,6 @@
       "by": "done"
     }
   ],
-  "by": "process:loopctl/2.2.1.dev16+g27435b040.d20261017",
-  "at": "2026-10-19T08:10:04+00:00"
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T11:30:29+00:00"
 }

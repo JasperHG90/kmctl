@@ -200,7 +200,7 @@
   },
   "plan_hash": "9b29ec64bb3d2b6ce4b3e78097e04021104bc4292fef0630c8e289f35e16d3a7",
   "intent": {
-    "epic": null,
+    "epic": "knowledge",
     "depends_on": [],
     "priority": null
   },
@@ -272,6 +272,6 @@
       "by": "done"
     }
   ],
-  "by": "process:loopctl/2.2.1.dev16+g27435b040.d20261017",
-  "at": "2026-10-17T21:57:32+00:00"
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T11:30:31+00:00"
 }

@@ -19,3 +19,4 @@
 {"at": "2026-10-15T08:35:53+00:00", "dispatched_at": "2026-10-15T08:34:55+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-15T08:35:37+00:00"}}
 {"at": "2026-10-15T08:36:06+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "c881717555c118de291269872b141d59d391008a"}
 {"at": "2026-10-15T08:36:12+00:00", "branch": "loop/adapt-copied-rules", "kind": "land", "schema_version": "1.0", "sha": "fa3602cd67f1b0c33968e281de5d9b600e03ec3e"}
+{"at": "2026-11-14T11:30:31+00:00", "by": "reconcile", "kind": "state-write", "schema_version": "1.0", "stage": "done"}

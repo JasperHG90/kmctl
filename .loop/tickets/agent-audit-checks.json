@@ -31,8 +31,10 @@
   "round": null,
   "plan_hash": "ff71f4027436621fa3e0d5edcd21afcb6f08c9e12bc301fe6b33a13fb063c7ac",
   "intent": {
-    "epic": null,
-    "depends_on": [],
+    "epic": "agent-audit",
+    "depends_on": [
+      "agent-audit-claims"
+    ],
     "priority": null
   },
   "history": [
@@ -44,5 +46,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-11T08:22:17+00:00"
+  "at": "2026-11-14T11:30:28+00:00"
 }

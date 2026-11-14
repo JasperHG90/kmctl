@@ -140,7 +140,9 @@
   "plan_hash": "a5195df492775fa3699e0074010c8f79c76466b5f62422a96fdde5173b9a328c",
   "intent": {
     "epic": null,
-    "depends_on": [],
+    "depends_on": [
+      "antigravity-rules"
+    ],
     "priority": null
   },
   "history": [
@@ -187,6 +189,6 @@
       "by": "done"
     }
   ],
-  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-17T07:51:27+00:00"
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T11:30:29+00:00"
 }
