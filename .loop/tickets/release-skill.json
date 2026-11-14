@@ -3,7 +3,7 @@
   "slug": "release-skill",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 1,
+  "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -85,9 +85,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 1,
-    "binds": "a6d479c861ad43f002679b46d99be49bcc4da41c1443ff4d54695eb9b544ea89",
-    "started_at": "2026-11-14T17:47:24+00:00",
+    "n": 2,
+    "binds": "59daf4df99fedbc63de03bc6ccbc47d39bd6ae305fafcab0c12421bf2bf164f6",
+    "started_at": "2026-11-14T17:50:48+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -100,10 +100,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "a6d479c861ad43f002679b46d99be49bcc4da41c1443ff4d54695eb9b544ea89",
+  "plan_hash": "59daf4df99fedbc63de03bc6ccbc47d39bd6ae305fafcab0c12421bf2bf164f6",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -118,5 +118,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T17:50:46+00:00"
+  "at": "2026-11-14T17:50:48+00:00"
 }
