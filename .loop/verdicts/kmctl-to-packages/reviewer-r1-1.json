@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The plan gives the root tests/ its own small conftest with the autouse fixtures its tests still need (the per-run uv cache, KMCTL_PINNED). None was added. _uv_cache now lives only in packages/kmctl/tests/conftest.py, so the root integration tests that run uv (tests/scripts/test_check_wheel.py package_build, test_smoke_wheel.py, test_release.py's _build) write to the shared uv cache whenever they run without a kmctl test in the same session, which is the growth that fixture exists to stop.",
+      "anchor": "tests/",
+      "category": "missing",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "1967960450a15cb2fd6c60f6a838ec971a7cb7ebd14044692dcce5ddcac57d15",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T20:44:07+00:00"
+}
