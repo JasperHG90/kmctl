@@ -3,8 +3,8 @@
   "rows": [
     {
       "id": "r1",
-      "behavior": "The skill .claude/skills/release/SKILL.md is named release, every -f KEY= it names is a release.yml input, its package values match that input's options, and every path it cites exists.",
-      "fails_when": "the name differs, an input or package is made up, or a cited path is missing",
+      "behavior": "The skill .claude/skills/release/SKILL.md is named release, every -f KEY= it names is a release.yml input, its package values match that input's options, and every path it cites exists. A cited path holding a <tag> or <package> placeholder matches as a glob.",
+      "fails_when": "the name differs, an input or package is made up, or a cited path is missing, or a placeholder path's folder is missing",
       "command": "uv run pytest tests/test_release_skill.py -q"
     },
     {
@@ -15,9 +15,15 @@
     },
     {
       "id": "r3",
-      "behavior": ".claude/rules/releases.md keeps the no --admin rule and every-release-has-notes, reworded for notes reviewed in the pull request, and names .claude/skills/release/.",
-      "fails_when": "a rule is missing, it still says to regenerate notes by hand after publishing as the only path, or it does not name the skill",
+      "behavior": ".claude/rules/releases.md keeps the no --admin rule and every-release-has-notes, reworded so notes are reviewed in the pull request and a gap after publish is added by hand to the published Release (gh release edit --notes-file) and the committed .github/release-notes/TAG.md, keeping the reviewed text, with scripts/release_notes.py fixed when the draft missed a change; it names .claude/skills/release/.",
+      "fails_when": "a rule is missing, it says to regenerate published notes from the script, it omits either the Release or the committed file, or it does not name the skill",
       "command": "uv run pytest tests/test_rules.py tests/test_release_skill.py -k rule -q"
+    },
+    {
+      "id": "r4",
+      "behavior": "After the merge the skill watches the release-tag run (gh run watch / gh run view) and reads its ::warning:: or step summary naming late commits; its gap step adds missing entries by hand to both gh release edit and the committed notes file, and never regenerates published notes.",
+      "fails_when": "the skill never names the release-tag run or its warning, or its gap step regenerates notes or edits only one of the Release and the file",
+      "command": "uv run pytest tests/test_release_skill.py -k \"release_tag or gap\" -q"
     }
   ]
 }

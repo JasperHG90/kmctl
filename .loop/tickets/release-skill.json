@@ -22,16 +22,16 @@
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
-    "hash": "309c4f450a90e742c38aedc3fd96c0f883ba92354111cfb7c245d1e5f6217e3b",
-    "at": "2026-11-14T17:47:17+00:00"
+    "hash": "1556ad7b5827b674b8eb309c027849f5307d54d534b913866a0bbd4b04e2168c",
+    "at": "2026-11-14T17:50:46+00:00"
   },
   "delegation": null,
   "budget_base": null,
   "signed_rows": [
     {
       "id": "r1",
-      "behavior": "The skill .claude/skills/release/SKILL.md is named release, every -f KEY= it names is a release.yml input, its package values match that input's options, and every path it cites exists.",
-      "fails_when": "the name differs, an input or package is made up, or a cited path is missing",
+      "behavior": "The skill .claude/skills/release/SKILL.md is named release, every -f KEY= it names is a release.yml input, its package values match that input's options, and every path it cites exists. A cited path holding a <tag> or <package> placeholder matches as a glob.",
+      "fails_when": "the name differs, an input or package is made up, or a cited path is missing, or a placeholder path's folder is missing",
       "command": "uv run pytest tests/test_release_skill.py -q",
       "judgment": false
     },
@@ -44,13 +44,42 @@
     },
     {
       "id": "r3",
-      "behavior": ".claude/rules/releases.md keeps the no --admin rule and every-release-has-notes, reworded for notes reviewed in the pull request, and names .claude/skills/release/.",
-      "fails_when": "a rule is missing, it still says to regenerate notes by hand after publishing as the only path, or it does not name the skill",
+      "behavior": ".claude/rules/releases.md keeps the no --admin rule and every-release-has-notes, reworded so notes are reviewed in the pull request and a gap after publish is added by hand to the published Release (gh release edit --notes-file) and the committed .github/release-notes/TAG.md, keeping the reviewed text, with scripts/release_notes.py fixed when the draft missed a change; it names .claude/skills/release/.",
+      "fails_when": "a rule is missing, it says to regenerate published notes from the script, it omits either the Release or the committed file, or it does not name the skill",
       "command": "uv run pytest tests/test_rules.py tests/test_release_skill.py -k rule -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "After the merge the skill watches the release-tag run (gh run watch / gh run view) and reads its ::warning:: or step summary naming late commits; its gap step adds missing entries by hand to both gh release edit and the committed notes file, and never regenerates published notes.",
+      "fails_when": "the skill never names the release-tag run or its warning, or its gap step regenerates notes or edits only one of the Release and the file",
+      "command": "uv run pytest tests/test_release_skill.py -k \"release_tag or gap\" -q",
       "judgment": false
     }
   ],
-  "resigns": [],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+      "reason": "plan round 1: gaps after publish are added by hand to the Release and the committed file, and the skill reads release-tag's late-commit warning",
+      "diff": {
+        "added": [
+          "r4"
+        ],
+        "removed": [],
+        "changed": {
+          "r1": [
+            "behavior",
+            "fails_when"
+          ],
+          "r3": [
+            "behavior",
+            "fails_when"
+          ]
+        }
+      },
+      "at": "2026-11-14T17:50:46+00:00"
+    }
+  ],
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
@@ -89,5 +118,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T17:50:21+00:00"
+  "at": "2026-11-14T17:50:46+00:00"
 }
