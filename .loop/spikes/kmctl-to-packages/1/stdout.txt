@@ -1,0 +1,31 @@
+source /tmp/loopctl-spike-d304qq1g/tree at af95432c; uv 0.13.7 (aarch64-unknown-linux-gnu)
+
+== plain
+  a sdist->wheel: FAIL build: FileNotFoundError: Forced include not found: /tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-k2p/k2p-builds-q0uc1quh/uv-cache/sdists-v10/apm/.apm/agents
+  b wheel: PASS built .gitignore,kmctl-0.99.0-py3-none-any.whl; wheel holds 3/3 of _skills,_agents,_rules; check_wheel=0 (check_wheel: kmctl-0.99.0-py3-none-any.whl holds kmctl/_skills/, kmctl/_agents/, kmctl/_rules/); smoke_wheel=0 (smoke_wheel: kmctl-0.99.0-py3-none-any.whl installs, reports 0.99.0, holds its skills)
+  c git subdir: PASS version='kmctl 0.99.0'; payload=0 (/tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-k2p/k2p-builds-q0uc1quh/plain/tools-c/tools/kmctl/lib/python3.12/site-packages/kmctl True)
+  d archive dir: PASS version='kmctl 0.99.0'; payload=0 (/tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-k2p/k2p-builds-q0uc1quh/plain/tools-d/tools/kmctl/lib/python3.12/site-packages/kmctl True)
+
+== sdist
+  a sdist->wheel: FAIL build: FileNotFoundError: Forced include not found: /tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-k2p/k2p-builds-q0uc1quh/uv-cache/sdists-v10/apm/.apm/agents
+  b wheel: PASS built .gitignore,kmctl-0.99.0-py3-none-any.whl; wheel holds 3/3 of _skills,_agents,_rules; check_wheel=0 (check_wheel: kmctl-0.99.0-py3-none-any.whl holds kmctl/_skills/, kmctl/_agents/, kmctl/_rules/); smoke_wheel=0 (smoke_wheel: kmctl-0.99.0-py3-none-any.whl installs, reports 0.99.0, holds its skills)
+  c git subdir: PASS version='kmctl 0.99.0'; payload=0 (/tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-k2p/k2p-builds-q0uc1quh/sdist/tools-c/tools/kmctl/lib/python3.12/site-packages/kmctl True)
+  d archive dir: PASS version='kmctl 0.99.0'; payload=0 (/tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-k2p/k2p-builds-q0uc1quh/sdist/tools-d/tools/kmctl/lib/python3.12/site-packages/kmctl True)
+
+== hook
+  a sdist->wheel: FAIL built .gitignore,kmctl-0.99.0-py3-none-any.whl,kmctl-0.99.0.tar.gz; sdist has 35 apm/ files; wheel holds 3/3 of _skills,_agents,_rules; check_wheel=1 (KeyError: 'force-include'); smoke_wheel=0 (smoke_wheel: kmctl-0.99.0-py3-none-any.whl installs, reports 0.99.0, holds its skills)
+  b wheel: FAIL built .gitignore,kmctl-0.99.0-py3-none-any.whl; wheel holds 3/3 of _skills,_agents,_rules; check_wheel=1 (KeyError: 'force-include'); smoke_wheel=0 (smoke_wheel: kmctl-0.99.0-py3-none-any.whl installs, reports 0.99.0, holds its skills)
+  c git subdir: PASS version='kmctl 0.99.0'; payload=0 (/tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-k2p/k2p-builds-q0uc1quh/hook/tools-c/tools/kmctl/lib/python3.12/site-packages/kmctl True)
+  d archive dir: PASS version='kmctl 0.99.0'; payload=0 (/tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-k2p/k2p-builds-q0uc1quh/hook/tools-d/tools/kmctl/lib/python3.12/site-packages/kmctl True)
+
+== symlink
+  a sdist->wheel: PASS built .gitignore,kmctl-0.99.0-py3-none-any.whl,kmctl-0.99.0.tar.gz; sdist has 43 apm/ files; wheel holds 3/3 of _skills,_agents,_rules; check_wheel=0 (check_wheel: kmctl-0.99.0-py3-none-any.whl holds kmctl/_skills/, kmctl/_agents/, kmctl/_rules/); smoke_wheel=0 (smoke_wheel: kmctl-0.99.0-py3-none-any.whl installs, reports 0.99.0, holds its skills)
+  b wheel: PASS built .gitignore,kmctl-0.99.0-py3-none-any.whl; wheel holds 3/3 of _skills,_agents,_rules; check_wheel=0 (check_wheel: kmctl-0.99.0-py3-none-any.whl holds kmctl/_skills/, kmctl/_agents/, kmctl/_rules/); smoke_wheel=0 (smoke_wheel: kmctl-0.99.0-py3-none-any.whl installs, reports 0.99.0, holds its skills)
+  c git subdir: PASS version='kmctl 0.99.0'; payload=0 (/tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-k2p/k2p-builds-q0uc1quh/symlink/tools-c/tools/kmctl/lib/python3.12/site-packages/kmctl True)
+  d archive dir: PASS version='kmctl 0.99.0'; payload=0 (/tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-k2p/k2p-builds-q0uc1quh/symlink/tools-d/tools/kmctl/lib/python3.12/site-packages/kmctl True)
+
+== summary
+  plain: 3/4 pass
+  sdist: 3/4 pass
+  hook: 2/4 pass
+  symlink: 4/4 pass
