@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-package",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
@@ -41,7 +41,7 @@
   "split": "j-20261114T113833+0000-71a1f1ab",
   "split_plan_hash": "91e38cc5769c6252125f0ccd805de0978a8b85fe014248981ea811fc5ff0199e",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "f7fb724e8c55c6c9500f1d7d2cf1dc3d58aaa4ad",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -196,8 +196,14 @@
       "to": "verifying",
       "at": "2026-11-14T12:54:17+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-14T12:59:44+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T12:59:07+00:00"
+  "at": "2026-11-14T12:59:45+00:00"
 }
