@@ -1,12 +1,17 @@
 # Tag and publish a release when its version pull request lands on main
-# (ADR 0012). Only a push that raises apm/apm.yml's version to a
-# releasable version releases; an unchanged or .dev version does nothing, a
-# lowered one fails, and a push with no previous commit to compare against (the
-# repository's first push) is skipped. The wheel and sdist are built and checked
-# before the tag exists, so a failed build leaves no tag behind; a rerun after a
-# failed publish resumes from the tag it pushed. The GitHub Release carries the
-# wheel, the sdist and their checksums, with notes from scripts/release_notes.py;
-# nothing goes to PyPI.
+# (ADR 0012). The job runs once per package: kmctl, whose version source is
+# apm/apm.yml and whose tags are vX.Y.Z, and kmaudit, whose version source is
+# packages/kmaudit/VERSION and whose tags are kmaudit-vX.Y.Z. Only a push that
+# raises a package's version to a releasable version releases it; an unchanged
+# or .dev version does nothing, a lowered one fails, and a push with no
+# previous commit to compare against (the repository's first push) is skipped.
+# A release needs the notes its version pull request committed as
+# .github/release-notes/TAG.md: without them it stops before tagging. The wheel
+# and sdist are built and checked before the tag exists, so a failed build
+# leaves no tag behind; a rerun after a failed publish resumes from the tag it
+# pushed. The GitHub Release carries the wheel, the sdist and their checksums,
+# with that notes file as its body, unchanged; only a kmctl release is marked
+# Latest. Nothing goes to PyPI.
 #
 # No concurrency group: a group keeps one pending run and cancels the rest,
 # which would drop the tag of a version merged between two others.
@@ -17,16 +22,23 @@ on:
     branches: [main]
     paths:
       - apm/apm.yml
+      - packages/kmaudit/VERSION
 
 permissions:
   contents: read
 
 jobs:
   tag:
-    name: Tag and publish the release
+    name: Tag and publish ${{ matrix.package }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [kmctl, kmaudit]
+    env:
+      PACKAGE: ${{ matrix.package }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -44,7 +56,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          VERSION="$(uv run scripts/release.py current)"
+          VERSION="$(uv run scripts/release.py current --package "$PACKAGE")"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ] \
             || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
@@ -53,31 +65,96 @@ jobs:
             exit 0
           fi
           git worktree add -q --detach "$RUNNER_TEMP/before" "$BEFORE"
-          # The before commit's copies of the version may disagree, so read
-          # apm/apm.yml alone; only a commit with no version there gives an empty OLD.
-          OLD="$(uv run scripts/release.py --repo "$RUNNER_TEMP/before" manifest || true)"
+          # The before commit's copies of kmctl's version may disagree, so read
+          # the version source alone; only a commit with no version there (for
+          # kmaudit, one before VERSION existed) gives an empty OLD.
+          OLD="$(uv run scripts/release.py --repo "$RUNNER_TEMP/before" manifest --package "$PACKAGE" || true)"
           VERDICT="$(uv run scripts/release.py compare "$OLD" "$VERSION")"
           case "$VERDICT" in
             raised) ;;
-            same) echo "The version is still $VERSION; nothing to release." >> "$GITHUB_STEP_SUMMARY"; VERDICT=nothing ;;
-            skip) echo "$VERSION is a .dev or +local version, which is never released." >> "$GITHUB_STEP_SUMMARY"; VERDICT=nothing ;;
-            lowered) echo "::error::This push lowers the version from $OLD to $VERSION. Raise it instead."; exit 1 ;;
+            same) echo "$PACKAGE is still $VERSION; nothing to release." >> "$GITHUB_STEP_SUMMARY"; VERDICT=nothing ;;
+            skip) echo "$PACKAGE $VERSION is a .dev or +local version, which is never released." >> "$GITHUB_STEP_SUMMARY"; VERDICT=nothing ;;
+            lowered) echo "::error::This push lowers $PACKAGE from $OLD to $VERSION. Raise it instead."; exit 1 ;;
           esac
-          if [ "$VERDICT" = "raised" ] && git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
-            TAGGED="$(git rev-list -n 1 "v$VERSION")"
+          if [ "$VERDICT" = "raised" ]; then
+            TAG="$(uv run scripts/release.py tag "$VERSION" --package "$PACKAGE")"
+            echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          fi
+          if [ "$VERDICT" = "raised" ] && git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            TAGGED="$(git rev-list -n 1 "$TAG")"
             if [ "$TAGGED" != "$GITHUB_SHA" ]; then
-              echo "::error::v$VERSION already tags $TAGGED, not this commit $GITHUB_SHA. Pick the next version."
+              echo "::error::$TAG already tags $TAGGED, not this commit $GITHUB_SHA. Pick the next version."
               exit 1
             fi
-            if gh release view "v$VERSION" >/dev/null 2>&1; then
-              echo "v$VERSION is already tagged and released; nothing to do." >> "$GITHUB_STEP_SUMMARY"
+            if gh release view "$TAG" >/dev/null 2>&1; then
+              echo "$TAG is already tagged and released; nothing to do." >> "$GITHUB_STEP_SUMMARY"
               VERDICT=nothing
             else
-              echo "v$VERSION is tagged here but has no Release; resuming." >> "$GITHUB_STEP_SUMMARY"
+              echo "$TAG is tagged here but has no Release; resuming." >> "$GITHUB_STEP_SUMMARY"
               VERDICT=resume
             fi
           fi
           echo "verdict=$VERDICT" >> "$GITHUB_OUTPUT"
+      # The notes were reviewed in the version pull request; without them the
+      # release would publish nothing, so stop before the tag exists.
+      - name: Refuse a release without its committed notes
+        if: ${{ steps.plan.outputs.verdict == 'raised' || steps.plan.outputs.verdict == 'resume' }}
+        env:
+          TAG: ${{ steps.plan.outputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          NOTES=".github/release-notes/$TAG.md"
+          if [ ! -f "$NOTES" ] || ! grep -q '[^[:space:]]' "$NOTES"; then
+            echo "::error::$NOTES is missing or blank, so $TAG has no notes to publish. Run the Release workflow for $PACKAGE, which drafts them into the version pull request, or add the file in a pull request."
+            exit 1
+          fi
+      # A commit that reached main after the Release run drafted the notes
+      # ships in the tag with no bullet. Find the drafted commit (the parent of
+      # the merge's second parent, or a squash merge's Drafted-From trailer)
+      # and name this package's commits since it. The notes stay as reviewed.
+      - name: Name commits that landed after the notes were drafted
+        if: ${{ steps.plan.outputs.verdict == 'raised' || steps.plan.outputs.verdict == 'resume' }}
+        env:
+          TAG: ${{ steps.plan.outputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          read -r -a PARENTS <<< "$(git rev-list --parents -n 1 "$GITHUB_SHA")"
+          FIRST="${PARENTS[1]:-}"
+          if [ "${#PARENTS[@]}" -eq 3 ]; then
+            DRAFTED="$(git rev-parse "${PARENTS[2]}^")"
+          else
+            DRAFTED="$(git log -1 --format=%B "$GITHUB_SHA" \
+              | sed -n 's/^.*Drafted-From: *\([0-9a-f]\{7,40\}\).*$/\1/p' | head -n 1)"
+          fi
+          if [ -z "$FIRST" ] || [ -z "$DRAFTED" ] || ! git cat-file -e "$DRAFTED^{commit}" 2>/dev/null; then
+            echo "::warning::Could not find the commit the $TAG notes were drafted from, so commits that landed after the draft are not named. Compare the notes with the history by hand."
+            exit 0
+          fi
+          LATE=()
+          for c in $(git rev-list --first-parent "$DRAFTED..$FIRST"); do
+            subject="$(git log -1 --format=%s "$c")"
+            case "$subject" in "loop: "* | "release: "* | "Merge pull request #"*/release/*) continue ;; esac
+            if git diff --name-only "$c^1" "$c" | awk -v p="$PACKAGE" '
+                p == "kmaudit" && /^packages\/kmaudit\// { f = 1 }
+                p == "kmctl" && (/^packages\/kmctl\// || !/^packages\//) { f = 1 }
+                END { exit !f }'; then
+              LATE+=("$(git log -1 --format='%h %s' "$c")")
+            fi
+          done
+          if [ "${#LATE[@]}" -eq 0 ]; then
+            exit 0
+          fi
+          NAMES="$(printf '%s; ' "${LATE[@]}")"
+          echo "::warning::$TAG ships ${#LATE[@]} $PACKAGE commit(s) that landed after its notes were drafted from $DRAFTED, which the published notes leave out: ${NAMES%; }. Add them with gh release edit $TAG --notes-file FILE."
+          {
+            echo "## Commits missing from the $TAG notes"
+            echo
+            echo "These $PACKAGE commits landed on main after the notes were drafted from \`$DRAFTED\`. The Release publishes the reviewed notes unchanged; add them with \`gh release edit $TAG --notes-file FILE\`."
+            echo
+            printf -- '- %s\n' "${LATE[@]}"
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Build and check the release files
         if: ${{ steps.plan.outputs.verdict == 'raised' || steps.plan.outputs.verdict == 'resume' }}
         env:
@@ -85,7 +162,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          uv build --package kmctl -o dist
+          uv build --package "$PACKAGE" -o dist
           for file in dist/*; do
             case "$(basename "$file")" in
               *-"$VERSION"-*.whl | *-"$VERSION".tar.gz) ;;
@@ -93,30 +170,36 @@ jobs:
             esac
           done
           uvx twine check dist/*
-          uv run scripts/check_wheel.py dist/*.whl --pyproject packages/kmctl/pyproject.toml
-          uv run scripts/smoke_wheel.py dist/*.whl --version "$VERSION"
+          uv run scripts/check_wheel.py --package "$PACKAGE" dist/*.whl
+          uv run scripts/smoke_wheel.py --package "$PACKAGE" dist/*.whl --version "$VERSION"
           (cd dist && sha256sum ./* > SHA256SUMS)
       - name: Push the annotated tag
         if: ${{ steps.plan.outputs.verdict == 'raised' }}
         env:
           VERSION: ${{ steps.plan.outputs.version }}
+          TAG: ${{ steps.plan.outputs.tag }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a "v$VERSION" -m "kmctl $VERSION" "$GITHUB_SHA"
-          git push origin "v$VERSION"
+          git tag -a "$TAG" -m "$PACKAGE $VERSION" "$GITHUB_SHA"
+          git push origin "$TAG"
+      # Users pin kmctl's tags, so only a kmctl release becomes Latest.
       - name: Publish the GitHub Release
         if: ${{ steps.plan.outputs.verdict == 'raised' || steps.plan.outputs.verdict == 'resume' }}
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.plan.outputs.version }}
+          TAG: ${{ steps.plan.outputs.tag }}
         shell: bash
         run: |
           set -euo pipefail
-          uv run scripts/release_notes.py "v$VERSION" > "$RUNNER_TEMP/notes.md"
-          ARGS=(--title "v$VERSION" --verify-tag --notes-file "$RUNNER_TEMP/notes.md")
+          ARGS=(--title "$TAG" --verify-tag --notes-file ".github/release-notes/$TAG.md")
           if uv run scripts/release.py is-prerelease "$VERSION"; then
-            ARGS+=(--prerelease)
+            ARGS+=(--prerelease --latest=false)
+          elif [ "$PACKAGE" = kmctl ]; then
+            ARGS+=(--latest)
+          else
+            ARGS+=(--latest=false)
           fi
-          gh release create "v$VERSION" "${ARGS[@]}" dist/*
-          echo "Released v$VERSION." >> "$GITHUB_STEP_SUMMARY"
+          gh release create "$TAG" "${ARGS[@]}" dist/*
+          echo "Released $TAG." >> "$GITHUB_STEP_SUMMARY"

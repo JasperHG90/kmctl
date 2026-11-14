@@ -1,19 +1,30 @@
-# Cut a release by hand (ADR 0012). Pick an increment or type the version; a
-# dry run (the default) resolves, tests and builds, then stops. A real run from
-# main opens a pull request that sets the four apm.yml files (apm/apm.yml is the
-# one version source) to the version, pins the docs' install lines to its
-# tag, moves the starter template's kmctl_ref default in copier.yml to it
-# (ADR 0025) and points the Claude Code hook's install hints at it; merging it
-# is the approval, and release-tag.yml tags the merge commit
-# and publishes the GitHub Release.
+# Cut a release of kmctl or kmaudit by hand (ADR 0012). Pick the package and
+# an increment, or type the version. Each package has its own version source
+# and tag family: kmctl's is apm/apm.yml with vX.Y.Z tags, kmaudit's is
+# packages/kmaudit/VERSION with kmaudit-vX.Y.Z tags. A dry run (the default)
+# resolves, tests, builds and drafts the release notes, then stops. A real run
+# from main opens a pull request that commits `scripts/release.py set` and the
+# notes as .github/release-notes/TAG.md, with the notes as its body. For kmctl,
+# set writes the four apm.yml files, pins the docs' install lines to the tag,
+# moves the starter template's kmctl_ref default in copier.yml to it
+# (ADR 0025) and points the Claude Code hook's install hints at it; for
+# kmaudit it writes VERSION and pins its README's install line. Merging is the
+# approval of the version and the notes, and release-tag.yml tags the merge
+# commit and publishes that notes file as the GitHub Release.
 # Releases go to GitHub only, never to PyPI.
 name: Release
 
 on:
   workflow_dispatch:
     inputs:
+      package:
+        description: "The package to release: kmctl (vX.Y.Z tags, version in apm/apm.yml) or kmaudit (kmaudit-vX.Y.Z tags, version in packages/kmaudit/VERSION)."
+        type: choice
+        required: true
+        default: kmctl
+        options: [kmctl, kmaudit]
       increment:
-        description: "Raise the newest v* tag: PATCH, MINOR, MAJOR, PRE (next pre-release), FINAL (promote a pre-release). Ignored when version is set."
+        description: "Raise the package's newest tag (v* for kmctl, kmaudit-v* for kmaudit): PATCH, MINOR, MAJOR, PRE (next pre-release), FINAL (promote a pre-release). Ignored when version is set."
         type: choice
         required: true
         default: PATCH
@@ -25,11 +36,11 @@ on:
         default: none
         options: [none, a, b, rc]
       version:
-        description: "Override: the exact version, X.Y.Z or X.Y.Z{a,b,rc}N, no v. Required for the first release."
+        description: "Override: the exact version, X.Y.Z or X.Y.Z{a,b,rc}N, no v. Required for a package's first release."
         type: string
         required: false
       dry_run:
-        description: "Resolve, test and build, then stop without opening the version pull request."
+        description: "Resolve, test, build and draft the notes, then stop without opening the version pull request."
         type: boolean
         required: true
         default: true
@@ -47,6 +58,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.next.outputs.version }}
+      tag: ${{ steps.next.outputs.tag }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -57,17 +69,20 @@ jobs:
       - name: Work out the version
         id: next
         env:
+          PACKAGE: ${{ inputs.package }}
           INCREMENT: ${{ inputs.increment }}
           PRE: ${{ inputs.prerelease }}
           OVERRIDE: ${{ inputs.version }}
         shell: bash
         run: |
           set -euo pipefail
-          args=("$INCREMENT")
+          args=("$INCREMENT" --package "$PACKAGE")
           if [ "$PRE" != "none" ]; then args+=(--pre "$PRE"); fi
           if [ -n "$OVERRIDE" ]; then args+=(--version "$OVERRIDE"); fi
           VERSION="$(uv run scripts/next_release_version.py "${args[@]}")"
+          TAG="$(uv run scripts/release.py --package "$PACKAGE" tag "$VERSION")"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
       - name: Refuse a real run off main
         if: ${{ !inputs.dry_run && github.ref != 'refs/heads/main' }}
         run: |
@@ -75,26 +90,26 @@ jobs:
           exit 1
       - name: Refuse a tag that exists on origin
         env:
-          VERSION: ${{ steps.next.outputs.version }}
+          TAG: ${{ steps.next.outputs.tag }}
         shell: bash
         run: |
           set -euo pipefail
           set +e
-          git ls-remote --exit-code --tags origin "refs/tags/v$VERSION" >/dev/null
+          git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null
           rc=$?
           set -e
           case "$rc" in
             2) ;;
-            0) echo "::error::Tag v$VERSION already exists. Pick the next version."; exit 1 ;;
-            *) echo "::error::Could not check whether v$VERSION exists (git exit $rc)."; exit 1 ;;
+            0) echo "::error::Tag $TAG already exists. Pick the next version."; exit 1 ;;
+            *) echo "::error::Could not check whether $TAG exists (git exit $rc)."; exit 1 ;;
           esac
       - name: Summary
         env:
-          VERSION: ${{ steps.next.outputs.version }}
+          TAG: ${{ steps.next.outputs.tag }}
           DRY_RUN: ${{ inputs.dry_run }}
         run: |
           {
-            echo "## v$VERSION"
+            echo "## $TAG"
             echo
             echo "| | |"
             echo "|---|---|"
@@ -129,19 +144,22 @@ jobs:
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: false
-      # Build what the version pull request will hold: apm/apm.yml at the
-      # release version. This checkout is thrown away; bump commits the change.
+      # Build what the version pull request will hold: the package's version
+      # source at the release version. This checkout is thrown away; bump
+      # commits the change.
       - name: Set the release version
         env:
+          PACKAGE: ${{ inputs.package }}
           VERSION: ${{ needs.resolve.outputs.version }}
-        run: uv run scripts/release.py set "$VERSION"
+        run: uv run scripts/release.py --package "$PACKAGE" set "$VERSION"
       - name: Build at the release version
         env:
+          PACKAGE: ${{ inputs.package }}
           VERSION: ${{ needs.resolve.outputs.version }}
         shell: bash
         run: |
           set -euo pipefail
-          uv build --package kmctl -o dist
+          uv build --package "$PACKAGE" -o dist
           for file in dist/*; do
             case "$(basename "$file")" in
               *-"$VERSION"-*.whl | *-"$VERSION".tar.gz) ;;
@@ -149,40 +167,94 @@ jobs:
             esac
           done
       - run: uvx twine check dist/*
-      - run: uv run scripts/check_wheel.py dist/*.whl --pyproject packages/kmctl/pyproject.toml
+      - name: Check the wheel's files
+        env:
+          PACKAGE: ${{ inputs.package }}
+        run: uv run scripts/check_wheel.py --package "$PACKAGE" dist/*.whl
       - name: Smoke-test the wheel
         env:
+          PACKAGE: ${{ inputs.package }}
           VERSION: ${{ needs.resolve.outputs.version }}
-        run: uv run scripts/smoke_wheel.py dist/*.whl --version "$VERSION"
+        run: uv run scripts/smoke_wheel.py --package "$PACKAGE" dist/*.whl --version "$VERSION"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: dist
           path: dist/
           retention-days: 7
 
+  # Drafts the package's notes from its own commits since its family's last
+  # tag. It runs in dry runs too, so a dry run shows the notes a real run would
+  # commit. The draft step writes the notes file and nothing else, so a later
+  # step can replace that file before the upload hands the folder to bump.
+  notes:
+    name: Draft the release notes
+    needs: resolve
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.draft.outputs.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: false
+      - name: Draft the notes
+        id: draft
+        env:
+          PACKAGE: ${{ inputs.package }}
+          TAG: ${{ needs.resolve.outputs.tag }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          uv run scripts/release_notes.py --package "$PACKAGE" "$TAG" --ref HEAD --out "$RUNNER_TEMP/release-notes/$TAG.md"
+      - name: Show the notes
+        env:
+          TAG: ${{ needs.resolve.outputs.tag }}
+        run: cat "$RUNNER_TEMP/release-notes/$TAG.md" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-notes
+          path: ${{ runner.temp }}/release-notes/
+          retention-days: 7
+
   bump:
     name: Open the version pull request
-    needs: [resolve, test, build]
+    needs: [resolve, test, build, notes]
     if: ${{ !inputs.dry_run }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: write
     steps:
+      # The commit the notes were drafted from, so the release branch holds
+      # exactly the history the notes cover and release-tag can name any
+      # commit that reached main after it.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.notes.outputs.sha }}
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-notes
+          path: ${{ runner.temp }}/release-notes
       # Needs "Allow GitHub Actions to create and approve pull requests" in the
       # repository's Actions settings (ADR 0012).
-      - name: Commit the version and open the pull request
+      - name: Commit the version and the notes, and open the pull request
         env:
           GH_TOKEN: ${{ github.token }}
+          PACKAGE: ${{ inputs.package }}
           VERSION: ${{ needs.resolve.outputs.version }}
+          TAG: ${{ needs.resolve.outputs.tag }}
+          DRAFTED: ${{ needs.notes.outputs.sha }}
         shell: bash
         run: |
           set -euo pipefail
-          BRANCH="release/v$VERSION"
+          BRANCH="release/$TAG"
+          NOTES=".github/release-notes/$TAG.md"
           if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null; then
             PR="$(gh pr list --head "$BRANCH" --state open --json url --jq '.[0].url')"
             if [ -n "$PR" ]; then
@@ -192,20 +264,42 @@ jobs:
             fi
             exit 1
           fi
-          uv run scripts/release.py set "$VERSION"
+          uv run scripts/release.py --package "$PACKAGE" set "$VERSION"
+          mkdir -p .github/release-notes
+          cp "$RUNNER_TEMP/release-notes/$TAG.md" "$NOTES"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git switch -c "$BRANCH"
-          git add apm.yml apm/apm.yml apm/claude/apm.yml apm/antigravity/apm.yml README.md docs/tutorials/get-started-with-kmctl.md docs/how-to/install-the-plugin-and-the-ci-action.md docs/how-to/install-kmctl-with-apm.md copier.yml apm/claude/.apm/hooks/hooks.json
-          git commit -m "release: v$VERSION"
+          if [ "$PACKAGE" = kmaudit ]; then
+            git add packages/kmaudit/VERSION packages/kmaudit/README.md
+            WHAT="Sets packages/kmaudit/VERSION to $VERSION and pins the README's install line to $TAG."
+          else
+            git add apm.yml apm/apm.yml apm/claude/apm.yml apm/antigravity/apm.yml README.md docs/tutorials/get-started-with-kmctl.md docs/how-to/install-the-plugin-and-the-ci-action.md docs/how-to/install-kmctl-with-apm.md copier.yml apm/claude/.apm/hooks/hooks.json
+            WHAT="Sets the four apm.yml files to $VERSION, pins the docs' install lines to $TAG and defaults the starter template's kmctl_ref to $TAG."
+          fi
+          git add "$NOTES"
+          git commit -m "release: $TAG" -m "Drafted-From: $DRAFTED"
           if ! git diff --exit-code --stat; then
             echo "::error::release.py set changed a file this step does not stage. Add it to the git add line."
             exit 1
           fi
           git push origin "$BRANCH"
+          {
+            echo "$WHAT Merging this tags $TAG and publishes the GitHub Release through release-tag.yml, with \`$NOTES\` as its notes."
+            echo
+            echo "The notes below are that file. Edit it in this pull request to change them before merging."
+            echo
+            echo "---"
+            echo
+            cat "$NOTES"
+            echo
+            echo "---"
+            echo
+            echo "Drafted-From: $DRAFTED"
+          } > "$RUNNER_TEMP/pr-body.md"
           if ! gh pr create --base main --head "$BRANCH" \
-            --title "release: v$VERSION" \
-            --body "Sets the four apm.yml files to $VERSION, pins the docs' install lines to v$VERSION and defaults the starter template's kmctl_ref to v$VERSION. Merging this tags v$VERSION and publishes the GitHub Release through release-tag.yml." \
+            --title "release: $TAG" \
+            --body-file "$RUNNER_TEMP/pr-body.md" \
             >> "$GITHUB_STEP_SUMMARY"; then
             git push origin --delete "$BRANCH" || echo "::warning::Could not delete $BRANCH; delete it by hand."
             echo "::error::Could not open the pull request, so $BRANCH was deleted. Turn on \"Allow GitHub Actions to create and approve pull requests\" in the repository's Actions settings."

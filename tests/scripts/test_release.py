@@ -473,3 +473,175 @@ def test_release_py_set_refuses_a_copier_yml_without_the_default(
         check=True,
     )
     assert status.stdout == ""
+
+
+#: kmaudit's package, whose pyproject reads the version from its VERSION file.
+KMAUDIT = Path("packages/kmaudit")
+
+
+def test_kmaudit_version_source_is_the_version_file() -> None:
+    """kmaudit's pyproject sets no fixed version; hatchling's regex source reads VERSION."""
+    data = tomllib.loads((ROOT / KMAUDIT / "pyproject.toml").read_text())
+
+    assert "version" not in data["project"]
+    assert "version" in data["project"]["dynamic"]
+    source = data["tool"]["hatch"]["version"]
+    assert source["source"] == "regex"
+    assert source["path"] == "VERSION"
+    # A local uv run rebuilds kmaudit when the file changes.
+    assert {"file": "VERSION"} in data["tool"]["uv"]["cache-keys"]
+
+
+def test_kmaudit_version_is_not_copied_into_the_lock() -> None:
+    """uv.lock holds no version for kmaudit, so a bump never has to re-lock."""
+    lock = tomllib.loads((ROOT / "uv.lock").read_text())
+    [entry] = [p for p in lock["package"] if p["name"] == "kmaudit"]
+
+    assert "version" not in entry
+
+
+def test_kmaudit_version_starts_unreleasable(tmp_path: Path) -> None:
+    """VERSION starts at 0.1.0.dev0, which compare skips, so the push adding it releases nothing."""
+    assert (ROOT / KMAUDIT / "VERSION").read_text() == "0.1.0.dev0\n"
+
+    current = _run(ROOT, "--package", "kmaudit", "current")
+    verdict = _run(ROOT, "compare", "", "0.1.0.dev0")
+
+    assert current.returncode == 0, current.stderr
+    assert current.stdout == "0.1.0.dev0\n"
+    assert verdict.stdout == "skip\n"
+
+
+def test_kmaudit_version_builds_the_file_s_version(tmp_path: Path) -> None:
+    """A copy of kmaudit's package with VERSION at 9.8.7 builds 9.8.7, and current prints it."""
+    project = tmp_path / "project"
+    shutil.copytree(
+        ROOT / KMAUDIT,
+        project / KMAUDIT,
+        ignore=shutil.ignore_patterns("__pycache__", "tests", "docs"),
+    )
+    (project / KMAUDIT / "VERSION").write_text("9.8.7\n")
+
+    names = _build(project / KMAUDIT, tmp_path / "dist")
+
+    assert names == ["kmaudit-9.8.7-py3-none-any.whl", "kmaudit-9.8.7.tar.gz"]
+    assert _run(project, "--package", "kmaudit", "current").stdout == "9.8.7\n"
+
+
+def _kmaudit_repo(tmp_path: Path) -> Path:
+    """``_repo`` plus kmaudit's VERSION file and README, committed."""
+    root = _repo(tmp_path)
+    for rel in (KMAUDIT / "VERSION", KMAUDIT / "README.md"):
+        (root / rel).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy(ROOT / rel, root / rel)
+    subprocess.run(["git", "add", "."], cwd=root, check=True)
+    subprocess.run([*GIT, "commit", "-q", "-m", "kmaudit"], cwd=root, check=True)
+    return root
+
+
+def _changed(root: Path) -> set[str]:
+    """The paths ``git status`` shows as changed under ``root``."""
+    status = subprocess.run(
+        ["git", "status", "--porcelain"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return {line[3:] for line in status.stdout.splitlines()}
+
+
+def test_package_aware_kmaudit_set_writes_only_its_files(tmp_path: Path) -> None:
+    """``--package kmaudit set`` writes VERSION and pins the README install line to kmaudit-vX.Y.Z."""
+    root = _kmaudit_repo(tmp_path)
+
+    res = _run(root, "--package", "kmaudit", "set", "0.2.0")
+
+    assert res.returncode == 0, res.stderr
+    assert res.stdout.splitlines() == [
+        f"wrote {KMAUDIT / 'VERSION'}",
+        f"wrote {KMAUDIT / 'README.md'}",
+    ]
+    assert _changed(root) == {
+        (KMAUDIT / "VERSION").as_posix(),
+        (KMAUDIT / "README.md").as_posix(),
+    }
+    assert (root / KMAUDIT / "VERSION").read_text() == "0.2.0\n"
+    assert (
+        "uv tool install 'kmaudit @ git+https://github.com/JasperHG90/kmctl"
+        "@kmaudit-v0.2.0#subdirectory=packages/kmaudit'"
+        in (root / KMAUDIT / "README.md").read_text()
+    )
+    assert _run(root, "--package", "kmaudit", "current").stdout == "0.2.0\n"
+    assert _run(root, "current").stdout == "0.1.0\n"
+
+
+def test_package_aware_kmaudit_set_moves_an_older_pin(tmp_path: Path) -> None:
+    """A second kmaudit release moves the README pin from the older kmaudit-v tag."""
+    root = _kmaudit_repo(tmp_path)
+
+    assert _run(root, "--package", "kmaudit", "set", "0.2.0").returncode == 0
+    assert _run(root, "set", "0.3.0", "--package", "kmaudit").returncode == 0
+
+    text = (root / KMAUDIT / "README.md").read_text()
+    assert "@kmaudit-v0.3.0#subdirectory=packages/kmaudit'" in text
+    assert "kmaudit-v0.2.0" not in text
+
+
+def test_package_aware_kmaudit_set_refuses_a_readme_without_the_install_line(
+    tmp_path: Path,
+) -> None:
+    """With no install line to pin, ``--package kmaudit set`` writes nothing and names the file."""
+    root = _kmaudit_repo(tmp_path)
+    (root / KMAUDIT / "README.md").write_text("# kmaudit\n")
+    subprocess.run([*GIT, "commit", "-qam", "drop"], cwd=root, check=True)
+
+    res = _run(root, "--package", "kmaudit", "set", "0.2.0")
+
+    assert res.returncode == 1
+    assert "README.md" in res.stderr
+    assert _changed(root) == set()
+
+
+def test_package_aware_kmctl_set_is_unchanged(tmp_path: Path) -> None:
+    """``--package kmctl set`` writes what ``set`` always has, and never kmaudit's files."""
+    root = _kmaudit_repo(tmp_path)
+
+    res = _run(root, "--package", "kmctl", "set", "0.2.0")
+
+    assert res.returncode == 0, res.stderr
+    assert res.stdout.splitlines() == [
+        f"wrote {p}" for p in (*APM_FILES, *DOC_FILES, APM_DOC, COPIER, HOOKS)
+    ]
+    assert _changed(root) == {
+        p.as_posix() for p in (*APM_FILES, *DOC_FILES, APM_DOC, COPIER, HOOKS)
+    }
+    for args in (("current",), ("manifest",)):
+        assert _run(root, "--package", "kmctl", *args).stdout == "0.2.0\n"
+        assert _run(root, *args).stdout == "0.2.0\n"
+
+
+@pytest.mark.parametrize(
+    ("args", "tag"),
+    [
+        (("tag", "0.2.0"), "v0.2.0"),
+        (("--package", "kmctl", "tag", "0.2.0rc1"), "v0.2.0rc1"),
+        (("--package", "kmaudit", "tag", "0.2.0"), "kmaudit-v0.2.0"),
+    ],
+)
+def test_package_aware_tag_names_the_family(
+    tmp_path: Path, args: tuple[str, ...], tag: str
+) -> None:
+    """``tag VERSION`` prints the package's tag: vX.Y.Z for kmctl, kmaudit-vX.Y.Z for kmaudit."""
+    res = _run(tmp_path, *args)
+
+    assert res.returncode == 0, res.stderr
+    assert res.stdout == f"{tag}\n"
+
+
+def test_package_aware_tag_refuses_an_unreleasable_version(tmp_path: Path) -> None:
+    """A .dev version has no tag."""
+    res = _run(tmp_path, "--package", "kmaudit", "tag", "0.1.0.dev0")
+
+    assert res.returncode == 1
+    assert "0.1.0.dev0" in res.stderr
