@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.3.1.dev65+g93b143856
-  at: '2026-11-14T14:00:02+00:00'
+  at: '2026-11-14T14:00:27+00:00'
 slug: kmaudit-briefing
 n: 1
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike kmaudit-briefing/1
@@ -48,7 +48,7 @@ print(f'list_checks: {t_list:.2f}s, counts {counts}')
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note kmaudit-briefing 1`.
+On a copy of the operator's store, in a throwaway worktree of agent-audit: the first open of .okf (copying the old store) took 0.51s; cutting all 212 sections and comparing keys 0.03s; list_checks 0.06s (holds 708, not measured 80, reason 248, stale reason 98, weak 1). Fast enough for a SessionStart hook. Found: a read-only key compare reported all 212 sections pending, because the stored keys predate the guidance split; only Store.refresh re-keys them through previous_keys. The briefing must count a section as extracted when its stored key is its key or one of previous_keys(section), and must not call todo, whose refresh drops the claims of changed sections.
 
 ## Files
 
