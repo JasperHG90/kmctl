@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "Every writing verb now names its namespace by --path FOLDER, todo --json prints the namespace and a Next step with --path, and the agents, skills, README and commands.md are in O3's touches, checked by r2 and r9.",
+      "anchor": "packages/kmaudit/src/kmaudit/cli.py:332",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r2"
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "The plan now states the mapping rule (a path inside an existing namespace narrows it and opens no store; an OKF bundle's files mean the bundle; a folder holding a namespace is refused naming it; the root holding .okf means .okf), checked by r2b and r6.",
+      "anchor": "packages/kmaudit/src/kmaudit/sections.py:139",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r2b"
+    },
+    {
+      "id": "p3",
+      "disposition": "resolved",
+      "claim": "O1 is now the per-namespace store and mapping (support, needs none) and O2 the plain-folder audit (behaviour, needs O1) holding the steps.py Repository change, so a split cannot ship the folder change before the store split.",
+      "anchor": ".loop/plans/kmaudit-namespaces/README.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "37ff578b1bd9eea4e2b82bedeb748b6b725a383811f15e0c273c435362d6c6d6"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T13:12:39+00:00"
+}
