@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0",
+  "slug": "kmaudit-mcp",
+  "plan_hash": "6f7fb1da63c7d442a1fc57c159be355ac515f35ebdc30b40763b1d54d49410e6",
+  "problems": [
+    {
+      "id": "P1",
+      "text": "Driving kmaudit needs a shell and its CLI, so a harness without a shell tool, or one that prefers MCP, cannot use it."
+    },
+    {
+      "id": "P2",
+      "text": "Nobody is told how to connect kmaudit to their harness."
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "Any harness that speaks MCP can drive the audit."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "O1",
+      "change": "kmaudit mcp serves the verbs as MCP tools over stdio",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "new:packages/kmaudit/src/kmaudit/mcp_server.py",
+        "packages/kmaudit/src/kmaudit/cli.py",
+        "packages/kmaudit/pyproject.toml",
+        "uv.lock",
+        "new:packages/kmaudit/tests/test_mcp.py"
+      ],
+      "checked_by": "a test that starts `kmaudit mcp` through the SDK's stdio client in a fixture repository, lists the tools, runs claims_todo, claims_submit and claims_list for a namespace, and gets a refused submit back as a tool error naming the fix",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O2",
+      "change": "The README tells each harness how to connect, and the docs list the tools",
+      "kind": "support",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P2",
+      "fixes_index": 1,
+      "needs": [
+        "O1"
+      ],
+      "needs_index": [
+        0
+      ],
+      "touches": [
+        "packages/kmaudit/README.md",
+        "packages/kmaudit/docs/commands.md"
+      ],
+      "checked_by": "a test that every tool the server lists is named in the docs, and the README has a section for Claude Code, Codex, Antigravity and LangGraph",
+      "seen_by": "operator"
+    }
+  ]
+}
