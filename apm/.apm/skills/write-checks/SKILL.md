@@ -5,22 +5,22 @@ description: Write checks for stored claims with a subagent. It hands the claims
 
 # /write-checks: checks into the store, summaries only
 
-kmctl calls no model here: the `kmctl-check-writer` agent writes each check,
-and `kmctl audit checks submit` runs it, refuses a weak one and stores the
+kmaudit calls no model here: the `kmctl-check-writer` agent writes each check,
+and `kmaudit checks submit` runs it, refuses a weak one and stores the
 rest in `.kmctl/audit.sqlite`. You never read a claim, write a step or judge
 a check yourself; keep only the agents' summaries.
 
 ## 1. See what is left
 
 ```
-kmctl audit checks todo [PATH]
+kmaudit checks todo [PATH]
 ```
 
 `PATH` is the repository (the default), the bundle, or one concept file if
 the user named one. It prints the counts and one `pending FILE (N claims)`
 line per concept. If it reports 0 checkable claims, there are no claims
 yet: point to `/extract-claims` and stop. If nothing is pending, say the
-checks are up to date, show `kmctl audit checks list`, and stop. Exit 1 is
+checks are up to date, show `kmaudit checks list`, and stop. Exit 1 is
 a refusal: quote its line and stop.
 
 ## 2. Batch by concept
@@ -36,7 +36,7 @@ a short summary.
 
 ## 4. Report
 
-Run `kmctl audit checks todo [PATH]` and `kmctl audit checks list [PATH]`.
+Run `kmaudit checks todo [PATH]` and `kmaudit checks list [PATH]`.
 Show the agents' summaries (checks stored, reasons, drift found, claims
 refused with their refusal line), then the counts both commands print. Name
 any drift: it is a claim the code no longer bears out, for a person to look

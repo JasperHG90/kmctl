@@ -6,11 +6,11 @@
       "name": "fixture-first-pass",
       "prompt": "/extract-claims",
       "repo": "tests/fixtures/audit_repo.py's repository plus .okf/decisions/0005-audits-report-only.md (11 sections in 3 concepts)",
-      "expected_output": "Every pending section is stored by the kmctl-claims-extractor agent through kmctl audit claims submit; the main session reports the agent's summary and the counts from todo and list, and holds no claim text.",
+      "expected_output": "Every pending section is stored by the kmctl-claims-extractor agent through kmaudit claims submit; the main session reports the agent's summary and the counts from todo and list, and holds no claim text.",
       "files": [],
       "expectations": [
-        "kmctl audit claims todo reports 0 to extract afterwards",
-        "kmctl audit claims list shows claims for all three concepts",
+        "kmaudit claims todo reports 0 to extract afterwards",
+        "kmaudit claims list shows claims for all three concepts",
         "git status --porcelain is empty: nothing under .okf/ or docs/ changed",
         "The main session's transcript holds the agent's summary but no claim text",
         "Sentences about history, status and rejected options are kind none"
@@ -24,9 +24,9 @@
       "expected_output": "Only the edited section is handed to the agent; the other ten stay as stored.",
       "files": [],
       "expectations": [
-        "kmctl audit claims todo lists only .okf/tool.md (1 section) before the agent runs",
+        "kmaudit claims todo lists only .okf/tool.md (1 section) before the agent runs",
         "The agent is dispatched with that one file",
-        "kmctl audit claims todo reports 0 to extract afterwards"
+        "kmaudit claims todo reports 0 to extract afterwards"
       ]
     },
     {
@@ -34,7 +34,7 @@
       "name": "nothing-to-do",
       "prompt": "are the bundle's claims up to date? extract any that aren't",
       "repo": "the repository of eval 1 after it ran, unchanged",
-      "expected_output": "The skill sees 0 to extract, dispatches no agent and shows kmctl audit claims list.",
+      "expected_output": "The skill sees 0 to extract, dispatches no agent and shows kmaudit claims list.",
       "files": [],
       "expectations": [
         "No kmctl-claims-extractor agent is dispatched",

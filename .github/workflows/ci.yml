@@ -50,9 +50,11 @@ jobs:
           enable-cache: false
       - name: Install just
         run: uv tool install rust-just==1.59.0
+      # The repository root, as the gate's bare uv run pytest: both packages'
+      # tests, tests/ and packages/kmaudit/tests/ (ADR 0043).
       - uses: JasperHG90/toiminnot/actions/pytest@dc32088cfc239bd550283512de713872370280c2 # v2.0.0
         with:
-          directory: tests
+          directory: .
           markers: not integration
           python_version: "3.12"
 

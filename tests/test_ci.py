@@ -1,6 +1,8 @@
 """The CI workflow for this repository: kmctl's own check, prek (ruff, kmctl check, OKF validation) and pytest on every pull request."""
 
 import re
+import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -75,15 +77,32 @@ def test_ci_prek_job_runs_justfile_version_after_uv() -> None:
     }
 
 
-def test_ci_pytest_job_runs_default_tier() -> None:
+def test_ci_pytest_job_runs_default_tier_of_both_packages() -> None:
+    """The job runs pytest at the root, as the gate does, so kmaudit's tests run too (ADR 0043)."""
     steps = _job_steps("tests")
     tests = steps[_uses(steps, "JasperHG90/toiminnot/actions/pytest")]
+    collected = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            "--collect-only",
+            "-q",
+            tests["with"]["directory"],
+        ],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    ).stdout
 
     assert tests["with"] == {
-        "directory": "tests",
+        "directory": ".",
         "markers": "not integration",
         "python_version": "3.12",
     }
+    roots = {line.split("/")[0] for line in collected.splitlines() if "::" in line}
+    assert {"packages", "tests"} <= roots
 
 
 def test_ci_actions_pinned_and_uv_cache_off() -> None:

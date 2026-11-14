@@ -12,6 +12,19 @@ to use; the rules for writing knowledge come with its package. Its GitHub Action
 at no model cost, and an opt-in audit agent reports knowledge that has drifted from the code
 without changing anything.
 
+## Two packages
+
+This repository holds two packages that work well together and install
+apart:
+
+- **kmctl**, at the root, keeps `docs/` and the `.okf/` bundle current
+  through your coding agent. Everything below is about kmctl.
+- **kmaudit**, in [`packages/kmaudit/`](packages/kmaudit/README.md), checks
+  what a folder of markdown docs claims against the code: an agent lists the
+  claims, writes a check for each, and kmaudit reruns the checks with no
+  model. It needs nothing from kmctl. See
+  [`packages/kmaudit/README.md`](packages/kmaudit/README.md).
+
 ## Install
 
 Two ways, depending on whether the repository exists yet. Click one to open
@@ -363,4 +376,6 @@ The [docs index](docs/README.md) links each folder's index. The pages:
 Start at [`.okf/summary.md`](.okf/summary.md), which links down to the
 rest of the bundle; the design is
 [`.okf/manifesto.md`](.okf/manifesto.md). `just lint`, `just test` and
-`just integration` run the checks.
+`just integration` run the checks for both packages: kmaudit is a uv
+workspace member, so `uv sync` at the root installs it and the root
+`pytest` runs its tests under `packages/kmaudit/tests/` too.

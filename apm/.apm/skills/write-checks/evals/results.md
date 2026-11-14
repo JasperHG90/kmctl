@@ -1,5 +1,8 @@
 # write-checks: skill-creator results
 
+These runs used the commands while they were still a kmctl group; they are
+`kmaudit` now (ADR 0043), and the names below use the new one.
+
 Made with the skill-creator skill (ADR 0007), together with the
 `kmctl-check-writer` agent, on 2026-11-11 (ticket agent-audit-checks-skill).
 In these runs the main session did the skill's steps (todo, batch, report)
@@ -14,7 +17,7 @@ extract-claims eval's: 22 checkable claims, 19 of them from a copy of ADR
 fixture does not have. Two claims of `.okf/tool.md` already had a check
 and a reason from the extract-claims smoke test, which the agent left
 alone. For the other 20 it stored 12 checks (exact 11, proxy 1) and 8
-reasons with no refusal; afterwards `kmctl audit checks todo` reported 22
+reasons with no refusal; afterwards `kmaudit checks todo` reported 22
 checkable claims, 13 checks, 9 reasons and 0 to check, in 15 tool calls, 80k tokens and 83 s. It marked
 12 checks as drift, each on a file the fixture lacks, rather than bending
 them until they held. Its reply carried a few lines after the summary, so
@@ -31,7 +34,7 @@ file mentions SQLite. Afterwards `todo` reported 0 to check and `git status
 --porcelain` was empty.
 
 **Eval 3, no claims yet.** On a fresh fixture repository with no stored
-claims, `kmctl audit checks todo` printed `0 checkable claims: 0 checks, 0
+claims, `kmaudit checks todo` printed `0 checkable claims: 0 checks, 0
 reasons, 0 to check`, so step 1 sends the user to `/extract-claims` before
 any agent is dispatched. Only the CLI step ran; no agent was needed.
 

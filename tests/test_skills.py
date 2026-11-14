@@ -87,14 +87,14 @@ def test_write_docs_grader_joins_metadata(tmp_path: Path) -> None:
 
 
 AGENTS = ROOT / "apm" / ".apm" / "agents"
-#: ``kmctl`` followed by its words and flags, up to the first word that is neither.
-COMMAND = re.compile(r"\bkmctl((?: +(?:[a-z][a-z-]*|--[a-z][a-z-]*|-(?= )))+)")
+#: ``kmaudit`` followed by its words and flags, up to the first word that is neither.
+COMMAND = re.compile(r"\bkmaudit((?: +(?:[a-z][a-z-]*|--[a-z][a-z-]*|-(?= )))+)")
 #: Code: fenced blocks and inline code spans, where a file names a command to run.
 CODE = re.compile(r"```.*?```|`[^`\n]+`", re.DOTALL)
 
 
 def _named_commands(text: str) -> list[list[str]]:
-    """Each ``kmctl ...`` command a skill or agent names in its code, as its words."""
+    """Each ``kmaudit ...`` command a skill or agent names in its code, as its words."""
     code = "\n".join(CODE.findall(text))
     return [m.group(1).split() for m in COMMAND.finditer(code)]
 
@@ -109,24 +109,23 @@ def _named_commands(text: str) -> list[list[str]]:
     ],
     ids=lambda p: p.parent.name if p.name == "SKILL.md" else p.stem,
 )
-def test_every_named_kmctl_command_exists(path: Path) -> None:
-    """Each command and flag the skill or agent names is in the CLI (skills-name-only-real-verbs)."""
+def test_every_named_kmaudit_command_exists(path: Path) -> None:
+    """Each kmaudit command and flag the skill or agent names is in kmaudit's CLI (skills-name-only-real-verbs)."""
+    from kmaudit.cli import app
     from typer.main import get_command
 
-    from kmctl import app
-
     named = _named_commands(path.read_text())
-    assert named, "the file names no kmctl command"
+    assert named, "the file names no kmaudit command"
     for words in named:
         command = get_command(app)
         for word in (w for w in words if not w.startswith("--")):
             if not hasattr(command, "commands"):
                 break  # a verb's argument
-            assert word in command.commands, f"kmctl {' '.join(words)}: no {word!r}"
+            assert word in command.commands, f"kmaudit {' '.join(words)}: no {word!r}"
             command = command.commands[word]
         known = {o for p in command.params for o in p.opts}
         flags = {w for w in words if w.startswith("--")}
-        assert flags <= known, f"kmctl {' '.join(words)}: {flags - known}"
+        assert flags <= known, f"kmaudit {' '.join(words)}: {flags - known}"
 
 
 @pytest.mark.parametrize(

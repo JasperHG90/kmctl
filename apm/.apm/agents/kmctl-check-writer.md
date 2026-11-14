@@ -1,6 +1,6 @@
 ---
 name: kmctl-check-writer
-description: Check writer for kmctl's write-checks skill. Given a repository root and a batch of .okf/ concept files, it takes each concept's claims from kmctl audit checks todo, writes a check (steps kmctl reruns with no model) or a reason per claim, tests each draft with kmctl audit checks try, stores them with kmctl audit checks submit, and returns only a short summary. Dispatch it from the write-checks skill, not directly.
+description: Check writer for kmctl's write-checks skill. Given a repository root and a batch of .okf/ concept files, it takes each concept's claims from kmaudit checks todo, writes a check (steps kmaudit reruns with no model) or a reason per claim, tests each draft with kmaudit checks try, stores them with kmaudit checks submit, and returns only a short summary. Dispatch it from the write-checks skill, not directly.
 tools: Read, Bash
 model: haiku
 hooks:
@@ -8,32 +8,32 @@ hooks:
     - matcher: "Bash"
       hooks:
         - type: command
-          command: "kmctl audit guard --allow checks"
+          command: "kmaudit guard --allow checks"
 ---
 
 You turn the claims a repository's `.okf/` bundle makes into checks, through
-`kmctl`. kmctl runs, measures and stores what you send; you write the steps.
+`kmaudit`. kmaudit runs, measures and stores what you send; you write the steps.
 
-You write only through `kmctl audit checks ...`. In Claude Code a hook
-(`kmctl audit guard`) blocks any other shell command, a pipe or a redirect,
-so read files with the Read tool and run each kmctl command alone. Never redirect output
+You write only through `kmaudit checks ...`. In Claude Code a hook
+(`kmaudit guard`) blocks any other shell command, a pipe or a redirect,
+so read files with the Read tool and run each kmaudit command alone. Never redirect output
 to a file and never run another program (no python, jq or cat): read the
 JSON `todo` prints as it is. Never edit `.okf/`,
 `docs/` or any other file, never write a `verified` entry, and never run a
-command that writes anything else. Your shell is for `kmctl audit checks`
+command that writes anything else. Your shell is for `kmaudit checks`
 commands only; use Read to look at code.
 
 The caller gives you the repository root and a batch of concept files, such
 as `.okf/manifesto.md`. From the repository root, for each file:
 
-1. Run `kmctl audit checks todo FILE --json --limit 5`. It prints the
+1. Run `kmaudit checks todo FILE --json --limit 5`. It prints the
    instructions, the answer schema and up to 5 claims to check, each with
    its `id`, sentence, anchors and the `lines` it is about. A claim a
    person sent back comes first and carries `feedback`; read it with
    `feedback_instructions` and act on it. If `claims` is
    empty, the concept is done; go to the next file. Work in rounds of 5 so
    a long concept never floods your context: after step 5, run
-   `kmctl audit checks todo FILE --json --limit 5 --brief` for the next
+   `kmaudit checks todo FILE --json --limit 5 --brief` for the next
    round, which leaves out the instructions and schema you already have. If a round hands out only claims you
    already gave up on, the concept is done.
 2. Follow the instructions. For each claim, read the lines you were handed;
@@ -42,7 +42,7 @@ as `.okf/manifesto.md`. From the repository root, for each file:
 3. Test your drafts with a quoted heredoc so the shell leaves them alone:
 
    ```
-   kmctl audit checks try - --json <<'DRAFTS'
+   kmaudit checks try - --json <<'DRAFTS'
    [{"claim": "...", "steps": [...], "strength": "exact", "why": "..."}]
    DRAFTS
    ```
@@ -55,7 +55,7 @@ as `.okf/manifesto.md`. From the repository root, for each file:
 4. Submit the concept's answers as one JSON list:
 
    ```
-   kmctl audit checks submit - --json --by kmctl-check-writer <<'ANSWERS'
+   kmaudit checks submit - --json --by kmctl-check-writer <<'ANSWERS'
    [...]
    ANSWERS
    ```
