@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "kmctl-to-packages",
-  "plan_hash": "e7297741492ac32aeeb9dffa1ce25a4cf94a6325c6edca4b0e1c567c10064331",
+  "plan_hash": "a47f0c9483d8cb2ea3dfa219e479bb545a6eb40b2cb87b93d0b2fdadd2094bd4",
   "problems": [
     {
       "id": "P1",
@@ -60,10 +60,12 @@
         "new:packages/kmctl/LICENSE",
         "new:packages/kmctl/src/kmctl/__init__.py",
         "new:packages/kmctl/src/kmctl/pin.py",
+        "new:packages/kmctl/hatch_build.py",
+        "scripts/check_wheel.py",
         "src/kmctl/__init__.py",
         "uv.lock"
       ],
-      "checked_by": "`uv sync` then `uv run kmctl --version` at the root prints `apm/apm.yml`'s version; `uv build --package kmctl` gives a wheel and an sdist at that version; `tests/scripts/test_release.py` and `tests/scripts/test_check_wheel.py` read `packages/kmctl/pyproject.toml`",
+      "checked_by": "`uv sync` then `uv run kmctl --version` at the root prints `apm/apm.yml`'s version; `uv build --package kmctl` (wheel built from the sdist) and `uv build --wheel --package kmctl` both give a wheel at that version with `_skills`, `_agents` and `_rules` that `scripts/check_wheel.py` and `scripts/smoke_wheel.py` accept; `tests/scripts/test_release.py` and `tests/scripts/test_check_wheel.py` read `packages/kmctl/pyproject.toml`",
       "seen_by": "operator"
     },
     {
