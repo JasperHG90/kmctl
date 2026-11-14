@@ -28,7 +28,7 @@ from kmctl.audit_settings import Question, Settings, load, settings_path
 from kmctl.claims import AuditError
 from kmctl.claims.check_store import check
 from kmctl.claims.check_verbs import CHECKABLE, lines_for, status_row
-from kmctl.claims.coverage import FileCoverage, code_files, coverage
+from kmctl.claims.coverage import FileCoverage, coverage
 from kmctl.claims.feedback import (
     Feedback,
     FeedbackIn,
@@ -91,6 +91,10 @@ class CheckView(BaseModel):
     reads: list[str] = Field(
         default_factory=list,
         description="The files the check read on its last run, for checks that test whole files.",
+    )
+    stale: bool = Field(
+        default=False,
+        description="True when a file it read changed since its last run, so the lines it matched may have moved.",
     )
 
 
@@ -249,7 +253,7 @@ def question_for(claim: Claim, store: Store) -> Question | None:
     return "link" if stored.holds else "failure"
 
 
-def _check_view(store: Store, claim_id: str) -> CheckView | None:
+def _check_view(store: Store, repo: Repository, claim_id: str) -> CheckView | None:
     """A claim's stored check or reason for the page, or None."""
     found = check(store, claim_id)
     if found is None:
@@ -270,6 +274,7 @@ def _check_view(store: Store, claim_id: str) -> CheckView | None:
         if q is None
         else QualityView(mutants=q.mutants, killed=q.killed, survived=q.survived),
         reads=sorted(found.reads),
+        stale=any(repo.sha(p) != h for p, h in found.reads.items()),
     )
 
 
@@ -306,7 +311,7 @@ def _claim_view(
         kind=claim.kind,
         quantifier=claim.quantifier,
         status=status,
-        check=_check_view(store, claim.id) if row is not None else None,
+        check=_check_view(store, repo, claim.id) if row is not None else None,
         coverage=coverage_of(status, human),
         human=human,
         human_stale=given is not None and given.verdict is not None and human is None,
@@ -501,18 +506,30 @@ def sentence_coverage(pending: bool, claims: list[ClaimView]) -> str:
 
 
 def file_text(root: Path, path: str) -> FileText:
-    """One code file's text, for the code view; only files that count as code are served.
+    """One file's text, for the code view and a check's "View code" panel.
+
+    Any git-tracked text file outside the knowledge folders is served, since
+    that is what a check may read: code, and also tests, READMEs and other
+    files a file step names. A file that is gone, binary, or a link leading
+    out of the repository is refused.
 
     Raises
     ------
     AuditError
-        When ``path`` is not one of the repository's code files.
+        When ``path`` is not such a file.
     """
     target = resolve_target(root)
     repo = Repository(target.root)
-    if path not in set(code_files(repo)):
-        raise AuditError(f"{path!r} is not a code file of this repository")
-    return FileText(path=path, text=repo.text(path))
+    refused = AuditError(f"{path!r} is not a text file a check may read")
+    if path not in set(repo.tracked):
+        raise refused
+    full = (target.root / path).resolve()
+    if not full.is_file() or not full.is_relative_to(target.root.resolve()):
+        raise refused
+    data = full.read_bytes()
+    if b"\0" in data[:8192]:
+        raise refused
+    return FileText(path=path, text=data.decode(errors="replace"))
 
 
 def claim_view(root: Path, claim_id: str, config: Path | None = None) -> ClaimView:

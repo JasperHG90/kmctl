@@ -1030,11 +1030,14 @@ The Code tab shows the repository's code instead: each file with the share
 of its lines a check matched, the file with matched lines marked (red where
 a matching check fails), and, for a clicked line, the claims whose
 checks matched it. A check's card lists the lines it matched, each a link
-into the code. `kmctl audit coverage` gives the same numbers.
+into the code, and its View code button shows those lines in the card with
+three lines around them; for a check that tests whole files, it shows each
+file it read (up to four, 400 lines each), and it warns when a file
+changed since the check ran. `kmctl audit coverage` gives the same numbers.
 
 The server answers only requests whose Host is `127.0.0.1` or `localhost`,
 takes writes only as JSON from its own page, and serves the text only of
-files that count as code.
+files a check may read.
 
 | Option | Meaning |
 |---|---|

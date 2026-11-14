@@ -210,6 +210,21 @@
   .code-links { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px 8px; font-size: 12px; }
   .code-links button { font: 500 11.5px var(--code); color: var(--pencil); }
   .code-links button:hover { text-decoration: underline; }
+  .view-code { margin-top: 6px; }
+  .view-code-btn { font: 500 12px var(--ui); color: var(--pencil); border: 1px solid var(--rule); border-radius: 5px; padding: 2px 9px; }
+  .view-code-btn:hover { background: var(--pencil-wash); }
+  .snips { margin-top: 6px; display: grid; gap: 8px; }
+  .snip { border: 1px solid var(--rule); border-radius: 6px; overflow: hidden; }
+  .snip-head { display: flex; align-items: baseline; gap: 8px; padding: 4px 8px; font: 500 11.5px var(--code); color: var(--soft); background: var(--pencil-wash); }
+  .snip-head .snip-where { flex: 1; text-align: left; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .snip-head button { color: var(--pencil); font: 500 11.5px var(--ui); white-space: nowrap; }
+  .snip-head button:hover { text-decoration: underline; }
+  .snip .code { padding: 4px 0; font-size: 11.5px; line-height: 1.5; overflow-x: auto; }
+  .snip .code.whole { max-height: 320px; overflow-y: auto; }
+  .snip .ln { grid-template-columns: 34px 3px max-content; width: max-content; min-width: 100%; cursor: default; }
+  .snip .ln .no { padding-right: 8px; }
+  .snip .ln .tx { padding: 0 8px; overflow: visible; text-overflow: clip; }
+  .snip-more { margin: 2px 8px 4px; font-size: 11.5px; }
   .readers { margin: 0 0 0 30px; font-size: 13px; color: var(--soft); line-height: 1.55; }
   .readers summary { cursor: pointer; }
   .readers ul { margin: 6px 0 0; padding-left: 18px; }
@@ -778,7 +793,7 @@ function claimCard(sec, c, fold, fromCode = false) {
     card.append(
       part("check", "Check", verdictLine(k), el("div", { class: "what" }, k.why),
         el("ul", { class: "steps" }, k.steps.map((step, i) => stepLine(step, k.passed[i], k.results[i]))),
-        k.drift ? el("div", { class: "drift-note" }, k.drift) : null, codeLinks(c), feedback(c, "check"), verdictNotes),
+        k.drift ? el("div", { class: "drift-note" }, k.drift) : null, codeLinks(c), viewCode(c), feedback(c, "check"), verdictNotes),
       confidence(k, c));
   }
   return card;
@@ -789,7 +804,7 @@ function renderCards() {
   const keyNow = selection ? `${selection.section}|${selection.n}` : "";
   const moved = keyNow !== shownKey;
   shownKey = keyNow;
-  if (moved) { openCards = new Set(); editing = null; }
+  if (moved) { openCards = new Set(); codeOpen = new Set(); editing = null; }
   const top = box.scrollTop;
   box.replaceChildren();
   const sec = current?.sections.find((s) => s.id === selection?.section);
@@ -831,6 +846,87 @@ function indexClaims() {
 }
 const firstCodeFile = () => (DATA.code.files.find((f) => Object.values(f.hits).some((h) => h.drift)) || DATA.code.files.find((f) => f.covered) || DATA.code.files[0])?.path;
 const driftLines = (f) => Object.values(f.hits).filter((h) => h.drift).length;
+
+// One file's text, fetched once and kept.
+async function loadFile(path) {
+  if (!(path in fileText)) {
+    const res = await fetch("/api/file?" + new URLSearchParams({ path }));
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `the server answered ${res.status}`);
+    fileText[path] = data.text;
+  }
+  return fileText[path];
+}
+
+const CONTEXT = 3;           // lines shown above and below what a check matched
+const SPAN_MAX = 40;         // lines shown of one matched span before it is cut
+const WHOLE_MAX = 400;       // lines shown of a file a check read whole
+let codeOpen = new Set();    // claim ids whose "View code" panel is open
+
+// The "View code" button and, when open, the code the check matched or read, in place.
+function viewCode(c) {
+  const spans = c.code || [];
+  const reads = c.check?.reads || [];
+  if (!spans.length && !reads.length) return null;
+  const open = codeOpen.has(c.id);
+  const box = el("div", { class: "view-code" });
+  const button = el("button", { class: "view-code-btn", "aria-expanded": String(open),
+      onclick: () => { if (codeOpen.has(c.id)) codeOpen.delete(c.id); else codeOpen.add(c.id); box.replaceWith(viewCode(c)); } },
+    open ? "Hide code" : "View code");
+  box.append(button);
+  if (!open) return box;
+  const panel = el("div", { class: "snips" }, el("p", { class: "dim" }, "Reading the code…"));
+  box.append(panel);
+  fillSnippets(panel, c, spans, reads);
+  return box;
+}
+// Matched spans grouped into windows: spans on one file whose context touches share one window.
+function windowsOf(spans) {
+  const out = [];
+  for (const sp of [...spans].sort((x, y) => x.path.localeCompare(y.path) || x.start - y.start)) {
+    const last = out.at(-1);
+    if (last && last.path === sp.path && sp.start - CONTEXT <= last.end + CONTEXT + 1) {
+      last.end = Math.max(last.end, sp.end); last.hits.push([sp.start, sp.end]);
+    } else out.push({ path: sp.path, start: sp.start, end: sp.end, hits: [[sp.start, sp.end]] });
+  }
+  return out;
+}
+async function fillSnippets(panel, c, spans, reads) {
+  const known = new Set(DATA.code.files.map((f) => f.path));
+  const failing = c.status === "drift" || c.status === "fails";
+  const all = spans.length ? windowsOf(spans) : reads.map((p) => ({ path: p, start: null, end: null, hits: [] }));
+  const wanted = all.slice(0, spans.length ? 8 : 4);
+  const parts = [];
+  for (const w of wanted) {
+    const name = w.path.split("/").at(-1);
+    const where = w.start == null ? `${name}, read whole` : `${name}:${w.start}${w.end > w.start ? "–" + w.end : ""}`;
+    const head = el("div", { class: "snip-head", title: w.path }, el("span", { class: "snip-where" }, where),
+      known.has(w.path) ? el("button", { title: "Open the whole file in the code view", onclick: () => goCode(w.path, w.start) }, "Open file") : null);
+    let text;
+    try { text = await loadFile(w.path); } catch (e) {
+      parts.push(el("div", { class: "snip" }, head, el("p", { class: "dim snip-more" }, `Could not read it: ${e.message}`)));
+      continue;
+    }
+    const lines = text.split("\n");
+    const whole = w.start == null;
+    const from = whole ? 1 : Math.max(1, w.start - CONTEXT);
+    const last = whole ? Math.min(lines.length, WHOLE_MAX) : Math.min(lines.length, w.end + CONTEXT, w.start + SPAN_MAX - 1);
+    const rows = [];
+    for (let n = from; n <= last; n++) {
+      const hit = w.hits.some(([x, y]) => n >= x && n <= y);
+      rows.push(el("div", { class: "ln" + (hit ? " hit" : "") + (hit && failing ? " drift" : "") },
+        el("span", { class: "no" }, String(n)), el("span", { class: "mk" }), el("span", { class: "tx" }, lines[n - 1] || " ")));
+    }
+    const cut = Math.max(0, (whole ? lines.length : w.end) - last);
+    parts.push(el("div", { class: "snip" }, head, el("div", { class: "code" + (whole ? " whole" : "") }, rows),
+      cut > 0 ? el("p", { class: "dim snip-more" }, `${cut} more ${cut === 1 ? "line" : "lines"}`) : null));
+  }
+  if (c.check?.stale) parts.unshift(el("p", { class: "disagree" },
+    "A file this check reads changed since it last ran, so these lines may have moved. Run kmctl audit checks run, then Reload."));
+  const more = all.length - wanted.length;
+  if (more > 0) parts.push(el("p", { class: "dim snip-more" }, `and ${more} more ${spans.length ? "matches" : "files"}: see the links above`));
+  panel.replaceChildren(...parts);
+}
 
 function codeLinks(c) {
   if (!c.code?.length) {
@@ -904,10 +1000,7 @@ async function renderCode() {
   if (!(f.path in fileText)) {
     page.append(el("p", { class: "blank" }, "Reading the file…"));
     try {
-      const res = await fetch("/api/file?" + new URLSearchParams({ path: f.path }));
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || `the server answered ${res.status}`);
-      fileText[f.path] = data.text;
+      await loadFile(f.path);
     } catch (e) {
       page.replaceChildren(el("p", { class: "blank" }, `Could not read ${f.path}: ${e.message}`));
       return;
@@ -977,7 +1070,7 @@ function renderCodeCards() {
   const keyNow = `${codeFile?.path}|${codeLine}`;
   const moved = keyNow !== shownCodeKey;
   shownCodeKey = keyNow;
-  if (moved) { openCards = new Set(); editing = null; }
+  if (moved) { openCards = new Set(); codeOpen = new Set(); editing = null; }
   const top = box.scrollTop;
   box.replaceChildren();
   if (!codeFile) return;

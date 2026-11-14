@@ -2,13 +2,13 @@
 
 import json
 import threading
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from pathlib import Path
 
 import httpx
 import pytest
 import respx
-from fixtures.audit_repo import make_repo, store_claims
+from fixtures.audit_repo import git, make_repo, store_claims
 from typer.testing import CliRunner
 
 from kmctl import app
@@ -282,20 +282,37 @@ def test_the_page_carries_code_coverage_and_each_check_s_matched_lines(
     ("path", "status"),
     [
         ("src/tool.py", 200),
-        ("README.md", 404),
+        ("README.md", 200),
         (".okf/tool.md", 404),
         ("../../etc/passwd", 404),
+        ("untracked.py", 404),
     ],
-    ids=["code", "readme", "knowledge", "outside"],
+    ids=["code", "readme", "knowledge", "outside", "untracked"],
 )
-def test_only_code_files_are_served(
-    client: httpx.Client, path: str, status: int
+def test_only_files_a_check_may_read_are_served(
+    client: httpx.Client, repo: Path, path: str, status: int
 ) -> None:
+    (repo / "untracked.py").write_text("print(1)\n")
+
     res = client.get("/api/file", params={"path": path})
 
     assert res.status_code == status
     if status == 200:
-        assert "sys.exit(1)" in res.json()["text"]
+        assert res.json()["text"] == (repo / path).read_text()
+
+
+def test_a_test_file_a_check_reads_is_served_though_it_is_not_code(
+    client: httpx.Client, repo: Path
+) -> None:
+    test = repo / "tests" / "test_tool.py"
+    test.parent.mkdir()
+    test.write_text("def test_exits():\n    assert True\n")
+    git(repo, "add", "tests/test_tool.py")
+
+    res = client.get("/api/file", params={"path": "tests/test_tool.py"})
+
+    assert res.status_code == 200
+    assert res.json()["text"] == test.read_text()
 
 
 def test_the_page_still_loads_when_a_tracked_file_is_deleted(
@@ -339,3 +356,34 @@ def test_the_page_says_whether_a_check_holds_and_which_steps_passed(
     shown = claim_in(build(repo).model_dump(), ids["exits"])["check"]
 
     assert (shown["holds"], shown["passed"]) == (True, [True])
+
+
+def test_a_check_whose_file_changed_since_its_run_is_marked_stale(
+    repo: Path, ids: dict[str, str]
+) -> None:
+    before = claim_in(build(repo).model_dump(), ids["exits"])["check"]["stale"]
+    tool = repo / "src" / "tool.py"
+    tool.write_text("# moved down\n" + tool.read_text())
+
+    after = claim_in(build(repo).model_dump(), ids["exits"])["check"]["stale"]
+
+    assert (before, after) == (False, True)
+
+
+@pytest.mark.parametrize(
+    ("name", "make"),
+    [
+        ("logo.png", lambda p: p.write_bytes(b"\x89PNG\0\0binary")),
+        ("escape.py", lambda p: p.symlink_to("/etc/hostname")),
+    ],
+    ids=["binary", "symlink-out"],
+)
+def test_a_binary_file_or_a_link_out_of_the_repository_is_refused(
+    client: httpx.Client, repo: Path, name: str, make: Callable[[Path], object]
+) -> None:
+    make(repo / name)
+    git(repo, "add", name)
+
+    res = client.get("/api/file", params={"path": name})
+
+    assert res.status_code == 404
