@@ -64,10 +64,16 @@ them. A commit counts for a package when its diff against its first parent touch
 one of its paths; loop state and release commits stay skipped as today. Measured on
 `agent-audit`: of the 16 first-parent commits since `v0.12.1` that are not loop or
 release commits, 13 touch only kmctl's paths, 3 touch both (root tooling plus
-kmaudit), and 0 touch only kmaudit, so today a kmaudit release would list 3
-bullets and kmctl 16, where the unfiltered script would list all 16 in both.
+kmaudit), and 0 touch only kmaudit. kmctl's next notes would list 16 bullets either
+way; the filter's effect shows from kmaudit's second release on. kmaudit has no
+`kmaudit-v*` tag yet, so its first draft walks the whole history and lists every
+commit that ever touched `packages/kmaudit/`; the pull request review trims it.
 
-Late commits: a commit that lands on main after the Release run drafts the notes and before the version pull request merges ships in the tag without a bullet, and the next release's notes start after it. The draft records the commit it was drafted from in an HTML comment; release-tag lists the package's commits between that commit and the merge, and when there are any it still publishes exactly the reviewed file but writes a `::warning::` and a step-summary section naming them, so someone adds them with `gh release edit`. Release-tag never rewrites the reviewed notes itself (D3).
+Late commits: a commit that lands on main after the Release run drafts the notes and before the version pull request merges ships in the tag without a bullet, and the next release's notes start after it. The notes file carries no marker, because `release-notes-hermes` replaces it and a human may edit it. Instead the bump job commits on top of the exact commit the draft was made from and records it as a `Drafted-From: <sha>` trailer in the bump commit message and in the pull request body. Release-tag finds the drafted commit as the parent of the merge's second parent when the merge has two parents, else from the `Drafted-From` trailer in the pushed commit's message (a squash merge). It lists the package's commits between that commit and the merge's first parent, and when there are any it still publishes the reviewed file unchanged but writes a `::warning::` and a step-summary section naming them, so someone adds them with `gh release edit`. Release-tag never rewrites the reviewed notes itself (D3).
+
+First kmaudit release: `packages/kmaudit/VERSION` starts at `0.1.0.dev0`. `scripts/release.py compare` already answers `skip` for a `.dev` version, so the merge that lands this ticket (which adds the file, a release-tag trigger path, with no file before it) releases nothing. kmaudit's first release is a Release run that sets `0.1.0`, which compares as raised against `0.1.0.dev0`.
+
+Where the draft runs: the draft step sits in its own job that runs in dry runs too, writes the notes file, shows it in the step summary and uploads it as an artifact; bump downloads that artifact. `release-notes-hermes` puts its rewrite step in the same job, beside the draft step.
 
 Only a kmctl release is marked Latest (`--latest`); a kmaudit release passes
 `--latest=false`. The untracked root `release.yml` and `plugin-tag.yml` are shape
@@ -101,7 +107,7 @@ publishes the file as the Release body, Latest only for kmctl.
 - fixes: P2
 - needs: none
 - touches: `new:packages/kmaudit/VERSION`, `packages/kmaudit/pyproject.toml`, `uv.lock`
-- checked by: a test that `scripts/release.py --package kmaudit current` prints the VERSION file's value and the pyproject declares version dynamic with a regex source on that file; `uv lock --check` passes with no kmaudit version line
+- checked by: a test that `scripts/release.py --package kmaudit current` prints the VERSION file's value, that the file holds `0.1.0.dev0` and `release.py compare '' 0.1.0.dev0` prints `skip` (so the landing push releases nothing), and that the pyproject declares version dynamic with a regex source on that file; `uv lock --check` passes with no kmaudit version line
 - seen by: nobody
 
 ### O2: The version and wheel scripts take `--package kmctl|kmaudit`
@@ -122,13 +128,13 @@ publishes the file as the Release body, Latest only for kmctl.
 - checked by: tests on a scratch git repo that `release_notes.py --package kmaudit kmaudit-v0.2.0 --ref HEAD --out FILE` writes notes for the range from the family's previous tag to HEAD when the tag does not exist, lists a commit touching `packages/kmaudit/` but not one touching only kmctl's paths (and the reverse for kmctl), never counts a `v*` tag as kmaudit's previous tag, skips `release/kmaudit-v` merges and `release: kmaudit-v` commits, and fills the kmaudit template's install line with `#subdirectory=packages/kmaudit`; existing tagged-tag tests still pass
 - seen by: calling code
 
-### O4: The Release run takes a package, drafts its notes to a file, and commits that file into the version pull request and its body
+### O4: The Release run takes a package, drafts its notes to a file, and commits that file into the version pull request and its body with a Drafted-From trailer
 - kind: behaviour
 - goal: G2
 - fixes: P4
 - needs: O2, O3
 - touches: `.github/workflows/release.yml`, `tests/scripts/test_workflows.py`
-- checked by: workflow tests that the inputs are `package` (choice kmctl, kmaudit), increment, prerelease, version and dry_run; that resolve passes `--package` and checks the family's tag on origin; that build runs `uv build --package` for the chosen package and the per-package wheel checks; that a draft step writes `release_notes.py` output to the notes file path before the bump step, as its own step a later step can replace; that bump opens `release/TAG`, stages the notes file with every file `release.py set` wrote, and passes the same file to `gh pr create --body-file`; and that a dry run still drafts the notes and shows them in the step summary
+- checked by: workflow tests that the inputs are `package` (choice kmctl, kmaudit), increment, prerelease, version and dry_run; that resolve passes `--package` and checks the family's tag on origin; that build runs `uv build --package` for the chosen package and the per-package wheel checks; that a notes job, which runs in dry runs too, writes `release_notes.py` output to the notes file as its own step a later step can replace, shows it in the step summary and uploads it as an artifact; that bump needs that job, downloads the artifact, checks out the exact commit the draft was made from, opens `release/TAG` on it, stages the notes file with every file `release.py set` wrote, writes a `Drafted-From: <sha>` trailer in the commit message, and passes a body holding the notes file and the same trailer to `gh pr create --body-file`
 - seen by: operator
 
 ### O5: release-tag publishes the committed notes for whichever package's version rose, refuses without them, and marks only kmctl Latest
@@ -137,9 +143,9 @@ publishes the file as the Release body, Latest only for kmctl.
 - fixes: P5
 - needs: O2, O4
 - touches: `.github/workflows/release-tag.yml`, `tests/scripts/test_workflows.py`, `.okf/decisions/0012-releases-come-from-ci.md`, `.okf/architecture/overview.md`
-- checked by: workflow tests that the push paths are `apm/apm.yml` and `packages/kmaudit/VERSION`; that the tag job runs once per package (matrix) comparing that package's version before and after; that the step refusing a missing or blank .github/release-notes/TAG.md runs before `git tag -a`; that `gh release create` uses `--notes-file` on that committed file with no call to `release_notes.py` and no `--generate-notes`; that kmctl passes `--latest` and kmaudit `--latest=false`; and that ADR 0012 carries a dated Correction naming the package input, the tag families, the VERSION file and the committed notes file, checked by `tests/scripts/test_release_docs.py`
+- checked by: workflow tests that the push paths are `apm/apm.yml` and `packages/kmaudit/VERSION`; that the tag job runs once per package (matrix) comparing that package's version before and after; that the step refusing a missing or blank .github/release-notes/TAG.md runs before `git tag -a`; that `gh release create` uses `--notes-file` on that committed file with no call to `release_notes.py` and no `--generate-notes`; that kmctl passes `--latest` and kmaudit `--latest=false`; that a step finds the drafted commit as the parent of the merge's second parent for a two-parent merge, else from the `Drafted-From` trailer of the pushed commit, and, run in bash against a scratch repo, writes a `::warning::` and a step-summary section naming a package commit that landed between the drafted commit and the merge's first parent while the published notes file stays byte for byte the reviewed one; and that ADR 0012 carries a dated Correction naming the package input, the tag families, the VERSION file and the committed notes file, checked by `tests/scripts/test_release_docs.py`
 - seen by: operator
 
 ## Could invalidate this plan
 
-- After `kmctl-to-packages` moves kmctl's pyproject into `packages/kmctl`, its hatchling `regex` version source may be unable to read `apm/apm.yml` outside the package folder (or the sdist may not carry it), which would force kmctl's version source somewhere else and change what `release.py`, the Release run and release-tag's trigger read. `kmctl-to-packages` owns that choice; this plan assumes `apm/apm.yml` stays kmctl's one version source as D2 and D5 say. spike:kmctl-to-packages/3 settles it: with kmctl's moved pyproject reading apm.yml two folders up and a hatch build hook for the force-includes, the sdist build, the wheel build, the git-subdirectory install and the folder install all report apm.yml's version (the sdist reads it from PKG-INFO), so apm/apm.yml stays kmctl's one version source.
+- After `kmctl-to-packages` moves kmctl's pyproject into `packages/kmctl`, its hatchling `regex` version source may be unable to read `apm/apm.yml` outside the package folder (or the sdist may not carry it), which would force kmctl's version source somewhere else and change what `release.py`, the Release run and release-tag's trigger read. `kmctl-to-packages` owns that choice; this plan assumes `apm/apm.yml` stays kmctl's one version source as D2 and D5 say. Settled by spike:kmctl-to-packages/3: with packages/kmctl/hatch_build.py (from kmctl-to-packages) reading `../../apm` in a checkout and the sdist's `apm/` otherwise, `uv build`, `uv build --wheel`, a git subdirectory install and a git-archive install all report `apm/apm.yml`'s version. spike:kmctl-to-packages/3 settles it: with kmctl's moved pyproject reading apm.yml two folders up and a hatch build hook for the force-includes, the sdist build, the wheel build, the git-subdirectory install and the folder install all report apm.yml's version (the sdist reads it from PKG-INFO), so apm/apm.yml stays kmctl's one version source.
