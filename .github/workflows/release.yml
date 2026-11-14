@@ -2,7 +2,9 @@
 # an increment, or type the version. Each package has its own version source
 # and tag family: kmctl's is apm/apm.yml with vX.Y.Z tags, kmaudit's is
 # packages/kmaudit/VERSION with kmaudit-vX.Y.Z tags. A dry run (the default)
-# resolves, tests, builds and drafts the release notes, then stops. A real run
+# resolves, tests, builds and drafts the release notes, has Hermes rewrite
+# them for users and keeps the rewrite only when it passes
+# scripts/hermes_release_notes.py's checks (ADR 0035), then stops. A real run
 # from main opens a pull request that commits `scripts/release.py set` and the
 # notes as .github/release-notes/TAG.md, with the notes as its body. For kmctl,
 # set writes the four apm.yml files, pins the docs' install lines to the tag,
@@ -183,9 +185,11 @@ jobs:
           retention-days: 7
 
   # Drafts the package's notes from its own commits since its family's last
-  # tag. It runs in dry runs too, so a dry run shows the notes a real run would
-  # commit. The draft step writes the notes file and nothing else, so a later
-  # step can replace that file before the upload hands the folder to bump.
+  # tag, and has Hermes rewrite the draft's What changed bullets for users. It
+  # runs in dry runs too, so a dry run shows the notes a real run would commit.
+  # The draft step writes the notes file and nothing else; the check step
+  # replaces it with the notes that won before the upload hands the folder to
+  # bump.
   notes:
     name: Draft the release notes
     needs: resolve
@@ -209,10 +213,57 @@ jobs:
           set -euo pipefail
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           uv run scripts/release_notes.py --package "$PACKAGE" "$TAG" --ref HEAD --out "$RUNNER_TEMP/release-notes/$TAG.md"
+      # Every tool is off, so Hermes answers from the draft alone, and a
+      # crafted commit subject in the draft can make it do little with the key
+      # in its environment (ADR 0035). An error or a timeout leaves no
+      # response, and the check step keeps the draft.
+      - name: Rewrite the notes with Hermes
+        id: hermes
+        continue-on-error: true
+        timeout-minutes: 10
+        uses: JasperHG90/toiminnot/actions/hermes@551e8a6cbb23aba74045fa3578bf4c14ffb92893 # v1.2.0
+        with:
+          system_prompt_file: .github/prompts/release-notes-system.md
+          user_message: '@${{ runner.temp }}/release-notes/${{ needs.resolve.outputs.tag }}.md'
+          api_key: ${{ secrets.OLLAMA_API_KEY }}
+          model: deepseek-v4.1-flash
+          disabled_toolsets: 'browser,clarify,code_execution,delegation,file,memory,project,session_search,skills,terminal,todo,tts,web,vision'
+          max_iterations: '3'
+      # Keeps Hermes' rewrite as TAG.md only when it passes the checks, else
+      # the draft. A kept rewrite also leaves TAG.before-hermes.md, the
+      # draft's What changed section, for the summary and the pull request
+      # body; bump does not commit it.
+      - name: Check the rewrite
+        env:
+          TAG: ${{ needs.resolve.outputs.tag }}
+          RESPONSE_FILE: ${{ steps.hermes.outputs.response_file }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          DIR="$RUNNER_TEMP/release-notes"
+          cp "$DIR/$TAG.md" "$RUNNER_TEMP/draft.md"
+          uv run scripts/hermes_release_notes.py "$RUNNER_TEMP/draft.md" "$RESPONSE_FILE" --before "$DIR/$TAG.before-hermes.md" > "$RUNNER_TEMP/notes.md"
+          mv "$RUNNER_TEMP/notes.md" "$DIR/$TAG.md"
       - name: Show the notes
         env:
           TAG: ${{ needs.resolve.outputs.tag }}
-        run: cat "$RUNNER_TEMP/release-notes/$TAG.md" >> "$GITHUB_STEP_SUMMARY"
+        shell: bash
+        run: |
+          set -euo pipefail
+          DIR="$RUNNER_TEMP/release-notes"
+          {
+            if [ -f "$DIR/$TAG.before-hermes.md" ]; then
+              echo "**Notes source:** Hermes, checked against the draft."
+            else
+              echo "**Notes source:** the draft. Hermes' rewrite was not kept; the Check the rewrite step says why."
+            fi
+            echo
+            cat "$DIR/$TAG.md"
+            if [ -f "$DIR/$TAG.before-hermes.md" ]; then
+              echo
+              cat "$DIR/$TAG.before-hermes.md"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: release-notes
@@ -255,6 +306,7 @@ jobs:
           set -euo pipefail
           BRANCH="release/$TAG"
           NOTES=".github/release-notes/$TAG.md"
+          BEFORE="$RUNNER_TEMP/release-notes/$TAG.before-hermes.md"
           if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null; then
             PR="$(gh pr list --head "$BRANCH" --state open --json url --jq '.[0].url')"
             if [ -n "$PR" ]; then
@@ -295,6 +347,12 @@ jobs:
             echo
             echo "---"
             echo
+            if [ -f "$BEFORE" ]; then
+              echo "Hermes rewrote What changed for users. Check each line against the draft's below before merging."
+              echo
+              cat "$BEFORE"
+              echo
+            fi
             echo "Drafted-From: $DRAFTED"
           } > "$RUNNER_TEMP/pr-body.md"
           if ! gh pr create --base main --head "$BRANCH" \
