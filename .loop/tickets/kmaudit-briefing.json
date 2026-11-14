@@ -22,23 +22,23 @@
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-main",
-    "hash": "5f13809538c6767dc688c3ac18ec501a7d87006f158f4b068a45d061374472a5",
-    "at": "2026-11-14T14:00:41+00:00"
+    "hash": "4c3559168e67531d67fff32f522e2e159bbcfbc3788af80febcb509b2c568b08",
+    "at": "2026-11-14T14:03:23+00:00"
   },
   "delegation": null,
   "budget_base": null,
   "signed_rows": [
     {
       "id": "r1",
-      "behavior": "`kmaudit briefing --json` reports, per namespace, sections, pending sections, claims, checks by status and open feedback, matching what `kmaudit claims list` and `kmaudit checks list` report for that namespace; without --json it prints a few lines per namespace and one next step.",
-      "fails_when": "a namespace is missing, any count differs from claims list or checks list, or the text output names no next step while sections are pending",
+      "behavior": "`kmaudit briefing --json` reports, per namespace, sections, pending sections, claims, checks by status and open feedback; sections, claims, check statuses and open feedback match what `kmaudit claims list` and `kmaudit checks list` report for that namespace, and pending is the count of sections whose page is new or changed. Without --json it prints a few lines per namespace and one next step.",
+      "fails_when": "a namespace is missing, a matched count differs from the list commands, pending differs from the sections a fresh cut finds unextracted, or the text output names no next step while sections are pending",
       "command": "uv run pytest packages/kmaudit/tests/test_briefing.py -k counts -q",
       "judgment": false
     },
     {
       "id": "r2",
-      "behavior": "The briefing is read-only: every store file's bytes are equal before and after it runs, even when a page changed since extraction, and the changed page's sections are counted pending.",
-      "fails_when": "any store file changes, a changed section's claims are dropped, or the changed section is not counted pending",
+      "behavior": "The briefing is read-only: with only an old .kmctl/audit.sqlite, or with stores under .kmaudit/, no file in the repository appears or changes (no .kmaudit/ is created, no store is copied or migrated), even when a page changed since extraction, and the changed page's sections are counted pending.",
+      "fails_when": "any file under .kmaudit/ or .kmctl/ appears or changes, or the changed section is not counted pending",
       "command": "uv run pytest packages/kmaudit/tests/test_briefing.py -k read_only -q",
       "judgment": false
     },
@@ -57,7 +57,27 @@
       "judgment": false
     }
   ],
-  "resigns": [],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-main",
+      "reason": "plan review round 1: read-only means no store opened through Store (r2), and pending is the briefing's own count from the pages, not the list commands' (r1)",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r1": [
+            "behavior",
+            "fails_when"
+          ],
+          "r2": [
+            "behavior",
+            "fails_when"
+          ]
+        }
+      },
+      "at": "2026-11-14T14:03:23+00:00"
+    }
+  ],
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
@@ -96,5 +116,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T14:03:20+00:00"
+  "at": "2026-11-14T14:03:23+00:00"
 }

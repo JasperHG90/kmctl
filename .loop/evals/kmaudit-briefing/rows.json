@@ -3,14 +3,14 @@
   "rows": [
     {
       "id": "r1",
-      "behavior": "`kmaudit briefing --json` reports, per namespace, sections, pending sections, claims, checks by status and open feedback, matching what `kmaudit claims list` and `kmaudit checks list` report for that namespace; without --json it prints a few lines per namespace and one next step.",
-      "fails_when": "a namespace is missing, any count differs from claims list or checks list, or the text output names no next step while sections are pending",
+      "behavior": "`kmaudit briefing --json` reports, per namespace, sections, pending sections, claims, checks by status and open feedback; sections, claims, check statuses and open feedback match what `kmaudit claims list` and `kmaudit checks list` report for that namespace, and pending is the count of sections whose page is new or changed. Without --json it prints a few lines per namespace and one next step.",
+      "fails_when": "a namespace is missing, a matched count differs from the list commands, pending differs from the sections a fresh cut finds unextracted, or the text output names no next step while sections are pending",
       "command": "uv run pytest packages/kmaudit/tests/test_briefing.py -k counts -q"
     },
     {
       "id": "r2",
-      "behavior": "The briefing is read-only: every store file's bytes are equal before and after it runs, even when a page changed since extraction, and the changed page's sections are counted pending.",
-      "fails_when": "any store file changes, a changed section's claims are dropped, or the changed section is not counted pending",
+      "behavior": "The briefing is read-only: with only an old .kmctl/audit.sqlite, or with stores under .kmaudit/, no file in the repository appears or changes (no .kmaudit/ is created, no store is copied or migrated), even when a page changed since extraction, and the changed page's sections are counted pending.",
+      "fails_when": "any file under .kmaudit/ or .kmctl/ appears or changes, or the changed section is not counted pending",
       "command": "uv run pytest packages/kmaudit/tests/test_briefing.py -k read_only -q"
     },
     {
