@@ -20,3 +20,4 @@
 {"at": "2026-11-14T22:14:37+00:00", "binds": "f6a0375aaf67fb6d9b6046223a307cc1924f4c2e7a3b3693b49163b21ab7405d", "kind": "round-start", "n": 2, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "df4ee8bd9949119e1e9ab76962477c27e15ef233"}
 {"at": "2026-11-14T22:18:26+00:00", "dispatched_at": "2026-11-14T22:14:37+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-11-14T22:18:15+00:00"}}
 {"at": "2026-11-14T22:18:34+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "9fb147110bcad63d34e44d34aff4fcc24fac266c"}
+{"at": "2026-11-14T22:21:53+00:00", "branch": "loop/release-notes-hermes", "kind": "land", "schema_version": "1.0", "sha": "16a731dfb8d6b1088b5123c3101bf033606f0188"}
