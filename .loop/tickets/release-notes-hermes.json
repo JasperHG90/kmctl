@@ -1,14 +1,31 @@
 {
   "schema_version": "1.0",
   "slug": "release-notes-hermes",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "f6a0375aaf67fb6d9b6046223a307cc1924f4c2e7a3b3693b49163b21ab7405d",
+    "tree": "df4ee8bd9949119e1e9ab76962477c27e15ef233",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": "j-20261114T221428+0000-93f94bc7",
+        "paths": [
+          "scripts/hermes_release_notes.py",
+          "tests/scripts/test_hermes_release_notes.py"
+        ]
+      }
+    ],
+    "at": "2026-11-14T22:14:28+00:00"
+  },
   "ask": "j-20261114T171913+0000-6d6b52c3",
   "split": "j-20261114T200016+0000-cacc639c",
   "split_plan_hash": "213a6358e28669d2d88b5c36be82ebd299210ce3d217b988cf86fec3a4264a26",
@@ -122,8 +139,14 @@
       "to": "fixing",
       "at": "2026-11-14T22:10:49+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-14T22:14:28+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T22:14:26+00:00"
+  "at": "2026-11-14T22:14:28+00:00"
 }
