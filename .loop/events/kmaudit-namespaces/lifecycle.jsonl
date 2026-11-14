@@ -19,3 +19,4 @@
 {"at": "2026-11-14T13:52:12+00:00", "binds": "14a08a0fbcfd62ea2e4642626743c2ded8c8f63133ee350ef4b64e9789bd1baf", "kind": "round-start", "n": 2, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "2ed8f2d43f719efd241993b21ff18484af526ca1"}
 {"at": "2026-11-14T13:56:19+00:00", "dispatched_at": "2026-11-14T13:52:12+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-11-14T13:56:03+00:00"}}
 {"at": "2026-11-14T13:56:34+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "d74c8d204586a39430c340b5d3c1820e81954103"}
+{"at": "2026-11-14T13:59:22+00:00", "branch": "loop/kmaudit-namespaces", "kind": "land", "schema_version": "1.0", "sha": "581e4d73a0ae21f53736718ba0fd0c65f36790f3"}
