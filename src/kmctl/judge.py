@@ -67,12 +67,21 @@ LINK = {
     "link": {
         "type": "score",
         "instructions": "Does this check test what the claim says? A check holds when every step holds; it is good "
-        "when it would fail if the claim were false.",
+        "when it would fail if the claim were false. Many claims are about what the repository says: a name, a "
+        "setting, a trigger, a line of help or text. For those, finding that exact text or value is testing the "
+        "claim. Judge only the part of the claim the repository can show; do not mark a check down for a part no "
+        "file could show, such as where a repository lives.",
         "criteria": [
             "unrelated: the steps test something the claim does not say",
-            "a keyword only: the steps look for a word or name from the claim, not what the claim says about it",
-            "a nearby fact: the steps test something related that the claim needs, not the claim itself",
-            "the claim itself: the steps fail exactly when the claim is false",
+            "a keyword only: the steps find a word or name from the claim, but not the fact the claim states about it",
+            (
+                "a nearby fact: the steps test something related that the claim needs, while the fact it states "
+                "could change and the steps still pass"
+            ),
+            (
+                "the claim itself: the steps fail when the fact the claim states stops being true, including by "
+                "finding the exact text or value the claim describes"
+            ),
         ],
     }
 }
@@ -150,6 +159,10 @@ class Judgement(BaseModel):
     )
     level: str | None = Field(
         default=None, description="link: unrelated, keyword, nearby or the claim."
+    )
+    levels: dict[str, float] | None = Field(
+        default=None,
+        description="link: the model's probability for each level, by name; a close split means it is unsure.",
     )
 
 
@@ -250,7 +263,8 @@ def _judgement(
     Raises
     ------
     DecisionError
-        When the link question came back with no level probabilities.
+        When the link question came back with no level probabilities, or
+        with levels outside 0 to 3.
     """
     out = Judgement(question=question, id=subject, model=model, cached=cached)
     if question == "failure":
@@ -275,12 +289,16 @@ def _judgement(
             raise DecisionError(
                 "the decision endpoint gave the link question no level probabilities"
             )
+        if any(k not in range(len(LINK_LEVELS)) for k in weights):
+            raise DecisionError(
+                f"the decision endpoint gave the link question levels {sorted(weights)}; "
+                f"the levels are 0 to {len(LINK_LEVELS) - 1}"
+            )
         out.score = round(
             sum(level * p for level, p in weights.items()) / (len(LINK_LEVELS) - 1), 3
         )
-        out.level = LINK_LEVELS[
-            min(max(weights, key=lambda k: weights[k]), len(LINK_LEVELS) - 1)
-        ]
+        out.level = LINK_LEVELS[max(weights, key=lambda k: weights[k])]
+        out.levels = {LINK_LEVELS[k]: round(p, 3) for k, p in sorted(weights.items())}
     return out
 
 

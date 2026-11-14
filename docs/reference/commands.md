@@ -1015,7 +1015,11 @@ On each claim you can:
 | Thumbs up or down on the check or reason | Rates the answer. A thumbs down hands the claim out again, first, in `kmctl audit checks todo`, with your note. |
 | Note | Free text kept with the rating. It goes to the agent the next time the item is handed out; on its own it sends nothing back. |
 | Your verdict: Claim holds, Claim is false | Your own reading of the claim. It counts over the check's while the files it was given on are unchanged (those the check read, or the files behind the claim's lines when no check read any). When the check says the opposite, or you say false and no check decides the claim yet, the claim goes back to `kmctl audit checks todo`. |
-| Ask for a second opinion | Asks the decision model `kmctl audit judge` uses: `link` for a check that holds, `failure` for one that fails, `claim` for a reason or no answer. Needs the `kmctl[audit]` extra and the question switched on in `audit.toml`. |
+| Ask for a second opinion | Asks the decision model `kmctl audit judge` uses: `link` for a check that holds, `failure` for one that fails, `claim` for a reason or no answer. Needs the `kmctl[audit]` extra and the question switched on in `audit.toml`. The page shows the answer as a guess; for `link`, when no level gets 70% it says the model is unsure and gives its two likeliest levels. |
+
+The controls show only feedback given under your `--by` name; feedback from
+anyone else, such as a check sent back on the decision model's word, shows
+below them, read-only, with who gave it.
 
 The agent's next `submit` for that section or claim marks the feedback
 answered, whatever it answered; the page then says so, and still shows a
@@ -1105,7 +1109,7 @@ for a question switched on in the settings file.
 |---|---|---|
 | `failure` | check ids of failed checks | `chance` the claim is false, `cause`: `claim_false`, `check_wrong` or `unclear` |
 | `claim` | one claim id, with the lines to judge on stdin | `chance` the lines show it true, `verdict`: `true`, `false` or `not_shown` |
-| `link` | check ids | `score` from 0 (unrelated) to 1 (tests the claim itself), `level`: `unrelated`, `keyword`, `nearby` or `the claim` |
+| `link` | check ids | `score` from 0 (unrelated) to 1 (tests the claim itself), `level`: `unrelated`, `keyword`, `nearby` or `the claim` (the most likely), and `levels`, the model's probability for each; finding the exact text or value a claim describes counts as testing the claim |
 
 kmctl builds the state from the store: the claim, its sentence, the check's
 steps and what its last run saw. It posts `{model, state, questions}` to the

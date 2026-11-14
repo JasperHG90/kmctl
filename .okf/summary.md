@@ -7,12 +7,9 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-11-12T11:19:35Z
+  at: 2026-11-14T07:57:06Z
   against:
-    - architecture/audit-pipeline
     - architecture/overview
-    - decisions/0042-code-coverage-counts-the-lines-a-check-matched
-    - manifesto
 ---
 
 # Summary: kmctl

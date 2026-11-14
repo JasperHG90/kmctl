@@ -258,6 +258,8 @@
   .fb-state { margin-top: 5px; font-size: 12px; color: var(--soft); }
   .fb-state.sent { color: var(--pencil); }
   .fb-error { margin-top: 5px; font-size: 12px; color: var(--drift); }
+  .fb-note.other { color: var(--soft); }
+  .fb-note.other .sub { font-size: 12px; margin-bottom: 2px; }
   .disagree { margin-top: 8px; padding: 6px 8px; border-radius: 5px; background: var(--unchecked-wash); color: var(--unchecked); font-size: 12.5px; }
   .opinion { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--rule); font-size: 12.5px; }
   .opinion .what { font-size: 13px; }
@@ -637,7 +639,11 @@ function since(at) {
 // Thumbs, an optional verdict and a note for one claim and target ("claim" or "check").
 function feedback(c, target) {
   const f = c.feedback[target];
-  const state = { vote: f?.vote ?? null, verdict: f?.verdict ?? null, note: f?.note ?? "" };
+  // Only your own feedback fills the controls; someone else's (the decision model, an agent) shows apart, read-only.
+  const mine = !f || f.by === DATA.by;
+  // Someone else's open thumbs down stays when you only add a note or a verdict; your own thumbs replace it.
+  const keepDown = !mine && f.vote === "down" && !f.answered;
+  const state = mine ? { vote: f?.vote ?? null, verdict: f?.verdict ?? null, note: f?.note ?? "" } : { vote: keepDown ? "down" : null, verdict: null, note: "" };
   const key = `${c.id}|${target}`;
   const box = el("div", {});
   const error = el("div", { class: "fb-error", role: "alert" });
@@ -688,7 +694,14 @@ function feedback(c, target) {
   } else if (state.note) {
     box.append(el("div", { class: "fb-note" }, state.note));
   }
-  if (f && (f.vote || f.verdict || f.note)) {
+  if (f && !mine) {
+    const what = f.vote === "down" ? "gave it a thumbs down" : f.vote === "up" ? "gave it a thumbs up" : f.verdict ? `said the claim ${f.verdict === "holds" ? "holds" : "is false"}` : "noted";
+    box.append(el("div", { class: "fb-note other" },
+      el("div", { class: "sub" }, `${f.by} ${what}, ${since(f.at)}`,
+        f.answered ? "; the agent has answered since." : keepDown ? ". It is sent back to the agent; a note or verdict from you keeps it sent back, and a thumbs up from you overrides it."
+          : ". Your vote counts over it."),
+      f.note || null));
+  } else if (f && (f.vote || f.verdict || f.note)) {
     // Mirrors kmctl's rule: a thumbs down, or a current verdict the check contradicts or no check settles, sends it back.
     const unsettled = ["no check", "reason", "stale reason"].includes(c.status);
     const back = f.vote === "down" || (target === "check" && (c.disagrees || (c.human === "false" && unsettled)));
@@ -715,16 +728,26 @@ const VERDICT = { true: "they show it holds", false: "they show it does not hold
 const pct = (x) => `${Math.round(x * 100)}%`;
 
 // The decision model's answer, and the button that asks for it.
+const SURE = 0.7;             // a link level the model gives at least this is its answer; below, it is unsure
+// What the model said about a link, with its split when no level is clear.
+function linkSaid(o) {
+  const levels = Object.entries(o.levels || {}).sort((a, b) => b[1] - a[1]);
+  const score = ` Score ${o.score.toFixed(2)} of 1.`;
+  if (!levels.length || levels[0][1] >= SURE) return [`The check ${LINK_LEVEL[o.level] || o.level}`, levels.length ? ` (${pct(levels[0][1])} sure).${score}` : `.${score}`];
+  const [a, b] = levels;
+  const second = b ? `, ${pct(b[1])} that it ${LINK_LEVEL[b[0]] || b[0]}` : "";
+  return ["Unsure", `: ${pct(a[1])} that the check ${LINK_LEVEL[a[0]] || a[0]}${second}.${score}`];
+}
 function opinion(c) {
   if (!c.ask) return null;
   const box = el("div", { class: "opinion" });
   const o = c.opinion;
   if (o) {
-    const said = o.question === "link" ? [`The check ${LINK_LEVEL[o.level] || o.level}`, ` (score ${o.score.toFixed(2)} of 1).`]
+    const said = o.question === "link" ? linkSaid(o)
       : o.question === "failure" ? [`${pct(o.chance)} likely the claim is false`, `; the model's best guess at why it failed: ${CAUSE[o.cause] || o.cause}.`]
       : [`${pct(o.chance)} likely the lines kmctl found show the claim true`, `; ${VERDICT[o.verdict] || o.verdict}.`];
     box.append(el("div", { class: "what" }, el("b", {}, "Second opinion: "), said[0], said[1]),
-      el("div", { class: "sub" }, el("span", {}, `from ${o.model}`)));
+      el("div", { class: "sub" }, el("span", {}, `a guess from ${o.model}, not measured against people's votes yet; your thumbs decide`)));
   }
   if (!DATA.questions.includes(c.ask)) {
     box.append(el("p", { class: "note" }, "Second opinion is off: switch on ", el("code", {}, `[decisions.${c.ask}]`), " in audit.toml (see kmctl audit judge --help) and restart kmctl audit ui."));
@@ -743,9 +766,16 @@ function opinion(c) {
   return box;
 }
 
+// Who gave a claim's current verdict: "you" when it was given under this page's name.
+function verdictBy(c) {
+  const by = c.feedback.check?.by;
+  return !by || by === DATA.by ? null : by;
+}
 function statusChip(c) {
-  if (c.human) return el("span", { class: "status st-" + (c.human === "false" ? "drift" : "checked"), title: "Your verdict, which counts over the check's" },
-    c.human === "false" ? "you: false" : "you: holds");
+  const other = verdictBy(c);
+  if (c.human) return el("span", { class: "status st-" + (c.human === "false" ? "drift" : "checked"),
+      title: other ? `${other}'s verdict, which counts over the check's` : "Your verdict, which counts over the check's" },
+    `${other ? other.split(":")[0] : "you"}: ${c.human === "false" ? "false" : "holds"}`);
   // "not measured" means the check holds but got no trial edits; the chip says what the check found, the confidence row says the rest.
   if (c.status === "not measured") return el("span", { class: "status st-checked", title: "The check holds; kmctl could not trial-edit it, see Confidence" }, "holds");
   return el("span", { class: "status st-" + c.coverage }, c.status);
@@ -776,9 +806,9 @@ function claimCard(sec, c, fold, fromCode = false) {
   head.lastChild.append(feedback(c, "claim"));
   card.append(head);
   const verdictNotes = [
-    c.disagrees ? el("div", { class: "disagree" }, `You say the claim ${c.human === "holds" ? "holds" : "is false"}; the check says ${c.status}. `,
+    c.disagrees ? el("div", { class: "disagree" }, `${verdictBy(c) ? `${verdictBy(c)} says` : "You say"} the claim ${c.human === "holds" ? "holds" : "is false"}; the check says ${c.status}. `,
       c.feedback.check?.answered ? "The agent answered since and still disagrees." : "It is back in the agent's queue.") : null,
-    c.human_stale ? el("div", { class: "disagree" }, "Your verdict was given before the files this check reads changed, so it no longer counts. Look again and say whether the claim holds.") : null,
+    c.human_stale ? el("div", { class: "disagree" }, `${verdictBy(c) ? `${verdictBy(c)}'s` : "Your"} verdict was given before the files this check reads changed, so it no longer counts. Look again and say whether the claim holds.`) : null,
   ];
   if (c.status === "not checkable") {
     card.append(part("check", "Check", el("div", { class: "what dim" }, "Not checkable: an opinion or a fact outside this repository.")));

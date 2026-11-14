@@ -61,6 +61,7 @@ JUDGE_REPLY = {
 LINK_REPLY = {
     "answers": {"link": {"probabilities": {"0": 0.1, "1": 0.1, "2": 0.2, "3": 0.6}}}
 }
+LINK_LEVELS_SHOWN = {"unrelated": 0.1, "keyword": 0.1, "nearby": 0.2, "the claim": 0.6}
 
 
 @pytest.fixture
@@ -163,6 +164,24 @@ def test_link_score_from_level_probabilities(repo: Path, ids: dict[str, str]) ->
     assert json.loads(route.calls[0].request.content)["questions"] == LINK
     answer = json.loads(out)[0]
     assert (answer["score"], answer["level"]) == (0.767, "the claim")
+    assert answer["levels"] == LINK_LEVELS_SHOWN
+
+
+@pytest.mark.parametrize(
+    "levels",
+    [{"2": 0.4, "3": 0.3, "4": 0.3}, {"-1": 0.9, "0": 0.1}],
+    ids=["above-3", "negative"],
+)
+def test_link_levels_outside_0_to_3_are_refused(
+    repo: Path, ids: dict[str, str], levels: dict[str, float]
+) -> None:
+    reply = {"answers": {"link": {"probabilities": levels}}}
+    with respx.mock:
+        respx.post(URL).mock(return_value=httpx.Response(200, json=reply))
+        code, _, err = judge("link", ids["exits"])
+
+    assert code == 1
+    assert "the levels are 0 to 3" in err
 
 
 def test_cache_a_repeat_sends_no_request(repo: Path, ids: dict[str, str]) -> None:

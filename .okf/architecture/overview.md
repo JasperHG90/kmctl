@@ -225,7 +225,7 @@ cached, and the copy on PATH adds the newer-release line from
 | `kmctl audit checks todo`, `try`, `submit`, `run`, `list` | `claims/check_verbs.py`, with `claims/steps.py` (the step DSL and runner), `claims/anchors.py` and `claims/lines.py` (what a claim names and the lines around it), `claims/mutate.py` (the weak bar), `claims/check_instructions.py` and `claims/check_store.py` | only `.kmctl/`: `audit.sqlite`, and its `.gitignore` when missing; `try` writes nothing; no model call; code and query steps load ast-grep-py and jmespath from the `kmctl[audit]` extra (ADR 0038) |
 | `kmctl audit judge` | `judge.py`, with `audit_settings.py` (the per-user `audit.toml`), `tracing.py` (opt-in LangSmith) and `claims/check_store.py` for the state | only the `decisions` table in `.kmctl/audit.sqlite`; the one model call kmctl makes, off until a question is switched on; httpx with tenacity retries from the `kmctl[audit]` extra (ADR 0039) |
 | `kmctl audit coverage` | `claims/coverage.py`, reading each stored check's last run from `claims/check_store.py` and the code files from `claims/steps.py` | nothing in a repository that has a store; it reads `.kmctl/audit.sqlite` and the tracked files, and creates `.kmctl/` with an empty store only when there is none (ADR 0042) |
-| `kmctl audit ui` | `claims/ui.py` (the server and the page's data), `claims/ui.html` (the page), `claims/feedback.py`, with `claims/check_verbs.py` for each claim's status and `judge.py` for a second opinion | only `.kmctl/audit.sqlite`: the `feedback` and `decisions` tables, and on each page load the `sections` and `claims` tables, which it refreshes as `kmctl audit claims todo` does; a server on 127.0.0.1 that answers only local Hosts and writes only JSON from its own Origin; a second opinion is the `judge` call, off until a question is switched on (ADR 0041) |
+| `kmctl audit ui` | `claims/ui.py` (the server and the page's data), `claims/ui.html` (the page), `claims/feedback.py`, with `claims/check_verbs.py` for each claim's status and `judge.py` for a second opinion | only `.kmctl/audit.sqlite`: the `feedback`, `decisions` and `cache` tables (a second opinion on a claim caches the CLI help walk it reads lines from), and on each page load the `sections` table, which it refreshes as `kmctl audit claims todo` does, deleting the claims, extractions and verdicts of a section that is gone; a server on 127.0.0.1 that answers only local Hosts and writes only JSON from its own Origin; a second opinion is the `judge` call, off until a question is switched on (ADR 0041) |
 | `kmctl doctor` | `doctor.py`, with `plugin.py` for the hook, MCP entries and lock reader, `antigravity.py` for the folder comparison and `opencode.py` for the OpenCode files | nothing; it reads `apm.yml`, `apm.lock.yaml` and the files it lists, the settings files, `.mcp.json`, `.agents/plugins/kmctl/`, `.opencode/`, `opencode.json` and agy's trust list, and runs only `uv tool run --offline --from apm-cli==0.33.0 apm --version`; `--online` fetches okf's MCP script URL |
 
 The claims flow: `kmctl audit claims todo` cuts each live concept into
@@ -255,10 +255,12 @@ prints a JSON Schema built from it, so the schema is what kmctl writes.
 
 `okf.py` is the one reader of OKF front matter. `checks.py`, `concepts.py`,
 `docs_index.py`, `handoffs.py`, `review_due.py`, `summary.py`,
-`supersede.py`, `verify.py` and `claims/sections.py` read fields through it, and `kinds.py` takes
-its field list from it, so the fields kmctl uses are the ones the OKF v0.2
-spec defines plus `handoff_key` and `checked` (I4, ADR 0006, ADR 0009,
-ADR 0027).
+`supersede.py`, `verify.py` and `claims/sections.py` read fields through it.
+`kinds.py` names each kind's fields itself and cites `okf.py`'s
+`ALLOWED_FIELDS` for where each comes from, and `tests/test_schema.py` checks
+that every field in the schema it builds is allowed, so the fields kmctl uses
+are the ones the OKF v0.2 spec defines plus `handoff_key` and `checked` (I4,
+ADR 0006, ADR 0009, ADR 0027).
 
 ## The package and its install
 
