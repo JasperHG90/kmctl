@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.3.1.dev65+g93b143856
-  at: '2026-11-14T19:56:25+00:00'
+  at: '2026-11-14T19:59:22+00:00'
 slug: release-notes-hermes
 n: 2
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike release-notes-hermes/2
@@ -24,7 +24,7 @@ bash -ic 'python3 /tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b18
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note release-notes-hermes 2`.
+This is the same harness as spike 3, but loopctl cut stdout to its last 20 kB (`truncated: true`), so the A runs' rewrites are missing from the record. Only the B rewrites and the summary survived. The summary showed 15 of 15 kept in A (default tools, 9 runs called tools, none changed the checkout), 15 of 15 kept in B (tools off: `disabled_toolsets` set to all 14 default toolsets, `max_iterations: '3'`, 0 tool calls), and 0 flagged reversal bullets. The surviving B v0.9.0 rewrites kept the "Deferred hardening" bullets word for word. Spike 3 reran with compact output split across stdout and stderr. Cite spike 3, not this one.
 
 ## Files
 
