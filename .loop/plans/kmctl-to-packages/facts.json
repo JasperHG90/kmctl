@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "kmctl-to-packages",
-  "plan_hash": "3746974443955a8928c341776e62b800b51d3a7e92b88e8c3e18f5aa129c44d7",
+  "plan_hash": "97efc292a06a3688bd249ce74fe0a35115c061c958ca07658a64d85ab9697e5c",
   "problems": [
     {
       "id": "P1",
@@ -77,7 +77,7 @@
         "tests/test_starter.py",
         "tests/test_pin.py"
       ],
-      "checked_by": "`uv sync` then `uv run kmctl --version` at the root prints `apm/apm.yml`'s version; `uv build --package kmctl` (wheel built from the sdist) and `uv build --wheel --package kmctl` both give a wheel at that version with `_skills`, `_agents` and `_rules` that `scripts/check_wheel.py` and `scripts/smoke_wheel.py` accept; the skills, agents and rules tests pass against the editable install, where `_skills`, `_agents` and `_rules` do not exist (the source-tree fallbacks find `apm/` at the root); `uv run pytest --collect-only` at the root selects 1407 tests (876 under `packages/kmctl/tests`, 276 under `tests/`, 255 under `packages/kmaudit/tests`) and `uv run pytest` passes; `tests/scripts/test_workflows.py` pins `uv build --package kmctl` and the check_wheel pyproject path in both release workflows, and ci.yml's starter job runs `new:packages/kmctl/tests/test_starter.py` (ci-per-package later splits the rest of ci.yml); the `kmctl-check` hook installs and runs from a post-move commit in another repository (the hook test in the docs front matter tests); the action installs kmctl from `packages/kmctl` and the `knowledge` CI job (`uses: ./`) passes; the starter renders `kmctl_src` with the fragment for a newer `kmctl_ref` and without it for v0.12.1, and `new:packages/kmctl/tests/test_starter.py -m integration` bootstraps from a `file://` clone; the `tree_repo` fixture tags its copy of the tree one minor version past `apm/apm.yml`'s (a test-only tag, so the moved tree is installed as a post-move release with the fragment), and the starter and pin integration tests pass against it; a Release dry run on the branch passes the build and smoke-test job",
+      "checked_by": "`uv sync` then `uv run kmctl --version` at the root prints `apm/apm.yml`'s version; `uv build --package kmctl` (wheel built from the sdist) and `uv build --wheel --package kmctl` both give a wheel at that version with `_skills`, `_agents` and `_rules` that `scripts/check_wheel.py` and `scripts/smoke_wheel.py` accept; the skills, agents and rules tests pass against the editable install, where `_skills`, `_agents` and `_rules` do not exist (the source-tree fallbacks find `apm/` at the root); `uv run pytest --collect-only` at the root selects 1407 tests (876 under `packages/kmctl/tests`, 276 under `tests/`, 255 under `packages/kmaudit/tests`) and `uv run pytest` passes; `tests/scripts/test_workflows.py` pins `uv build --package kmctl` and the check_wheel pyproject path in both release workflows, and ci.yml's starter job runs `new:packages/kmctl/tests/test_starter.py` (ci-per-package later splits the rest of ci.yml); the `kmctl-check` hook installs and runs from a post-move commit in another repository (the hook test in the docs front matter tests); the action installs kmctl from `packages/kmctl` and the `knowledge` CI job (`uses: ./`) passes; the starter renders `kmctl_src` with the fragment for a newer `kmctl_ref` and without it for v0.12.1, and `new:packages/kmctl/tests/test_starter.py -m integration` bootstraps from a `file://` clone; the `tree_repo` fixture runs `scripts/release.py set` on its copy at a test-only version one minor past `apm/apm.yml`'s and tags that commit at it, and the starter bootstrap integration test passes against it (doctor's lock check included); a Release dry run on the branch passes the build and smoke-test job",
       "seen_by": "operator"
     },
     {
@@ -99,7 +99,7 @@
         "new:packages/kmctl/src/kmctl/pin.py",
         "tests/test_pin.py"
       ],
-      "checked_by": "tests that a pin at v0.12.1 hands off to `git+https://github.com/JasperHG90/kmctl@COMMIT` and a pin at a newer tag to `...@COMMIT#subdirectory=packages/kmctl`, for the command and the not-installed notice alike",
+      "checked_by": "tests that a pin at v0.12.1 hands off to `git+https://github.com/JasperHG90/kmctl@COMMIT` and a pin at a newer tag to `...@COMMIT#subdirectory=packages/kmctl`, for the command and the not-installed notice alike; the real uvx hand-off integration test pins `tree_repo`'s test-only tag (newer than v0.12.1, different from the running version) and runs the copy's kmctl from `packages/kmctl`",
       "seen_by": "operator"
     },
     {
