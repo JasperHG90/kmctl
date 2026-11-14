@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "the repository root without .okf/ opened a namespace '.' that swallowed every folder",
+      "anchor": "packages/kmaudit/src/kmaudit/sections.py:142",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "parallel first opens of the legacy store raced on one .partial file and renamed over a store in use",
+      "anchor": "packages/kmaudit/src/kmaudit/store.py:158",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "r2b's -k did not select the refusal test",
+      "anchor": "packages/kmaudit/tests/test_namespaces.py",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "resolved",
+      "claim": "r1's test checked concepts, not every section id",
+      "anchor": "packages/kmaudit/tests/test_namespaces.py:109",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "14a08a0fbcfd62ea2e4642626743c2ded8c8f63133ee350ef4b64e9789bd1baf",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T13:56:03+00:00"
+}
