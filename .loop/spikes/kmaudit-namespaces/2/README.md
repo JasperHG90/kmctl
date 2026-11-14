@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.3.1.dev65+g93b143856
-  at: '2026-11-14T13:07:38+00:00'
+  at: '2026-11-14T13:07:47+00:00'
 slug: kmaudit-namespaces
 n: 2
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike kmaudit-namespaces/2
@@ -24,7 +24,7 @@ uv run --project /home/vscode/workspace python /tmp/claude-1000/-home-vscode-wor
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note kmaudit-namespaces 2`.
+Reran spike 1's script with ui.html and check_instructions.py counted as touched. Exit 0: every wrong result it finds (SKIP_NAMES on a plain folder's index.md, Repository reading and counting the audited folder as code in checks, coverage and the page, the page's .okf/ path, the check instructions' folder list) sits in the plan's touched files; none outside. Settles risk 1 for the widened plan. Limit: the fixture repository, with the folder as docs/ and handbook/.
 
 ## Files
 
