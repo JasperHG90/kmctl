@@ -1,0 +1,680 @@
+check,kind,before,level_before,after,level_after
+00a61ffeea87,code,0.62,nearby,0.637,nearby
+00c6003119be,wording,0.897,the claim,0.97,the claim
+00eaa79815b0,code,0.573,nearby,0.723,the claim
+01100b00f112,wording,0.88,the claim,0.98,the claim
+026c07137a93,code,0.563,nearby,0.593,nearby
+02c77eeedfef,code,0.96,the claim,0.977,the claim
+02e14ee82f9e,code,0.63,nearby,0.69,nearby
+03d7d7e8274b,wording,0.91,the claim,0.937,the claim
+03e551ef4aa4,wording,0.577,nearby,0.713,nearby
+040929415ea0,wording,0.65,nearby,0.737,nearby
+048e25c2c3e9,wording,0.78,the claim,0.887,the claim
+04974978bb33,wording,0.133,unrelated,0.337,unrelated
+049be0611e21,code,0.873,the claim,0.937,the claim
+04cc422e62ce,code,0.53,nearby,0.557,nearby
+04e9de730633,code,0.667,nearby,0.7,nearby
+05154babda23,wording,0.82,nearby,0.937,the claim
+055987f78f1e,wording,0.647,nearby,0.667,nearby
+0561efe06a49,wording,0.887,the claim,0.917,the claim
+0657a5314198,wording,0.827,the claim,0.88,the claim
+06da459b59b8,wording,0.55,nearby,0.677,nearby
+07014938139b,wording,0.683,nearby,0.777,the claim
+070f9a8c28c2,wording,0.927,the claim,0.967,the claim
+071b28ae2559,code,0.727,nearby,0.747,nearby
+0773d5ef4015,code,0.673,nearby,0.773,nearby
+07b7c46a591c,code,0.773,the claim,0.84,the claim
+07bd574524a4,code,0.68,nearby,0.757,nearby
+07c8cae98757,wording,0.853,the claim,0.937,the claim
+08075c420f97,wording,0.917,the claim,0.96,the claim
+08091da09f05,code,0.567,nearby,0.583,nearby
+084e30c58721,code,0.73,nearby,0.773,nearby
+0870aeba8e9d,wording,0.897,the claim,0.9,the claim
+091886b000ce,code,0.63,nearby,0.62,nearby
+093209894b10,code,0.66,nearby,0.75,nearby
+097b67b3a732,wording,0.617,nearby,0.643,nearby
+0a0b83ab0221,wording,0.777,the claim,0.833,the claim
+0a0de531e677,code,0.563,nearby,0.617,nearby
+0a1b9e3b6e7f,code,0.563,nearby,0.603,nearby
+0a1df786a9db,wording,0.51,nearby,0.573,nearby
+0a4692780602,code,0.653,nearby,0.723,nearby
+0a5eb22032d7,wording,0.803,the claim,0.917,the claim
+0ab9acbe5d44,wording,0.71,nearby,0.8,the claim
+0ae01762472c,code,0.713,nearby,0.773,nearby
+0bff173f614e,code,0.503,nearby,0.507,nearby
+0c04139b547b,code,0.62,nearby,0.653,nearby
+0c4e0f5f9317,wording,0.757,nearby,0.803,the claim
+0c7f252c753d,wording,0.52,nearby,0.63,nearby
+0c9e87186489,code,0.743,nearby,0.793,nearby
+0ce2bb1aec7b,code,0.73,nearby,0.793,nearby
+0dacb0915b0c,code,0.82,the claim,0.917,the claim
+0dc2fbb80143,wording,0.877,the claim,0.96,the claim
+0dd8ad5a6f2d,code,0.66,nearby,0.617,nearby
+0e10ac43c21d,wording,0.747,nearby,0.843,the claim
+0e339edf49dc,code,0.77,nearby,0.89,the claim
+0e72e2611d41,wording,0.86,the claim,0.88,the claim
+0ee0494bd077,wording,0.57,keyword,0.807,the claim
+0f83fa934b86,code,0.63,nearby,0.557,nearby
+0f87b5bcd343,code,0.653,nearby,0.817,the claim
+0fb316722a4a,code,0.883,the claim,0.893,the claim
+1035f4c5674a,code,0.833,the claim,0.89,the claim
+104c0954e438,wording,0.733,nearby,0.79,the claim
+10858b191ee1,code,0.637,nearby,0.687,nearby
+10d304aaf1a5,wording,0.677,nearby,0.757,nearby
+11986bbacb37,code,0.663,nearby,0.767,the claim
+11f58f371a8d,wording,0.567,nearby,0.553,nearby
+1291782ee864,code,0.687,nearby,0.747,nearby
+12958893bd1d,code,0.51,nearby,0.6,nearby
+1371f40e22ba,wording,0.77,nearby,0.823,the claim
+1497ae896628,code,0.6,nearby,0.603,nearby
+14c1ae64f527,code,0.743,nearby,0.853,the claim
+157e7d95420b,wording,0.913,the claim,0.943,the claim
+162ed44032b0,wording,0.84,the claim,0.88,the claim
+1667ea3c986e,code,0.633,nearby,0.627,nearby
+16a7ba7b4995,code,0.513,nearby,0.51,nearby
+16b0bf55d7d3,wording,0.703,nearby,0.74,the claim
+1732e35ad49c,code,0.76,nearby,0.84,the claim
+1793ccfeaade,wording,0.697,nearby,0.777,nearby
+1813ea52e182,wording,0.943,the claim,0.977,the claim
+18691c062066,code,0.73,nearby,0.843,the claim
+18bd4bb8a1c1,wording,0.687,nearby,0.76,nearby
+191e4b4be122,wording,0.717,nearby,0.853,the claim
+192c691ce882,code,0.607,nearby,0.633,nearby
+19642e33908c,code,0.777,nearby,0.857,the claim
+196e024b721f,code,0.537,nearby,0.56,nearby
+198983fa11ed,wording,0.643,nearby,0.68,nearby
+19a18a4a2384,wording,0.603,nearby,0.73,nearby
+1aee2fce3871,code,0.643,nearby,0.74,nearby
+1b1424b12c69,code,0.677,nearby,0.783,the claim
+1b5ed52cdee7,code,0.927,the claim,0.957,the claim
+1b81f1b61888,code,0.587,nearby,0.7,nearby
+1b9adab1071a,code,0.69,nearby,0.72,nearby
+1bbe29c6de50,code,0.65,nearby,0.667,nearby
+1be58d1986e0,code,0.603,nearby,0.623,nearby
+1cbacf56d022,wording,0.52,nearby,0.577,nearby
+1d6bc720af0b,wording,0.637,nearby,0.73,nearby
+1df148c20e0d,code,0.673,nearby,0.743,nearby
+1e02a21b7acc,code,0.77,nearby,0.777,the claim
+1e086f7dbd65,wording,0.773,nearby,0.723,nearby
+1e4951401717,code,0.667,nearby,0.757,nearby
+1e49cd5ae194,code,0.733,nearby,0.83,the claim
+1e815be56301,code,0.623,nearby,0.66,nearby
+1ee7b7b2fc65,wording,0.627,nearby,0.787,the claim
+1efb49c48308,code,0.753,nearby,0.823,the claim
+1f7cef96dacf,wording,0.933,the claim,0.947,the claim
+1fe53b9c5381,wording,0.887,the claim,0.92,the claim
+200b8262727c,code,0.657,nearby,0.683,nearby
+20771148ef93,wording,0.647,nearby,0.657,nearby
+20b9c881867c,wording,0.407,keyword,0.583,keyword
+20d73f1cc6e7,code,0.353,unrelated,0.377,unrelated
+216cad067296,wording,0.607,nearby,0.623,nearby
+21df804d549e,wording,0.877,the claim,0.92,the claim
+21f98ec68076,code,0.64,nearby,0.727,nearby
+2206b5b90b27,wording,0.977,the claim,0.983,the claim
+2220a9459c4b,code,0.693,nearby,0.82,the claim
+222e06f0448d,wording,0.74,nearby,0.743,nearby
+22cc223fe3a7,code,0.373,nearby,0.357,nearby
+238ee145959d,code,0.48,nearby,0.51,keyword
+239d165562a9,code,0.387,keyword,0.437,keyword
+23c3ee048343,code,0.72,nearby,0.74,nearby
+23dc58667006,code,0.54,nearby,0.527,keyword
+242f419fb30c,wording,0.677,nearby,0.807,the claim
+243b4281392f,wording,0.843,the claim,0.923,the claim
+247bd8c658f7,wording,0.877,the claim,0.933,the claim
+247de0ec8e2d,code,0.773,nearby,0.903,the claim
+2494afe441fc,wording,0.537,nearby,0.537,nearby
+24f981ce196b,wording,0.593,nearby,0.713,nearby
+261db0b1e279,wording,0.657,nearby,0.77,nearby
+266fb34b597f,wording,0.947,the claim,0.97,the claim
+26d549236960,code,0.657,nearby,0.687,nearby
+2723f07a410d,wording,0.98,the claim,0.997,the claim
+274404a608e7,wording,0.687,nearby,0.73,nearby
+278549b6ef7b,code,0.68,nearby,0.75,nearby
+27b21c3ec7bf,wording,0.693,nearby,0.74,nearby
+27ef9b8e76d6,wording,0.697,nearby,0.753,the claim
+28413474f5cf,code,0.973,the claim,0.993,the claim
+28b865fb98c3,code,0.833,the claim,0.9,the claim
+28e2b070b5fc,code,0.53,nearby,0.57,nearby
+28f818086936,code,0.88,the claim,0.897,the claim
+294abab4aede,wording,0.633,nearby,0.65,nearby
+29b582128456,code,0.797,nearby,0.87,the claim
+2b0a111185b5,wording,0.67,nearby,0.787,the claim
+2b2fc036302a,wording,0.917,the claim,0.953,the claim
+2b4cf0481e2f,code,0.767,nearby,0.863,the claim
+2b7461a9c6f2,code,0.58,nearby,0.613,nearby
+2b79b8f45eba,wording,0.587,nearby,0.613,nearby
+2bcbcd441a40,wording,0.757,nearby,0.873,the claim
+2cc8b6586875,wording,0.933,the claim,0.93,the claim
+2ce6b628a5e4,code,0.547,nearby,0.56,keyword
+2d1fc2cd39dd,wording,0.747,nearby,0.837,the claim
+2d7baf194cc2,code,0.663,nearby,0.67,nearby
+2d86f1f79a50,wording,0.95,the claim,0.977,the claim
+2dc944daaf38,code,0.59,nearby,0.61,nearby
+2edbd3b3d3b0,code,0.743,nearby,0.817,the claim
+2f2830414009,code,0.65,nearby,0.673,nearby
+2fc23388ccad,wording,0.82,the claim,0.903,the claim
+3014d98eeec5,code,0.717,nearby,0.747,nearby
+3024119a3975,wording,0.78,the claim,0.88,the claim
+3059f3181003,code,0.507,nearby,0.44,keyword
+30d324e7a3ad,wording,0.74,the claim,0.83,the claim
+3104b518d111,wording,0.847,the claim,0.95,the claim
+317cc0d49cd7,code,0.923,the claim,0.977,the claim
+327f17313b12,code,0.68,nearby,0.743,nearby
+32a4dc747cdf,wording,0.65,nearby,0.757,nearby
+33d069b6c2fc,code,0.613,nearby,0.59,nearby
+348722d76120,wording,0.673,nearby,0.707,nearby
+349eecbea6c5,code,0.567,nearby,0.597,nearby
+35886ad989d3,code,0.72,nearby,0.823,the claim
+35b38ce7f8c3,wording,0.72,nearby,0.82,the claim
+35d930e1639e,code,0.74,nearby,0.757,nearby
+36c58e2b2154,wording,0.86,the claim,0.95,the claim
+375922498fa0,code,0.773,nearby,0.807,the claim
+375c180bdf11,wording,0.537,nearby,0.553,keyword
+37616d2614e1,code,0.617,nearby,0.683,nearby
+37f76b0d684e,code,0.68,nearby,0.687,nearby
+380c4a43c89d,code,0.657,nearby,0.717,nearby
+380df2be5880,code,0.967,the claim,0.953,the claim
+388d7abcc288,wording,0.603,nearby,0.793,the claim
+394d1728c53e,wording,0.5,nearby,0.567,nearby
+39d30e4b6e14,wording,0.527,nearby,0.553,nearby
+39ec72053cbd,wording,0.703,nearby,0.837,the claim
+3aa3ee25497e,code,0.657,nearby,0.677,nearby
+3b18eb82518a,wording,0.747,the claim,0.893,the claim
+3bcec109b724,code,0.76,nearby,0.837,the claim
+3d1c01964a36,code,0.773,nearby,0.79,the claim
+3d9f25421522,wording,0.827,the claim,0.927,the claim
+3db75b76fd0c,wording,0.82,the claim,0.777,the claim
+3e0d3299e5e5,wording,0.697,nearby,0.747,nearby
+3e4204b267bc,wording,0.633,nearby,0.647,nearby
+3e5e559b786e,wording,0.88,the claim,0.927,the claim
+3f976bed56e3,wording,0.69,nearby,0.727,nearby
+40a511992695,code,0.397,nearby,0.363,nearby
+40ef4db76df9,wording,0.75,nearby,0.847,the claim
+41c0f4984a2c,wording,0.737,nearby,0.887,the claim
+4246daa6d37b,code,0.63,nearby,0.66,nearby
+42851f3ac907,code,0.473,keyword,0.633,keyword
+428e1207fad2,wording,0.65,nearby,0.7,nearby
+42b494275075,code,0.597,nearby,0.607,nearby
+42debd8c7d80,wording,0.917,the claim,0.953,the claim
+4328a5e87bec,wording,0.94,the claim,0.98,the claim
+45b226461ab7,wording,0.897,the claim,0.903,the claim
+45fe82c7eeba,wording,0.77,nearby,0.89,the claim
+46569bb833f4,code,0.553,nearby,0.517,nearby
+46b3dcd0cd5e,wording,0.96,the claim,0.983,the claim
+4723c8a16a7d,wording,0.927,the claim,0.987,the claim
+473dab8ec2b6,wording,0.847,the claim,0.91,the claim
+47f8652d2cc1,wording,0.967,the claim,0.983,the claim
+482cca9d9997,code,0.737,nearby,0.74,nearby
+48c16883db83,wording,0.76,nearby,0.79,the claim
+4910e44b0afd,wording,0.83,the claim,0.823,the claim
+4964ab596c1e,code,0.61,nearby,0.713,nearby
+4af02bacb5f7,wording,0.743,nearby,0.747,nearby
+4b2a0d500a73,wording,0.803,the claim,0.88,the claim
+4b590daf0a75,code,0.657,nearby,0.713,nearby
+4bc618ebe5b5,code,0.63,nearby,0.603,nearby
+4bf4df6ff6c5,wording,0.917,the claim,0.963,the claim
+4d29ff29d6a6,code,0.543,nearby,0.573,nearby
+4d3ff193ce48,wording,0.533,nearby,0.487,nearby
+4d7afa64101b,code,0.833,the claim,0.937,the claim
+4da5f99f3d03,code,0.69,nearby,0.693,nearby
+4dc49fb2b0da,code,0.637,nearby,0.693,nearby
+4def4bda5df1,code,0.657,nearby,0.717,nearby
+4e4351d28192,wording,0.643,nearby,0.753,nearby
+4ed2e81863f0,code,0.8,the claim,0.923,the claim
+4fb2f37081fe,wording,0.64,nearby,0.647,nearby
+5100ab040969,wording,0.7,the claim,0.927,the claim
+519fc065fbc0,code,0.52,keyword,0.613,nearby
+52cdd2f36191,code,0.867,the claim,0.943,the claim
+52f83404e8b4,code,0.617,nearby,0.617,nearby
+538c24946781,wording,0.657,nearby,0.663,nearby
+5425b284ac7b,wording,0.773,nearby,0.793,nearby
+546676353133,code,0.777,the claim,0.83,the claim
+5476e8b426bc,wording,0.827,the claim,0.893,the claim
+5493c0a9aa7f,code,0.753,nearby,0.727,nearby
+5568d331dad0,code,0.723,nearby,0.773,the claim
+55e9c11a2a8f,code,0.8,nearby,0.893,the claim
+5755b013dbd4,wording,0.91,the claim,0.94,the claim
+57756c0fee4d,wording,0.69,nearby,0.817,the claim
+577ff5a3ab84,code,0.617,nearby,0.627,nearby
+57f8c3c6351e,wording,0.733,nearby,0.827,the claim
+580ddc9e1796,wording,0.64,nearby,0.667,nearby
+5864c6e73ce0,wording,0.687,nearby,0.777,nearby
+588a9e6a043d,code,0.483,nearby,0.433,nearby
+595c9e50c079,code,0.48,nearby,0.53,nearby
+5998f5ff60dc,code,0.853,the claim,0.883,the claim
+59a93ae77d55,wording,0.71,nearby,0.737,nearby
+5aba951a6ab0,code,0.83,the claim,0.933,the claim
+5adbcf28c1db,wording,0.857,the claim,0.893,the claim
+5ba2efd2ea88,code,0.607,nearby,0.62,nearby
+5bfac17dfe7b,wording,0.763,the claim,0.967,the claim
+5c2f70418c9e,code,0.73,nearby,0.717,nearby
+5ccd7a4c178a,wording,0.593,nearby,0.673,nearby
+5cd921101f3c,wording,0.983,the claim,0.953,the claim
+5d3289527edb,wording,0.923,the claim,0.963,the claim
+5d66e07671da,code,0.693,nearby,0.7,nearby
+5e5500df51c9,wording,0.823,the claim,0.88,the claim
+5ee86d2e272f,code,0.607,nearby,0.587,nearby
+5fbf936762bc,wording,0.64,nearby,0.887,the claim
+5ffb7719acdd,code,0.6,nearby,0.643,nearby
+601ec89f0abb,code,0.623,nearby,0.627,nearby
+6052b54343f8,code,0.687,nearby,0.77,nearby
+6066f4ab4384,wording,0.623,nearby,0.773,the claim
+6077c395094c,wording,0.633,nearby,0.843,the claim
+609fbd35b050,code,0.727,nearby,0.807,the claim
+60afb762760a,code,0.68,nearby,0.823,the claim
+612ab2b32362,code,0.703,nearby,0.75,nearby
+6156b1fff4c1,code,0.537,nearby,0.62,nearby
+61907a3a51a4,wording,0.687,nearby,0.667,nearby
+619278aa8af7,wording,0.72,nearby,0.713,nearby
+61b7c231997c,wording,0.893,the claim,0.95,the claim
+6261d9f432fa,code,0.66,nearby,0.633,nearby
+62da96a94ce9,code,0.687,nearby,0.74,nearby
+635290f044b7,code,0.473,nearby,0.493,nearby
+638542573222,code,0.627,nearby,0.66,nearby
+63af840d662d,code,0.987,the claim,0.99,the claim
+63bcb49fcdfd,wording,0.493,keyword,0.52,keyword
+648e1ac086f8,wording,0.867,the claim,0.877,the claim
+66303511b7d9,code,0.657,nearby,0.673,nearby
+66a11844bca3,code,0.667,nearby,0.717,nearby
+6707f2fb1e0a,code,0.71,nearby,0.777,the claim
+672bdf62845c,wording,0.867,the claim,0.877,the claim
+68aa09f90e0a,wording,0.617,nearby,0.597,nearby
+698aafa66bba,code,0.64,nearby,0.667,nearby
+69b87d188dcf,code,0.587,nearby,0.637,nearby
+69c4ef470dca,code,0.687,nearby,0.713,nearby
+6a69cc1d25b9,wording,0.933,the claim,0.97,the claim
+6a79d686729e,wording,0.59,keyword,0.59,keyword
+6b973510a0fa,code,0.78,nearby,0.813,the claim
+6bac7a4d73de,wording,0.8,the claim,0.95,the claim
+6bac7e0f01eb,wording,0.893,the claim,0.907,the claim
+6bc53df41ebe,code,0.433,keyword,0.453,keyword
+6c3b447e3332,wording,0.873,the claim,0.977,the claim
+6c5457a31d21,code,0.533,nearby,0.54,nearby
+6ccbfeaa1736,wording,0.647,nearby,0.76,nearby
+6d688184992d,wording,0.743,nearby,0.893,the claim
+6d86a5b0371f,code,0.907,the claim,0.947,the claim
+6e062d566973,wording,0.637,nearby,0.64,nearby
+6e4f04c20b2b,code,0.637,nearby,0.607,nearby
+6ecde34da7ab,code,0.763,nearby,0.84,the claim
+6ed33a5b6a72,code,0.63,nearby,0.623,nearby
+6edcced92951,code,0.627,nearby,0.623,nearby
+6f3ff95dd915,code,0.663,nearby,0.72,nearby
+702f9a46ae58,wording,0.89,the claim,0.933,the claim
+7087a304b15f,code,0.863,the claim,0.93,the claim
+70d5a006c3a1,code,0.62,nearby,0.643,nearby
+72bfcfe6528d,code,0.66,nearby,0.743,the claim
+7318dc2a06a8,code,0.56,nearby,0.623,nearby
+74607d1c2c31,wording,0.743,nearby,0.693,nearby
+75c48b61c239,code,0.877,the claim,0.947,the claim
+75dbb0fbde97,code,0.847,the claim,0.92,the claim
+75ec0380e3b7,wording,0.7,nearby,0.757,nearby
+7647e2b5e8b3,code,0.457,nearby,0.497,nearby
+76f132db679c,code,0.81,the claim,0.9,the claim
+77051bffacf0,wording,0.803,nearby,0.82,the claim
+77288c11a7ab,code,0.657,nearby,0.737,nearby
+77aa94186dd6,wording,0.467,keyword,0.617,the claim
+77c3c5406b23,code,0.663,nearby,0.693,nearby
+787109b22122,code,0.633,nearby,0.673,nearby
+78c52f28caba,wording,0.78,the claim,0.843,the claim
+790eb25eadea,wording,0.963,the claim,0.98,the claim
+793aa53be7c4,wording,0.89,the claim,0.96,the claim
+794941cf1de3,wording,0.883,the claim,0.94,the claim
+798193078a0d,code,0.583,nearby,0.623,nearby
+79925babdf12,wording,0.527,nearby,0.603,keyword
+79a74d2e23a8,code,0.537,nearby,0.567,nearby
+79fd36b1cbfd,wording,0.81,the claim,0.827,the claim
+7b4425a71495,wording,0.553,nearby,0.653,nearby
+7b9767f05ee5,wording,0.877,the claim,0.93,the claim
+7bc665bb0685,wording,0.657,nearby,0.84,the claim
+7d089cec6ffc,code,0.63,nearby,0.63,nearby
+7d2154d08a04,code,0.633,nearby,0.733,nearby
+7d23740079cd,code,0.717,nearby,0.807,the claim
+7d92e99713a1,wording,0.743,nearby,0.83,the claim
+7e2f70aecac7,code,0.51,nearby,0.56,nearby
+7ef7e63db34c,code,0.63,nearby,0.66,nearby
+7f2cd4f1eae8,wording,0.52,nearby,0.57,keyword
+7f3522213901,code,0.403,nearby,0.317,unrelated
+7f3f2b4a6f46,code,0.757,nearby,0.857,the claim
+7f7eda8808e0,wording,0.833,the claim,0.93,the claim
+7fb3fd54adf2,code,0.703,nearby,0.757,nearby
+7fc3055fa235,wording,0.897,the claim,0.887,the claim
+80114ae7bbac,wording,0.76,nearby,0.783,the claim
+8134f22c11d8,code,0.75,nearby,0.717,nearby
+813d47a23aa8,code,0.627,nearby,0.913,the claim
+814f69237fe0,wording,0.977,the claim,0.977,the claim
+81c5804624a6,code,0.55,nearby,0.64,nearby
+81d2d4f499e9,code,0.717,nearby,0.75,nearby
+828e02763ba5,wording,0.743,nearby,0.79,the claim
+82acb83cc101,wording,0.54,keyword,0.663,nearby
+8425f734df5b,code,0.533,nearby,0.45,nearby
+8453757e8673,code,0.8,the claim,0.897,the claim
+846de1cea84e,wording,0.763,nearby,0.88,the claim
+84dce66b0fa8,wording,0.673,nearby,0.787,the claim
+85830d1f6441,wording,0.667,nearby,0.74,the claim
+85ba1695ef4f,wording,0.803,nearby,0.917,the claim
+85ced0cf3779,code,0.943,the claim,0.91,the claim
+8716fa788ad4,code,0.65,nearby,0.753,nearby
+8849efa3c749,code,0.57,nearby,0.657,nearby
+88c1502e6750,wording,0.647,nearby,0.773,nearby
+88d9865dfdf5,wording,0.79,nearby,0.877,the claim
+8a373d528992,code,0.67,nearby,0.747,nearby
+8a4cb4c4ac01,wording,0.753,nearby,0.737,the claim
+8a800c2e8032,code,0.75,the claim,0.783,the claim
+8aa80b9ccbea,code,0.65,nearby,0.67,nearby
+8b5cd0ae3904,wording,0.72,nearby,0.733,nearby
+8bdbbb279377,wording,0.713,nearby,0.737,nearby
+8be8b08ee681,code,0.633,nearby,0.66,nearby
+8bea1fdac0f6,code,0.677,nearby,0.713,nearby
+8c5610ead2f5,wording,0.61,nearby,0.617,nearby
+8ce35a12c338,code,0.847,the claim,0.92,the claim
+8d00a30c53d2,wording,0.76,the claim,0.86,the claim
+8d0f399f50f0,wording,0.993,the claim,0.993,the claim
+8d97186547d8,wording,0.75,nearby,0.85,the claim
+8dd48d669750,code,0.787,nearby,0.91,the claim
+8dd8bd61f062,code,0.583,nearby,0.537,nearby
+8e035918eb85,wording,0.757,the claim,0.89,the claim
+8e28940d9f85,code,0.627,nearby,0.633,nearby
+8e864920c5f8,code,0.673,nearby,0.713,nearby
+8ec85f1eab7c,code,0.337,keyword,0.42,keyword
+8ecb4b2a6a5c,code,0.687,nearby,0.7,nearby
+8f2ddc232d9f,wording,0.583,nearby,0.677,nearby
+8f4506ce8269,code,0.673,nearby,0.707,nearby
+8fc95332f15e,wording,0.563,nearby,0.583,nearby
+90707c6d0c19,code,0.75,nearby,0.887,the claim
+9091faf4bd95,code,0.75,nearby,0.857,the claim
+90bd86e2eaf8,wording,0.68,nearby,0.67,nearby
+9103ecaa2581,wording,0.783,the claim,0.843,the claim
+9125350d80a7,code,0.613,nearby,0.613,nearby
+913de4a2b7ce,wording,0.68,nearby,0.723,nearby
+91576c7cfa3c,code,0.547,nearby,0.57,nearby
+9270ddfe7a25,code,0.697,nearby,0.707,nearby
+9303a00a2fe7,code,0.683,the claim,0.803,the claim
+93b4ddc2a73d,wording,0.87,the claim,0.9,the claim
+94d679090603,code,0.683,nearby,0.927,the claim
+95bb168e7604,wording,0.62,nearby,0.73,nearby
+96b071f3a880,code,0.713,the claim,0.723,nearby
+96cf18067d84,wording,0.723,the claim,0.887,the claim
+972b0aa54bad,wording,0.8,the claim,0.95,the claim
+97559ac186f0,wording,0.927,the claim,0.953,the claim
+9761a64fe998,wording,0.747,nearby,0.88,the claim
+97876818b8f6,code,0.583,nearby,0.677,nearby
+987099e53411,wording,0.907,the claim,0.947,the claim
+98bdc2298087,code,0.693,nearby,0.713,nearby
+994b8b05f1d1,code,0.6,nearby,0.627,nearby
+999d12c3f621,code,0.523,nearby,0.557,nearby
+99ff05ec3753,wording,0.89,the claim,0.943,the claim
+9a16107d3470,code,0.647,nearby,0.703,nearby
+9bb5d68b4827,code,0.54,nearby,0.523,keyword
+9df3a4f14fe1,wording,0.72,nearby,0.833,the claim
+9e30d5c378d4,wording,0.907,the claim,0.917,the claim
+9f4ee9510ee1,wording,0.77,nearby,0.717,nearby
+9fabafaa93c6,code,0.917,the claim,0.9,the claim
+9fb017a8cacb,wording,0.737,nearby,0.913,the claim
+a03bcd859d94,wording,0.727,the claim,0.883,the claim
+a03f0ec11306,wording,0.85,the claim,0.943,the claim
+a054c3aeb810,code,0.757,nearby,0.823,nearby
+a0975501c034,code,0.923,the claim,0.95,the claim
+a0cfe7a8c384,code,0.863,the claim,0.903,the claim
+a11b5381c4c5,wording,0.86,the claim,0.923,the claim
+a15599fa7905,wording,0.883,the claim,0.943,the claim
+a17312c017f3,code,0.75,nearby,0.74,the claim
+a1918c7495f4,code,0.617,nearby,0.637,nearby
+a1b0cdca5125,code,0.613,nearby,0.667,nearby
+a20e597231da,code,0.64,nearby,0.64,nearby
+a2b5150412d7,code,0.64,nearby,0.68,nearby
+a2fa4b1a039f,wording,0.7,nearby,0.777,nearby
+a32603e1fcbf,code,0.613,nearby,0.727,the claim
+a36248bd63b4,wording,0.65,nearby,0.71,nearby
+a40fd8b19f16,wording,0.71,the claim,0.763,the claim
+a4bd53f70086,wording,0.883,the claim,0.927,the claim
+a4d756ed1f86,wording,0.743,nearby,0.827,the claim
+a51442969245,wording,0.873,the claim,0.953,the claim
+a55d434f09ee,code,0.443,keyword,0.497,keyword
+a5b0fd7d10c5,code,0.81,the claim,0.937,the claim
+a5e75adfb630,code,0.637,nearby,0.677,nearby
+a670729240e2,wording,0.843,the claim,0.933,the claim
+a67a188632f8,wording,0.857,the claim,0.913,the claim
+a6da0f23e9b9,wording,0.64,nearby,0.813,the claim
+a70b5032adad,wording,0.783,nearby,0.863,the claim
+a724da9b2623,wording,0.857,the claim,0.9,the claim
+a7265813f940,code,0.88,the claim,0.94,the claim
+a754eb17eac0,code,0.583,nearby,0.627,keyword
+a77d6a56c119,code,0.65,nearby,0.677,nearby
+a78d9b0f2a50,code,0.803,nearby,0.847,the claim
+a85693e12a5b,code,0.673,nearby,0.687,nearby
+a8c15ac65b63,wording,0.67,nearby,0.747,nearby
+a8fefc603f80,code,0.663,nearby,0.623,nearby
+a910867a9716,code,0.757,nearby,0.823,the claim
+a923ceede5cb,code,0.887,the claim,0.913,the claim
+a9c0d44e584c,code,0.543,nearby,0.543,nearby
+a9c70f88419d,code,0.663,nearby,0.707,nearby
+a9dd380b24f4,wording,0.717,the claim,0.937,the claim
+a9fd6e2722f9,wording,0.57,nearby,0.6,nearby
+aa0a0b56b5c7,wording,0.637,nearby,0.677,nearby
+aadc22c136db,wording,0.6,nearby,0.58,keyword
+ab1eb878f544,code,0.653,nearby,0.717,nearby
+ab418ea3509e,code,0.777,nearby,0.853,the claim
+abb85b408eca,wording,0.827,the claim,0.903,the claim
+abce15dff17a,wording,0.923,the claim,0.89,the claim
+ac4e7c9f9aa5,code,0.91,the claim,0.96,the claim
+ad9306b6caaf,wording,0.73,nearby,0.833,the claim
+adb5ae07da2c,code,0.687,nearby,0.837,the claim
+aded8e7741e4,code,0.763,nearby,0.7,nearby
+adf9d8c46ac6,code,0.653,nearby,0.647,nearby
+ae6c68a7aacb,wording,0.803,the claim,0.927,the claim
+ae7c9962da0d,code,0.753,nearby,0.83,the claim
+af0d60b7bf2c,code,0.647,nearby,0.677,nearby
+af1f8540502a,wording,0.933,the claim,0.957,the claim
+af434d3bc2da,code,0.967,the claim,0.977,the claim
+b053c7f8b4fa,code,0.657,nearby,0.753,nearby
+b0b683cf436b,code,0.533,nearby,0.55,nearby
+b1a386238a05,code,0.493,nearby,0.48,keyword
+b1f47bf8879c,code,0.683,nearby,0.803,the claim
+b1f4b488a0dc,wording,0.657,nearby,0.72,nearby
+b2234b42e9ac,wording,0.707,the claim,0.773,the claim
+b25468e28e37,code,0.617,nearby,0.623,nearby
+b2a756971518,code,0.567,nearby,0.58,nearby
+b2f6d137216a,code,0.723,nearby,0.873,the claim
+b34645862a8f,code,0.7,nearby,0.84,the claim
+b348a70766a4,code,0.65,nearby,0.647,nearby
+b38d6f6b2724,code,0.58,nearby,0.623,nearby
+b3983cc59a29,code,0.553,nearby,0.62,nearby
+b3c205cd2881,code,0.67,nearby,0.807,the claim
+b3eea8cba814,wording,0.673,nearby,0.833,the claim
+b42e9e112548,wording,0.923,the claim,0.937,the claim
+b52ccf9290c9,code,0.96,the claim,0.953,the claim
+b57a3509aa50,code,0.607,nearby,0.647,nearby
+b65a88840240,code,0.703,nearby,0.837,the claim
+b69e3a44fe23,wording,0.927,the claim,0.97,the claim
+b6ddf68d7e6b,wording,0.84,the claim,0.963,the claim
+b7017e49e757,code,0.477,keyword,0.643,nearby
+b7ca2334a20a,code,0.82,nearby,0.87,the claim
+b8010b0d5f55,wording,0.687,nearby,0.807,the claim
+ba2fa83b1407,code,0.607,nearby,0.743,the claim
+ba402db0734c,wording,0.973,the claim,0.99,the claim
+bb081c8e90fe,wording,0.843,the claim,0.887,the claim
+bb0a1fec3f5c,wording,0.513,nearby,0.483,keyword
+bb712e46bdc9,wording,0.98,the claim,0.997,the claim
+bb90535c2ec8,wording,0.727,nearby,0.873,the claim
+bbb2b276f150,wording,0.913,the claim,0.957,the claim
+bbc2ba769dc9,wording,0.807,the claim,0.887,the claim
+bbf7a7b748dd,code,0.727,nearby,0.713,nearby
+bc06074db419,code,0.713,nearby,0.807,the claim
+bc3006c38181,code,0.847,the claim,0.9,the claim
+bcc2d1c6c00a,wording,0.813,the claim,0.9,the claim
+bcd27f81fc21,code,0.637,nearby,0.673,nearby
+bcf3f84718b7,code,0.597,nearby,0.673,nearby
+bd059ff4d530,code,0.657,nearby,0.723,nearby
+bde32778901f,wording,0.593,nearby,0.687,nearby
+be0744d1d665,wording,0.947,the claim,0.987,the claim
+be25f586e142,wording,0.937,the claim,0.94,the claim
+bf1df395c4b8,code,0.69,nearby,0.73,the claim
+bf81f5ae5d21,code,0.547,nearby,0.557,keyword
+bfffebe6369b,code,0.723,nearby,0.897,the claim
+c05aab199eff,code,0.63,nearby,0.677,nearby
+c06cec441262,code,0.73,nearby,0.787,the claim
+c1047f9fdea9,code,0.217,unrelated,0.34,unrelated
+c18a7440eb37,code,0.923,the claim,0.963,the claim
+c22f4ca9758a,wording,0.853,the claim,0.843,the claim
+c242b972aea3,wording,0.597,nearby,0.613,keyword
+c2e54352352c,code,0.667,nearby,0.757,nearby
+c45e33405a78,code,0.603,nearby,0.597,nearby
+c493be5eed71,code,0.66,nearby,0.667,nearby
+c4bfea1ed684,code,0.637,nearby,0.65,nearby
+c527764e0089,wording,0.673,nearby,0.68,nearby
+c54424d0571e,code,0.64,nearby,0.703,nearby
+c548838cdfcd,wording,0.74,the claim,0.74,the claim
+c623083c0f4d,code,0.587,nearby,0.647,nearby
+c635d5aa6412,wording,0.837,the claim,0.917,the claim
+c6d682455682,wording,0.95,the claim,0.97,the claim
+c6f3c09f1818,wording,0.393,nearby,0.447,nearby
+c71dbe9e8973,wording,0.77,nearby,0.917,the claim
+c751cfa1116c,code,0.67,nearby,0.6,nearby
+c7bc779d3c26,code,0.503,nearby,0.53,nearby
+c8d73a40dc5d,wording,0.897,the claim,0.897,the claim
+c8dca718135e,code,0.72,nearby,0.78,the claim
+c8ef91206926,wording,0.663,nearby,0.697,nearby
+c8fdfca5a704,wording,0.957,the claim,0.983,the claim
+ca18d24b5ef1,code,0.563,nearby,0.563,keyword
+cac9386e51f0,wording,0.537,nearby,0.543,nearby
+cb1c4ce13679,code,0.637,nearby,0.62,nearby
+cb79b88bdf09,code,0.707,nearby,0.78,the claim
+cbb8671ef9cd,code,0.653,nearby,0.68,nearby
+cbc78018c01e,wording,0.717,the claim,0.837,the claim
+cbf3f28cb1af,code,0.887,the claim,0.863,the claim
+cd06cf70f4b9,wording,0.93,the claim,0.95,the claim
+cd09165a16c3,code,0.7,nearby,0.687,nearby
+cd4ee5d4afb4,wording,0.883,the claim,0.897,the claim
+cda2602cc01b,wording,0.463,nearby,0.507,nearby
+cdc5bf844516,wording,0.767,the claim,0.95,the claim
+cdc915a8aa6e,code,0.61,nearby,0.587,nearby
+cdfa7c293be5,code,0.787,nearby,0.827,the claim
+ce0d25434f8f,wording,0.917,the claim,0.963,the claim
+ce87b03f1b7a,code,0.713,nearby,0.787,the claim
+ce892d523060,code,0.613,nearby,0.81,the claim
+ceb3303ad933,wording,0.49,keyword,0.63,keyword
+cebe610a322a,code,0.777,the claim,0.83,the claim
+cfcbdc94d401,code,0.24,unrelated,0.3,unrelated
+d06b511512ac,code,0.743,nearby,0.733,nearby
+d0c79e37a5b1,wording,0.387,keyword,0.543,nearby
+d0e91e3f5ead,code,0.733,the claim,0.817,the claim
+d1adb4aa0fd6,code,0.753,nearby,0.807,nearby
+d23ca567e3b3,code,0.767,the claim,0.883,the claim
+d28cfefd5848,wording,0.503,nearby,0.54,nearby
+d29a7b3b7dda,code,0.477,keyword,0.533,keyword
+d303e7d7837f,wording,0.707,nearby,0.727,nearby
+d3770b8c6a87,code,0.78,the claim,0.88,the claim
+d3984453d5a9,code,0.517,nearby,0.543,keyword
+d3cfaef6be6a,wording,0.807,the claim,0.847,the claim
+d41e33d7f518,code,0.653,nearby,0.727,nearby
+d4b0ac3176b1,code,0.633,nearby,0.613,nearby
+d4bc5dc7d9c2,code,0.95,the claim,0.973,the claim
+d52733ac5c73,code,0.717,nearby,0.763,nearby
+d552b7849fea,code,0.737,nearby,0.71,nearby
+d5b55997e5d8,wording,0.58,nearby,0.463,nearby
+d6301e3f640e,code,0.67,nearby,0.71,nearby
+d67d9ad3ed8b,wording,0.927,the claim,0.967,the claim
+d715923635ad,code,0.8,the claim,0.95,the claim
+d7c9a1d64983,wording,0.843,the claim,0.88,the claim
+d8289d3ed396,wording,0.687,nearby,0.72,nearby
+d884701d8e76,wording,0.783,nearby,0.793,nearby
+d95ebc817043,wording,0.72,nearby,0.703,nearby
+d96567c7962b,code,0.737,the claim,0.923,the claim
+d979009222d2,code,0.707,nearby,0.79,nearby
+da61776d6262,code,0.777,nearby,0.843,the claim
+da9ffda79fd1,wording,0.64,nearby,0.703,nearby
+dae37765ef4b,code,0.583,nearby,0.563,keyword
+dc1cbb2e267d,code,0.667,nearby,0.667,nearby
+dcd0d40baeaf,wording,0.627,nearby,0.673,the claim
+dd77bf0a46ee,wording,0.89,the claim,0.947,the claim
+dd7c2061da58,wording,0.963,the claim,0.99,the claim
+ddc012b7b7ba,code,0.743,nearby,0.9,the claim
+ddee756ba770,code,0.907,the claim,0.913,the claim
+de35426bf5c7,wording,0.777,nearby,0.79,nearby
+de9a8e0f945a,wording,0.577,nearby,0.537,nearby
+decbddc42952,code,0.793,the claim,0.907,the claim
+df0e9568126c,code,0.59,nearby,0.667,nearby
+df4f19804c16,wording,0.897,the claim,0.957,the claim
+dfff14f0314e,wording,0.687,nearby,0.867,the claim
+e01b5564908c,wording,0.713,nearby,0.777,the claim
+e02d21eb569a,code,0.54,nearby,0.58,nearby
+e08df388847d,code,0.69,nearby,0.75,nearby
+e16ac0286560,code,0.66,nearby,0.787,the claim
+e2389392679b,code,0.827,the claim,0.947,the claim
+e2dc3a1c2998,code,0.867,the claim,0.9,the claim
+e31f8890f4fd,code,0.6,nearby,0.65,nearby
+e355eea3d257,code,0.753,nearby,0.887,the claim
+e36ed88e02e4,wording,0.91,the claim,0.953,the claim
+e387006b5196,code,0.637,nearby,0.607,nearby
+e397cce7c599,code,0.543,nearby,0.58,nearby
+e3e70fef5189,code,0.637,nearby,0.76,the claim
+e41ea02a0640,wording,0.743,nearby,0.76,nearby
+e437cf6f3517,code,0.6,nearby,0.62,nearby
+e43a5d1483b8,code,0.18,unrelated,0.187,unrelated
+e47a390d0c13,wording,0.95,the claim,0.987,the claim
+e4d31544331a,code,0.657,nearby,0.683,nearby
+e4dbd2a69713,wording,0.683,nearby,0.787,the claim
+e508b8f4e956,code,0.717,nearby,0.787,nearby
+e52f60abed39,code,0.45,nearby,0.483,nearby
+e53dc0c7397c,wording,0.647,nearby,0.8,nearby
+e5b1bf789233,wording,0.583,nearby,0.57,nearby
+e6df75c4da01,code,0.523,nearby,0.57,nearby
+e756e4da60cb,wording,0.793,the claim,0.893,the claim
+e7a3e7d4a180,code,0.69,nearby,0.757,nearby
+e7cc8d54d788,code,0.66,nearby,0.65,nearby
+e853e7a6fece,wording,1.0,the claim,0.997,the claim
+e8733420f0f0,code,0.857,the claim,0.943,the claim
+e9240e62b912,code,0.543,nearby,0.62,nearby
+e9fe365134c1,code,0.763,nearby,0.81,the claim
+ea8fc2bffd51,wording,0.927,the claim,0.973,the claim
+eb3b9d8fa160,wording,0.497,nearby,0.457,nearby
+eb76fa3211cb,wording,0.81,nearby,0.89,the claim
+ebd091783e64,code,0.777,nearby,0.883,the claim
+ecc30ef3b3be,code,0.577,nearby,0.667,nearby
+ecdaad19d3b5,wording,0.78,nearby,0.857,the claim
+ed54af4fd471,code,0.653,nearby,0.677,nearby
+ededccabecde,code,0.753,nearby,0.82,the claim
+ee118482371d,code,0.717,nearby,0.737,nearby
+ee761dab4f9e,wording,0.78,the claim,0.927,the claim
+ef34686279e5,code,0.757,the claim,0.713,nearby
+ef80a8c2d527,code,0.623,nearby,0.673,nearby
+efec978c2069,code,0.593,nearby,0.607,nearby
+f0321a16db6c,code,0.713,nearby,0.783,the claim
+f034d8cb0771,wording,0.687,nearby,0.673,nearby
+f19cd6f90366,wording,0.967,the claim,0.947,the claim
+f1a75654bb28,code,0.63,nearby,0.707,nearby
+f1d2c824b429,wording,0.72,nearby,0.853,the claim
+f26882017a7e,code,0.553,nearby,0.53,keyword
+f2b477e9e0c0,wording,0.67,nearby,0.78,the claim
+f31631897334,code,0.703,nearby,0.75,nearby
+f352cbc22df3,code,0.627,nearby,0.703,nearby
+f3c8f8d0abcc,code,0.433,keyword,0.443,keyword
+f4ee5c1206e0,wording,0.657,nearby,0.64,nearby
+f5a3599aed62,code,0.587,nearby,0.66,nearby
+f6369e2179b2,code,0.623,nearby,0.627,nearby
+f6790f55c319,wording,0.89,the claim,0.913,the claim
+f6e204da55b9,code,0.813,the claim,0.867,the claim
+f732ec3d4953,code,0.61,nearby,0.68,nearby
+f851eedb061b,code,0.803,nearby,0.857,the claim
+f88abb9677a6,code,0.683,nearby,0.777,nearby
+f8d511688c01,wording,0.907,the claim,0.97,the claim
+f911bdc20ca1,code,0.673,nearby,0.677,nearby
+f944323e5561,code,0.777,nearby,0.787,nearby
+f961e61f7ca4,wording,0.663,nearby,0.683,nearby
+f9fd37e35155,code,0.58,nearby,0.63,nearby
+fa0959be0cde,code,0.74,nearby,0.837,the claim
+fa3875fb5724,code,0.447,nearby,0.513,nearby
+fa556e4d0258,wording,0.637,nearby,0.72,nearby
+fa7bc9d06f1f,code,0.933,the claim,0.973,the claim
+fab78cd4d5c9,wording,0.643,nearby,0.7,nearby
+faeffc854d40,wording,0.707,nearby,0.767,nearby
+fb48caec93fd,code,0.873,the claim,0.923,the claim
+fb79d99adab8,wording,0.69,nearby,0.763,nearby
+fbb6196a2d63,code,0.61,nearby,0.743,nearby
+fbe9c67cd930,wording,0.88,the claim,0.97,the claim
+fc26b40dad7d,wording,0.96,the claim,0.953,the claim
+fd3b3aae6ef7,wording,0.78,nearby,0.827,the claim
+fdbf1fed139a,wording,0.74,nearby,0.803,nearby
+febcfb77101b,wording,0.573,nearby,0.67,nearby
+fefaf6fca19e,wording,0.937,the claim,0.973,the claim
+ffd7d28fbfc7,wording,0.883,the claim,0.923,the claim

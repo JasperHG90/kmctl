@@ -7,9 +7,9 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-11-14T07:57:06Z
+  at: 2026-11-14T08:27:33Z
   against:
-    - architecture/overview
+    - prototypes/link-question
 ---
 
 # Summary: kmctl
