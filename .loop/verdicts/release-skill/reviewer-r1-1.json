@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The Inputs section says `version` takes \"X.Y.Z with no v\", but release.yml's version input also accepts a pre-release version X.Y.Z{a,b,rc}N. An operator who wants an exact pre-release version would think they cannot type one.",
+      "anchor": ".claude/skills/release/SKILL.md:47",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "_regenerates lets through any sentence about regenerating that also holds \"not\", so \"If the notes are not complete, regenerate them.\" passes as a ban. The r3/r4 \"never regenerates\" check is weaker than it looks. Matching only a ban that comes before the verb (never/do not/don't regenerate, never regenerated) would close it.",
+      "anchor": "tests/test_release_skill.py:79",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "c19b70de402217c7a0a829101a3074e42dd3e73fab82bb70ad62d937a430d32a",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T22:34:36+00:00"
+}
