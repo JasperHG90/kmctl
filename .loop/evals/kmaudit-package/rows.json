@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "kmaudit, built as a wheel from packages/kmaudit and installed into a fresh virtual environment that does not have kmctl, runs `kmaudit claims todo --json` on a fixture OKF bundle in a git repository and prints its sections.",
+      "fails_when": "the wheel does not build, kmctl gets installed alongside it, the command exits nonzero, or it prints no section of the fixture bundle",
+      "command": "uv run pytest packages/kmaudit/tests/test_independent.py -m integration -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "No Python module under packages/kmaudit imports kmctl, and kmaudit's pyproject.toml does not depend on kmctl.",
+      "fails_when": "any module under packages/kmaudit/src or packages/kmaudit/tests has an import of kmctl, or kmaudit's dependencies name kmctl",
+      "command": "uv run pytest packages/kmaudit/tests/test_independent.py -k imports -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "One `uv run pytest` at the repository root collects and runs both kmctl's tests under tests/ and kmaudit's under packages/kmaudit/tests.",
+      "fails_when": "the root run collects no test from packages/kmaudit/tests or none from tests/, or collection errors",
+      "command": "uv run pytest --collect-only -q | grep -q '^packages/kmaudit/tests/' && uv run pytest --collect-only -q | grep -q '^tests/'"
+    },
+    {
+      "id": "r4",
+      "behavior": "kmctl has no audit group and no audit extra: `kmctl audit --help` fails as an unknown command and kmctl's package metadata lists no audit extra.",
+      "fails_when": "`kmctl audit` still resolves to a command group, or kmctl's metadata Provides-Extra includes audit",
+      "command": "uv run pytest tests/test_no_audit.py -q"
+    },
+    {
+      "id": "r5",
+      "behavior": "Every audit behaviour tested before the move is still tested after it: the audit tests that lived under tests/ run under packages/kmaudit/tests against kmaudit and pass.",
+      "fails_when": "an audit test from tests/ was deleted rather than moved (other than the CLI name changing from kmctl audit to kmaudit), or the moved tests fail",
+      "command": "uv run pytest packages/kmaudit/tests -q"
+    },
+    {
+      "id": "r6",
+      "behavior": "Outside .loop/, .okf/log.md, .okf/prototypes/ and decision records superseded by the new one, no tracked file says `kmctl audit` or `kmctl[audit]`; the root README names the two packages and links packages/kmaudit/README.md.",
+      "fails_when": "git grep finds `kmctl audit` or `kmctl[audit]` in a file outside those exclusions, or README.md does not link packages/kmaudit/README.md",
+      "command": "uv run pytest tests/test_no_audit.py -k mentions -q"
+    },
+    {
+      "id": "r7",
+      "behavior": "A new decision record says the audit left kmctl to become kmaudit, a separate package in this monorepo served over MCP, names the alternative it rejected (keeping kmctl audit, or moving kmctl into packages/ too), and marks the records it supersedes; the OKF bundle validates strictly.",
+      "fails_when": "no such record exists, it names no rejected alternative, or okf validate --strict fails",
+      "judgment": true
+    }
+  ]
+}
