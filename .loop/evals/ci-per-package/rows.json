@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "ci.yml is named CI and runs prek, then knowledge, then the kmctl, kmaudit, repo and starter jobs, each test job running pytest in its own directory.",
+      "fails_when": "the name is not CI, a job is missing, the needs order differs, or a test job runs the wrong directory",
+      "command": "uv run pytest tests/test_ci.py -k per_package -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "A tests job needs kmctl, kmaudit and repo, runs if: always(), and fails unless every one succeeded; prek, knowledge and tests carry no name: so the required checks keep their names.",
+      "fails_when": "the tests job is missing, lacks always(), passes when one job failed or was skipped, or a required job has a name:",
+      "command": "uv run pytest tests/test_ci.py -k aggregate -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "Every test the loop's tests gate collects sits under exactly one CI test job's directory, each job directory collects at least one test, and both packages appear.",
+      "fails_when": "a collected test is in no job or in two, a job collects nothing, or a package is missing",
+      "command": "uv run pytest tests/test_ci.py -k partition -q"
+    }
+  ]
+}
