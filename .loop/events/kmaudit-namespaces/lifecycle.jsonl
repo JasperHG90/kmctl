@@ -1,3 +1,4 @@
 {"at": "2026-11-14T11:33:58+00:00", "kind": "register", "schema_version": "1.0", "stage": "planning"}
 {"at": "2026-11-14T13:06:30+00:00", "kind": "spike-note", "n": 1, "replaced": false, "schema_version": "1.0"}
 {"at": "2026-11-14T13:07:47+00:00", "kind": "spike-note", "n": 2, "replaced": false, "schema_version": "1.0"}
+{"at": "2026-11-14T13:07:56+00:00", "grant": "g7", "hash": "e5b62ddfaa83fc99cf47e402d30c4b57212ca976df648be6ac12fa0062e5e219", "kind": "signoff", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/claude-main", "step": "eval-sign"}
