@@ -3,7 +3,7 @@
   "slug": "kmaudit-namespaces",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -89,8 +89,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "5ab3fa5f92e4a4a35225206001ff19f7f8297f3626c1016b703a177a2debb32e",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "c85bfbf1d40833000054302c0e2c5a4bdc6c69b606d2400da6a16be9d59c826e",
+    "started_at": "2026-11-14T13:07:58+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "c85bfbf1d40833000054302c0e2c5a4bdc6c69b606d2400da6a16be9d59c826e",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -105,5 +124,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T13:07:56+00:00"
+  "at": "2026-11-14T13:07:58+00:00"
 }
