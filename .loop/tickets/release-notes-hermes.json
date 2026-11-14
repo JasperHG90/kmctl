@@ -19,7 +19,9 @@
   "archived": false,
   "worktree": "/home/vscode/workspace.worktrees/release-notes-hermes",
   "branch": "loop/release-notes-hermes",
-  "stamps": [],
+  "stamps": [
+    "ef295b1568db381f1a3bac3d8cda4d5070c64c5258b259245f1772576a4c92bf"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
     "hash": "9f923ab7d637f4bd76f21eab9e80d669a122a1a2a046f3548d824d5a1d700e46",
@@ -110,5 +112,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T21:54:08+00:00"
+  "at": "2026-11-14T22:05:47+00:00"
 }
