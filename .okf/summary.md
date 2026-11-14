@@ -7,11 +7,10 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-11-14T13:35:06Z
+  at: 2026-11-14T14:08:34Z
   against:
     - architecture/audit-pipeline
     - architecture/overview
-    - decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp
 ---
 
 # Summary: kmctl

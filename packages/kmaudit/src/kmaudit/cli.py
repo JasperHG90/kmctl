@@ -1047,6 +1047,60 @@ def list_namespaces(
         )
 
 
+@app.command(
+    "briefing",
+    epilog=(
+        "Examples:\n\n"
+        "  kmaudit briefing\n\n"
+        "  kmaudit briefing --json\n\n"
+        "For a session-start hook: per namespace, its sections and how many "
+        "are pending, its claims, its checks by status and its open notes, then "
+        "the one thing to do next. It changes no store: it opens each read-only "
+        "and cuts the pages to count pending sections, where claims todo would "
+        "refresh and drop changed sections' claims. With no namespace it prints "
+        "nothing (with --json, an empty list); on any error it prints one line "
+        "saying the briefing is unavailable (with --json, an unavailable key). "
+        "It always exits 0, so a hook never blocks a session."
+    ),
+)
+def audit_briefing(
+    path: Annotated[
+        Path,
+        typer.Argument(
+            metavar="[.]",
+            help="A path in the repository to brief on. Default: the current directory.",
+        ),
+    ] = Path("."),
+    as_json: Annotated[
+        bool,
+        typer.Option(
+            "--json",
+            help=(
+                "Print one JSON object, {namespaces: [{namespace, sections, pending, "
+                "claims, checks, feedback, next}]}, plus unavailable: REASON on an "
+                "error, for scripts."
+            ),
+        ),
+    ] = False,
+) -> None:
+    """Print each namespace's audit state and the next step, changing nothing."""
+    from kmaudit.briefing import brief, render
+
+    try:
+        briefs = brief(path)
+    except Exception as error:  # noqa: BLE001 - a session-start hook must never fail
+        first = str(error).splitlines()[0] if str(error) else type(error).__name__
+        if as_json:
+            typer.echo(json.dumps({"namespaces": [], "unavailable": first}))
+        else:
+            typer.echo(f"kmaudit briefing: unavailable ({first})")
+        return
+    if as_json:
+        typer.echo(json.dumps({"namespaces": [asdict(b) for b in briefs]}))
+    elif briefs:
+        typer.echo(render(briefs))
+
+
 def main() -> None:
     """Run the kmaudit CLI."""
     app()

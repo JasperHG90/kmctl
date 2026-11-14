@@ -186,8 +186,8 @@ Still open:
   `kmaudit claims list`, `kmaudit checks todo`,
   `kmaudit checks try`, `kmaudit checks submit`,
   `kmaudit checks run`, `kmaudit checks list`, `kmaudit judge`,
-  `kmaudit ui`, `kmaudit coverage`, `kmaudit namespaces`, `kmaudit guard`.
-- Modules: `packages/kmaudit/src/kmaudit/` (`cli.py`, `namespaces.py`, `sections.py`, `instructions.py`,
+  `kmaudit ui`, `kmaudit coverage`, `kmaudit namespaces`, `kmaudit briefing`, `kmaudit guard`.
+- Modules: `packages/kmaudit/src/kmaudit/` (`cli.py`, `namespaces.py`, `briefing.py`, `sections.py`, `instructions.py`,
   `models.py`, `store.py`, `verbs.py`, `steps.py`, `anchors.py`,
   `lines.py`, `mutate.py`, `check_instructions.py`, `check_store.py`,
   `check_verbs.py`, `guard.py`, `feedback.py`, `ui.py`, `ui.html`,
