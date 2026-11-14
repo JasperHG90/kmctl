@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "Settled by spike:kmctl-to-packages/5; O1 carries the hook change.",
+      "anchor": ".pre-commit-hooks.yaml:4",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "The move, fallbacks, workflows and hook sit in O1.",
+      "anchor": ".loop/plans/kmctl-to-packages/README.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "resolved",
+      "claim": "O2, O3 and O4 each need O1.",
+      "anchor": ".loop/plans/kmctl-to-packages/README.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p4",
+      "disposition": "resolved",
+      "claim": "release.py's fragment sits in P2, fixed by O3.",
+      "anchor": ".loop/plans/kmctl-to-packages/README.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p5",
+      "disposition": "resolved",
+      "claim": "action.yml, the starter justfile and its test ship with O1.",
+      "anchor": "action.yml:142",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r5"
+    },
+    {
+      "id": "p6",
+      "disposition": "resolved",
+      "claim": "tree_repo now runs scripts/release.py set on its copy at the test-only version before committing and tagging, so tag, apm.yml files, copier default, the starter's lock and the installed CLI agree; set_version rewrites exactly those files and needs no git state.",
+      "anchor": "tests/conftest.py:98",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r4"
+    },
+    {
+      "id": "p7",
+      "disposition": "resolved",
+      "claim": "The real uvx hand-off claim moved to O2's checked-by and pins tree_repo's test-only tag, which is newer than v0.12.1 and differs from the running version.",
+      "anchor": "tests/test_pin.py:23",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r4"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "97efc292a06a3688bd249ce74fe0a35115c061c958ca07658a64d85ab9697e5c"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T20:06:11+00:00"
+}
