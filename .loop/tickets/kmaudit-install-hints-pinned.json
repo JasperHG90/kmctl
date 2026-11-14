@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0",
+  "slug": "kmaudit-install-hints-pinned",
+  "stage": "stub",
+  "attempts": 0,
+  "plan_rounds": 0,
+  "review_rounds": 0,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": null,
+  "ask": null,
+  "split": null,
+  "split_plan_hash": null,
+  "split_hold": false,
+  "commit_sha": null,
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": null,
+  "branch": null,
+  "stamps": [],
+  "signoff": null,
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [],
+  "resigns": [],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [],
+  "round": null,
+  "plan_hash": "2e3030079e294789c35532c64a852b75f25ee85563dcc09ebbf78e032c1dfa4c",
+  "intent": {
+    "epic": "monorepo-release",
+    "depends_on": [
+      "release-per-package"
+    ],
+    "priority": null
+  },
+  "history": [],
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T21:35:07+00:00"
+}
