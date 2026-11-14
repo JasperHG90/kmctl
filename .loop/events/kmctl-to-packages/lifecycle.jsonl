@@ -17,3 +17,4 @@
 {"at": "2026-11-14T20:04:52+00:00", "by": "delegated:jasperginn@gmail.com/agent", "edge": "plan-cap", "grant": "g7", "kind": "override", "reason": "operator said to unblock; p6 (tree_repo runs release.py set on its copy) and p7 (real uvx hand-off pins the test-only tag) are fixed in the plan", "schema_version": "1.0", "step": "ticket-override"}
 {"at": "2026-11-14T20:04:59+00:00", "binds": "97efc292a06a3688bd249ce74fe0a35115c061c958ca07658a64d85ab9697e5c", "kind": "round-start", "n": 4, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
 {"at": "2026-11-14T20:06:25+00:00", "dispatched_at": "2026-11-14T20:04:59+00:00", "kind": "round-close", "n": 4, "outcome": "pass", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-14T20:06:11+00:00"}}
+{"at": "2026-11-14T20:06:31+00:00", "kind": "unblock", "schema_version": "1.0"}
