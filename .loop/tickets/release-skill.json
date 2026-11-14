@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "release-skill",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
@@ -38,7 +38,7 @@
   "split": "j-20261114T175021+0000-266ed6d2",
   "split_plan_hash": "59daf4df99fedbc63de03bc6ccbc47d39bd6ae305fafcab0c12421bf2bf164f6",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "aec195507dd206ee38a4530b8a7cc4787d9aa5a8",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -173,8 +173,14 @@
       "to": "verifying",
       "at": "2026-11-14T22:38:46+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-14T22:40:01+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T22:39:52+00:00"
+  "at": "2026-11-14T22:40:01+00:00"
 }
