@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "The plan now moves judge's CLI body into an async function in judge.py that takes the folder, question, ids and lines and returns one entry per id, awaited by both the CLI and the tool; judge.py is in O1's touches and r1 checks the shared function.",
+      "anchor": "packages/kmaudit/src/kmaudit/cli.py:704",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "The contract now splits a whole-call refusal (tool error with the CLI's refusal line) from a mixed batch (the --json SubmitResult or SubmitChecks with its refused list), and r3 tests both.",
+      "anchor": "packages/kmaudit/src/kmaudit/cli.py:225",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r3"
+    },
+    {
+      "id": "p3",
+      "disposition": "resolved",
+      "claim": "folder may be absolute (resolve_target takes both), slow verbs run off the event loop, and the README gives each harness's working directory and how to raise a short tool timeout; r5 checks an absolute folder.",
+      "anchor": "packages/kmaudit/src/kmaudit/sections.py:131",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r5"
+    },
+    {
+      "id": "p4",
+      "disposition": "open",
+      "claim": "The prose now says every subprocess a verb starts gets stdin=DEVNULL, because stdin is the MCP channel. Those calls are in anchors.py (lines 82 and 157), namespaces.py (line 75) and steps.py (lines 286 and 433). O1's touches name none of the three files, so the facts plan.split reads leave out files the prose says change. Add them to O1's touches, or drop the stdin change from the prose.",
+      "anchor": "packages/kmaudit/src/kmaudit/steps.py:286",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "4876e54c0a058751f32308644d50acf50206cd74b795b735198c7294864416ee"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T17:27:47+00:00"
+}
