@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "Settled by spike:kmctl-to-packages/5; O1 carries the hook change.",
+      "anchor": ".pre-commit-hooks.yaml:4",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "The move, fallbacks, workflows and hook sit in O1.",
+      "anchor": ".loop/plans/kmctl-to-packages/README.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "resolved",
+      "claim": "O2, O3 and O4 each need O1.",
+      "anchor": ".loop/plans/kmctl-to-packages/README.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p4",
+      "disposition": "resolved",
+      "claim": "release.py's fragment sits in P2, fixed by O3.",
+      "anchor": ".loop/plans/kmctl-to-packages/README.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p5",
+      "disposition": "resolved",
+      "claim": "action.yml, starter/justfile.jinja and the starter test now sit in O1, with the knowledge job and starter bootstrap in O1's checked-by.",
+      "anchor": "action.yml:142",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r5"
+    },
+    {
+      "id": "p6",
+      "disposition": "open",
+      "claim": "The chosen fix (tree_repo tags its copy one minor past apm/apm.yml, a test-only tag) still breaks the starter bootstrap test, because only the tag moves and the copy's version stays 0.12.1. The copy's copier.yml kmctl_ref default is still v0.12.1 (tests/test_starter.py:171 pins it to apm.yml's version), so copier renders kmctl_ref v0.12.1 and apm.yml/justfile ask the file:// clone for a tag it no longer has, and the install fails. If the test passes the new tag as kmctl_ref instead, apm.lock.yaml pins v0.13.0 while the installed CLI reports 0.12.1 (version comes from the copy's apm/apm.yml), so doctor's lock check fails (src/kmctl/doctor.py:373, resolved_ref != package_ref()), and test_bootstrap_installs_this_checkout asserts report['ok']. The tag and the copy's own version must agree: for example tree_repo runs `scripts/release.py set` (apm.yml files, copier.yml default, pinned lines) on the copy to the test-only version before committing and tagging, so the installed CLI, the lock, the copier default and the tag all say the same post-move version. State that rule in O1.",
+      "anchor": "tests/conftest.py:122",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r4"
+    },
+    {
+      "id": "p7",
+      "disposition": "open",
+      "claim": "O1's checked-by says the pin integration test passes against the moved tree, but that test does not use tree_repo's tag: test_hands_off_through_a_real_uvx (tests/test_pin.py:335) writes a lock at OTHER = 'v0.5.1' (tests/test_pin.py:23) with the tree's commit and unsets KMCTL_PINNED, so it really hands off through uvx. On O1 alone pin.py has no fragment, so uvx builds the root's empty wheel and finds no kmctl; after O2 the rule gives v0.5.1 no fragment either, with the same result. So the pin integration test cannot pass in O1 and does not pass in O2 as written. Move that claim from O1's checked-by to O2's, and have the test pin a ref newer than v0.12.1 that differs from the running version (the hand-off is skipped when they match, pin.py:151). O1 should not claim it, or the integration gate stays red until O2 lands.",
+      "anchor": "tests/test_pin.py:23",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r4"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "3746974443955a8928c341776e62b800b51d3a7e92b88e8c3e18f5aa129c44d7"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T19:55:54+00:00"
+}
