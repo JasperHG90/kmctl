@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "kmaudit-namespaces",
+  "n": 1,
+  "command": "bash -c unset VIRTUAL_ENV; uv run --project /home/vscode/workspace python -I /tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-ns/plain_folder.py",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-ns/plain_folder.py",
+      "copy": "files/plain_folder.py"
+    }
+  ],
+  "where": "worktree",
+  "head": "e168082c96347bf5ab422a726fe2abfded01eaec",
+  "fingerprint": "cc5eec10ce70ef5966a41dafbf21fc15b2d3f974a421466d0cca3f784bfcd4e6",
+  "started_at": "2026-11-14T13:06:13+00:00",
+  "finished_at": "2026-11-14T13:06:13+00:00",
+  "duration_seconds": 0.318,
+  "timeout_seconds": 300.0,
+  "exit": 1,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "moved_from": null
+}

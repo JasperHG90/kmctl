@@ -76,3 +76,4 @@
 {"at": "2026-11-14T07:54:38+00:00", "branch": "agent-audit", "kind": "commit", "schema_version": "1.0", "sha": "f9aaa2dc59f61e9d73d86bb0718a0134d7a19cb0", "subject": "audit ui: a View code button on each check"}
 {"at": "2026-11-14T08:25:46+00:00", "branch": "agent-audit", "kind": "commit", "schema_version": "1.0", "sha": "a29ddf1e339175436e4bb12a9ce5d41c552a1140", "subject": "audit: honest second opinions, others' feedback apart, two overview drifts"}
 {"at": "2026-11-14T08:51:28+00:00", "branch": "agent-audit", "kind": "commit", "schema_version": "1.0", "sha": "9dcbb0bd63aaf6354d17243bb1d1bdb043d3a586", "subject": "prototypes: measure how the reworded link question moved its answers"}
+{"ask": "j-20261114T113041+0000-fa5ce086", "at": "2026-11-14T13:04:47+00:00", "branch": "agent-audit", "kind": "commit", "schema_version": "1.0", "sha": "e168082c96347bf5ab422a726fe2abfded01eaec", "subject": "loop: tickets land on agent-audit while the kmaudit epic runs"}

@@ -1,0 +1,54 @@
+
+===== audited folder: docs =====
+sections: ['guide#exit', 'guide#retries']
+[wrong] sections.py:18 SKIP_NAMES: docs/sub/index.md skipped in a plain folder
+claims todo concepts: [('guide', 'docs/guide.md')]
+list documents: ['guide']
+checks todo concepts: [('guide', 'docs/guide.md')]
+  a6d58099b4ab anchors=[] lines.source=area files=['src/tool.py']
+  a8b73b7ead01 anchors=[('MAX_RETRIES', 'defined'), ('src/tool.py', 'present')] lines.source=anchors files=['src/tool.py']
+  443ecfab1a35 anchors=[] lines.source=area files=['src/tool.py']
+claims with lines in src/tool.py: 3
+  try: check True ["1 lines: ['src/tool.py:4: MAX_RETRIES = 3']"]
+  try: check False ["could not run: ValueError: no readable tracked file matches 'docs/guide.md'"]
+  checks submit: {"stored":[{"claim":"a6d58099b4ab","kind":"check","status":"holds","mutants":4,"killed":3}],"refused":[]}
+coverage files: ['ci/audit.yml', 'pyproject.toml', 'scripts/release.py', 'src/tool.py'] covered 1 / 22
+ui concepts: ['guide']
+file_text src ok: True
+file_text docs/guide.md refused: 'docs/guide.md' is not a text file a check may read
+
+===== audited folder: handbook =====
+sections: ['guide#exit', 'guide#retries']
+[wrong] sections.py:18 SKIP_NAMES: handbook/sub/index.md skipped in a plain folder
+claims todo concepts: [('guide', 'handbook/guide.md')]
+list documents: ['guide']
+[wrong] steps.py:59 EXCLUDE_DIRS / Repository: checks may read audited files ['handbook/guide.md', 'handbook/sub/index.md']
+checks todo concepts: [('guide', 'handbook/guide.md')]
+  a6d58099b4ab anchors=[] lines.source=area files=['src/tool.py']
+  a8b73b7ead01 anchors=[('MAX_RETRIES', 'defined'), ('src/tool.py', 'present')] lines.source=anchors files=['src/tool.py']
+  443ecfab1a35 anchors=[] lines.source=area files=['src/tool.py']
+claims with lines in src/tool.py: 3
+  try: check True ["1 lines: ['src/tool.py:4: MAX_RETRIES = 3']"]
+  try: check True ["1 lines: ['handbook/guide.md:5: The tool stops after `MAX_RETRIES` attempts in `src/tool.py`. The CLI writes out.txt.']"]
+[wrong] steps.py Repository: a check read handbook/guide.md and held
+  checks submit: {"stored":[{"claim":"a6d58099b4ab","kind":"check","status":"holds","mutants":4,"killed":3}],"refused":[]}
+coverage files: ['ci/audit.yml', 'handbook/guide.md', 'handbook/sub/index.md', 'pyproject.toml', 'scripts/release.py', 'src/tool.py'] covered 1 / 29
+[wrong] coverage.code_files (via Repository): audited files counted as code ['handbook/guide.md', 'handbook/sub/index.md']
+ui concepts: ['guide']
+[wrong] ui.build code view: audited files in code view ['handbook/guide.md', 'handbook/sub/index.md']
+file_text src ok: True
+[wrong] ui.file_text: serves audited handbook/guide.md as code
+[wrong] ui.html:479: document path shown as .okf/<concept>.md whatever the folder
+[wrong] check_instructions.py:34: check prompt says only .okf/ and docs/ are never read
+
+===== summary =====
+wrong  in plan      sections.py:18 SKIP_NAMES: docs/sub/index.md skipped in a plain folder
+wrong  in plan      sections.py:18 SKIP_NAMES: handbook/sub/index.md skipped in a plain folder
+wrong  in plan      steps.py:59 EXCLUDE_DIRS / Repository: checks may read audited files ['handbook/guide.md', 'handbook/sub/index.md']
+wrong  in plan      steps.py Repository: a check read handbook/guide.md and held
+wrong  in plan      coverage.code_files (via Repository): audited files counted as code ['handbook/guide.md', 'handbook/sub/index.md']
+wrong  in plan      ui.build code view: audited files in code view ['handbook/guide.md', 'handbook/sub/index.md']
+wrong  in plan      ui.file_text: serves audited handbook/guide.md as code
+wrong  OUTSIDE plan ui.html:479: document path shown as .okf/<concept>.md whatever the folder
+wrong  OUTSIDE plan check_instructions.py:34: check prompt says only .okf/ and docs/ are never read
+outside plan: ['ui.html:479', 'check_instructions.py:34']

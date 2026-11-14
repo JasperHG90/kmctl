@@ -1,0 +1,1 @@
+{"at": "2026-11-14T13:06:14+00:00", "command": "bash -c unset VIRTUAL_ENV; uv run --project /home/vscode/workspace python -I /tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-ns/plain_folder.py", "exit": 1, "kind": "spike", "n": 1, "schema_version": "1.0"}
