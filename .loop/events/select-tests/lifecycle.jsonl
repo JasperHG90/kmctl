@@ -1,3 +1,4 @@
 {"at": "2026-11-14T11:39:09+00:00", "kind": "register", "schema_version": "1.0", "stage": "planning"}
 {"at": "2026-11-14T11:48:23+00:00", "kind": "spike-note", "n": 1, "replaced": false, "schema_version": "1.0"}
 {"at": "2026-11-14T11:48:24+00:00", "kind": "spike-note", "n": 2, "replaced": false, "schema_version": "1.0"}
+{"at": "2026-11-14T11:51:05+00:00", "kind": "drop", "reason": "measured: the full default suite runs in 68 s (1379 tests, worktree of kmaudit-package, 2026-11-14) and 125 s serially with per-test coverage; the 17 min stamps were machine load. spike:select-tests/1: with the planned rules the median commit still runs 83 percent of the suite and 15 of the last 40 commits fall back to a full run, so a stamp would save about 10-15 s. Not worth a 1700-line selector; revisit if the suite passes several minutes.", "schema_version": "1.0"}
