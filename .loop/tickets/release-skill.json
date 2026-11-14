@@ -3,7 +3,7 @@
   "slug": "release-skill",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -54,8 +54,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "cfa8c72943b21cabfd9bee1b523c28678a83722fe0e4c3544fcf17fa9342d8c5",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "a6d479c861ad43f002679b46d99be49bcc4da41c1443ff4d54695eb9b544ea89",
+    "started_at": "2026-11-14T17:47:24+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "a6d479c861ad43f002679b46d99be49bcc4da41c1443ff4d54695eb9b544ea89",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -70,5 +89,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T17:47:17+00:00"
+  "at": "2026-11-14T17:47:24+00:00"
 }
