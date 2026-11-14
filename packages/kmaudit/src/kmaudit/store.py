@@ -1,4 +1,4 @@
-"""The audit store: a git-ignored SQLite file at .kmctl/audit.sqlite in the repository.
+"""The audit stores: one git-ignored SQLite file per namespace under .kmaudit/ in the repository.
 
 Its schema moves by the ordered SQL steps in ``STEPS``, tracked in ``PRAGMA
 user_version``, so later tickets add tables by appending a step. WAL mode and
@@ -6,7 +6,9 @@ a busy timeout let parallel agents submit at once.
 """
 
 import json
+import os
 import sqlite3
+import tempfile
 from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -14,11 +16,10 @@ from pathlib import Path
 from types import TracebackType
 from typing import Self
 
+from kmaudit import namespaces
 from kmaudit.models import Claim
 from kmaudit.sections import Section, previous_keys
 
-STORE_DIR = ".kmctl"
-STORE_NAME = "audit.sqlite"
 BUSY_TIMEOUT_MS = 30_000
 
 #: The schema steps, in order; step i brings a database to user_version i + 1.
@@ -144,7 +145,43 @@ STEPS: list[str] = [
     );
     CREATE INDEX feedback_claim ON feedback (claim_id, target);
     """,
+    # The namespace a store belongs to and the folder it audits (ADR 0043).
+    """
+    CREATE TABLE meta (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+    );
+    """,
 ]
+
+
+def _copy(source: Path, target: Path) -> None:
+    """Copy the SQLite database at ``source`` to ``target`` with SQLite's backup API, rows in its WAL included.
+
+    ``source`` is opened read-only, so it is not changed. The copy is written
+    to a temporary file of its own and linked into place only when
+    ``target`` does not exist yet, so processes opening the store at once
+    never overwrite one another's copy or a store already in use.
+    """
+    handle, name = tempfile.mkstemp(dir=target.parent, suffix=".partial")
+    os.close(handle)
+    partial = Path(name)
+    try:
+        src = sqlite3.connect(f"file:{source}?mode=ro", uri=True)
+        try:
+            dst = sqlite3.connect(partial)
+            try:
+                src.backup(dst)
+            finally:
+                dst.close()
+        finally:
+            src.close()
+        try:
+            os.link(partial, target)
+        except FileExistsError:
+            pass  # another process copied it first; use theirs
+    finally:
+        partial.unlink(missing_ok=True)
 
 
 class StaleSection(Exception):
@@ -176,34 +213,44 @@ class Verdict:
     reason: str
 
 
-def store_path(root: Path) -> Path:
-    """Where the store of the repository at ``root`` lives."""
-    return root / STORE_DIR / STORE_NAME
-
-
 def _now() -> str:
     """The current UTC time as ISO 8601 seconds."""
     return datetime.now(UTC).isoformat(timespec="seconds")
 
 
 class Store:
-    """The audit store of one repository, opened at the newest schema step.
+    """The audit store of one namespace, opened at the newest schema step.
 
     Parameters
     ----------
     root :
-        The repository root; the store is ``root/.kmctl/audit.sqlite``. kmctl
-        creates ``.kmctl/`` with a ``.gitignore`` holding ``*``, so the folder
-        ignores itself and the user's own ``.gitignore`` is never edited.
+        The repository root; the store is ``root/.kmaudit/<namespace>.sqlite``.
+        kmaudit creates ``.kmaudit/`` with a ``.gitignore`` holding ``*``, so
+        the folder ignores itself and the user's own ``.gitignore`` is never
+        edited.
+    namespace :
+        The audited folder's path below ``root``. The ``.okf`` namespace
+        starts as a copy of the store the audit kept while it was part of
+        kmctl, ``.kmctl/audit.sqlite``, when there is one; that file is left
+        as it was.
     """
 
-    def __init__(self, root: Path) -> None:
-        folder = root / STORE_DIR
+    def __init__(
+        self, root: Path, namespace: str = namespaces.LEGACY_NAMESPACE
+    ) -> None:
+        self.path = namespaces.store_file(root, namespace)
+        folder = self.path.parent
         folder.mkdir(parents=True, exist_ok=True)
         ignore = folder / ".gitignore"
         if not ignore.exists():
             ignore.write_text("*\n", encoding="utf-8")
-        self.path = folder / STORE_NAME
+        legacy = root / namespaces.LEGACY_STORE
+        if (
+            namespace == namespaces.LEGACY_NAMESPACE
+            and not self.path.exists()
+            and legacy.is_file()
+        ):
+            _copy(legacy, self.path)
         self.db = sqlite3.connect(
             self.path, timeout=BUSY_TIMEOUT_MS / 1000, isolation_level=None
         )
@@ -212,6 +259,10 @@ class Store:
         self.db.execute("PRAGMA journal_mode = WAL")
         self.db.execute("PRAGMA foreign_keys = ON")
         self._migrate()
+        self.db.execute(
+            "INSERT OR IGNORE INTO meta (key, value) VALUES ('namespace', ?)",
+            (namespace,),
+        )
 
     def _migrate(self) -> None:
         """Apply every schema step the database has not had yet, each in its own transaction."""

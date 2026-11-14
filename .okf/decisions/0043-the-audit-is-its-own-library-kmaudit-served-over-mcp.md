@@ -76,3 +76,16 @@ in them as `kmaudit X`. ADR 0036's correction says where the verbs went.
   route before it reaches main.
 - The store stays at `.kmctl/audit.sqlite` for now; the namespaces ticket
   moves it.
+
+## Amended, 2026-11-14
+
+Namespaces are built. Each audited folder keeps its own SQLite file,
+`.kmaudit/<namespace>.sqlite`, rather than sharing one file with a
+namespace column: page ids are relative to their folder, so `docs/guide.md`
+and `.okf/guide.md` would share section ids in one file, and every table
+and query would need the column. A path inside an existing namespace
+narrows it and never opens a second store; a folder holding a namespace is
+refused. The writing verbs name their namespace with `--path`, which `todo`
+prints. `.kmctl/audit.sqlite` is copied into the `.okf` namespace on first
+use and left as it was; settings stay at the kmctl path for now.
+

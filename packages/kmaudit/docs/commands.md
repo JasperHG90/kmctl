@@ -1,15 +1,15 @@
 # kmaudit commands
 
 Every command takes `--help`; every command that prints results takes
-`--json`. The audit's state lives in `.kmctl/audit.sqlite` in the
-repository.
+`--json`. Each audited folder is a namespace with its own store under
+`.kmaudit/` in the repository; see [Namespaces](#namespaces).
 
 ## Summary
 
 | Command | What it does |
 |---|---|
-| `kmaudit` | Audit what the `.okf/` bundle claims about the repository. Groups: `claims` and `checks`; verbs: `judge`, `ui` and `coverage`. kmaudit calls no model except `judge`: a coding agent reads what these verbs hand out and submits its answers. |
-| `kmaudit claims todo` | List the bundle's sections that have no claims extracted for their current text. |
+| `kmaudit` | Audit what a folder of markdown docs claims about its repository. Groups: `claims` and `checks`; verbs: `judge`, `ui` and `coverage`. kmaudit calls no model except `judge`: a coding agent reads what these verbs hand out and submits its answers. |
+| `kmaudit claims todo` | List the folder's sections that have no claims extracted for their current text. |
 | `kmaudit claims submit` | Store an agent's verdicts and claims for sections that `todo` handed out. |
 | `kmaudit claims list` | Show the stored claims: counts per concept and kind, or each claim. |
 | `kmaudit checks todo` | List the stored claims that have no check or current reason, with the lines they are about. |
@@ -20,20 +20,23 @@ repository.
 | `kmaudit judge` | Ask the configured decision model one question about stored checks or a claim. |
 | `kmaudit coverage` | Show how much of the repository's code the claims' checks match, line by line. |
 | `kmaudit ui` | Serve a local page to review claims and checks and give feedback on them. |
+| `kmaudit namespaces` | List the repository's namespaces: each audited folder with its counts. |
 | `kmaudit guard` | Allow a Bash call only when it is one `kmaudit` command, as a PreToolUse hook. |
 
 ## `kmaudit claims todo`
 
 `kmaudit claims todo [PATH] [--limit N] [--json]`
 
-List the bundle's sections that have no claims extracted for their current
-text. `PATH` is a repository holding `.okf/`, a bundle folder, or one
-concept file to narrow the scope (default: the current directory).
+List the folder's sections that have no claims extracted for their current
+text. `PATH` is the folder of markdown docs to audit, or a folder or page
+inside one to narrow the scope (default: the current directory); see
+[Namespaces](#namespaces) for which namespace a path means.
 
 It cuts each live concept into its `#`, `##` and `###` sections (a `#`
 inside a code fence is not a header) and splits each into numbered
-sentences: a code block or table is one sentence. Deprecated concepts,
-`index.md`, `log.md` and `prototypes/` are skipped. Each section has an id,
+sentences: a code block or table is one sentence. In an OKF bundle,
+deprecated concepts, `index.md`, `log.md` and `prototypes/` are skipped; any
+other folder hands out every `.md` file. Each section has an id,
 `concept#slug`, and a key covering its text, its concept's id, title,
 status and type, the earlier sections and the extraction instructions.
 The earlier sections are in the key because a claim may cite their
@@ -47,7 +50,7 @@ current key.
 | Option | Meaning |
 |---|---|
 | `--limit N` | Hand out at most N sections; the counts still cover all. |
-| `--json` | One JSON object: `instructions` (once), `counts` (`up_to_date`, `pending`, `new`, `changed`, `removed`), `concepts` (each concept with pending sections: `concept`, `path`, `sections`, beyond `--limit` too), `sections` (each with `id`, `key`, `concept`, `type`, `status`, `title`, `section`, `sentences` as `n` and `text`, `earlier`, `corrections`; a correction section's `corrections` holds only the corrections after it) and `next`. |
+| `--json` | One JSON object: `instructions` (once), `counts` (`up_to_date`, `pending`, `new`, `changed`, `removed`), `concepts` (each concept with pending sections: `concept`, `path`, `sections`, beyond `--limit` too), `sections` (each with `id`, `key`, `concept`, `type`, `status`, `title`, `section`, `sentences` as `n` and `text`, `earlier`, `corrections`; a correction section's `corrections` holds only the corrections after it), `namespace` and `next`, which spells `--path NAMESPACE`. |
 
 Without `--json` it prints the counts, a `pending FILE  (N sections)` line
 per concept with pending sections and, when any are pending, a `Next:` line
@@ -142,7 +145,8 @@ Steps: `file` (`path`, `exists`), `grep` (`pattern`, `paths`, `present`),
 JMESPath `query` over YAML, TOML or JSON `paths`, with `expect` and
 `value`), `definition` (`name`, `paths`, `defined`), `imports` (`path`,
 `module`, `imported`) and `help` (`command`, `pattern`, `present`). A step
-reads only git-tracked files outside `.okf/`, `docs/` and `.kmctl/`, and
+reads only git-tracked files outside the audited folder, `.okf/`, `docs/`,
+`.kmctl/` and `.kmaudit/`, and
 never a `README.md`, `CLAUDE.md`, `AGENTS.md` or `CHANGELOG.md`, which
 restate the knowledge. Other markdown, such as a skill, an agent file or a
 prompt, is read: it is what the code runs. A `help` step runs a
@@ -196,9 +200,9 @@ strength, why, drift or reason and mutation score (`killed/mutants`, or
 
 `kmaudit ui [PATH] [--port PORT] [--by NAME] [--config FILE] [--no-open]`
 
-Serve a page on 127.0.0.1 that shows each document of the bundle with its
+Serve a page on 127.0.0.1 that shows each page of the audited folder with its
 claims, their checks and how sure each check is, read live from
-`.kmctl/audit.sqlite`. It opens the page in a browser and runs until
+the namespace's store. It opens the page in a browser and runs until
 Ctrl-C.
 
 On each claim you can:
@@ -239,7 +243,7 @@ files a check may read.
 
 | Option | Meaning |
 |---|---|
-| `PATH` | The repository, its bundle or a path in it (default: the current directory). |
+| `PATH` | The namespace: its folder or a path in it (default: the current directory). |
 | `--port PORT` | The port on 127.0.0.1; `0` picks any free one (default: `8765`). A taken port refuses, naming `--port 0`. |
 | `--by NAME` | The name your feedback is stored under (default: `human`). |
 | `--config FILE` | The `audit.toml` to read for a second opinion, instead of the per-user one. |
@@ -270,7 +274,7 @@ again: run `kmaudit checks run --all` once.
 
 | Option | Meaning |
 |---|---|
-| `PATH` | The repository, its bundle or a path in it (default: the current directory). |
+| `PATH` | The namespace: its folder or a path in it (default: the current directory). |
 | `--files N` | How many of the largest files with no matched line to list (default: 5). |
 | `--json` | One JSON object: `lines`, `covered`, `files`, `files_read`, `stale`, and `by_file` with each file's `lines`, `covered`, `hits` (per line: `claims`, `drift`) and `read_by`. |
 
@@ -309,7 +313,7 @@ kmaudit builds the state from the store: the claim, its sentence, the check's
 steps and what its last run saw. It posts `{model, state, questions}` to the
 provider's `base_url` with the key as a bearer token, retries timeouts, 429
 (after its `Retry-After`, up to a minute) and 5xx, and keeps at most `max_calls` requests in flight. Each answer is
-kept in `.kmctl/audit.sqlite` under a hash of the question, model and
+kept in the namespace's store under a hash of the question, model and
 state, so asking again sends nothing (`cached: true`) until the check, its
 result or the model changes. A question that is off, a missing key
 variable, a 4xx and an answer missing a question each refuse in one stderr
@@ -368,8 +372,40 @@ them, and `kmaudit judge` refuses naming the install command.
 
 ### The store
 
-The `kmaudit` verbs keep their state in `.kmctl/audit.sqlite` at the
-repository root (git's top level, else the bundle's parent). kmaudit creates
-`.kmctl/` with a `.gitignore` holding `*`, so git ignores the folder and
-your own `.gitignore` is never edited. Each checkout has its own store, and
-the verbs write nothing else: never `.okf/` or `docs/`.
+Each namespace keeps its state in its own SQLite file,
+`.kmaudit/<namespace>.sqlite` at the repository root (git's top level). kmaudit
+creates `.kmaudit/` with a `.gitignore` holding `*`, so git ignores the
+folder and your own `.gitignore` is never edited. Each checkout has its own
+stores, and the verbs write nothing else: never the audited folder.
+
+A repository audited before kmaudit had namespaces kept one store at
+`.kmctl/audit.sqlite`. The first verb on `.okf` copies it into the `.okf`
+namespace, with SQLite's backup API, and leaves the old file as it was.
+
+## Namespaces
+
+`kmaudit namespaces [PATH] [--json]`
+
+List the repository's namespaces: each audited folder with its store's
+counts of sections, claims and checks. It writes nothing.
+
+A namespace is an audited folder, named by its path below the repository
+root (`.okf`, `docs`, `handbook/guides`). Which namespace a path means:
+
+- A folder or page inside an existing namespace means that namespace,
+  narrowed to the pages under the path; it never opens a store of its own.
+- A page inside an OKF bundle means the bundle.
+- A folder with no namespace above it opens one, unless a namespace already
+  sits inside it: that is refused, naming the namespace it would overlap.
+  Audit that folder instead, or delete its store to start over higher up.
+- A page with no namespace or bundle above it is refused: give its folder
+  first.
+- The repository root holding `.okf/` means `.okf`.
+
+The verbs that write (`claims submit`, `checks try`, `checks submit`,
+`judge`) name their namespace with `--path`, as `todo` prints it.
+
+| Option | Meaning |
+|---|---|
+| `PATH` | A path in the repository (default: the current directory). |
+| `--json` | One JSON object: `namespaces`, each with `namespace`, `folder`, `sections`, `claims` and `checks`. |

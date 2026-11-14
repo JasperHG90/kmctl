@@ -91,14 +91,14 @@ def coverage(path: Path) -> Coverage:
         If ``path`` names no bundle, or the repository is not a git repository.
     """
     target = resolve_target(path)
-    repo = Repository(target.root)
+    repo = Repository(target.root, target.bundle)
     files = code_files(repo)
     wanted = set(files)
     hits: dict[str, dict[int, set[str]]] = defaultdict(lambda: defaultdict(set))
     failing: dict[str, set[int]] = defaultdict(set)
     read_by: dict[str, set[str]] = defaultdict(set)
     stale = 0
-    with Store(target.root) as store:
+    with Store(target.root, target.namespace) as store:
         live = {c.id for c in store.claims() if c.kind in CHECKABLE}
         for claim_id in check_ids(store):
             if claim_id not in live:

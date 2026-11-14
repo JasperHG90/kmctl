@@ -92,7 +92,7 @@ def test_flow_from_no_checks_to_stored_checks(repo: Path, ids: dict[str, str]) -
 def test_try_reports_holds_weak_and_misses_and_writes_nothing(
     repo: Path, ids: dict[str, str]
 ) -> None:
-    before = (repo / ".kmctl" / "audit.sqlite").read_bytes()
+    before = (repo / ".kmaudit" / ".okf.sqlite").read_bytes()
 
     code, out, _ = run(
         "checks", "try", "-", "--json",
@@ -106,7 +106,7 @@ def test_try_reports_holds_weak_and_misses_and_writes_nothing(
     assert (good["holds"], good["weak"]) == (True, False)
     assert good["killed"] > 0
     assert failing["holds"] is False
-    assert (repo / ".kmctl" / "audit.sqlite").read_bytes() == before
+    assert (repo / ".kmaudit" / ".okf.sqlite").read_bytes() == before
 
 
 def _one_refusal(stdin_answers: list[dict] | str) -> str:
@@ -273,7 +273,7 @@ def test_help_walk_and_help_steps_leave_the_tree_and_ignored_files_alone(
     not_installed, script = json.loads(out)
     assert "not installed" in not_installed["steps"][0]["detail"]
     assert script["holds"] is True
-    assert git(repo, "status", "--porcelain", "--ignored") == "!! .kmctl/\n"
+    assert git(repo, "status", "--porcelain", "--ignored") == "!! .kmaudit/\n"
 
 
 def test_editing_a_section_keeps_the_checks_of_claims_that_come_back(

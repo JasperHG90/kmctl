@@ -23,8 +23,8 @@ def test_store_at_the_repository_root_and_ignored(repo: Path) -> None:
     with Store(target.root) as store:
         store.refresh(cut(target), target.concepts)
 
-    assert (repo / ".kmctl" / "audit.sqlite").is_file()
-    assert (repo / ".kmctl" / ".gitignore").read_text() == "*\n"
+    assert (repo / ".kmaudit" / ".okf.sqlite").is_file()
+    assert (repo / ".kmaudit" / ".gitignore").read_text() == "*\n"
     assert git(repo, "status", "--porcelain") == ""
 
 

@@ -280,3 +280,4 @@
 
 - Added `decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp` with `kmctl new decision`.
 - The audit left kmctl for its own package, kmaudit, in `packages/kmaudit/` (ADR 0043): `manifesto` describes kmaudit as its own part, `architecture/audit-pipeline` and `architecture/overview` name the `kmaudit` verbs and the package's modules, `architecture/index` follows the new description, `decisions/0036-claims-are-extracted-by-the-agent-through-kmctl-audit-claims` gains a correction saying where its verbs went, and `summary` says the audit is kmaudit now.
+- kmaudit audits any folder of markdown docs, each a namespace with its own store under `.kmaudit/`: `decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp` gains an amendment on one file per namespace, and `architecture/audit-pipeline` and `architecture/overview` name the stores, `namespaces.py` and `kmaudit namespaces`.

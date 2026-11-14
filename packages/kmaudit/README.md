@@ -35,11 +35,15 @@ reference is [`docs/commands.md`](docs/commands.md).
 | `kmaudit judge failure\|claim\|link` | Ask an optional decision model about stored checks (off by default) |
 | `kmaudit coverage` | How much of the code the checks match |
 | `kmaudit ui` | A local page to review claims and checks and give feedback |
+| `kmaudit namespaces` | Each audited folder, with its counts |
 | `kmaudit guard --allow claims\|checks` | A Claude Code PreToolUse hook that holds an agent to kmaudit commands |
 
-State lives in `.kmctl/audit.sqlite` in the repository, which ignores itself
-in git. Today kmaudit audits an OKF bundle (a folder whose `index.md`
-carries `okf_version`, or a repository's `.okf/`).
+Point kmaudit at any folder of markdown docs: `kmaudit claims todo docs`,
+`kmaudit claims todo .okf`. Each folder is a namespace with its own store
+under `.kmaudit/` in the repository, which ignores itself in git, so two
+folders never clash; `kmaudit namespaces` lists them. An OKF bundle keeps
+its own rules (its `index.md`, `log.md` and `prototypes/` are skipped);
+any other folder audits every `.md` file in it.
 
 ## Agents and skills
 

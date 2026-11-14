@@ -363,7 +363,7 @@ def test_todo_refuses_a_skipped_file(repo: Path) -> None:
     code, _, err = run("claims", "todo", ".okf/prototypes/spike/README.md")
 
     assert code == 1
-    assert "not a concept kmaudit audits" in err
+    assert "not a page kmaudit audits" in err
 
 
 def test_list_claims_json_holds_only_claims(repo: Path) -> None:

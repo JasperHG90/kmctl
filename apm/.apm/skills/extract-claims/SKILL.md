@@ -6,8 +6,8 @@ description: Extract a bundle's claims with a subagent. It hands the .okf/ secti
 # /extract-claims: claims into the store, summaries only
 
 kmaudit calls no model here: the `kmctl-claims-extractor` agent reads each
-section and submits its verdicts, and `kmaudit claims submit` validates
-and stores them in `.kmctl/audit.sqlite`. You never read a section, write a
+section and submits its verdicts, and `kmaudit claims submit --path FOLDER` validates
+and stores them in the folder's own store under `.kmaudit/`. You never read a section, write a
 verdict or look at a claim yourself; keep only the agents' summaries.
 
 ## 1. See what is left
@@ -16,8 +16,10 @@ verdict or look at a claim yourself; keep only the agents' summaries.
 kmaudit claims todo [PATH]
 ```
 
-`PATH` is the repository (the default), the bundle, or one concept file if
-the user named one. It prints the counts and one `pending FILE (N
+`PATH` is the folder of markdown docs to audit (`docs`, `.okf`, or any
+other; the repository root means `.okf`, the default), or one page in it
+if the user named one. Each folder is its own namespace, with its own
+store. It prints the counts and one `pending FILE (N
 sections)` line per concept. If nothing is pending, say the claims are up
 to date, show `kmaudit claims list`, and stop. Exit 1 is a refusal: quote
 its line and stop.

@@ -56,7 +56,9 @@ INCLUDE_EXTENSIONS = (
     ".hcl", ".tf", ".nomad", ".tpl", ".j2", ".go", ".js", ".mjs", ".ts", ".tsx",
     ".rs", ".java", ".rb", ".ini", ".cfg", ".conf", ".lua", ".sql",
 )  # fmt: skip
-EXCLUDE_DIRS = frozenset({".loop", ".claude", ".vscode", ".okf", "docs", ".kmctl"})
+EXCLUDE_DIRS = frozenset(
+    {".loop", ".claude", ".vscode", ".okf", "docs", ".kmctl", ".kmaudit"}
+)
 EXCLUDE_PATTERNS = (
     "*.pyc",
     "*.lock",
@@ -262,16 +264,24 @@ class StepResult(BaseModel):
 
 
 class Repository:
-    """The files a check may read: tracked by git, outside the knowledge folders.
+    """The files a check may read: tracked by git, outside the knowledge folders and the audited one.
 
     Parameters
     ----------
     root :
         The repository root.
+    audited :
+        The folder being audited, whose pages restate the claims; a check
+        never reads a file in it. None leaves only the fixed folders out.
     """
 
-    def __init__(self, root: Path) -> None:
+    def __init__(self, root: Path, audited: Path | None = None) -> None:
         self.root = root
+        inside = (
+            None
+            if audited is None or audited.resolve() == root.resolve()
+            else audited.resolve().relative_to(root.resolve()).as_posix() + "/"
+        )
         try:
             out = subprocess.run(
                 ["git", "-C", str(root), "ls-files", "-z"],
@@ -287,7 +297,9 @@ class Repository:
         self.tracked = sorted(
             f
             for f in out.stdout.split("\0")
-            if f and not EXCLUDE_DIRS & set(f.split("/")[:-1])
+            if f
+            and not EXCLUDE_DIRS & set(f.split("/")[:-1])
+            and not (inside and f.startswith(inside))
         )
         self.files = [
             f

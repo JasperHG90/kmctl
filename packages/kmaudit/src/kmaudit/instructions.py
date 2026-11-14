@@ -9,6 +9,9 @@ command, an MCP tool) keeps every stored answer.
 
 import hashlib
 
+#: What extraction depends on. Changing it hands every section out again: also
+#: empty ``PREVIOUS_HASHES``, whose answers were made under other guidance, and
+#: update the hash pinned in tests/test_claims_sections.py.
 GUIDANCE = """
 You read sections of a design document from a software repository and
 decide, sentence by sentence, which claims each makes about that repository.

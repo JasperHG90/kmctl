@@ -123,6 +123,13 @@ def test_key_moves_with_the_guidance(
     assert _key(repo) != before
 
 
+def test_the_guidance_hash_is_pinned() -> None:
+    """A guidance change must be deliberate: it re-keys every section, and PREVIOUS_HASHES must be emptied with it."""
+    assert instructions.instructions_hash() == "016f0d4b5b8d", (
+        "GUIDANCE changed: empty instructions.PREVIOUS_HASHES, then update this hash"
+    )
+
+
 def test_key_stays_when_only_the_way_to_submit_changes(
     repo: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -149,6 +156,6 @@ def test_target_forms(repo: Path) -> None:
     assert one.root == repo.resolve()
 
 
-def test_target_refuses_a_folder_with_no_bundle(tmp_path: Path) -> None:
-    with pytest.raises(AuditError, match="kmctl init"):
+def test_target_refuses_a_folder_with_no_markdown(tmp_path: Path) -> None:
+    with pytest.raises(AuditError, match="holds no markdown pages"):
         resolve_target(tmp_path)
