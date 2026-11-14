@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "release-notes-hermes",
-  "plan_hash": "d60ce5b40e1ca7a4dd3725288cb91f9fe29db3e073ddde720a5681a899e3891d",
+  "plan_hash": "213a6358e28669d2d88b5c36be82ebd299210ce3d217b988cf86fec3a4264a26",
   "problems": [
     {
       "id": "P1",
@@ -60,7 +60,7 @@
         "tests/scripts/test_workflows.py",
         ".okf/decisions/0035-kmctl-s-repository-answers-and-triages-with-hermes.md"
       ],
-      "checked_by": "workflow tests pinning the Hermes step's SHA, secret, model, prompt and continue-on-error, and that the notes file comes from the cleaning script's output",
+      "checked_by": "workflow tests pinning the Hermes step's SHA, secret, model, prompt, disabled toolsets, `max_iterations` and continue-on-error, that the notes file comes from the cleaning script's output, and that the pull request body and step summary carry the draft's What changed section under \"Draft before Hermes\" when the rewrite is kept",
       "seen_by": "operator"
     }
   ]
