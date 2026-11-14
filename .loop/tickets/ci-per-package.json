@@ -3,7 +3,7 @@
   "slug": "ci-per-package",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 1,
+  "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -81,9 +81,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 1,
-    "binds": "828e91a261742e5a91e601130876ff4bed35e2e10036d73ebc61fa48a1237598",
-    "started_at": "2026-11-14T17:47:23+00:00",
+    "n": 2,
+    "binds": "c53cfd048d85784dc3d4f9ada3ba5efe3aab0029f76b393cc9bc9741c2276bb3",
+    "started_at": "2026-11-14T17:50:59+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -96,10 +96,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "828e91a261742e5a91e601130876ff4bed35e2e10036d73ebc61fa48a1237598",
+  "plan_hash": "c53cfd048d85784dc3d4f9ada3ba5efe3aab0029f76b393cc9bc9741c2276bb3",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -114,5 +114,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T17:50:58+00:00"
+  "at": "2026-11-14T17:50:59+00:00"
 }

@@ -27,48 +27,59 @@ CI)". The untracked `tests.yml` at the repo root gives the shape only: one
 test job per package plus a job for the repository itself. Its registry,
 cache and harness details do not apply, and it is never committed.
 
-This ticket assumes `kmctl-to-packages` has landed: kmctl lives in
-`packages/kmctl` with its tests, kmaudit stays in `packages/kmaudit`, and
-repo-level tests (workflows, the action, the starter, the skills) stay in the
-root `tests/`. If that ticket puts a test folder elsewhere, the job
-directories below follow it.
+This ticket assumes `kmctl-to-packages` has landed. kmctl lives in
+`packages/kmctl`, and its tests in `packages/kmctl/tests`, including
+test_starter.py and conftest.py, which move there from the root tests/. kmaudit
+stays in `packages/kmaudit`. The repo-level tests that plan keeps at the root
+(`tests/scripts/`, `tests/test_agent.py`, `tests/test_audit.py`,
+`tests/test_ci.py`, `tests/test_repo_apm.py`, `tests/test_rules.py`,
+`tests/test_skills.py`, `tests/vendor/`) stay in `tests/`. If that ticket puts
+a test file elsewhere, the job directories below follow it. Paths written
+here as packages/kmctl/tests/test_starter.py are the moved files, which this
+ticket does not create.
 
 `.github/workflows/ci.yml` keeps its file name (docs and tests cite it) and
 becomes `name: CI`. The jobs stay ordered so a cheap failure stops the run
 early: `prek`, then `knowledge` (`uses: ./`), then side by side:
 
-- `kmctl`: kmctl's tests, `packages/kmctl/tests`;
+- `kmctl`: kmctl's tests, `packages/kmctl/tests`, with just installed first,
+  because packages/kmctl/tests/test_starter.py runs the template's just
+  recipes (and asserts just is on PATH in a default-tier test);
 - `kmaudit`: kmaudit's tests, `packages/kmaudit/tests`;
-- `repo`: the repo-level tests in `tests/`, with just installed first,
-  because `tests/test_starter.py` runs the template's just recipes;
-- `starter`: unchanged, the bootstrap integration test;
-- `tests`: an aggregate job that needs `kmctl`, `kmaudit` and `repo`, runs
-  with `if: always()`, and fails unless all three succeeded.
+- `repo`: the repo-level tests in `tests/`;
+- `starter`: the bootstrap integration test, now
+  `uv run pytest packages/kmctl/tests/test_starter.py -m integration`;
+- `tests`: a job that collects the other three. It needs `kmctl`, `kmaudit`
+  and `repo`, runs with `if: always()`, and fails unless all three succeeded.
 
 Each test job uses the same pinned `JasperHG90/toiminnot/actions/pytest`
 step as today, with `markers: not integration` (spike:ci-toiminnot/2: an
 empty marker clears the filter) and its own `directory`. That action syncs at
-the repo root and runs `uv run pytest DIRECTORY`, so the uv workspace and the
-root dev group stay as they are.
+the repo root and runs `uv run pytest DIRECTORY`, so the uv workspace, the
+root dev group and the root pytest config (addopts, pythonpath,
+`-p pytester`) apply to every job, as long as neither package's
+`pyproject.toml` gets its own pytest table.
 
-Why the aggregate `tests` job: main's ruleset (id 25313903, read with
+The `tests` job ships in the same outcome as the split, because without it
+no pull request can merge. Main's ruleset (id 25313903, read with
 `gh api repos/JasperHG90/kmctl/rulesets/25313903`) requires the status checks
-`prek`, `knowledge` and `tests`. Renaming the one `tests` job away would leave
-every pull request waiting on a check that never reports. The aggregate keeps
-that check meaning "every package's tests passed" with no settings change.
-`if: always()` matters: a job skipped because a job it needs failed reports
-as passing to a required check. `prek`, `knowledge` and `tests` keep their
-ids and get no `name:`, because the check context is the job's name.
+`prek`, `knowledge` and `tests`. The operator chose this job over changing
+the ruleset. `if: always()` matters: a job skipped because a job it needs
+failed reports as passing to a required check. `prek`, `knowledge` and
+`tests` keep their ids and get no `name:`, because the check takes the job's
+name.
 
 The loop's gates do not change. The `tests` gate in `.loop/config.toml` and
 `just test` in `justfile` stay `uv run pytest` at the root, which collects
-both packages and `tests/` (measured today: roots `packages/` and `tests/`
-only). A new test pins that the three CI test jobs together run exactly what
-that gate collects, each test in one job, so CI and the gates cannot drift.
+both packages and `tests/` (kmctl-to-packages measured 876 kmctl, 255
+kmaudit and 276 root tests on the moved tree, 1407 together). A new test
+collects each CI test job's directory on its own and checks that the counts
+add up to the gate's root collection, with every test in exactly one job, so
+CI and the gates cannot drift.
 
 Outcome that shows it worked: on the pull request, the CI run shows separate
 `kmctl`, `kmaudit` and `repo` jobs, each green, and the required `tests`
-check reports from the aggregate job.
+check reports from the collecting job.
 
 Decisions already made for the epic (not reopened here): D1 layout
 (`packages/kmctl`), D2 tag families, D3 notes in the version pull request, D5
@@ -78,42 +89,31 @@ also runs the tests; it belongs to `release-per-package`.
 ## Problems
 
 - P1: `.github/workflows/ci.yml` is named `ci` and runs every package's tests in one `tests` job at the root, so a red run does not say which package broke and one package cannot be rerun alone
-- P2: main's ruleset requires a status check named `tests`, which only that one job reports, so splitting the job without a stand-in blocks every merge
-- P3: once the tests are split, nothing checks that CI's test jobs and the loop's `uv run pytest` gate still run the same tests
+- P2: once the tests are split, nothing checks that CI's test jobs and the loop's `uv run pytest` gate still run the same tests
 
 ## Goals
 
-- G1: The CI workflow is named `CI` and reports kmctl, kmaudit and the repository's own tests as separate jobs
-- G2: Pull requests stay mergeable under the existing ruleset with no settings change
-- G3: CI and the loop's gates run the same tests, both packages included
+- G1: The CI workflow is named `CI` and reports kmctl, kmaudit and the repository's own tests as separate jobs, while main's required checks `prek`, `knowledge` and `tests` keep reporting
+- G2: CI and the loop's gates run the same tests, both packages included
 
 ## Outcomes
 
-### O1: ci.yml is named CI and runs one pytest job per package plus the repo tests
+### O1: ci.yml is named CI, runs one pytest job per package plus the repo tests, and a tests job keeps the required check
 - kind: behaviour
 - goal: G1
 - fixes: P1
 - needs: none
 - touches: `.github/workflows/ci.yml`, `tests/test_ci.py`, `tests/scripts/test_workflows.py`
-- checked by: `tests/test_ci.py` pinning the name, the job order and needs (prek, knowledge, then kmctl, kmaudit, repo, starter), and each test job's pytest step and directory; `tests/scripts/test_workflows.py` checking the `repo` job installs just before pytest
+- checked by: `tests/test_ci.py` pinning the name, the job order and needs (prek, knowledge, then kmctl, kmaudit, repo, starter, and tests after the three test jobs), each test job's pytest step and directory, and the `tests` job's needs, `if: always()`, its failure unless each result is success, and no `name:` on `prek`, `knowledge` or `tests`; `tests/scripts/test_workflows.py` checking the `kmctl` job installs just before pytest and the `starter` job runs packages/kmctl/tests/test_starter.py with `-m integration`
 - seen by: operator
 
-### O2: An aggregate tests job stands in for the required check
+### O2: A test pins that the CI test jobs split what the gate collects, by count
 - kind: support
 - goal: G2
 - fixes: P2
 - needs: O1
-- touches: `.github/workflows/ci.yml`, `tests/test_ci.py`
-- checked by: a test in `tests/test_ci.py` that the `tests` job needs `kmctl`, `kmaudit` and `repo`, runs `if: always()`, fails unless each result is success, and that `prek`, `knowledge` and `tests` carry no `name:`
-- seen by: operator
-
-### O3: A test pins that the CI test jobs partition what the gate collects
-- kind: support
-- goal: G3
-- fixes: P3
-- needs: O1
 - touches: `tests/test_ci.py`
-- checked by: a test that collects with the `tests` gate's command from `.loop/config.toml` (and `just test` in `justfile`, both `uv run pytest`), then asserts every collected test sits under exactly one CI test job's directory, every job directory collects at least one test, and both `packages/kmctl` and `packages/kmaudit` appear
+- checked by: a test that runs `--collect-only` once per CI test job's directory and once with the `tests` gate's command from `.loop/config.toml` (and `just test` in `justfile`, both `uv run pytest`), then asserts each job collects at least one test, the per-job counts sum to the gate's count, the per-job test ids are disjoint and their union equals the gate's ids, and both `packages/kmctl` and `packages/kmaudit` appear
 - seen by: nobody
 
 ## Could invalidate this plan
