@@ -40,7 +40,11 @@ migrates the schema and writes a `meta` row. It opens each store file with
 SQLite's read-only mode (`mode=ro`), falls back to the old
 .kmctl/audit.sqlite for `.okf` the way `listing` does, reads whatever
 schema step the file is at without migrating it, and counts a missing
-table as empty. Check statuses come from `status_row` in
+table as empty. Read-only on a WAL store still lets SQLite create its
+`-wal` and `-shm` sidecar files, which hold no data the store did not
+have; that is allowed. `immutable=1` would avoid them but ignore rows a
+running agent has not yet checkpointed, giving wrong counts while agents
+write, so it is not used. Check statuses come from `status_row` in
 `packages/kmaudit/src/kmaudit/check_verbs.py` called on a read-only
 handle (a `Store` built over that connection without its constructor), so
 the briefing's statuses are the ones `checks list` shows. Pending sections
@@ -60,8 +64,9 @@ It lives in `new:packages/kmaudit/src/kmaudit/briefing.py`, with
 
 It worked when, on a copy of this repository's old store with no
 `.kmaudit/`, `kmaudit briefing` prints the `.okf` namespace's counts, no
-file in the repository changes (no `.kmaudit/` appears), and the check
-statuses equal those `kmaudit checks list` prints afterwards.
+`.kmaudit/` appears, every `.sqlite` file's bytes are unchanged (only
+SQLite's `-wal` and `-shm` sidecars may appear), and the check statuses
+equal those `kmaudit checks list` prints afterwards.
 
 ## Problems
 

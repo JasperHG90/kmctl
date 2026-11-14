@@ -3,7 +3,7 @@
   "slug": "kmaudit-briefing",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 2,
+  "plan_rounds": 3,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -98,9 +98,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 2,
-    "binds": "5b3b7a9ae9bcc9971daf4750823d70cd103638c6a59d039250b89669dae380a4",
-    "started_at": "2026-11-14T14:03:24+00:00",
+    "n": 3,
+    "binds": "2a01acebbd7a279e07e84238ab92484b3100f45186684258afbf8ffe111a1de8",
+    "started_at": "2026-11-14T14:05:41+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -113,10 +113,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "5b3b7a9ae9bcc9971daf4750823d70cd103638c6a59d039250b89669dae380a4",
+  "plan_hash": "2a01acebbd7a279e07e84238ab92484b3100f45186684258afbf8ffe111a1de8",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -131,5 +131,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T14:05:40+00:00"
+  "at": "2026-11-14T14:05:41+00:00"
 }
