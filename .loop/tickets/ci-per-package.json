@@ -19,7 +19,9 @@
   "archived": false,
   "worktree": "/home/vscode/workspace.worktrees/ci-per-package",
   "branch": "loop/ci-per-package",
-  "stamps": [],
+  "stamps": [
+    "7bf51f70375c8294dfefe15c4431d3308dbfc8253e02930468584bb7b96fa834"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
     "hash": "4f563484fdb94c814d1cceb39a238e62a30ddd914a2e085c52fc75061bfcc113",
@@ -126,5 +128,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T20:53:43+00:00"
+  "at": "2026-11-14T21:00:50+00:00"
 }
