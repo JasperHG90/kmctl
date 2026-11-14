@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "A Hermes response file that is not valid UTF-8 crashes hermes_release_notes.py with UnicodeDecodeError (exit 1). Under set -euo pipefail the Check the rewrite step then fails and the notes job fails, so a bad Hermes reply blocks the release. That breaks row r1's \"never exits non-zero\" and the plan's rule that a Hermes failure never blocks a release. TAG.md is not emptied, because output goes to notes.md and mv runs only on success.",
+      "anchor": "scripts/hermes_release_notes.py:138",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "Lines under What changed that are not bullets are never checked. A paragraph before the first bullet is ignored, and any later non-blank line is joined onto the bullet above it. So a reply can add an intro sentence or a made-up claim with no reference and still pass every check. Only the person merging would catch it.",
+      "anchor": "scripts/hermes_release_notes.py:69",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "ef295b1568db381f1a3bac3d8cda4d5070c64c5258b259245f1772576a4c92bf",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T22:10:32+00:00"
+}
