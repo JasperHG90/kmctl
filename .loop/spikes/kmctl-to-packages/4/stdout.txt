@@ -1,0 +1,7 @@
+restructure: exit 0; restructure: /tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-k2p/k2p-collect-8gvm7pml/repo ready (tests=True, variant=plain, bump=None)
+root pyproject: package = false members = ["packages/*"] | addopts = ["--strict-markers", "-m", "not integration", "-p", "pytester"]
+uv sync: exit 0
+pytest --collect-only: exit 0; 1407/1421 tests collected (14 deselected) in 1.56s
+selected 1407; by tree {'packages/kmaudit': 255, 'packages/kmctl': 876, 'tests': 276}; ERROR lines 0
+
+result: OK (expected 1407)
