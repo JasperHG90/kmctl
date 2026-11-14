@@ -21,7 +21,8 @@
   "branch": "loop/release-per-package",
   "stamps": [
     "86c2aab1fd22c47884000d44b8616731e30d967ecf430a47732cb7676bac9b79",
-    "97d2a9170c99439a22f44949a3d9c06f67190dc1dda50e4d7f4a5bb3134553ef"
+    "97d2a9170c99439a22f44949a3d9c06f67190dc1dda50e4d7f4a5bb3134553ef",
+    "3536821959942988fbd3251970589be29e4be96bb68ea90ffd5d1fcd430fe53b"
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
@@ -157,5 +158,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T21:40:28+00:00"
+  "at": "2026-11-14T21:46:29+00:00"
 }
