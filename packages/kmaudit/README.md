@@ -36,6 +36,7 @@ reference is [`docs/commands.md`](docs/commands.md).
 | `kmaudit coverage` | How much of the code the checks match |
 | `kmaudit ui` | A local page to review claims and checks and give feedback |
 | `kmaudit namespaces` | Each audited folder, with its counts |
+| `kmaudit briefing` | Each namespace's state and the next step, for a session-start hook |
 | `kmaudit guard --allow claims\|checks` | A Claude Code PreToolUse hook that holds an agent to kmaudit commands |
 
 Point kmaudit at any folder of markdown docs: `kmaudit claims todo docs`,
@@ -44,6 +45,22 @@ under `.kmaudit/` in the repository, which ignores itself in git, so two
 folders never clash; `kmaudit namespaces` lists them. An OKF bundle keeps
 its own rules (its `index.md`, `log.md` and `prototypes/` are skipped);
 any other folder audits every `.md` file in it.
+
+## A briefing at session start
+
+`kmaudit briefing` prints where the audit stands and what to do next, in a
+few lines, without changing anything, and always exits 0. In Claude Code,
+add it as a SessionStart hook in `.claude/settings.json`:
+
+```json
+{
+  "hooks": {
+    "SessionStart": [
+      {"hooks": [{"type": "command", "command": "kmaudit briefing"}]}
+    ]
+  }
+}
+```
 
 ## Agents and skills
 

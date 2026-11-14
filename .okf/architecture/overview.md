@@ -229,6 +229,7 @@ cached, and the copy on PATH adds the newer-release line from
 | `kmaudit judge` | `judge.py`, with `settings.py` (the per-user `audit.toml`), `tracing.py` (opt-in LangSmith) and `check_store.py` for the state | only the `decisions` table in the namespace's store; the one model call kmaudit makes, off until a question is switched on; httpx with tenacity retries (ADR 0039) |
 | `kmaudit coverage` | `coverage.py`, reading each stored check's last run from `check_store.py` and the code files from `steps.py` | nothing in a repository that has a store; it reads the namespace's store and the tracked files, and creates an empty store only when there is none (ADR 0042) |
 | `kmaudit namespaces` | `namespaces.py` | nothing; it reads each store under `.kmaudit/`, and an old `.kmctl/audit.sqlite` as `.okf` |
+| `kmaudit briefing` | `briefing.py`, with `check_verbs.py`'s `status_row` over a read-only store and `sections.py` to count pending sections | nothing; it opens each store read-only (SQLite may add its `-wal` and `-shm` files) and always exits 0 |
 | `kmaudit ui` | `ui.py` (the server and the page's data), `ui.html` (the page), `feedback.py`, with `check_verbs.py` for each claim's status and `judge.py` for a second opinion | only the namespace's store: the `feedback`, `decisions` and `cache` tables (a second opinion on a claim caches the CLI help walk it reads lines from), and on each page load the `sections` table, which it refreshes as `kmaudit claims todo` does, deleting the claims, extractions and verdicts of a section that is gone; a server on 127.0.0.1 that answers only local Hosts and writes only JSON from its own Origin; a second opinion is the `judge` call, off until a question is switched on (ADR 0041) |
 | `kmctl doctor` | `doctor.py`, with `plugin.py` for the hook, MCP entries and lock reader, `antigravity.py` for the folder comparison and `opencode.py` for the OpenCode files | nothing; it reads `apm.yml`, `apm.lock.yaml` and the files it lists, the settings files, `.mcp.json`, `.agents/plugins/kmctl/`, `.opencode/`, `opencode.json` and agy's trust list, and runs only `uv tool run --offline --from apm-cli==0.33.0 apm --version`; `--online` fetches okf's MCP script URL |
 
@@ -407,7 +408,7 @@ tag a consumer's `apm.yml` names and a build from a download with no
   `kmaudit claims list`, `kmaudit checks todo`, `kmaudit checks try`,
   `kmaudit checks submit`, `kmaudit checks run`, `kmaudit checks list`,
   `kmaudit judge`, `kmaudit ui`, `kmaudit coverage`, `kmaudit namespaces`,
-  `kmaudit guard`.
+  `kmaudit briefing`, `kmaudit guard`.
 - Modules: `src/kmctl/__init__.py`, `scaffold.py`, `checks.py`,
   `briefing.py`, `review_due.py`, `handoffs.py`, `concepts.py`,
   `docs.py`, `docs_index.py`, `supersede.py`, `mv.py`, `verify.py`, `summary.py` (the
@@ -416,7 +417,7 @@ tag a consumer's `apm.yml` names and a build from a download with no
   `src/kmctl/opencode.py` (the OpenCode agents, rules and briefing plugin),
   `src/kmctl/doctor.py` (the install checks), `src/kmctl/pin.py` (the
   hand-off to the lock's pin and the newer-release line),
-  `okf.py`, `kinds.py`; `packages/kmaudit/src/kmaudit/` (`cli.py`, `namespaces.py`,
+  `okf.py`, `kinds.py`; `packages/kmaudit/src/kmaudit/` (`cli.py`, `namespaces.py`, `briefing.py`,
   `verbs.py`, `sections.py`, `instructions.py`, `models.py`, `store.py`,
   `steps.py`, `mutate.py`, `anchors.py`, `lines.py`,
   `check_instructions.py`, `check_store.py`, `check_verbs.py`, `guard.py`,

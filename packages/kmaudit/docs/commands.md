@@ -21,6 +21,7 @@ Every command takes `--help`; every command that prints results takes
 | `kmaudit coverage` | Show how much of the repository's code the claims' checks match, line by line. |
 | `kmaudit ui` | Serve a local page to review claims and checks and give feedback on them. |
 | `kmaudit namespaces` | List the repository's namespaces: each audited folder with its counts. |
+| `kmaudit briefing` | Print each namespace's audit state and the next step, changing nothing. |
 | `kmaudit guard` | Allow a Bash call only when it is one `kmaudit` command, as a PreToolUse hook. |
 
 ## `kmaudit claims todo`
@@ -277,6 +278,31 @@ again: run `kmaudit checks run --all` once.
 | `PATH` | The namespace: its folder or a path in it (default: the current directory). |
 | `--files N` | How many of the largest files with no matched line to list (default: 5). |
 | `--json` | One JSON object: `lines`, `covered`, `files`, `files_read`, `stale`, and `by_file` with each file's `lines`, `covered`, `hits` (per line: `claims`, `drift`) and `read_by`. |
+
+## `kmaudit briefing`
+
+`kmaudit briefing [PATH] [--json]`
+
+Print, for each namespace, its sections and how many are pending, its
+claims, its checks by status and its open notes from people, then the one
+thing to do next: `/extract-claims FOLDER` while sections are pending,
+`/write-checks FOLDER` while claims lack a current answer, `kmaudit ui
+FOLDER` while checks show drift, fail or are weak, or notes are open.
+
+It is meant for a session-start hook and changes no store: it opens each
+store read-only (SQLite may create its `-wal` and `-shm` sidecars) and
+counts pending sections by cutting the pages, where `claims todo` would
+refresh and drop the claims of changed sections. A store at an older
+schema step is read through an in-memory copy, migrated there, so it
+briefs like a current one. With no namespace it prints nothing (with
+`--json`, an empty `namespaces` list); on any error it prints one line
+saying the briefing is unavailable (with `--json`, an `unavailable` key
+holding the reason). It always exits 0.
+
+| Option | Meaning |
+|---|---|
+| `PATH` | A path in the repository (default: the current directory). |
+| `--json` | One JSON object: `namespaces`, each with `namespace`, `sections`, `pending`, `claims`, `checks` (per status), `feedback` and `next`; on an error, `namespaces` is empty and `unavailable` holds the reason. |
 
 ## `kmaudit guard`
 
