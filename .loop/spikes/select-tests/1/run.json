@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "select-tests",
+  "n": 1,
+  "command": "/tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-select/wt/.venv/bin/python -I /tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-select/risk1_saving.py /tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-select/data/map.json /tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-select/upstream 40",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-select/risk1_saving.py",
+      "copy": "files/risk1_saving.py"
+    }
+  ],
+  "where": "worktree",
+  "head": "4453fa8ee51307ff866f398499f4a1bdd6ae1df1",
+  "fingerprint": "4e822c80a7533b0baf50729afc44a18e2b448aef5554bedd1facf6b21b459049",
+  "started_at": "2026-11-14T11:47:46+00:00",
+  "finished_at": "2026-11-14T11:47:51+00:00",
+  "duration_seconds": 4.494,
+  "timeout_seconds": 300.0,
+  "exit": 1,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "moved_from": null
+}
