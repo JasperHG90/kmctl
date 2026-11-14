@@ -6,12 +6,12 @@ tags:
 - eval
 generated:
   by: process:loopctl/2.3.1.dev65+g93b143856
-  at: '2026-11-14T17:47:09+00:00'
+  at: '2026-11-14T19:49:06+00:00'
 slug: kmctl-to-packages
 signoff:
   signer: delegated:jasperginn@gmail.com/claude-opus-5-5
-  hash: 6e04b48a4938b9a6cd62c03ed0c22470699c5cfbc6921b3ae4000ea4fde4db36
-  at: '2026-11-14T17:47:09+00:00'
+  hash: d066b171f65c36a13ac67b5c116964040d129613f746f975a04e8dc749474d0f
+  at: '2026-11-14T19:49:06+00:00'
 verified: null
 ---
 
