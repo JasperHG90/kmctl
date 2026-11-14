@@ -5,7 +5,7 @@
   "attempts": 0,
   "plan_rounds": 3,
   "review_rounds": 0,
-  "extra_plan_rounds": 0,
+  "extra_plan_rounds": 1,
   "extra_review_rounds": 0,
   "blocker": {
     "code": "finding-open-two-rounds",
@@ -102,7 +102,14 @@
     }
   ],
   "waivers": [],
-  "overrides": [],
+  "overrides": [
+    {
+      "edge": "plan-cap",
+      "reason": "operator said to unblock; p6 (tree_repo runs release.py set on its copy) and p7 (real uvx hand-off pins the test-only tag) are fixed in the plan",
+      "by": "delegated:jasperginn@gmail.com/agent",
+      "at": "2026-11-14T20:04:52+00:00"
+    }
+  ],
   "round": {
     "kind": "plan",
     "n": 3,
@@ -144,5 +151,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T19:56:22+00:00"
+  "at": "2026-11-14T20:04:52+00:00"
 }
