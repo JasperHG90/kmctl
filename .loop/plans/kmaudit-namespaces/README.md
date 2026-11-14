@@ -39,7 +39,21 @@ never read the audited folder: `Repository` in `steps.py` takes it, so
 checks, coverage and the review page's code view leave it out (12 call
 sites in `check_verbs.py`, `ui.py` and `coverage.py`). The page shows each
 page's real path instead of .okf/CONCEPT.md, and the check writer's
-instructions say the audited folder is never read. The repository root holding `.okf/` still
+instructions say the audited folder is never read. The fixed set of
+folders checks skip today stays, so the stored checks read what they read.
+
+Which namespace a path means: a folder or file inside an existing
+namespace narrows that namespace (docs/sub/page.md and `docs/sub` both
+mean `docs`, scoped to those files), and never opens a store of its own;
+an OKF bundle's files mean the bundle; a folder with no namespace above it
+opens one, unless a namespace already sits inside it, which is refused
+naming the namespaces it would overlap. The verbs that write
+(`claims submit`, `checks try`, `checks submit`, `judge`, `ui`) name their
+namespace by `--path FOLDER`, as `todo` does by its path; `todo --json`
+prints its namespace, and its `Next:` step spells `--path FOLDER`, so the
+agents and skills pass the folder back. The README and the skills stop
+naming .kmctl/audit.sqlite. The old store is copied with SQLite's backup
+API, so rows still in its write-ahead log come along. The repository root holding `.okf/` still
 means `.okf`, as today. `kmaudit namespaces` lists the namespaces with their
 folder and counts. A repository with the old .kmctl/audit.sqlite gets it
 copied into the `.okf` namespace the first time that namespace opens, so no
@@ -62,10 +76,11 @@ store hands out nothing for `.okf`.
 ## Problems
 
 - P1: kmaudit refuses any folder that is not an OKF bundle, so docs in another layout cannot be audited.
-- P2: Every folder would share one store, so two audited folders would clash.
+- P2: Every folder would share one store, and concept ids are relative to their folder, so two audited folders would clash.
 - P3: Nobody can see which folders have been audited.
 - P4: A repository's existing audit store would be orphaned by a new store location.
 - P5: Nothing stops a later guidance change from carrying old answers over through PREVIOUS_HASHES.
+- P6: The verbs that write, and the agents that call them, have no way to say which namespace an answer belongs to.
 
 ## Goals
 
@@ -74,43 +89,52 @@ store hands out nothing for `.okf`.
 
 ## Outcomes
 
-### O1: Any folder of markdown docs is a namespace with its own store
-- kind: behaviour
-- goal: G1
-- fixes: P1
-- needs: none
-- touches: `packages/kmaudit/src/kmaudit/sections.py`, `packages/kmaudit/src/kmaudit/steps.py`, `packages/kmaudit/src/kmaudit/cli.py`, `packages/kmaudit/src/kmaudit/check_instructions.py`, `packages/kmaudit/src/kmaudit/ui.html`, `new:packages/kmaudit/tests/test_namespaces.py`
-- checked by: a test that `kmaudit claims todo docs` in a fixture repository with a plain `docs/` folder hands out its sections, skips nothing in it, and that a check never reads a file in the audited folder
-- seen by: operator
-
-### O2: Each namespace keeps its own store under .kmaudit/
+### O1: Each namespace has its own store, and every path maps to one namespace
 - kind: support
 - goal: G1
 - fixes: P2
-- needs: O1
-- touches: `packages/kmaudit/src/kmaudit/store.py`, `packages/kmaudit/src/kmaudit/verbs.py`, `packages/kmaudit/src/kmaudit/check_verbs.py`, `packages/kmaudit/src/kmaudit/ui.py`, `packages/kmaudit/src/kmaudit/coverage.py`
-- checked by: a test that claims submitted for `docs` never show in `kmaudit claims list .okf` and the reverse, with two store files under `.kmaudit/`
+- needs: none
+- touches: `packages/kmaudit/src/kmaudit/store.py`, `packages/kmaudit/src/kmaudit/sections.py`, `packages/kmaudit/src/kmaudit/verbs.py`, `packages/kmaudit/src/kmaudit/check_verbs.py`, `packages/kmaudit/src/kmaudit/ui.py`, `packages/kmaudit/src/kmaudit/coverage.py`, `new:packages/kmaudit/tests/test_namespaces.py`
+- checked by: tests that claims submitted for `docs` never show under `.okf` and the reverse, with one store file per namespace under `.kmaudit/`; that docs/sub/page.md and `docs/sub` mean `docs`; and that opening a folder holding an existing namespace is refused naming it
 - seen by: calling code
 
-### O3: kmaudit namespaces lists each namespace, its folder and counts
+### O2: Any folder of markdown docs can be audited
+- kind: behaviour
+- goal: G1
+- fixes: P1
+- needs: O1
+- touches: `packages/kmaudit/src/kmaudit/sections.py`, `packages/kmaudit/src/kmaudit/steps.py`, `packages/kmaudit/src/kmaudit/check_verbs.py`, `packages/kmaudit/src/kmaudit/ui.py`, `packages/kmaudit/src/kmaudit/coverage.py`, `packages/kmaudit/src/kmaudit/check_instructions.py`, `packages/kmaudit/src/kmaudit/ui.html`
+- checked by: tests that `kmaudit claims todo docs` on a plain `docs/` hands out every `.md` file's sections, that a check never reads a file in the audited folder, and that the page and coverage work for it
+- seen by: operator
+
+### O3: The write verbs, the agents and the skills name their namespace
+- kind: support
+- goal: G1
+- fixes: P6
+- needs: O1
+- touches: `packages/kmaudit/src/kmaudit/cli.py`, `apm/.apm/agents/kmctl-claims-extractor.md`, `apm/.apm/agents/kmctl-check-writer.md`, `apm/.apm/skills/extract-claims/SKILL.md`, `apm/.apm/skills/write-checks/SKILL.md`, `packages/kmaudit/README.md`, `packages/kmaudit/docs/commands.md`
+- checked by: a test that `kmaudit claims submit - --path docs` stores answers in `docs` and leaves `.okf` alone, that `todo --json` prints its namespace and a next step with `--path`, and that the agents pass `--path`
+- seen by: calling code
+
+### O4: kmaudit namespaces lists each namespace, its folder and counts
 - kind: behaviour
 - goal: G1
 - fixes: P3
-- needs: O2
+- needs: O1
 - touches: `packages/kmaudit/src/kmaudit/cli.py`, `packages/kmaudit/docs/commands.md`
 - checked by: a test that `kmaudit namespaces --json` lists both namespaces with folder, sections, claims and checks
 - seen by: operator
 
-### O4: The old .kmctl/audit.sqlite is copied into the .okf namespace
+### O5: The old .kmctl/audit.sqlite is copied into the .okf namespace
 - kind: support
 - goal: G2
 - fixes: P4
-- needs: O2
+- needs: O1
 - touches: `packages/kmaudit/src/kmaudit/store.py`
-- checked by: a test that a repository with only .kmctl/audit.sqlite opens `.okf` with every row of every table, and the old file unchanged; and a run on a copy of this repository's store hands out 0 sections for `.okf`
+- checked by: a test that a repository with only the old store opens `.okf` with every row of every table, the old file unchanged; and a run on a copy of this repository's store hands out 0 sections for `.okf`
 - seen by: operator
 
-### O5: A guidance change cannot carry old answers over silently
+### O6: A guidance change cannot carry old answers over silently
 - kind: support
 - goal: G2
 - fixes: P5

@@ -3,7 +3,7 @@
   "slug": "kmaudit-namespaces",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 1,
+  "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -124,9 +124,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 1,
-    "binds": "c85bfbf1d40833000054302c0e2c5a4bdc6c69b606d2400da6a16be9d59c826e",
-    "started_at": "2026-11-14T13:07:58+00:00",
+    "n": 2,
+    "binds": "37ff578b1bd9eea4e2b82bedeb748b6b725a383811f15e0c273c435362d6c6d6",
+    "started_at": "2026-11-14T13:11:13+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -139,10 +139,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "c85bfbf1d40833000054302c0e2c5a4bdc6c69b606d2400da6a16be9d59c826e",
+  "plan_hash": "37ff578b1bd9eea4e2b82bedeb748b6b725a383811f15e0c273c435362d6c6d6",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -157,5 +157,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T13:11:12+00:00"
+  "at": "2026-11-14T13:11:13+00:00"
 }
