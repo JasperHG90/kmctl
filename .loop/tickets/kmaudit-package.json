@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-package",
-  "stage": "planning",
+  "stage": "ready",
   "attempts": 0,
   "plan_rounds": 2,
   "review_rounds": 0,
@@ -134,8 +134,14 @@
       "to": "planning",
       "at": "2026-11-14T11:31:31+00:00",
       "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-11-14T11:40:19+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T11:40:17+00:00"
+  "at": "2026-11-14T11:40:19+00:00"
 }
