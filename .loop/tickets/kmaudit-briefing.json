@@ -20,10 +20,43 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-main",
+    "hash": "5f13809538c6767dc688c3ac18ec501a7d87006f158f4b068a45d061374472a5",
+    "at": "2026-11-14T14:00:41+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "`kmaudit briefing --json` reports, per namespace, sections, pending sections, claims, checks by status and open feedback, matching what `kmaudit claims list` and `kmaudit checks list` report for that namespace; without --json it prints a few lines per namespace and one next step.",
+      "fails_when": "a namespace is missing, any count differs from claims list or checks list, or the text output names no next step while sections are pending",
+      "command": "uv run pytest packages/kmaudit/tests/test_briefing.py -k counts -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "The briefing is read-only: every store file's bytes are equal before and after it runs, even when a page changed since extraction, and the changed page's sections are counted pending.",
+      "fails_when": "any store file changes, a changed section's claims are dropped, or the changed section is not counted pending",
+      "command": "uv run pytest packages/kmaudit/tests/test_briefing.py -k read_only -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "A section whose stored key was made under a hash in PREVIOUS_HASHES reads as up to date in the briefing, as the store's refresh would treat it.",
+      "fails_when": "such a section is counted pending",
+      "command": "uv run pytest packages/kmaudit/tests/test_briefing.py -k previous -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "In a repository with no namespace the briefing prints nothing and exits 0; with a store it cannot read it prints one line saying the briefing is unavailable and exits 0.",
+      "fails_when": "either case exits nonzero, the empty case prints anything, or the broken case prints a traceback or more than one line",
+      "command": "uv run pytest packages/kmaudit/tests/test_briefing.py -k never_fails -q",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -44,5 +77,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T14:00:28+00:00"
+  "at": "2026-11-14T14:00:41+00:00"
 }
