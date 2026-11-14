@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-mcp",
-  "plan_hash": "de255ec96b0757d926e7e396329251e84af0adefcc36e5e046940090c99c5804",
+  "plan_hash": "4a3568e1f1e469705f68021f706561e8ce8463a9fa4a7af4b032b641237c55ef",
   "problems": [
     {
       "id": "P1",
