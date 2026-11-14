@@ -7,3 +7,4 @@
 {"at": "2026-11-14T17:54:43+00:00", "dispatched_at": "2026-11-14T17:53:13+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-14T17:54:27+00:00"}}
 {"at": "2026-11-14T17:54:44+00:00", "by": "advance", "from": "planning", "kind": "transition", "schema_version": "1.0", "to": "ready"}
 {"at": "2026-11-14T21:05:56+00:00", "by": "advance", "from": "ready", "kind": "transition", "schema_version": "1.0", "to": "building"}
+{"at": "2026-11-14T21:26:42+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "building"}
