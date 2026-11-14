@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-briefing",
-  "plan_hash": "f12d093dbb6761ef59752e565b7ceaeba2ad8af7bbb5fdb723f7fd031de40432",
+  "plan_hash": "5b3b7a9ae9bcc9971daf4750823d70cd103638c6a59d039250b89669dae380a4",
   "problems": [
     {
       "id": "P1",
@@ -35,7 +35,7 @@
         "new:packages/kmaudit/tests/test_briefing.py",
         "packages/kmaudit/docs/commands.md"
       ],
-      "checked_by": "a test that the briefing's counts per namespace match `claims list` and `checks list`, that pending sections are counted without changing the store (its bytes are equal before and after), and that a store keyed under a previous hash reads as up to date",
+      "checked_by": "a test that sections, claims, check statuses and open feedback per namespace match `claims list` and `checks list`; that with only an old .kmctl/audit.sqlite no file appears or changes; that a changed page counts pending; and that a store keyed under a previous hash reads as up to date",
       "seen_by": "operator"
     },
     {
