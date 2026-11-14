@@ -604,10 +604,8 @@ def test_release_package_notes_job_drafts_in_dry_runs_and_uploads_the_file() -> 
     assert "GITHUB_STEP_SUMMARY" not in draft["run"]
     assert draft["env"]["TAG"] == "${{ needs.resolve.outputs.tag }}"
     show = steps.index(_step(RELEASE, "notes", "Show the notes"))
-    assert (
-        '"$RUNNER_TEMP/release-notes/$TAG.md" >> "$GITHUB_STEP_SUMMARY"'
-        in (steps[show]["run"])
-    )
+    assert 'cat "$DIR/$TAG.md"' in steps[show]["run"]
+    assert '>> "$GITHUB_STEP_SUMMARY"' in steps[show]["run"]
     assert len(upload) == 1
     assert steps.index(draft) < show < steps.index(upload[0])
     assert upload[0]["with"]["name"] == "release-notes"
@@ -639,13 +637,12 @@ def test_release_package_bump_starts_from_the_drafted_commit_with_the_notes() ->
     assert commit["env"]["TAG"] == "${{ needs.resolve.outputs.tag }}"
 
 
-def test_release_package_bump_commits_the_notes_and_makes_them_the_body(
-    tmp_path: Path,
-) -> None:
-    """Run in bash for kmaudit, bump commits VERSION, the README and the notes file on the drafted commit.
+def _run_bump(
+    tmp_path: Path, notes: str, before: str | None = None
+) -> tuple[subprocess.CompletedProcess[str], Path, str, Path]:
+    """Run bump's commit step in bash for kmaudit-v0.2.0 with ``notes`` (and a before-Hermes file).
 
-    The commit carries a Drafted-From trailer, and the pull request body
-    holds the notes file and the same trailer.
+    Returns the result, the origin repository, the drafted commit and RUNNER_TEMP.
     """
     origin = tmp_path / "origin.git"
     _git_out(tmp_path, "init", "-q", "--bare", "-b", "main", str(origin))
@@ -661,9 +658,10 @@ def test_release_package_bump_commits_the_notes_and_makes_them_the_body(
     _git_out(repo, "push", "-q", "origin", "main")
     drafted = _git_out(repo, "rev-parse", "HEAD")
     temp = tmp_path / "runner"
-    notes = "## What changed\n\n- kmaudit learns a trick. (`trick`)\n"
     (temp / "release-notes").mkdir(parents=True)
     (temp / "release-notes" / "kmaudit-v0.2.0.md").write_text(notes)
+    if before is not None:
+        (temp / "release-notes" / "kmaudit-v0.2.0.before-hermes.md").write_text(before)
     commit = _step(
         RELEASE, "bump", "Commit the version and the notes, and open the pull request"
     )
@@ -682,6 +680,20 @@ def test_release_package_bump_commits_the_notes_and_makes_them_the_body(
             "GITHUB_STEP_SUMMARY": str(temp / "summary"),
         },
     )
+    return res, origin, drafted, temp
+
+
+def test_release_package_bump_commits_the_notes_and_makes_them_the_body(
+    tmp_path: Path,
+) -> None:
+    """Run in bash for kmaudit, bump commits VERSION, the README and the notes file on the drafted commit.
+
+    The commit carries a Drafted-From trailer, and the pull request body
+    holds the notes file and the same trailer.
+    """
+    notes = "## What changed\n\n- kmaudit learns a trick. (`trick`)\n"
+
+    res, origin, drafted, temp = _run_bump(tmp_path, notes)
 
     assert res.returncode == 0, res.stdout + res.stderr
     branch = "release/kmaudit-v0.2.0"
@@ -710,6 +722,7 @@ def test_release_package_bump_commits_the_notes_and_makes_them_the_body(
     body = (temp / "gh-file").read_text()
     assert notes in body
     assert f"Drafted-From: {drafted}" in body
+    assert "Draft before Hermes" not in body
 
 
 def test_release_tag_runs_once_per_package() -> None:
@@ -984,3 +997,205 @@ def test_release_tag_warns_when_it_cannot_find_the_drafted_commit(
 
     assert res.returncode == 0, res.stdout + res.stderr
     assert "::warning::Could not find the commit" in res.stdout
+
+
+# Hermes rewrites the drafted notes for users; scripts/hermes_release_notes.py
+# keeps the rewrite only when it passes its checks, else the draft (ADR 0035).
+
+HERMES_ACTION = (
+    "JasperHG90/toiminnot/actions/hermes@551e8a6cbb23aba74045fa3578bf4c14ffb92893"
+)
+# Every Hermes toolset: an empty enabled_toolsets is dropped by the runner and
+# loads the defaults, so each one is disabled by name.
+TOOLSETS = {
+    "browser",
+    "clarify",
+    "code_execution",
+    "delegation",
+    "file",
+    "memory",
+    "project",
+    "session_search",
+    "skills",
+    "terminal",
+    "todo",
+    "tts",
+    "web",
+    "vision",
+}
+HERMES_DRAFT = (
+    "## What changed\n\n- Add kmaudit mcp. (`kmaudit-mcp`)\n\n"
+    "## Other changes\n\nNone.\n\n## Install\n\nFirst release.\n"
+)
+HERMES_REWRITE = HERMES_DRAFT.replace(
+    "Add kmaudit mcp.", "Drive the audit from any MCP harness."
+)
+BEFORE = "kmaudit-v0.2.0.before-hermes.md"
+
+
+def test_hermes_release_step_is_pinned_with_every_tool_off() -> None:
+    """The notes job's Hermes step: pinned action, key, model, prompt, no tools, 3 turns, may fail, times out."""
+    hermes = _step(RELEASE, "notes", "Rewrite the notes with Hermes")
+    triage = next(s for s in _steps(HERMES_TRIAGE, "triage") if s.get("id") == "hermes")
+    w = hermes["with"]
+
+    assert hermes["id"] == "hermes"
+    assert hermes["uses"] == HERMES_ACTION == triage["uses"]
+    assert w["api_key"] == "${{ secrets.OLLAMA_API_KEY }}"
+    assert w["model"] == "deepseek-v4.1-flash"
+    assert w["system_prompt_file"] == ".github/prompts/release-notes-system.md"
+    assert (ROOT / w["system_prompt_file"]).is_file()
+    assert set(w["disabled_toolsets"].split(",")) == TOOLSETS
+    assert not w.get("enabled_toolsets")
+    assert "skills_dir" not in w
+    assert w["max_iterations"] == "3"
+    assert w["user_message"] == (
+        "@${{ runner.temp }}/release-notes/${{ needs.resolve.outputs.tag }}.md"
+    )
+    assert hermes["continue-on-error"] is True
+    assert 0 < hermes["timeout-minutes"] <= 15
+
+
+def test_hermes_release_step_sits_between_the_draft_and_the_upload() -> None:
+    """Draft, Hermes, the check, the summary, then the upload, in that order."""
+    steps = _steps(RELEASE, "notes")
+    order = [
+        steps.index(_step(RELEASE, "notes", name))
+        for name in (
+            "Draft the notes",
+            "Rewrite the notes with Hermes",
+            "Check the rewrite",
+            "Show the notes",
+        )
+    ]
+    [upload] = [
+        i
+        for i, s in enumerate(steps)
+        if s.get("uses", "").startswith("actions/upload-artifact@")
+    ]
+
+    assert order == sorted(order)
+    assert order[-1] < upload
+
+
+def test_hermes_release_prompt_rewrites_only_what_changed() -> None:
+    """The prompt keeps references, other sections, and never says work was deferred."""
+    text = (PROMPTS / "release-notes-system.md").read_text()
+
+    assert "## What changed" in text
+    assert "## Other changes" in text
+    assert "postponed, deferred or planned" in text
+    assert "@hermes" not in text.lower()
+
+
+def test_hermes_release_runs_never_expand_an_expression() -> None:
+    """Step outputs, the tag and commit-derived values reach release.yml's scripts through env only."""
+    for job in _load(RELEASE)["jobs"]:
+        assert "${{" not in _runs(RELEASE, job), job
+
+
+def _check_rewrite(tmp_path: Path, response: str | None) -> Path:
+    """Run the Check the rewrite step in bash on HERMES_DRAFT; return the release-notes folder."""
+    temp = tmp_path / "runner"
+    notes = temp / "release-notes"
+    notes.mkdir(parents=True)
+    (notes / "kmaudit-v0.2.0.md").write_text(HERMES_DRAFT)
+    resp = ""
+    if response is not None:
+        (tmp_path / "response.md").write_text(response)
+        resp = str(tmp_path / "response.md")
+    step = _step(RELEASE, "notes", "Check the rewrite")
+
+    res = _bash(
+        step["run"],
+        ROOT,
+        {
+            "PATH": f"{_stub_bin(tmp_path)}:/usr/bin:/bin",
+            "TAG": "kmaudit-v0.2.0",
+            "RESPONSE_FILE": resp,
+            "RUNNER_TEMP": str(temp),
+        },
+    )
+
+    assert res.returncode == 0, res.stdout + res.stderr
+    assert step["env"]["RESPONSE_FILE"] == "${{ steps.hermes.outputs.response_file }}"
+    assert step["env"]["TAG"] == "${{ needs.resolve.outputs.tag }}"
+    return notes
+
+
+def test_hermes_release_notes_file_is_the_cleaning_script_s_output(
+    tmp_path: Path,
+) -> None:
+    """A passing rewrite becomes TAG.md, with the draft's What changed in the before-Hermes file."""
+    notes = _check_rewrite(tmp_path, HERMES_REWRITE)
+
+    assert (notes / "kmaudit-v0.2.0.md").read_text() == HERMES_REWRITE
+    before = (notes / BEFORE).read_text()
+    assert "Draft before Hermes" in before
+    assert "- Add kmaudit mcp. (`kmaudit-mcp`)" in before
+
+
+@pytest.mark.parametrize(
+    "response",
+    [None, "", HERMES_REWRITE.replace("(`kmaudit-mcp`)", "(`other`)")],
+    ids=["no-response", "empty", "rejected"],
+)
+def test_hermes_release_failure_keeps_the_draft(
+    tmp_path: Path, response: str | None
+) -> None:
+    """No response, an empty one or a rejected rewrite leaves the draft as TAG.md and no before file."""
+    notes = _check_rewrite(tmp_path, response)
+
+    assert (notes / "kmaudit-v0.2.0.md").read_text() == HERMES_DRAFT
+    assert not (notes / BEFORE).exists()
+
+
+@pytest.mark.parametrize("kept", [True, False], ids=["hermes", "draft"])
+def test_hermes_release_summary_names_the_source_and_the_draft(
+    tmp_path: Path, kept: bool
+) -> None:
+    """The summary says which source won and, when Hermes won, shows the draft before Hermes."""
+    notes = _check_rewrite(tmp_path, HERMES_REWRITE if kept else None)
+    summary = tmp_path / "summary"
+    step = _step(RELEASE, "notes", "Show the notes")
+
+    res = _bash(
+        step["run"],
+        ROOT,
+        {
+            "TAG": "kmaudit-v0.2.0",
+            "RUNNER_TEMP": str(notes.parent),
+            "GITHUB_STEP_SUMMARY": str(summary),
+        },
+    )
+
+    assert res.returncode == 0, res.stderr
+    text = summary.read_text()
+    first = text.splitlines()[0]
+    assert (notes / "kmaudit-v0.2.0.md").read_text() in text
+    if kept:
+        assert "Hermes" in first and "draft" in first
+        assert "Draft before Hermes" in text
+        assert "- Add kmaudit mcp. (`kmaudit-mcp`)" in text
+    else:
+        assert first.startswith("**Notes source:** the draft")
+        assert "Draft before Hermes" not in text
+
+
+def test_hermes_release_pr_body_carries_the_draft_before_hermes(
+    tmp_path: Path,
+) -> None:
+    """When Hermes won, the body adds the draft's What changed, collapsed; the file is not committed."""
+    before = "<details>\n<summary>Draft before Hermes</summary>\n\n## What changed\n\n- Add kmaudit mcp. (`kmaudit-mcp`)\n\n</details>\n"
+
+    res, origin, drafted, temp = _run_bump(tmp_path, HERMES_REWRITE, before)
+
+    assert res.returncode == 0, res.stdout + res.stderr
+    body = (temp / "gh-file").read_text()
+    assert HERMES_REWRITE in body
+    assert before in body
+    assert body.index(HERMES_REWRITE) < body.index(before)
+    changed = _git_out(
+        origin, "diff", "--name-only", drafted, "release/kmaudit-v0.2.0"
+    ).splitlines()
+    assert not any("before-hermes" in path for path in changed)
