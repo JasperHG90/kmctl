@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.3.1.dev65+g93b143856
-  at: '2026-11-14T19:48:52+00:00'
+  at: '2026-11-14T19:49:08+00:00'
 slug: release-notes-hermes
 n: 1
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike release-notes-hermes/1
@@ -24,7 +24,9 @@ bash -ic python3 /tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note release-notes-hermes 1`.
+`ollama/deepseek-v4.1-flash` through Bifrost kept every check on 15 of 15 rewrites (5 real drafts, v0.9.0 to v0.12.1, 3 runs each, default temperature): headings in order, everything from `## Other changes` on unchanged, the same `` (`slug`) ``/`(#N)` set under What changed, one per bullet, no preamble or fence. The rewrites were real (the v0.12.1 `fix(release-notes):` prefix dropped, every v0.11.0 bullet reworded), not copies.
+This rules out the fallback-almost-every-time case and settles risk 1. Checker and caller: `files/spike.py`; the draft prompt it sent is `release-notes-system.md` beside it in the scratch dir (not copied into the evidence).
+Limits: a single chat call, not the Hermes agent action with tools and its own wrapper; small sample. The checks do not catch vague wording: v0.9.0's "reviewer finding f4" bullets became "the `verify` command now handles more edge cases safely", which passes but says little.
 
 ## Files
 
