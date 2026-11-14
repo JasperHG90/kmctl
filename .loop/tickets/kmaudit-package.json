@@ -1,14 +1,42 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-package",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "d57c7a1c289ecd1b49fbda3208328f66910e7c3c11d739490795e7d582273556",
+    "tree": "d30bf7ab757bdb58ce0344d343172e69a0b91384",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "blocking",
+        "judgement": null,
+        "paths": [
+          ".github/workflows/ci.yml",
+          "tests/test_ci.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f3",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": "j-20261114T125417+0000-53602b62",
+        "paths": [
+          "apm/.apm/skills/*/SKILL.md",
+          "packages/kmaudit/src/kmaudit/__init__.py",
+          "packages/kmaudit/src/kmaudit/ui.html"
+        ]
+      }
+    ],
+    "at": "2026-11-14T12:54:17+00:00"
+  },
   "ask": "j-20261114T113041+0000-fa5ce086",
   "split": "j-20261114T113833+0000-71a1f1ab",
   "split_plan_hash": "91e38cc5769c6252125f0ccd805de0978a8b85fe014248981ea811fc5ff0199e",
@@ -162,8 +190,14 @@
       "to": "fixing",
       "at": "2026-11-14T12:45:21+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-14T12:54:17+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T12:54:08+00:00"
+  "at": "2026-11-14T12:54:17+00:00"
 }
