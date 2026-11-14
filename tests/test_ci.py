@@ -3,9 +3,11 @@
 import re
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 from typing import Any
 
+import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -33,14 +35,32 @@ def test_ci_triggers_on_pull_request_and_push_to_main() -> None:
     assert on["push"]["branches"] == ["main"]
 
 
-def test_ci_jobs_run_prek_then_knowledge_then_pytest() -> None:
-    jobs = _ci()["jobs"]
+# Each CI test job and the directory its pytest step runs.
+TEST_JOBS = {
+    "kmctl": "packages/kmctl/tests",
+    "kmaudit": "packages/kmaudit/tests",
+    "repo": "tests",
+}
 
-    assert list(jobs) == ["prek", "knowledge", "tests", "starter"]
+
+def test_ci_per_package_jobs_run_prek_then_knowledge_then_the_tests() -> None:
+    ci = _ci()
+    jobs = ci["jobs"]
+
+    assert ci["name"] == "CI"
+    assert list(jobs) == [
+        "prek",
+        "knowledge",
+        "kmctl",
+        "kmaudit",
+        "repo",
+        "starter",
+        "tests",
+    ]
     assert "needs" not in jobs["prek"]
     assert jobs["knowledge"]["needs"] == "prek"
-    assert jobs["tests"]["needs"] == "knowledge"
-    assert jobs["starter"]["needs"] == "knowledge"
+    for name in [*TEST_JOBS, "starter"]:
+        assert jobs[name]["needs"] == "knowledge", name
 
 
 def test_ci_knowledge_job_runs_own_check_with_full_history() -> None:
@@ -77,32 +97,94 @@ def test_ci_prek_job_runs_justfile_version_after_uv() -> None:
     }
 
 
-def test_ci_pytest_job_runs_default_tier_of_both_packages() -> None:
-    """The job runs pytest at the root, as the gate does, so kmaudit's tests run too (ADR 0043)."""
-    steps = _job_steps("tests")
-    tests = steps[_uses(steps, "JasperHG90/toiminnot/actions/pytest")]
-    collected = subprocess.run(
-        [
-            sys.executable,
-            "-m",
-            "pytest",
-            "--collect-only",
-            "-q",
-            tests["with"]["directory"],
-        ],
+def test_ci_per_package_test_jobs_run_the_default_tier_in_their_own_directory() -> None:
+    for name, directory in TEST_JOBS.items():
+        steps = _job_steps(name)
+        tests = steps[_uses(steps, "JasperHG90/toiminnot/actions/pytest")]
+
+        assert tests["with"] == {
+            "directory": directory,
+            "markers": "not integration",
+            "python_version": "3.12",
+        }, name
+
+
+def test_ci_aggregate_tests_job_needs_every_test_job_and_always_runs() -> None:
+    """main's ruleset requires prek, knowledge and tests; a check takes its job's name, so none has a name:."""
+    jobs = _ci()["jobs"]
+    tests = jobs["tests"]
+
+    assert sorted(tests["needs"]) == sorted(TEST_JOBS)
+    assert tests["if"] == "always()"
+    for name in ["prek", "knowledge", "tests"]:
+        assert "name" not in jobs[name], name
+
+
+def _aggregate_exit(results: dict[str, str]) -> int:
+    """Run the tests job's step with each needed job's result and return its exit code."""
+    [step] = _job_steps("tests")
+    env = {key: str(value) for key, value in step["env"].items()}
+    assert env == {
+        name.upper(): f"${{{{ needs.{name}.result }}}}" for name in TEST_JOBS
+    }
+    env = {name.upper(): results[name] for name in TEST_JOBS}
+    return subprocess.run(
+        ["bash", "-e", "-c", step["run"]],
+        env=env,
+        capture_output=True,
+        check=False,
+    ).returncode
+
+
+@pytest.mark.parametrize("result", ["failure", "skipped", "cancelled"])
+@pytest.mark.parametrize("job", list(TEST_JOBS))
+def test_ci_aggregate_tests_job_fails_unless_every_test_job_succeeded(
+    job: str, result: str
+) -> None:
+    passed = dict.fromkeys(TEST_JOBS, "success")
+
+    assert _aggregate_exit(passed) == 0
+    assert _aggregate_exit({**passed, job: result}) != 0
+
+
+def _collected(*args: str) -> list[str]:
+    """The test ids ``pytest --collect-only`` finds with ``args``, from the root."""
+    out = subprocess.run(
+        [sys.executable, "-m", "pytest", "--collect-only", "-q", *args],
         cwd=ROOT,
         capture_output=True,
         text=True,
-        check=False,
+        check=True,
     ).stdout
+    return [line for line in out.splitlines() if "::" in line]
 
-    assert tests["with"] == {
-        "directory": ".",
-        "markers": "not integration",
-        "python_version": "3.12",
-    }
-    roots = {line.split("/")[0] for line in collected.splitlines() if "::" in line}
-    assert {"packages", "tests"} <= roots
+
+def test_ci_test_jobs_partition_what_the_gate_collects() -> None:
+    """The loop's tests gate and just test run pytest at the root; CI's test jobs must split that, no more, no less."""
+    gates = tomllib.loads((ROOT / ".loop" / "config.toml").read_text())["gates"]
+    [gate] = [g["command"] for g in gates if g["name"] == "tests"]
+    recipe = re.search(
+        r"^test:\n\s+(.+)$", (ROOT / "justfile").read_text(), re.MULTILINE
+    )
+    assert gate == "uv run pytest"
+    assert recipe and recipe[1] == gate
+
+    whole = _collected()
+    per_job = {}
+    for name in TEST_JOBS:
+        steps = _job_steps(name)
+        directory = steps[_uses(steps, "JasperHG90/toiminnot/actions/pytest")]["with"][
+            "directory"
+        ]
+        per_job[name] = _collected(directory)
+
+    assert all(per_job.values()), {k: len(v) for k, v in per_job.items()}
+    assert sum(len(ids) for ids in per_job.values()) == len(whole)
+    union = [i for ids in per_job.values() for i in ids]
+    assert len(set(union)) == len(union)
+    assert set(union) == set(whole)
+    assert any(i.startswith("packages/kmctl/") for i in whole)
+    assert any(i.startswith("packages/kmaudit/") for i in whole)
 
 
 def test_ci_actions_pinned_and_uv_cache_off() -> None:
