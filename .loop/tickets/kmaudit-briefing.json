@@ -22,8 +22,8 @@
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-main",
-    "hash": "4c3559168e67531d67fff32f522e2e159bbcfbc3788af80febcb509b2c568b08",
-    "at": "2026-11-14T14:03:23+00:00"
+    "hash": "b147be953b0359bf516cdfeae38cbf7892704e85dd681e134d3fa4ee34e629df",
+    "at": "2026-11-14T14:05:40+00:00"
   },
   "delegation": null,
   "budget_base": null,
@@ -37,8 +37,8 @@
     },
     {
       "id": "r2",
-      "behavior": "The briefing is read-only: with only an old .kmctl/audit.sqlite, or with stores under .kmaudit/, no file in the repository appears or changes (no .kmaudit/ is created, no store is copied or migrated), even when a page changed since extraction, and the changed page's sections are counted pending.",
-      "fails_when": "any file under .kmaudit/ or .kmctl/ appears or changes, or the changed section is not counted pending",
+      "behavior": "The briefing is read-only: with only an old .kmctl/audit.sqlite, or with stores under .kmaudit/, no store is created, copied or migrated (no .kmaudit/ appears where there was none) and every .sqlite file's bytes are unchanged; only SQLite's -wal and -shm sidecar files may appear. This holds even when a page changed since extraction, and the changed page's sections are counted pending.",
+      "fails_when": "a .kmaudit/ folder or a new .sqlite file appears, any .sqlite file's bytes change, or the changed section is not counted pending",
       "command": "uv run pytest packages/kmaudit/tests/test_briefing.py -k read_only -q",
       "judgment": false
     },
@@ -76,6 +76,21 @@
         }
       },
       "at": "2026-11-14T14:03:23+00:00"
+    },
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-main",
+      "reason": "plan review round 2: read-only allows SQLite's -wal/-shm sidecars, since immutable=1 would miss rows running agents have not checkpointed (r2)",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r2": [
+            "behavior",
+            "fails_when"
+          ]
+        }
+      },
+      "at": "2026-11-14T14:05:40+00:00"
     }
   ],
   "accepted_risks": [],
@@ -116,5 +131,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T14:05:38+00:00"
+  "at": "2026-11-14T14:05:40+00:00"
 }

@@ -9,8 +9,8 @@
     },
     {
       "id": "r2",
-      "behavior": "The briefing is read-only: with only an old .kmctl/audit.sqlite, or with stores under .kmaudit/, no file in the repository appears or changes (no .kmaudit/ is created, no store is copied or migrated), even when a page changed since extraction, and the changed page's sections are counted pending.",
-      "fails_when": "any file under .kmaudit/ or .kmctl/ appears or changes, or the changed section is not counted pending",
+      "behavior": "The briefing is read-only: with only an old .kmctl/audit.sqlite, or with stores under .kmaudit/, no store is created, copied or migrated (no .kmaudit/ appears where there was none) and every .sqlite file's bytes are unchanged; only SQLite's -wal and -shm sidecar files may appear. This holds even when a page changed since extraction, and the changed page's sections are counted pending.",
+      "fails_when": "a .kmaudit/ folder or a new .sqlite file appears, any .sqlite file's bytes change, or the changed section is not counted pending",
       "command": "uv run pytest packages/kmaudit/tests/test_briefing.py -k read_only -q"
     },
     {
