@@ -20,7 +20,8 @@
   "worktree": "/home/vscode/workspace.worktrees/release-per-package",
   "branch": "loop/release-per-package",
   "stamps": [
-    "86c2aab1fd22c47884000d44b8616731e30d967ecf430a47732cb7676bac9b79"
+    "86c2aab1fd22c47884000d44b8616731e30d967ecf430a47732cb7676bac9b79",
+    "97d2a9170c99439a22f44949a3d9c06f67190dc1dda50e4d7f4a5bb3134553ef"
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
@@ -156,5 +157,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T21:29:43+00:00"
+  "at": "2026-11-14T21:40:28+00:00"
 }
