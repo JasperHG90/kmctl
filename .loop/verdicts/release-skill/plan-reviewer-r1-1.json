@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The after-publish step and the reworded every-release-has-notes constraint say to fix scripts/release_notes.py and set the regenerated notes with gh release edit (and do the same for earlier releases). Under D3 the published notes are the reviewed file: Hermes-rewritten by release-notes-hermes and maybe hand-edited in the pull request. Regenerating from release_notes.py replaces that prose with the raw deterministic draft, for the current release and for every earlier release the fix touches, and leaves .github/release-notes/TAG.md in the repo saying something else than the published Release. The plan has to settle what a gap found after publish does under D3 (for example: fix the script so future drafts are right, and add the missing entry to the published notes and to the committed file without discarding the reviewed text). O2's wording of the rule and r3 both depend on that answer.",
+      "anchor": ".loop/plans/release-skill/README.md:51",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r3"
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "release-per-package settled that release-tag publishes the reviewed file unchanged and, when commits landed between the draft and the merge, writes a ::warning:: and a step-summary section naming them so that someone adds them with gh release edit. This skill is that someone, but its after-publish step only reads gh release view, which cannot show those late commits because they are missing from the notes by construction. Nothing in the plan watches the release-tag run or reads its warning, so the one path release-per-package relies on to close the late-commit gap is never walked, and G1 ('checked after publish') holds only when no commit landed late. Step 4, O1's checked-by, and the reworded rule should name the release-tag run's warning (for example gh run list/watch on release-tag.yml after the merge, then gh run view for the summary).",
+      "anchor": ".loop/plans/release-skill/README.md:51",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "a6d479c861ad43f002679b46d99be49bcc4da41c1443ff4d54695eb9b544ea89"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T17:48:56+00:00"
+}
