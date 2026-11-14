@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "slug": "kmaudit-mcp",
+  "n": 1,
+  "command": "uv run python -c \nimport json, shutil, subprocess\nfrom pathlib import Path\ndef size(args):\n    out = subprocess.run(['uv','run','kmaudit',*args], capture_output=True, text=True).stdout\n    d = json.loads(out)\n    return len(out), d\nfor f in ('.kmctl', '.kmaudit'):\n    shutil.rmtree(f, ignore_errors=True)\nn, d = size(['claims','todo','--json'])\nprint('claims todo, all pending:', n, 'bytes, ~', n//4, 'tokens,', len(d['sections']), 'sections')\nbiggest = max(len(json.dumps(s)) for s in d['sections'])\nprint('largest single section:', biggest, 'bytes')\nn, d = size(['claims','todo','--json','--limit','15'])\nprint('claims todo --limit 15:', n, 'bytes, ~', n//4, 'tokens')\nPath('.kmctl').mkdir(exist_ok=True)\nshutil.copy('/home/vscode/workspace/.kmctl/audit.sqlite', '.kmctl/audit.sqlite')\nn, d = size(['checks','todo','--json','--limit','5'])\nprint('checks todo --limit 5:', n, 'bytes, ~', n//4, 'tokens,', len(d['claims']), 'claims')\nn, d = size(['checks','todo','--json','--limit','5','--brief'])\nprint('checks todo --limit 5 --brief:', n, 'bytes, ~', n//4, 'tokens')\n",
+  "scripts": [],
+  "where": "worktree",
+  "head": "ffa4f36404a07c993651f625612f07521f36b48f",
+  "fingerprint": "cc5eec10ce70ef5966a41dafbf21fc15b2d3f974a421466d0cca3f784bfcd4e6",
+  "started_at": "2026-11-14T13:46:35+00:00",
+  "finished_at": "2026-11-14T13:46:46+00:00",
+  "duration_seconds": 10.924,
+  "timeout_seconds": 1800.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "moved_from": null
+}
