@@ -4,3 +4,4 @@
 {"at": "2026-11-14T17:47:09+00:00", "grant": "g7", "hash": "6e04b48a4938b9a6cd62c03ed0c22470699c5cfbc6921b3ae4000ea4fde4db36", "kind": "signoff", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5", "step": "eval-sign"}
 {"at": "2026-11-14T17:47:49+00:00", "kind": "spike-note", "n": 3, "replaced": false, "schema_version": "1.0"}
 {"at": "2026-11-14T17:48:41+00:00", "kind": "spike-note", "n": 4, "replaced": false, "schema_version": "1.0"}
+{"at": "2026-11-14T19:43:10+00:00", "by": "human:jasperginn@gmail.com", "kind": "accept-risk", "reason": "users upgrade the CLI before pinning a post-move release", "risk": 2, "schema_version": "1.0"}

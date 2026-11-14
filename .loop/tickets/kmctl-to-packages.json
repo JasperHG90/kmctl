@@ -72,7 +72,14 @@
     }
   ],
   "resigns": [],
-  "accepted_risks": [],
+  "accepted_risks": [
+    {
+      "risk_hash": "0ca3109decabc459c522a940d4fc7a0fd71d4cfbddc920c7edeb78b3e5c6b24f",
+      "reason": "users upgrade the CLI before pinning a post-move release",
+      "by": "human:jasperginn@gmail.com",
+      "at": "2026-11-14T19:43:10+00:00"
+    }
+  ],
   "waivers": [],
   "overrides": [],
   "round": null,
@@ -91,5 +98,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T17:52:33+00:00"
+  "at": "2026-11-14T19:43:10+00:00"
 }
