@@ -20,10 +20,50 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "6dcde8a260c963d56fa1b3ac0ebbb4df909f2fe66de6f7a7a43788b0d0d79d41",
+    "at": "2026-11-14T17:22:55+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "`kmaudit mcp`, started through the MCP SDK's stdio client in a fixture repository, lists the tools namespaces, claims_todo, claims_submit, claims_list, checks_todo, checks_try, checks_submit, checks_run, checks_list, coverage and judge, each taking folder.",
+      "fails_when": "the server does not start over stdio, a tool is missing, or a tool other than namespaces takes no folder",
+      "command": "uv run pytest packages/kmaudit/tests/test_mcp.py -k lists -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "Through the tools, a claims_todo, claims_submit and claims_list round trip for one namespace stores and reads back the claims, returning the JSON the CLI's --json prints.",
+      "fails_when": "submit stores nothing, list does not show the submitted claims, or a result's fields differ from the CLI's --json for the same call",
+      "command": "uv run pytest packages/kmaudit/tests/test_mcp.py -k round_trip -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "A refused call (a stale key, an unknown folder) comes back as an MCP tool error whose text is the CLI's refusal line naming the fix; the server keeps running.",
+      "fails_when": "a refusal returns as a success, the error text lacks the fix, or the server exits",
+      "command": "uv run pytest packages/kmaudit/tests/test_mcp.py -k refusal -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "claims_todo with its default limit on a folder of 200 pending sections returns under 25,000 tokens (bytes / 4), and brief leaves out the instructions; `kmaudit claims todo --brief` does the same on the CLI.",
+      "fails_when": "the default result is 100,000 bytes or more, or brief still carries the instructions",
+      "command": "uv run pytest packages/kmaudit/tests/test_mcp.py -k paging -q",
+      "judgment": false
+    },
+    {
+      "id": "r5",
+      "behavior": "Every tool the server lists is named in packages/kmaudit/docs/commands.md, and packages/kmaudit/README.md has a section for each of Claude Code, Codex, Antigravity and LangGraph saying how to add the server.",
+      "fails_when": "a listed tool is missing from the docs, or any of the four harnesses has no section",
+      "command": "uv run pytest packages/kmaudit/tests/test_mcp.py -k documented -q",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -44,5 +84,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T17:22:42+00:00"
+  "at": "2026-11-14T17:22:55+00:00"
 }
