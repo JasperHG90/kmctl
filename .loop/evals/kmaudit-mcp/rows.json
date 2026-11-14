@@ -3,8 +3,8 @@
   "rows": [
     {
       "id": "r1",
-      "behavior": "`kmaudit mcp`, started through the MCP SDK's stdio client in a fixture repository, lists the tools namespaces, claims_todo, claims_submit, claims_list, checks_todo, checks_try, checks_submit, checks_run, checks_list, coverage and judge, each taking folder.",
-      "fails_when": "the server does not start over stdio, a tool is missing, or a tool other than namespaces takes no folder",
+      "behavior": "`kmaudit mcp`, started through the MCP SDK's stdio client in a fixture repository, lists the tools namespaces, claims_todo, claims_submit, claims_list, checks_todo, checks_try, checks_submit, checks_run, checks_list, coverage and judge, each taking folder. judge takes folder, question, ids and lines and returns one entry per id; the CLI's `kmaudit judge` awaits the same function in judge.py.",
+      "fails_when": "the server does not start over stdio, a tool is missing, or a tool other than namespaces takes no folder, or judge's tool and CLI command do not share one function",
       "command": "uv run pytest packages/kmaudit/tests/test_mcp.py -k lists -q"
     },
     {
@@ -15,8 +15,8 @@
     },
     {
       "id": "r3",
-      "behavior": "A refused call (a stale key, an unknown folder) comes back as an MCP tool error whose text is the CLI's refusal line naming the fix; the server keeps running.",
-      "fails_when": "a refusal returns as a success, the error text lacks the fix, or the server exits",
+      "behavior": "A whole-call refusal (an unknown folder, an input that does not parse) comes back as an MCP tool error whose text is the CLI's refusal line naming the fix, and the server keeps running; a submit batch with one good and one stale answer stores the good one and returns a result whose refused list names the stale one and its fix.",
+      "fails_when": "a whole-call refusal returns as a success, the error text lacks the fix, the server exits, or the mixed batch is an error, stores nothing, or does not list the refused item",
       "command": "uv run pytest packages/kmaudit/tests/test_mcp.py -k refusal -q"
     },
     {
@@ -27,8 +27,8 @@
     },
     {
       "id": "r5",
-      "behavior": "Every tool the server lists is named in packages/kmaudit/docs/commands.md, and packages/kmaudit/README.md has a section for each of Claude Code, Codex, Antigravity and LangGraph saying how to add the server.",
-      "fails_when": "a listed tool is missing from the docs, or any of the four harnesses has no section",
+      "behavior": "Every tool the server lists is named in packages/kmaudit/docs/commands.md, and packages/kmaudit/README.md has a section for each of Claude Code, Codex, Antigravity and LangGraph saying how to add the server; an absolute folder works the same as a relative one.",
+      "fails_when": "a listed tool is missing from the docs, or any of the four harnesses has no section, or an absolute folder is refused",
       "command": "uv run pytest packages/kmaudit/tests/test_mcp.py -k documented -q"
     }
   ]
