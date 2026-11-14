@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-package",
-  "plan_hash": "30a477a48d4063abc25337b9c3178977a5088b9afce72ee8f1d979ef53024cdf",
+  "plan_hash": "91e38cc5769c6252125f0ccd805de0978a8b85fe014248981ea811fc5ff0199e",
   "problems": [
     {
       "id": "P1",
@@ -41,9 +41,14 @@
         "new:packages/kmaudit/pyproject.toml",
         "new:packages/kmaudit/src/kmaudit/__init__.py",
         "new:packages/kmaudit/src/kmaudit/store.py",
+        "new:packages/kmaudit/src/kmaudit/ui.html",
+        "new:packages/kmaudit/tests/__init__.py",
         "new:packages/kmaudit/tests/conftest.py",
         "new:packages/kmaudit/tests/test_store.py",
-        "src/kmctl/claims/store.py",
+        "new:packages/kmaudit/tests/fixtures/__init__.py",
+        "new:packages/kmaudit/tests/fixtures/audit_repo.py",
+        "src/kmctl/claims/*.py",
+        "src/kmctl/claims/ui.html",
         "src/kmctl/judge.py",
         "src/kmctl/audit_settings.py",
         "src/kmctl/tracing.py",
@@ -68,14 +73,14 @@
       ],
       "touches": [
         "pyproject.toml",
-        ".loop/config.toml"
+        "uv.lock"
       ],
-      "checked_by": "`uv run pytest` at the root collects the tests under packages/kmaudit/tests and tests/ in one run",
+      "checked_by": "kmaudit is a workspace source in the root dev group, so a plain `uv sync` installs it; `uv run pytest` at the root collects the tests under packages/kmaudit/tests and tests/ in one run",
       "seen_by": "nobody"
     },
     {
       "id": "O3",
-      "change": "kmctl has no audit group, extra or audit dependencies",
+      "change": "kmctl has no audit group or extra, and the agents' guard hook calls kmaudit",
       "kind": "support",
       "goal": "G2",
       "goal_index": 1,
@@ -89,15 +94,22 @@
       ],
       "touches": [
         "src/kmctl/__init__.py",
+        "src/kmctl/claims/guard.py",
         "pyproject.toml",
-        "tests/test_apm_package.py"
+        "tests/test_apm_package.py",
+        "apm/.apm/agents/kmctl-check-writer.md",
+        "apm/.apm/agents/kmctl-claims-extractor.md",
+        "apm/.apm/skills/extract-claims/SKILL.md",
+        "apm/.apm/skills/write-checks/SKILL.md",
+        "apm/.apm/skills/extract-claims/evals/evals.json",
+        "apm/.apm/skills/write-checks/evals/evals.json"
       ],
-      "checked_by": "a test that `kmctl audit --help` exits 2 as an unknown command and that kmctl's metadata names no audit extra",
+      "checked_by": "a test that `kmctl audit --help` exits 2 as an unknown command and that kmctl's metadata names no audit extra; `tests/test_apm_package.py` pins the agents' hook command as `kmaudit guard --allow GROUP`, and the guard lets through `kmaudit GROUP` commands only",
       "seen_by": "operator"
     },
     {
       "id": "O4",
-      "change": "Skills, agents, docs, the README and a decision record name kmaudit",
+      "change": "Docs, the README and a decision record name kmaudit",
       "kind": "support",
       "goal": "G2",
       "goal_index": 1,
@@ -113,17 +125,16 @@
         "README.md",
         "new:packages/kmaudit/README.md",
         "AGENTS.md",
-        "apm/.apm/agents/kmctl-check-writer.md",
-        "apm/.apm/agents/kmctl-claims-extractor.md",
-        "apm/.apm/skills/extract-claims/SKILL.md",
-        "apm/.apm/skills/write-checks/SKILL.md",
         "docs/reference/commands.md",
         ".okf/manifesto.md",
         ".okf/architecture/audit-pipeline.md",
         ".okf/architecture/overview.md",
+        ".okf/architecture/index.md",
+        "apm/.apm/skills/extract-claims/evals/results.md",
+        "apm/.apm/skills/write-checks/evals/results.md",
         "new:.okf/decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp.md"
       ],
-      "checked_by": "`git grep \"kmctl audit\"` outside .loop/, .okf/log.md, .okf/prototypes/ and superseded decision records finds nothing; okf validate --strict passes; the root README names both packages and links kmaudit's own README",
+      "checked_by": "`git grep \"kmctl audit\"` finds nothing outside .loop/, .okf/log.md, .okf/prototypes/, .okf/decisions/ (accepted records keep their history notes; superseded ones keep their text), and the Action's own audit-mode refusal in `action.yml` and `docs/how-to/install-the-plugin-and-the-ci-action.md`; okf validate --strict passes; the root README names both packages and links kmaudit's own README",
       "seen_by": "operator"
     }
   ]
