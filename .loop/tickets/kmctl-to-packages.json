@@ -3,7 +3,7 @@
   "slug": "kmctl-to-packages",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -82,8 +82,27 @@
   ],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "7c836917609da9a1449d487f79c48749f88fc7a59bc83407b2d53e78253dfb88",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "e00907b0150676b7d33f954e6afabca8ce4a13bb5e410cd408804c69e2e51287",
+    "started_at": "2026-11-14T19:45:21+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "e00907b0150676b7d33f954e6afabca8ce4a13bb5e410cd408804c69e2e51287",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -98,5 +117,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T19:43:10+00:00"
+  "at": "2026-11-14T19:45:21+00:00"
 }
