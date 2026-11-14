@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "stores before schema step 5 printed 'unavailable'",
+      "anchor": "packages/kmaudit/src/kmaudit/briefing.py:61",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "the counts test did not store a check or feedback, so checks and feedback were never compared where they could differ",
+      "anchor": "packages/kmaudit/tests/test_briefing.py:59",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "--json printed plain text on an error and the docs said 'nothing' for no namespace",
+      "anchor": "packages/kmaudit/src/kmaudit/cli.py:1093",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "9c713bd4a8b1da46b16d1b324af4bebd61787597262fc41bf9640b90ef86291b",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T14:27:44+00:00"
+}
