@@ -3,7 +3,7 @@
   "slug": "release-notes-hermes",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -47,8 +47,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "f5d415ed30545be26a9cb8b3cc414a7100c76318c8ddf6ebeec7fb2fca593a94",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "8b9e4405f701b4ec486b6570c74fb0d164a1a4e2ff77276065b15f2400948905",
+    "started_at": "2026-11-14T19:49:35+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "8b9e4405f701b4ec486b6570c74fb0d164a1a4e2ff77276065b15f2400948905",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -63,5 +82,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T19:49:28+00:00"
+  "at": "2026-11-14T19:49:35+00:00"
 }
