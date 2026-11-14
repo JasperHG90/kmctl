@@ -1,6 +1,6 @@
 """The release version: one source in ``apm/apm.yml``, and ``scripts/release.py`` (ADR 0012).
 
-``pyproject.toml`` reads the version from ``apm/apm.yml``, kmctl's APM package
+``packages/kmctl/pyproject.toml`` reads the version from ``apm/apm.yml``, kmctl's APM package
 (ADR 0014), so a build needs no git history. ``scripts/release.py`` reads, writes and
 compares that version for the release workflows, and points the docs' install
 lines at the release tag. It never commits or tags.
@@ -22,10 +22,15 @@ from scripts.release import APM_DOC, APM_FILES, COPIER, DOC_FILES, HOOKS, MANIFE
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "release.py"
+#: kmctl's package, whose pyproject reads the version two folders up (ADR 0044).
+KMCTL = Path("packages/kmctl")
 GIT = ["git", "-c", "user.email=o@e.com", "-c", "user.name=O"]
+#: Every release after v0.12.1 builds kmctl from this folder (ADR 0044).
+SUBDIRECTORY = "#subdirectory=packages/kmctl"
 # The six lines `set` points at the release tag, as they start in the docs.
 INSTALL_RE = re.compile(
-    r"^\s*uv tool install git\+https://github\.com/JasperHG90/kmctl(@\S+)?$",
+    r"^\s*uv tool install git\+https://github\.com/JasperHG90/kmctl(@[^\s#]+)?"
+    r"(#subdirectory=packages/kmctl)?$",
     re.MULTILINE,
 )
 USES_RE = re.compile(r"^\s*- uses: JasperHG90/kmctl@(\S+)$", re.MULTILINE)
@@ -49,24 +54,25 @@ def _build(project: Path, out: Path) -> list[str]:
 
 
 def test_version_source_is_the_apm_package() -> None:
-    """``pyproject.toml`` sets no fixed version; hatchling's regex source reads apm/apm.yml."""
-    data = tomllib.loads((ROOT / "pyproject.toml").read_text())
+    """kmctl's ``pyproject.toml`` sets no fixed version; hatchling's regex source reads apm/apm.yml."""
+    data = tomllib.loads((ROOT / KMCTL / "pyproject.toml").read_text())
+    manifest = f"../../{MANIFEST.as_posix()}"
 
     assert "version" not in data["project"]
     assert "version" in data["project"]["dynamic"]
     source = data["tool"]["hatch"]["version"]
     assert source["source"] == "regex"
-    assert source["path"] == MANIFEST.as_posix()
+    assert source["path"] == manifest
     # A local uv run rebuilds kmctl when the manifest changes.
-    assert {"file": MANIFEST.as_posix()} in data["tool"]["uv"]["cache-keys"]
+    assert {"file": manifest} in data["tool"]["uv"]["cache-keys"]
     assert {"file": "pyproject.toml"} in data["tool"]["uv"]["cache-keys"]
 
 
 def test_version_source_builds_the_manifest_version(tmp_path: Path) -> None:
-    """``uv build`` of this repository gives a wheel and sdist at apm/apm.yml's version."""
+    """``uv build`` of kmctl's package gives a wheel and sdist at apm/apm.yml's version."""
     version = _manifest_version(ROOT)
 
-    names = _build(ROOT, tmp_path)
+    names = _build(ROOT / KMCTL, tmp_path)
 
     assert names == [f"kmctl-{version}-py3-none-any.whl", f"kmctl-{version}.tar.gz"]
 
@@ -75,17 +81,15 @@ def test_version_source_follows_a_changed_manifest(tmp_path: Path) -> None:
     """A copy of the project with apm/apm.yml at another version builds that version."""
     project = tmp_path / "project"
     project.mkdir()
-    for name in ("pyproject.toml", "README.md"):
-        shutil.copy(ROOT / name, project / name)
-    for folder in ("src", "apm"):
+    for folder in (KMCTL, Path("apm")):
         shutil.copytree(
             ROOT / folder,
             project / folder,
-            ignore=shutil.ignore_patterns("__pycache__"),
+            ignore=shutil.ignore_patterns("__pycache__", "tests"),
         )
     _set_apm_version(project / MANIFEST, "9.8.7")
 
-    names = _build(project, tmp_path / "dist")
+    names = _build(project / KMCTL, tmp_path / "dist")
 
     assert names == ["kmctl-9.8.7-py3-none-any.whl", "kmctl-9.8.7.tar.gz"]
 
@@ -377,7 +381,9 @@ def _hook_refs(root: Path) -> list[str]:
     """The refs the install hints in the Claude hook's hooks.json name."""
     text = (root / HOOKS).read_text()
     return re.findall(
-        r"git\+https://github\.com/JasperHG90/kmctl@(v[0-9a-z.]+?)\.?'", text
+        r"git\+https://github\.com/JasperHG90/kmctl@(v[0-9a-z.]+?)"
+        r"#subdirectory=packages/kmctl\.?'",
+        text,
     )
 
 
@@ -392,6 +398,30 @@ def test_release_py_set_rewrites_the_hooks_json_ref(tmp_path: Path) -> None:
     assert res.returncode == 0, res.stderr
     assert _hook_refs(root) == ["v0.3.0rc1"] * 2
     assert f"wrote {HOOKS}" in res.stdout.splitlines()
+
+
+def test_release_py_set_keeps_the_install_subdirectory(tmp_path: Path) -> None:
+    """Each install line and hook hint ``set`` pins builds from packages/kmctl, once, after one set or two."""
+    root = _repo(tmp_path)
+    for rel in (*DOC_FILES, APM_DOC, HOOKS):
+        # A line without the fragment, as before the move, gains it.
+        path = root / rel
+        path.write_text(path.read_text().replace(SUBDIRECTORY, ""))
+
+    for version in ("0.13.0", "0.14.0rc1"):
+        assert _run(root, "set", version).returncode == 0
+        installs = [
+            m
+            for rel in (*DOC_FILES, APM_DOC)
+            for m in INSTALL_RE.finditer((root / rel).read_text())
+        ]
+        assert len(installs) == 4
+        for m in installs:
+            assert (m.group(1), m.group(2)) == (f"@v{version}", SUBDIRECTORY)
+        assert _hook_refs(root) == [f"v{version}"] * 2
+        hooks = (root / HOOKS).read_text()
+        assert hooks.count(f"@v{version}{SUBDIRECTORY}") == 2
+        assert SUBDIRECTORY * 2 not in hooks
 
 
 def _kmctl_ref_default(root: Path) -> str:

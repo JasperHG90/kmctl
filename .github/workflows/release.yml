@@ -113,7 +113,7 @@ jobs:
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: false
-      # tests/test_starter.py runs the template's just recipes.
+      # packages/kmctl/tests/test_starter.py runs the template's just recipes.
       - name: Install just
         run: uv tool install rust-just==1.59.0
       - run: uv run ruff check
@@ -141,7 +141,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          uv build -o dist
+          uv build --package kmctl -o dist
           for file in dist/*; do
             case "$(basename "$file")" in
               *-"$VERSION"-*.whl | *-"$VERSION".tar.gz) ;;
@@ -149,7 +149,7 @@ jobs:
             esac
           done
       - run: uvx twine check dist/*
-      - run: uv run scripts/check_wheel.py dist/*.whl
+      - run: uv run scripts/check_wheel.py dist/*.whl --pyproject packages/kmctl/pyproject.toml
       - name: Smoke-test the wheel
         env:
           VERSION: ${{ needs.resolve.outputs.version }}

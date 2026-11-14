@@ -11,8 +11,8 @@ status: stable
 
 # Architecture overview
 
-kmctl has four parts (manifesto, Parts). The CLI in `src/kmctl/` does every
-step a script can do and is the only part that writes knowledge. The APM
+kmctl has four parts (manifesto, Parts). The CLI in `packages/kmctl/src/kmctl/`
+does every step a script can do and is the only part that writes knowledge. The APM
 package in `apm/` (skills, the audit agent and the knowledge rules) calls the
 CLI and holds no logic of its own beyond relaying it. The action in
 `action.yml` and `action/` calls the CLI in its default checks mode; its
@@ -52,7 +52,7 @@ flowchart LR
         judgePy["judge.py, settings.py, tracing.py<br/>kmaudit judge (off by default)"]
     end
 
-    subgraph cli["src/kmctl/ (kmctl CLI)"]
+    subgraph cli["packages/kmctl/src/kmctl/ (kmctl CLI)"]
         app["__init__.py<br/>Typer app"]
         pinPy["pin.py<br/>hand-off to the lock's pin,<br/>newer-release line"]
         scaffold["scaffold.py<br/>init"]
@@ -189,18 +189,18 @@ flowchart LR
     releaseYml -- "set: version, docs' install lines" --> releasePy
     releasePy -- "write: version,<br/>and its copies in the root apm.yml<br/>and the two sub-packages" --> apmPkg
     releasePy -- "write: kmctl_ref default vX.Y.Z" --> starter
-    releaseYml -- "uv build, then check" --> wheelChecks
+    releaseYml -- "uv build --package kmctl, then check" --> wheelChecks
     releaseYml -- "commits it on release/vX.Y.Z,<br/>gh pr create" --> apmPkg
     apmPkg -- "merged to main" --> releaseTag
     releaseTag -- "compare old and new" --> releasePy
-    releaseTag -- "uv build, then check" --> wheelChecks
+    releaseTag -- "uv build --package kmctl, then check" --> wheelChecks
     releaseTag -- "tag after the build,<br/>gh release create" --> ghRelease
     app -. "kmctl --version reads it<br/>through pyproject's regex source" .-> apmPkg
 ```
 
 ## The CLI
 
-`src/kmctl/__init__.py` holds the Typer app and only parses, prints and sets
+`packages/kmctl/src/kmctl/__init__.py` holds the Typer app and only parses, prints and sets
 exit codes. Before any verb, `main` calls `pin.py`: when the project's
 `apm.lock.yaml` pins another kmctl release, it runs that release through
 `uvx` at the lock's commit with `KMCTL_PINNED=1` and exits with its code
@@ -265,7 +265,7 @@ prints a JSON Schema built from it, so the schema is what kmctl writes.
 `supersede.py` and `verify.py` read fields through it; kmaudit has its own
 reader, `frontmatter.py`.
 `kinds.py` names each kind's fields itself and cites `okf.py`'s
-`ALLOWED_FIELDS` for where each comes from, and `tests/test_schema.py` checks
+`ALLOWED_FIELDS` for where each comes from, and `packages/kmctl/tests/test_schema.py` checks
 that every field in the schema it builds is allowed, so the fields kmctl uses
 are the ones the OKF v0.2 spec defines plus `handoff_key` and `checked` (I4,
 ADR 0006, ADR 0009, ADR 0027).
@@ -366,10 +366,21 @@ install kmctl from the action's own checkout.
 ## Releases
 
 `apm/apm.yml` holds the one version, and `scripts/release.py set` copies
-it into the root, Claude and Antigravity `apm.yml` files; `pyproject.toml`
-reads it from `apm/apm.yml` with hatchling's `regex` version source, so `kmctl --version`, the package
-tag a consumer's `apm.yml` names and a build from a download with no
-`.git` agree (ADR 0012, ADR 0014).
+it into the root, Claude and Antigravity `apm.yml` files;
+`packages/kmctl/pyproject.toml` reads it from `../../apm/apm.yml` with
+hatchling's `regex` version source, so `kmctl --version`, the package tag a
+consumer's `apm.yml` names and a build from a download with no `.git` agree
+(ADR 0012, ADR 0014).
+
+The repository is a uv workspace (ADR 0044). The root `pyproject.toml`
+installs nothing (`[tool.uv] package = false`) and lists `packages/kmctl`
+and `packages/kmaudit` as members, with one `uv.lock`; `uv run pytest` at
+the root runs `tests/` (the repository's own files: workflows, release
+scripts, rules and skills) and both packages' tests.
+`packages/kmctl/hatch_build.py` puts `apm/`'s skills, agents and rules in
+the wheel, from `../../apm` in a checkout or the sdist's copy. Releases
+after v0.12.1 install from `#subdirectory=packages/kmctl`; the action
+installs that folder of its own checkout.
 
 - `.github/workflows/release.yml` runs by hand. It works out the version with
   `scripts/next_release_version.py`, refuses a real run off `main` or a tag
@@ -391,7 +402,7 @@ tag a consumer's `apm.yml` names and a build from a download with no
 - The tag is also a release of kmctl-starter, the copier template in
   `copier.yml` and `starter/` (ADR 0025): `uvx copier copy
   gh:JasperHG90/kmctl` renders the newest tag, whose `kmctl_ref` default is
-  that release. `tests/test_starter.py` renders it, and bootstraps a
+  that release. `packages/kmctl/tests/test_starter.py` renders it, and bootstraps a
   generated project from a `file://` clone of the tree.
 
 ## Depicts
@@ -409,13 +420,13 @@ tag a consumer's `apm.yml` names and a build from a download with no
   `kmaudit checks submit`, `kmaudit checks run`, `kmaudit checks list`,
   `kmaudit judge`, `kmaudit ui`, `kmaudit coverage`, `kmaudit namespaces`,
   `kmaudit briefing`, `kmaudit guard`.
-- Modules: `src/kmctl/__init__.py`, `scaffold.py`, `checks.py`,
+- Modules: `packages/kmctl/src/kmctl/__init__.py`, `scaffold.py`, `checks.py`,
   `briefing.py`, `review_due.py`, `handoffs.py`, `concepts.py`,
   `docs.py`, `docs_index.py`, `supersede.py`, `mv.py`, `verify.py`, `summary.py` (the
-  summary's freshness rule and ack), `src/kmctl/plugin.py` (the hook and MCP
-  writers), `src/kmctl/antigravity.py` (the Antigravity plugin folder),
-  `src/kmctl/opencode.py` (the OpenCode agents, rules and briefing plugin),
-  `src/kmctl/doctor.py` (the install checks), `src/kmctl/pin.py` (the
+  summary's freshness rule and ack), `packages/kmctl/src/kmctl/plugin.py` (the hook and MCP
+  writers), `packages/kmctl/src/kmctl/antigravity.py` (the Antigravity plugin folder),
+  `packages/kmctl/src/kmctl/opencode.py` (the OpenCode agents, rules and briefing plugin),
+  `packages/kmctl/src/kmctl/doctor.py` (the install checks), `packages/kmctl/src/kmctl/pin.py` (the
   hand-off to the lock's pin and the newer-release line),
   `okf.py`, `kinds.py`; `packages/kmaudit/src/kmaudit/` (`cli.py`, `namespaces.py`, `briefing.py`,
   `verbs.py`, `sections.py`, `instructions.py`, `models.py`, `store.py`,

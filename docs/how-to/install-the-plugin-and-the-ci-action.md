@@ -46,7 +46,7 @@ How the commands below were run:
 ### 1. Install kmctl
 
 ```
-uv tool install git+https://github.com/JasperHG90/kmctl@v0.12.1
+uv tool install git+https://github.com/JasperHG90/kmctl@v0.12.1#subdirectory=packages/kmctl
 ```
 
 The kmctl repository is private for now, so this needs a GitHub account
@@ -508,7 +508,7 @@ its `vX.Y.Z` tag. To move to a newer one:
 1. Install kmctl at the new tag, replacing `vX.Y.Z` with it:
 
    ```
-   uv tool install --force git+https://github.com/JasperHG90/kmctl@vX.Y.Z
+   uv tool install --force git+https://github.com/JasperHG90/kmctl@vX.Y.Z#subdirectory=packages/kmctl
    ```
 
    `--force` replaces the kmctl you have. `kmctl --version` then prints the

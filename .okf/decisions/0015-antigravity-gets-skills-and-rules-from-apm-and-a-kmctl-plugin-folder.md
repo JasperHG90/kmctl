@@ -8,8 +8,8 @@ generated:
   at: 2026-10-16T21:27:04Z
 status: stable
 sources:
-  - resource: "src/kmctl/antigravity.py"
-  - resource: "src/kmctl/plugin.py"
+  - resource: "packages/kmctl/src/kmctl/antigravity.py"
+  - resource: "packages/kmctl/src/kmctl/plugin.py"
 ---
 
 # ADR 0015: Antigravity gets skills and rules from APM and a kmctl plugin folder

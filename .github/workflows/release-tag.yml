@@ -85,7 +85,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          uv build -o dist
+          uv build --package kmctl -o dist
           for file in dist/*; do
             case "$(basename "$file")" in
               *-"$VERSION"-*.whl | *-"$VERSION".tar.gz) ;;
@@ -93,7 +93,7 @@ jobs:
             esac
           done
           uvx twine check dist/*
-          uv run scripts/check_wheel.py dist/*.whl
+          uv run scripts/check_wheel.py dist/*.whl --pyproject packages/kmctl/pyproject.toml
           uv run scripts/smoke_wheel.py dist/*.whl --version "$VERSION"
           (cd dist && sha256sum ./* > SHA256SUMS)
       - name: Push the annotated tag

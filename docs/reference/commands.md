@@ -284,7 +284,7 @@ Exit code: 2 when `--json` and `--format antigravity` are given together.
 
 Print the JSON Schema (draft 2020-12) of one document kind's front matter, or
 list the kinds with where each lives and what it is for. The schema is built
-from kmctl's own table of kinds (`src/kmctl/kinds.py`) when you run it, so it
+from kmctl's own table of kinds (`packages/kmctl/src/kmctl/kinds.py`) when you run it, so it
 is what kmctl writes: the fields by their OKF names, which are required, the
 legal values and what each one means. Read it before you write a concept or a
 page by hand. Nothing checks a file against it yet.
@@ -705,7 +705,7 @@ already hold yours:
   hook goes into the `settings.json` in `$CLAUDE_CONFIG_DIR` (by default
   `~/.claude/`) and the server into the user `.claude.json`. The hook
   prints how to install kmctl, at the release the package came from
-  (`uv tool install git+https://github.com/JasperHG90/kmctl@vX.Y.Z`), and
+  (`uv tool install git+https://github.com/JasperHG90/kmctl@vX.Y.Z#subdirectory=packages/kmctl`), and
   exits 0 when kmctl is missing or fails.
   Claude Code asks you to approve a project `.mcp.json` server once.
 - For `antigravity`: the skills to `.agents/skills/`; the four rules to

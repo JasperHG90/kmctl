@@ -8,7 +8,7 @@ generated:
   at: 2026-10-19T19:49:49Z
 status: stable
 sources:
-  - resource: "src/kmctl/mv.py"
+  - resource: "packages/kmctl/src/kmctl/mv.py"
 ---
 
 # ADR 0034: kmctl mv renames a concept and rewrites the links to it

@@ -1,5 +1,5 @@
 ---
-paths: [".okf/**", "src/kmctl/**/*.py", "apm/.apm/**"]
+paths: [".okf/**", "packages/kmctl/src/kmctl/**/*.py", "apm/.apm/**"]
 ---
 
 # Diagrams stay current

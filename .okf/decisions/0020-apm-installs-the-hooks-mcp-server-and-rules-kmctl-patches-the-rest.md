@@ -11,8 +11,8 @@ sources:
   - resource: "apm/apm.yml"
   - resource: "apm/claude/apm.yml"
   - resource: "apm/antigravity/apm.yml"
-  - resource: "src/kmctl/plugin.py"
-  - resource: "src/kmctl/antigravity.py"
+  - resource: "packages/kmctl/src/kmctl/plugin.py"
+  - resource: "packages/kmctl/src/kmctl/antigravity.py"
   - resource: "scripts/sync_antigravity_rules.py"
 ---
 

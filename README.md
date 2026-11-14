@@ -70,7 +70,7 @@ old kmctl-starter repository.
 ### 1. Install the kmctl CLI
 
 ```
-uv tool install git+https://github.com/JasperHG90/kmctl@v0.12.1
+uv tool install git+https://github.com/JasperHG90/kmctl@v0.12.1#subdirectory=packages/kmctl
 ```
 
 One install serves every repository: when a repository's `apm.lock.yaml`
@@ -199,7 +199,7 @@ install; each `fail` line names its fix.
 Set `ref` in `apm.yml` to the new tag and run your `apm install` line and
 `kmctl plugin patch` again; the kmctl on PATH then runs the new pinned
 release. Install a newer CLI with
-`uv tool install --force git+https://github.com/JasperHG90/kmctl@vX.Y.Z`
+`uv tool install --force git+https://github.com/JasperHG90/kmctl@vX.Y.Z#subdirectory=packages/kmctl`
 only for its own fixes.
 
 ### Remove

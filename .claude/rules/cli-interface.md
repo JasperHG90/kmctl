@@ -1,5 +1,5 @@
 ---
-paths: ["src/kmctl/**", "tests/**/test_*cli*.py", "tests/**/test_*help*.py", "docs/reference/**"]
+paths: ["packages/kmctl/src/kmctl/**", "packages/kmctl/tests/**/test_*cli*.py", "packages/kmctl/tests/**/test_*help*.py", "docs/reference/**"]
 ---
 
 # The CLI interface

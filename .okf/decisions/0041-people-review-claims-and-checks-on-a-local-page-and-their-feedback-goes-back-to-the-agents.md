@@ -8,12 +8,12 @@ generated:
   at: 2026-11-12T07:00:00Z
 status: draft
 sources:
-  - resource: "src/kmctl/claims/feedback.py"
-  - resource: "src/kmctl/claims/ui.py"
-  - resource: "src/kmctl/claims/ui.html"
-  - resource: "src/kmctl/claims/store.py"
-  - resource: "src/kmctl/claims/check_verbs.py"
-  - resource: "src/kmctl/claims/verbs.py"
+  - resource: "packages/kmaudit/src/kmaudit/feedback.py"
+  - resource: "packages/kmaudit/src/kmaudit/ui.py"
+  - resource: "packages/kmaudit/src/kmaudit/ui.html"
+  - resource: "packages/kmaudit/src/kmaudit/store.py"
+  - resource: "packages/kmaudit/src/kmaudit/check_verbs.py"
+  - resource: "packages/kmaudit/src/kmaudit/verbs.py"
 ---
 
 # ADR 0041: People review claims and checks on a local page, and their feedback goes back to the agents

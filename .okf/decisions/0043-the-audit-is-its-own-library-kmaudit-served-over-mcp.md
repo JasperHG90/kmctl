@@ -89,3 +89,10 @@ refused. The writing verbs name their namespace with `--path`, which `todo`
 prints. `.kmctl/audit.sqlite` is copied into the `.okf` namespace on first
 use and left as it was; settings stay at the kmctl path for now.
 
+
+## Amended, 2026-11-14
+
+kmctl no longer stays at the root: it moved to `packages/kmctl/` beside
+kmaudit, and the root became a uv workspace that installs nothing
+(ADR 0044). Its install URLs for releases after v0.12.1 carry
+`#subdirectory=packages/kmctl`. The rest of this decision holds.

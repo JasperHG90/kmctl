@@ -44,14 +44,14 @@ jobs:
     needs: knowledge
     runs-on: ubuntu-latest
     steps:
-      # tests/test_starter.py runs the template's just recipes.
+      # packages/kmctl/tests/test_starter.py runs the template's just recipes.
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: false
       - name: Install just
         run: uv tool install rust-just==1.59.0
-      # The repository root, as the gate's bare uv run pytest: both packages'
-      # tests, tests/ and packages/kmaudit/tests/ (ADR 0043).
+      # The repository root, as the gate's bare uv run pytest: tests/,
+      # packages/kmctl/tests/ and packages/kmaudit/tests/ (ADR 0044).
       - uses: JasperHG90/toiminnot/actions/pytest@dc32088cfc239bd550283512de713872370280c2 # v2.0.0
         with:
           directory: .
@@ -61,7 +61,7 @@ jobs:
   # The starter template (copier.yml, starter/): render a project from this
   # checkout and run its just bootstrap, with git pointing kmctl's GitHub URL
   # at a file:// clone of the checkout, so the CLI and the package are this
-  # commit's (tests/test_starter.py). The other tests job runs the render
+  # commit's (packages/kmctl/tests/test_starter.py). The other tests job runs the render
   # tests; this one runs the integration test that bootstraps.
   starter:
     needs: knowledge
@@ -74,4 +74,4 @@ jobs:
       - name: Install just
         run: uv tool install rust-just==1.59.0
       - name: Bootstrap a generated project
-        run: uv run pytest tests/test_starter.py -m integration
+        run: uv run pytest packages/kmctl/tests/test_starter.py -m integration

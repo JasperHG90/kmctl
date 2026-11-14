@@ -8,9 +8,9 @@ generated:
   at: 2026-10-18T04:28:18Z
 status: stable
 sources:
-  - resource: "src/kmctl/opencode.py"
-  - resource: "src/kmctl/plugin.py"
-  - resource: "src/kmctl/doctor.py"
+  - resource: "packages/kmctl/src/kmctl/opencode.py"
+  - resource: "packages/kmctl/src/kmctl/plugin.py"
+  - resource: "packages/kmctl/src/kmctl/doctor.py"
 ---
 
 # ADR 0024: OpenCode gets the package from APM and its agents, rules and briefing from kmctl plugin patch

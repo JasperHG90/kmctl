@@ -8,9 +8,9 @@ generated:
   at: 2026-10-17T07:02:34Z
 status: stable
 sources:
-  - resource: "src/kmctl/antigravity.py"
-  - resource: "src/kmctl/plugin.py"
-  - resource: "src/kmctl/doctor.py"
+  - resource: "packages/kmctl/src/kmctl/antigravity.py"
+  - resource: "packages/kmctl/src/kmctl/plugin.py"
+  - resource: "packages/kmctl/src/kmctl/doctor.py"
 ---
 
 # ADR 0018: kmctl runs okf's Stop check for Antigravity

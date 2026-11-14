@@ -1,10 +1,13 @@
 # Hooks other repositories can use: list this repository under repos: in
 # their .pre-commit-config.yaml (ADR 0022). Add args: [--fix] to rewrite the
 # generated docs/ folder indexes as you commit.
+# pre-commit and prek install the repository root, which builds an empty
+# wheel, then kmctl from packages/kmctl (ADR 0044).
 - id: kmctl-check
   name: kmctl check
   description: Check docs/ and .okf/ indexes, docs front matter and links; with --fix, rewrite the generated docs folder indexes first.
   entry: kmctl check
   language: python
+  additional_dependencies: ["./packages/kmctl"]
   pass_filenames: false
   always_run: true

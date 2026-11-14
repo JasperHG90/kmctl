@@ -1,5 +1,5 @@
 ---
-paths: [".okf/manifesto.md", "tests/**"]
+paths: [".okf/manifesto.md", "tests/**", "packages/kmctl/tests/**"]
 ---
 
 # Manifesto invariants

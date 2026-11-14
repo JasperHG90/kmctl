@@ -8,9 +8,9 @@ generated:
   at: 2026-10-17T16:57:28Z
 status: stable
 sources:
-  - resource: "src/kmctl/docs_index.py"
-  - resource: "src/kmctl/checks.py"
-  - resource: "src/kmctl/review_due.py"
+  - resource: "packages/kmctl/src/kmctl/docs_index.py"
+  - resource: "packages/kmctl/src/kmctl/checks.py"
+  - resource: "packages/kmctl/src/kmctl/review_due.py"
 ---
 
 # ADR 0022: Docs pages carry optional OKF front matter and generated folder indexes

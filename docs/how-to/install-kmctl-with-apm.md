@@ -36,7 +36,7 @@ in mind:
 How the APM install below was run: with APM 0.33.0 in a scratch
 repository, installing the package from a local git server that held this
 repository's files, and with okf-skills from GitHub.
-`tests/test_plugin_patch.py` runs the same install, then
+`packages/kmctl/tests/test_plugin_patch.py` runs the same install, then
 `kmctl plugin patch`.
 
 ## Before you start
@@ -57,8 +57,12 @@ repository's files, and with okf-skills from GitHub.
 ### 1. Install the kmctl CLI
 
 ```
-uv tool install git+https://github.com/JasperHG90/kmctl@v0.12.1
+uv tool install git+https://github.com/JasperHG90/kmctl@v0.12.1#subdirectory=packages/kmctl
 ```
+
+Releases after v0.12.1 build kmctl from the repository's `packages/kmctl`
+folder, which `#subdirectory=packages/kmctl` names. To install v0.12.1 or
+older, leave that part out.
 
 One kmctl on your PATH serves every repository. When a repository's
 `apm.lock.yaml` pins another kmctl release, the kmctl on PATH runs that
@@ -69,6 +73,9 @@ offline. Install a newer CLI when you want its own fixes, never once per
 repository. In such a repository `kmctl --version` prints the pinned
 version and says where it comes from, for example
 `kmctl 0.10.0 (pinned by apm.lock.yaml; kmctl 0.11.0 is on PATH)`.
+A kmctl at v0.12.1 or older on your PATH cannot run a pin to a later
+release, because it looks for kmctl at the repository root; install a newer
+CLI first.
 
 ### 2. Add the kmctl package
 

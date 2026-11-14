@@ -106,7 +106,15 @@ def test_version_matches_exactly(printed: str, expect: str, ok: bool) -> None:
 def test_the_wheel_built_from_this_tree_passes(tmp_path: Path) -> None:
     """The real kmctl wheel passes both wheel checks; installing it fetches typer and pyyaml."""
     build = subprocess.run(
-        ["uv", "build", "-q", "--wheel", "-o", str(tmp_path), str(ROOT)],
+        [
+            "uv",
+            "build",
+            "-q",
+            "--wheel",
+            "-o",
+            str(tmp_path),
+            str(ROOT / "packages" / "kmctl"),
+        ],
         capture_output=True,
         text=True,
         check=False,

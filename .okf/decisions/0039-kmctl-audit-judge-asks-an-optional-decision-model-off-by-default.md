@@ -8,9 +8,9 @@ generated:
   at: 2026-11-11T09:43:40Z
 status: stable
 sources:
-  - resource: "src/kmctl/judge.py"
-  - resource: "src/kmctl/audit_settings.py"
-  - resource: "src/kmctl/tracing.py"
+  - resource: "packages/kmaudit/src/kmaudit/judge.py"
+  - resource: "packages/kmaudit/src/kmaudit/settings.py"
+  - resource: "packages/kmaudit/src/kmaudit/tracing.py"
 ---
 
 # ADR 0039: kmctl audit judge asks an optional decision model, off by default

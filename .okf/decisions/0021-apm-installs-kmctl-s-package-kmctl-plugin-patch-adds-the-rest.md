@@ -8,8 +8,8 @@ generated:
   at: 2026-10-17T15:28:49Z
 status: stable
 sources:
-  - resource: "src/kmctl/plugin.py"
-  - resource: "src/kmctl/__init__.py"
+  - resource: "packages/kmctl/src/kmctl/plugin.py"
+  - resource: "packages/kmctl/src/kmctl/__init__.py"
   - resource: "README.md"
 ---
 

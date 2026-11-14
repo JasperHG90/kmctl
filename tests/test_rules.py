@@ -22,7 +22,7 @@ PLANNED = (
     ".okf/prototypes/",
     ".okf/handoffs/",
     "docs/",
-    "src/kmctl/",
+    "packages/",
     ".github/workflows/",
     "action.yml",
 )

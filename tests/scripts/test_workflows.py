@@ -26,6 +26,10 @@ PROMPTS = ROOT / ".github" / "prompts"
 MEMBERS = 'contains(fromJSON(\'["MEMBER","OWNER","COLLABORATOR"]\'), github.event.comment.author_association)'
 # The job in each workflow that may write; every other job reads only.
 WRITERS = {RELEASE: {"bump"}, RELEASE_TAG: {"tag"}}
+# kmctl builds from packages/kmctl (ADR 0044), so check_wheel reads its pyproject.
+CHECK_WHEEL = (
+    "uv run scripts/check_wheel.py dist/*.whl --pyproject packages/kmctl/pyproject.toml"
+)
 
 
 def _load(path: Path) -> dict[Any, Any]:
@@ -108,9 +112,9 @@ def test_release_builds_and_checks_at_the_release_version() -> None:
 
     order = [
         _index(steps, 'uv run scripts/release.py set "$VERSION"'),
-        _index(steps, "uv build"),
+        _index(steps, "uv build --package kmctl -o dist"),
         _index(steps, "uvx twine check dist/*"),
-        _index(steps, "uv run scripts/check_wheel.py dist/*.whl"),
+        _index(steps, CHECK_WHEEL),
         _index(steps, 'uv run scripts/smoke_wheel.py dist/*.whl --version "$VERSION"'),
     ]
     assert order == sorted(order)
@@ -164,7 +168,7 @@ def test_release_tag_builds_before_it_tags_and_publishes_the_release() -> None:
 
     order = [
         _index(steps, "uv run scripts/release.py compare"),
-        _index(steps, "uv build"),
+        _index(steps, "uv build --package kmctl -o dist"),
         _index(steps, 'git tag -a "v$VERSION"'),
         _index(steps, 'gh release create "v$VERSION"'),
     ]
@@ -172,7 +176,7 @@ def test_release_tag_builds_before_it_tags_and_publishes_the_release() -> None:
     build = steps[order[1]]["run"]
     for needle in (
         "uvx twine check dist/*",
-        "uv run scripts/check_wheel.py dist/*.whl",
+        CHECK_WHEEL,
         'uv run scripts/smoke_wheel.py dist/*.whl --version "$VERSION"',
         "sha256sum ./* > SHA256SUMS",
     ):
@@ -301,7 +305,11 @@ def test_ci_starter_job_bootstraps_a_generated_project() -> None:
 
     assert any(s.get("uses", "").startswith("astral-sh/setup-uv@") for s in steps)
     assert "uv tool install rust-just==" in _runs(CI, "starter")
-    assert steps[-1]["run"] == "uv run pytest tests/test_starter.py -m integration"
+    assert (
+        steps[-1]["run"]
+        == "uv run pytest packages/kmctl/tests/test_starter.py -m integration"
+    )
+    assert (ROOT / "packages" / "kmctl" / "tests" / "test_starter.py").is_file()
 
 
 def _installs_just_before(path: Path, job: str, pytest_step: int) -> bool:
@@ -313,7 +321,7 @@ def _installs_just_before(path: Path, job: str, pytest_step: int) -> bool:
 
 
 def test_ci_and_release_test_jobs_install_just() -> None:
-    """The default tier runs the template's just recipes (tests/test_starter.py), so both test jobs install just first."""
+    """The default tier runs the template's just recipes (packages/kmctl/tests/test_starter.py), so both test jobs install just first."""
     ci = _steps(CI, "tests")
     [ci_pytest] = [
         i for i, s in enumerate(ci) if "toiminnot/actions/pytest@" in s.get("uses", "")

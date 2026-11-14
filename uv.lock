@@ -11,6 +11,7 @@ resolution-markers = [
 members = [
     "kmaudit",
     "kmctl",
+    "kmctl-workspace",
 ]
 
 [[package]]
@@ -920,27 +921,12 @@ provides-extras = ["tracing"]
 
 [[package]]
 name = "kmctl"
-source = { editable = "." }
+source = { editable = "packages/kmctl" }
 dependencies = [
     { name = "httpx" },
     { name = "pydantic" },
     { name = "pyyaml" },
     { name = "typer" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "copier" },
-    { name = "ipykernel" },
-    { name = "jsonschema" },
-    { name = "kmaudit", extra = ["tracing"] },
-    { name = "opentelemetry-exporter-otlp-proto-http" },
-    { name = "opentelemetry-sdk" },
-    { name = "packaging" },
-    { name = "pydantic-ai-slim", extra = ["openai"] },
-    { name = "pytest" },
-    { name = "respx" },
-    { name = "ruff" },
 ]
 
 [package.metadata]
@@ -951,12 +937,36 @@ requires-dist = [
     { name = "typer", specifier = ">=0.27.3" },
 ]
 
+[[package]]
+name = "kmctl-workspace"
+version = "0.0.0"
+source = { virtual = "." }
+
+[package.dev-dependencies]
+dev = [
+    { name = "copier" },
+    { name = "ipykernel" },
+    { name = "jsonschema" },
+    { name = "kmaudit", extra = ["tracing"] },
+    { name = "kmctl" },
+    { name = "opentelemetry-exporter-otlp-proto-http" },
+    { name = "opentelemetry-sdk" },
+    { name = "packaging" },
+    { name = "pydantic-ai-slim", extra = ["openai"] },
+    { name = "pytest" },
+    { name = "respx" },
+    { name = "ruff" },
+]
+
+[package.metadata]
+
 [package.metadata.requires-dev]
 dev = [
     { name = "copier", specifier = ">=9.19.1" },
     { name = "ipykernel", specifier = ">=7.4.0" },
     { name = "jsonschema", specifier = ">=4.26.0" },
     { name = "kmaudit", extras = ["tracing"], editable = "packages/kmaudit" },
+    { name = "kmctl", editable = "packages/kmctl" },
     { name = "opentelemetry-exporter-otlp-proto-http", specifier = "==1.45.1" },
     { name = "opentelemetry-sdk", specifier = "==1.45.1" },
     { name = "packaging", specifier = ">=26.3" },

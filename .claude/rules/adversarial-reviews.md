@@ -1,5 +1,5 @@
 ---
-paths: ["src/**", "tests/**", "apm/.apm/**", ".okf/**", "docs/**", ".claude/**", "AGENTS.md"]
+paths: ["packages/**", "tests/**", "apm/.apm/**", ".okf/**", "docs/**", ".claude/**", "AGENTS.md"]
 ---
 
 <constraint name="adversarial-reviews">

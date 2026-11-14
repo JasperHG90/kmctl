@@ -254,13 +254,23 @@ def test_template_fills_version_install_and_compare(repo: Path) -> None:
             assert line in res.stdout
     assert (
         "uv tool install git+https://github.com/JasperHG90/kmctl@v0.3.0rc1"
-        in res.stdout
+        "#subdirectory=packages/kmctl\n" in res.stdout
     )
     assert "- uses: JasperHG90/kmctl@v0.3.0rc1" in res.stdout
     assert (
         "https://github.com/JasperHG90/kmctl/compare/v0.2.0...v0.3.0rc1" in res.stdout
     )
     assert "$" not in res.stdout
+
+
+def test_template_install_subdirectory_is_packages_kmctl() -> None:
+    """The release notes template installs the tag from packages/kmctl, where releases after v0.12.1 build (ADR 0044)."""
+    text = TEMPLATE.read_text()
+
+    assert (
+        "uv tool install git+https://github.com/JasperHG90/kmctl@$tag"
+        "#subdirectory=packages/kmctl\n" in text
+    )
 
 
 def test_first_release_has_no_compare_link(repo: Path) -> None:
