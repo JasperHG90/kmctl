@@ -33,7 +33,7 @@ CLI group. The audit code
 `src/kmctl/tracing.py` and the `audit` group in `src/kmctl/__init__.py`) moves
 to a uv workspace member, `new:packages/kmaudit/pyproject.toml`, with the code
 under `new:packages/kmaudit/src/kmaudit/__init__.py` and its tests under
-`new:packages/kmaudit/tests/conftest.py`. kmaudit carries its own copy of the
+`new:packages/kmaudit/tests/__init__.py`. kmaudit carries its own copy of the
 two front matter helpers it reads from `src/kmctl/okf.py`, so it imports
 nothing from kmctl. Its CLI keeps today's verbs under a `kmaudit` command
 (`kmaudit claims todo`, `kmaudit checks try`, ...), and kmctl loses its
@@ -71,7 +71,7 @@ installed and kmctl not, and `kmctl audit` no longer exists.
 - goal: G1
 - fixes: P1
 - needs: none
-- touches: `new:packages/kmaudit/pyproject.toml`, `new:packages/kmaudit/src/kmaudit/__init__.py`, `new:packages/kmaudit/src/kmaudit/store.py`, `new:packages/kmaudit/src/kmaudit/ui.html`, `new:packages/kmaudit/tests/__init__.py`, `new:packages/kmaudit/tests/conftest.py`, `new:packages/kmaudit/tests/test_store.py`, `new:packages/kmaudit/tests/fixtures/__init__.py`, `new:packages/kmaudit/tests/fixtures/audit_repo.py`, `src/kmctl/claims/*.py`, `src/kmctl/claims/ui.html`, `src/kmctl/judge.py`, `src/kmctl/audit_settings.py`, `src/kmctl/tracing.py`, `pyproject.toml`
+- touches: `new:packages/kmaudit/pyproject.toml`, `new:packages/kmaudit/src/kmaudit/__init__.py`, `new:packages/kmaudit/src/kmaudit/store.py`, `new:packages/kmaudit/src/kmaudit/ui.html`, `new:packages/kmaudit/tests/__init__.py`, `new:packages/kmaudit/tests/test_independent.py`, `new:packages/kmaudit/tests/fixtures/__init__.py`, `new:packages/kmaudit/tests/fixtures/audit_repo.py`, `src/kmctl/claims/*.py`, `src/kmctl/claims/ui.html`, `src/kmctl/judge.py`, `src/kmctl/audit_settings.py`, `src/kmctl/tracing.py`, `pyproject.toml`
 - checked by: a test that builds the kmaudit wheel, installs it into a new venv without kmctl and runs `kmaudit claims todo` on a fixture bundle; and a test that no module under packages/kmaudit imports kmctl
 - seen by: operator
 
