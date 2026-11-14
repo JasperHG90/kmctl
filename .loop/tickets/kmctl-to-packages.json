@@ -3,7 +3,7 @@
   "slug": "kmctl-to-packages",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 1,
+  "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -99,9 +99,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 1,
-    "binds": "e00907b0150676b7d33f954e6afabca8ce4a13bb5e410cd408804c69e2e51287",
-    "started_at": "2026-11-14T19:45:21+00:00",
+    "n": 2,
+    "binds": "8841228a1e81ddc2d51615f2625ebb73637bf4d4bfbd02e48e111fa3e707cb32",
+    "started_at": "2026-11-14T19:51:39+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -114,10 +114,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "e00907b0150676b7d33f954e6afabca8ce4a13bb5e410cd408804c69e2e51287",
+  "plan_hash": "8841228a1e81ddc2d51615f2625ebb73637bf4d4bfbd02e48e111fa3e707cb32",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -132,5 +132,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T19:51:36+00:00"
+  "at": "2026-11-14T19:51:39+00:00"
 }
