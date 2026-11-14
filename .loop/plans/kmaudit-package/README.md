@@ -41,8 +41,14 @@ nothing from kmctl. Its CLI keeps today's verbs under a `kmaudit` command
 (.kmctl/audit.sqlite); the next tickets in the epic move it, add
 namespaces, the MCP server and the slim CLI.
 
-The skills, agents and docs that call `kmctl audit` call `kmaudit` instead,
-and a decision record says why the audit left kmctl and where it is going.
+The agents' guard hook, the skills and agents that call `kmctl audit`, and
+the test pinning the hook change together with the removal, so no state has
+an agent hook calling a missing command. The docs, README and a decision
+record follow. Accepted decision records keep their history notes ("found by
+the first `kmctl audit checks` run" stays true), and the Action's own
+audit-mode refusal ("kmctl audit: refused for event ...") is a different
+audit and keeps its text. After this ticket kmaudit has no install route for
+users yet; the epic adds one before it leaves the integration branch.
 
 It worked when kmaudit's tests pass in a fresh environment that has kmaudit
 installed and kmctl not, and `kmctl audit` no longer exists.
@@ -65,7 +71,7 @@ installed and kmctl not, and `kmctl audit` no longer exists.
 - goal: G1
 - fixes: P1
 - needs: none
-- touches: `new:packages/kmaudit/pyproject.toml`, `new:packages/kmaudit/src/kmaudit/__init__.py`, `new:packages/kmaudit/src/kmaudit/store.py`, `new:packages/kmaudit/tests/conftest.py`, `new:packages/kmaudit/tests/test_store.py`, `src/kmctl/claims/store.py`, `src/kmctl/judge.py`, `src/kmctl/audit_settings.py`, `src/kmctl/tracing.py`, `pyproject.toml`
+- touches: `new:packages/kmaudit/pyproject.toml`, `new:packages/kmaudit/src/kmaudit/__init__.py`, `new:packages/kmaudit/src/kmaudit/store.py`, `new:packages/kmaudit/src/kmaudit/ui.html`, `new:packages/kmaudit/tests/__init__.py`, `new:packages/kmaudit/tests/conftest.py`, `new:packages/kmaudit/tests/test_store.py`, `new:packages/kmaudit/tests/fixtures/__init__.py`, `new:packages/kmaudit/tests/fixtures/audit_repo.py`, `src/kmctl/claims/*.py`, `src/kmctl/claims/ui.html`, `src/kmctl/judge.py`, `src/kmctl/audit_settings.py`, `src/kmctl/tracing.py`, `pyproject.toml`
 - checked by: a test that builds the kmaudit wheel, installs it into a new venv without kmctl and runs `kmaudit claims todo` on a fixture bundle; and a test that no module under packages/kmaudit imports kmctl
 - seen by: operator
 
@@ -74,26 +80,26 @@ installed and kmctl not, and `kmctl audit` no longer exists.
 - goal: G1
 - fixes: P1
 - needs: O1
-- touches: `pyproject.toml`, `.loop/config.toml`
-- checked by: `uv run pytest` at the root collects the tests under packages/kmaudit/tests and tests/ in one run
+- touches: `pyproject.toml`, `uv.lock`
+- checked by: kmaudit is a workspace source in the root dev group, so a plain `uv sync` installs it; `uv run pytest` at the root collects the tests under packages/kmaudit/tests and tests/ in one run
 - seen by: nobody
 
-### O3: kmctl has no audit group, extra or audit dependencies
+### O3: kmctl has no audit group or extra, and the agents' guard hook calls kmaudit
 - kind: support
 - goal: G2
 - fixes: P2
 - needs: O1
-- touches: `src/kmctl/__init__.py`, `pyproject.toml`, `tests/test_apm_package.py`
-- checked by: a test that `kmctl audit --help` exits 2 as an unknown command and that kmctl's metadata names no audit extra
+- touches: `src/kmctl/__init__.py`, `src/kmctl/claims/guard.py`, `pyproject.toml`, `tests/test_apm_package.py`, `apm/.apm/agents/kmctl-check-writer.md`, `apm/.apm/agents/kmctl-claims-extractor.md`, `apm/.apm/skills/extract-claims/SKILL.md`, `apm/.apm/skills/write-checks/SKILL.md`, `apm/.apm/skills/extract-claims/evals/evals.json`, `apm/.apm/skills/write-checks/evals/evals.json`
+- checked by: a test that `kmctl audit --help` exits 2 as an unknown command and that kmctl's metadata names no audit extra; `tests/test_apm_package.py` pins the agents' hook command as `kmaudit guard --allow GROUP`, and the guard lets through `kmaudit GROUP` commands only
 - seen by: operator
 
-### O4: Skills, agents, docs, the README and a decision record name kmaudit
+### O4: Docs, the README and a decision record name kmaudit
 - kind: support
 - goal: G2
 - fixes: P3
 - needs: O3
-- touches: `README.md`, `new:packages/kmaudit/README.md`, `AGENTS.md`, `apm/.apm/agents/kmctl-check-writer.md`, `apm/.apm/agents/kmctl-claims-extractor.md`, `apm/.apm/skills/extract-claims/SKILL.md`, `apm/.apm/skills/write-checks/SKILL.md`, `docs/reference/commands.md`, `.okf/manifesto.md`, `.okf/architecture/audit-pipeline.md`, `.okf/architecture/overview.md`, `new:.okf/decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp.md`
-- checked by: `git grep "kmctl audit"` outside .loop/, .okf/log.md, .okf/prototypes/ and superseded decision records finds nothing; okf validate --strict passes; the root README names both packages and links kmaudit's own README
+- touches: `README.md`, `new:packages/kmaudit/README.md`, `AGENTS.md`, `docs/reference/commands.md`, `.okf/manifesto.md`, `.okf/architecture/audit-pipeline.md`, `.okf/architecture/overview.md`, `.okf/architecture/index.md`, `apm/.apm/skills/extract-claims/evals/results.md`, `apm/.apm/skills/write-checks/evals/results.md`, `new:.okf/decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp.md`
+- checked by: `git grep "kmctl audit"` finds nothing outside .loop/, .okf/log.md, .okf/prototypes/, .okf/decisions/ (accepted records keep their history notes; superseded ones keep their text), and the Action's own audit-mode refusal in `action.yml` and `docs/how-to/install-the-plugin-and-the-ci-action.md`; okf validate --strict passes; the root README names both packages and links kmaudit's own README
 - seen by: operator
 
 ## Could invalidate this plan
