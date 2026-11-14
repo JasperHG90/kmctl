@@ -1,0 +1,17 @@
+source /tmp/loopctl-spike-6h4vx114/tree at 250aa19a; uv 0.13.7 (aarch64-unknown-linux-gnu)
+packages/kmctl/pyproject.toml hatch tables:
+  [tool.hatch.version]
+  path = "../../apm/apm.yml"
+  [tool.hatch.build.targets.wheel]
+  [tool.hatch.build.targets.wheel.hooks.custom]
+  apm-include = { ".apm/skills" = "kmctl/_skills", ".apm/agents" = "kmctl/_agents", "claude/.apm/instructions" = "kmctl/_rules" }
+  cache-keys = [{ file = "pyproject.toml" }, { file = "../../apm/apm.yml" }]
+  [tool.hatch.build.targets.sdist.force-include]
+  "../../apm/.apm/skills" = "apm/.apm/skills"
+  "../../apm/.apm/agents" = "apm/.apm/agents"
+  "../../apm/claude/.apm/instructions" = "apm/claude/.apm/instructions"
+  a sdist->wheel: PASS built .gitignore,kmctl-0.99.0-py3-none-any.whl,kmctl-0.99.0.tar.gz; sdist has 34 apm/ files; wheel holds 3/3 of _skills,_agents,_rules; check_wheel=0 (check_wheel: kmctl-0.99.0-py3-none-any.whl holds kmctl/_skills/, kmctl/_agents/, kmctl/_rules/); smoke_wheel=0 (smoke_wheel: kmctl-0.99.0-py3-none-any.whl installs, reports 0.99.0, holds its skills)
+  b wheel: PASS built .gitignore,kmctl-0.99.0-py3-none-any.whl; wheel holds 3/3 of _skills,_agents,_rules; check_wheel=0 (check_wheel: kmctl-0.99.0-py3-none-any.whl holds kmctl/_skills/, kmctl/_agents/, kmctl/_rules/); smoke_wheel=0 (smoke_wheel: kmctl-0.99.0-py3-none-any.whl installs, reports 0.99.0, holds its skills)
+  c git subdir: PASS version='kmctl 0.99.0'; payload=0 (/tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-k2p/k2p-confirm-nixza_br/tools-c/tools/kmctl/lib/python3.12/site-packages/kmctl True)
+  d archive dir: PASS version='kmctl 0.99.0'; payload=0 (/tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-k2p/k2p-confirm-nixza_br/tools-d/tools/kmctl/lib/python3.12/site-packages/kmctl True)
+summary: 4/4 pass
