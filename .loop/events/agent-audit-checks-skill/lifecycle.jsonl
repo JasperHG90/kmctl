@@ -1,2 +1,3 @@
 {"at": "2026-11-11T08:10:29+00:00", "kind": "register", "schema_version": "1.0", "stage": "planning"}
 {"at": "2026-11-14T11:30:31+00:00", "by": "reconcile", "kind": "state-write", "schema_version": "1.0", "stage": "planning"}
+{"at": "2026-11-14T11:35:26+00:00", "kind": "drop", "reason": "built inline on agent-audit in b537c3b7 and 36d0e273; the kmaudit epic now moves that code out of kmctl", "schema_version": "1.0"}
