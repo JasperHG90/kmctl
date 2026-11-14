@@ -21,9 +21,9 @@
     },
     {
       "id": "r4",
-      "behavior": "kmctl has no audit group and no audit extra: `kmctl audit --help` fails as an unknown command and kmctl's package metadata lists no audit extra.",
-      "fails_when": "`kmctl audit` still resolves to a command group, or kmctl's metadata Provides-Extra includes audit",
-      "command": "uv run pytest tests/test_no_audit.py -q"
+      "behavior": "kmctl has no audit group and no audit extra: `kmctl audit --help` fails as an unknown command and kmctl's package metadata lists no audit extra; the shipped agents' guard hook calls `kmaudit guard --allow GROUP`, and the guard lets through only `kmaudit GROUP` commands.",
+      "fails_when": "`kmctl audit` still resolves to a command group, kmctl's metadata Provides-Extra includes audit, an agent's hook still calls kmctl audit guard, or the guard allows a `kmctl audit` command",
+      "command": "uv run pytest tests/test_no_audit.py tests/test_apm_package.py packages/kmaudit/tests/test_audit_guard.py -q"
     },
     {
       "id": "r5",
@@ -33,7 +33,7 @@
     },
     {
       "id": "r6",
-      "behavior": "Outside .loop/, .okf/log.md, .okf/prototypes/ and decision records superseded by the new one, no tracked file says `kmctl audit` or `kmctl[audit]`; the root README names the two packages and links packages/kmaudit/README.md.",
+      "behavior": "Outside .loop/, .okf/log.md, .okf/prototypes/, .okf/decisions/ and the Action's own audit-mode refusal (action.yml and docs/how-to/install-the-plugin-and-the-ci-action.md), no tracked file says `kmctl audit` or `kmctl[audit]`; the root README names the two packages and links packages/kmaudit/README.md.",
       "fails_when": "git grep finds `kmctl audit` or `kmctl[audit]` in a file outside those exclusions, or README.md does not link packages/kmaudit/README.md",
       "command": "uv run pytest tests/test_no_audit.py -k mentions -q"
     },
