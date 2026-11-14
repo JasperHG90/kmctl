@@ -1,0 +1,130 @@
+{
+  "schema_version": "1.0",
+  "slug": "kmaudit-package",
+  "plan_hash": "b0cfa3382ca840548650eb40eeb25c50f20fd1fee0095484079de26f1f91cb0a",
+  "problems": [
+    {
+      "id": "P1",
+      "text": "The audit lives inside kmctl, so nobody can audit a folder of docs without installing kmctl and following its layout."
+    },
+    {
+      "id": "P2",
+      "text": "kmctl carries the audit's CLI group, extra and dependencies though the operator now wants kmctl optional."
+    },
+    {
+      "id": "P3",
+      "text": "The skills, agents, docs, README and decision records describe the audit as `kmctl audit` and the repository as one package."
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "kmaudit is a library of its own that installs and runs without kmctl."
+    },
+    {
+      "id": "G2",
+      "text": "kmctl no longer holds or advertises the audit."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "O1",
+      "change": "kmaudit installs and runs with kmctl absent",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "new:packages/kmaudit/pyproject.toml",
+        "new:packages/kmaudit/src/kmaudit/__init__.py",
+        "new:packages/kmaudit/src/kmaudit/store.py",
+        "new:packages/kmaudit/tests/conftest.py",
+        "new:packages/kmaudit/tests/test_store.py",
+        "src/kmctl/claims/store.py",
+        "src/kmctl/judge.py",
+        "src/kmctl/audit_settings.py",
+        "src/kmctl/tracing.py",
+        "pyproject.toml"
+      ],
+      "checked_by": "a test that builds the kmaudit wheel, installs it into a new venv without kmctl and runs `kmaudit claims todo` on a fixture bundle; and a test that no module under packages/kmaudit imports kmctl",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O2",
+      "change": "The root gates run kmaudit's tests next to kmctl's",
+      "kind": "support",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [
+        "O1"
+      ],
+      "needs_index": [
+        0
+      ],
+      "touches": [
+        "pyproject.toml",
+        ".loop/config.toml"
+      ],
+      "checked_by": "`uv run pytest` at the root collects the tests under packages/kmaudit/tests and tests/ in one run",
+      "seen_by": "nobody"
+    },
+    {
+      "id": "O3",
+      "change": "kmctl has no audit group, extra or audit dependencies",
+      "kind": "support",
+      "goal": "G2",
+      "goal_index": 1,
+      "fixes": "P2",
+      "fixes_index": 1,
+      "needs": [
+        "O1"
+      ],
+      "needs_index": [
+        0
+      ],
+      "touches": [
+        "src/kmctl/__init__.py",
+        "pyproject.toml",
+        "tests/test_apm_package.py"
+      ],
+      "checked_by": "a test that `kmctl audit --help` exits 2 as an unknown command and that kmctl's metadata names no audit extra",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O4",
+      "change": "Skills, agents, docs, the README and a decision record name kmaudit",
+      "kind": "support",
+      "goal": "G2",
+      "goal_index": 1,
+      "fixes": "P3",
+      "fixes_index": 2,
+      "needs": [
+        "O3"
+      ],
+      "needs_index": [
+        2
+      ],
+      "touches": [
+        "README.md",
+        "new:packages/kmaudit/README.md",
+        "AGENTS.md",
+        "apm/.apm/agents/kmctl-check-writer.md",
+        "apm/.apm/agents/kmctl-claims-extractor.md",
+        "apm/.apm/skills/extract-claims/SKILL.md",
+        "apm/.apm/skills/write-checks/SKILL.md",
+        "docs/reference/commands.md",
+        ".okf/manifesto.md",
+        ".okf/architecture/audit-pipeline.md",
+        ".okf/architecture/overview.md",
+        "new:.okf/decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp.md"
+      ],
+      "checked_by": "`git grep \"kmctl audit\"` outside .loop/, .okf/log.md, .okf/prototypes/ and superseded decision records finds nothing; okf validate --strict passes; the root README names both packages and links kmaudit's own README",
+      "seen_by": "operator"
+    }
+  ]
+}
