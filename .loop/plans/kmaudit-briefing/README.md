@@ -34,10 +34,23 @@ status (holds, drift, fails, weak, not measured, not run, reasons, stale
 reasons) and its open feedback, then one line naming what to do next
 (`/extract-claims FOLDER` while sections are pending, `/write-checks
 FOLDER` while claims lack an answer, `kmaudit ui FOLDER` while drift or
-feedback is open). It is read-only: it cuts the pages and compares keys
-without refreshing, counting a section as extracted when its stored key is
-its key or one of `previous_keys` (spike 1 found every section would read
-as pending otherwise). It prints nothing and exits 0 when the repository
+feedback is open). It is read-only, so it does not open `Store`, whose
+constructor creates `.kmaudit/`, copies the old .kmctl/audit.sqlite,
+migrates the schema and writes a `meta` row. It opens each store file with
+SQLite's read-only mode (`mode=ro`), falls back to the old
+.kmctl/audit.sqlite for `.okf` the way `listing` does, reads whatever
+schema step the file is at without migrating it, and counts a missing
+table as empty. Check statuses come from `status_row` in
+`packages/kmaudit/src/kmaudit/check_verbs.py` called on a read-only
+handle (a `Store` built over that connection without its constructor), so
+the briefing's statuses are the ones `checks list` shows. Pending sections
+come from cutting the pages and comparing keys, never from the store
+alone: a section counts as extracted when its stored key is its key or one
+of `previous_keys` (spike 1 found every section would read as pending
+otherwise), and a new or changed page counts as pending. Sections, claims,
+check statuses and open feedback match what the list commands report;
+pending is the briefing's own count, which `claims todo` would hand out.
+It prints nothing and exits 0 when the repository
 has no namespace, and on any error it prints one line saying the briefing
 is unavailable and exits 0, so a hook never blocks a session. The README
 says how to wire it into a SessionStart hook in Claude Code.
@@ -45,9 +58,10 @@ says how to wire it into a SessionStart hook in Claude Code.
 It lives in `new:packages/kmaudit/src/kmaudit/briefing.py`, with
 `packages/kmaudit/src/kmaudit/cli.py` adding the verb.
 
-It worked when, on a copy of this repository's store, `kmaudit briefing`
-prints the `.okf` namespace's counts matching `kmaudit checks list` and the
-store is unchanged afterwards.
+It worked when, on a copy of this repository's old store with no
+`.kmaudit/`, `kmaudit briefing` prints the `.okf` namespace's counts, no
+file in the repository changes (no `.kmaudit/` appears), and the check
+statuses equal those `kmaudit checks list` prints afterwards.
 
 ## Problems
 
@@ -66,7 +80,7 @@ store is unchanged afterwards.
 - fixes: P1
 - needs: none
 - touches: `new:packages/kmaudit/src/kmaudit/briefing.py`, `packages/kmaudit/src/kmaudit/cli.py`, `new:packages/kmaudit/tests/test_briefing.py`, `packages/kmaudit/docs/commands.md`
-- checked by: a test that the briefing's counts per namespace match `claims list` and `checks list`, that pending sections are counted without changing the store (its bytes are equal before and after), and that a store keyed under a previous hash reads as up to date
+- checked by: a test that sections, claims, check statuses and open feedback per namespace match `claims list` and `checks list`; that with only an old .kmctl/audit.sqlite no file appears or changes; that a changed page counts pending; and that a store keyed under a previous hash reads as up to date
 - seen by: operator
 
 ### O2: The briefing never fails a session start
