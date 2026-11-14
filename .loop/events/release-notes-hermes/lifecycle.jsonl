@@ -5,3 +5,4 @@
 {"at": "2026-11-14T19:51:53+00:00", "dispatched_at": "2026-11-14T19:49:35+00:00", "kind": "round-close", "n": 1, "outcome": "fail", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-14T19:51:21+00:00"}}
 {"at": "2026-11-14T19:59:21+00:00", "kind": "spike-note", "n": 3, "replaced": false, "schema_version": "1.0"}
 {"at": "2026-11-14T19:59:22+00:00", "kind": "spike-note", "n": 2, "replaced": false, "schema_version": "1.0"}
+{"at": "2026-11-14T20:00:14+00:00", "diff": {"added": [], "changed": {"r2": ["behavior", "fails_when"]}, "removed": []}, "grant": "g7", "hash": "9f923ab7d637f4bd76f21eab9e80d669a122a1a2a046f3548d824d5a1d700e46", "kind": "signoff", "reason": "plan review r1: tools off and the draft-before block for the reviewer join r2", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5", "step": "eval-sign"}
