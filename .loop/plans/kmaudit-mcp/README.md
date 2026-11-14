@@ -87,10 +87,6 @@ on a fixture repository, with a refusal coming back as a tool error.
 
 ## Could invalidate this plan
 
-- The MCP SDK's 2.x dependencies (starlette, uvicorn, opentelemetry-api,
-  httpx2) may not resolve beside the root lock, which pins
-  opentelemetry-sdk and pydantic-ai-slim for the CI audit, forcing an
-  older SDK or a hand-written server.
 - A todo result may be too large for one tool result: Claude Code warns
   past about 25,000 tokens, and `claims todo` hands out its instructions
   and up to every pending section at once, so the tools would need paging
