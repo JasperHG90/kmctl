@@ -1,13 +1,19 @@
 {
   "schema_version": "1.0",
   "slug": "kmctl-to-packages",
-  "stage": "planning",
+  "stage": "blocked",
   "attempts": 0,
   "plan_rounds": 3,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
-  "blocker": null,
+  "blocker": {
+    "code": "finding-open-two-rounds",
+    "message": "finding plan-reviewer:p6 stayed open across two rounds",
+    "plan_hash": "3746974443955a8928c341776e62b800b51d3a7e92b88e8c3e18f5aa129c44d7",
+    "at": "2026-11-14T19:56:09+00:00",
+    "resign_eval": false
+  },
   "fix": null,
   "ask": "j-20261114T171913+0000-6d6b52c3",
   "split": "j-20261114T195349+0000-551f29cf",
@@ -114,8 +120,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "blocked"
   },
   "plan_hash": "3746974443955a8928c341776e62b800b51d3a7e92b88e8c3e18f5aa129c44d7",
   "intent": {
@@ -129,8 +135,14 @@
       "to": "planning",
       "at": "2026-11-14T17:22:48+00:00",
       "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "blocked",
+      "at": "2026-11-14T19:56:09+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T19:53:56+00:00"
+  "at": "2026-11-14T19:56:09+00:00"
 }

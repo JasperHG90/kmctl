@@ -12,3 +12,5 @@
 {"at": "2026-11-14T19:51:39+00:00", "binds": "8841228a1e81ddc2d51615f2625ebb73637bf4d4bfbd02e48e111fa3e707cb32", "kind": "round-start", "n": 2, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
 {"at": "2026-11-14T19:53:47+00:00", "dispatched_at": "2026-11-14T19:51:39+00:00", "kind": "round-close", "n": 2, "outcome": "fail", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-14T19:53:19+00:00"}}
 {"at": "2026-11-14T19:53:56+00:00", "binds": "3746974443955a8928c341776e62b800b51d3a7e92b88e8c3e18f5aa129c44d7", "kind": "round-start", "n": 3, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
+{"at": "2026-11-14T19:56:09+00:00", "code": "finding-open-two-rounds", "from": "planning", "kind": "block", "message": "finding plan-reviewer:p6 stayed open across two rounds", "notified": false, "schema_version": "1.0"}
+{"at": "2026-11-14T19:56:09+00:00", "dispatched_at": "2026-11-14T19:53:56+00:00", "kind": "round-close", "n": 3, "outcome": "blocked", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-14T19:55:54+00:00"}}
