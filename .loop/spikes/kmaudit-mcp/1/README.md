@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.3.1.dev65+g93b143856
-  at: '2026-11-14T13:46:47+00:00'
+  at: '2026-11-14T13:47:12+00:00'
 slug: kmaudit-mcp
 n: 1
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike kmaudit-mcp/1
@@ -45,7 +45,7 @@ print('checks todo --limit 5 --brief:', n, 'bytes, ~', n//4, 'tokens')
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note kmaudit-mcp 1`.
+Measured on this repository's .okf/ with every section pending (a fresh store) and on a copy of the operator's store for checks: claims todo with no limit is 1,109,408 bytes (~277k tokens, 211 sections); --limit 15 is 163,018 bytes (~41k tokens), past Claude Code's ~25k-token tool result warning; the largest single section is 26,165 bytes (~6.5k tokens, its earlier-sections context included). checks todo --limit 5 is ~7.9k tokens, and ~5.1k with --brief. Risk 2 holds: the claims_todo tool needs a small default limit (5 sections is about 14k tokens) and a brief mode that leaves out the instructions after the first call, which claims todo lacks today; checks_todo is fine at --limit 5.
 
 ## Files
 
