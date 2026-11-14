@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-mcp",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 3,
   "review_rounds": 2,
@@ -30,7 +30,7 @@
   "split": "j-20261114T172808+0000-5c2af18c",
   "split_plan_hash": "86961df6f435c8ef92f8c960c1ddb2d4438318d7a3512111672cb5fc9fc302d9",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "bddb3a22b1b320737d0beb0bb14af262baae108e",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -174,8 +174,14 @@
       "to": "verifying",
       "at": "2026-11-14T18:07:00+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-14T18:11:15+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T18:11:03+00:00"
+  "at": "2026-11-14T18:11:15+00:00"
 }
