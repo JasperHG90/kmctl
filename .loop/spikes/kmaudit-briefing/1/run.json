@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "slug": "kmaudit-briefing",
+  "n": 1,
+  "command": "uv run python -c \nimport shutil, time\nfrom pathlib import Path\nPath('.kmctl').mkdir(exist_ok=True)\nshutil.copy('/home/vscode/workspace/.kmctl/audit.sqlite', '.kmctl/audit.sqlite')\nfrom kmaudit.sections import cut, resolve_target\nfrom kmaudit.store import Store\nfrom kmaudit.check_verbs import list_checks\nt = time.perf_counter()\ntarget = resolve_target(Path('.okf'))\nStore(target.root, target.namespace).db.close()\nt_open = time.perf_counter() - t\nt = time.perf_counter()\nsections = list(cut(target))\nwith Store(target.root, target.namespace) as store:\n    extracted = store.extracted()\npending = [s for s in sections if extracted.get(s.id) != s.key]\nt_cut = time.perf_counter() - t\nt = time.perf_counter()\ncounts = list_checks(Path('.okf')).counts\nt_list = time.perf_counter() - t\nprint(f'first open (legacy copy): {t_open:.2f}s')\nprint(f'cut + compare keys: {t_cut:.2f}s, {len(sections)} sections, {len(pending)} pending')\nprint(f'list_checks: {t_list:.2f}s, counts {counts}')\n",
+  "scripts": [],
+  "where": "worktree",
+  "head": "137ddd5870a462013dfe64391c27140f321b8181",
+  "fingerprint": "82061813031aa39937aaf84d11a73be4b94809724a88b033d2fb7a8205fbe17b",
+  "started_at": "2026-11-14T13:59:59+00:00",
+  "finished_at": "2026-11-14T14:00:02+00:00",
+  "duration_seconds": 3.027,
+  "timeout_seconds": 1800.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "moved_from": null
+}
