@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-namespaces",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
@@ -59,7 +59,7 @@
   "split": "j-20261114T131059+0000-1c3ebc2f",
   "split_plan_hash": "37ff578b1bd9eea4e2b82bedeb748b6b725a383811f15e0c273c435362d6c6d6",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "d74c8d204586a39430c340b5d3c1820e81954103",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -234,8 +234,14 @@
       "to": "verifying",
       "at": "2026-11-14T13:51:59+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-14T13:56:34+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T13:56:19+00:00"
+  "at": "2026-11-14T13:56:34+00:00"
 }
