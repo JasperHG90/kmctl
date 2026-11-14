@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-briefing",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 3,
   "review_rounds": 2,
@@ -51,7 +51,7 @@
   "split": "j-20261114T140538+0000-5e6423b7",
   "split_plan_hash": "2a01acebbd7a279e07e84238ab92484b3100f45186684258afbf8ffe111a1de8",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "51f5a8ac392bf464d3fca186b19c7e795b396421",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -199,8 +199,14 @@
       "to": "verifying",
       "at": "2026-11-14T14:23:29+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-14T14:28:23+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T14:28:08+00:00"
+  "at": "2026-11-14T14:28:23+00:00"
 }
