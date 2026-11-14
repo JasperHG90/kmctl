@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "The skill .claude/skills/release/SKILL.md is named release, every -f KEY= it names is a release.yml input, its package values match that input's options, and every path it cites exists.",
+      "fails_when": "the name differs, an input or package is made up, or a cited path is missing",
+      "command": "uv run pytest tests/test_release_skill.py -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "The skill explains why release.yml and release-tag.yml both exist and that apm/apm.yml is kmctl's version source because users pin the APM package to the CLI tag.",
+      "fails_when": "either explanation is absent",
+      "command": "uv run pytest tests/test_release_skill.py -k explains -q"
+    },
+    {
+      "id": "r3",
+      "behavior": ".claude/rules/releases.md keeps the no --admin rule and every-release-has-notes, reworded for notes reviewed in the pull request, and names .claude/skills/release/.",
+      "fails_when": "a rule is missing, it still says to regenerate notes by hand after publishing as the only path, or it does not name the skill",
+      "command": "uv run pytest tests/test_rules.py tests/test_release_skill.py -k rule -q"
+    }
+  ]
+}

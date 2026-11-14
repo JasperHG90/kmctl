@@ -20,10 +20,36 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "309c4f450a90e742c38aedc3fd96c0f883ba92354111cfb7c245d1e5f6217e3b",
+    "at": "2026-11-14T17:47:17+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "The skill .claude/skills/release/SKILL.md is named release, every -f KEY= it names is a release.yml input, its package values match that input's options, and every path it cites exists.",
+      "fails_when": "the name differs, an input or package is made up, or a cited path is missing",
+      "command": "uv run pytest tests/test_release_skill.py -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "The skill explains why release.yml and release-tag.yml both exist and that apm/apm.yml is kmctl's version source because users pin the APM package to the CLI tag.",
+      "fails_when": "either explanation is absent",
+      "command": "uv run pytest tests/test_release_skill.py -k explains -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": ".claude/rules/releases.md keeps the no --admin rule and every-release-has-notes, reworded for notes reviewed in the pull request, and names .claude/skills/release/.",
+      "fails_when": "a rule is missing, it still says to regenerate notes by hand after publishing as the only path, or it does not name the skill",
+      "command": "uv run pytest tests/test_rules.py tests/test_release_skill.py -k rule -q",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -44,5 +70,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T17:23:05+00:00"
+  "at": "2026-11-14T17:47:17+00:00"
 }
