@@ -53,12 +53,13 @@ returns the JSON the CLI's `--json` prints. The todo tools page: they take
 schema the agent already has; `claims todo` gains the `--brief` that
 `checks todo` already has, so a todo result stays well under a harness's
 tool result limit. A whole-call refusal (an unknown folder, an
-input that does not parse, a stale key) is an MCP tool error whose text is
+input that does not parse) is an MCP tool error whose text is
 the CLI's refusal line, naming the fix. A submit batch that stores some
 answers and refuses others is not an error: it returns the CLI's `--json`
 result, `SubmitResult` or `SubmitChecks`, whose `refused` list names each
 refused item and its fix, so the agent sees both what was stored and what
-to redo. The slow verbs (`checks_run`, `checks_try`, `judge`'s calls) run
+to redo; a stale key is refused per item, so a batch of only stale
+answers returns an empty `stored` list, not an error. The slow verbs (`checks_run`, `checks_try`, `judge`'s calls) run
 off the server's event loop (`anyio.to_thread`), and any subprocess a verb
 starts gets `stdin=DEVNULL`, because stdin is the MCP channel. The CLI keeps its
 verbs in this ticket; the skills move to the tools and the CLI shrinks in
@@ -89,7 +90,7 @@ on a fixture repository, with a refusal coming back as a tool error.
 - goal: G1
 - fixes: P1
 - needs: none
-- touches: `new:packages/kmaudit/src/kmaudit/mcp_server.py`, `packages/kmaudit/src/kmaudit/cli.py`, `packages/kmaudit/src/kmaudit/verbs.py`, `packages/kmaudit/src/kmaudit/judge.py`, `packages/kmaudit/pyproject.toml`, `uv.lock`, `new:packages/kmaudit/tests/test_mcp.py`
+- touches: `new:packages/kmaudit/src/kmaudit/mcp_server.py`, `packages/kmaudit/src/kmaudit/cli.py`, `packages/kmaudit/src/kmaudit/verbs.py`, `packages/kmaudit/src/kmaudit/judge.py`, `packages/kmaudit/src/kmaudit/anchors.py`, `packages/kmaudit/src/kmaudit/namespaces.py`, `packages/kmaudit/src/kmaudit/steps.py`, `packages/kmaudit/pyproject.toml`, `uv.lock`, `new:packages/kmaudit/tests/test_mcp.py`
 - checked by: a test that starts `kmaudit mcp` through the SDK's stdio client in a fixture repository, lists the tools, runs claims_todo, claims_submit and claims_list for a namespace, gets an unknown folder back as a tool error naming the fix and a mixed submit batch back as a result listing what it refused, and that a default claims_todo result on a 200-section folder stays under 25,000 tokens (bytes / 4)
 - seen by: operator
 
