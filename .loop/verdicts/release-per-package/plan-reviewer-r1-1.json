@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The late-commit behaviour in the prose (the draft records the commit it was drafted from in an HTML comment; release-tag lists the package's commits between that commit and the merge, warns, and adds a step-summary section) has no outcome. No outcome's title or checked-by covers the marker (O3 and O4 do not write it) or the warning (O5 does not check it), yet eval row r5 requires 'late commits are named'. plan.split reads the outcomes, so the slice that builds O5 would have a row its outcome never promised, and nothing would build the marker that row depends on. Either add the marker to O3 or O4 and the warning to O5's checked-by, or drop it from the prose and from r5.",
+      "anchor": ".loop/plans/release-per-package/README.md:70",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r5"
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "The late-commit marker lives inside the notes file, which release-notes-hermes replaces at the seam this plan makes. That plan's cleaning script strips HTML comments from Hermes' reply and prints the rewrite in place of the draft, so whenever the rewrite wins, the committed file has no marker and release-tag cannot find the drafted commit. A human editing the notes in the pull request can also delete it. The seam contract has to name where the drafted commit lives so it survives the rewrite. One option needs no marker: the release commit's parent on release/TAG is the drafted commit, so release-tag can read it from the merge's second parent (MERGE^2's first-parent chain back to where it left main). Or the Hermes plan must carry the marker over.",
+      "anchor": ".loop/plans/release-notes-hermes/README.md:48",
+      "category": "design",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r5"
+    },
+    {
+      "id": "p3",
+      "disposition": "open",
+      "claim": "The merge that ships this ticket adds packages/kmaudit/VERSION, which is one of release-tag's new trigger paths. The kmaudit leg reads the before commit's version with no VERSION file, gets an empty OLD, and scripts/release.py compare returns 'raised' for an empty OLD (release.py:236). So release-tag tries to release kmaudit-v0.1.0 on that push, finds no .github/release-notes/kmaudit-v0.1.0.md, and fails red on main. Worse, kmaudit 0.1.0 can then never be released through the flow: a later Release run for 0.1.0 changes nothing, so release-tag sees 'same'. The plan must say what happens when the file first appears: treat a missing before-file as 'nothing' for kmaudit, start VERSION at a .dev version that compare skips, or accept a first release above 0.1.0. Then O1 or O5 must test that choice.",
+      "anchor": "scripts/release.py:236",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r5"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "b41e2cb7312cd49a9a1cc51bb9bbbc8d3b004b027a50fd997f069cdd41443e01"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T17:51:31+00:00"
+}
