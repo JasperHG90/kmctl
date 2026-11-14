@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-namespaces",
-  "plan_hash": "260327e04561bd9fb437cc201d0957a9c600f94ff3a86e7e1a3625e32c3ab6ae",
+  "plan_hash": "87a8be0889167c6edd898202e29acdf3d98a49d043f5b2052fd56ff94be370f8",
   "problems": [
     {
       "id": "P1",
@@ -49,6 +49,8 @@
         "packages/kmaudit/src/kmaudit/sections.py",
         "packages/kmaudit/src/kmaudit/steps.py",
         "packages/kmaudit/src/kmaudit/cli.py",
+        "packages/kmaudit/src/kmaudit/check_instructions.py",
+        "packages/kmaudit/src/kmaudit/ui.html",
         "new:packages/kmaudit/tests/test_namespaces.py"
       ],
       "checked_by": "a test that `kmaudit claims todo docs` in a fixture repository with a plain `docs/` folder hands out its sections, skips nothing in it, and that a check never reads a file in the audited folder",
