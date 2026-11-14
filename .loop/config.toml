@@ -12,7 +12,7 @@ fingerprint_ignore = []
 guard_paths = []
 
 # The branch finished tickets merge into.
-integration_branch = "main"
+integration_branch = "agent-audit"
 
 # Where ticket worktrees go; {repo} is the repo's folder name. loopctl init
 # gitignores one inside the repo.
@@ -85,7 +85,7 @@ doc_writer = false
 [budget]
 
 [judgements]
-url = "https://jevtypesafeai.com/api/v1/decide"
+url = "https://api.typesafe.ai/v1/systemone"
 api_key_env = "TYPESAFE_API_KEY"
 timeout_seconds = 5.0
 
