@@ -226,3 +226,4 @@
 {"at": "2026-11-14T11:33:58+00:00", "judgement": "j-20261114T113041+0000-fa5ce086", "kind": "judgement-link", "schema_version": "1.0", "ticket": "kmaudit-namespaces"}
 {"at": "2026-11-14T12:59:45+00:00", "evidence": "2 review round(s), 0 block(s), 4379 changed line(s)", "judgement": "j-20261114T113041+0000-fa5ce086", "kind": "judgement-label", "label": "loop", "schema_version": "1.0", "source": "outcome"}
 {"at": "2026-11-14T13:41:57+00:00", "judgement": "j-20261114T113041+0000-fa5ce086", "kind": "judgement-link", "schema_version": "1.0", "ticket": "kmaudit-mcp"}
+{"at": "2026-11-14T13:59:57+00:00", "judgement": "j-20261114T113041+0000-fa5ce086", "kind": "judgement-link", "schema_version": "1.0", "ticket": "kmaudit-briefing"}
