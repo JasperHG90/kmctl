@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "CI's tests job ran pytest on tests/ only, so kmaudit's tests never ran in CI.",
+      "anchor": ".github/workflows/ci.yml:57",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "GUIDANCE and PREVIOUS_HASHES must change together and nothing enforces it; deferred by loopctl to ticket kmaudit-package-reviewer-f2.",
+      "anchor": "packages/kmaudit/src/kmaudit/instructions.py",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "kmctl was named as the actor in kmaudit's docstring, two skills and the review page.",
+      "anchor": "packages/kmaudit/src/kmaudit/__init__.py:3",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "d57c7a1c289ecd1b49fbda3208328f66910e7c3c11d739490795e7d582273556",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T12:58:50+00:00"
+}
