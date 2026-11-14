@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "judge setup moves out of the CLI body into a shared async function in judge.py with a per-id result.",
+      "anchor": null,
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "Whole-call refusal is a tool error; a mixed batch returns the --json result with its refused list.",
+      "anchor": null,
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "resolved",
+      "claim": "Absolute folders, off-loop slow verbs, and per-harness working directory and timeout in the README.",
+      "anchor": null,
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p4",
+      "disposition": "resolved",
+      "claim": "anchors.py, namespaces.py and steps.py, the only modules besides cli.py/ui.py that start processes, are now in O1's touches.",
+      "anchor": null,
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "86961df6f435c8ef92f8c960c1ddb2d4438318d7a3512111672cb5fc9fc302d9"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T17:28:48+00:00"
+}
