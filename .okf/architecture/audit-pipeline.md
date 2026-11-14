@@ -19,7 +19,8 @@ sources:
 
 kmaudit, a package of its own in `packages/kmaudit/`
 ([ADR 0043](../decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp.md)),
-checks what the `.okf/` bundle says against the code. It calls no model
+checks what a folder of markdown docs says against the code: `.okf/`,
+`docs/` or any other, each folder a namespace with its own store. It calls no model
 except the optional `kmaudit judge`: two Haiku subagents, driven by two
 skills in kmctl's package, do the reading and writing, and kmaudit hands
 out the work, validates and measures what comes back, stores it and
@@ -60,7 +61,7 @@ flowchart TB
 
     person(["a person reviewing"])
 
-    store[(".kmctl/audit.sqlite<br/>sections, claims, checks,<br/>runs, scores, decisions, feedback")]
+    store[(".kmaudit/NAMESPACE.sqlite, one per folder<br/>sections, claims, checks,<br/>runs, scores, decisions, feedback")]
 
     bundle --> ctodo
     extractSkill -- "dispatches per batch" --> extractor
@@ -185,8 +186,8 @@ Still open:
   `kmaudit claims list`, `kmaudit checks todo`,
   `kmaudit checks try`, `kmaudit checks submit`,
   `kmaudit checks run`, `kmaudit checks list`, `kmaudit judge`,
-  `kmaudit ui`, `kmaudit coverage`, `kmaudit guard`.
-- Modules: `packages/kmaudit/src/kmaudit/` (`cli.py`, `sections.py`, `instructions.py`,
+  `kmaudit ui`, `kmaudit coverage`, `kmaudit namespaces`, `kmaudit guard`.
+- Modules: `packages/kmaudit/src/kmaudit/` (`cli.py`, `namespaces.py`, `sections.py`, `instructions.py`,
   `models.py`, `store.py`, `verbs.py`, `steps.py`, `anchors.py`,
   `lines.py`, `mutate.py`, `check_instructions.py`, `check_store.py`,
   `check_verbs.py`, `guard.py`, `feedback.py`, `ui.py`, `ui.html`,

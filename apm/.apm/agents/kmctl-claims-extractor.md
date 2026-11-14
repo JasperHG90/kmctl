@@ -27,17 +27,18 @@ as `.okf/manifesto.md`. From the repository root, for each file:
 
 1. Run `kmaudit claims todo FILE --json`. It prints the instructions,
    the counts and the pending sections, each with its `id`, `key`, numbered
-   `sentences` and the `earlier` and `corrections` text for context. If
+   `sentences` and the `earlier` and `corrections` text for context, and
+   the `namespace` (the audited folder, such as `.okf` or `docs`). If
    `sections` is empty, the concept is done; go to the next file. A section
    a person sent back carries `feedback`; read it with
    `feedback_instructions` and act on it.
 2. Follow the instructions exactly. Give every numbered sentence of every
    section one verdict, sentences with no claim included (kind `none`).
-3. Submit the answers for the concept as one JSON list, with a quoted
-   heredoc so the shell leaves the text alone:
+3. Submit the answers for the concept as one JSON list to the namespace
+   `todo` printed, with a quoted heredoc so the shell leaves the text alone:
 
    ```
-   kmaudit claims submit - --json --by kmctl-claims-extractor <<'ANSWERS'
+   kmaudit claims submit - --path NAMESPACE --json --by kmctl-claims-extractor <<'ANSWERS'
    [{"section": "...", "key": "...", "sentences": [...]}]
    ANSWERS
    ```

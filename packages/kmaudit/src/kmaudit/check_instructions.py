@@ -31,7 +31,8 @@ Rules:
   just the flag.
 - To test what code does, prefer code over grep: a call and its argument, a
   condition and its exit. Use grep for text in files no code step reads.
-- Markdown files, .okf/ and docs/ are never read: they restate the claims.
+- Markdown files, the folder being audited, .okf/ and docs/ are never read:
+  they restate the claims.
 - Prefer one or two narrow steps over many loose ones. Pin a regex to the code
   that does the thing, not to a comment or docstring.
 - strength "exact": the steps decide the claim. "proxy": they show the code

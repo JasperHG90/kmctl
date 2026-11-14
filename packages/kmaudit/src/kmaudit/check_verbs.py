@@ -171,6 +171,9 @@ class ChecksTodo(BaseModel):
         default_factory=list,
         description="Checks and reasons people marked good, with their notes, to learn what works.",
     )
+    namespace: str = Field(
+        description="The namespace these claims belong to: the audited folder below the repository root; pass it as --path to try and submit."
+    )
     next: str
 
 
@@ -392,8 +395,8 @@ def todo(path: Path, limit: int | None = None, brief: bool = False) -> ChecksTod
         If ``path`` names no bundle.
     """
     target = resolve_target(path)
-    repo = Repository(target.root)
-    with Store(target.root) as store:
+    repo = Repository(target.root, target.bundle)
+    with Store(target.root, target.namespace) as store:
         pruned = prune(store)
         claims = _checkable(store, target)
         kinds = {
@@ -488,7 +491,11 @@ def todo(path: Path, limit: int | None = None, brief: bool = False) -> ChecksTod
         if examples or any(c.feedback for c in out)
         else None,
         examples=examples,
-        next="kmaudit checks try -, then kmaudit checks submit -",
+        namespace=target.namespace,
+        next=(
+            f"kmaudit checks try - --path {target.namespace}, "
+            f"then kmaudit checks submit - --path {target.namespace}"
+        ),
     )
 
 
@@ -564,7 +571,7 @@ def try_answers(path: Path, text: str) -> list[Tried]:
         If ``text`` is not JSON, or ``path`` names no bundle.
     """
     target = resolve_target(path)
-    repo = Repository(target.root)
+    repo = Repository(target.root, target.bundle)
     out: list[Tried] = []
     for item in _parse(text, "try"):
         label = _label(item) or "?"
@@ -605,10 +612,10 @@ def submit(path: Path, text: str, by: str = "agent") -> SubmitChecks:
         If ``text`` is not JSON, or ``path`` names no bundle.
     """
     target = resolve_target(path)
-    repo = Repository(target.root)
+    repo = Repository(target.root, target.bundle)
     result = SubmitChecks()
     items = _parse(text, "submit")
-    with Store(target.root) as store:
+    with Store(target.root, target.namespace) as store:
         known = {c.id: c for c in store.claims() if c.kind in CHECKABLE}
         evidence: Evidence | None = None
         finder: LineFinder | None = None
@@ -740,9 +747,9 @@ def run(path: Path, everything: bool = False) -> RunResult:
         If ``path`` names no bundle.
     """
     target = resolve_target(path)
-    repo = Repository(target.root)
+    repo = Repository(target.root, target.bundle)
     rows: list[RunRow] = []
-    with Store(target.root) as store:
+    with Store(target.root, target.namespace) as store:
         prune(store)
         for claim in _checkable(store, target):
             stored = check(store, claim.id)
@@ -823,8 +830,8 @@ def list_checks(path: Path, status: str | None = None) -> ListChecks:
         If ``path`` names no bundle.
     """
     target = resolve_target(path)
-    repo = Repository(target.root)
-    with Store(target.root) as store:
+    repo = Repository(target.root, target.bundle)
+    with Store(target.root, target.namespace) as store:
         rows = [status_row(store, repo, claim) for claim in _checkable(store, target)]
     shown = [r for r in rows if status is None or r.status == status]
     return ListChecks(counts=dict(Counter(r.status for r in rows)), claims=shown)
@@ -869,8 +876,8 @@ def status_row(store: Store, repo: Repository, claim: Claim) -> ListRow:
 def claim_row(path: Path, claim_id: str) -> ListRow | None:
     """One claim's row as ``list`` shows it, or None when the claim is not stored or not checkable."""
     target = resolve_target(path)
-    repo = Repository(target.root)
-    with Store(target.root) as store:
+    repo = Repository(target.root, target.bundle)
+    with Store(target.root, target.namespace) as store:
         found = store.claim(claim_id)
         if found is None or found.kind not in CHECKABLE:
             return None
@@ -886,8 +893,8 @@ def claim_lines(path: Path, claim_id: str) -> str:
         If ``path`` names no bundle, or the store has no such claim.
     """
     target = resolve_target(path)
-    repo = Repository(target.root)
-    with Store(target.root) as store:
+    repo = Repository(target.root, target.bundle)
+    with Store(target.root, target.namespace) as store:
         found = store.claim(claim_id)
         if found is None:
             raise AuditError(

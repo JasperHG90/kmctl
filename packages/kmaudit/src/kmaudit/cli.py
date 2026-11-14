@@ -1,7 +1,9 @@
 """kmaudit's command line: audit what a folder of markdown docs claims about its repository."""
 
+import json
 import sqlite3
 import sys
+from dataclasses import asdict
 from importlib.metadata import version
 from pathlib import Path
 from typing import Annotated, cast
@@ -23,14 +25,15 @@ def _print_version(value: bool) -> None:
 
 app = typer.Typer(
     help=(
-        "Audit what the .okf/ bundle claims about the repository. Groups: claims "
+        "Audit what a folder of markdown docs claims about its repository. Groups: claims "
         "(extract them), checks (test them; needs claims from kmaudit claims). "
         "Verbs: judge (an optional decision model's opinion; off by default), "
         "ui (a local page to review claims and checks and give feedback), "
         "coverage (how much of the code the checks match). "
         "kmaudit calls no model except judge: a coding agent reads what these "
-        "verbs hand out and submits its answers. State lives in .kmctl/audit.sqlite, which "
-        "ignores itself in git. Needs a repository with an .okf/ bundle (kmctl init makes one)."
+        "verbs hand out and submits its answers. Each audited folder is a namespace "
+        "with its own store under .kmaudit/, which ignores itself in git; namespaces "
+        "lists them. Needs a git repository."
     ),
     no_args_is_help=True,
     context_settings={"help_option_names": ["-h", "--help"]},
@@ -53,18 +56,30 @@ def _root(
 
 claims_app = typer.Typer(
     help=(
-        "Extract a bundle's claims through an agent. Verbs: todo (sections to "
+        "Extract a folder's claims through an agent. Verbs: todo (sections to "
         "read), submit (store the agent's verdicts), list (read claims back)."
     ),
     no_args_is_help=True,
 )
 app.add_typer(claims_app, name="claims")
 
+#: What a path means, shared by every verb's help.
+_PATH_MEANING = (
+    "The folder of markdown docs to audit (its namespace), or a folder or page "
+    "inside one to narrow the scope. A path inside an audited folder means that "
+    "folder; the repository root holding .okf/ means .okf. Default: the current "
+    "directory."
+)
 _AUDIT_PATH_ARGUMENT = typer.Argument(
-    metavar="[.|.okf|.okf/manifesto.md]",
+    metavar="[docs|.okf|docs/guide.md]", help=_PATH_MEANING
+)
+_STORE_PATH_OPTION = typer.Option(
+    "--path",
+    metavar="docs",
+    exists=True,
     help=(
-        "What to work on: a repository holding .okf/, a bundle folder, or one "
-        "concept file to narrow the scope. Default: the current directory."
+        "The namespace whose store to use, as todo printed it in namespace and "
+        "next. " + _PATH_MEANING
     ),
 )
 
@@ -92,7 +107,7 @@ def _refuse(verb: str, message: str) -> None:
         "skipped. With --json it prints the instructions once, the counts and "
         "each section (id, key, concept, title, section, sentences, earlier, "
         "corrections): answer each per the instructions and pipe the answers "
-        "to kmaudit claims submit -. It writes only .kmctl/."
+        "to kmaudit claims submit -. It writes only .kmaudit/."
     ),
 )
 def claims_todo(
@@ -156,7 +171,7 @@ def claims_todo(
         "sentence without a verdict (naming the numbers), a kind other than none "
         "with no claim, and a malformed answer, each as one stderr line with the "
         "fix; the good sections in the same input are still stored. Exit 1 when "
-        "any section is refused. It writes only .kmctl/."
+        "any section is refused. It writes only .kmaudit/."
     ),
 )
 def claims_submit(
@@ -169,12 +184,7 @@ def claims_submit(
     ] = "-",
     path: Annotated[
         Path,
-        typer.Option(
-            "--path",
-            metavar="../other-repo",
-            exists=True,
-            help="The repository whose store to write: it or a path in it. Default: the current directory.",
-        ),
+        _STORE_PATH_OPTION,
     ] = Path("."),
     by: Annotated[
         str,
@@ -329,12 +339,6 @@ _ANSWERS_ARGUMENT = typer.Argument(
     metavar="[answers.json|-]",
     help="The file holding the answers (one JSON object or a list), or - to read them from stdin. Default: -.",
 )
-_STORE_PATH_OPTION = typer.Option(
-    "--path",
-    metavar="../other-repo",
-    exists=True,
-    help="The repository whose store to use: it or a path in it. Default: the current directory.",
-)
 
 
 def _read_answers(verb: str, file: str) -> str:
@@ -366,7 +370,7 @@ def _read_answers(verb: str, file: str) -> str:
         "command, flag or name) and the lines around them, or keyword windows "
         "from its concept's sources; the instructions and the answer_schema come "
         "once. Draft each answer, test it with kmaudit checks try -, then "
-        "kmaudit checks submit -. It writes only .kmctl/."
+        "kmaudit checks submit -. It writes only .kmaudit/."
     ),
 )
 def checks_todo(
@@ -497,7 +501,7 @@ def checks_try(
         "or stale claim id, a code or query step whose library is missing, and a "
         "malformed answer, each as one stderr line with the fix. The rest are "
         "stored, reasons included. Exit 1 when any answer is refused. It "
-        "writes only .kmctl/."
+        "writes only .kmaudit/."
     ),
 )
 def checks_submit(
@@ -562,7 +566,7 @@ def checks_submit(
         "to try), weak, fails, drift (fails and the check says the claim is "
         "wrong), skipped (needs ast-grep or jmespath), reason, stale reason (a file its "
         "lines came from changed; todo hands it out again), no check. Exit 0 whatever the checks find (audits report only, ADR "
-        "0005), 1 only when it cannot run. It writes only .kmctl/."
+        "0005), 1 only when it cannot run. It writes only .kmaudit/."
     ),
 )
 def checks_run(
@@ -689,7 +693,7 @@ def checks_list(
         "unclear); claim asks whether the lines on stdin show a claim true "
         "(chance, verdict: true, false or not_shown); link asks whether a "
         "check tests its claim (score 0 to 1, level: unrelated, keyword, "
-        "nearby or the claim). Each answer is kept in .kmctl/audit.sqlite under "
+        "nearby or the claim). Each answer is kept in the namespace's store under "
         "a hash of the question, model and state, so asking again sends nothing "
         "until the check, its result or the model changes. The key is read only "
         "from the variable api_key_env names and is never printed. Set "
@@ -768,7 +772,7 @@ def audit_judge(
             )
         lines = sys.stdin.read() if question == "claim" else ""
         target = resolve_target(path)
-        with Store(target.root) as store:
+        with Store(target.root, target.namespace) as store:
             results = asyncio.run(
                 judge(store, settings, cast(Question, question), ids, lines)
             )
@@ -825,8 +829,8 @@ def audit_coverage(
     path: Annotated[
         Path,
         typer.Argument(
-            metavar="[.|.okf]",
-            help="The repository to measure: it, its bundle or a path in it. Default: the current directory.",
+            metavar="[docs|.okf]",
+            help="The namespace to measure. " + _PATH_MEANING,
         ),
     ] = Path("."),
     files: Annotated[
@@ -883,7 +887,7 @@ def audit_coverage(
         "  kmaudit ui .okf --port 0 --no-open\n\n"
         "  kmaudit ui --by human:sam --config ci-audit.toml\n\n"
         "Serves a page on 127.0.0.1 that shows each document with its claims, "
-        "their checks and how sure each check is, read from .kmctl/audit.sqlite. "
+        "their checks and how sure each check is, read from the namespace's store. "
         "On the page you give a claim or its check a thumbs up or down and a "
         "note, and say whether the claim holds or is false. A thumbs down, or a "
         "verdict the check disagrees with, sends the work back: kmaudit "
@@ -903,8 +907,8 @@ def audit_ui(
     path: Annotated[
         Path,
         typer.Argument(
-            metavar="[.|.okf]",
-            help="The repository to show: it, its bundle or a path in it. Default: the current directory.",
+            metavar="[docs|.okf]",
+            help="The namespace to show. " + _PATH_MEANING,
         ),
     ] = Path("."),
     port: Annotated[
@@ -997,6 +1001,50 @@ def audit_guard(
     if reason is not None:
         typer.echo(f"kmaudit guard: blocked: {reason}", err=True)
         raise typer.Exit(2)
+
+
+@app.command(
+    "namespaces",
+    epilog=(
+        "Examples:\n\n"
+        "  kmaudit namespaces\n\n"
+        "  kmaudit namespaces --json\n\n"
+        "Each audited folder is a namespace, named by its path below the "
+        "repository root, with its own store under .kmaudit/. A repository "
+        "whose audit predates namespaces lists its old .kmctl/audit.sqlite as "
+        ".okf until the first verb on .okf copies it. It writes nothing."
+    ),
+)
+def list_namespaces(
+    path: Annotated[
+        Path,
+        typer.Argument(
+            metavar="[.]",
+            help="A path in the repository whose namespaces to list. Default: the current directory.",
+        ),
+    ] = Path("."),
+    as_json: Annotated[
+        bool,
+        typer.Option(
+            "--json",
+            help="Print one JSON object, {namespaces: [{namespace, folder, sections, claims, checks}]}, for scripts.",
+        ),
+    ] = False,
+) -> None:
+    """List the repository's namespaces: each audited folder with its counts."""
+    from kmaudit.namespaces import listing
+
+    rows = listing(path)
+    if as_json:
+        typer.echo(json.dumps({"namespaces": [asdict(r) for r in rows]}))
+        return
+    if not rows:
+        typer.echo("no namespaces yet; audit a folder with kmaudit claims todo FOLDER")
+        return
+    for r in rows:
+        typer.echo(
+            f"{r.namespace}: {r.sections} sections, {r.claims} claims, {r.checks} checks ({r.folder})"
+        )
 
 
 def main() -> None:

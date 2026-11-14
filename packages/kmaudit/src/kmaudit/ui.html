@@ -476,7 +476,7 @@ function renderDoc() {
   });
   const c = current.counts;
   head.append(
-    el("h2", {}, current.title), el("div", { class: "path" }, `.okf/${current.concept}.md`), strip,
+    el("h2", {}, current.title), el("div", { class: "path" }, current.path), strip,
     el("div", { class: "key" },
       KINDS.filter(([k]) => c[k]).map(([k, label, hue]) =>
         el("button", { title: `Go to the next sentence marked ${label}`, onclick: () => next(k) },

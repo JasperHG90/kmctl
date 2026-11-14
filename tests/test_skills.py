@@ -128,6 +128,29 @@ def test_every_named_kmaudit_command_exists(path: Path) -> None:
         assert flags <= known, f"kmaudit {' '.join(words)}: {flags - known}"
 
 
+#: The kmaudit verbs that write, which must name their namespace.
+WRITES = re.compile(r"\bkmaudit (?:claims submit|checks try|checks submit)\b[^\n`]*")
+
+
+@pytest.mark.parametrize(
+    "path",
+    [
+        SKILLS / "extract-claims" / "SKILL.md",
+        AGENTS / "kmctl-claims-extractor.md",
+        SKILLS / "write-checks" / "SKILL.md",
+        AGENTS / "kmctl-check-writer.md",
+    ],
+    ids=lambda p: p.parent.name if p.name == "SKILL.md" else p.stem,
+)
+def test_writes_name_their_namespace_with_path(path: Path) -> None:
+    """An agent's submit or try passes --path, or a docs/ answer lands in .okf (ADR 0043)."""
+    code = "\n".join(CODE.findall(path.read_text()))
+    commands = [m.group(0) for m in WRITES.finditer(code)]
+
+    assert commands, "the file names no kmaudit write"
+    assert [c for c in commands if "--path" not in c] == []
+
+
 @pytest.mark.parametrize(
     "path",
     sorted(SKILLS.glob("*/SKILL.md")) + sorted(AGENTS.glob("*.md")),

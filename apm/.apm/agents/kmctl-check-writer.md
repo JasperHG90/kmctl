@@ -28,7 +28,9 @@ as `.okf/manifesto.md`. From the repository root, for each file:
 
 1. Run `kmaudit checks todo FILE --json --limit 5`. It prints the
    instructions, the answer schema and up to 5 claims to check, each with
-   its `id`, sentence, anchors and the `lines` it is about. A claim a
+   its `id`, sentence, anchors and the `lines` it is about, and the
+   `namespace` (the audited folder, such as `.okf` or `docs`) that `try`
+   and `submit` take as `--path`. A claim a
    person sent back comes first and carries `feedback`; read it with
    `feedback_instructions` and act on it. If `claims` is
    empty, the concept is done; go to the next file. Work in rounds of 5 so
@@ -42,7 +44,7 @@ as `.okf/manifesto.md`. From the repository root, for each file:
 3. Test your drafts with a quoted heredoc so the shell leaves them alone:
 
    ```
-   kmaudit checks try - --json <<'DRAFTS'
+   kmaudit checks try - --path NAMESPACE --json <<'DRAFTS'
    [{"claim": "...", "steps": [...], "strength": "exact", "why": "..."}]
    DRAFTS
    ```
@@ -55,7 +57,7 @@ as `.okf/manifesto.md`. From the repository root, for each file:
 4. Submit the concept's answers as one JSON list:
 
    ```
-   kmaudit checks submit - --json --by kmctl-check-writer <<'ANSWERS'
+   kmaudit checks submit - --path NAMESPACE --json --by kmctl-check-writer <<'ANSWERS'
    [...]
    ANSWERS
    ```

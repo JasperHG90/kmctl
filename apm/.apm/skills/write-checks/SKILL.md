@@ -6,8 +6,8 @@ description: Write checks for stored claims with a subagent. It hands the claims
 # /write-checks: checks into the store, summaries only
 
 kmaudit calls no model here: the `kmctl-check-writer` agent writes each check,
-and `kmaudit checks submit` runs it, refuses a weak one and stores the
-rest in `.kmctl/audit.sqlite`. You never read a claim, write a step or judge
+and `kmaudit checks submit --path FOLDER` runs it, refuses a weak one and stores the
+rest in the folder's own store under `.kmaudit/`. You never read a claim, write a step or judge
 a check yourself; keep only the agents' summaries.
 
 ## 1. See what is left
@@ -16,8 +16,10 @@ a check yourself; keep only the agents' summaries.
 kmaudit checks todo [PATH]
 ```
 
-`PATH` is the repository (the default), the bundle, or one concept file if
-the user named one. It prints the counts and one `pending FILE (N claims)`
+`PATH` is the folder of markdown docs to audit (`docs`, `.okf`, or any
+other; the repository root means `.okf`, the default), or one page in it
+if the user named one. Each folder is its own namespace, with its own
+store. It prints the counts and one `pending FILE (N claims)`
 line per concept. If it reports 0 checkable claims, there are no claims
 yet: point to `/extract-claims` and stop. If nothing is pending, say the
 checks are up to date, show `kmaudit checks list`, and stop. Exit 1 is

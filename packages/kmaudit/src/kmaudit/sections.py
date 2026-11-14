@@ -1,14 +1,13 @@
-"""Cut an OKF bundle into sections, one per header section of each live concept, with numbered sentences and change keys."""
+"""Cut a folder of markdown docs into sections, one per header section of each live page, with numbered sentences and change keys."""
 
 import hashlib
 import json
 import re
-import subprocess
 from collections.abc import Iterable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from kmaudit import AuditError, instructions
+from kmaudit import AuditError, instructions, namespaces
 from kmaudit.frontmatter import BadFrontMatter, split_front_matter
 from kmaudit.frontmatter import field as okf_field
 
@@ -29,16 +28,16 @@ _NOT_SLUG = re.compile(r"[^a-z0-9]+")
 
 @dataclass(frozen=True)
 class Target:
-    """What a path given to a ``kmaudit`` verb names.
+    """What a path given to a ``kmaudit`` verb names: one namespace, maybe narrowed to some of its files.
 
     Attributes
     ----------
     bundle : Path
-        The bundle's root folder; concept ids are paths relative to it.
+        The audited folder, an OKF bundle or any folder of markdown; concept ids are paths relative to it.
     files : list[Path] | None
-        The concept files to cut, or None for the whole bundle.
+        The files to cut, or None for the whole folder.
     root : Path
-        The repository that holds the bundle (git's top level, else the bundle's parent); the store lives here.
+        The repository that holds the folder (git's top level, else the folder's parent); the stores live here.
     """
 
     bundle: Path
@@ -48,6 +47,11 @@ class Target:
     def concept(self, path: Path) -> str:
         """The concept id of a file in the bundle: its path below the bundle root, without .md."""
         return path.resolve().relative_to(self.bundle).with_suffix("").as_posix()
+
+    @property
+    def namespace(self) -> str:
+        """The namespace: the audited folder's path below the repository root."""
+        return namespaces.name_of(self.root, self.bundle)
 
     @property
     def concepts(self) -> set[str] | None:
@@ -103,61 +107,100 @@ def _is_bundle_root(folder: Path) -> bool:
     return okf_field(meta, "okf_version") is not None
 
 
-def _git_root(folder: Path) -> Path | None:
-    """Git's top level for ``folder``, or None outside a repository."""
-    try:
-        out = subprocess.run(
-            ["git", "-C", str(folder), "rev-parse", "--show-toplevel"],
-            capture_output=True,
-            text=True,
-            check=True,
-        ).stdout
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        return None
-    return Path(out.strip()).resolve()
-
-
-def project_root(bundle: Path) -> Path:
-    """The repository that holds ``bundle``: git's top level, else the bundle's parent."""
-    return _git_root(bundle) or bundle.parent
+def is_okf_bundle(folder: Path) -> bool:
+    """Whether ``folder`` is an OKF bundle: an ``index.md`` with ``okf_version``, or a folder named ``.okf``."""
+    return folder.name == ".okf" or _is_bundle_root(folder)
 
 
 def resolve_target(path: Path) -> Target:
-    """What ``path`` names: a concept file, a bundle folder, or a repository with a ``.okf`` bundle.
+    """The namespace ``path`` names, narrowed to the files under it when it is not the namespace's own folder.
+
+    A path inside an existing namespace narrows that namespace and never opens
+    a store of its own. Otherwise a path inside an OKF bundle means the
+    bundle, and a folder with no namespace above it opens one, unless a
+    namespace already sits inside it. The repository root holding ``.okf/``
+    means ``.okf``.
 
     Raises
     ------
     AuditError
-        If the path does not exist, is not markdown, or names no bundle.
+        If the path does not exist, is not markdown, holds no page in scope,
+        is a file with no namespace or bundle above it, or would overlap an
+        existing namespace.
     """
     path = path.resolve()
-    if path.is_file():
-        if path.suffix != ".md":
-            raise AuditError(
-                f"{path} is not a markdown concept file; give a concept, a bundle or the repository"
-            )
-        for folder in path.parents:
-            if _is_bundle_root(folder) or folder.name == ".okf":
-                if path not in concept_paths(folder):
-                    raise AuditError(
-                        f"{path} is not a concept kmaudit audits (index.md, log.md and "
-                        "prototypes/ are skipped); give a concept file"
-                    )
-                return Target(bundle=folder, files=[path], root=project_root(folder))
+    if not path.exists():
         raise AuditError(
-            f"{path} is not inside an OKF bundle (no folder above it has an index.md with okf_version)"
+            f"{path} does not exist; give a folder of markdown docs or a page in one"
         )
-    if path.is_dir():
-        if (path / ".okf").is_dir():
-            path = path / ".okf"
-        elif not (_is_bundle_root(path) or path.name == ".okf"):
+    if path.is_file() and path.suffix != ".md":
+        raise AuditError(
+            f"{path} is not a markdown file; give a folder of markdown docs or a page in one"
+        )
+    start = path if path.is_dir() else path.parent
+    root = namespaces.repository_root(start)
+    if path == root:
+        if not (root / ".okf").is_dir():
             raise AuditError(
-                f"{path} is not an OKF bundle and holds no .okf folder; run kmctl init there first"
+                f"{root} is the repository root, which holds no .okf/; give the folder of "
+                "markdown docs to audit, such as docs, so it gets a namespace of its own"
             )
-        return Target(bundle=path, files=None, root=project_root(path))
-    raise AuditError(
-        f"{path} does not exist; give a concept, a bundle or the repository"
+        path = root / ".okf"
+    taken = namespaces.existing(root)
+    owner = next(
+        (
+            folder
+            for folder in sorted(
+                taken.values(), key=lambda f: len(f.parts), reverse=True
+            )
+            if path == folder or folder in path.parents
+        ),
+        None,
     )
+    if owner is None:
+        owner = next(
+            (
+                f
+                for f in [path, *path.parents]
+                if f.is_dir() and f.is_relative_to(root) and is_okf_bundle(f)
+            ),
+            None,
+        )
+    if owner is None:
+        if path.is_file():
+            hint = start.relative_to(root) if start.is_relative_to(root) else start
+            raise AuditError(
+                f"{path} is in no audited folder yet; give the folder first, as in "
+                f"kmaudit claims todo {hint}"
+            )
+        inside = sorted(n for n, f in taken.items() if path in f.parents)
+        if inside:
+            raise AuditError(
+                f"{path} holds the namespace(s) {', '.join(inside)}, which would overlap it; audit "
+                f"those folders instead, or delete their stores under {namespaces.STORE_DIR}/ "
+                "to start over at this folder"
+            )
+        if not any(path.rglob("*.md")):
+            raise AuditError(
+                f"{path} holds no markdown pages; give a folder of markdown docs, such as docs or .okf"
+            )
+        owner = path
+    if path == owner:
+        return Target(bundle=owner, files=None, root=root)
+    pages = concept_paths(owner)
+    if path.is_file():
+        if path not in pages:
+            raise AuditError(
+                f"{path} is not a page kmaudit audits (an OKF bundle's index.md, log.md and "
+                "prototypes/ are skipped); give a page of the folder"
+            )
+        return Target(bundle=owner, files=[path], root=root)
+    files = [p for p in pages if path in p.parents]
+    if not files:
+        raise AuditError(
+            f"{path} holds no page kmaudit audits; give a folder with markdown pages"
+        )
+    return Target(bundle=owner, files=files, root=root)
 
 
 def split_sentences(text: str) -> list[str]:
@@ -310,11 +353,14 @@ def previous_keys(section: Section) -> set[str]:
 
 
 def concept_paths(bundle: Path) -> list[Path]:
-    """The bundle's concept files in sorted order, minus reserved names and skipped folders."""
+    """The folder's pages in sorted order: every ``.md`` file, less an OKF bundle's reserved names and skipped folders."""
     bundle = bundle.resolve()
+    pages = sorted(bundle.rglob("*.md"))
+    if not is_okf_bundle(bundle):
+        return pages
     return [
         p
-        for p in sorted(bundle.rglob("*.md"))
+        for p in pages
         if p.name not in SKIP_NAMES and not SKIP_DIRS & set(p.relative_to(bundle).parts)
     ]
 

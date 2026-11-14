@@ -103,7 +103,12 @@ class TodoResult(BaseModel):
         default_factory=list,
         description="Claims people marked good, with their notes, to learn what works.",
     )
-    next: str = Field(description="The verb that usually follows.")
+    namespace: str = Field(
+        description="The namespace these sections belong to: the audited folder below the repository root; pass it as --path to submit."
+    )
+    next: str = Field(
+        description="The verb that usually follows, with --path naming the namespace."
+    )
 
 
 class Stored(BaseModel):
@@ -161,7 +166,7 @@ def todo(path: Path, limit: int | None = None) -> TodoResult:
     """
     target = resolve_target(path)
     sections = list(cut(target))
-    with Store(target.root) as store:
+    with Store(target.root, target.namespace) as store:
         refresh = store.refresh(sections, target.concepts)
         extracted = store.extracted()
         said: dict[str, list[FeedbackOut]] = {}
@@ -218,7 +223,8 @@ def todo(path: Path, limit: int | None = None) -> TodoResult:
         if examples or any(s.id in said for s in shown)
         else None,
         examples=examples,
-        next="kmaudit claims submit -",
+        namespace=target.namespace,
+        next=f"kmaudit claims submit - --path {target.namespace}",
     )
 
 
@@ -358,7 +364,7 @@ def submit(path: Path, text: str, by: str = "agent") -> SubmitResult:
             "as kmaudit claims todo --json describes"
         )
     result = SubmitResult()
-    with Store(target.root) as store:
+    with Store(target.root, target.namespace) as store:
         for item in items:
             section = item.get("section") if isinstance(item, dict) else None
             label = section if isinstance(section, str) else None
@@ -404,7 +410,7 @@ def list_claims(path: Path, kind: str | None = None, each: bool = False) -> List
     """
     target = resolve_target(path)
     concepts = target.concepts
-    with Store(target.root) as store:
+    with Store(target.root, target.namespace) as store:
         claims = [c for c in store.claims(concepts) if kind is None or c.kind == kind]
         documents = store.documents()
     if each:

@@ -3,7 +3,7 @@
 The page shows each document of the bundle with its claims, checks and how
 sure each check is. People give a thumbs up or down and a note on a claim or
 its check, say whether a claim holds, and ask the decision model for a second
-opinion. Everything is read from and written to ``.kmctl/audit.sqlite``
+opinion. Everything is read from and written to the namespace's store under ``.kmaudit/``
 (ADR 0041). The server listens on 127.0.0.1 only and refuses requests whose
 Host or Origin is not local, so no other site can write through it.
 """
@@ -174,9 +174,10 @@ class SectionView(BaseModel):
 
 
 class DocumentView(BaseModel):
-    """One concept of the bundle as the page lists and shows it."""
+    """One page of the audited folder as the review page lists and shows it."""
 
     concept: str
+    path: str = Field(description="The page's file, relative to the repository root.")
     title: str
     sections: list[SectionView]
     counts: dict[str, int] = Field(description="Sentences per coverage.")
@@ -410,11 +411,11 @@ def build(root: Path, by: str = "human", config: Path | None = None) -> AuditVie
     """
     todo(root)
     target = resolve_target(root)
-    repo = Repository(target.root)
+    repo = Repository(target.root, target.bundle)
     settings = _settings(config)
-    measured = coverage(target.root)
+    measured = coverage(target.bundle)
     concepts: dict[str, DocumentView] = {}
-    with Store(target.root) as store:
+    with Store(target.root, target.namespace) as store:
         pending = store.pending_sections()
         verdicts = {
             (sid, n): (kind, reason)
@@ -442,6 +443,9 @@ def build(root: Path, by: str = "human", config: Path | None = None) -> AuditVie
             concept,
             DocumentView(
                 concept=concept,
+                path=(target.bundle / f"{concept}.md")
+                .relative_to(target.root)
+                .as_posix(),
                 title=title,
                 sections=[],
                 counts={},
@@ -519,7 +523,7 @@ def file_text(root: Path, path: str) -> FileText:
         When ``path`` is not such a file.
     """
     target = resolve_target(root)
-    repo = Repository(target.root)
+    repo = Repository(target.root, target.bundle)
     refused = AuditError(f"{path!r} is not a text file a check may read")
     if path not in set(repo.tracked):
         raise refused
@@ -541,9 +545,9 @@ def claim_view(root: Path, claim_id: str, config: Path | None = None) -> ClaimVi
         If ``root`` names no bundle, or the store has no such claim.
     """
     target = resolve_target(root)
-    repo = Repository(target.root)
+    repo = Repository(target.root, target.bundle)
     settings = _settings(config)
-    with Store(target.root) as store:
+    with Store(target.root, target.namespace) as store:
         found = store.claim(claim_id)
         if found is None:
             raise AuditError(
@@ -569,8 +573,8 @@ def give_feedback(
         If ``root`` names no bundle, or the store has no such claim.
     """
     target = resolve_target(root)
-    repo = Repository(target.root)
-    with Store(target.root) as store:
+    repo = Repository(target.root, target.bundle)
+    with Store(target.root, target.namespace) as store:
         found = store.claim(given.claim)
         lines_read: dict[str, str] = {}
         if found is not None and given.target == "check" and given.verdict:
@@ -599,7 +603,7 @@ def second_opinion(root: Path, claim_id: str, config: Path | None = None) -> Cla
     from kmaudit.judge import INSTALL, judge
 
     target = resolve_target(root)
-    with Store(target.root) as store:
+    with Store(target.root, target.namespace) as store:
         found = store.claim(claim_id)
         if found is None:
             raise AuditError(
@@ -623,7 +627,7 @@ def second_opinion(root: Path, claim_id: str, config: Path | None = None) -> Cla
             f"(enabled, provider, model) in {settings.source or settings_path(config)}"
         )
     lines = claim_lines(root, claim_id) if question == "claim" else ""
-    with Store(target.root) as store:
+    with Store(target.root, target.namespace) as store:
         result = asyncio.run(judge(store, settings, question, [claim_id], lines))[0]
     if isinstance(result, Exception):
         raise AuditError(str(result)) from result

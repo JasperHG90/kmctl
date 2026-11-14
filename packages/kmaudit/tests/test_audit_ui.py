@@ -213,7 +213,7 @@ def test_a_second_opinion_asks_the_model_once_and_shows_on_the_page(
     assert shown["opinion"]["level"] == "the claim"
 
 
-def test_ui_refuses_a_folder_with_no_bundle(
+def test_ui_refuses_a_folder_with_no_markdown(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.chdir(tmp_path)
