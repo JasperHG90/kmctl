@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "release-per-package",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
@@ -114,8 +114,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "b820da51e625c7a4c1d68a1b4b9e0f7c233efd8f5235387c45bb506e01ab3862",
   "intent": {
@@ -147,8 +147,14 @@
       "to": "verifying",
       "at": "2026-11-14T21:26:48+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-14T21:29:42+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T21:26:50+00:00"
+  "at": "2026-11-14T21:29:43+00:00"
 }
