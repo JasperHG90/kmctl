@@ -1,15 +1,15 @@
 {
   "schema_version": "1.0",
   "slug": "release-skill",
-  "plan_hash": "a6d479c861ad43f002679b46d99be49bcc4da41c1443ff4d54695eb9b544ea89",
+  "plan_hash": "59daf4df99fedbc63de03bc6ccbc47d39bd6ae305fafcab0c12421bf2bf164f6",
   "problems": [
     {
       "id": "P1",
-      "text": "No skill walks a release: the flow lives as prose in `.claude/rules/releases.md`, assumes one package, and never says why `release.yml` and `release-tag.yml` are separate or why `apm/apm.yml` is kmctl's version source"
+      "text": "No skill walks a release: the flow lives as prose in `.claude/rules/releases.md`, assumes one package, never says why `release.yml` and `release-tag.yml` are separate or why `apm/apm.yml` is kmctl's version source, and nothing reads release-tag's run for late commits missing from the notes"
     },
     {
       "id": "P2",
-      "text": "`.claude/rules/releases.md` will describe a stale one-package flow once releases take a package and the notes are committed in the version pull request, and it would repeat the skill's steps"
+      "text": "`.claude/rules/releases.md` will describe a stale one-package flow once releases take a package and the notes are committed in the version pull request, its after-publish fix (regenerate the notes from the script) would overwrite the reviewed notes, and it would repeat the skill's steps"
     },
     {
       "id": "P3",
@@ -40,12 +40,12 @@
       "touches": [
         "new:.claude/skills/release/"
       ],
-      "checked_by": "`new:tests/test_release_skill.py` (front matter names `release`, every `-f KEY=` is a `release.yml` input, package values match the input's options, cited paths exist), and a manual `/release kmaudit` dry run",
+      "checked_by": "`new:tests/test_release_skill.py` (front matter names `release`; every `-f KEY=` is a `release.yml` input; package values match the input's options; cited paths exist, `<tag>`/`<package>` placeholders matched as globs; `-k explains` tests for the two-workflow and version-source explanations; the after-merge step watches the release-tag run with `gh run watch`/`gh run view` and reads its `::warning::`/step summary of late commits; the gap step edits both the Release and the committed notes file and never regenerates), and a manual `/release kmaudit` dry run",
       "seen_by": "operator"
     },
     {
       "id": "O2",
-      "change": "`releases.md` keeps only the no-`--admin` rule and `every-release-has-notes`, reworded for notes reviewed in the pull request, and points at the skill",
+      "change": "`releases.md` keeps only the no-`--admin` rule and `every-release-has-notes`, reworded so notes are reviewed in the pull request and a gap after publish is added by hand to the Release and the committed notes file, never regenerated, and points at the skill",
       "kind": "support",
       "goal": "G2",
       "goal_index": 1,
@@ -60,7 +60,7 @@
       "touches": [
         ".claude/rules/releases.md"
       ],
-      "checked_by": "`tests/test_rules.py` (cited paths exist, cited ADRs exist) and `new:tests/test_release_skill.py` (the rule names the skill's folder `.claude/skills/release/`)",
+      "checked_by": "`tests/test_rules.py` (cited paths exist, cited ADRs exist) and `new:tests/test_release_skill.py` `-k rule` (the rule names the skill's folder `.claude/skills/release/`, names `gh release edit` and the committed notes file, and does not say to regenerate published notes)",
       "seen_by": "operator"
     },
     {
