@@ -84,9 +84,10 @@ flowchart LR
     end
 
     subgraph release["releases (ADR 0012)"]
-        releaseYml[".github/workflows/release.yml<br/>by hand: version pull request"]
-        releaseTag[".github/workflows/release-tag.yml<br/>on an apm/apm.yml change on main"]
-        releasePy["scripts/release.py<br/>current, manifest, set, compare"]
+        releaseYml[".github/workflows/release.yml<br/>by hand, package kmctl or kmaudit:<br/>version pull request with its notes"]
+        releaseTag[".github/workflows/release-tag.yml<br/>on an apm/apm.yml or<br/>packages/kmaudit/VERSION change on main"]
+        releasePy["scripts/release.py<br/>current, manifest, set, tag, compare"]
+        releaseNotes["scripts/release_notes.py<br/>.github/release-notes/TAG.md"]
         nextVersion["scripts/next_release_version.py"]
         wheelChecks["scripts/check_wheel.py<br/>scripts/smoke_wheel.py"]
         starter["copier.yml and starter/<br/>the kmctl-starter template (ADR 0025)"]
@@ -94,7 +95,7 @@ flowchart LR
 
     apmCli["apm install, run by the user<br/>in the consumer (kmctl never runs it)"]
     okfSkills["scaccogatto/okf-skills<br/>pinned commit"]
-    ghRelease["v* tag and GitHub Release<br/>wheel, sdist, SHA256SUMS"]
+    ghRelease["v* or kmaudit-v* tag and GitHub Release<br/>wheel, sdist, SHA256SUMS"]
     repo[("docs/ and .okf/")]
     agentFiles[("CLAUDE.md, AGENTS.md")]
     consumer[("the consumer's apm.yml,<br/>.claude/ skills, agents, rules,<br/>.claude/settings.json hook,<br/>.mcp.json bundle (all from APM)")]
@@ -185,16 +186,17 @@ flowchart LR
     publishPy -. "reads CODEOWNERS" .-> repo
     ci --> summary
 
-    releaseYml -- "next version from v* tags" --> nextVersion
+    releaseYml -- "next version from the package's tags" --> nextVersion
+    releaseYml -- "draft the package's notes" --> releaseNotes
     releaseYml -- "set: version, docs' install lines" --> releasePy
     releasePy -- "write: version,<br/>and its copies in the root apm.yml<br/>and the two sub-packages" --> apmPkg
     releasePy -- "write: kmctl_ref default vX.Y.Z" --> starter
-    releaseYml -- "uv build --package kmctl, then check" --> wheelChecks
-    releaseYml -- "commits it on release/vX.Y.Z,<br/>gh pr create" --> apmPkg
+    releaseYml -- "uv build --package, then check" --> wheelChecks
+    releaseYml -- "commits it and the notes on release/TAG,<br/>gh pr create" --> apmPkg
     apmPkg -- "merged to main" --> releaseTag
     releaseTag -- "compare old and new" --> releasePy
-    releaseTag -- "uv build --package kmctl, then check" --> wheelChecks
-    releaseTag -- "tag after the build,<br/>gh release create" --> ghRelease
+    releaseTag -- "uv build --package, then check" --> wheelChecks
+    releaseTag -- "refuse without the notes file,<br/>tag after the build,<br/>gh release create --notes-file" --> ghRelease
     app -. "kmctl --version reads it<br/>through pyproject's regex source" .-> apmPkg
 ```
 
@@ -382,23 +384,33 @@ the wheel, from `../../apm` in a checkout or the sdist's copy. Releases
 after v0.12.1 install from `#subdirectory=packages/kmctl`; the action
 installs that folder of its own checkout.
 
-- `.github/workflows/release.yml` runs by hand. It works out the version with
-  `scripts/next_release_version.py`, refuses a real run off `main` or a tag
+kmaudit releases on its own: its version is the one line in
+`packages/kmaudit/VERSION`, its tags are `kmaudit-vX.Y.Z`, and every release
+script takes `--package kmctl|kmaudit` (ADR 0012).
+
+- `.github/workflows/release.yml` runs by hand for one package. It works out the version with
+  `scripts/next_release_version.py` from that package's tags, refuses a real run off `main` or a tag
   that exists, runs the lint and the tests, and builds and checks the wheel
   with `scripts/check_wheel.py` and `scripts/smoke_wheel.py`. A real run
   commits `scripts/release.py set` (the version in `apm/apm.yml` and its
   copies in the root `apm.yml`, `apm/claude/apm.yml` and
   `apm/antigravity/apm.yml`, the docs' six install lines and the APM how-to's
-  pin, and `kmctl_ref`'s default in `copier.yml`) on `release/vX.Y.Z` and
-  opens the version pull request.
+  pin, and `kmctl_ref`'s default in `copier.yml`; for kmaudit, `VERSION` and
+  its README's install line) on `release/TAG` and opens the version pull
+  request. A notes job, in dry runs too, drafts the package's notes with
+  `scripts/release_notes.py`; the version pull request commits them as
+  `.github/release-notes/TAG.md` with a `Drafted-From` trailer and carries
+  them as its body.
 - `.github/workflows/release-tag.yml` runs when a push to `main` changes
-  `apm/apm.yml`. It reads the commit before the push with
+  `apm/apm.yml` or `packages/kmaudit/VERSION`, once per package. It reads the commit before the push with
   `scripts/release.py manifest`, which reads `apm/apm.yml` alone, so an old
   commit whose apm.yml copies disagree still has a version to compare and a
   lowered version still fails. When `scripts/release.py compare` says the
-  version went up, it builds and checks first, then pushes the tag `vX.Y.Z` and publishes the
-  GitHub Release with the wheel, the sdist and `SHA256SUMS`. Nothing goes to
-  PyPI.
+  version went up, it refuses when `.github/release-notes/TAG.md` is missing
+  or blank, warns about the package's commits that landed after the notes
+  were drafted, builds and checks, then pushes the tag and publishes the
+  GitHub Release with the wheel, the sdist, `SHA256SUMS` and that notes file
+  as its body; only a kmctl release is Latest. Nothing goes to PyPI.
 - The tag is also a release of kmctl-starter, the copier template in
   `copier.yml` and `starter/` (ADR 0025): `uvx copier copy
   gh:JasperHG90/kmctl` renders the newest tag, whose `kmctl_ref` default is
@@ -442,7 +454,9 @@ installs that folder of its own checkout.
   audits); `.github/workflows/knowledge-audit.yml`.
 - Releases: `.github/workflows/release.yml`, `.github/workflows/release-tag.yml`,
   `scripts/release.py`, `scripts/next_release_version.py`,
+  `scripts/release_notes.py`, `.github/release-notes/`,
   `scripts/check_wheel.py`, `scripts/smoke_wheel.py`, `apm/apm.yml`,
+  `packages/kmaudit/VERSION`,
   `copier.yml` and `starter/`.
 - Repository agents (ADR 0035): `.github/workflows/hermes-interactive.yaml`
   (`/hermes`), `.github/workflows/hermes-issue-triage.yaml` and

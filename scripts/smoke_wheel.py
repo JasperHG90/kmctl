@@ -5,13 +5,14 @@
 
 Usage::
 
-    uv run scripts/smoke_wheel.py dist/kmctl-*.whl [--version VERSION]
+    uv run scripts/smoke_wheel.py dist/kmctl-*.whl [--package kmctl|kmaudit] [--version VERSION]
 
 It creates a throwaway virtual environment, installs the wheel with its
-dependencies, and checks that ``kmctl --version`` prints the wheel's version
-(or ``--version`` when given) and that the installed package holds the skills
-``kmctl briefing`` lists, such as ``kmctl/_skills/audit/SKILL.md``. Exit 0
-when both hold (ADR 0012).
+dependencies, and checks that ``<package> --version`` prints the wheel's
+version (or ``--version`` when given). For kmctl, the default, it also checks
+that the installed package holds the skills ``kmctl briefing`` lists, such as
+``kmctl/_skills/audit/SKILL.md``; kmaudit ships no skills. Exit 0 when the
+checks hold (ADR 0012).
 """
 
 from __future__ import annotations
@@ -41,9 +42,9 @@ def _run(args: list[str]) -> subprocess.CompletedProcess[str]:
     return subprocess.run(args, capture_output=True, text=True, check=False)
 
 
-def smoke(wheel: Path, expect: str) -> list[str]:
+def smoke(wheel: Path, expect: str, package: str = "kmctl") -> list[str]:
     """Install ``wheel`` in a fresh venv and return the problems found (empty when fine)."""
-    with tempfile.TemporaryDirectory(prefix="kmctl-smoke-") as tmp:
+    with tempfile.TemporaryDirectory(prefix=f"{package}-smoke-") as tmp:
         venv = Path(tmp) / "venv"
         made = _run(["uv", "venv", "-q", "--python", "3.12", str(venv)])
         if made.returncode != 0:
@@ -53,11 +54,18 @@ def smoke(wheel: Path, expect: str) -> list[str]:
         if inst.returncode != 0:
             return [f"could not install the wheel: {inst.stderr.strip()}"]
         problems: list[str] = []
-        version = _run([str(venv / "bin" / "kmctl"), "--version"])
+        command = venv / "bin" / package
+        version = (
+            _run([str(command), "--version"])
+            if command.is_file()
+            else subprocess.CompletedProcess([], 1, "", "")
+        )
         if version.returncode != 0 or not version_matches(version.stdout, expect):
             problems.append(
-                f"kmctl --version printed {version.stdout.strip()!r}, not {expect}"
+                f"{package} --version printed {version.stdout.strip()!r}, not {expect}"
             )
+        if package != "kmctl":
+            return problems
         found = _run(
             [
                 str(python),
@@ -84,18 +92,23 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("wheel", type=Path, help="the built wheel")
     parser.add_argument(
+        "--package",
+        choices=("kmctl", "kmaudit"),
+        default="kmctl",
+        help="the package the wheel builds (default kmctl); kmaudit skips the skills check",
+    )
+    parser.add_argument(
         "--version",
-        help="the version kmctl must report; default: the wheel file name's",
+        help="the version the package must report; default: the wheel file name's",
     )
     args = parser.parse_args(argv)
     expect = args.version or wheel_version(args.wheel)
-    problems = smoke(args.wheel.resolve(), expect)
+    problems = smoke(args.wheel.resolve(), expect, args.package)
     for problem in problems:
         print(f"smoke_wheel: {problem}", file=sys.stderr)
     if not problems:
-        print(
-            f"smoke_wheel: {args.wheel.name} installs, reports {expect}, holds its skills"
-        )
+        held = ", holds its skills" if args.package == "kmctl" else ""
+        print(f"smoke_wheel: {args.wheel.name} installs, reports {expect}{held}")
     return 1 if problems else 0
 
 

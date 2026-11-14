@@ -126,3 +126,61 @@ def test_newest_tag_ignores_other_tags() -> None:
 
     assert newest_tag(tags) == "0.2.1rc1"
     assert newest_tag(["release-1", "other"]) is None
+
+
+def test_package_aware_newest_tag_reads_one_family() -> None:
+    """kmctl counts only ``v*`` tags and kmaudit only ``kmaudit-v*`` tags."""
+    tags = ["v0.5.0", "kmaudit-v0.1.0", "kmaudit-v0.2.0rc1", "kmaudit-vnext"]
+
+    assert newest_tag(tags) == "0.5.0"
+    assert newest_tag(tags, prefix="v") == "0.5.0"
+    assert newest_tag(tags, prefix="kmaudit-v") == "0.2.0rc1"
+    assert newest_tag(["v0.5.0"], prefix="kmaudit-v") is None
+
+
+@pytest.mark.parametrize(
+    ("args", "expected"),
+    [
+        (("PATCH",), "0.5.1"),
+        (("PATCH", "--package", "kmctl"), "0.5.1"),
+        (("PATCH", "--package", "kmaudit"), "0.1.1"),
+        (("MINOR", "--package", "kmaudit"), "0.2.0"),
+    ],
+)
+def test_package_aware_increment_raises_the_family_s_tag(
+    tmp_path: Path, args: tuple[str, ...], expected: str
+) -> None:
+    """Each package raises its own family's newest tag, never the other's."""
+    repo = _repo(tmp_path, "v0.5.0", "kmaudit-v0.1.0")
+
+    res = _run(repo, *args)
+
+    assert res.returncode == 0, res.stderr
+    assert res.stdout == f"{expected}\n"
+
+
+def test_package_aware_first_kmaudit_release_needs_a_version(tmp_path: Path) -> None:
+    """With only ``v*`` tags, kmaudit has no release yet and asks for ``--version``."""
+    repo = _repo(tmp_path, "v0.5.0")
+
+    refused = _run(repo, "PATCH", "--package", "kmaudit")
+    given = _run(repo, "PATCH", "--package", "kmaudit", "--version", "0.1.0")
+
+    assert refused.returncode == 1
+    assert "kmaudit-v*" in refused.stderr
+    assert "--version" in refused.stderr
+    assert given.stdout == "0.1.0\n"
+
+
+def test_package_aware_kmaudit_version_is_checked_against_its_own_family(
+    tmp_path: Path,
+) -> None:
+    """An override below kmctl's newest tag is fine for kmaudit, and refused at or below kmaudit's."""
+    repo = _repo(tmp_path, "v0.5.0", "kmaudit-v0.2.0")
+
+    ok = _run(repo, "PATCH", "--package", "kmaudit", "--version", "0.3.0")
+    low = _run(repo, "PATCH", "--package", "kmaudit", "--version", "0.2.0")
+
+    assert ok.stdout == "0.3.0\n"
+    assert low.returncode == 1
+    assert "not above" in low.stderr

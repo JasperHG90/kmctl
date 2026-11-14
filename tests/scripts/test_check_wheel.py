@@ -139,3 +139,85 @@ def test_package_build_gives_a_wheel_both_scripts_accept(
         check=False,
     )
     assert smoke.returncode == 0, smoke.stdout + smoke.stderr
+
+
+KMAUDIT_PYPROJECT = ROOT / "packages" / "kmaudit" / "pyproject.toml"
+KMAUDIT_COMPLETE = ["kmaudit/__init__.py", "kmaudit/cli.py", "kmaudit/ui.html"]
+
+
+def test_package_aware_kmaudit_expects_its_package_and_data_files() -> None:
+    """kmaudit has no apm-include table: its wheel must hold the package and its non-Python files."""
+    assert expected_entries(KMAUDIT_PYPROJECT) == ["kmaudit/", "kmaudit/ui.html"]
+
+
+@pytest.mark.parametrize(
+    ("names", "code"),
+    [
+        (KMAUDIT_COMPLETE, 0),
+        (["kmaudit/__init__.py", "kmaudit/cli.py"], 1),
+    ],
+    ids=["complete", "no-ui-html"],
+)
+def test_package_aware_kmaudit_reads_its_own_pyproject(
+    tmp_path: Path, names: list[str], code: int
+) -> None:
+    """``--package kmaudit`` from the root reads packages/kmaudit/pyproject.toml and checks ui.html."""
+    wheel = _wheel(tmp_path / "kmaudit-0.1.0-py3-none-any.whl", names)
+
+    res = subprocess.run(
+        [sys.executable, str(SCRIPT), "--package", "kmaudit", str(wheel)],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert res.returncode == code, res.stderr
+    if code:
+        assert "lacks kmaudit/ui.html" in res.stderr
+
+
+def test_package_aware_kmctl_is_unchanged(tmp_path: Path) -> None:
+    """``--package kmctl`` checks what the default always has, and a kmaudit wheel fails it."""
+    complete = _wheel(tmp_path / "kmctl-0.1.0-py3-none-any.whl", COMPLETE)
+    other = _wheel(tmp_path / "kmaudit-0.1.0-py3-none-any.whl", KMAUDIT_COMPLETE)
+
+    def run(wheel: Path) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [sys.executable, str(SCRIPT), "--package", "kmctl", str(wheel)],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+    assert run(complete).returncode == 0
+    assert run(other).returncode == 1
+
+
+@pytest.mark.integration
+def test_package_aware_kmaudit_build_passes_both_scripts(tmp_path: Path) -> None:
+    """uv build --package kmaudit gives a wheel at VERSION's version that both scripts accept."""
+    version = (ROOT / "packages" / "kmaudit" / "VERSION").read_text().strip()
+    out = tmp_path / "dist"
+
+    build = subprocess.run(
+        ["uv", "build", "-q", "--package", "kmaudit", "-o", str(out)],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert build.returncode == 0, build.stderr
+    [wheel] = out.glob("*.whl")
+    assert wheel.name == f"kmaudit-{version}-py3-none-any.whl"
+    for script, extra in ((SCRIPT, []), (SMOKE, ["--version", version])):
+        res = subprocess.run(
+            [sys.executable, str(script), "--package", "kmaudit", str(wheel), *extra],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert res.returncode == 0, res.stdout + res.stderr

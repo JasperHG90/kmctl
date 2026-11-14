@@ -2,11 +2,14 @@
 # requires-python = ">=3.12"
 # dependencies = ["packaging"]
 # ///
-"""Work out the next release version from the newest ``v*`` tag (ADR 0012).
+"""Work out a package's next release version from its family's newest tag (ADR 0012).
 
 Usage::
 
-    uv run scripts/next_release_version.py INCREMENT [--pre a|b|rc] [--version X] [--repo PATH]
+    uv run scripts/next_release_version.py INCREMENT [--package kmctl|kmaudit] [--pre a|b|rc] [--version X] [--repo PATH]
+
+``--package`` picks the tag family: kmctl (the default) counts ``v*`` tags,
+kmaudit counts ``kmaudit-v*`` tags, and neither reads the other's.
 
 INCREMENT is one of PATCH, MINOR, MAJOR (raise that part of the newest
 release, optionally starting a pre-release series with ``--pre``), PRE (the
@@ -28,6 +31,8 @@ from packaging.version import InvalidVersion, Version
 
 INCREMENTS = ("PATCH", "MINOR", "MAJOR", "PRE", "FINAL")
 PRE_LABELS = ("a", "b", "rc")
+#: Each package's tag prefix: its tags are the prefix and a version.
+TAG_PREFIX = {"kmctl": "v", "kmaudit": "kmaudit-v"}
 
 
 class Refused(Exception):
@@ -52,21 +57,25 @@ def _parse(text: str) -> Version:
     return version
 
 
-def newest_tag(tags: Iterable[str]) -> str | None:
-    """Return the highest version among ``v<version>`` tags, without the ``v``."""
+def newest_tag(tags: Iterable[str], prefix: str = "v") -> str | None:
+    """Return the highest version among ``<prefix><version>`` tags, without the prefix."""
     found: list[Version] = []
     for tag in tags:
-        if not tag.startswith("v"):
+        if not tag.startswith(prefix):
             continue
         try:
-            found.append(Version(tag[1:]))
+            found.append(Version(tag[len(prefix) :]))
         except InvalidVersion:
             continue
     return str(max(found)) if found else None
 
 
 def next_version(
-    newest: str | None, increment: str, pre: str | None, explicit: str | None = None
+    newest: str | None,
+    increment: str,
+    pre: str | None,
+    explicit: str | None = None,
+    prefix: str = "v",
 ) -> str:
     """Return the next version after ``newest``.
 
@@ -80,6 +89,8 @@ def next_version(
         A pre-release label (``a``, ``b``, ``rc``) to start or switch to, or ``None``.
     explicit :
         A version typed by the operator; it wins when given.
+    prefix :
+        The tag family's prefix, named when no tag exists yet.
 
     Returns
     -------
@@ -102,7 +113,9 @@ def next_version(
             raise Refused(f"{wanted} is not above the newest release {current}")
         return str(wanted)
     if current is None:
-        raise Refused("there is no v* tag yet; give the first version with --version")
+        raise Refused(
+            f"there is no {prefix}* tag yet; give the first version with --version"
+        )
     if increment not in INCREMENTS:
         raise Refused(f"increment {increment!r} is not one of {', '.join(INCREMENTS)}")
     major, minor, patch = [*current.release, 0, 0][:3]
@@ -143,6 +156,12 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("increment", help="PATCH, MINOR, MAJOR, PRE or FINAL")
     parser.add_argument(
+        "--package",
+        choices=tuple(TAG_PREFIX),
+        default="kmctl",
+        help="the package whose tags to count: kmctl (v*, the default) or kmaudit (kmaudit-v*)",
+    )
+    parser.add_argument(
         "--pre", choices=PRE_LABELS, help="start or switch a pre-release series"
     )
     parser.add_argument("--version", help="the exact version to release, e.g. 0.2.0a1")
@@ -151,11 +170,13 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
     try:
+        prefix = TAG_PREFIX[args.package]
         version = next_version(
-            newest_tag(repo_tags(args.repo)),
+            newest_tag(repo_tags(args.repo), prefix),
             args.increment.upper(),
             args.pre,
             args.version,
+            prefix,
         )
     except Refused as exc:
         print(f"next_release_version: refused: {exc}", file=sys.stderr)

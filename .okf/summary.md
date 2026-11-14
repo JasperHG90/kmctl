@@ -7,10 +7,10 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-11-14T14:08:34Z
+  at: 2026-11-14T21:18:58Z
   against:
-    - architecture/audit-pipeline
     - architecture/overview
+    - decisions/0012-releases-come-from-ci
 ---
 
 # Summary: kmctl

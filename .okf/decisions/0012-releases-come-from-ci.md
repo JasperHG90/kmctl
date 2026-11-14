@@ -148,3 +148,36 @@ action to a commit SHA, and no `uses:` line names `@main`.
 
 Found by the first `kmctl audit checks` run over the whole bundle
 ([ADR 0038](0038-checks-are-step-data-that-kmctl-reruns-and-only-checks-that-notice-a-change-are-stored.md)).
+
+## Correction, 2026-11-14
+
+The two workflows now release either package of the workspace
+([ADR 0044](0044-kmctl-and-kmaudit-are-both-workspace-packages.md)).
+`release.yml` takes a `package` input, `kmctl` or `kmaudit`. Each package has
+its own version source and tag family: kmctl keeps `apm/apm.yml` and `vX.Y.Z`
+tags, because users' `apm.yml` pins, `uses: JasperHG90/kmctl@vX` and copier's
+`kmctl_ref` name them; kmaudit's version is the one line in
+`packages/kmaudit/VERSION`, which its pyproject reads with hatchling's `regex`
+source, and its tags are `kmaudit-vX.Y.Z`. The file starts at `0.1.0.dev0`,
+which `scripts/release.py compare` skips, so adding it released nothing.
+`next_release_version.py`, `release.py`, `check_wheel.py` and
+`smoke_wheel.py` take `--package`.
+
+The notes are now written before the release and reviewed with it. A notes
+job, which runs in dry runs too, drafts them with
+`scripts/release_notes.py --package P TAG --ref HEAD`, listing only commits
+that touch the package's paths since its family's previous tag: kmaudit owns
+`packages/kmaudit/`, kmctl owns `packages/kmctl/` and everything outside
+`packages/`. The bump job commits the draft as
+`.github/release-notes/TAG.md` in the version pull request, on top of the
+exact commit it was drafted from, with a `Drafted-From: <sha>` trailer, and
+puts the notes and the trailer in the pull request body. Merging approves
+the notes too.
+
+`release-tag.yml` runs on a change to `apm/apm.yml` or
+`packages/kmaudit/VERSION`, once per package. It refuses before tagging when
+`.github/release-notes/TAG.md` is missing or blank, and publishes that file
+unchanged with `--notes-file`; it no longer runs `release_notes.py`. It warns,
+in a `::warning::` and the step summary, about the package's commits that
+landed between the drafted commit and the merge, so someone adds them with
+`gh release edit`. Only a kmctl release is marked Latest.

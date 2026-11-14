@@ -6,11 +6,20 @@
 
 Usage::
 
-    uv run scripts/release.py current
-    uv run scripts/release.py manifest
-    uv run scripts/release.py set VERSION
+    uv run scripts/release.py [--package kmctl|kmaudit] current
+    uv run scripts/release.py [--package kmctl|kmaudit] manifest
+    uv run scripts/release.py [--package kmctl|kmaudit] set VERSION
+    uv run scripts/release.py [--package kmctl|kmaudit] tag VERSION
     uv run scripts/release.py compare OLD NEW
     uv run scripts/release.py is-prerelease VERSION
+
+``--package`` picks the package, kmctl by default. Each has its own version
+source and tag family: kmctl's is described below and tags ``vX.Y.Z``;
+kmaudit's is the one-line ``packages/kmaudit/VERSION``, which its
+pyproject reads, and tags ``kmaudit-vX.Y.Z``. For kmaudit, ``current`` and
+``manifest`` print that file's version and ``set`` writes it and pins the
+install line in ``packages/kmaudit/README.md`` to the tag. ``tag`` prints a
+version's tag.
 
 ``apm/apm.yml``, kmctl's APM package, carries the one version, and
 ``packages/kmctl/pyproject.toml`` reads it from there (ADR 0014). APM needs a ``version:`` in
@@ -88,6 +97,18 @@ _COPIER_DEFAULT = re.compile(
 )
 
 
+#: The packages a release can name, and each one's tag prefix.
+TAG_PREFIX = {"kmctl": "v", "kmaudit": "kmaudit-v"}
+#: kmaudit's one version source, which packages/kmaudit/pyproject.toml reads.
+KMAUDIT_VERSION = Path("packages/kmaudit/VERSION")
+#: kmaudit's README, whose install line ``set --package kmaudit`` pins.
+KMAUDIT_README = Path("packages/kmaudit/README.md")
+# kmaudit's install line, with or without a tag before its subdirectory.
+_KMAUDIT_INSTALL = re.compile(
+    r"(git\+https://github\.com/JasperHG90/kmctl)(@[^\s#']+)?(#subdirectory=packages/kmaudit)"
+)
+
+
 class ReleaseRefused(Exception):
     """A release precondition failed; the message names the fix."""
 
@@ -138,6 +159,55 @@ def manifest_version(repo: Path) -> str:
     if version is None:
         raise ReleaseRefused(f"{MANIFEST} has no top-level version: line; restore it")
     return version
+
+
+def kmaudit_version(repo: Path) -> str:
+    """Return the version ``packages/kmaudit/VERSION`` holds.
+
+    Raises
+    ------
+    ReleaseRefused
+        When the file is missing or blank.
+    """
+    path = repo / KMAUDIT_VERSION
+    version = path.read_text().strip() if path.is_file() else ""
+    if not version:
+        raise ReleaseRefused(f"{KMAUDIT_VERSION} is missing or blank; restore it")
+    return version
+
+
+def set_kmaudit_version(repo: Path, version_text: str) -> list[Path]:
+    """Write the version into ``packages/kmaudit/VERSION`` and pin the README's install line.
+
+    Nothing is written unless the version is valid and the README holds an
+    install line.
+
+    Returns
+    -------
+    list[Path]
+        The repo-relative paths written.
+
+    Raises
+    ------
+    ReleaseRefused
+        When the version is malformed or the README has no install line.
+    """
+    version = str(parse_release(version_text))
+    readme, count = _KMAUDIT_INSTALL.subn(
+        rf"\g<1>@kmaudit-v{version}\g<3>", (repo / KMAUDIT_README).read_text()
+    )
+    if count == 0:
+        raise ReleaseRefused(
+            f"{KMAUDIT_README} has no kmaudit install line; restore the uv tool install line"
+        )
+    (repo / KMAUDIT_VERSION).write_text(f"{version}\n")
+    (repo / KMAUDIT_README).write_text(readme)
+    return [KMAUDIT_VERSION, KMAUDIT_README]
+
+
+def tag(package: str, version_text: str) -> str:
+    """Return the tag that releases ``version_text`` of ``package``, e.g. ``kmaudit-v0.2.0``."""
+    return f"{TAG_PREFIX[package]}{parse_release(version_text)}"
 
 
 def current(repo: Path) -> str:
@@ -255,20 +325,30 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--repo", type=Path, default=Path.cwd(), help="the repository root"
     )
+    parser.add_argument(
+        "--package",
+        choices=tuple(TAG_PREFIX),
+        default="kmctl",
+        help="the package to release (default kmctl); kmaudit reads packages/kmaudit/VERSION",
+    )
     sub = parser.add_subparsers(dest="cmd", required=True)
     p_cur = sub.add_parser(
         "current",
-        help="print apm/apm.yml's version; refuse when another apm.yml differs",
+        help="print the version (kmctl: apm/apm.yml's, refusing when another apm.yml differs)",
     )
     p_man = sub.add_parser(
         "manifest",
-        help="print apm/apm.yml's version alone; refuse only when it has none",
+        help="print the version source's version alone (kmctl: apm/apm.yml); refuse only when it has none",
     )
     p_set = sub.add_parser(
         "set",
-        help="write the version into the four apm.yml files, pin the docs, the hook's install hints and copier.yml's kmctl_ref",
+        help="kmctl: write the version into the four apm.yml files, pin the docs, the hook's install hints and copier.yml's kmctl_ref; kmaudit: write VERSION and pin its README's install line",
     )
     p_set.add_argument("version", help="the release version, e.g. 0.2.0 or 0.2.0rc1")
+    p_tag = sub.add_parser(
+        "tag", help="print the package's tag for a version: vX.Y.Z or kmaudit-vX.Y.Z"
+    )
+    p_tag.add_argument("version", help="the release version, e.g. 0.2.0")
     p_cmp = sub.add_parser("compare", help="print raised, same, lowered or skip")
     p_cmp.add_argument("old", help="the version before, or an empty string for none")
     p_cmp.add_argument("new", help="the version after")
@@ -276,18 +356,29 @@ def main(argv: list[str] | None = None) -> int:
         "is-prerelease", help="exit 0 for an a, b or rc version, else 1"
     )
     p_pre.add_argument("version", help="the version to test, e.g. 0.2.0rc1")
-    for p in (p_cur, p_man, p_set, p_cmp, p_pre):
+    for p in (p_cur, p_man, p_set, p_tag, p_cmp, p_pre):
         p.add_argument("--repo", type=Path, default=argparse.SUPPRESS)
+        p.add_argument(
+            "--package", choices=tuple(TAG_PREFIX), default=argparse.SUPPRESS
+        )
     args = parser.parse_args(argv)
     repo: Path = args.repo.resolve()
     try:
+        kmaudit = args.package == "kmaudit"
         if args.cmd == "current":
-            print(current(repo))
+            print(kmaudit_version(repo) if kmaudit else current(repo))
         elif args.cmd == "manifest":
-            print(manifest_version(repo))
+            print(kmaudit_version(repo) if kmaudit else manifest_version(repo))
         elif args.cmd == "set":
-            for path in set_version(repo, args.version):
+            written = (
+                set_kmaudit_version(repo, args.version)
+                if kmaudit
+                else set_version(repo, args.version)
+            )
+            for path in written:
                 print(f"wrote {path}")
+        elif args.cmd == "tag":
+            print(tag(args.package, args.version))
         elif args.cmd == "compare":
             print(compare(args.old, args.new))
         else:

@@ -887,7 +887,6 @@ wheels = [
 
 [[package]]
 name = "kmaudit"
-version = "0.1.0"
 source = { editable = "packages/kmaudit" }
 dependencies = [
     { name = "ast-grep-py" },
