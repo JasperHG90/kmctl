@@ -7,6 +7,12 @@ resolution-markers = [
     "python_full_version < '3.13'",
 ]
 
+[manifest]
+members = [
+    "kmaudit",
+    "kmctl",
+]
+
 [[package]]
 name = "annotated-doc"
 version = "0.0.5"
@@ -807,6 +813,38 @@ wheels = [
 ]
 
 [[package]]
+name = "kmaudit"
+version = "0.1.0"
+source = { editable = "packages/kmaudit" }
+dependencies = [
+    { name = "ast-grep-py" },
+    { name = "httpx" },
+    { name = "jmespath" },
+    { name = "pydantic" },
+    { name = "pyyaml" },
+    { name = "tenacity" },
+    { name = "typer" },
+]
+
+[package.optional-dependencies]
+tracing = [
+    { name = "langsmith" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "ast-grep-py", specifier = ">=0.51.2" },
+    { name = "httpx", specifier = ">=0.28.1" },
+    { name = "jmespath", specifier = ">=1.1.0" },
+    { name = "langsmith", marker = "extra == 'tracing'", specifier = ">=0.14.17" },
+    { name = "pydantic", specifier = ">=2.14.1" },
+    { name = "pyyaml", specifier = ">=6.0.3" },
+    { name = "tenacity", specifier = ">=9.2.1" },
+    { name = "typer", specifier = ">=0.27.3" },
+]
+provides-extras = ["tracing"]
+
+[[package]]
 name = "kmctl"
 source = { editable = "." }
 dependencies = [
@@ -816,22 +854,12 @@ dependencies = [
     { name = "typer" },
 ]
 
-[package.optional-dependencies]
-audit = [
-    { name = "ast-grep-py" },
-    { name = "jmespath" },
-    { name = "langsmith" },
-    { name = "tenacity" },
-]
-
 [package.dev-dependencies]
 dev = [
-    { name = "ast-grep-py" },
     { name = "copier" },
     { name = "ipykernel" },
-    { name = "jmespath" },
     { name = "jsonschema" },
-    { name = "langsmith" },
+    { name = "kmaudit", extra = ["tracing"] },
     { name = "opentelemetry-exporter-otlp-proto-http" },
     { name = "opentelemetry-sdk" },
     { name = "packaging" },
@@ -839,30 +867,22 @@ dev = [
     { name = "pytest" },
     { name = "respx" },
     { name = "ruff" },
-    { name = "tenacity" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "ast-grep-py", marker = "extra == 'audit'", specifier = ">=0.51.2" },
     { name = "httpx", specifier = ">=0.28.1" },
-    { name = "jmespath", marker = "extra == 'audit'", specifier = ">=1.1.0" },
-    { name = "langsmith", marker = "extra == 'audit'", specifier = ">=0.14.17" },
     { name = "pydantic", specifier = ">=2.14.1" },
     { name = "pyyaml", specifier = ">=6.0.3" },
-    { name = "tenacity", marker = "extra == 'audit'", specifier = ">=9.2.1" },
     { name = "typer", specifier = ">=0.27.3" },
 ]
-provides-extras = ["audit"]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "ast-grep-py", specifier = ">=0.51.2" },
     { name = "copier", specifier = ">=9.19.1" },
     { name = "ipykernel", specifier = ">=7.4.0" },
-    { name = "jmespath", specifier = ">=1.1.0" },
     { name = "jsonschema", specifier = ">=4.26.0" },
-    { name = "langsmith", specifier = ">=0.14.17" },
+    { name = "kmaudit", extras = ["tracing"], editable = "packages/kmaudit" },
     { name = "opentelemetry-exporter-otlp-proto-http", specifier = "==1.45.1" },
     { name = "opentelemetry-sdk", specifier = "==1.45.1" },
     { name = "packaging", specifier = ">=26.3" },
@@ -870,7 +890,6 @@ dev = [
     { name = "pytest", specifier = ">=9.1.1" },
     { name = "respx", specifier = ">=0.23.1" },
     { name = "ruff", specifier = ">=0.17.0" },
-    { name = "tenacity", specifier = ">=9.2.1" },
 ]
 
 [[package]]

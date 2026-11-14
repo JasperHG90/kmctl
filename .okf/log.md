@@ -275,3 +275,8 @@
 - Fixed a drift in `architecture/overview`: `kmctl audit checks run` also reruns a check whose last run was skipped, and every check with `--all`.
 - Fixed two drifts in `architecture/overview` (in commit a29ddf1e, which left out this line): `kmctl audit ui` also writes the `cache` table and deletes a removed section's claims, extractions and verdicts, and `kinds.py` names each kind's fields itself, with `tests/test_schema.py` checking they are allowed.
 - Added `prototypes/link-question`: rewording the decision model's link question so finding the exact text or value a claim describes counts as testing it moved 679 checks' median score from 0.70 to 0.76, wording checks from 0.75 to 0.84.
+
+## 2026-11-14
+
+- Added `decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp` with `kmctl new decision`.
+- The audit left kmctl for its own package, kmaudit, in `packages/kmaudit/` (ADR 0043): `manifesto` describes kmaudit as its own part, `architecture/audit-pipeline` and `architecture/overview` name the `kmaudit` verbs and the package's modules, `architecture/index` follows the new description, `decisions/0036-claims-are-extracted-by-the-agent-through-kmctl-audit-claims` gains a correction saying where its verbs went, and `summary` says the audit is kmaudit now.

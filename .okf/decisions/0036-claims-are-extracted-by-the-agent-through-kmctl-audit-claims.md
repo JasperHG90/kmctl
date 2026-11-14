@@ -72,3 +72,9 @@ add their tables to the same store as further schema steps.
 a claim's id still follows its text, but a stored check or reason now
 follows a reworded claim of the same sentence, so re-extracting an edited
 section keeps its answers.
+
+## Correction, 2026-11-14
+
+The verbs this record names as `kmctl audit claims` are `kmaudit claims`
+now: the audit left kmctl for its own package, kmaudit, in
+`packages/kmaudit/` (ADR 0043). The rest of this record stands.

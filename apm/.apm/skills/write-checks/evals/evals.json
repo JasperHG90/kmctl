@@ -6,10 +6,10 @@
       "name": "code-backed-claims",
       "prompt": "/write-checks",
       "repo": "tests/fixtures/audit_repo.py's repository with three stored claims (store_claims): two the code bears out, one it does not",
-      "expected_output": "The kmctl-check-writer agent stores a check for each claim through kmctl audit checks submit, tests each with try first, and marks the false claim as drift; the main session sees only the summary.",
+      "expected_output": "The kmctl-check-writer agent stores a check for each claim through kmaudit checks submit, tests each with try first, and marks the false claim as drift; the main session sees only the summary.",
       "files": [],
       "expectations": [
-        "kmctl audit checks todo reports 0 to check afterwards",
+        "kmaudit checks todo reports 0 to check afterwards",
         "The two true claims hold with code steps that are not weak",
         "The SQLite claim is stored as drift with a one-sentence reason",
         "The main session's transcript holds the summary but no step",

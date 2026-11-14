@@ -729,7 +729,7 @@ def test_package_ships_no_post_tool_use_hook(harness: str) -> None:
     [("kmctl-claims-extractor", "claims"), ("kmctl-check-writer", "checks")],
 )
 def test_shell_agents_carry_the_guard_hook(agent: str, group: str) -> None:
-    """In Claude Code a PreToolUse hook holds the agent's shell to kmctl audit GROUP commands (ADR 0040)."""
+    """In Claude Code a PreToolUse hook holds the agent's shell to kmaudit GROUP commands (ADR 0040)."""
     meta = yaml.safe_load(
         (DOT_APM / "agents" / f"{agent}.md").read_text().split("---")[1]
     )
@@ -737,5 +737,5 @@ def test_shell_agents_carry_the_guard_hook(agent: str, group: str) -> None:
     [entry] = meta["hooks"]["PreToolUse"]
     assert entry["matcher"] == "Bash"
     assert entry["hooks"] == [
-        {"type": "command", "command": f"kmctl audit guard --allow {group}"}
+        {"type": "command", "command": f"kmaudit guard --allow {group}"}
     ]

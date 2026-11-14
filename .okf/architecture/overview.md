@@ -47,11 +47,14 @@ flowchart LR
         checkWriter["agents/kmctl-check-writer<br/>Read, Bash; Haiku"]
     end
 
+    subgraph kmaudit["packages/kmaudit/ (kmaudit, its own package; ADR 0043)"]
+        claimsPkg["src/kmaudit/<br/>claims, checks, ui, coverage, guard;<br/>.kmctl/audit.sqlite"]
+        judgePy["judge.py, settings.py, tracing.py<br/>kmaudit judge (off by default)"]
+    end
+
     subgraph cli["src/kmctl/ (kmctl CLI)"]
         app["__init__.py<br/>Typer app"]
         pinPy["pin.py<br/>hand-off to the lock's pin,<br/>newer-release line"]
-        claimsPkg["claims/<br/>audit claims, audit checks and audit ui;<br/>.kmctl/audit.sqlite"]
-        judgePy["judge.py, audit_settings.py, tracing.py<br/>kmctl audit judge (off by default)"]
         scaffold["scaffold.py<br/>init"]
         checks["checks.py<br/>check"]
         briefing["briefing.py<br/>briefing"]
@@ -115,12 +118,12 @@ flowchart LR
     audit --> reviews
     audit -- "dispatches" --> auditor
     auditor -. "reads only" .-> repo
-    extract -- "kmctl audit claims todo, list" --> claimsPkg
+    extract -- "kmaudit claims todo, list" --> claimsPkg
     extract -- "dispatches" --> extractor
-    extractor -- "kmctl audit claims todo --json, submit" --> claimsPkg
-    writeChecks -- "kmctl audit checks todo, list" --> claimsPkg
+    extractor -- "kmaudit claims todo --json, submit" --> claimsPkg
+    writeChecks -- "kmaudit checks todo, list" --> claimsPkg
     writeChecks -- "dispatches" --> checkWriter
-    checkWriter -- "kmctl audit checks todo --json, try, submit" --> claimsPkg
+    checkWriter -- "kmaudit checks todo --json, try, submit" --> claimsPkg
     judgePy -- "reads checks and claims,<br/>caches answers" --> claimsPkg
     judgePy -- "only a question switched on:<br/>{model, state, questions}" --> decider
     judgePy -. "only with LANGSMITH_TRACING=true" .-> langsmith
@@ -221,29 +224,31 @@ cached, and the copy on PATH adds the newer-release line from
 | `kmctl mv` | `mv.py`, with `checks.py` to find links as `kmctl check` does and `concepts.py` for the name check and the log line | the renamed concept (its file, or a prototype's folder), each `.okf/` and `docs/` page with a link to it, a decision's new number in its `title` and heading, the summary's `checked.against`, and a log line; lines elsewhere that still name it are listed, not rewritten (ADR 0034) |
 | `kmctl verify` | `verify.py`, with `concepts.py` for `--stale-after` and the log line | a `verified` entry (and, with `--stale-after`, `stale_after`) in one concept or docs page, and a log line for a concept; only a person verifies, never an audit (ADR 0005, ADR 0023) |
 | `kmctl plugin patch` | `plugin.py`, with `antigravity.py` for the plugin folder and `opencode.py` for OpenCode | never runs APM, only `claude` to remove the old plugin: reads `apm.lock.yaml`; refuses an `apm.yml` that names the package the v0.3.0 way, naming the `apm uninstall`; for claude, removes the hook an older kmctl wrote and the old claude plugin `kmctl@kmctl`; for antigravity, writes `.agents/plugins/kmctl/` with the translated agents and takes APM's broken okf Stop handler out of `.agents/hooks.json` (ADR 0018, ADR 0020, ADR 0021); for opencode, rewrites the three agents in `.opencode/agents/`, writes `.opencode/rules/`, the `instructions` entry in `opencode.json` and `.opencode/plugins/kmctl.js` (ADR 0024); `--undo` deletes the plugin folder and the OpenCode files, and with `--scope user` deletes nothing in the repository and names them |
-| `kmctl audit claims todo`, `submit`, `list` | `claims/verbs.py`, with `claims/sections.py` (the section cutter and keys, reading front matter through `okf.py`), `claims/instructions.py`, `claims/models.py` (the answer schema) and `claims/store.py` | only `.kmctl/audit.sqlite` and `.kmctl/.gitignore` (`*`), never `.okf/` or `docs/`; no model call (ADR 0036) |
-| `kmctl audit checks todo`, `try`, `submit`, `run`, `list` | `claims/check_verbs.py`, with `claims/steps.py` (the step DSL and runner), `claims/anchors.py` and `claims/lines.py` (what a claim names and the lines around it), `claims/mutate.py` (the weak bar), `claims/check_instructions.py` and `claims/check_store.py` | only `.kmctl/`: `audit.sqlite`, and its `.gitignore` when missing; `try` writes nothing; no model call; code and query steps load ast-grep-py and jmespath from the `kmctl[audit]` extra (ADR 0038) |
-| `kmctl audit judge` | `judge.py`, with `audit_settings.py` (the per-user `audit.toml`), `tracing.py` (opt-in LangSmith) and `claims/check_store.py` for the state | only the `decisions` table in `.kmctl/audit.sqlite`; the one model call kmctl makes, off until a question is switched on; httpx with tenacity retries from the `kmctl[audit]` extra (ADR 0039) |
-| `kmctl audit coverage` | `claims/coverage.py`, reading each stored check's last run from `claims/check_store.py` and the code files from `claims/steps.py` | nothing in a repository that has a store; it reads `.kmctl/audit.sqlite` and the tracked files, and creates `.kmctl/` with an empty store only when there is none (ADR 0042) |
-| `kmctl audit ui` | `claims/ui.py` (the server and the page's data), `claims/ui.html` (the page), `claims/feedback.py`, with `claims/check_verbs.py` for each claim's status and `judge.py` for a second opinion | only `.kmctl/audit.sqlite`: the `feedback`, `decisions` and `cache` tables (a second opinion on a claim caches the CLI help walk it reads lines from), and on each page load the `sections` table, which it refreshes as `kmctl audit claims todo` does, deleting the claims, extractions and verdicts of a section that is gone; a server on 127.0.0.1 that answers only local Hosts and writes only JSON from its own Origin; a second opinion is the `judge` call, off until a question is switched on (ADR 0041) |
+| `kmaudit claims todo`, `submit`, `list` | `verbs.py`, with `sections.py` (the section cutter and keys, reading front matter through its own `frontmatter.py`), `instructions.py`, `models.py` (the answer schema) and `store.py` | only `.kmctl/audit.sqlite` and `.kmctl/.gitignore` (`*`), never `.okf/` or `docs/`; no model call (ADR 0036) |
+| `kmaudit checks todo`, `try`, `submit`, `run`, `list` | `check_verbs.py`, with `steps.py` (the step DSL and runner), `anchors.py` and `lines.py` (what a claim names and the lines around it), `mutate.py` (the weak bar), `check_instructions.py` and `check_store.py` | only `.kmctl/`: `audit.sqlite`, and its `.gitignore` when missing; `try` writes nothing; no model call; code and query steps load ast-grep-py and jmespath, which kmaudit installs (ADR 0038) |
+| `kmaudit judge` | `judge.py`, with `settings.py` (the per-user `audit.toml`), `tracing.py` (opt-in LangSmith) and `check_store.py` for the state | only the `decisions` table in `.kmctl/audit.sqlite`; the one model call kmaudit makes, off until a question is switched on; httpx with tenacity retries (ADR 0039) |
+| `kmaudit coverage` | `coverage.py`, reading each stored check's last run from `check_store.py` and the code files from `steps.py` | nothing in a repository that has a store; it reads `.kmctl/audit.sqlite` and the tracked files, and creates `.kmctl/` with an empty store only when there is none (ADR 0042) |
+| `kmaudit ui` | `ui.py` (the server and the page's data), `ui.html` (the page), `feedback.py`, with `check_verbs.py` for each claim's status and `judge.py` for a second opinion | only `.kmctl/audit.sqlite`: the `feedback`, `decisions` and `cache` tables (a second opinion on a claim caches the CLI help walk it reads lines from), and on each page load the `sections` table, which it refreshes as `kmaudit claims todo` does, deleting the claims, extractions and verdicts of a section that is gone; a server on 127.0.0.1 that answers only local Hosts and writes only JSON from its own Origin; a second opinion is the `judge` call, off until a question is switched on (ADR 0041) |
 | `kmctl doctor` | `doctor.py`, with `plugin.py` for the hook, MCP entries and lock reader, `antigravity.py` for the folder comparison and `opencode.py` for the OpenCode files | nothing; it reads `apm.yml`, `apm.lock.yaml` and the files it lists, the settings files, `.mcp.json`, `.agents/plugins/kmctl/`, `.opencode/`, `opencode.json` and agy's trust list, and runs only `uv tool run --offline --from apm-cli==0.33.0 apm --version`; `--online` fetches okf's MCP script URL |
 
-The claims flow: `kmctl audit claims todo` cuts each live concept into
+The kmaudit rows above are a separate package, `packages/kmaudit/src/kmaudit/`,
+which imports nothing from kmctl (ADR 0043); its paths are relative to it.
+The claims flow: `kmaudit claims todo` cuts each live concept into
 header sections, refreshes the store's sections (dropping the claims of a
 section whose key moved or that is gone) and hands out the pending ones
 with the extraction instructions. A coding agent writes one verdict per
-sentence and pipes them to `kmctl audit claims submit`, which validates them
-against `claims/models.py` and stores verdicts and claims; `kmctl audit
+sentence and pipes them to `kmaudit claims submit`, which validates them
+against `models.py` and stores verdicts and claims; `kmaudit
 claims list` reads them back. The store's schema moves by ordered steps in
-`PRAGMA user_version` (ADR 0036). `kmctl audit checks` turns stored
+`PRAGMA user_version` (ADR 0036). `kmaudit checks` turns stored
 claims into checks: `todo` hands out each claim with its anchors and lines,
 `submit` runs and mutation-tests each check and refuses a weak one, and
 `run` reruns a check when the files it reads change or its last run was skipped, and every check with `--all` (ADR 0038).
-`kmctl audit judge` builds a state from the store and asks a decision model,
-when the person switched that question on (ADR 0039). `kmctl audit ui`
+`kmaudit judge` builds a state from the store and asks a decision model,
+when the person switched that question on (ADR 0039). `kmaudit ui`
 serves a local page where a person gives claims and checks a thumbs up or
 down, a note and their own verdict; open feedback comes back with the next
-`todo` (ADR 0041). Its code view and `kmctl audit coverage` show which
+`todo` (ADR 0041). Its code view and `kmaudit coverage` show which
 lines of code the checks matched (ADR 0042). The whole pipeline,
 with its guard hook and its limits, is [the audit pipeline](audit-pipeline.md).
 
@@ -255,7 +260,8 @@ prints a JSON Schema built from it, so the schema is what kmctl writes.
 
 `okf.py` is the one reader of OKF front matter. `checks.py`, `concepts.py`,
 `docs_index.py`, `handoffs.py`, `review_due.py`, `summary.py`,
-`supersede.py`, `verify.py` and `claims/sections.py` read fields through it.
+`supersede.py` and `verify.py` read fields through it; kmaudit has its own
+reader, `frontmatter.py`.
 `kinds.py` names each kind's fields itself and cites `okf.py`'s
 `ALLOWED_FIELDS` for where each comes from, and `tests/test_schema.py` checks
 that every field in the schema it builds is allowed, so the fields kmctl uses
@@ -312,12 +318,12 @@ and `apm/claude/.apm/instructions/`, for the OpenCode rules.
   Grep and Glob (I2, ADR 0005). In CI, `action/agent.py` does the auditor's
   work itself and also has a shell, but nothing it changes is committed.
 - **Claims come from a subagent.** The `extract-claims` skill reads the
-  pending files from `kmctl audit claims todo` and dispatches the
+  pending files from `kmaudit claims todo` and dispatches the
   `kmctl-claims-extractor` agent per batch. The agent has Read and a shell,
-  writes only through `kmctl audit claims submit` by its instructions, and
+  writes only through `kmaudit claims submit` by its instructions, and
   returns a short summary, so the main session sees no claim (ADR 0036,
   ADR 0037). The `write-checks` skill and its `kmctl-check-writer` agent do
-  the same for checks, trying each draft with `kmctl audit checks try`
+  the same for checks, trying each draft with `kmaudit checks try`
   before `submit` (ADR 0038).
 
 ## The action
@@ -396,10 +402,10 @@ tag a consumer's `apm.yml` names and a build from a download with no
   `kmctl handoffs`, `kmctl new decision`, `kmctl new practice`,
   `kmctl new proposal`, `kmctl new prototype`, `kmctl new handoff`,
   `kmctl new doc`, `kmctl schema`, `kmctl decision supersede`, `kmctl mv`, `kmctl verify`, `kmctl summary ack`, `kmctl plugin patch`,
-  `kmctl doctor`, `kmctl audit claims todo`, `kmctl audit claims submit`,
-  `kmctl audit claims list`, `kmctl audit checks todo`, `kmctl audit checks try`,
-  `kmctl audit checks submit`, `kmctl audit checks run`, `kmctl audit checks list`,
-  `kmctl audit judge`, `kmctl audit ui`, `kmctl audit coverage`, `kmctl audit guard`.
+  `kmctl doctor`; kmaudit's `kmaudit claims todo`, `kmaudit claims submit`,
+  `kmaudit claims list`, `kmaudit checks todo`, `kmaudit checks try`,
+  `kmaudit checks submit`, `kmaudit checks run`, `kmaudit checks list`,
+  `kmaudit judge`, `kmaudit ui`, `kmaudit coverage`, `kmaudit guard`.
 - Modules: `src/kmctl/__init__.py`, `scaffold.py`, `checks.py`,
   `briefing.py`, `review_due.py`, `handoffs.py`, `concepts.py`,
   `docs.py`, `docs_index.py`, `supersede.py`, `mv.py`, `verify.py`, `summary.py` (the
@@ -408,11 +414,11 @@ tag a consumer's `apm.yml` names and a build from a download with no
   `src/kmctl/opencode.py` (the OpenCode agents, rules and briefing plugin),
   `src/kmctl/doctor.py` (the install checks), `src/kmctl/pin.py` (the
   hand-off to the lock's pin and the newer-release line),
-  `okf.py`, `kinds.py`, `src/kmctl/claims/` (`verbs.py`, `sections.py`,
-  `instructions.py`, `models.py`, `store.py`, `steps.py`, `mutate.py`,
-  `anchors.py`, `lines.py`, `check_instructions.py`, `check_store.py`,
-  `check_verbs.py`, `guard.py`), `src/kmctl/judge.py`, `src/kmctl/audit_settings.py`,
-  `src/kmctl/tracing.py`; `apm/.apm/skills/` (write-docs, handoff,
+  `okf.py`, `kinds.py`; `packages/kmaudit/src/kmaudit/` (`cli.py`,
+  `verbs.py`, `sections.py`, `instructions.py`, `models.py`, `store.py`,
+  `steps.py`, `mutate.py`, `anchors.py`, `lines.py`,
+  `check_instructions.py`, `check_store.py`, `check_verbs.py`, `guard.py`,
+  `judge.py`, `settings.py`, `tracing.py`, `frontmatter.py`); `apm/.apm/skills/` (write-docs, handoff,
   continue, audit and the three review skills),
   `apm/.apm/agents/kmctl-auditor.md`, `apm/.apm/skills/extract-claims/`
   and `apm/.apm/agents/kmctl-claims-extractor.md`, `apm/.apm/skills/write-checks/`

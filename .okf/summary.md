@@ -88,7 +88,8 @@ The [decision index](decisions/index.md) lists every record.
 ## Where it stands
 
 All four parts work, for three harnesses. I1, I3 and I4 are enforced by
-tests; I2 is `planned`. Agents extract claims and write checks
-that kmctl reruns with no model; an opt-in decision model and people's
-reviews judge them ([the audit pipeline](architecture/audit-pipeline.md)).
+tests; I2 is `planned`. The audit is kmaudit, its own package
+([ADR 0043](decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp.md)):
+agents write checks it reruns with no model, and people review them
+([the audit pipeline](architecture/audit-pipeline.md)).
 Many concepts lack a `verified` entry. Work in flight lives in `.loop/`.

@@ -1,5 +1,8 @@
 # extract-claims: skill-creator results
 
+These runs used the commands while they were still a kmctl group; they are
+`kmaudit` now (ADR 0043), and the names below use the new one.
+
 Made with the skill-creator skill (ADR 0007), together with the
 `kmctl-claims-extractor` agent, on 2026-11-11 (ticket agent-audit-claims-skill).
 The repository was `tests/fixtures/audit_repo.py`'s fixture plus a copy of
@@ -13,7 +16,7 @@ the agent's replies, not a `/extract-claims` run.
 
 ## Iteration 1
 
-**Eval 1, first pass.** `kmctl audit claims todo` listed 3 files, 11
+**Eval 1, first pass.** `kmaudit claims todo` listed 3 files, 11
 sections, which is one batch. The Haiku agent stored 11 of 11 sections with
 no refusal, 25 claims (point 19, structural 4, subjective 1, external 1),
 in 8 tool calls, 74k tokens and 69 s. Its reply was the two-line summary and
@@ -24,7 +27,7 @@ claims found them standalone and in the present tense, with a usable
 none, and only what the corrections still say became claims.
 
 **Baseline, no skill** (Sonnet, the same prompt in words: "extract the
-claims our .okf bundle makes"). It found `kmctl audit claims` on its own and
+claims our .okf bundle makes"). It found `kmaudit claims` on its own and
 stored all 11 sections, 33 claims, in 58k tokens and 41 s. Two sections were
 refused first (a subjective sentence with no claim) and fixed from the
 refusal line. It worked, but every sentence, verdict and claim passed

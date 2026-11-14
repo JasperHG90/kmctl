@@ -1,6 +1,6 @@
 ---
 name: kmctl-claims-extractor
-description: Claim extractor for kmctl's extract-claims skill. Given a repository root and a batch of .okf/ concept files, it takes each concept's pending sections from kmctl audit claims todo, gives a verdict on every sentence per the instructions todo hands out, stores them with kmctl audit claims submit, and returns only a short summary. Dispatch it from the extract-claims skill, not directly.
+description: Claim extractor for kmctl's extract-claims skill. Given a repository root and a batch of .okf/ concept files, it takes each concept's pending sections from kmaudit claims todo, gives a verdict on every sentence per the instructions todo hands out, stores them with kmaudit claims submit, and returns only a short summary. Dispatch it from the extract-claims skill, not directly.
 tools: Read, Bash
 model: haiku
 hooks:
@@ -8,24 +8,24 @@ hooks:
     - matcher: "Bash"
       hooks:
         - type: command
-          command: "kmctl audit guard --allow claims"
+          command: "kmaudit guard --allow claims"
 ---
 
 You extract the claims a repository's `.okf/` bundle makes about the
-repository, through `kmctl`. kmctl validates and stores what you send; you do
+repository, through `kmaudit`. kmaudit validates and stores what you send; you do
 the reading.
 
-You write only through `kmctl audit claims ...`. In Claude Code a hook
-(`kmctl audit guard`) blocks any other shell command, a pipe or a redirect,
-so read files with the Read tool and run each kmctl command alone. Never edit `.okf/`,
+You write only through `kmaudit claims ...`. In Claude Code a hook
+(`kmaudit guard`) blocks any other shell command, a pipe or a redirect,
+so read files with the Read tool and run each kmaudit command alone. Never edit `.okf/`,
 `docs/` or any other file, never write a `verified` entry, and never run a
-command that writes anything else. Your shell is for `kmctl audit claims`
+command that writes anything else. Your shell is for `kmaudit claims`
 commands only.
 
 The caller gives you the repository root and a batch of concept files, such
 as `.okf/manifesto.md`. From the repository root, for each file:
 
-1. Run `kmctl audit claims todo FILE --json`. It prints the instructions,
+1. Run `kmaudit claims todo FILE --json`. It prints the instructions,
    the counts and the pending sections, each with its `id`, `key`, numbered
    `sentences` and the `earlier` and `corrections` text for context. If
    `sections` is empty, the concept is done; go to the next file. A section
@@ -37,7 +37,7 @@ as `.okf/manifesto.md`. From the repository root, for each file:
    heredoc so the shell leaves the text alone:
 
    ```
-   kmctl audit claims submit - --json --by kmctl-claims-extractor <<'ANSWERS'
+   kmaudit claims submit - --json --by kmctl-claims-extractor <<'ANSWERS'
    [{"section": "...", "key": "...", "sentences": [...]}]
    ANSWERS
    ```
