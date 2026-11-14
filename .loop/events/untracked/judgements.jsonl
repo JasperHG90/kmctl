@@ -236,3 +236,4 @@
 {"at": "2026-11-14T17:21:46+00:00", "judgement": "j-20261114T171913+0000-6d6b52c3", "kind": "judgement-link", "schema_version": "1.0", "ticket": "ci-per-package"}
 {"at": "2026-11-14T17:22:48+00:00", "judgement": "j-20261114T171913+0000-6d6b52c3", "kind": "judgement-link", "schema_version": "1.0", "ticket": "kmctl-to-packages"}
 {"at": "2026-11-14T17:22:54+00:00", "judgement": "j-20261114T171913+0000-6d6b52c3", "kind": "judgement-link", "schema_version": "1.0", "ticket": "release-per-package"}
+{"at": "2026-11-14T20:50:14+00:00", "evidence": "1 review round(s), 1 block(s), 1688 changed line(s)", "judgement": "j-20261114T171913+0000-6d6b52c3", "kind": "judgement-label", "label": "loop", "schema_version": "1.0", "source": "outcome"}
