@@ -3,7 +3,7 @@
   "slug": "kmaudit-mcp",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 1,
+  "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -94,9 +94,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 1,
-    "binds": "4a3568e1f1e469705f68021f706561e8ce8463a9fa4a7af4b032b641237c55ef",
-    "started_at": "2026-11-14T17:23:01+00:00",
+    "n": 2,
+    "binds": "4876e54c0a058751f32308644d50acf50206cd74b795b735198c7294864416ee",
+    "started_at": "2026-11-14T17:26:28+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -109,10 +109,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "4a3568e1f1e469705f68021f706561e8ce8463a9fa4a7af4b032b641237c55ef",
+  "plan_hash": "4876e54c0a058751f32308644d50acf50206cd74b795b735198c7294864416ee",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -127,5 +127,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T17:26:26+00:00"
+  "at": "2026-11-14T17:26:28+00:00"
 }
