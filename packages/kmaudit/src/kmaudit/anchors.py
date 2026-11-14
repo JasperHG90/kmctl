@@ -81,6 +81,7 @@ class Evidence:
         }
         log = subprocess.run(
             ["git", "-C", str(repo.root), "log", "--all", "--name-only", "--format="],
+            stdin=subprocess.DEVNULL,
             capture_output=True,
             text=True,
             check=False,
@@ -157,6 +158,7 @@ class Evidence:
                 help_text = subprocess.run(
                     [*base, *words, "--help"],
                     cwd=self.repo.root,
+                    stdin=subprocess.DEVNULL,
                     capture_output=True,
                     text=True,
                     env=env,

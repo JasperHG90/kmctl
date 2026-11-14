@@ -85,8 +85,9 @@ class PendingConcept(BaseModel):
 class TodoResult(BaseModel):
     """What ``kmaudit claims todo`` hands out."""
 
-    instructions: str = Field(
-        description="How to give verdicts and the answer's shape."
+    instructions: str | None = Field(
+        default=None,
+        description="How to give verdicts and the answer's shape; left out with brief.",
     )
     counts: TodoCounts
     concepts: list[PendingConcept] = Field(
@@ -156,8 +157,11 @@ class ListResult(BaseModel):
     )
 
 
-def todo(path: Path, limit: int | None = None) -> TodoResult:
+def todo(path: Path, limit: int | None = None, brief: bool = False) -> TodoResult:
     """Refresh the store from the bundle at ``path`` and list the sections with no extraction for their current key.
+
+    With ``brief``, the instructions are left out, for a caller that already
+    has them from an earlier round.
 
     Raises
     ------
@@ -195,7 +199,7 @@ def todo(path: Path, limit: int | None = None) -> TodoResult:
     ]
     return TodoResult(
         concepts=concepts,
-        instructions=INSTRUCTIONS,
+        instructions=None if brief else INSTRUCTIONS,
         counts=TodoCounts(
             up_to_date=len(sections) - len(pending),
             pending=len(pending),

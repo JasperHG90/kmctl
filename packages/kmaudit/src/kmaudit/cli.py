@@ -6,7 +6,7 @@ import sys
 from dataclasses import asdict
 from importlib.metadata import version
 from pathlib import Path
-from typing import Annotated, cast
+from typing import Annotated
 
 import typer
 
@@ -29,7 +29,8 @@ app = typer.Typer(
         "(extract them), checks (test them; needs claims from kmaudit claims). "
         "Verbs: judge (an optional decision model's opinion; off by default), "
         "ui (a local page to review claims and checks and give feedback), "
-        "coverage (how much of the code the checks match). "
+        "coverage (how much of the code the checks match), "
+        "mcp (serve these verbs as MCP tools over stdio). "
         "kmaudit calls no model except judge: a coding agent reads what these "
         "verbs hand out and submits its answers. Each audited folder is a namespace "
         "with its own store under .kmaudit/, which ignores itself in git; namespaces "
@@ -97,6 +98,7 @@ def _refuse(verb: str, message: str) -> None:
         "  kmaudit claims todo\n\n"
         "  kmaudit claims todo .okf/manifesto.md --json\n\n"
         "  kmaudit claims todo --limit 5 --json\n\n"
+        "  kmaudit claims todo .okf --limit 5 --brief --json\n\n"
         "It cuts each live concept into header sections with numbered "
         "sentences, refreshes the store's sections, drops the claims of "
         "sections whose text changed or that are gone, and lists the sections "
@@ -121,6 +123,13 @@ def claims_todo(
             help="Hand out at most this many sections; the counts still cover all. Default: every one.",
         ),
     ] = None,
+    brief: Annotated[
+        bool,
+        typer.Option(
+            "--brief",
+            help="Leave the instructions out of --json, for the rounds after the first.",
+        ),
+    ] = False,
     as_json: Annotated[
         bool,
         typer.Option(
@@ -134,12 +143,12 @@ def claims_todo(
     from kmaudit.verbs import todo
 
     try:
-        result = todo(path, limit)
+        result = todo(path, limit, brief)
     except (AuditError, sqlite3.Error) as error:
         _refuse("claims todo", str(error))
         return
     if as_json:
-        typer.echo(result.model_dump_json())
+        typer.echo(result.model_dump_json(exclude_none=brief))
         return
     c = result.counts
     typer.echo(
@@ -736,57 +745,22 @@ def audit_judge(
 ) -> None:
     """Ask the configured decision model one question about stored checks or a claim."""
     import asyncio
-    import importlib.util
 
     from pydantic import TypeAdapter
 
     from kmaudit import AuditError
-    from kmaudit.judge import INSTALL, Judgement, judge
-    from kmaudit.sections import resolve_target
-    from kmaudit.settings import QUESTIONS, Question, load, settings_path
-    from kmaudit.store import Store
-    from kmaudit.tracing import tracing_on
+    from kmaudit.judge import Judgement, run_judge
 
-    if question not in QUESTIONS:
-        _refuse("judge", f"unknown question {question!r}; use failure, claim or link")
-    if question == "claim" and len(ids) != 1:
-        _refuse(
-            "judge", "the claim question takes one claim id, with its lines on stdin"
-        )
-    if importlib.util.find_spec("tenacity") is None:
-        _refuse(
-            "judge",
-            f"kmaudit judge needs tenacity, which kmaudit installs; reinstall it: {INSTALL}",
-        )
-    if tracing_on() and importlib.util.find_spec("langsmith") is None:
-        _refuse(
-            "judge",
-            f"LANGSMITH_TRACING=true needs langsmith from the kmaudit[tracing] extra; {INSTALL}",
-        )
     try:
-        settings = load(config)
-        if not settings.decisions.question(cast(Question, question)).enabled:
-            raise AuditError(
-                f"the {question} question is off; switch it on under [decisions.{question}] "
-                f"(enabled, provider, model) in {settings.source or settings_path(config)}"
-            )
         lines = sys.stdin.read() if question == "claim" else ""
-        target = resolve_target(path)
-        with Store(target.root, target.namespace) as store:
-            results = asyncio.run(
-                judge(store, settings, cast(Question, question), ids, lines)
-            )
+        result = asyncio.run(run_judge(path, question, ids, lines, config))
     except (AuditError, sqlite3.Error) as error:
         _refuse("judge", str(error))
         return
-    answered = [r for r in results if isinstance(r, Judgement)]
-    failed = [
-        (i, r)
-        for i, r in zip(ids, results, strict=True)
-        if not isinstance(r, Judgement)
-    ]
-    for subject, error in failed:
-        typer.echo(f"kmaudit judge: refused: {subject}: {error}", err=True)
+    answered = [e.judgement for e in result.entries if e.judgement is not None]
+    failed = [e for e in result.entries if e.judgement is None]
+    for entry in failed:
+        typer.echo(f"kmaudit judge: refused: {entry.id}: {entry.error}", err=True)
     if as_json:
         typer.echo(
             TypeAdapter(list[Judgement]).dump_json(answered, exclude_none=True).decode()
@@ -1001,6 +975,29 @@ def audit_guard(
     if reason is not None:
         typer.echo(f"kmaudit guard: blocked: {reason}", err=True)
         raise typer.Exit(2)
+
+
+@app.command(
+    "mcp",
+    epilog=(
+        "Examples:\n\n"
+        "  kmaudit mcp\n\n"
+        "A harness that speaks MCP starts this command and talks to it over "
+        "stdin and stdout; you do not run it by hand. Its tools mirror the "
+        "verbs: namespaces, claims_todo, claims_submit, claims_list, "
+        "checks_todo, checks_try, checks_submit, checks_run, checks_list, "
+        "coverage and judge. Each takes folder, absolute or relative to the "
+        "directory the harness starts it in, and returns the JSON the verb's "
+        "--json prints; the todo tools hand out 5 items unless given limit. A "
+        "refused call comes back as a tool error naming the fix. See the "
+        "README for each harness's setup."
+    ),
+)
+def audit_mcp() -> None:
+    """Serve kmaudit's verbs as MCP tools over stdio, for a harness that speaks MCP."""
+    from kmaudit.mcp_server import server
+
+    server.run("stdio")
 
 
 @app.command(
