@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-package",
-  "plan_hash": "91e38cc5769c6252125f0ccd805de0978a8b85fe014248981ea811fc5ff0199e",
+  "plan_hash": "06c3a7a00ba545a4b98bbe1456347b2cf5600fbbe4751070a2546f61bda3ea4b",
   "problems": [
     {
       "id": "P1",
@@ -43,8 +43,7 @@
         "new:packages/kmaudit/src/kmaudit/store.py",
         "new:packages/kmaudit/src/kmaudit/ui.html",
         "new:packages/kmaudit/tests/__init__.py",
-        "new:packages/kmaudit/tests/conftest.py",
-        "new:packages/kmaudit/tests/test_store.py",
+        "new:packages/kmaudit/tests/test_independent.py",
         "new:packages/kmaudit/tests/fixtures/__init__.py",
         "new:packages/kmaudit/tests/fixtures/audit_repo.py",
         "src/kmctl/claims/*.py",
