@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-cli-slim",
-  "stage": "stub",
+  "stage": "planning",
   "attempts": 0,
   "plan_rounds": 0,
   "review_rounds": 0,
@@ -37,7 +37,14 @@
     ],
     "priority": 3
   },
-  "history": [],
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-11-15T05:43:22+00:00",
+      "by": "promote"
+    }
+  ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T14:31:38+00:00"
+  "at": "2026-11-15T05:43:22+00:00"
 }
