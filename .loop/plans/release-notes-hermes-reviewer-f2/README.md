@@ -12,7 +12,7 @@ slug: release-notes-hermes-reviewer-f2
 status: draft
 epic: monorepo-release
 depends_on: []
-priority: null
+priority: 2
 schema_version: '2.0'
 ---
 
@@ -22,41 +22,29 @@ Relayed from: release-notes-hermes, reviewer finding f2 in review round 1
 
 ## Intent
 
-Lines under What changed that are not bullets are never checked. A paragraph before the first bullet is ignored, and any later non-blank line is joined onto the bullet above it. So a reply can add an intro sentence or a made-up claim with no reference and still pass every check. Only the person merging would catch it. at scripts/hermes_release_notes.py:69.
+Fix: a non-blank line under What changed that is not a `- ` bullet and is not
+indented under one fails a new `stray-line` check, unless the draft's What
+changed has the same line (the draft's own "None."). Lines under What changed that are not bullets are never checked. A paragraph before the first bullet is ignored, and any later non-blank line is joined onto the bullet above it. So a reply can add an intro sentence or a made-up claim with no reference and still pass every check. Only the person merging would catch it. at scripts/hermes_release_notes.py:69.
 
 ## Problems
 
-<!-- One line per problem this ticket fixes: - P1: text. Every problem is
-fixed by at least one outcome. -->
-
-- P1: The problem this ticket fixes, in one line.
+- P1: A line under What changed that is not a bullet or an indented continuation of one is never checked, so a rewrite can add an intro or an unreferenced claim and still be kept.
 
 ## Goals
 
-<!-- One line per goal the fixes serve: - G1: text. Every goal is served by
-at least one outcome. -->
-
-- G1: What fixing it serves, in one line.
+- G1: Every line Hermes adds under What changed carries one of the draft's references, or the draft stands.
 
 ## Outcomes
 
-<!-- One block per outcome: a heading ### O1: what changes, then exactly these
-one-line bullets. kind: behaviour (stands alone), support (serves another
-outcome) or follow-up. goal: a G id. fixes: a P id. needs: none, or the O ids
-it needs first, comma-separated. touches: the paths, CLI verbs or keys it
-changes, each in backticks, comma-separated (new: marks a file it creates).
-checked by: the test or check that shows it. seen by: operator, calling code
-or nobody. loopctl plan lint writes these to .loop/plans/SLUG/facts.json. -->
-
-### O1: What changes, in one line
+### O1: The cleaning script falls back to the draft when a stray line appears under What changed
 - kind: behaviour
 - goal: G1
 - fixes: P1
 - needs: none
-- touches: `loopctl verb`
-- checked by: the test that shows it works
+- touches: `scripts/hermes_release_notes.py`, `tests/scripts/test_hermes_release_notes.py`
+- checked by: tests that a rewrite with a paragraph before the first bullet, or an unindented line after a bullet, falls back to the draft with a warning naming the check; an indented continuation line is still joined and kept; a draft whose What changed holds a non-bullet line (such as "None.") passes when the rewrite keeps that line
 - seen by: operator
 
 ## Could invalidate this plan
 
-- none
+- The check may throw away good rewrites. spike:release-notes-hermes-reviewer-f2/1 measured it on the 15 real rewrites from spike:release-notes-hermes/1: none had a stray line, so it would have dropped none. On benign drafts it changes nothing; it guards the crafted-subject case of ADR 0035, which benign history cannot show.

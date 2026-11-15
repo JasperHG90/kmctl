@@ -3,7 +3,7 @@
   "slug": "release-notes-hermes-reviewer-f2",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "dfdab6cee2001775ab768d5539cf2e5d39a56eb18f640bb604e08c23a402f73c",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "b76dfecd715fa80aa1bf05016df0811828221361af03eb5d67f3221198c9d6bf",
+    "started_at": "2026-11-15T05:01:19+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "b76dfecd715fa80aa1bf05016df0811828221361af03eb5d67f3221198c9d6bf",
   "intent": {
     "epic": "monorepo-release",
     "depends_on": [],
@@ -44,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T05:01:12+00:00"
+  "at": "2026-11-15T05:01:19+00:00"
 }
