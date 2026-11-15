@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-install-hints-pinned",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 2,
   "plan_rounds": 1,
   "review_rounds": 4,
@@ -29,7 +29,7 @@
   "split": "j-20261115T054225+0000-e408492d",
   "split_plan_hash": "ca1c39750f3413a9c06736ceddc667346614d269d6c528c174b1a141416b203b",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "5dc0a18bb1c3f5ee20982ba79998e29db0e45ec9",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -182,8 +182,14 @@
       "to": "verifying",
       "at": "2026-11-15T08:41:54+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-15T08:50:00+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T08:46:22+00:00"
+  "at": "2026-11-15T08:50:00+00:00"
 }
