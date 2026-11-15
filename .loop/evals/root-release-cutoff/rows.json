@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "The pin hand-off and the plugin's hook hint build kmctl from the root for v0.12.2 and older, and from packages/kmctl for later tags, pre-releases after v0.12.2 and refs that are not release tags; both decide it through one cutoff constant in plugin.py.",
+      "fails_when": "v0.12.1 or v0.12.2 gets the subdirectory, v0.12.3rc1 or v0.13.0 lacks it, the hook hint disagrees with the hand-off, or hooks.json no longer equals the hook command",
+      "command": "uv run pytest packages/kmctl/tests/test_pin.py packages/kmctl/tests/test_plugin.py -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "The starter renders kmctl_src without the subdirectory for kmctl_ref v0.12.1 and v0.12.2, and with it for v0.12.3rc1 and v0.13.0.",
+      "fails_when": "a render at v0.12.2 or older carries the subdirectory, or a later one lacks it",
+      "command": "uv run pytest packages/kmctl/tests/test_starter.py -k subdirectory -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "release.py set writes the subdirectory on every install line and hook hint only for a version after the cutoff, removes it when re-pinning to a version at or below it, writes it once over repeated runs, and its cutoff equals plugin.py's.",
+      "fails_when": "set 0.12.2 leaves a fragment, set 0.13.0 misses one or doubles it, or the two cutoffs differ",
+      "command": "uv run pytest tests/scripts/test_release.py packages/kmctl/tests/test_plugin.py -k 'cutoff or subdirectory' -q"
+    },
+    {
+      "id": "r4",
+      "behavior": "Every v* tag in the clone that has no packages/kmctl/pyproject.toml is at or below the cutoff, and every tag that has it is above.",
+      "fails_when": "a root-layout tag is newer than the cutoff, or a packages-layout tag is not",
+      "command": "uv run pytest packages/kmctl/tests/test_pin.py -m integration -k cutoff_matches_tags -q"
+    },
+    {
+      "id": "r5",
+      "behavior": "This branch's version files and install lines read v0.12.2, the last root release, with no subdirectory, and the docs and ADR 0044 name v0.12.2 as the cutoff.",
+      "fails_when": "a version file or install line still names v0.12.1, an install line at v0.12.2 carries the fragment, or the docs or ADR name v0.12.1 as the last root release",
+      "command": "uv run pytest packages/kmctl/tests/test_docs.py tests/scripts/test_release.py -q"
+    }
+  ]
+}
