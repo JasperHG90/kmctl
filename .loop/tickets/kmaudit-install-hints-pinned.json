@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-install-hints-pinned",
-  "stage": "building",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 0,
@@ -96,8 +96,14 @@
       "to": "building",
       "at": "2026-11-15T07:52:21+00:00",
       "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-15T08:05:51+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T08:05:34+00:00"
+  "at": "2026-11-15T08:05:51+00:00"
 }
