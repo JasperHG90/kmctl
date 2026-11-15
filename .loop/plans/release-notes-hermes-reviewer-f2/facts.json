@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "slug": "release-notes-hermes-reviewer-f2",
+  "plan_hash": "b76dfecd715fa80aa1bf05016df0811828221361af03eb5d67f3221198c9d6bf",
+  "problems": [
+    {
+      "id": "P1",
+      "text": "A line under What changed that is not a bullet or an indented continuation of one is never checked, so a rewrite can add an intro or an unreferenced claim and still be kept."
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "Every line Hermes adds under What changed carries one of the draft's references, or the draft stands."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "O1",
+      "change": "The cleaning script falls back to the draft when a stray line appears under What changed",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "scripts/hermes_release_notes.py",
+        "tests/scripts/test_hermes_release_notes.py"
+      ],
+      "checked_by": "tests that a rewrite with a paragraph before the first bullet, or an unindented line after a bullet, falls back to the draft with a warning naming the check; an indented continuation line is still joined and kept; a draft whose What changed holds a non-bullet line (such as \"None.\") passes when the rewrite keeps that line",
+      "seen_by": "operator"
+    }
+  ]
+}
