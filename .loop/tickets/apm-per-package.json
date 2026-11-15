@@ -3,7 +3,7 @@
   "slug": "apm-per-package",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "308adcb7dbc3403bb4252aa402495c87d745ebd6ea8168ff47c681e6c9454f6b",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "288078fda6aedae2e3b78e7935e3780966e13856f561346d86a9eddaa1e7a972",
+    "started_at": "2026-11-15T05:18:48+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "288078fda6aedae2e3b78e7935e3780966e13856f561346d86a9eddaa1e7a972",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -44,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T05:18:40+00:00"
+  "at": "2026-11-15T05:18:48+00:00"
 }
