@@ -1,31 +1,14 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-install-hints-pinned",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 3,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": {
-    "round": 2,
-    "fingerprint": "1fc3260938e60a2d2e9f3c3f6a14d65cd620672133c65386484d8909d4ff57d1",
-    "tree": "47e6f1d446a32d9d96dd173cb4ce6f3f8d6c1c43",
-    "decisions": [
-      {
-        "finding": "reviewer:f2",
-        "outcome": "sent-back",
-        "by": "fallback",
-        "judgement": "j-20261115T082547+0000-869f5a7e",
-        "paths": [
-          ".github/workflows/release.yml",
-          "scripts/release.py"
-        ]
-      }
-    ],
-    "at": "2026-11-15T08:25:47+00:00"
-  },
+  "fix": null,
   "ask": null,
   "split": "j-20261115T054225+0000-e408492d",
   "split_plan_hash": "ca1c39750f3413a9c06736ceddc667346614d269d6c528c174b1a141416b203b",
@@ -86,8 +69,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "ca1c39750f3413a9c06736ceddc667346614d269d6c528c174b1a141416b203b",
   "intent": {
@@ -145,8 +128,14 @@
       "to": "verifying",
       "at": "2026-11-15T08:25:47+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-15T08:33:50+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T08:25:56+00:00"
+  "at": "2026-11-15T08:33:50+00:00"
 }
