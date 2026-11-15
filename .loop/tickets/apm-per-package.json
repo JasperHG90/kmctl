@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "apm-per-package",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 3,
   "review_rounds": 3,
@@ -29,7 +29,7 @@
   "split": "j-20261115T053442+0000-c90071b8",
   "split_plan_hash": "bf4ef9f6db868c7514a135c617d8f90a14d53038a7f3b6c726d27fa608b70efa",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "64ee250952098ef8641291125c2b85e0a7d2593d",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -165,8 +165,14 @@
       "to": "verifying",
       "at": "2026-11-15T07:23:14+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-15T07:48:48+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T07:48:45+00:00"
+  "at": "2026-11-15T07:48:48+00:00"
 }
