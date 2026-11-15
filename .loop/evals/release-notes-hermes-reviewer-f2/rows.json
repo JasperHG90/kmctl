@@ -1,4 +1,17 @@
 {
   "schema_version": "1.0",
-  "rows": []
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "A rewrite with a non-blank line under What changed that is neither a '- ' bullet nor indented under one, such as an intro paragraph before the first bullet or an unindented line after a bullet, fails the stray-line check, so the draft stands with a ::warning:: naming stray-line.",
+      "fails_when": "such a rewrite is kept, or the warning does not name stray-line",
+      "command": "uv run pytest tests/scripts/test_hermes_release_notes.py -k stray -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "An indented continuation line under a bullet is still joined and kept, and a draft whose What changed holds 'None.' passes when the rewrite keeps that line; every earlier check still behaves as before.",
+      "fails_when": "a continuation line or the draft's own 'None.' fails a rewrite, or any existing cleaning-script test fails",
+      "command": "uv run pytest tests/scripts/test_hermes_release_notes.py -q"
+    }
+  ]
 }

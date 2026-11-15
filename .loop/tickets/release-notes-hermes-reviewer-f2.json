@@ -20,10 +20,29 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/implementer",
+    "hash": "a4e57dd340b1a4fe5a7e51f958af909d1097f234d853266dc9582dfb276d0398",
+    "at": "2026-11-15T05:04:58+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "A rewrite with a non-blank line under What changed that is neither a '- ' bullet nor indented under one, such as an intro paragraph before the first bullet or an unindented line after a bullet, fails the stray-line check, so the draft stands with a ::warning:: naming stray-line.",
+      "fails_when": "such a rewrite is kept, or the warning does not name stray-line",
+      "command": "uv run pytest tests/scripts/test_hermes_release_notes.py -k stray -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "An indented continuation line under a bullet is still joined and kept, and a draft whose What changed holds 'None.' passes when the rewrite keeps that line; every earlier check still behaves as before.",
+      "fails_when": "a continuation line or the draft's own 'None.' fails a rewrite, or any existing cleaning-script test fails",
+      "command": "uv run pytest tests/scripts/test_hermes_release_notes.py -q",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -69,5 +88,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T05:04:41+00:00"
+  "at": "2026-11-15T05:04:58+00:00"
 }
