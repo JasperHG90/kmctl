@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "release_paths gave the moved kmaudit reference to kmctl. The revision names kmaudit's docs pages kmaudit-* and has owns give them to kmaudit and not kmctl, with scripts/release_paths.py in touches and a check for it.",
+      "anchor": "scripts/release_paths.py:30",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "kmctl's install-line test would flag kmaudit's pinned line in docs/, and README tests read the root README. The revision splits kmaudit's lines from kmctl's in the test, adds a test that runs `set --package kmaudit` on a copy and then the check, and moves the README tests to packages/kmctl/README.md.",
+      "anchor": "packages/kmctl/tests/test_docs.py:143",
+      "category": "test-mismatch",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "resolved",
+      "claim": "touches left out docs/reference/commands.md and scripts/release_paths.py. Both are now listed in the prose and in O1's touches.",
+      "anchor": null,
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "19fc835eacad09d29946fe2dacf91b9408e32f5549e487d4abc64815dc28b196"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T18:47:50+00:00"
+}
