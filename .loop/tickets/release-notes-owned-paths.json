@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "release-notes-owned-paths",
-  "stage": "planning",
+  "stage": "ready",
   "attempts": 0,
   "plan_rounds": 2,
   "review_rounds": 0,
@@ -60,8 +60,14 @@
       "to": "planning",
       "at": "2026-11-15T05:20:25+00:00",
       "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-11-15T05:35:13+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T05:35:12+00:00"
+  "at": "2026-11-15T05:35:13+00:00"
 }
