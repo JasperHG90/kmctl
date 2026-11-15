@@ -1,14 +1,31 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-install-hints-pinned",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "7d01e3e632911497851df3a0b0f2e465c809c4a785e9d1d3ca0953c5de47097c",
+    "tree": "81353c25437d1153ff3fdf0218bd7ee5f23f3d55",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": "j-20261115T081723+0000-0391de15",
+        "paths": [
+          ".github/workflows/release.yml",
+          "scripts/release.py"
+        ]
+      }
+    ],
+    "at": "2026-11-15T08:17:23+00:00"
+  },
   "ask": null,
   "split": "j-20261115T054225+0000-e408492d",
   "split_plan_hash": "ca1c39750f3413a9c06736ceddc667346614d269d6c528c174b1a141416b203b",
@@ -109,8 +126,14 @@
       "to": "fixing",
       "at": "2026-11-15T08:13:24+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-15T08:17:23+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T08:17:09+00:00"
+  "at": "2026-11-15T08:17:23+00:00"
 }
