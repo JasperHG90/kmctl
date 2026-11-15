@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "upgrade-from-v0-12-docs",
-  "plan_hash": "b2bd87833e0ab893113b0a585a27cb2bf4c7766965bdc19d6447979cd387a804",
+  "plan_hash": "66e4c26c1ed2b69ab6e11b35e946fe77ae0f56ecdddbd8813518932e7d2abb0f",
   "problems": [
     {
       "id": "P1",
@@ -30,7 +30,7 @@
         "docs/how-to/install-kmctl-with-apm.md",
         "packages/kmctl/tests/test_docs.py"
       ],
-      "checked_by": "a docs test that kmctl's README Upgrade section and the how-to say to install the new CLI before moving the pin past v0.12.2, give the path change, name `just upgrade` and `kmctl doctor`, and that kmctl's README links kmaudit's README",
+      "checked_by": "a docs test that kmctl's README Upgrade section and the how-to say to install the new CLI before moving the pin past v0.12.2, give the full new entry (`path: packages/kmctl/apm`, `ref: vX.Y.Z`), name `just upgrade`, and use `kmctl doctor` only as the final check, and that kmctl's README links kmaudit's README",
       "seen_by": "operator"
     }
   ]
