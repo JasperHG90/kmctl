@@ -1,0 +1,1 @@
+{"ask":"CI's kmaudit job fails: kmaudit's test helper git(root, 'commit', ...) runs with no git identity on a fresh runner (exit 128); 1 failure and 14 errors with GIT_CONFIG_GLOBAL=/dev/null"}
