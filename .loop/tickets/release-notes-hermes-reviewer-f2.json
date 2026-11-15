@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "release-notes-hermes-reviewer-f2",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 2,
@@ -29,7 +29,7 @@
   "split": "j-20261115T050111+0000-e70be2e4",
   "split_plan_hash": "b76dfecd715fa80aa1bf05016df0811828221361af03eb5d67f3221198c9d6bf",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "f8affcf7e4e125aef69d17d817dc8c562a12b0b3",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -128,8 +128,14 @@
       "to": "verifying",
       "at": "2026-11-15T05:38:22+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-15T05:45:51+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T05:45:43+00:00"
+  "at": "2026-11-15T05:45:51+00:00"
 }
