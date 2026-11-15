@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "kmaudit namespaces --json lists a nested namespace (handbook/guides, whose store file is handbook%2Fguides.sqlite) with its section count, and a top-level one beside it, without an error.",
+      "fails_when": "the command fails, leaves the nested namespace out, or reports its counts as 0 when its store holds a section",
+      "command": "uv run pytest packages/kmaudit/tests/test_namespaces.py -k nested -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "kmaudit briefing reports a nested namespace's audit state, read from its store.",
+      "fails_when": "briefing fails or leaves the nested namespace out",
+      "command": "uv run pytest packages/kmaudit/tests/test_briefing.py -k nested -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "Read-only store URIs are built from the store's absolute path with Path.as_uri, so a repository path holding %, # or ? opens, including the legacy store copy, and a relative store path works too.",
+      "fails_when": "a store under a path with %, # or ? fails to open or copy, or a relative path raises",
+      "command": "uv run pytest packages/kmaudit/tests/test_namespaces.py packages/kmaudit/tests/test_claims_store.py -k uri -q"
+    }
+  ]
+}

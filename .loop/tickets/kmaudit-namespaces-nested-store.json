@@ -20,10 +20,36 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/implementer",
+    "hash": "67f09a84ee3c2b44e3d0c2ac2f6de8434431dae8a145770db8594b7259f406a5",
+    "at": "2026-11-15T05:04:56+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "kmaudit namespaces --json lists a nested namespace (handbook/guides, whose store file is handbook%2Fguides.sqlite) with its section count, and a top-level one beside it, without an error.",
+      "fails_when": "the command fails, leaves the nested namespace out, or reports its counts as 0 when its store holds a section",
+      "command": "uv run pytest packages/kmaudit/tests/test_namespaces.py -k nested -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "kmaudit briefing reports a nested namespace's audit state, read from its store.",
+      "fails_when": "briefing fails or leaves the nested namespace out",
+      "command": "uv run pytest packages/kmaudit/tests/test_briefing.py -k nested -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "Read-only store URIs are built from the store's absolute path with Path.as_uri, so a repository path holding %, # or ? opens, including the legacy store copy, and a relative store path works too.",
+      "fails_when": "a store under a path with %, # or ? fails to open or copy, or a relative path raises",
+      "command": "uv run pytest packages/kmaudit/tests/test_namespaces.py packages/kmaudit/tests/test_claims_store.py -k uri -q",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -69,5 +95,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T05:04:32+00:00"
+  "at": "2026-11-15T05:04:56+00:00"
 }
