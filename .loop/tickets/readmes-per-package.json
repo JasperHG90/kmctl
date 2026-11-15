@@ -20,7 +20,8 @@
   "worktree": "/home/vscode/workspace.worktrees/readmes-per-package",
   "branch": "loop/readmes-per-package",
   "stamps": [
-    "8d6f88d8732f7a1f8bc06c8f3c8702be74ec31810cc6b571036e1d690f5c1df9"
+    "8d6f88d8732f7a1f8bc06c8f3c8702be74ec31810cc6b571036e1d690f5c1df9",
+    "0025eda9368e438c1a503ac44d92547d4fc10005ad0bad314a5781f3726e57e5"
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/implementer",
@@ -129,5 +130,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T19:12:06+00:00"
+  "at": "2026-11-15T19:17:53+00:00"
 }
