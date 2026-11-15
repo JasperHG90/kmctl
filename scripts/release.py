@@ -18,8 +18,9 @@ source and tag family, each in its own APM package's apm.yml (ADR 0045):
 kmctl's is described below and tags ``vX.Y.Z``; kmaudit's is
 ``packages/kmaudit/apm/apm.yml``, which its pyproject reads, and tags
 ``kmaudit-vX.Y.Z``. For kmaudit, ``current`` and ``manifest`` print that
-file's version and ``set`` writes it and pins the install line in
-``packages/kmaudit/README.md`` to the tag. ``tag`` prints a version's tag.
+file's version and ``set`` writes it and pins the install lines in
+``packages/kmaudit/README.md`` and the ``kmaudit[tracing]`` line in
+``packages/kmaudit/docs/commands.md`` to the tag. ``tag`` prints a version's tag.
 
 ``packages/kmctl/apm/apm.yml``, kmctl's APM package, carries the one version,
 and ``packages/kmctl/pyproject.toml`` reads it from there (ADR 0014). APM needs a ``version:`` in
@@ -109,6 +110,9 @@ TAG_PREFIX = {"kmctl": "v", "kmaudit": "kmaudit-v"}
 KMAUDIT_MANIFEST = Path("packages/kmaudit/apm/apm.yml")
 #: kmaudit's README, whose install line ``set --package kmaudit`` pins.
 KMAUDIT_README = Path("packages/kmaudit/README.md")
+#: kmaudit's commands reference, whose ``kmaudit[tracing]`` install line
+#: ``set --package kmaudit`` pins too.
+KMAUDIT_DOCS = Path("packages/kmaudit/docs/commands.md")
 # kmaudit's install line, with or without a tag before its subdirectory.
 _KMAUDIT_INSTALL = re.compile(
     r"(git\+https://github\.com/JasperHG90/kmctl)(@[^\s#']+)?(#subdirectory=packages/kmaudit)"
@@ -188,10 +192,11 @@ def kmaudit_version(repo: Path) -> str:
 
 
 def set_kmaudit_version(repo: Path, version_text: str) -> list[Path]:
-    """Write the version into ``packages/kmaudit/apm/apm.yml`` and pin the README's install line.
+    """Write the version into ``packages/kmaudit/apm/apm.yml`` and pin the README's and commands reference's install lines.
 
     Nothing is written unless the version is valid, the apm.yml has a
-    ``version:`` line and the README holds an install line.
+    ``version:`` line, the README holds an install line and the commands
+    reference holds its ``kmaudit[tracing]`` install line.
 
     Returns
     -------
@@ -201,8 +206,9 @@ def set_kmaudit_version(repo: Path, version_text: str) -> list[Path]:
     Raises
     ------
     ReleaseRefused
-        When the version is malformed, the apm.yml has no ``version:`` line or
-        the README has no install line.
+        When the version is malformed, the apm.yml has no ``version:`` line,
+        the README has no install line or the commands reference has no
+        ``kmaudit[tracing]`` install line.
     """
     version = str(parse_release(version_text))
     manifest, count = _APM_VERSION.subn(
@@ -219,9 +225,18 @@ def set_kmaudit_version(repo: Path, version_text: str) -> list[Path]:
         raise ReleaseRefused(
             f"{KMAUDIT_README} has no kmaudit install line; restore the uv tool install line"
         )
+    docs, count = _KMAUDIT_INSTALL.subn(
+        rf"\g<1>@kmaudit-v{version}\g<3>", (repo / KMAUDIT_DOCS).read_text()
+    )
+    if "kmaudit[tracing] @" not in docs or count == 0:
+        raise ReleaseRefused(
+            f"{KMAUDIT_DOCS} has no kmaudit[tracing] install line; restore the "
+            "uv tool install line in its tracing section"
+        )
     (repo / KMAUDIT_MANIFEST).write_text(manifest)
     (repo / KMAUDIT_README).write_text(readme)
-    return [KMAUDIT_MANIFEST, KMAUDIT_README]
+    (repo / KMAUDIT_DOCS).write_text(docs)
+    return [KMAUDIT_MANIFEST, KMAUDIT_README, KMAUDIT_DOCS]
 
 
 def tag(package: str, version_text: str) -> str:
@@ -373,7 +388,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     p_set = sub.add_parser(
         "set",
-        help="kmctl: write the version into the four apm.yml files, pin the docs, the hook's install hints and copier.yml's kmctl_ref; kmaudit: write packages/kmaudit/apm/apm.yml and pin its README's install line",
+        help="kmctl: write the version into the four apm.yml files, pin the docs, the hook's install hints and copier.yml's kmctl_ref; kmaudit: write packages/kmaudit/apm/apm.yml and pin the install lines in its README and docs/commands.md",
     )
     p_set.add_argument("version", help="the release version, e.g. 0.2.0 or 0.2.0rc1")
     p_tag = sub.add_parser(

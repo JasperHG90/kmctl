@@ -469,3 +469,78 @@ def test_help_loads_without_the_extra() -> None:
 
     assert done.returncode == 0, done.stderr
     assert done.stdout.strip() == "ok"
+
+
+@pytest.mark.parametrize(
+    ("version", "extras", "want"),
+    [
+        (
+            "0.2.0",
+            "",
+            "'kmaudit @ git+https://github.com/JasperHG90/kmctl@kmaudit-v0.2.0#subdirectory=packages/kmaudit'",
+        ),
+        (
+            "0.2.0rc1",
+            "",
+            "'kmaudit @ git+https://github.com/JasperHG90/kmctl@kmaudit-v0.2.0rc1#subdirectory=packages/kmaudit'",
+        ),
+        (
+            "0.2.0.dev1",
+            "",
+            "'kmaudit @ git+https://github.com/JasperHG90/kmctl#subdirectory=packages/kmaudit'",
+        ),
+        (
+            "0.2.0+g1a2b",
+            "",
+            "'kmaudit @ git+https://github.com/JasperHG90/kmctl#subdirectory=packages/kmaudit'",
+        ),
+        (
+            "0.2.0",
+            "tracing",
+            "'kmaudit[tracing] @ git+https://github.com/JasperHG90/kmctl@kmaudit-v0.2.0#subdirectory=packages/kmaudit'",
+        ),
+    ],
+)
+def test_install_hint_names_the_release_it_ships_in(
+    version: str, extras: str, want: str
+) -> None:
+    """A release or pre-release names its kmaudit-v tag; a dev or local build names no ref; extras go in the requirement."""
+    from kmaudit.install import install_hint
+
+    assert install_hint(version, extras) == f"uv tool install --force {want}"
+
+
+def test_the_tracing_refusal_install_hint_asks_for_the_extra(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """LANGSMITH_TRACING=true without langsmith names kmaudit[tracing] in its install hint."""
+    import importlib.util
+
+    from kmaudit import AuditError
+    from kmaudit.judge import run_judge
+
+    real_find_spec = importlib.util.find_spec
+
+    def no_langsmith(name: str, *args: Any, **kwargs: Any) -> Any:
+        """Report langsmith missing, as when the tracing extra is not installed."""
+        return None if name == "langsmith" else real_find_spec(name, *args, **kwargs)
+
+    monkeypatch.setenv("LANGSMITH_TRACING", "true")
+    monkeypatch.setattr(importlib.util, "find_spec", no_langsmith)
+
+    with pytest.raises(AuditError) as caught:
+        asyncio.run(run_judge(tmp_path, "failure", ["c1"]))
+
+    assert "kmaudit[tracing] @" in str(caught.value)
+
+
+def test_only_the_install_module_writes_the_install_source() -> None:
+    """No kmaudit module hand-writes the git install source; they ask kmaudit.install (install hints)."""
+    src = Path(__file__).resolve().parents[1] / "src" / "kmaudit"
+    writers = sorted(
+        p.name
+        for p in src.glob("*.py")
+        if "github.com/JasperHG90/kmctl" in p.read_text()
+    )
+
+    assert writers == ["install.py"]

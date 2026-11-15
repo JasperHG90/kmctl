@@ -10,7 +10,8 @@
 # set writes the four apm.yml files, pins the docs' install lines to the tag,
 # moves the starter template's kmctl_ref default in copier.yml to it
 # (ADR 0025) and points the Claude Code hook's install hints at it; for
-# kmaudit it writes its apm.yml and pins its README's install line. Merging is the
+# kmaudit it writes its apm.yml and pins the install lines in its README and
+# docs/commands.md. Merging is the
 # approval of the version and the notes, and release-tag.yml tags the merge
 # commit and publishes that notes file as the GitHub Release.
 # Releases go to GitHub only, never to PyPI.
@@ -323,8 +324,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git switch -c "$BRANCH"
           if [ "$PACKAGE" = kmaudit ]; then
-            git add packages/kmaudit/apm/apm.yml packages/kmaudit/README.md
-            WHAT="Sets packages/kmaudit/apm/apm.yml to $VERSION and pins the README's install line to $TAG."
+            git add packages/kmaudit/apm/apm.yml packages/kmaudit/README.md packages/kmaudit/docs/commands.md
+            WHAT="Sets packages/kmaudit/apm/apm.yml to $VERSION and pins the install lines in the README and docs/commands.md (kmaudit[tracing]) to $TAG."
           else
             git add apm.yml packages/kmctl/apm/apm.yml packages/kmctl/apm/claude/apm.yml packages/kmctl/apm/antigravity/apm.yml README.md docs/tutorials/get-started-with-kmctl.md docs/how-to/install-the-plugin-and-the-ci-action.md docs/how-to/install-kmctl-with-apm.md copier.yml packages/kmctl/apm/claude/.apm/hooks/hooks.json
             WHAT="Sets the four apm.yml files to $VERSION, pins the docs' install lines to $TAG and defaults the starter template's kmctl_ref to $TAG."

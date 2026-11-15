@@ -30,11 +30,13 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field
 
 from kmaudit import AuditError
+from kmaudit.install import installed_hint
 
 MAX_HITS = 30
 #: The most matched spans a step keeps, so a broad pattern cannot bloat the store.
 MAX_SPANS = 200
-INSTALL = "uv tool install --force 'kmaudit @ git+https://github.com/JasperHG90/kmctl#subdirectory=packages/kmaudit'"
+#: How to reinstall the running kmaudit, named in refusals.
+INSTALL = installed_hint()
 SKIPPED = "skipped: needs ast-grep-py or jmespath"
 TEST_DIRS = {
     "tests",
