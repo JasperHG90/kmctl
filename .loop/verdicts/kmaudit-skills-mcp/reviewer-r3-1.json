@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "/write-checks and kmaudit-check-writer had not been run end to end through the MCP tools.",
+      "anchor": "packages/kmaudit/apm/.apm/skills/write-checks/evals/results.md",
+      "category": "missing",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "Both results.md files said tests/test_skills.py checks the agents' tools.",
+      "anchor": "packages/kmaudit/apm/.apm/skills/write-checks/evals/results.md",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "a635e1f06fb5301345bb6f6de4f7af6ce0ff12df8e7fa692af9a5efbde66b8cc",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T09:55:02+00:00"
+}
