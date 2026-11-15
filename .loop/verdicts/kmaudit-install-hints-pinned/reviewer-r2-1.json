@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "release.yml's kmaudit WHAT text and release.py's set help named only the README's install line",
+      "anchor": ".github/workflows/release.yml:327",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "two more descriptions of the kmaudit bump still say it pins only the README's install line, the release.yml header comment and release.py's module docstring",
+      "anchor": ".github/workflows/release.yml:13",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "7d01e3e632911497851df3a0b0f2e465c809c4a785e9d1d3ca0953c5de47097c",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T08:21:43+00:00"
+}
