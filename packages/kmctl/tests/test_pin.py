@@ -330,7 +330,7 @@ def test_action_runs_its_own_kmctl() -> None:
         assert step.get("env", {}).get("KMCTL_PINNED") == "1", step["name"]
 
 
-# The subdirectory: releases after v0.12.1 build from packages/kmctl (ADR 0044) --
+# The subdirectory: releases after v0.12.2 build from packages/kmctl (ADR 0044) --
 
 SUBDIRECTORY = "#subdirectory=packages/kmctl"
 NEWER = "v0.13.0"
@@ -343,15 +343,17 @@ NEWER = "v0.13.0"
         ("v0.12.0", ""),
         ("v0.12.1rc1", ""),
         ("v0.12.1", ""),
-        ("v0.12.2", SUBDIRECTORY),
+        ("v0.12.2rc1", ""),
+        ("v0.12.2", ""),
+        ("v0.12.3rc1", SUBDIRECTORY),
         ("v0.13.0a1", SUBDIRECTORY),
         ("v1.0.0", SUBDIRECTORY),
         # Not a release tag, such as a branch: it points at a commit after the move.
         ("main", SUBDIRECTORY),
     ],
 )
-def test_subdirectory_only_for_refs_newer_than_v0_12_1(ref: str, fragment: str) -> None:
-    """A pin newer than v0.12.1 builds from packages/kmctl; v0.12.1 and older from the root."""
+def test_subdirectory_only_for_refs_newer_than_v0_12_2(ref: str, fragment: str) -> None:
+    """A pin newer than v0.12.2 builds from packages/kmctl; v0.12.2 and older from the root."""
     pin = Pin(ref=ref, commit=COMMIT)
 
     assert uvx_source(pin) == f"{SOURCE}@{COMMIT}{fragment}"
@@ -363,7 +365,7 @@ def test_subdirectory_only_for_refs_newer_than_v0_12_1(ref: str, fragment: str) 
 def test_subdirectory_in_the_hand_off_of_a_newer_pin(
     tmp_path: Path, fake_uvx: Path
 ) -> None:
-    """A lock pinning a release after v0.12.1 runs uvx from packages/kmctl at its commit."""
+    """A lock pinning a release after v0.12.2 runs uvx from packages/kmctl at its commit."""
     root = project(tmp_path)
     write_lock(root, ref=NEWER)
 
@@ -380,7 +382,7 @@ def test_subdirectory_in_the_hand_off_of_a_newer_pin(
 def test_subdirectory_in_the_offline_briefing_of_a_newer_pin(
     tmp_path: Path, fake_uvx: Path
 ) -> None:
-    """The briefing's offline probe and run use packages/kmctl for a pin after v0.12.1."""
+    """The briefing's offline probe and run use packages/kmctl for a pin after v0.12.2."""
     root = project(tmp_path)
     write_lock(root, ref=NEWER)
 
@@ -399,7 +401,7 @@ def test_subdirectory_in_the_offline_briefing_of_a_newer_pin(
 def test_subdirectory_left_out_of_the_hand_off_of_an_old_pin(
     tmp_path: Path, fake_uvx: Path
 ) -> None:
-    """A lock pinning v0.12.1 or older runs uvx from the repository root, as those tags were built."""
+    """A lock pinning v0.12.2 or older runs uvx from the repository root, as those tags were built."""
     root = project(tmp_path)
     write_lock(root, ref=OTHER)
 
@@ -475,3 +477,38 @@ def test_docs_say_the_pin_wins() -> None:
     decision = " ".join(decisions[0].read_text().split())
     for words in ("KMCTL_PINNED", "uvx", "mise", "by tag"):
         assert words in decision, words
+
+
+@pytest.mark.integration
+def test_cutoff_matches_tags() -> None:
+    """Every v* tag without packages/kmctl/pyproject.toml is at or below LAST_ROOT_RELEASE, every tag with it above.
+
+    A root release from main after the cutoff would otherwise get a
+    subdirectory it does not have (ADR 0044).
+    """
+    from kmctl.plugin import LAST_ROOT_RELEASE, tag_version
+
+    tags = subprocess.run(
+        ["git", "tag", "--list", "v*"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.split()
+    last = tag_version(LAST_ROOT_RELEASE)
+    releases = [t for t in tags if tag_version(t) is not None]
+    assert LAST_ROOT_RELEASE in releases, "the clone has no tags; fetch them"
+    wrong = []
+    for tag in releases:
+        moved = (
+            subprocess.run(
+                ["git", "cat-file", "-e", f"{tag}:packages/kmctl/pyproject.toml"],
+                cwd=ROOT,
+                capture_output=True,
+                check=False,
+            ).returncode
+            == 0
+        )
+        if moved != (tag_version(tag) > last):
+            wrong.append(tag)
+    assert wrong == []

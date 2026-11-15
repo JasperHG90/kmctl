@@ -110,7 +110,7 @@ def test_install_hint_names_release(repo: Path, tmp_path: Path) -> None:
     """Both install hints name the release in apm/apm.yml, in hooks.json and hook_entry() alike, and the hook still exits 0."""
     manifest = (ROOT / "apm/apm.yml").read_text()
     [apm_version] = re.findall(r"(?m)^version: (\S+)$", manifest)
-    install = f"git+https://github.com/JasperHG90/kmctl@v{apm_version}#subdirectory=packages/kmctl"
+    install = plugin.hook_install(apm_version)
     shipped = json.loads((ROOT / "apm/claude/.apm/hooks/hooks.json").read_text())
     [group] = shipped["hooks"]["SessionStart"]
     [hook] = group["hooks"]
@@ -176,9 +176,26 @@ def test_mcp_launcher_tries_each_start_in_order(repo: Path, tmp_path: Path) -> N
     assert args == ["run", plugin.okf_mcp_url(), str((repo / ".okf").resolve())]
 
 
-def test_hook_install_subdirectory_is_packages_kmctl() -> None:
-    """HOOK_INSTALL names this release's tag and builds from packages/kmctl (ADR 0044)."""
-    assert plugin.HOOK_INSTALL == (
-        f"git+https://github.com/JasperHG90/kmctl@{plugin.package_ref()}"
-        "#subdirectory=packages/kmctl"
+@pytest.mark.parametrize(
+    ("version", "fragment"),
+    [
+        ("0.12.1", ""),
+        ("0.12.2", ""),
+        ("0.12.3rc1", "#subdirectory=packages/kmctl"),
+        ("0.13.0", "#subdirectory=packages/kmctl"),
+        # A dev build is not a release tag: it is a commit after the move.
+        ("0.13.0.dev3+gabc", "#subdirectory=packages/kmctl"),
+    ],
+)
+def test_hook_install_subdirectory_only_after_the_cutoff(
+    version: str, fragment: str
+) -> None:
+    """The hook hint builds from packages/kmctl only for a release after v0.12.2 (ADR 0044)."""
+    assert plugin.hook_install(version) == (
+        f"git+https://github.com/JasperHG90/kmctl@v{version}{fragment}"
     )
+
+
+def test_hook_install_is_this_release_s() -> None:
+    """HOOK_INSTALL is the hint for this CLI's own version."""
+    assert plugin.HOOK_INSTALL == plugin.hook_install(plugin.package_ref()[1:])
