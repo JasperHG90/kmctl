@@ -3,7 +3,7 @@
   "slug": "kmaudit-cli-slim",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "b17fc0f19fd2aae087bedbcde536acf125a2418568d81dca092cdb70f06b2740",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "b1fd859ad405283cbf2a3bc6378c059ac32458b8b354c427b5ed9a5fc9a40657",
+    "started_at": "2026-11-15T05:45:21+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "b1fd859ad405283cbf2a3bc6378c059ac32458b8b354c427b5ed9a5fc9a40657",
   "intent": {
     "epic": "kmaudit",
     "depends_on": [
@@ -46,5 +65,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T05:45:11+00:00"
+  "at": "2026-11-15T05:45:21+00:00"
 }
