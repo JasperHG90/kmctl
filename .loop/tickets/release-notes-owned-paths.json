@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "release-notes-owned-paths",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
@@ -30,7 +30,7 @@
   "split": "j-20261115T053348+0000-45d1ec47",
   "split_plan_hash": "9a9daf71ec65d83291ffb6867f46a0ef41eb1ad33661fa0f88c0699925d703cb",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "f43ebffc5940d66ee20931b617fd83c6f52f094f",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -136,8 +136,14 @@
       "to": "verifying",
       "at": "2026-11-15T06:40:42+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-15T06:48:05+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T06:48:01+00:00"
+  "at": "2026-11-15T06:48:05+00:00"
 }
