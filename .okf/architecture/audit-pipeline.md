@@ -9,10 +9,10 @@ tags: [architecture, diagram, audit]
 status: stable
 sources:
   - resource: "packages/kmaudit/src/kmaudit/"
-  - resource: "packages/kmctl/apm/.apm/skills/extract-claims/SKILL.md"
-  - resource: "packages/kmctl/apm/.apm/skills/write-checks/SKILL.md"
-  - resource: "packages/kmctl/apm/.apm/agents/kmctl-claims-extractor.md"
-  - resource: "packages/kmctl/apm/.apm/agents/kmctl-check-writer.md"
+  - resource: "packages/kmaudit/apm/.apm/skills/extract-claims/SKILL.md"
+  - resource: "packages/kmaudit/apm/.apm/skills/write-checks/SKILL.md"
+  - resource: "packages/kmaudit/apm/claude/.apm/agents/kmaudit-claims-extractor.md"
+  - resource: "packages/kmaudit/apm/claude/.apm/agents/kmaudit-check-writer.md"
 ---
 
 # The audit pipeline
@@ -22,8 +22,9 @@ kmaudit, a package of its own in `packages/kmaudit/`
 checks what a folder of markdown docs says against the code: `.okf/`,
 `docs/` or any other, each folder a namespace with its own store. It calls no model
 except the optional `kmaudit judge`: two Haiku subagents, driven by two
-skills in kmctl's package, do the reading and writing, and kmaudit hands
-out the work, validates and measures what comes back, stores it and
+skills in kmaudit's own APM package (`packages/kmaudit/apm/`), do the
+reading and writing through the kmaudit MCP tools, and kmaudit hands out
+the work, validates and measures what comes back, stores it and
 reruns it. The choices are in
 [ADR 0036](../decisions/0036-claims-are-extracted-by-the-agent-through-kmctl-audit-claims.md),
 [ADR 0037](../decisions/0037-the-claims-and-checks-agents-get-a-plain-shell-and-i2-narrows.md),
@@ -39,12 +40,11 @@ flowchart TB
     bundle[".okf/ concepts"]
     code["git-tracked code, skills, prompts<br/>(not .okf/, docs/, READMEs, agent notes)"]
 
-    subgraph skills["APM package: skills route, agents read"]
+    subgraph skills["kmaudit's APM package: skills route, agents read"]
         extractSkill["/extract-claims"]
         writeSkill["/write-checks"]
-        extractor["kmctl-claims-extractor<br/>Haiku, Read + Bash"]
-        writer["kmctl-check-writer<br/>Haiku, Read + Bash"]
-        guard["PreToolUse hook:<br/>kmaudit guard"]
+        extractor["kmaudit-claims-extractor<br/>Haiku, Read + MCP tools"]
+        writer["kmaudit-check-writer<br/>Haiku, Read + MCP tools"]
     end
 
     subgraph cli["kmaudit (no model)"]
@@ -65,16 +65,16 @@ flowchart TB
 
     bundle --> ctodo
     extractSkill -- "dispatches per batch" --> extractor
-    extractor -- "todo --json" --> ctodo
-    extractor -- "answers" --> csubmit
+    extractor -- "claims_todo" --> ctodo
+    extractor -- "claims_submit" --> csubmit
     csubmit --> store
     store --> ktodo
     code --> ktodo
     writeSkill -- "dispatches per concept" --> writer
-    writer -- "todo --json --brief" --> ktodo
-    writer -- "drafts" --> ktry
+    writer -- "checks_todo, brief" --> ktodo
+    writer -- "checks_try" --> ktry
     code --> ktry
-    writer -- "answers" --> ksubmit
+    writer -- "checks_submit" --> ksubmit
     ksubmit --> store
     code --> krun
     store --> krun
@@ -87,8 +87,6 @@ flowchart TB
     store --> cover
     code --> cover
     cover --> ui
-    guard -. "blocks any other shell command" .-> extractor
-    guard -. "blocks any other shell command" .-> writer
 ```
 
 ## The flow
@@ -99,8 +97,8 @@ flowchart TB
    and the extraction instructions; it hands out the sections whose key
    moved and those a person sent back from `kmaudit ui`.
 2. **Claims.** The extractor gives every sentence a verdict (kind,
-   quantifier, standalone claims) and pipes them to `kmaudit claims
-   submit`, which refuses a stale key, a missing or doubled sentence and a
+   quantifier, standalone claims) and passes them to `claims_submit`
+   (`kmaudit claims submit`), which refuses a stale key, a missing or doubled sentence and a
    malformed answer, one stderr line each. A claim's id hashes its concept
    and text.
 3. **Lines.** `kmaudit checks todo` hands out the point, structural and
@@ -136,10 +134,11 @@ flowchart TB
 
 ## What keeps it honest
 
-- **The guard.** In Claude Code each agent's front matter runs `kmaudit
-  guard` before every Bash call, so the agent can run only `kmaudit
-  claims` or `kmaudit checks` commands. Antigravity and OpenCode have
-  no per-agent hook; there the instructions hold the rule.
+- **No shell.** In Claude Code the agents' tools are Read, Grep, Glob and
+  their kmaudit MCP tools, so they can write only through kmaudit's submit
+  tools. Antigravity and OpenCode get no agents; there the skill does the
+  batch in the main session with the same tools. `kmaudit guard` stays in
+  the CLI for an agent that still drives kmaudit through a shell.
 - **The weak bar.** A check that notices none of the changes to the code
   it matched, or matched only comments and docstrings, is never stored.
 - **Answers follow rewording.** When re-extraction rewords a claim, its
@@ -181,7 +180,7 @@ Still open:
 ## Depicts
 
 - Invariants: I2 (the audit agent and CI audit never write knowledge; the
-  claims and checks agents are a Value, held by the guard in Claude Code).
+  claims and checks agents are a Value, held by their tools in Claude Code).
 - Verbs: `kmaudit claims todo`, `kmaudit claims submit`,
   `kmaudit claims list`, `kmaudit checks todo`,
   `kmaudit checks try`, `kmaudit checks submit`,
@@ -193,7 +192,8 @@ Still open:
   `check_verbs.py`, `guard.py`, `feedback.py`, `ui.py`, `ui.html`,
   `coverage.py`, `judge.py`, `settings.py`, `tracing.py`,
   `frontmatter.py`);
-  `packages/kmctl/apm/.apm/skills/extract-claims/`,
-  `packages/kmctl/apm/.apm/skills/write-checks/`,
-  `packages/kmctl/apm/.apm/agents/kmctl-claims-extractor.md`,
-  `packages/kmctl/apm/.apm/agents/kmctl-check-writer.md`.
+  `packages/kmaudit/src/kmaudit/mcp_server.py`,
+  `packages/kmaudit/apm/.apm/skills/extract-claims/`,
+  `packages/kmaudit/apm/.apm/skills/write-checks/`,
+  `packages/kmaudit/apm/claude/.apm/agents/kmaudit-claims-extractor.md`,
+  `packages/kmaudit/apm/claude/.apm/agents/kmaudit-check-writer.md`.

@@ -38,23 +38,7 @@ ROOT = Path(__file__).resolve().parents[3]
 SKILLS = ROOT / "packages" / "kmctl" / "apm" / ".apm" / "skills"
 SKILL_NAMES = sorted(p.name for p in SKILLS.iterdir() if p.is_dir())
 AUDITOR = ROOT / "packages" / "kmctl" / "apm" / ".apm" / "agents" / "kmctl-auditor.md"
-EXTRACTOR = (
-    ROOT
-    / "packages"
-    / "kmctl"
-    / "apm"
-    / ".apm"
-    / "agents"
-    / "kmctl-claims-extractor.md"
-)
-CHECK_WRITER = (
-    ROOT / "packages" / "kmctl" / "apm" / ".apm" / "agents" / "kmctl-check-writer.md"
-)
-KMCTL_AGENTS = {
-    "kmctl-auditor": AUDITOR,
-    "kmctl-check-writer": CHECK_WRITER,
-    "kmctl-claims-extractor": EXTRACTOR,
-}
+KMCTL_AGENTS = {"kmctl-auditor": AUDITOR}
 INSTRUCTIONS = ROOT / "packages" / "kmctl" / "apm" / "claude" / ".apm" / "instructions"
 RULE_NAMES = sorted(
     p.name.removesuffix(".instructions.md") for p in INSTRUCTIONS.glob("*.md")
@@ -66,13 +50,15 @@ INSTALL_HOW_TO = ROOT / "docs" / "how-to" / "install-kmctl-with-apm.md"
 README = ROOT / "README.md"
 REF = f"v{version('kmctl')}"
 OKF_AGENTS = "apm_modules/scaccogatto/okf-skills/agents"
-AGENT_NAMES = [
-    "bundle-weaver",
-    "event-analyzer",
-    "kmctl-auditor",
-    "kmctl-check-writer",
+AGENT_NAMES = ["bundle-weaver", "event-analyzer", "kmctl-auditor"]
+#: kmaudit's agents, which ship in kmaudit's Claude-only sub-package and which
+#: kmctl no longer translates.
+KMAUDIT_AGENTS = {
     "kmctl-claims-extractor",
-]
+    "kmctl-check-writer",
+    "kmaudit-claims-extractor",
+    "kmaudit-check-writer",
+}
 AGENT_PATHS = [f".opencode/agents/{n}.md" for n in AGENT_NAMES]
 RULE_PATHS = [f".opencode/rules/{n}.md" for n in RULE_NAMES]
 PLUGIN_PATH = ".opencode/plugins/kmctl.js"
@@ -354,6 +340,17 @@ def test_patch_rewrites_the_agents(repo: Path) -> None:
         assert have == opencode.translate_agent(source, name), name
     meta, _ = _split((repo / ".opencode/agents/kmctl-auditor.md").read_text())
     assert set(meta["permission"]) == {"*", "read", "grep", "glob"}
+
+
+def test_patch_translates_no_kmaudit_agent(repo: Path) -> None:
+    """kmctl translates only its own and okf's agents; kmaudit's two are not among them."""
+    _install(repo)
+
+    written = {Path(rel).stem for rel in opencode.agent_files(repo)}
+    on_disk = {p.stem for p in (repo / ".opencode" / "agents").glob("*.md")}
+
+    assert written == set(AGENT_NAMES)
+    assert not KMAUDIT_AGENTS & (written | on_disk)
 
 
 def test_patch_writes_the_four_rules_without_apply_to(repo: Path) -> None:

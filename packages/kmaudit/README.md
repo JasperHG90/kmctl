@@ -152,6 +152,44 @@ add it as a SessionStart hook in `.claude/settings.json`:
 
 ## Agents and skills
 
-kmctl's APM package ships the `extract-claims` and `write-checks` skills and
-the `kmctl-claims-extractor` and `kmctl-check-writer` agents that drive
-these commands.
+kmaudit's [APM](https://github.com/microsoft/apm) package, in
+`packages/kmaudit/apm`, brings the `/extract-claims` and `/write-checks`
+skills and the kmaudit MCP server, from the same release, so you need not
+install kmaudit first. For Claude Code it also brings two agents,
+`kmaudit-claims-extractor` and `kmaudit-check-writer`, which the skills hand
+each batch to; they call the MCP tools and have no shell. Antigravity and
+OpenCode get no agents, so there the skills do each batch themselves with
+the same tools.
+
+Add the package to your repository's `apm.yml`, with `ref` set to the
+kmaudit release you want:
+
+```yaml
+dependencies:
+  apm:
+    - git: https://github.com/JasperHG90/kmctl.git
+      path: packages/kmaudit/apm
+      ref: kmaudit-vX.Y.Z
+```
+
+then install it for your harnesses, for example
+`apm install --target claude`. APM writes the server into `.mcp.json` for
+Claude Code, `opencode.json` for OpenCode and `.agents/mcp_config.json` for
+Antigravity, as `uvx` running `kmaudit mcp` from that tag.
+
+Claude Code asks once for each kmaudit tool the first time the skill or an
+agent calls it. APM writes no permission rules, so to skip the prompts,
+allow every kmaudit tool in `.claude/settings.json`:
+
+```json
+{
+  "permissions": {
+    "allow": ["mcp__kmaudit__*"]
+  }
+}
+```
+
+In `claude -p` (headless) runs, a project allow rule did not reach a
+subagent's MCP calls when we tried it; name the tools with `--allowedTools`
+as well, such as
+`--allowedTools mcp__kmaudit__claims_todo,mcp__kmaudit__claims_submit`.

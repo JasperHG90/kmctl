@@ -115,8 +115,6 @@ def test_patch_writes_the_agents_and_drops_apms_okf_stop(
         "agents/bundle-weaver.md",
         "agents/event-analyzer.md",
         "agents/kmctl-auditor.md",
-        "agents/kmctl-check-writer.md",
-        "agents/kmctl-claims-extractor.md",
         "plugin.json",
     ]
     assert not antigravity.apm_okf_stop_present(repo)

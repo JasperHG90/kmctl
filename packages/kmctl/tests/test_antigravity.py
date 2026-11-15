@@ -37,8 +37,8 @@ ROOT = Path(__file__).resolve().parents[3]
 DOT_APM = ROOT / "packages" / "kmctl" / "apm" / ".apm"
 SKILLS = DOT_APM / "skills"
 AUDITOR = DOT_APM / "agents" / "kmctl-auditor.md"
-EXTRACTOR = DOT_APM / "agents" / "kmctl-claims-extractor.md"
-CHECK_WRITER = DOT_APM / "agents" / "kmctl-check-writer.md"
+#: kmaudit's agents, in its Claude-only sub-package, which kmctl no longer translates.
+KMAUDIT_AGENTS = ROOT / "packages" / "kmaudit" / "apm" / "claude" / ".apm" / "agents"
 INSTRUCTIONS = ROOT / "packages" / "kmctl" / "apm" / "claude" / ".apm" / "instructions"
 DECISIONS = ROOT / ".okf" / "decisions"
 MANIFESTO = ROOT / ".okf" / "manifesto.md"
@@ -88,8 +88,6 @@ PLUGIN_FILES = [
     "agents/bundle-weaver.md",
     "agents/event-analyzer.md",
     "agents/kmctl-auditor.md",
-    "agents/kmctl-check-writer.md",
-    "agents/kmctl-claims-extractor.md",
     "plugin.json",
 ]
 
@@ -235,18 +233,19 @@ def test_translate_auditor_is_read_only_subagent() -> None:
     }
 
 
-@pytest.mark.parametrize("agent", [EXTRACTOR, CHECK_WRITER], ids=lambda p: p.stem)
-def test_translate_shell_agents_read_and_run_commands(agent: Path) -> None:
-    meta, _ = _split(antigravity.translate_agent(agent.read_text(), agent.name))
-
-    assert meta == {
-        "name": agent.stem,
-        "description": _split(agent.read_text())[0]["description"],
-        "tools": ["view_file", "run_command"],
-        "mainAgent": False,
-        "subagent": True,
-        "model": "inherit",
-    }
+def test_kmctl_translates_only_its_auditor_not_kmaudit_s_agents() -> None:
+    """kmctl's agents are its auditor alone; kmaudit's two use MCP tools kmctl's map has no name for."""
+    assert sorted(p.name for p in antigravity.agents_dir().glob("*.md")) == [
+        "kmctl-auditor.md"
+    ]
+    agents = sorted(KMAUDIT_AGENTS.glob("*.md"))
+    assert [p.stem for p in agents] == [
+        "kmaudit-check-writer",
+        "kmaudit-claims-extractor",
+    ]
+    for agent in agents:
+        with pytest.raises(plugin.PluginError, match="mcp__kmaudit__"):
+            antigravity.translate_agent(agent.read_text(), agent.name)
 
 
 def test_translate_agent_with_bash_gets_no_execution_policy() -> None:

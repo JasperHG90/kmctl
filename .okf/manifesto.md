@@ -84,13 +84,16 @@ ADR 0027), `manifesto.md` (the root concept), `decisions/`, `architecture/`, `pr
   practices), a skill for writing Diataxis docs, `/handoff` and `/continue`,
   which write and read back handoffs in `.okf/handoffs/` (ADR 0008), and the
   four knowledge rules, and it depends on the okf skills for OKF authoring and
-  validation. `/extract-claims` hands the bundle's changed sections to the
-  `kmctl-claims-extractor` agent (Haiku, Read and a shell), which stores
-  claims through `kmaudit claims` and returns only a summary;
-  `/write-checks` hands the claims with no check to the
-  `kmctl-check-writer` agent, built the same way, which tries and stores
-  checks through `kmaudit checks`. Skills route; `kmctl` and `kmaudit`
-  decide and write.
+  validation. kmaudit's own APM package, `packages/kmaudit/apm/`, brings
+  `/extract-claims`, `/write-checks` and the kmaudit MCP server from one
+  kmaudit release. `/extract-claims` hands the bundle's changed sections to
+  the `kmaudit-claims-extractor` agent (Haiku, Read and kmaudit's MCP tools,
+  no shell), which stores claims through `claims_submit` and returns only a
+  summary; `/write-checks` hands the claims with no check to the
+  `kmaudit-check-writer` agent, built the same way, which tries and stores
+  checks through `checks_try` and `checks_submit`. The agents come only to
+  Claude Code; elsewhere the skills do the batch with the same tools.
+  Skills route; `kmctl` and `kmaudit` decide and write.
   The package also ships, per harness, the SessionStart hook that relays
   `kmctl`'s briefing (ADR 0029), okf's MCP server and, for Antigravity, okf's
   Stop check (ADR 0018), so APM (Agent Package Manager) installs all of it
@@ -155,10 +158,10 @@ Each is `planned` until the test named for it passes, then `enforced`.
 - **Plain language** in everything kmctl prints and every page it writes.
 - **Every skill is made with the skill-creator skill** (ADR 0007).
 - **The claims and checks agents write only through `kmaudit`.** They
-  have a shell. In Claude Code a hook in their front matter (`kmaudit
-  guard`) blocks any command but `kmaudit claims` or `kmaudit checks`; Antigravity and OpenCode have no per-agent hook, so there their
-  instructions hold the rule. They never write `.okf/`, `docs/` or a
-  `verified` stamp (ADR 0037, ADR 0040).
+  have no shell: their tools are Read, Grep, Glob and kmaudit's MCP tools,
+  and they ship to Claude Code alone; in Antigravity and OpenCode the
+  skills do the same work with the same tools. They never write `.okf/`,
+  `docs/` or a `verified` stamp (ADR 0037, ADR 0040, ADR 0043).
 
 ## Out of scope for now
 

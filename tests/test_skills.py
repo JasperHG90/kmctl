@@ -87,74 +87,107 @@ def test_write_docs_grader_joins_metadata(tmp_path: Path) -> None:
 
 
 AGENTS = ROOT / "packages" / "kmctl" / "apm" / ".apm" / "agents"
-#: ``kmaudit`` followed by its words and flags, up to the first word that is neither.
-COMMAND = re.compile(r"\bkmaudit((?: +(?:[a-z][a-z-]*|--[a-z][a-z-]*|-(?= )))+)")
+#: kmaudit's APM package: its skills, and its agents in the Claude-only sub-package.
+KMAUDIT_SKILLS = ROOT / "packages" / "kmaudit" / "apm" / ".apm" / "skills"
+KMAUDIT_AGENTS = ROOT / "packages" / "kmaudit" / "apm" / "claude" / ".apm" / "agents"
+KMAUDIT_FILES = [
+    KMAUDIT_SKILLS / "extract-claims" / "SKILL.md",
+    KMAUDIT_AGENTS / "kmaudit-claims-extractor.md",
+    KMAUDIT_SKILLS / "write-checks" / "SKILL.md",
+    KMAUDIT_AGENTS / "kmaudit-check-writer.md",
+]
+#: ``kmaudit`` followed by one of its CLI verb groups, the way a shell command starts.
+COMMAND = re.compile(
+    r"\bkmaudit +(?:claims|checks|guard|judge|coverage|namespaces|ui|briefing|mcp)\b"
+)
 #: Code: fenced blocks and inline code spans, where a file names a command to run.
 CODE = re.compile(r"```.*?```|`[^`\n]+`", re.DOTALL)
+#: A name in code that looks like a kmaudit MCP tool: a verb group, then a verb.
+TOOL = re.compile(r"`(?:mcp__kmaudit__)?((?:claims|checks)_[a-z]+)`")
 
 
-def _named_commands(text: str) -> list[list[str]]:
-    """Each ``kmaudit ...`` command a skill or agent names in its code, as its words."""
-    code = "\n".join(CODE.findall(text))
-    return [m.group(1).split() for m in COMMAND.finditer(code)]
+def _ids(path: Path) -> str:
+    """A skill's folder name, or an agent's file stem."""
+    return path.parent.name if path.name == "SKILL.md" else path.stem
 
 
-@pytest.mark.parametrize(
-    "path",
-    [
-        SKILLS / "extract-claims" / "SKILL.md",
-        AGENTS / "kmctl-claims-extractor.md",
-        SKILLS / "write-checks" / "SKILL.md",
-        AGENTS / "kmctl-check-writer.md",
-    ],
-    ids=lambda p: p.parent.name if p.name == "SKILL.md" else p.stem,
-)
-def test_every_named_kmaudit_command_exists(path: Path) -> None:
-    """Each kmaudit command and flag the skill or agent names is in kmaudit's CLI (skills-name-only-real-verbs)."""
-    from kmaudit.cli import app
-    from typer.main import get_command
+def _server_tools() -> set[str]:
+    """The tools kmaudit's MCP server lists."""
+    import asyncio
 
-    named = _named_commands(path.read_text())
-    assert named, "the file names no kmaudit command"
-    for words in named:
-        command = get_command(app)
-        for word in (w for w in words if not w.startswith("--")):
-            if not hasattr(command, "commands"):
-                break  # a verb's argument
-            assert word in command.commands, f"kmaudit {' '.join(words)}: no {word!r}"
-            command = command.commands[word]
-        known = {o for p in command.params for o in p.opts}
-        flags = {w for w in words if w.startswith("--")}
-        assert flags <= known, f"kmaudit {' '.join(words)}: {flags - known}"
+    from kmaudit.mcp_server import server
+
+    return {t.name for t in asyncio.run(server.list_tools())}
 
 
-#: The kmaudit verbs that write, which must name their namespace.
-WRITES = re.compile(r"\bkmaudit (?:claims submit|checks try|checks submit)\b[^\n`]*")
-
-
-@pytest.mark.parametrize(
-    "path",
-    [
-        SKILLS / "extract-claims" / "SKILL.md",
-        AGENTS / "kmctl-claims-extractor.md",
-        SKILLS / "write-checks" / "SKILL.md",
-        AGENTS / "kmctl-check-writer.md",
-    ],
-    ids=lambda p: p.parent.name if p.name == "SKILL.md" else p.stem,
-)
-def test_writes_name_their_namespace_with_path(path: Path) -> None:
-    """An agent's submit or try passes --path, or a docs/ answer lands in .okf (ADR 0043)."""
+@pytest.mark.parametrize("path", KMAUDIT_FILES, ids=_ids)
+def test_names_no_kmaudit_shell_command(path: Path) -> None:
+    """The skill or agent drives kmaudit through its MCP tools, not a shell (ADR 0043)."""
     code = "\n".join(CODE.findall(path.read_text()))
-    commands = [m.group(0) for m in WRITES.finditer(code)]
 
-    assert commands, "the file names no kmaudit write"
-    assert [c for c in commands if "--path" not in c] == []
+    assert COMMAND.findall(code) == []
+
+
+@pytest.mark.parametrize("path", KMAUDIT_FILES, ids=_ids)
+def test_every_named_mcp_tool_exists(path: Path) -> None:
+    """Each kmaudit tool the skill or agent names is one the server lists (skills-name-only-real-verbs)."""
+    named = set(TOOL.findall(path.read_text()))
+
+    assert named, "the file names no kmaudit tool"
+    assert named <= _server_tools()
 
 
 @pytest.mark.parametrize(
     "path",
-    sorted(SKILLS.glob("*/SKILL.md")) + sorted(AGENTS.glob("*.md")),
-    ids=lambda p: p.parent.name if p.name == "SKILL.md" else p.stem,
+    [
+        KMAUDIT_SKILLS / "extract-claims" / "SKILL.md",
+        KMAUDIT_SKILLS / "write-checks" / "SKILL.md",
+    ],
+    ids=_ids,
+)
+def test_skill_works_the_batch_itself_where_no_agent_exists(path: Path) -> None:
+    """In Antigravity and OpenCode, which get no agents, the skill does each batch with the same tools."""
+    text = path.read_text()
+    group = "claims" if "extract-claims" in path.parts else "checks"
+
+    assert "When the agent is not available (Antigravity, OpenCode)" in text
+    assert f"`{group}_submit`" in text
+    assert "namespace" in text
+
+
+@pytest.mark.parametrize("path", KMAUDIT_FILES[1::2], ids=_ids)
+def test_agent_submits_to_the_namespace_folder(path: Path) -> None:
+    """An agent's submit names its namespace through folder, so a docs/ answer never lands in .okf (ADR 0043)."""
+    text = path.read_text()
+
+    assert "joined" in text and "`namespace`" in text
+    assert (
+        f"`by` set\n   to `{path.stem}`" in text or f"`by` set to `{path.stem}`" in text
+    )
+
+
+@pytest.mark.parametrize(
+    "path", sorted(KMAUDIT_SKILLS.glob("*/evals/evals.json")), ids=lambda p: p.parts[-3]
+)
+def test_skill_evals_follow_the_mcp_flow(path: Path) -> None:
+    """The evals expect the renamed agent and the MCP tools, and test the no-agent harness."""
+    import json
+
+    text = path.read_text()
+    evals = json.loads(text)["evals"]
+
+    assert "kmctl-" not in text
+    assert COMMAND.findall(text) == []
+    assert any(e["name"] == "no-agent-harness" for e in evals)
+
+
+@pytest.mark.parametrize(
+    "path",
+    sorted(SKILLS.glob("*/SKILL.md"))
+    + sorted(AGENTS.glob("*.md"))
+    + sorted(KMAUDIT_SKILLS.glob("*/SKILL.md"))
+    + sorted(KMAUDIT_AGENTS.glob("*.md")),
+    ids=_ids,
 )
 def test_front_matter_parses_with_a_name_and_description(path: Path) -> None:
     """A description with an unquoted ': ' breaks the YAML, and every harness then skips the skill."""

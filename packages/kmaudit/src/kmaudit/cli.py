@@ -172,7 +172,7 @@ def claims_todo(
         "Examples:\n\n"
         "  kmaudit claims submit answers.json\n\n"
         "  cat answers.json | kmaudit claims submit - --json\n\n"
-        "  kmaudit claims submit - --by kmctl-claims-extractor\n\n"
+        "  kmaudit claims submit - --by kmaudit-claims-extractor\n\n"
         "The input is one section answer or a JSON list of them: section and key "
         "as kmaudit claims todo gave them, and sentences, one verdict per "
         "numbered sentence (n, how_to_check, reason, kind, claims). It refuses a "
@@ -199,7 +199,7 @@ def claims_submit(
         str,
         typer.Option(
             "--by",
-            metavar="kmctl-claims-extractor",
+            metavar="kmaudit-claims-extractor",
             help="Who wrote the answers, recorded with each section. Default: agent.",
         ),
     ] = "agent",
@@ -500,7 +500,7 @@ def checks_try(
         "Examples:\n\n"
         "  kmaudit checks submit answers.json\n\n"
         "  cat answers.json | kmaudit checks submit - --json\n\n"
-        "  kmaudit checks submit - --by kmctl-check-writer\n\n"
+        "  kmaudit checks submit - --by kmaudit-check-writer\n\n"
         "Each answer is a check (claim, steps, strength exact or proxy, why, and "
         "drift with one sentence when the check fails because the claim is "
         "wrong) or a reason no check fits (claim, reason). It runs each check "
@@ -520,7 +520,7 @@ def checks_submit(
         str,
         typer.Option(
             "--by",
-            metavar="kmctl-check-writer",
+            metavar="kmaudit-check-writer",
             help="Who wrote the answers, recorded with each. Default: agent.",
         ),
     ] = "agent",
@@ -941,15 +941,16 @@ def audit_ui(
         "Examples:\n\n"
         "  kmaudit guard --allow claims\n\n"
         "  kmaudit guard --allow checks\n\n"
-        "A Claude Code PreToolUse hook for the kmctl-claims-extractor and "
-        "kmctl-check-writer agents, set in their front matter. It reads the "
+        "A Claude Code PreToolUse hook for an agent that drives kmaudit through "
+        "a shell, set in its front matter; kmaudit's own agents call the MCP "
+        "tools (kmaudit mcp) and need none. It reads the "
         "hook's JSON on stdin and lets a Bash call through only when it is one "
         "kmaudit GROUP command, optionally after cd DIR &&, optionally fed "
         "by one quoted heredoc (<<'ANSWERS') whose body is data. A pipe, "
         "redirect, second command or substitution is refused: exit 2, which "
         "blocks the call, with the reason on stderr. Other tools pass. "
-        "Antigravity and OpenCode have no per-agent hook, so there the "
-        "agents' instructions hold the same rule (ADR 0040)."
+        "Antigravity and OpenCode have no per-agent hook, so there an "
+        "agent's instructions must hold the same rule (ADR 0040)."
     ),
 )
 def audit_guard(

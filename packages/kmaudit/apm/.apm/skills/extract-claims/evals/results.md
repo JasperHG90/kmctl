@@ -49,3 +49,48 @@ The description's first sentence is the briefing line, so it stays short
 names the triggers: extract, refresh or list the bundle's claims,
 `/extract-claims`, and claims needed before writing checks. The trigger
 optimisation loop (`run_loop`) did not run for this ticket.
+
+## Moved to kmaudit's package and its MCP tools (ticket kmaudit-skills-mcp)
+
+The skill moved to kmaudit's APM package, its agent became
+`kmaudit-*` with Read, Grep, Glob and the kmaudit MCP tools only, and
+both now call those tools instead of the CLI. `evals.json` names the tools
+in each expectation and adds eval 4, the same work in a harness with no
+agent (Antigravity, OpenCode). The runs above used the CLI and are kept as
+the record of the flow's results then.
+
+The evals were not rerun for this change. A run needs a session where the
+kmaudit MCP server is configured and `mcp__kmaudit__*` allowed: the
+building session had no such server, and starting one meant a nested
+`claude` session, which the build left out (the loop's guards refuse one,
+as the plan's spike found). The `tests/test_skills.py`
+checks (every tool named exists in the server, no kmaudit shell command is
+named) and `packages/kmaudit/tests/test_apm_package.py`'s check of the
+agents' tools hold, and the APM integration test in
+`packages/kmaudit/tests/test_apm_package.py` installs the agents and
+server. Rerun these evals in such a session before tuning the description.
+
+**End-to-end runs through MCP, 2026-11-15.** Three runs of the eval-1
+shape, made from the parent session with a plain script (Claude Code
+2.1.325, `claude -p "/extract-claims" --model sonnet`), since the loop's
+guards refuse a nested session inside a recorded spike. The project was
+kmaudit's test fixture repository
+(`packages/kmaudit/tests/fixtures/audit_repo.py`, 2 concepts, 4 sections),
+with this skill in `.claude/skills/`, `kmaudit-claims-extractor` in
+`.claude/agents/`, the kmaudit server from this tree in `.mcp.json`, and
+`--allowedTools` naming the three claims tools, Read, Grep, Glob and Agent.
+The script passes only when the agent was dispatched, it called
+`claims_submit`, nothing called Bash, claims are stored and fewer sections
+are pending than before.
+
+- Runs 1 and 2: the agent stored all 4 sections through `claims_submit`
+  with no shell (3 point and 1 subjective claim, 0 pending after). Run 1's
+  pass/fail line was wrong (the script misread `claims_list`'s JSON); run 2
+  failed it honestly: the main session ran one `ls` to see which folders
+  exist before choosing `.okf`.
+- The skill then gained one sentence: with no folder named, call
+  `claims_todo` on the repository root's `.okf` straight away.
+- Run 3: passed. One dispatch, two `claims_submit` calls inside the agent,
+  no Bash anywhere, 4 claims stored, 0 pending.
+
+write-checks and the no-agent eval were not run.
