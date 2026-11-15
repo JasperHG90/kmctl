@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "release-notes-owned-paths",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
@@ -73,8 +73,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "9a9daf71ec65d83291ffb6867f46a0ef41eb1ad33661fa0f88c0699925d703cb",
   "intent": {
@@ -106,8 +106,14 @@
       "to": "verifying",
       "at": "2026-11-15T05:44:27+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-15T06:36:24+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T05:44:28+00:00"
+  "at": "2026-11-15T06:36:24+00:00"
 }
