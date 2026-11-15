@@ -7,7 +7,7 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-11-15T04:59:22Z
+  at: 2026-11-15T05:38:40Z
   against:
     - decisions/0012-releases-come-from-ci
 ---
