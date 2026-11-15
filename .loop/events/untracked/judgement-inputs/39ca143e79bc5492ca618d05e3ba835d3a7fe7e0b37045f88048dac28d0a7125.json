@@ -1,0 +1,1 @@
+{"ask":"Document the migration path for users from v0.12 to the next release: upgrade the CLI first, change the apm.yml path, starter just upgrade, unchanged action and hook, kmaudit as the new opt-in home for the audit"}
