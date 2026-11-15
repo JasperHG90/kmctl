@@ -17,7 +17,7 @@ knowledge bundle current, and kmaudit checks that bundle against the code.
 ## Install
 
 ```bash
-uv tool install 'kmaudit @ git+https://github.com/JasperHG90/kmctl#subdirectory=packages/kmaudit'
+uv tool install 'kmaudit @ git+https://github.com/JasperHG90/kmctl@kmaudit-v0.1.0#subdirectory=packages/kmaudit'
 ```
 
 Add the `tracing` extra (`kmaudit[tracing]`) to trace the `judge` tool's
