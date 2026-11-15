@@ -19,7 +19,9 @@
   "archived": false,
   "worktree": "/home/vscode/workspace.worktrees/root-release-cutoff",
   "branch": "loop/root-release-cutoff",
-  "stamps": [],
+  "stamps": [
+    "f2835e2294c7b9c18bc91cb6e8f820f7ae00b1ff8998ca883649a647d42a9f36"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/implementer",
     "hash": "0ef1bd5ced8c0d6f2b32a7ecba5c87660d38120b6b5d8e91638a046989cbca90",
@@ -115,5 +117,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T05:08:29+00:00"
+  "at": "2026-11-15T05:22:26+00:00"
 }

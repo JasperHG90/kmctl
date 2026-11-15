@@ -1,0 +1,17 @@
+warning: `VIRTUAL_ENV=/home/vscode/workspace/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+
+==================================== ERRORS ====================================
+______________ ERROR collecting packages/kmctl/tests/test_docs.py ______________
+ImportError while importing test module '/home/vscode/workspace.worktrees/root-release-cutoff/packages/kmctl/tests/test_docs.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+../../.local/share/uv/python/cpython-3.12.16-linux-aarch64-gnu/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+packages/kmctl/tests/test_docs.py:6: in <module>
+    from conftest import okf_validate
+E   ImportError: cannot import name 'okf_validate' from 'conftest' (/home/vscode/workspace.worktrees/root-release-cutoff/tests/conftest.py)
+=========================== short test summary info ============================
+ERROR packages/kmctl/tests/test_docs.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.13s
