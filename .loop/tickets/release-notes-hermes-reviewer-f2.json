@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "release-notes-hermes-reviewer-f2",
-  "stage": "stub",
+  "stage": "planning",
   "attempts": 0,
   "plan_rounds": 0,
   "review_rounds": 0,
@@ -35,7 +35,14 @@
     "depends_on": [],
     "priority": null
   },
-  "history": [],
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-11-15T04:47:26+00:00",
+      "by": "promote"
+    }
+  ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T22:10:49+00:00"
+  "at": "2026-11-15T04:47:26+00:00"
 }
