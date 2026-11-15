@@ -1,2 +1,3 @@
 {"at": "2026-11-14T21:29:43+00:00", "by": "review close", "kind": "register", "schema_version": "1.0", "stage": "stub"}
 {"at": "2026-11-15T04:46:38+00:00", "by": "promote", "from": "stub", "grant": "g7", "kind": "transition", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/implementer", "step": "ticket-promote", "to": "planning"}
+{"at": "2026-11-15T04:46:45+00:00", "binds": "fa1e300920cc604669bf5818a1c1ccb1d29aca28d454a608c6de855a945cac3b", "kind": "round-start", "n": 1, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}

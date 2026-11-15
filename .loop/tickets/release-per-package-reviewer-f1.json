@@ -3,7 +3,7 @@
   "slug": "release-per-package-reviewer-f1",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "7218809ac1227f99a5e97a8ce0cb1abdda9e0994b2e2c320d52a64dfc396d35d",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "fa1e300920cc604669bf5818a1c1ccb1d29aca28d454a608c6de855a945cac3b",
+    "started_at": "2026-11-15T04:46:45+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "fa1e300920cc604669bf5818a1c1ccb1d29aca28d454a608c6de855a945cac3b",
   "intent": {
     "epic": "monorepo-release",
     "depends_on": [],
@@ -44,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T04:46:43+00:00"
+  "at": "2026-11-15T04:46:45+00:00"
 }

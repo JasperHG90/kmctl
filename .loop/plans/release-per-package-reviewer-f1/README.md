@@ -9,10 +9,9 @@ generated:
   by: process:loopctl/2.3.1.dev65+g93b143856
   at: '2026-11-14T21:29:42+00:00'
 slug: release-per-package-reviewer-f1
-status: draft
 epic: monorepo-release
 depends_on: []
-priority: null
+priority: 2
 schema_version: '2.0'
 ---
 
@@ -26,35 +25,21 @@ The late-commit step takes the drafted commit as the first parent of the merge's
 
 ## Problems
 
-<!-- One line per problem this ticket fixes: - P1: text. Every problem is
-fixed by at least one outcome. -->
-
-- P1: The problem this ticket fixes, in one line.
+- P1: When the release branch takes an "Update branch" merge from main before a later commit, release-tag reads the update merge as the drafted commit and names none of the commits that landed after the notes were drafted.
 
 ## Goals
 
-<!-- One line per goal the fixes serve: - G1: text. Every goal is served by
-at least one outcome. -->
-
-- G1: What fixing it serves, in one line.
+- G1: release-tag names every commit of the package that ships without a bullet in the reviewed notes.
 
 ## Outcomes
 
-<!-- One block per outcome: a heading ### O1: what changes, then exactly these
-one-line bullets. kind: behaviour (stands alone), support (serves another
-outcome) or follow-up. goal: a G id. fixes: a P id. needs: none, or the O ids
-it needs first, comma-separated. touches: the paths, CLI verbs or keys it
-changes, each in backticks, comma-separated (new: marks a file it creates).
-checked by: the test or check that shows it. seen by: operator, calling code
-or nobody. loopctl plan lint writes these to .loop/plans/SLUG/facts.json. -->
-
-### O1: What changes, in one line
+### O1: release-tag reads the Drafted-From trailer from the release branch's commits before falling back to the parent
 - kind: behaviour
 - goal: G1
 - fixes: P1
 - needs: none
-- touches: `loopctl verb`
-- checked by: the test that shows it works
+- touches: `.github/workflows/release-tag.yml`, `tests/scripts/test_workflows.py`
+- checked by: a test that merges main into the release branch, adds a notes edit, merges the release and runs the step, which must name the late commit and the drafted commit; the existing merge, squash and no-trailer tests still pass
 - seen by: operator
 
 ## Could invalidate this plan
