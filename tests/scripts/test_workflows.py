@@ -893,8 +893,17 @@ def _land_late_commits(repo: Path) -> None:
 
 
 def _merge_release(repo: Path, squash: bool, trailer: bool = True) -> None:
-    """Land release/kmaudit-v0.2.0 on main as a merge commit or a squash merge."""
+    """Land release/kmaudit-v0.2.0 on main as a merge commit or a squash merge, without the Drafted-From trailer when ``trailer`` is false."""
     if not squash:
+        if not trailer:
+            # The release commit as the bump job would write it without the
+            # trailer, such as one made by hand.
+            _git_out(repo, "switch", "-q", "release/kmaudit-v0.2.0")
+            message = _git_out(repo, "log", "-1", "--format=%B")
+            _git_out(
+                repo, "commit", "-q", "--amend", "-m", message.split("Drafted-From")[0]
+            )
+            _git_out(repo, "switch", "-q", "main")
         _git_out(
             repo,
             "merge",
@@ -1199,3 +1208,46 @@ def test_hermes_release_pr_body_carries_the_draft_before_hermes(
         origin, "diff", "--name-only", drafted, "release/kmaudit-v0.2.0"
     ).splitlines()
     assert not any("before-hermes" in path for path in changed)
+
+
+def test_release_tag_reads_the_trailer_past_an_update_branch_merge(
+    released: dict[str, Any], tmp_path: Path
+) -> None:
+    """A release branch that took an "Update branch" merge from main, then a later commit, still names the late commits.
+
+    The second parent's parent is then the update merge, whose history holds
+    the late commits, so the step must read the release commit's trailer.
+    """
+    repo: Path = released["repo"]
+    _land_late_commits(repo)
+    _git_out(repo, "switch", "-q", "release/kmaudit-v0.2.0")
+    _git_out(repo, "merge", "-q", "--no-ff", "-m", "Merge branch 'main'", "main")
+    _change(repo, "Edit notes", ".github/release-notes/kmaudit-v0.2.0.md")
+    _git_out(repo, "switch", "-q", "main")
+    _merge_release(repo, squash=False)
+
+    res, summary = _late(repo, tmp_path, "kmaudit")
+
+    assert res.returncode == 0, res.stdout + res.stderr
+    [warning] = [ln for ln in res.stdout.splitlines() if ln.startswith("::warning::")]
+    assert "Late kmaudit fix" in warning
+    assert released["drafted"] in warning
+    assert "Late kmaudit fix" in summary
+
+
+def test_release_tag_falls_back_to_the_parent_for_a_merge_without_a_trailer(
+    released: dict[str, Any], tmp_path: Path
+) -> None:
+    """A merged release commit with no Drafted-From trailer takes the second parent's parent as the drafted commit."""
+    repo: Path = released["repo"]
+    _land_late_commits(repo)
+    _merge_release(repo, squash=False, trailer=False)
+    assert "Drafted-From" not in _git_out(repo, "log", "-1", "--format=%B", "HEAD^2")
+
+    res, summary = _late(repo, tmp_path, "kmaudit")
+
+    assert res.returncode == 0, res.stdout + res.stderr
+    [warning] = [ln for ln in res.stdout.splitlines() if ln.startswith("::warning::")]
+    assert "Late kmaudit fix" in warning
+    assert released["drafted"] in warning
+    assert "Late kmaudit fix" in summary
