@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "release-per-package-reviewer-f1",
-  "stage": "planning",
+  "stage": "ready",
   "attempts": 0,
   "plan_rounds": 1,
   "review_rounds": 0,
@@ -60,8 +60,14 @@
       "to": "planning",
       "at": "2026-11-15T04:46:38+00:00",
       "by": "promote"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-11-15T04:48:18+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T04:48:16+00:00"
+  "at": "2026-11-15T04:48:18+00:00"
 }
