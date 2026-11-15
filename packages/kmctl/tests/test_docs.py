@@ -6,6 +6,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 from conftest import okf_validate
 from typer.core import TyperGroup
 from typer.main import get_command
@@ -270,3 +271,51 @@ def test_install_lines_pass_after_a_kmaudit_pin(tmp_path: Path) -> None:
         k: v for k, v in before.items() if not v[2]
     }
     assert _wrong_install_lines(found) == []
+
+
+def _section(text: str, heading: str) -> str:
+    """The body of the markdown section headed ``heading`` (any level), up to the next heading at its level or above."""
+    lines = text.splitlines()
+    [start] = [
+        i
+        for i, ln in enumerate(lines)
+        if ln.lstrip("#").strip() == heading and ln.startswith("#")
+    ]
+    level = len(lines[start]) - len(lines[start].lstrip("#"))
+    body = []
+    for ln in lines[start + 1 :]:
+        if ln.startswith("#") and len(ln) - len(ln.lstrip("#")) <= level:
+            break
+        body.append(ln)
+    return "\n".join(body)
+
+
+@pytest.mark.parametrize(
+    ("page", "heading"),
+    [
+        ("packages/kmctl/README.md", "Upgrade"),
+        ("docs/how-to/install-kmctl-with-apm.md", "Upgrade from v0.12"),
+    ],
+)
+def test_upgrade_from_v0_12_gives_the_steps_in_order(page: str, heading: str) -> None:
+    """A v0.12 user installs the new CLI first, moves the entry, reinstalls, and checks with doctor last."""
+    body = _section((ROOT / page).read_text(), heading)
+    flat = " ".join(body.split())
+
+    # The steps after the CLI install, each found after the one before it.
+    cli = flat.find("#subdirectory=packages/kmctl")
+    entry = flat.find("path: packages/kmctl/apm", cli)
+    install = flat.find("apm install", entry)
+    doctor = flat.find("kmctl doctor", install)
+    assert cli != -1 and entry != -1 and install != -1 and doctor != -1, body
+    assert flat.find("kmctl doctor") > entry, body
+    assert "path: apm" in flat
+    assert "ref: v" in flat
+    assert "just upgrade" in flat
+
+
+def test_upgrade_docs_link_kmaudit() -> None:
+    """kmctl's README links kmaudit's README, the separate package that checks docs against the code."""
+    text = (ROOT / "packages" / "kmctl" / "README.md").read_text()
+
+    assert "](../kmaudit/README.md)" in text

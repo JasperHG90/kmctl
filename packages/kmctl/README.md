@@ -190,11 +190,40 @@ install; each `fail` line names its fix.
 ### Upgrade
 
 Set `ref` in `apm.yml` to the new tag and run your `apm install` line and
-`kmctl plugin patch` again. Moving from v0.12.2 or older to a later release,
-also change `path: apm` to `path: packages/kmctl/apm`; the kmctl on PATH
-then runs the new pinned release. Install a newer CLI with
-`uv tool install --force git+https://github.com/JasperHG90/kmctl@vX.Y.Z#subdirectory=packages/kmctl`
-only for its own fixes.
+`kmctl plugin patch` again; the kmctl on PATH then runs the new pinned
+release. Install a newer CLI only for its own fixes, except when you move
+from v0.12.2 or older, as below. A project made from the starter does all
+of it with `just upgrade vX.Y.Z`.
+
+From v0.12.2 or older to a later release, kmctl moved into the repository's
+`packages/kmctl` folder, so the steps change and their order matters:
+
+1. Install the new CLI first. A kmctl at v0.12.2 or older looks for kmctl
+   at the repository root and cannot run a later pin:
+
+   ```
+   uv tool install --force 'git+https://github.com/JasperHG90/kmctl@vX.Y.Z#subdirectory=packages/kmctl'
+   ```
+
+2. In `apm.yml`, change kmctl's entry from `path: apm` to the new path and
+   tag:
+
+   ```yaml
+   - git: https://github.com/JasperHG90/kmctl.git
+     path: packages/kmctl/apm
+     ref: vX.Y.Z
+   ```
+
+3. Run your `apm install` line, then `kmctl plugin patch`.
+4. Run `kmctl doctor` to check the install. It runs the release the lock
+   names, so run it last, after `apm install` has moved the lock.
+
+The GitHub Action (`uses: JasperHG90/kmctl@vX.Y.Z`) and the pre-commit
+hook (`rev: vX.Y.Z`) change only their tag. kmctl's own audit (the
+action's `mode: audit`, the `/audit` skill and its agent) is unchanged.
+[kmaudit](../kmaudit/README.md) is a new, separate package that checks
+what a folder of docs claims against the code; install it apart if you
+want it.
 
 ### Remove
 
