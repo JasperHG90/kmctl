@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "make_repo still passes its own inline -c user.name/-c user.email to git add and git commit, which now duplicates IDENTITY that git() adds on every call.",
+      "anchor": "packages/kmaudit/tests/fixtures/audit_repo.py:125",
+      "category": "nit",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "4219b5cb87dcfd6bffe5fe58a49bd538f96ea376fbc1fbfda595626c66d05eb5",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T21:07:17+00:00"
+}
