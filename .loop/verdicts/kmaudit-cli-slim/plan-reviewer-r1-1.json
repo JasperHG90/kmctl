@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The plan's touches cover cli.py, guard.py, the README, commands.md, ADR 0043 and audit-pipeline.md. They miss the runtime text kmaudit keeps printing that names the dropped verbs. Refusals and `next` fields name them in verbs.py (231, 273, 278, 362, 368, 382, 398), check_verbs.py (496-497, 522, 527, 631, 641, 676, 686, 705), judge.py (232, 242, 245) and sections.py (174). The instructions claims_todo and checks_todo hand to agents say to pipe to `kmaudit claims submit -` and `kmaudit checks try -` (instructions.py 120, check_instructions.py 50-64). The UI page, which the plan keeps for people, says 'Run kmaudit checks run, then Reload', 'Run kmaudit claims todo' and 'see kmaudit judge --help' (ui.html 379, 532, 753, 817, 858, 955; ui.py 617). The manifesto (lines 64-92, 159) and .okf/architecture/overview.md (23 mentions) describe the verbs too. Shipped as written, every refusal and every UI hint points a person at a command that exits 2. `touches` does not match what has to change, and plan.split reads touches.",
+      "anchor": ".loop/plans/kmaudit-cli-slim/README.md (O1 touches)",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "After the slim, a person has no way to rerun stale checks. The UI shows 'Not run yet. Run kmaudit checks run' and 'Run kmaudit checks run, then Reload' when a file a check reads has changed. ui.py's server has no rerun endpoint (POST only /api/feedback and /api/opinion). The plan's carried choice covers only CI (an MCP client or Python). It does not cover the person the operator kept the UI for, who would have to start an agent session or write Python to clear a stale view. kmaudit-skills-mcp gives its agents five tools and no checks_run, so no skill reruns checks either. This is a scope decision for the operator, not a build detail. Options: keep `checks run` as a people command next to the list commands, add a rerun button to the UI, or have the UI and briefing send people to an agent. The plan must pick one, and the outcome and touches must follow it.",
+      "anchor": "packages/kmaudit/src/kmaudit/ui.html:532",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "open",
+      "claim": "The checked-by line, 'no behaviour test deleted' and 'every behaviour the old CLI tests checked is still tested', cannot hold for behaviours that exist only on the CLI and leave with it. Examples: submitting answers from a file or stdin (test_claims_cli.py test_submit_from_a_file), the people-facing counts (test_todo_limit_and_counts_for_people), the --help walk (test_checks_cli.py test_help_walk_and_help_steps...), exit codes (test_run_exits_0_when_a_check_fails), the one-line refusal outside git, and the CLI/MCP parity assertions in test_mcp.py (`on_cli = cli(\"claims\", \"todo\", ...)`). As written, the contract either cannot be met or pushes the build to keep fake CLI tests. The plan should say which behaviours leave with the verbs, so the per-behaviour count covers only the ones that move.",
+      "anchor": ".loop/plans/kmaudit-cli-slim/README.md (O1 checked by)",
+      "category": "test-mismatch",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "b1fd859ad405283cbf2a3bc6378c059ac32458b8b354c427b5ed9a5fc9a40657"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T05:47:54+00:00"
+}

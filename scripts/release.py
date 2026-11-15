@@ -72,9 +72,12 @@ COPIER = Path("copier.yml")
 HOOKS = Path("apm/claude/.apm/hooks/hooks.json")
 #: How many install hints ``HOOKS`` holds.
 HOOK_HINTS = 2
-#: The folder releases after v0.12.1 build kmctl from (ADR 0044); ``set``
-#: writes it after the tag on every install line and hint.
+#: The folder releases after ``LAST_ROOT_RELEASE`` build kmctl from (ADR 0044);
+#: ``set`` writes it after the tag on every install line and hint, for those
+#: releases only.
 SUBDIRECTORY = "#subdirectory=packages/kmctl"
+#: The last release built from the repository root, as ``kmctl.plugin`` names it.
+LAST_ROOT_RELEASE = "v0.12.2"
 _INSTALL = re.compile(
     r"^(\s*uv tool install git\+https://github\.com/JasperHG90/kmctl)(@[^\s#]+)?"
     r"(#subdirectory=packages/kmctl)?$",
@@ -230,15 +233,25 @@ def current(repo: Path) -> str:
     return version
 
 
+def subdirectory(version: str) -> str:
+    """``SUBDIRECTORY`` for a release after ``LAST_ROOT_RELEASE``, else empty."""
+    if Version(version) <= Version(LAST_ROOT_RELEASE.removeprefix("v")):
+        return ""
+    return SUBDIRECTORY
+
+
 def pin_docs(text: str, version: str) -> tuple[str, int]:
     """Point each install line in ``text`` at the tag ``v<version>``.
+
+    The line builds from packages/kmctl only for a release after
+    ``LAST_ROOT_RELEASE`` (``subdirectory``).
 
     Returns
     -------
     tuple[str, int]
         The new text and how many lines it pinned.
     """
-    text, installs = _INSTALL.subn(rf"\g<1>@v{version}{SUBDIRECTORY}", text)
+    text, installs = _INSTALL.subn(rf"\g<1>@v{version}{subdirectory(version)}", text)
     text, uses = _USES.subn(rf"\g<1>@v{version}", text)
     return text, installs + uses
 
@@ -290,7 +303,7 @@ def set_version(repo: Path, version_text: str) -> list[Path]:
             f"{COPIER} has no kmctl_ref question with a default: line; restore it"
         )
     hooks, count = _HOOK_INSTALL.subn(
-        rf"\g<1>@v{version}{SUBDIRECTORY}", (repo / HOOKS).read_text()
+        rf"\g<1>@v{version}{subdirectory(version)}", (repo / HOOKS).read_text()
     )
     if count != HOOK_HINTS:
         raise ReleaseRefused(

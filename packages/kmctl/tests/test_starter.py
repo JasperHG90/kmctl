@@ -218,14 +218,16 @@ def test_render_validator_takes_older_and_pre_release_tags(
         ("v0.6.0", ""),
         ("v0.12.1rc1", ""),
         ("v0.12.1", ""),
-        ("v0.12.2rc1", "#subdirectory=packages/kmctl"),
+        ("v0.12.2rc1", ""),
+        ("v0.12.2", ""),
+        ("v0.12.3rc1", "#subdirectory=packages/kmctl"),
         ("v0.13.0", "#subdirectory=packages/kmctl"),
     ],
 )
-def test_render_kmctl_src_has_the_subdirectory_only_after_v0_12_1(
+def test_render_kmctl_src_has_the_subdirectory_only_after_v0_12_2(
     template: Path, tmp_path: Path, ref: str, fragment: str
 ) -> None:
-    """kmctl_src builds from packages/kmctl for a kmctl_ref newer than v0.12.1, and from the root up to it (ADR 0044)."""
+    """kmctl_src builds from packages/kmctl for a kmctl_ref newer than v0.12.2, and from the root up to it (ADR 0044)."""
     out = tmp_path / "demo"
 
     res = _copier(template, out, "harnesses=[claude]", f"kmctl_ref={ref}")
@@ -409,7 +411,7 @@ def _bootstrap(
 ) -> str:
     """Generate a project for ``harnesses`` into ``consumer`` from this tree and run just bootstrap; return the tree's commit.
 
-    The tree is bumped to a test-only release after v0.12.1, so the generated
+    The tree is bumped to a test-only release after v0.12.2, so the generated
     justfile installs kmctl from packages/kmctl, as a real release does.
     """
     work = tree_repo(tmp_path / "kmctl", bump=True)

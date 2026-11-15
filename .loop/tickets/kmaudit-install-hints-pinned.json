@@ -1,17 +1,17 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-install-hints-pinned",
-  "stage": "stub",
+  "stage": "ready",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
   "fix": null,
   "ask": null,
-  "split": null,
-  "split_plan_hash": null,
+  "split": "j-20261115T054225+0000-e408492d",
+  "split_plan_hash": "ca1c39750f3413a9c06736ceddc667346614d269d6c528c174b1a141416b203b",
   "split_hold": false,
   "commit_sha": null,
   "closed_outside": false,
@@ -20,16 +20,54 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/implementer",
+    "hash": "a048e0b5c439ed519c4f1fdf5f7eec5e41f61d78bd743c412389cf3ee68784af",
+    "at": "2026-11-15T05:46:31+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "kmaudit builds its install hint from its installed version: a release or pre-release version names its kmaudit-vX.Y.Z tag with #subdirectory=packages/kmaudit, a dev or local version names no ref, and extras go in the requirement, so the tracing refusal asks for kmaudit[tracing]; steps.py, judge.py, check_verbs.py and ui.py use it.",
+      "fails_when": "a release version's hint lacks its tag, a dev version's names one, the tracing refusal leaves out the extra, or a hand-written INSTALL string remains",
+      "command": "uv run pytest packages/kmaudit/tests/test_judge.py packages/kmaudit/tests/test_claims_steps.py -k install -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "release.py set --package kmaudit pins kmaudit's README install line and the tracing line in packages/kmaudit/docs/commands.md to the release tag, and refuses, writing nothing, when either line is missing; the Release run's kmaudit bump stages docs/commands.md.",
+      "fails_when": "either line keeps an old ref, a missing line is not refused or something is written anyway, or the bump leaves docs/commands.md out",
+      "command": "uv run pytest tests/scripts/test_release.py tests/scripts/test_workflows.py -k kmaudit -q",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "2e3030079e294789c35532c64a852b75f25ee85563dcc09ebbf78e032c1dfa4c",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "ca1c39750f3413a9c06736ceddc667346614d269d6c528c174b1a141416b203b",
+    "started_at": "2026-11-15T05:42:42+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": true,
+    "outcome": "pass"
+  },
+  "plan_hash": "ca1c39750f3413a9c06736ceddc667346614d269d6c528c174b1a141416b203b",
   "intent": {
     "epic": "monorepo-release",
     "depends_on": [
@@ -37,7 +75,20 @@
     ],
     "priority": null
   },
-  "history": [],
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-11-15T05:42:23+00:00",
+      "by": "promote"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-11-15T05:45:09+00:00",
+      "by": "advance"
+    }
+  ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T21:35:07+00:00"
+  "at": "2026-11-15T05:46:31+00:00"
 }

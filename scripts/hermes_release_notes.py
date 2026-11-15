@@ -20,7 +20,9 @@ once cleaned (``empty``); its ``## `` headings are the draft's, in order
 (``headings``); everything after the What changed section matches the draft,
 ignoring trailing whitespace (``tail``); and under What changed the set of
 references, ``(`slug`)`` and ``(#N)``, equals the draft's (``ref-added``,
-``ref-dropped``), with at least one on each bullet (``bullet-without-ref``).
+``ref-dropped``), with at least one on each bullet (``bullet-without-ref``),
+and no line there that is neither a bullet nor indented under one, unless the
+draft's What changed has the same line (``stray-line``).
 """
 
 from __future__ import annotations
@@ -78,6 +80,25 @@ def _bullets(section: str) -> list[str]:
     return out
 
 
+def _stray(section: str, allowed: str) -> list[str]:
+    """Lines of ``section`` below its heading that are neither a bullet nor indented under one.
+
+    A line the draft's What changed (``allowed``) holds as well, such as its
+    own "None.", is not stray.
+    """
+    known = set(_lines(allowed))
+    out: list[str] = []
+    seen_bullet = False
+    for ln in section.splitlines()[1:]:
+        if not ln.strip():
+            continue
+        if ln.startswith("- "):
+            seen_bullet = True
+        elif not (seen_bullet and ln[0].isspace()) and ln.rstrip() not in known:
+            out.append(ln)
+    return out
+
+
 def check(draft: str, rewrite: str) -> str | None:
     """The name of the first check the cleaned ``rewrite`` fails, or None when it passes."""
     if not rewrite:
@@ -97,6 +118,8 @@ def check(draft: str, rewrite: str) -> str | None:
         return "ref-dropped"
     if any(not REF.search(b) for b in bullets):
         return "bullet-without-ref"
+    if _stray(changes, draft_changes):
+        return "stray-line"
     return None
 
 

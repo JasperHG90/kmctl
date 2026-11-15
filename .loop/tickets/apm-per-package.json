@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "slug": "apm-per-package",
-  "stage": "planning",
-  "attempts": 0,
+  "stage": "building",
+  "attempts": 1,
   "plan_rounds": 3,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
@@ -17,13 +17,67 @@
   "closed_outside": false,
   "dropped": false,
   "archived": false,
-  "worktree": null,
-  "branch": null,
+  "worktree": "/home/vscode/workspace.worktrees/apm-per-package",
+  "branch": "loop/apm-per-package",
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/implementer",
+    "hash": "82a68c91bc941e3c752fa394dbde2881c076d109b9079c83e44b4008b5efd1c2",
+    "at": "2026-11-15T05:39:14+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "kmctl's APM package lives in packages/kmctl/apm (with its claude and antigravity sub-packages), kmaudit's version lives in packages/kmaudit/apm/apm.yml, and neither apm/ at the root nor packages/kmaudit/VERSION remains; both wheels build at the version their apm.yml names, kmctl's with its skills, agents and rules.",
+      "fails_when": "apm/ or packages/kmaudit/VERSION still exists, a wheel's version differs from its apm.yml, or kmctl's wheel lacks _skills, _agents or _rules",
+      "command": "uv run pytest tests/test_workspace_layout.py tests/scripts/test_check_wheel.py -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "release.py reads kmctl's version from packages/kmctl/apm/apm.yml and kmaudit's from packages/kmaudit/apm/apm.yml, set writes them and pins the moved hook hints, and manifest falls back to apm/apm.yml on a commit from before the move; the release workflow stages the moved files and release-tag triggers on both apm.yml paths.",
+      "fails_when": "a version is read from or written to the old place, manifest fails on a pre-move commit, or a workflow names apm/apm.yml or packages/kmaudit/VERSION as a current path",
+      "command": "uv run pytest tests/scripts/test_release.py tests/scripts/test_workflows.py -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "new_entry writes path packages/kmctl/apm for this CLI; plugin patch and doctor recognise kmctl's entry and its sub-packages under path apm and packages/kmctl/apm; doctor's update fix for a project with {path: apm, ref: v0.12.2} names path packages/kmctl/apm and this CLI's ref.",
+      "fails_when": "an entry under either path goes unrecognised, new_entry writes path apm, or the update fix gives only a ref",
+      "command": "uv run pytest packages/kmctl/tests/test_plugin.py packages/kmctl/tests/test_doctor.py packages/kmctl/tests/test_plugin_patch.py -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "The starter renders path apm for kmctl_ref v0.12.2 and older and path packages/kmctl/apm after it, and just bootstrap in a project generated at a release after the cutoff installs the package from packages/kmctl/apm with doctor passing.",
+      "fails_when": "a render names the wrong path for its ref, or the bootstrap fails",
+      "command": "uv run pytest packages/kmctl/tests/test_starter.py -m 'not integration or integration' -q",
+      "judgment": false
+    },
+    {
+      "id": "r5",
+      "behavior": "Every v* tag after the cutoff has packages/kmctl/apm/apm.yml and packages/kmctl/pyproject.toml and no apm/apm.yml; every older tag the reverse.",
+      "fails_when": "a tag's layout disagrees with the cutoff for either move",
+      "command": "uv run pytest packages/kmctl/tests/test_pin.py -m integration -k cutoff_matches_tags -q",
+      "judgment": false
+    },
+    {
+      "id": "r6",
+      "behavior": "The Antigravity rules hook's files: pattern and scripts/sync_antigravity_rules.py work on packages/kmctl/apm, and the APM package, Antigravity and OpenCode tests read the moved package.",
+      "fails_when": "the hook's pattern does not match a rule under packages/kmctl/apm, the sync reads or writes apm/, or any of those tests fails",
+      "command": "uv run pytest packages/kmctl/tests/test_apm_package.py packages/kmctl/tests/test_antigravity.py packages/kmctl/tests/test_opencode.py -q",
+      "judgment": false
+    },
+    {
+      "id": "r7",
+      "behavior": "The repository's skills and audit tests read the skills and agents from packages/kmctl/apm.",
+      "fails_when": "any of those tests fails or still reads apm/",
+      "command": "uv run pytest tests/test_skills.py tests/test_audit.py tests/test_release_skill.py -q",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -45,8 +99,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "pass"
   },
   "plan_hash": "bf4ef9f6db868c7514a135c617d8f90a14d53038a7f3b6c726d27fa608b70efa",
   "intent": {
@@ -60,8 +114,20 @@
       "to": "planning",
       "at": "2026-11-15T05:03:58+00:00",
       "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-11-15T05:38:46+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-15T06:36:59+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T05:34:45+00:00"
+  "at": "2026-11-15T06:36:59+00:00"
 }

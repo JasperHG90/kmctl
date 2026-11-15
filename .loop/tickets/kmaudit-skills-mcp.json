@@ -1,17 +1,17 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-skills-mcp",
-  "stage": "stub",
+  "stage": "ready",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 3,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
   "fix": null,
   "ask": "j-20261114T113041+0000-fa5ce086",
-  "split": null,
-  "split_plan_hash": null,
+  "split": "j-20261115T063733+0000-e9d4e034",
+  "split_plan_hash": "391f0ca0e8b683447074a73ef857c2f3326f0485166e076a13bda8451b3722ad",
   "split_hold": false,
   "commit_sha": null,
   "closed_outside": false,
@@ -20,16 +20,75 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/implementer",
+    "hash": "c3a5370590be6b5c782b407354e0a126ed993501f62e81127ea7527433318aaa",
+    "at": "2026-11-15T06:38:58+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "kmaudit's APM package holds the extract-claims and write-checks skills and declares the kmaudit MCP server as uvx from its own kmaudit-vX.Y.Z tag; its Claude-only sub-package (packages/kmaudit/apm/claude, targets: [claude]) holds kmaudit-claims-extractor and kmaudit-check-writer, whose tools are Read, Grep, Glob and the five kmaudit MCP tools, with no Bash and no hook.",
+      "fails_when": "a skill or agent is missing from kmaudit's package, the server is not declared at the package's own tag, an agent has Bash or a hook, or the sub-package targets more than claude",
+      "command": "uv run pytest packages/kmaudit/tests/test_apm_package.py -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "kmctl's package, its wheel and its Antigravity and OpenCode translations no longer carry the two skills or agents, and kmctl's own audit skill and kmctl-auditor stay.",
+      "fails_when": "kmctl's package, wheel or plugin patch still holds or translates them, or loses its own audit skill or auditor",
+      "command": "uv run pytest packages/kmctl/tests/test_apm_package.py packages/kmctl/tests/test_opencode.py packages/kmctl/tests/test_antigravity.py packages/kmctl/tests/test_plugin_patch.py -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "release.py set --package kmaudit pins the MCP server's ref to the release tag with the version.",
+      "fails_when": "the server's ref keeps an old tag after set",
+      "command": "uv run pytest tests/scripts/test_release.py -k kmaudit -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "Installing kmaudit's package with APM for claude and opencode puts the kmaudit server in .mcp.json and opencode.json, the two agents in .claude/agents/ and none in .opencode/agents/.",
+      "fails_when": "the server is missing for a harness, the agents are missing for Claude Code, or OpenCode receives agent files",
+      "command": "uv run pytest packages/kmaudit/tests/test_apm_package.py -m integration -q",
+      "judgment": false
+    },
+    {
+      "id": "r5",
+      "behavior": "The skills' evals and the repository's skills tests pass for the moved skills, which name the MCP tools and say what to do where no agent exists.",
+      "fails_when": "a skill test fails, or a skill still names a kmaudit shell command",
+      "command": "uv run pytest tests/test_skills.py -q",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "387691a22ca4376820a1306f1da2f1fd9d9fce9fa4175c7129f1808c062afde8",
+  "round": {
+    "kind": "plan",
+    "n": 3,
+    "binds": "391f0ca0e8b683447074a73ef857c2f3326f0485166e076a13bda8451b3722ad",
+    "started_at": "2026-11-15T06:37:38+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": true,
+    "outcome": "pass"
+  },
+  "plan_hash": "391f0ca0e8b683447074a73ef857c2f3326f0485166e076a13bda8451b3722ad",
   "intent": {
     "epic": "kmaudit",
     "depends_on": [
@@ -37,7 +96,20 @@
     ],
     "priority": 2
   },
-  "history": [],
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-11-15T05:40:18+00:00",
+      "by": "promote"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-11-15T06:38:49+00:00",
+      "by": "advance"
+    }
+  ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T14:31:36+00:00"
+  "at": "2026-11-15T06:38:58+00:00"
 }

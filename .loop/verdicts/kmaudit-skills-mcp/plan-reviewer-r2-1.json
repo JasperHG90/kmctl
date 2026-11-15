@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "Resolved: the agents move to a Claude-only sub-package (targets: [claude]), the skills do the batch themselves where no agent exists, and kmctl's translation drops the two agents because it reads only kmctl's own agents_dir() and okf's folder.",
+      "anchor": "packages/kmctl/src/kmctl/opencode.py:224",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "Resolved: touches now list opencode.py, antigravity.py, test_opencode.py, test_antigravity.py, test_plugin_patch.py, test_apm_package.py and kmaudit's cli.py.",
+      "anchor": null,
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "open",
+      "claim": "O1's touches still leave out knowledge that says what this ticket changes. .okf/architecture/overview.md shows the agents as 'Read, Bash; Haiku' in kmctl's package and lists their paths under kmctl's apm/.apm/agents/ (lines 44-47, 324-329, 449-451). .okf/manifesto.md (lines 87-91) says the extractor has 'Read and a shell'. Both become false when the agents move to kmaudit's Claude sub-package with no shell. ADR 0037 and ADR 0040 list the old agent files in their sources front matter, so after the rename kmctl review due reports them as 'source not resolved'. apm-per-package moves these sources to the new paths for the same reason. plan.split reads touches, so add .okf/architecture/overview.md and .okf/manifesto.md, plus the sources of ADR 0037 and 0040, or say why they stay.",
+      "anchor": ".okf/architecture/overview.md:45",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "74a3cd4518aa0990d6b9f29589f4556da8dd8929ab493195eedb91241ae92962"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T05:48:02+00:00"
+}

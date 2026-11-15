@@ -1,1 +1,11 @@
 {"at": "2026-11-14T14:31:38+00:00", "kind": "register", "schema_version": "1.0", "stage": "stub"}
+{"at": "2026-11-15T05:43:22+00:00", "by": "promote", "from": "stub", "grant": "g7", "kind": "transition", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/implementer", "step": "ticket-promote", "to": "planning"}
+{"at": "2026-11-15T05:45:22+00:00", "binds": "b1fd859ad405283cbf2a3bc6378c059ac32458b8b354c427b5ed9a5fc9a40657", "kind": "round-start", "n": 1, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
+{"at": "2026-11-15T06:37:52+00:00", "dispatched_at": "2026-11-15T05:45:21+00:00", "kind": "round-close", "n": 1, "outcome": "fail", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-15T05:47:54+00:00"}}
+{"at": "2026-11-15T06:38:13+00:00", "binds": "ea684cc398699bd81f0fa77b0d5711951d7fdcd1a13f592978d59540c1603b84", "kind": "round-start", "n": 2, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
+{"at": "2026-11-15T06:39:49+00:00", "code": "finding-open-two-rounds", "from": "planning", "kind": "block", "message": "finding plan-reviewer:p1 stayed open across two rounds", "notified": false, "schema_version": "1.0"}
+{"at": "2026-11-15T06:39:49+00:00", "dispatched_at": "2026-11-15T06:38:13+00:00", "kind": "round-close", "n": 2, "outcome": "blocked", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-15T06:39:27+00:00"}}
+{"at": "2026-11-15T06:39:55+00:00", "binds": "d147aacb6235f3441b3d4bd6be11bb35f01ae6f8e7313c61d1205838deb0dac1", "kind": "round-start", "n": 3, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
+{"at": "2026-11-15T06:41:13+00:00", "dispatched_at": "2026-11-15T06:39:55+00:00", "kind": "round-close", "n": 3, "outcome": "pass", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-15T06:40:56+00:00"}}
+{"at": "2026-11-15T06:41:14+00:00", "kind": "unblock", "schema_version": "1.0"}
+{"at": "2026-11-15T06:41:26+00:00", "grant": "g7", "hash": "79018a77b126b90b7c2e98b4980ba0dff32c72bad5aaceff45416690243a5b2d", "kind": "signoff", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/implementer", "step": "eval-sign"}

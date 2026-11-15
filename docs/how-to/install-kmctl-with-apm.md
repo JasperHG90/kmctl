@@ -57,12 +57,12 @@ repository's files, and with okf-skills from GitHub.
 ### 1. Install the kmctl CLI
 
 ```
-uv tool install git+https://github.com/JasperHG90/kmctl@v0.12.1#subdirectory=packages/kmctl
+uv tool install git+https://github.com/JasperHG90/kmctl@v0.12.2
 ```
 
-Releases after v0.12.1 build kmctl from the repository's `packages/kmctl`
-folder, which `#subdirectory=packages/kmctl` names. To install v0.12.1 or
-older, leave that part out.
+Releases after v0.12.2 build kmctl from the repository's `packages/kmctl`
+folder: add `#subdirectory=packages/kmctl` to the line above to install
+one. v0.12.2 and older build from the repository root, as written.
 
 One kmctl on your PATH serves every repository. When a repository's
 `apm.lock.yaml` pins another kmctl release, the kmctl on PATH runs that
@@ -73,7 +73,7 @@ offline. Install a newer CLI when you want its own fixes, never once per
 repository. In such a repository `kmctl --version` prints the pinned
 version and says where it comes from, for example
 `kmctl 0.10.0 (pinned by apm.lock.yaml; kmctl 0.11.0 is on PATH)`.
-A kmctl at v0.12.1 or older on your PATH cannot run a pin to a later
+A kmctl at v0.12.2 or older on your PATH cannot run a pin to a later
 release, because it looks for kmctl at the repository root; install a newer
 CLI first.
 

@@ -2,9 +2,9 @@
 
 apm := "uvx --from apm-cli=={{ apm_version }} apm"
 kmctl_ref := "{{ kmctl_ref }}"
-{#- Releases after v0.12.1 build kmctl from packages/kmctl; older ones from the root. #}
+{#- Releases after v0.12.2 build kmctl from packages/kmctl; older ones from the root. #}
 {%- set kmctl_release = (kmctl_ref[1:] | regex_replace('(a|b|rc)[0-9]+$', '')).split('.') | map('int') | list %}
-kmctl_src := "git+https://github.com/JasperHG90/kmctl@" + kmctl_ref{% if kmctl_release > [0, 12, 1] %} + "#subdirectory=packages/kmctl"{% endif %}
+kmctl_src := "git+https://github.com/JasperHG90/kmctl@" + kmctl_ref{% if kmctl_release > [0, 12, 2] %} + "#subdirectory=packages/kmctl"{% endif %}
 {% raw -%}
 # kmctl at the pinned release, without touching the kmctl on your PATH.
 kmctl := "uvx --from " + kmctl_src + " kmctl"
