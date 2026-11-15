@@ -25,7 +25,7 @@
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/implementer",
     "hash": "0ef1bd5ced8c0d6f2b32a7ecba5c87660d38120b6b5d8e91638a046989cbca90",
-    "at": "2026-11-15T05:28:06+00:00"
+    "at": "2026-11-15T05:28:15+00:00"
   },
   "delegation": null,
   "budget_base": null,
@@ -117,5 +117,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T05:28:06+00:00"
+  "at": "2026-11-15T05:28:15+00:00"
 }
