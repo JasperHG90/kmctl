@@ -1,14 +1,30 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-tests-git-identity",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "b952c61a11feeab424f77e55f2ac39401abff5999c0cddd5db96d2c301d83b43",
+    "tree": "09a1ec2495700093ae8f5a97f8926f0143da183c",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": "j-20261115T211401+0000-a5b0ffa6",
+        "paths": [
+          "packages/kmaudit/tests/fixtures/audit_repo.py"
+        ]
+      }
+    ],
+    "at": "2026-11-15T21:14:01+00:00"
+  },
   "ask": "j-20261115T205233+0000-61b39bb7",
   "split": "j-20261115T205251+0000-56a612c2",
   "split_plan_hash": "8d75f206484e4effe1cd461556554f2e2910c2ca870bbfdec433f970e348e24b",
@@ -99,8 +115,14 @@
       "to": "fixing",
       "at": "2026-11-15T21:07:34+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-15T21:14:01+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T21:13:37+00:00"
+  "at": "2026-11-15T21:14:01+00:00"
 }
