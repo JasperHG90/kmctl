@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "kmctl's README Upgrade section and the APM how-to tell a v0.12 user, in order, to install the new CLI first, change the apm.yml entry to path packages/kmctl/apm with the new ref (written out in full), run apm install and kmctl plugin patch, and check with kmctl doctor last; they name just upgrade for starter projects; kmctl's README links kmaudit's README for auditing.",
+      "fails_when": "either page lacks the CLI-first step, puts doctor before apm install, omits the full new entry or just upgrade, or kmctl's README does not link kmaudit's README",
+      "command": "uv run pytest packages/kmctl/tests/test_docs.py -k upgrade -q"
+    }
+  ]
+}
