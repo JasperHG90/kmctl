@@ -3,7 +3,7 @@
   "slug": "upgrade-from-v0-12-docs",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 1,
+  "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -30,9 +30,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 1,
-    "binds": "b2bd87833e0ab893113b0a585a27cb2bf4c7766965bdc19d6447979cd387a804",
-    "started_at": "2026-11-15T19:44:48+00:00",
+    "n": 2,
+    "binds": "66e4c26c1ed2b69ab6e11b35e946fe77ae0f56ecdddbd8813518932e7d2abb0f",
+    "started_at": "2026-11-15T19:46:33+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -45,10 +45,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "b2bd87833e0ab893113b0a585a27cb2bf4c7766965bdc19d6447979cd387a804",
+  "plan_hash": "66e4c26c1ed2b69ab6e11b35e946fe77ae0f56ecdddbd8813518932e7d2abb0f",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -63,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T19:46:30+00:00"
+  "at": "2026-11-15T19:46:33+00:00"
 }

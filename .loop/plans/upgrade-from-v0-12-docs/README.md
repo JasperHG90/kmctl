@@ -26,8 +26,11 @@ released. Moving to the first release after the move (v0.13.0) takes, in
 order: install the new CLI first (a kmctl at v0.12.2 or older cannot run a
 pin to a later release, because it looks for kmctl at the repository root,
 ADR 0044); change the `apm.yml` entry from `path: apm` to
-`path: packages/kmctl/apm` with the new ref (`kmctl doctor` prints the exact
-entry); run `apm install` and `kmctl plugin patch`. A starter project does
+`path: packages/kmctl/apm` with the new ref, written out in full in the
+docs (doctor cannot print it here: the new CLI hands `kmctl doctor` to the
+release in `apm.lock.yaml`, which is still v0.12.x until `apm install`);
+run `apm install` and `kmctl plugin patch`; then `kmctl doctor` confirms
+the install. A starter project does
 it with `just upgrade vX.Y.Z`. The action (`uses:`) and the pre-commit hook
 (`rev:`) change only their tag. Auditing a folder of docs is now kmaudit's,
 installed apart.
@@ -61,7 +64,7 @@ end with the new CLI, the moved entry and a passing `kmctl doctor`.
 - fixes: P1
 - needs: none
 - touches: `packages/kmctl/README.md`, `docs/how-to/install-kmctl-with-apm.md`, `packages/kmctl/tests/test_docs.py`
-- checked by: a docs test that kmctl's README Upgrade section and the how-to say to install the new CLI before moving the pin past v0.12.2, give the path change, name `just upgrade` and `kmctl doctor`, and that kmctl's README links kmaudit's README
+- checked by: a docs test that kmctl's README Upgrade section and the how-to say to install the new CLI before moving the pin past v0.12.2, give the full new entry (`path: packages/kmctl/apm`, `ref: vX.Y.Z`), name `just upgrade`, and use `kmctl doctor` only as the final check, and that kmctl's README links kmaudit's README
 - seen by: operator
 
 ## Could invalidate this plan
