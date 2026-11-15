@@ -1,19 +1,13 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-cli-slim",
-  "stage": "blocked",
+  "stage": "ready",
   "attempts": 0,
   "plan_rounds": 3,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
-  "blocker": {
-    "code": "finding-open-two-rounds",
-    "message": "finding plan-reviewer:p1 stayed open across two rounds",
-    "plan_hash": "ea684cc398699bd81f0fa77b0d5711951d7fdcd1a13f592978d59540c1603b84",
-    "at": "2026-11-15T06:39:49+00:00",
-    "resign_eval": false
-  },
+  "blocker": null,
   "fix": null,
   "ask": "j-20261114T113041+0000-fa5ce086",
   "split": "j-20261115T063952+0000-231d9cca",
@@ -74,8 +68,14 @@
       "to": "blocked",
       "at": "2026-11-15T06:39:49+00:00",
       "by": "review close"
+    },
+    {
+      "from": "blocked",
+      "to": "ready",
+      "at": "2026-11-15T06:41:14+00:00",
+      "by": "unblock"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T06:41:13+00:00"
+  "at": "2026-11-15T06:41:14+00:00"
 }
