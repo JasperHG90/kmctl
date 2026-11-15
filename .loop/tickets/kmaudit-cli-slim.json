@@ -1,13 +1,19 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-cli-slim",
-  "stage": "planning",
+  "stage": "blocked",
   "attempts": 0,
   "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
-  "blocker": null,
+  "blocker": {
+    "code": "finding-open-two-rounds",
+    "message": "finding plan-reviewer:p1 stayed open across two rounds",
+    "plan_hash": "ea684cc398699bd81f0fa77b0d5711951d7fdcd1a13f592978d59540c1603b84",
+    "at": "2026-11-15T06:39:49+00:00",
+    "resign_eval": false
+  },
   "fix": null,
   "ask": "j-20261114T113041+0000-fa5ce086",
   "split": "j-20261115T063810+0000-49574c92",
@@ -45,8 +51,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "blocked"
   },
   "plan_hash": "ea684cc398699bd81f0fa77b0d5711951d7fdcd1a13f592978d59540c1603b84",
   "intent": {
@@ -62,8 +68,14 @@
       "to": "planning",
       "at": "2026-11-15T05:43:22+00:00",
       "by": "promote"
+    },
+    {
+      "from": "planning",
+      "to": "blocked",
+      "at": "2026-11-15T06:39:49+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T06:38:13+00:00"
+  "at": "2026-11-15T06:39:49+00:00"
 }
