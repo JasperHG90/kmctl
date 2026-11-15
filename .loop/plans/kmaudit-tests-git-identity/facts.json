@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "slug": "kmaudit-tests-git-identity",
+  "plan_hash": "8d75f206484e4effe1cd461556554f2e2910c2ca870bbfdec433f970e348e24b",
+  "problems": [
+    {
+      "id": "P1",
+      "text": "kmaudit's tests commit without a git identity, so they fail on any machine with no git user, CI's runner included."
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "kmaudit's tests pass on a machine with no git config."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "O1",
+      "change": "kmaudit's test git helper always commits with its own identity",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "packages/kmaudit/tests/fixtures/audit_repo.py"
+      ],
+      "checked_by": "packages/kmaudit/tests run with GIT_CONFIG_GLOBAL=/dev/null and GIT_CONFIG_NOSYSTEM=1 and pass",
+      "seen_by": "operator"
+    }
+  ]
+}
