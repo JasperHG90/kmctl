@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "slug": "upgrade-from-v0-12-docs",
+  "plan_hash": "b2bd87833e0ab893113b0a585a27cb2bf4c7766965bdc19d6447979cd387a804",
+  "problems": [
+    {
+      "id": "P1",
+      "text": "kmctl's README tells v0.12 users to upgrade the CLI only for its own fixes, which breaks the move to the next release, and no doc says auditing moved to kmaudit."
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "A v0.12 user can upgrade by following the docs alone."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "O1",
+      "change": "kmctl's README and the APM how-to give the v0.12 upgrade steps in order and point auditing at kmaudit",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "packages/kmctl/README.md",
+        "docs/how-to/install-kmctl-with-apm.md",
+        "packages/kmctl/tests/test_docs.py"
+      ],
+      "checked_by": "a docs test that kmctl's README Upgrade section and the how-to say to install the new CLI before moving the pin past v0.12.2, give the path change, name `just upgrade` and `kmctl doctor`, and that kmctl's README links kmaudit's README",
+      "seen_by": "operator"
+    }
+  ]
+}
