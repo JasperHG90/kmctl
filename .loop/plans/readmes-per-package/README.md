@@ -52,6 +52,27 @@ After this ticket:
   test in `test_mcp.py`, `.okf` pages that cite either file, and every link
   to an old path.
 
+Two consequences of kmaudit's page living in the root `docs/`:
+
+- Release-note ownership (ADR 0012): `scripts/release_paths.py` gives
+  kmaudit only `packages/kmaudit/`, so a change to its reference page would
+  land in kmctl's notes and release-tag's late-commit warning. kmaudit's
+  pages in `docs/` take names starting with `kmaudit-`, and `owns` gives
+  docs pages named kmaudit-* to kmaudit and not to kmctl.
+- The install-line test: `test_install_subdirectory_follows_the_cutoff_on_every_install_line`
+  in `packages/kmctl/tests/test_docs.py` checks every install line under
+  `docs/` against kmctl's cutoff, and once `set --package kmaudit` pins
+  kmaudit's tracing line to `@kmaudit-vX.Y.Z#subdirectory=packages/kmaudit`
+  it would demand kmctl's subdirectory there. The test checks kmctl's lines
+  against the cutoff and kmaudit's (`kmaudit @`, `packages/kmaudit`) against
+  their own subdirectory, and a test runs `set --package kmaudit` on a copy
+  of the tree and runs that check on the result. The tests that read
+  kmctl's install lines from the root README read them from
+  `packages/kmctl/README.md`.
+
+`docs/reference/commands.md` links the old `packages/kmaudit/docs/commands.md`
+path, and moves to the new one.
+
 It worked when the root README is a short map whose links resolve, kmctl's
 and kmaudit's READMEs each tell a user how to install and use that package,
 kmaudit's reference lives under `docs/reference/` and passes `kmctl check`,
@@ -72,8 +93,8 @@ and `release.py set` still pins every install line in its new place.
 - goal: G1
 - fixes: P1
 - needs: none
-- touches: `README.md`, `packages/kmctl/README.md`, `packages/kmaudit/README.md`, `packages/kmaudit/docs/commands.md`, `new:docs/reference/kmaudit-commands.md`, `docs/reference/README.md`, `docs/README.md`, `scripts/release.py`, `.github/workflows/release.yml`, `.claude/skills/release/SKILL.md`, `packages/kmctl/tests/*.py`, `packages/kmaudit/tests/*.py`, `tests/*.py`, `tests/scripts/*.py`, `.okf/architecture/overview.md`
-- checked by: a test that the root README links both package READMEs and docs/ and stays under 80 lines; that packages/kmctl/README.md holds kmctl's install line, the apm.yml entry and the harness sections; that packages/kmaudit/docs/ is gone and docs/reference/kmaudit-commands.md documents every kmaudit MCP tool and command; `release.py set` and `set --package kmaudit` pin the install lines in their new files; `kmctl check` passes with the docs indexes regenerated; no link in README files, docs/ or .okf points at a moved path
+- touches: `README.md`, `packages/kmctl/README.md`, `docs/reference/commands.md`, `scripts/release_paths.py`, `packages/kmaudit/README.md`, `packages/kmaudit/docs/commands.md`, `new:docs/reference/kmaudit-commands.md`, `docs/reference/README.md`, `docs/README.md`, `scripts/release.py`, `.github/workflows/release.yml`, `.claude/skills/release/SKILL.md`, `packages/kmctl/tests/*.py`, `packages/kmaudit/tests/*.py`, `tests/*.py`, `tests/scripts/*.py`, `.okf/architecture/overview.md`
+- checked by: a test that the root README links both package READMEs and docs/ and stays under 80 lines; that packages/kmctl/README.md holds kmctl's install line, the apm.yml entry and the harness sections; that packages/kmaudit/docs/ is gone and docs/reference/kmaudit-commands.md documents every kmaudit MCP tool and command; `release.py set` and `set --package kmaudit` pin the install lines in their new files; release_paths gives docs pages named kmaudit-* to kmaudit and not kmctl; the docs install-line test tells kmaudit's lines from kmctl's and passes on a copy after `set --package kmaudit 0.2.0`; `kmctl check` passes with the docs indexes regenerated; no link in README files, docs/ or .okf points at a moved path
 - seen by: operator
 
 ## Could invalidate this plan
