@@ -7,12 +7,9 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-11-15T06:10:53Z
+  at: 2026-11-15T06:28:26Z
   against:
-    - architecture/overview
-    - decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins
-    - decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp
-    - decisions/0044-kmctl-and-kmaudit-are-both-workspace-packages
+    - decisions/0035-kmctl-s-repository-answers-and-triages-with-hermes
 ---
 
 # Summary: kmctl
