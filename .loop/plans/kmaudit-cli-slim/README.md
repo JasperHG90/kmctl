@@ -42,14 +42,36 @@ stdio client `test_mcp.py` already uses) or to the Python functions; the
 behaviour they check stays covered. kmaudit's README and
 `packages/kmaudit/docs/commands.md`, ADR 0043 and the architecture concepts follow.
 
-Choice carried from the operator's words: `checks run` (rerunning checks
-with no model) is reachable only through MCP or Python afterwards, so a CI
-job reruns checks through an MCP client or a short Python call, not a shell
-verb.
+Rerunning checks, the operator's choice: `checks run` leaves the CLI, and
+the UI gains a "Rerun stale checks" button. The UI server gets a
+`POST /api/rerun` endpoint that calls the same Python function the MCP
+`checks_run` tool calls, for the namespace on screen, and the page refreshes
+its data from the result. A person reruns from the UI; an agent through
+`checks_run`; a CI job through an MCP client or a short Python call.
+
+Every message that names a dropped verb changes in the same change, so no
+hint sends a person to a command that exits 2: the refusals and `next`
+lines in `verbs.py`, `check_verbs.py`, `judge.py` and `sections.py`; the
+instructions handed to agents in `instructions.py` and
+`check_instructions.py` (they name the MCP tools instead); and the UI's
+text in `ui.html` and `ui.py` ("Run kmaudit checks run" becomes the button,
+"Run kmaudit claims todo" names /extract-claims, "see kmaudit judge --help"
+goes). A test fails when any string in kmaudit's source or UI names a
+dropped verb as a command to run.
+
+Some behaviours exist only on the CLI and leave with it, so their tests go
+rather than move: reading answers from a file or stdin, the counts printed
+for people by `claims todo`, the `--help` walk over the dropped verbs, the
+exit codes of `checks run`, the one-line refusal outside a git repository
+for the dropped verbs, and the CLI-against-MCP comparisons in
+`test_mcp.py` (the MCP side keeps its own tests). Every other behaviour the
+old CLI tests checked is kept, through the MCP tools or the Python
+functions; the build lists each deleted test with the behaviour it covered.
 
 It worked when `kmaudit --help` lists only mcp, ui, namespaces, briefing,
-claims list and checks list, a dropped verb names its MCP tool, and every
-behaviour the old CLI tests checked is still tested.
+claims list and checks list, a dropped verb names its MCP tool, the UI's
+button reruns stale checks, no message names a dropped verb, and every
+behaviour that did not leave with the CLI is still tested.
 
 ## Problems
 
@@ -66,8 +88,8 @@ behaviour the old CLI tests checked is still tested.
 - goal: G1
 - fixes: P1
 - needs: none
-- touches: `packages/kmaudit/src/kmaudit/cli.py`, `packages/kmaudit/src/kmaudit/guard.py`, `packages/kmaudit/README.md`, `packages/kmaudit/docs/commands.md`, `packages/kmaudit/tests/*.py`, `.okf/decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp.md`, `.okf/architecture/audit-pipeline.md`
-- checked by: a test that `kmaudit --help` lists exactly those commands; a test per dropped verb that it exits 2 naming its MCP tool; the moved tests pass through the MCP tools or the Python functions, with no behaviour test deleted (a count of test functions per behaviour before and after in the build notes); the docs test that every tool and command is documented
+- touches: `packages/kmaudit/src/kmaudit/cli.py`, `packages/kmaudit/src/kmaudit/guard.py`, `packages/kmaudit/src/kmaudit/ui.py`, `packages/kmaudit/src/kmaudit/ui.html`, `packages/kmaudit/src/kmaudit/verbs.py`, `packages/kmaudit/src/kmaudit/check_verbs.py`, `packages/kmaudit/src/kmaudit/judge.py`, `packages/kmaudit/src/kmaudit/sections.py`, `packages/kmaudit/src/kmaudit/instructions.py`, `packages/kmaudit/src/kmaudit/check_instructions.py`, `.okf/manifesto.md`, `.okf/architecture/overview.md`, `packages/kmaudit/README.md`, `packages/kmaudit/docs/commands.md`, `packages/kmaudit/tests/*.py`, `.okf/decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp.md`, `.okf/architecture/audit-pipeline.md`
+- checked by: a test that `kmaudit --help` lists exactly those commands; a test per dropped verb that it exits 2 naming its MCP tool; a UI test that POST /api/rerun reruns a stale check and the page shows the button; a test that no string in kmaudit's source or ui.html names a dropped verb as a command; the moved tests pass through the MCP tools or the Python functions, and the build notes list each deleted test with the CLI-only behaviour it covered; the docs test that every tool and command is documented
 - seen by: operator
 
 ## Could invalidate this plan
