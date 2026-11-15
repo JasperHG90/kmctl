@@ -27,9 +27,15 @@
     },
     {
       "id": "r5",
-      "behavior": "This branch's version files and install lines read v0.12.2, the last root release, with no subdirectory, and the docs and ADR 0044 name v0.12.2 as the cutoff.",
-      "fails_when": "a version file or install line still names v0.12.1, an install line at v0.12.2 carries the fragment, or the docs or ADR name v0.12.1 as the last root release",
-      "command": "uv run pytest packages/kmctl/tests/test_docs.py tests/scripts/test_release.py -q"
+      "behavior": "The README, docs and hook hints install v0.12.2, the last root release, with no subdirectory, and every install line carries the subdirectory exactly when its ref is after v0.12.2.",
+      "fails_when": "an install line still names v0.12.1, a line at v0.12.2 carries the fragment, or a line after the cutoff lacks it",
+      "command": "uv run pytest packages/kmctl/tests/test_docs.py -q"
+    },
+    {
+      "id": "r6",
+      "behavior": "Every release.py test passes with the cutoff, including set's version, docs, copier and hook pinning.",
+      "fails_when": "any release.py test fails",
+      "command": "uv run pytest tests/scripts/test_release.py -q"
     }
   ]
 }

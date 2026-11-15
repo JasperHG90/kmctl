@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "One cutoff for two moves. The plan now says both moves ship in the first release after LAST_ROOT_RELEASE, because both land on agent-audit before it merges to main. It also extends root-release-cutoff's test_cutoff_matches_tags so every tag after the cutoff has packages/kmctl/apm/apm.yml and no apm/apm.yml, and every older tag the reverse. If main cuts a release from the root in between, that test fails and the cutoff moves for both.",
+      "anchor": ".loop/plans/apm-per-package/README.md (What follows the move, the consumer entry)",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "Upgrade advice across the cutoff. _update_fix (doctor.py:170-176) now has to give the whole {git, path, ref} entry. The install how-tos and cli-version-floor.md say a move across the cutoff changes the path. The starter's apm.yml.jinja picks the path from kmctl_ref. A doctor test covers a {path: apm, ref: v0.12.2} project on this CLI getting a fix that names path: packages/kmctl/apm. I found no other code that rewrites only the ref: new_entry is the only writer, and the starter's upgrade recipe re-renders apm.yml.jinja.",
+      "anchor": "packages/kmctl/src/kmctl/doctor.py:170",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "resolved",
+      "claim": "Touches now include .pre-commit-config.yaml, scripts/sync_antigravity_rules.py, .claude/rules/*.md, .okf/decisions/*.md (including the resource: sources of 0020 and others), manifesto, summary, audit-pipeline, overview, docs/reference/commands.md, and test globs for packages/kmctl/tests, tests and tests/scripts. A fresh grep turns up only comment mentions outside touches (kinds.py:20 and the okf-stop-check.sh fixture header) plus history files (.okf/log.md, .okf/prototypes). None of these breaks when the folder moves.",
+      "anchor": ".pre-commit-config.yaml:16",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "bf4ef9f6db868c7514a135c617d8f90a14d53038a7f3b6c726d27fa608b70efa"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T05:36:30+00:00"
+}

@@ -65,7 +65,7 @@ def _read_only(path: Path) -> Store:
     store at an older schema step, missing tables or columns the readers
     use, reads like a current one, and the file itself is never written.
     """
-    source = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+    source = sqlite3.connect(namespaces.read_only_uri(path), uri=True)
     try:
         memory = sqlite3.connect(":memory:", isolation_level=None)
         source.backup(memory)

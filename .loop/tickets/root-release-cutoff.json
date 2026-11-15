@@ -1,10 +1,10 @@
 {
   "schema_version": "1.0",
   "slug": "root-release-cutoff",
-  "stage": "ready",
-  "attempts": 0,
+  "stage": "done",
+  "attempts": 1,
   "plan_rounds": 2,
-  "review_rounds": 0,
+  "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
@@ -13,17 +13,20 @@
   "split": "j-20261115T044805+0000-f8f37508",
   "split_plan_hash": "0814150b4bdfbe773d79ae961100eac0ad65840ce07625d187e1416efce823b1",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "fd866f07a29e5ca3d12a81203c2565a19e92f55d",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
-  "worktree": null,
-  "branch": null,
-  "stamps": [],
+  "worktree": "/home/vscode/workspace.worktrees/root-release-cutoff",
+  "branch": "loop/root-release-cutoff",
+  "stamps": [
+    "f2835e2294c7b9c18bc91cb6e8f820f7ae00b1ff8998ca883649a647d42a9f36",
+    "57438d47e7ac90f224d72ad6b9fc749f59f3cbff583805867aa5bb1a4743b599"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/implementer",
-    "hash": "0ef1bd5ced8c0d6f2b32a7ecba5c87660d38120b6b5d8e91638a046989cbca90",
-    "at": "2026-11-15T05:03:29+00:00"
+    "hash": "4a0e305f74a5998f8aebe004d88550f77155c8641894bb2f041cb728b2e0768d",
+    "at": "2026-11-15T05:33:15+00:00"
   },
   "delegation": null,
   "budget_base": null,
@@ -58,27 +61,53 @@
     },
     {
       "id": "r5",
-      "behavior": "This branch's version files and install lines read v0.12.2, the last root release, with no subdirectory, and the docs and ADR 0044 name v0.12.2 as the cutoff.",
-      "fails_when": "a version file or install line still names v0.12.1, an install line at v0.12.2 carries the fragment, or the docs or ADR name v0.12.1 as the last root release",
-      "command": "uv run pytest packages/kmctl/tests/test_docs.py tests/scripts/test_release.py -q",
+      "behavior": "The README, docs and hook hints install v0.12.2, the last root release, with no subdirectory, and every install line carries the subdirectory exactly when its ref is after v0.12.2.",
+      "fails_when": "an install line still names v0.12.1, a line at v0.12.2 carries the fragment, or a line after the cutoff lacks it",
+      "command": "uv run pytest packages/kmctl/tests/test_docs.py -q",
+      "judgment": false
+    },
+    {
+      "id": "r6",
+      "behavior": "Every release.py test passes with the cutoff, including set's version, docs, copier and hook pinning.",
+      "fails_when": "any release.py test fails",
+      "command": "uv run pytest tests/scripts/test_release.py -q",
       "judgment": false
     }
   ],
-  "resigns": [],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/implementer",
+      "reason": "r5 ran packages/kmctl/tests and tests/ in one pytest call, where the two conftest modules clash; split into r5 (test_docs) and r6 (test_release)",
+      "diff": {
+        "added": [
+          "r6"
+        ],
+        "removed": [],
+        "changed": {
+          "r5": [
+            "behavior",
+            "fails_when",
+            "command"
+          ]
+        }
+      },
+      "at": "2026-11-15T05:33:15+00:00"
+    }
+  ],
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
   "round": {
-    "kind": "plan",
-    "n": 2,
-    "binds": "0814150b4bdfbe773d79ae961100eac0ad65840ce07625d187e1416efce823b1",
-    "started_at": "2026-11-15T04:48:08+00:00",
+    "kind": "review",
+    "n": 1,
+    "binds": "57438d47e7ac90f224d72ad6b9fc749f59f3cbff583805867aa5bb1a4743b599",
+    "started_at": "2026-11-15T05:38:00+00:00",
     "passes": [
-      "plan-reviewer"
+      "reviewer"
     ],
-    "tree": null,
-    "plan_hash": null,
-    "eval_hash": null,
+    "tree": "8ece1aa826a6e19554e2ec5f4e44d95840158ed6",
+    "plan_hash": "0814150b4bdfbe773d79ae961100eac0ad65840ce07625d187e1416efce823b1",
+    "eval_hash": "4a0e305f74a5998f8aebe004d88550f77155c8641894bb2f041cb728b2e0768d",
     "scope": "full",
     "sent_back": [],
     "since": null,
@@ -106,8 +135,26 @@
       "to": "ready",
       "at": "2026-11-15T05:01:22+00:00",
       "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-15T05:08:29+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-15T05:37:58+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-15T05:43:45+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T05:03:29+00:00"
+  "at": "2026-11-15T05:43:45+00:00"
 }

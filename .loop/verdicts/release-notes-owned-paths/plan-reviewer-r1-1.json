@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The plan has release-tag.yml call release_notes.py (--owns) but never says what happens to the existing guard against it. tests/scripts/test_workflows.py::test_release_tag_never_writes_its_own_notes asserts the string 'release_notes.py' does not appear in release-tag.yml at all, and ADR 0012 says release-tag 'no longer runs release_notes.py'. Both exist to enforce the releases rule that published notes are never regenerated from the script. As written, the build can only pass by deleting or loosening that guard, and the plan leaves open whether the invariant survives. The plan should state the replacement guard, for example: release-tag may run release_notes.py only with --owns, never with a tag, --package or --out, and still has no --generate-notes. It should also state the ADR change, so the reviewed-notes contract is kept on purpose rather than lost by accident.",
+      "anchor": "tests/scripts/test_workflows.py:849",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "30eb9553152afba15eb0032b32774192a252fe4fff8f7580cebfaf173db95df7"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T05:22:33+00:00"
+}

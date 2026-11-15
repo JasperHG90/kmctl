@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "No test covers the plain-merge fallback to the parent of the merge's second parent. Every merge test now carries the trailer, so it takes the new trailer path. Replacing the fallback with DRAFTED=\"\" still passes all 23 release_tag tests, so row r2's claim that a plain merge falls back when no trailer is found is not checked.",
+      "anchor": ".github/workflows/release-tag.yml:141",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "8521fdf04dada517b1fdfbe97509a20a37c1063fe8aee36caee80264c2772325",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T05:12:23+00:00"
+}

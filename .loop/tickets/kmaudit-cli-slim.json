@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-cli-slim",
-  "stage": "stub",
+  "stage": "planning",
   "attempts": 0,
   "plan_rounds": 0,
   "review_rounds": 0,
@@ -10,8 +10,8 @@
   "blocker": null,
   "fix": null,
   "ask": "j-20261114T113041+0000-fa5ce086",
-  "split": null,
-  "split_plan_hash": null,
+  "split": "j-20261115T054324+0000-c4181cbf",
+  "split_plan_hash": "7c755ab4bcbc0eddf934bf8e7478497f0a7c831a0433c580293dc71902ac9322",
   "split_hold": false,
   "commit_sha": null,
   "closed_outside": false,
@@ -37,7 +37,14 @@
     ],
     "priority": 3
   },
-  "history": [],
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-11-15T05:43:22+00:00",
+      "by": "promote"
+    }
+  ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-14T14:31:38+00:00"
+  "at": "2026-11-15T05:43:24+00:00"
 }

@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "release-tag.yml would call release_notes.py, colliding with test_release_tag_never_writes_its_own_notes and ADR 0012. The revision moves owns into scripts/release_paths.py, which release_notes.py imports and release-tag calls, so release-tag never names release_notes.py and the guard and ADR line stand unchanged.",
+      "anchor": "tests/scripts/test_workflows.py:850",
+      "category": "contract",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "9a9daf71ec65d83291ffb6867f46a0ef41eb1ad33661fa0f88c0699925d703cb"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T05:34:46+00:00"
+}
