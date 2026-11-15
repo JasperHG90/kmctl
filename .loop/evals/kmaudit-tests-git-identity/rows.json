@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "kmaudit's tests pass on a machine with no global or system git config, as on a fresh CI runner, because the fixture's git helper commits with its own identity.",
+      "fails_when": "any kmaudit test fails or errors with GIT_CONFIG_GLOBAL=/dev/null and GIT_CONFIG_NOSYSTEM=1",
+      "command": "env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 uv run pytest packages/kmaudit/tests -q -p no:cacheprovider"
+    }
+  ]
+}
