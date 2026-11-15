@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "slug": "upgrade-from-v0-12-docs",
+  "stage": "planning",
+  "attempts": 0,
+  "plan_rounds": 0,
+  "review_rounds": 0,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": null,
+  "ask": "j-20261115T194419+0000-cd47aabf",
+  "split": null,
+  "split_plan_hash": null,
+  "split_hold": false,
+  "commit_sha": null,
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": null,
+  "branch": null,
+  "stamps": [],
+  "signoff": null,
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [],
+  "resigns": [],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [],
+  "round": null,
+  "plan_hash": "7ed00ed669da17b097df5cc12bf56ac8769e39d51500f3f1d7d215e1f9390986",
+  "intent": {
+    "epic": null,
+    "depends_on": [],
+    "priority": null
+  },
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-11-15T19:44:43+00:00",
+      "by": "register"
+    }
+  ],
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T19:44:43+00:00"
+}
