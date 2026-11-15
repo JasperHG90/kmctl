@@ -167,7 +167,7 @@ def _copy(source: Path, target: Path) -> None:
     os.close(handle)
     partial = Path(name)
     try:
-        src = sqlite3.connect(f"file:{source}?mode=ro", uri=True)
+        src = sqlite3.connect(namespaces.read_only_uri(source), uri=True)
         try:
             dst = sqlite3.connect(partial)
             try:
