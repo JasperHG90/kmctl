@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "release-notes-hermes-reviewer-f2",
-  "stage": "building",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 0,
@@ -93,8 +93,14 @@
       "to": "building",
       "at": "2026-11-15T05:07:32+00:00",
       "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-15T05:15:21+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T05:14:50+00:00"
+  "at": "2026-11-15T05:15:21+00:00"
 }
