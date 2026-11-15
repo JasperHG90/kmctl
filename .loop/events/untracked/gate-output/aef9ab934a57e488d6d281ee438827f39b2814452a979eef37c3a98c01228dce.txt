@@ -1,0 +1,190 @@
+warning: `VIRTUAL_ENV=/home/vscode/workspace/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+============================= test session starts ==============================
+platform linux -- Python 3.12.16, pytest-9.1.1, pluggy-1.6.0
+rootdir: /tmp/loopctl-land-root-release-cutoff-kbbu_ofp/tree
+configfile: pyproject.toml
+plugins: respx-0.23.1, platformdirs-4.13.4, anyio-4.15.1, langsmith-0.14.17
+collected 1596 items / 1578 deselected / 18 selected
+
+packages/kmaudit/tests/test_independent.py F                             [  5%]
+packages/kmctl/tests/test_antigravity.py sF                              [ 16%]
+packages/kmctl/tests/test_apm_package.py .                               [ 22%]
+packages/kmctl/tests/test_docs_frontmatter.py .                          [ 27%]
+packages/kmctl/tests/test_doctor.py ..                                   [ 38%]
+packages/kmctl/tests/test_opencode.py .s                                 [ 50%]
+packages/kmctl/tests/test_pin.py ..                                      [ 61%]
+packages/kmctl/tests/test_plugin_patch.py .                              [ 66%]
+packages/kmctl/tests/test_starter.py ..                                  [ 77%]
+tests/scripts/test_check_wheel.py ...                                    [ 94%]
+tests/scripts/test_smoke_wheel.py .                                      [100%]
+
+=================================== FAILURES ===================================
+_________________ test_the_wheel_runs_in_a_venv_without_kmctl __________________
+
+tmp_path = PosixPath('/tmp/pytest-of-vscode/pytest-694/test_the_wheel_runs_in_a_venv_0')
+
+    @pytest.mark.integration
+    def test_the_wheel_runs_in_a_venv_without_kmctl(tmp_path: Path) -> None:
+        dist = tmp_path / "dist"
+        subprocess.run(
+            ["uv", "build", "--wheel", "--out-dir", str(dist), str(PACKAGE)],
+            check=True,
+            capture_output=True,
+            timeout=600,
+        )
+        (wheel,) = dist.glob("kmaudit-*.whl")
+        venv = tmp_path / "venv"
+        subprocess.run(
+            ["uv", "venv", "--python", "3.12", str(venv)],
+            check=True,
+            capture_output=True,
+            timeout=600,
+        )
+        python = venv / "bin" / "python"
+>       subprocess.run(
+            ["uv", "pip", "install", "--python", str(python), str(wheel)],
+            check=True,
+            capture_output=True,
+            timeout=600,
+        )
+
+packages/kmaudit/tests/test_independent.py:64: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+input = None, capture_output = True, timeout = 600, check = True
+popenargs = (['uv', 'pip', 'install', '--python', '/tmp/pytest-of-vscode/pytest-694/test_the_wheel_runs_in_a_venv_0/venv/bin/python', '/tmp/pytest-of-vscode/pytest-694/test_the_wheel_runs_in_a_venv_0/dist/kmaudit-0.1.0.dev0-py3-none-any.whl'],)
+kwargs = {'stdout': -1, 'stderr': -1}
+
+    def run(*popenargs,
+            input=None, capture_output=False, timeout=None, check=False, **kwargs):
+        """Run command with arguments and return a CompletedProcess instance.
+    
+        The returned instance will have attributes args, returncode, stdout and
+        stderr. By default, stdout and stderr are not captured, and those attributes
+        will be None. Pass stdout=PIPE and/or stderr=PIPE in order to capture them,
+        or pass capture_output=True to capture both.
+    
+        If check is True and the exit code was non-zero, it raises a
+        CalledProcessError. The CalledProcessError object will have the return code
+        in the returncode attribute, and output & stderr attributes if those streams
+        were captured.
+    
+        If timeout (seconds) is given and the process takes too long,
+         a TimeoutExpired exception will be raised.
+    
+        There is an optional argument "input", allowing you to
+        pass bytes or a string to the subprocess's stdin.  If you use this argument
+        you may not also use the Popen constructor's "stdin" argument, as
+        it will be used internally.
+    
+        By default, all communication is in bytes, and therefore any "input" should
+        be bytes, and the stdout and stderr will be bytes. If in text mode, any
+        "input" should be a string, and stdout and stderr will be strings decoded
+        according to locale encoding, or by "encoding" if set. Text mode is
+        triggered by setting any of text, encoding, errors or universal_newlines.
+    
+        The other arguments are the same as for the Popen constructor.
+        """
+        if input is not None:
+            if kwargs.get('stdin') is not None:
+                raise ValueError('stdin and input arguments may not both be used.')
+            kwargs['stdin'] = PIPE
+    
+        if capture_output:
+            if kwargs.get('stdout') is not None or kwargs.get('stderr') is not None:
+                raise ValueError('stdout and stderr arguments may not be used '
+                                 'with capture_output.')
+            kwargs['stdout'] = PIPE
+            kwargs['stderr'] = PIPE
+    
+        with Popen(*popenargs, **kwargs) as process:
+            try:
+                stdout, stderr = process.communicate(input, timeout=timeout)
+            except TimeoutExpired as exc:
+                process.kill()
+                if _mswindows:
+                    # Windows accumulates the output in a single blocking
+                    # read() call run on child threads, with the timeout
+                    # being done in a join() on those threads.  communicate()
+                    # _after_ kill() is required to collect that and add it
+                    # to the exception.
+                    exc.stdout, exc.stderr = process.communicate()
+                else:
+                    # POSIX _communicate already populated the output so
+                    # far into the TimeoutExpired exception.
+                    process.wait()
+                raise
+            except:  # Including KeyboardInterrupt, communicate handled that.
+                process.kill()
+                # We don't call process.wait() as .__exit__ does that for us.
+                raise
+            retcode = process.poll()
+            if check and retcode:
+>               raise CalledProcessError(retcode, process.args,
+                                         output=stdout, stderr=stderr)
+E               subprocess.CalledProcessError: Command '['uv', 'pip', 'install', '--python', '/tmp/pytest-of-vscode/pytest-694/test_the_wheel_runs_in_a_venv_0/venv/bin/python', '/tmp/pytest-of-vscode/pytest-694/test_the_wheel_runs_in_a_venv_0/dist/kmaudit-0.1.0.dev0-py3-none-any.whl']' returned non-zero exit status 2.
+
+/home/vscode/.local/share/uv/python/cpython-3.12.16-linux-aarch64-gnu/lib/python3.12/subprocess.py:571: CalledProcessError
+____________ test_consumer_gets_skills_rules_and_the_plugin_folder _____________
+
+consumer = PosixPath('/tmp/pytest-of-vscode/pytest-694/test_consumer_gets_skills_rule0/consumer')
+served = 'http://127.0.0.1:52107/o/kmctl.git'
+
+    @pytest.mark.integration
+    def test_consumer_gets_skills_rules_and_the_plugin_folder(
+        consumer: Path, served: str
+    ) -> None:
+>       apm_install(consumer, served, "antigravity")
+
+/tmp/loopctl-land-root-release-cutoff-kbbu_ofp/tree/packages/kmctl/tests/test_antigravity.py:670: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+consumer = PosixPath('/tmp/pytest-of-vscode/pytest-694/test_consumer_gets_skills_rule0/consumer')
+served = 'http://127.0.0.1:52107/o/kmctl.git', targets = 'antigravity'
+
+    def apm_install(consumer: Path, served: str, targets: str) -> str:
+        """Install kmctl's package as a user does (ADR 0021): the apm.yml entry, apm install, kmctl plugin patch.
+    
+        The entry names ``served`` at this kmctl's tag; APM 0.33.0 runs through
+        uvx. Returns kmctl plugin patch's output; fails the test when a step fails.
+        """
+        import yaml
+        from typer.testing import CliRunner
+    
+        from kmctl import app
+    
+        entry = {
+            "git": served,
+            "path": "apm",
+            "ref": f"v{version('kmctl')}",
+            "allow_insecure": True,
+        }
+        manifest = {
+            "name": "consumer",
+            "version": "0.1.0",
+            "dependencies": {"apm": [entry]},
+            "targets": targets.split(","),
+        }
+        (consumer / "apm.yml").write_text(yaml.safe_dump(manifest))
+        proc = subprocess.run(
+            ["uvx", "--from", "apm-cli==0.33.0", "apm", "install", "--allow-insecure"],
+            cwd=consumer,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+>       assert proc.returncode == 0, proc.stderr + proc.stdout
+E       AssertionError: error: Request failed after 3 retries in 85.9s
+E           cause: Failed to download `https://github.com/astral-sh/python-build-standalone/releases/download/20261026/cpython-3.15.2%2B20261026-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz`
+E           cause: error sending request for url (https://github.com/astral-sh/python-build-standalone/releases/download/20261026/cpython-3.15.2%2B20261026-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz)
+E           cause: client error (Connect)
+E           cause: operation timed out
+E         
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['uvx', '--from', 'apm-cli==0.33.0', 'apm', 'install', '--allow-insecure'], returncode=2, stdout...ch64-unknown-linux-gnu-install_only_stripped.tar.gz)\n  cause: client error (Connect)\n  cause: operation timed out\n').returncode
+
+/tmp/loopctl-land-root-release-cutoff-kbbu_ofp/tree/packages/kmctl/tests/conftest.py:262: AssertionError
+=========================== short test summary info ============================
+FAILED packages/kmaudit/tests/test_independent.py::test_the_wheel_runs_in_a_venv_without_kmctl
+FAILED packages/kmctl/tests/test_antigravity.py::test_consumer_gets_skills_rules_and_the_plugin_folder
+===== 2 failed, 14 passed, 2 skipped, 1578 deselected in 293.87s (0:04:53) =====
