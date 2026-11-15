@@ -2,3 +2,4 @@
 {"at": "2026-11-15T04:47:26+00:00", "by": "promote", "from": "stub", "grant": "g7", "kind": "transition", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/implementer", "step": "ticket-promote", "to": "planning"}
 {"at": "2026-11-15T04:47:49+00:00", "kind": "spike-note", "n": 1, "replaced": false, "schema_version": "1.0"}
 {"at": "2026-11-15T05:01:19+00:00", "binds": "b76dfecd715fa80aa1bf05016df0811828221361af03eb5d67f3221198c9d6bf", "kind": "round-start", "n": 1, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
+{"at": "2026-11-15T05:04:37+00:00", "dispatched_at": "2026-11-15T05:01:19+00:00", "kind": "round-close", "n": 1, "outcome": "pass", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-15T05:03:50+00:00"}}
