@@ -110,9 +110,11 @@ jobs:
             exit 1
           fi
       # A commit that reached main after the Release run drafted the notes
-      # ships in the tag with no bullet. Find the drafted commit (the parent of
-      # the merge's second parent, or a squash merge's Drafted-From trailer)
-      # and name this package's commits since it. The notes stay as reviewed.
+      # ships in the tag with no bullet. Find the drafted commit from the
+      # Drafted-From trailer (on the release branch's own commits for a merge,
+      # on the pushed commit for a squash), else from the parent of the
+      # merge's second parent, and name this package's commits since it. The
+      # notes stay as reviewed.
       - name: Name commits that landed after the notes were drafted
         if: ${{ steps.plan.outputs.verdict == 'raised' || steps.plan.outputs.verdict == 'resume' }}
         env:
@@ -122,11 +124,24 @@ jobs:
           set -euo pipefail
           read -r -a PARENTS <<< "$(git rev-list --parents -n 1 "$GITHUB_SHA")"
           FIRST="${PARENTS[1]:-}"
+          # Print the first Drafted-From hash in stdin. awk reads all of it,
+          # so the writer never dies of SIGPIPE under pipefail.
+          drafted_from() {
+            awk '!d && match($0, /Drafted-From: *[0-9a-f]+/) {
+                d = substr($0, RSTART, RLENGTH); sub(/^Drafted-From: */, "", d)
+              }
+              END { if (length(d) >= 7 && length(d) <= 40) print d }'
+          }
           if [ "${#PARENTS[@]}" -eq 3 ]; then
-            DRAFTED="$(git rev-parse "${PARENTS[2]}^")"
+            # An "Update branch" merge on the release branch makes the second
+            # parent's parent a merge that already holds the late commits, so
+            # read the release commit's trailer first.
+            DRAFTED="$(git log --format=%B "$FIRST..${PARENTS[2]}" | drafted_from)"
+            if [ -z "$DRAFTED" ]; then
+              DRAFTED="$(git rev-parse "${PARENTS[2]}^")"
+            fi
           else
-            DRAFTED="$(git log -1 --format=%B "$GITHUB_SHA" \
-              | sed -n 's/^.*Drafted-From: *\([0-9a-f]\{7,40\}\).*$/\1/p' | head -n 1)"
+            DRAFTED="$(git log -1 --format=%B "$GITHUB_SHA" | drafted_from)"
           fi
           if [ -z "$FIRST" ] || [ -z "$DRAFTED" ] || ! git cat-file -e "$DRAFTED^{commit}" 2>/dev/null; then
             echo "::warning::Could not find the commit the $TAG notes were drafted from, so commits that landed after the draft are not named. Compare the notes with the history by hand."
