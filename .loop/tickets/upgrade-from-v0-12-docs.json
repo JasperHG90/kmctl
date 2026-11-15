@@ -1,14 +1,30 @@
 {
   "schema_version": "1.0",
   "slug": "upgrade-from-v0-12-docs",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "c5667b7b6b06b5afa2b78a4e45863eb708296196c5eb37852c0b98c8a69046e5",
+    "tree": "d5448b7d72c00a8a028129fdc5c92b47256914e3",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "blocking",
+        "judgement": null,
+        "paths": [
+          "packages/kmctl/README.md"
+        ]
+      }
+    ],
+    "at": "2026-11-15T20:14:21+00:00"
+  },
   "ask": "j-20261115T194419+0000-cd47aabf",
   "split": "j-20261115T194630+0000-63819848",
   "split_plan_hash": "66e4c26c1ed2b69ab6e11b35e946fe77ae0f56ecdddbd8813518932e7d2abb0f",
@@ -100,8 +116,14 @@
       "to": "fixing",
       "at": "2026-11-15T20:10:09+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-15T20:14:21+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T20:14:13+00:00"
+  "at": "2026-11-15T20:14:21+00:00"
 }
