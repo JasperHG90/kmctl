@@ -20,7 +20,8 @@
   "worktree": "/home/vscode/workspace.worktrees/kmaudit-install-hints-pinned",
   "branch": "loop/kmaudit-install-hints-pinned",
   "stamps": [
-    "9fbdc4d4bb3b5c4b3837006ebaa090fc68ee4f14415755505775ba199a4774b0"
+    "9fbdc4d4bb3b5c4b3837006ebaa090fc68ee4f14415755505775ba199a4774b0",
+    "2bd097ffdc6a89e2c4668d63b6f473eb5c8c565137b79f1956c0bfa86f819d59"
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/implementer",
@@ -98,5 +99,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T07:58:16+00:00"
+  "at": "2026-11-15T08:05:34+00:00"
 }
