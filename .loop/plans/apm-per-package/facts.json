@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "apm-per-package",
-  "plan_hash": "1bd5ff496009633febee833720e4acc7340d6c154812d534ce13d2dff8a3acf4",
+  "plan_hash": "bf4ef9f6db868c7514a135c617d8f90a14d53038a7f3b6c726d27fa608b70efa",
   "problems": [
     {
       "id": "P1",
@@ -28,6 +28,19 @@
       "touches": [
         "apm",
         "new:packages/kmctl/apm",
+        ".pre-commit-config.yaml",
+        "scripts/sync_antigravity_rules.py",
+        ".claude/rules/*.md",
+        ".okf/decisions/*.md",
+        "new:.okf/decisions/0045-each-package-keeps-its-apm-package-and-version.md",
+        ".okf/manifesto.md",
+        ".okf/summary.md",
+        ".okf/architecture/audit-pipeline.md",
+        "docs/reference/commands.md",
+        "packages/kmctl/tests/*.py",
+        "tests/*.py",
+        "tests/scripts/*.py",
+        "packages/kmctl/tests/test_pin.py",
         "new:packages/kmaudit/apm",
         "packages/kmaudit/VERSION",
         "packages/kmctl/pyproject.toml",
@@ -56,7 +69,7 @@
         "tests/scripts/test_release.py",
         "tests/scripts/test_workflows.py"
       ],
-      "checked_by": "the starter bootstrap integration test (a release after the cutoff, `path: packages/kmctl/apm`, doctor passes); test_starter renders `path: apm` at v0.12.2 and `path: packages/kmctl/apm` at v0.13.0; doctor and plugin patch tests recognise kmctl's entry and sub-packages under both paths and new_entry writes the new one; release.py tests read kmctl's version from its moved apm.yml and kmaudit's from its new one, `manifest` falls back to apm/apm.yml on an old commit, and `set --package kmaudit` writes the apm.yml; the package build test checks both wheels' versions and contents; a test that no `apm/` folder and no `packages/kmaudit/VERSION` remain",
+      "checked_by": "root-release-cutoff's tag test extended to the moved apm.yml against `apm/apm.yml`; a doctor test that a project with `{path: apm, ref: v0.12.2}` on this CLI gets a fix naming `path: packages/kmctl/apm` and this ref; a test that the Antigravity rules hook's `files:` pattern matches a rule file under `packages/kmctl/apm/`; the starter bootstrap integration test (a release after the cutoff, `path: packages/kmctl/apm`, doctor passes); test_starter renders `path: apm` at v0.12.2 and `path: packages/kmctl/apm` at v0.13.0; doctor and plugin patch tests recognise kmctl's entry and sub-packages under both paths and new_entry writes the new one; release.py tests read kmctl's version from its moved apm.yml and kmaudit's from its new one, `manifest` falls back to apm/apm.yml on an old commit, and `set --package kmaudit` writes the apm.yml; the package build test checks both wheels' versions and contents; a test that no `apm/` folder and no `packages/kmaudit/VERSION` remain",
       "seen_by": "operator"
     }
   ]
