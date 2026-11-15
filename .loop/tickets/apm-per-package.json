@@ -21,7 +21,8 @@
   "branch": "loop/apm-per-package",
   "stamps": [
     "fdd4c0b6a978c84c2c6c38458012841b5376531d779191cd1717e1a9f7f64ff6",
-    "cb9d5e473ac4e0ced84d78a279953713c89f8d0432eea9e9cda9c867f2672b80"
+    "cb9d5e473ac4e0ced84d78a279953713c89f8d0432eea9e9cda9c867f2672b80",
+    "c0886e39689c0c486f8a1007cd3cac088664bb7d43a1576e438488324ca25006"
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/implementer",
@@ -144,5 +145,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T07:18:39+00:00"
+  "at": "2026-11-15T07:23:06+00:00"
 }
