@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "release-notes-owned-paths",
+  "n": 1,
+  "command": "python3 /tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/owned/measure.py agent-audit",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/owned/measure.py",
+      "copy": "files/measure.py"
+    }
+  ],
+  "where": "worktree",
+  "head": "feccba963bd01561891a9ffdc0f36b3b637bb6a2",
+  "fingerprint": "3e83b97e18466de18dd87113e362dc70c6d255845a30a70efa7b374887ca98ff",
+  "started_at": "2026-11-15T05:20:29+00:00",
+  "finished_at": "2026-11-15T05:20:31+00:00",
+  "duration_seconds": 2.185,
+  "timeout_seconds": 1800.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "moved_from": null
+}

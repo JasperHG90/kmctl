@@ -1,0 +1,7 @@
+v0.9.1..v0.10.0: kept 3, bookkeeping-only 0: []
+v0.10.0..v0.11.0: kept 12, bookkeeping-only 1: ['Merge loop/commit-apm-installs: A decision records that projects commi']
+v0.11.0..v0.12.0: kept 2, bookkeeping-only 0: []
+v0.12.0..v0.12.1: kept 3, bookkeeping-only 0: []
+v0.12.1..v0.12.2: kept 6, bookkeeping-only 1: ['Add a rule: releases come from CI and always carry notes']
+v0.12.2..agent-audit: kept 17, bookkeeping-only 5: ['Merge loop/kmaudit-mcp: kmaudit mcp starts a stdio MCP server whose to', "Merge loop/kmaudit-briefing: kmaudit briefing prints each namespace's ", 'prototypes: measure how the reworded link question moved its answers', 'operator: manual commits', 'operator: manual commits']
+total: 7 of 43 kept commits touch only bookkeeping paths

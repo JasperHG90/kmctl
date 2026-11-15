@@ -202,3 +202,19 @@ def test_never_fails_with_no_namespace_or_a_broken_store(
     assert json_code == 0
     assert json.loads(json_out)["namespaces"] == []
     assert json.loads(json_out)["unavailable"]
+
+
+def test_a_nested_namespace_briefs(repo: Path) -> None:
+    """briefing opens a nested namespace's store, named handbook%2Fguides.sqlite."""
+    guides = repo / "handbook" / "guides"
+    guides.mkdir(parents=True)
+    (guides / "a.md").write_text("# A\n\n## Part\n\nThe tool writes out.txt.\n")
+    git(repo, "add", ".")
+    git(repo, "commit", "-qm", "handbook")
+    code, _, err = run("claims", "todo", "handbook/guides", "--json")
+    assert code == 0, err
+
+    rows = briefing()
+
+    assert "handbook/guides" in rows
+    assert rows["handbook/guides"]["pending"] == 1

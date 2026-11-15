@@ -180,4 +180,6 @@ the notes too.
 unchanged with `--notes-file`; it no longer runs `release_notes.py`. It warns,
 in a `::warning::` and the step summary, about the package's commits that
 landed between the drafted commit and the merge, so someone adds them with
-`gh release edit`. Only a kmctl release is marked Latest.
+`gh release edit`. It finds the drafted commit from the `Drafted-From`
+trailer on the release branch's own commits, so an "Update branch" merge
+from main on that branch does not hide the late commits. Only a kmctl release is marked Latest.

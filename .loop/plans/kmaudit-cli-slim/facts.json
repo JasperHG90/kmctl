@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "slug": "kmaudit-cli-slim",
+  "plan_hash": "b1fd859ad405283cbf2a3bc6378c059ac32458b8b354c427b5ed9a5fc9a40657",
+  "problems": [
+    {
+      "id": "P1",
+      "text": "kmaudit's CLI duplicates the MCP tools, so two surfaces must be kept correct."
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "One interface for agents (MCP) and a small CLI for people."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "O1",
+      "change": "The CLI keeps only mcp, ui, namespaces, briefing and the two list commands",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "packages/kmaudit/src/kmaudit/cli.py",
+        "packages/kmaudit/src/kmaudit/guard.py",
+        "packages/kmaudit/README.md",
+        "packages/kmaudit/docs/commands.md",
+        "packages/kmaudit/tests/*.py",
+        ".okf/decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp.md",
+        ".okf/architecture/audit-pipeline.md"
+      ],
+      "checked_by": "a test that `kmaudit --help` lists exactly those commands; a test per dropped verb that it exits 2 naming its MCP tool; the moved tests pass through the MCP tools or the Python functions, with no behaviour test deleted (a count of test functions per behaviour before and after in the build notes); the docs test that every tool and command is documented",
+      "seen_by": "operator"
+    }
+  ]
+}

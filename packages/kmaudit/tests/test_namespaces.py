@@ -302,3 +302,89 @@ def test_the_old_store_copies_once_when_processes_open_it_at_once(repo: Path) ->
     assert [r for r in results if r[0] != 0] == []
     assert list((repo / ".kmaudit").glob("*.partial")) == []
     assert any(c.startswith("O ") for c in claims_of(".okf"))
+
+
+@pytest.fixture
+def nested(repo: Path) -> Path:
+    """The fixture repository with a nested namespace, handbook/guides, holding claims."""
+    guides = repo / "handbook" / "guides"
+    guides.mkdir(parents=True)
+    (guides / "guide.md").write_text(GUIDE)
+    git(repo, "add", ".")
+    git(repo, "commit", "-qm", "handbook")
+    sections = todo("handbook/guides")["sections"]
+    run(
+        "claims",
+        "submit",
+        "-",
+        "--path",
+        "handbook/guides",
+        stdin=answers(sections, "H"),
+    )
+    return repo
+
+
+def test_a_nested_namespace_lists_its_counts(nested: Path) -> None:
+    """A store named handbook%2Fguides.sqlite opens, so its counts are listed (the %2F once broke the URI)."""
+    todo("docs")
+
+    code, out, err = run("namespaces", "--json")
+    rows = {r["namespace"]: r for r in json.loads(out)["namespaces"]}
+
+    assert code == 0, err
+    assert (nested / ".kmaudit" / "handbook%2Fguides.sqlite").is_file()
+    assert set(rows) == {"docs", "handbook/guides"}
+    assert rows["handbook/guides"]["sections"] == 2
+    assert rows["handbook/guides"]["claims"] > 0
+
+
+@pytest.mark.parametrize("name", ["r%2Fx", "r#x", "r?x", "r%x#y?z"])
+def test_read_only_uri_opens_a_path_with_uri_characters(
+    tmp_path: Path, name: str
+) -> None:
+    """``read_only_uri`` quotes %, # and ?, so SQLite opens the file the path names."""
+    from kmaudit.namespaces import read_only_uri
+
+    path = tmp_path / name / "a%2Fb.sqlite"
+    path.parent.mkdir()
+    sqlite3.connect(path).execute("CREATE TABLE t (x)").connection.close()
+
+    db = sqlite3.connect(read_only_uri(path), uri=True)
+    try:
+        assert db.execute("SELECT count(*) FROM t").fetchone() == (0,)
+    finally:
+        db.close()
+
+
+def test_read_only_uri_takes_a_relative_path(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A relative path resolves against the working directory rather than raising."""
+    from kmaudit.namespaces import read_only_uri
+
+    monkeypatch.chdir(tmp_path)
+    sqlite3.connect("rel.sqlite").close()
+
+    assert (
+        read_only_uri(Path("rel.sqlite"))
+        == (tmp_path / "rel.sqlite").resolve().as_uri() + "?mode=ro"
+    )
+
+
+def test_the_old_store_copies_from_a_repository_path_with_uri_characters(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The legacy store copy opens its source read-only through a quoted URI (uri)."""
+    root = make_repo(tmp_path / "r%x#y")
+    monkeypatch.chdir(root)
+    okf = todo(".okf")
+    run("claims", "submit", "-", stdin=answers(okf["sections"], "O"))
+    old = root / ".kmctl" / "audit.sqlite"
+    old.parent.mkdir()
+    shutil.move(root / ".kmaudit" / ".okf.sqlite", old)
+    shutil.rmtree(root / ".kmaudit")
+
+    again = todo(".okf")
+
+    assert (root / ".kmaudit" / ".okf.sqlite").is_file()
+    assert again["sections"] == []

@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The ADR 0035 edit leaves one 104-character line in a paragraph wrapped near 72 columns; rewrap the bullet.",
+      "anchor": ".okf/decisions/0035-kmctl-s-repository-answers-and-triages-with-hermes.md:75",
+      "category": "nit",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "81dab927a4613846f256fcf1417a0852c52934024770810eb4071c9184234b7a",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T05:25:02+00:00"
+}
