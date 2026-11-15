@@ -1,0 +1,143 @@
+{
+  "schema_version": "1.0",
+  "fingerprint": "fdd4c0b6a978c84c2c6c38458012841b5376531d779191cd1717e1a9f7f64ff6",
+  "slug": "apm-per-package",
+  "results": [
+    {
+      "name": "lint",
+      "kind": "gate",
+      "command": "uv run ruff check",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "format",
+      "kind": "gate",
+      "command": "uv run ruff format --check",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "tests",
+      "kind": "gate",
+      "command": "uv run pytest",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "integration",
+      "kind": "gate",
+      "command": "uv run pytest -m integration",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r1",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_workspace_layout.py tests/scripts/test_check_wheel.py -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 23,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r2",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/scripts/test_release.py tests/scripts/test_workflows.py -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 130,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r3",
+      "kind": "eval-row",
+      "command": "uv run pytest packages/kmctl/tests/test_plugin.py packages/kmctl/tests/test_doctor.py packages/kmctl/tests/test_plugin_patch.py -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 153,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r4",
+      "kind": "eval-row",
+      "command": "uv run pytest packages/kmctl/tests/test_starter.py -m 'not integration or integration' -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 48,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r5",
+      "kind": "eval-row",
+      "command": "uv run pytest packages/kmctl/tests/test_pin.py -m integration -k cutoff_matches_tags -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 1,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r6",
+      "kind": "eval-row",
+      "command": "uv run pytest packages/kmctl/tests/test_apm_package.py packages/kmctl/tests/test_antigravity.py packages/kmctl/tests/test_opencode.py -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 160,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r7",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_skills.py tests/test_audit.py tests/test_release_skill.py -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 43,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    }
+  ],
+  "green": true,
+  "at": "2026-11-15T07:06:37+00:00",
+  "commit": null,
+  "by": "process:loopctl/2.3.1.dev65+g93b143856"
+}

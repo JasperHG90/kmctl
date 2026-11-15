@@ -19,7 +19,9 @@
   "archived": false,
   "worktree": "/home/vscode/workspace.worktrees/apm-per-package",
   "branch": "loop/apm-per-package",
-  "stamps": [],
+  "stamps": [
+    "fdd4c0b6a978c84c2c6c38458012841b5376531d779191cd1717e1a9f7f64ff6"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/implementer",
     "hash": "82a68c91bc941e3c752fa394dbde2881c076d109b9079c83e44b4008b5efd1c2",
@@ -129,5 +131,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T06:36:59+00:00"
+  "at": "2026-11-15T07:06:37+00:00"
 }
