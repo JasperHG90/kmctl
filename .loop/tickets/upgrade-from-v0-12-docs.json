@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "upgrade-from-v0-12-docs",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 3,
@@ -29,7 +29,7 @@
   "split": "j-20261115T194630+0000-63819848",
   "split_plan_hash": "66e4c26c1ed2b69ab6e11b35e946fe77ae0f56ecdddbd8813518932e7d2abb0f",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "6b50ed9a3392ea185c4dfe6eb77744cf97f9e913",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -123,8 +123,14 @@
       "to": "verifying",
       "at": "2026-11-15T20:14:21+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-15T20:25:10+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T20:25:06+00:00"
+  "at": "2026-11-15T20:25:10+00:00"
 }
