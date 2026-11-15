@@ -92,14 +92,16 @@ their `apm.yml`, and no `VERSION` file is left.
 
 ## Could invalidate this plan
 
-- none. The one risk, that APM cannot install a package from a nested path
-  whose own apm.yml pulls in `./claude` and `./antigravity`, was measured
-  before writing this: see Evidence. It installs, and the lock records the
-  virtual paths `packages/kmctl/apm`, `packages/kmctl/apm/claude` and
-  `packages/kmctl/apm/antigravity`, which O1's doctor and plugin changes
-  match.
+- none
 
 ## Evidence
+
+The one risk this plan had, that APM cannot install a package from a
+nested path whose own apm.yml pulls in `./claude` and `./antigravity`, was
+measured before writing it, so it is no longer listed above. It installs,
+and the lock records the virtual paths `packages/kmctl/apm`,
+`packages/kmctl/apm/claude` and `packages/kmctl/apm/antigravity`, which O1's
+doctor and plugin changes match.
 
 The measurement could not run through `loopctl plan spike`: APM refuses a
 `file://` source (`Invalid virtual package path`), so the run needs git's
