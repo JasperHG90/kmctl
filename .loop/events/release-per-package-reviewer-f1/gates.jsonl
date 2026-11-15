@@ -1,0 +1,1 @@
+{"at": "2026-11-15T04:53:02+00:00", "command": "uv run pytest", "exit": 1, "fingerprint": "450288f6ae3b0f9aa530deffa34dd098d5cdf38f08317fc091916aabab3fe980", "kind": "red", "name": "tests", "note": null, "output": ".loop/events/release-per-package-reviewer-f1/gate-output/9c87ef91d7fdf68cf0e3d11c1abe7bb484206e04531802ad9c7cd8492ff23c71.txt", "schema_version": "1.0"}

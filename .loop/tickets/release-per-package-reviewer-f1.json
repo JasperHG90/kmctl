@@ -19,7 +19,9 @@
   "archived": false,
   "worktree": "/home/vscode/workspace.worktrees/release-per-package-reviewer-f1",
   "branch": "loop/release-per-package-reviewer-f1",
-  "stamps": [],
+  "stamps": [
+    "450288f6ae3b0f9aa530deffa34dd098d5cdf38f08317fc091916aabab3fe980"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/implementer",
     "hash": "509a41c1fb45827e875a589168d626e6a15fc40c234210a4705fe41eed3d103f",
@@ -94,5 +96,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T04:48:33+00:00"
+  "at": "2026-11-15T04:53:02+00:00"
 }
