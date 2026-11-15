@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-namespaces-nested-store",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 1,
@@ -13,7 +13,7 @@
   "split": "j-20261115T050236+0000-5e28e934",
   "split_plan_hash": "31227332531db0cd0a2b3b3f4a0b8fb61721e1969b551c77247fdab3411be586",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "42daf3d677f225cd0e9f7b959ed27cdf84a6727c",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -106,8 +106,14 @@
       "to": "verifying",
       "at": "2026-11-15T05:13:37+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-15T05:28:28+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T05:28:20+00:00"
+  "at": "2026-11-15T05:28:28+00:00"
 }
