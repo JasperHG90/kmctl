@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "A store at any schema step before the feedback table (steps 1 to 4) makes the whole briefing print \"unavailable\", because status_row reads the checks and feedback tables with no fallback. The plan says the briefing reads whatever schema step the file is at and counts a missing table as empty.",
+      "anchor": "packages/kmaudit/src/kmaudit/briefing.py:109",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "The r1 test never stores feedback or a stored check, so the feedback count and the per-status counts are compared only in their trivial case (0 notes, every claim \"no check\"). A briefing that counted answered feedback, or always reported 0 notes, would pass.",
+      "anchor": "packages/kmaudit/tests/test_briefing.py:46",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "commands.md and the --help epilog say the briefing prints nothing with no namespace, but with --json it prints {\"namespaces\": []}, and on an error --json prints the plain \"unavailable\" line, which is not JSON. The docs should say what --json prints in both cases.",
+      "anchor": "packages/kmaudit/docs/commands.md:295",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "2c10de2def90e4979788477c66e10928959191f867489bf9aa9fb9ea30284a5c",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T14:19:04+00:00"
+}

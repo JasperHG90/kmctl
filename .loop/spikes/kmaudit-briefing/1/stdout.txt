@@ -1,0 +1,3 @@
+first open (legacy copy): 0.51s
+cut + compare keys: 0.03s, 212 sections, 212 pending
+list_checks: 0.06s, counts {'stale reason': 98, 'holds': 708, 'not measured': 80, 'reason': 248, 'weak': 1}

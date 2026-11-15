@@ -1,0 +1,25 @@
+{"at": "2026-11-15T05:03:58+00:00", "kind": "register", "schema_version": "1.0", "stage": "planning"}
+{"at": "2026-11-15T05:18:48+00:00", "binds": "288078fda6aedae2e3b78e7935e3780966e13856f561346d86a9eddaa1e7a972", "kind": "round-start", "n": 1, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
+{"at": "2026-11-15T05:19:09+00:00", "kind": "round-abandoned", "n": 1, "round_kind": "plan", "schema_version": "1.0"}
+{"at": "2026-11-15T05:19:09+00:00", "binds": "1bd5ff496009633febee833720e4acc7340d6c154812d534ce13d2dff8a3acf4", "kind": "round-start", "n": 2, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
+{"at": "2026-11-15T05:34:12+00:00", "dispatched_at": "2026-11-15T05:19:09+00:00", "kind": "round-close", "n": 2, "outcome": "fail", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-15T05:21:11+00:00"}}
+{"at": "2026-11-15T05:34:45+00:00", "binds": "bf4ef9f6db868c7514a135c617d8f90a14d53038a7f3b6c726d27fa608b70efa", "kind": "round-start", "n": 3, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
+{"at": "2026-11-15T05:38:45+00:00", "dispatched_at": "2026-11-15T05:34:45+00:00", "kind": "round-close", "n": 3, "outcome": "pass", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-15T05:36:30+00:00"}}
+{"at": "2026-11-15T05:38:46+00:00", "by": "advance", "from": "planning", "kind": "transition", "schema_version": "1.0", "to": "ready"}
+{"at": "2026-11-15T05:39:14+00:00", "grant": "g7", "hash": "82a68c91bc941e3c752fa394dbde2881c076d109b9079c83e44b4008b5efd1c2", "kind": "signoff", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/implementer", "step": "eval-sign"}
+{"at": "2026-11-15T06:36:59+00:00", "by": "advance", "from": "ready", "kind": "transition", "schema_version": "1.0", "to": "building"}
+{"at": "2026-11-15T07:06:37+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "building"}
+{"at": "2026-11-15T07:12:36+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "building"}
+{"at": "2026-11-15T07:12:47+00:00", "by": "advance", "from": "building", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
+{"at": "2026-11-15T07:12:49+00:00", "binds": "cb9d5e473ac4e0ced84d78a279953713c89f8d0432eea9e9cda9c867f2672b80", "kind": "round-start", "n": 1, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "38e7aaff4773ad08fbb102c87efe4ff61f3075be"}
+{"at": "2026-11-15T07:18:39+00:00", "by": "review close", "from": "verifying", "kind": "transition", "schema_version": "1.0", "to": "fixing"}
+{"at": "2026-11-15T07:18:39+00:00", "dispatched_at": "2026-11-15T07:12:49+00:00", "kind": "round-close", "n": 1, "outcome": "fail", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-11-15T07:18:19+00:00"}}
+{"at": "2026-11-15T07:23:06+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "fixing"}
+{"at": "2026-11-15T07:23:14+00:00", "by": "review fixed", "from": "fixing", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
+{"at": "2026-11-15T07:23:21+00:00", "binds": "c0886e39689c0c486f8a1007cd3cac088664bb7d43a1576e438488324ca25006", "kind": "round-start", "n": 2, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "d63dc634e4c6177e4727c73e98b08e7f32b9ba12"}
+{"at": "2026-11-15T07:28:35+00:00", "dispatched_at": "2026-11-15T07:23:21+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-11-15T07:28:20+00:00"}}
+{"at": "2026-11-15T07:33:10+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "verifying"}
+{"at": "2026-11-15T07:33:33+00:00", "binds": "4b8d22081d875919721cb2c9ad9083f9b460733f552a3056c9118cfb6b9f18cf", "kind": "round-start", "n": 3, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "d63dc634e4c6177e4727c73e98b08e7f32b9ba12"}
+{"at": "2026-11-15T07:48:45+00:00", "dispatched_at": "2026-11-15T07:33:33+00:00", "kind": "round-close", "n": 3, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-11-15T07:48:20+00:00"}}
+{"at": "2026-11-15T07:48:48+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "64ee250952098ef8641291125c2b85e0a7d2593d"}
+{"at": "2026-11-15T07:52:11+00:00", "branch": "loop/apm-per-package", "kind": "land", "schema_version": "1.0", "sha": "41a113b359be174f2652d51f581ea630c7198cab"}

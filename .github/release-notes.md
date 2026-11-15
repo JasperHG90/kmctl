@@ -9,7 +9,7 @@ $other
 ## Install
 
 ```sh
-uv tool install git+https://github.com/JasperHG90/kmctl@$tag
+uv tool install git+https://github.com/JasperHG90/kmctl@$tag#subdirectory=packages/kmctl
 ```
 
 In a workflow:

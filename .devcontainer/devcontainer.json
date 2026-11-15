@@ -1,0 +1,61 @@
+{
+    "name": "kmctl",
+    "build": {
+      "dockerfile": "Dockerfile",
+      "context": "."
+    },
+    "containerEnv": {
+      "HOME": "/home/vscode"
+    },
+    // The checkout's .venv first, so kmctl is the one under development.
+    "remoteEnv": {
+      "PATH": "${containerWorkspaceFolder}/.venv/bin:${containerEnv:PATH}"
+    },
+    "customizations": {
+      "vscode": {
+        "extensions": [
+          "ms-python.python",
+          "ms-python.vscode-pylance",
+          "charliermarsh.ruff",
+          "redhat.vscode-yaml",
+          "mhutchie.git-graph",
+          "tamasfe.even-better-toml",
+          "kokakiwi.vscode-just",
+          "bierner.markdown-mermaid",
+          "anthropic.claude-code"
+        ],
+        "settings": {
+          "python.defaultInterpreterPath": "/home/vscode/workspace/.venv/bin/python"
+        }
+      }
+    },
+    // runArgs needs the env file to exist, so create an empty one on first open.
+    "initializeCommand": "touch .devcontainer/.env",
+    "postCreateCommand": "${containerWorkspaceFolder}/.devcontainer/bootstrap.sh ${containerWorkspaceFolder}",
+    "postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder} && git config --global --add credential.useHttpPath true",
+    "runArgs": [
+      "--env-file",
+      ".devcontainer/.env"
+    ],
+    "workspaceFolder": "/home/vscode/workspace",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/home/vscode/workspace,type=bind",
+    // Node backs the OpenCode briefing plugin tests; gh backs the release flow.
+    "features": {
+      "ghcr.io/devcontainers/features/node:1": {},
+      "ghcr.io/devcontainers/features/github-cli:1": {}
+    },
+    // State that outlives a rebuild lives in named volumes. Claude Code, the uv
+    // and prek caches and the scratch folder share the loop-harness container's
+    // volumes, so one login and one cache serve both. The .venv volume is this
+    // project's own and keeps the Linux venv apart from the host's macOS one;
+    // the worktrees volume holds loop ticket worktrees (worktree_dir is
+    // ../{repo}.worktrees, outside the bind mount).
+    "mounts": [
+      "source=loop-harness-claude,target=/home/vscode/.claude,type=volume",
+      "source=loop-harness-uv-cache,target=/home/vscode/.cache/uv,type=volume",
+      "source=loop-harness-prek-cache,target=/home/vscode/.cache/prek,type=volume",
+      "source=loop-harness-scratch,target=/home/scratch,type=volume",
+      "source=kmctl-venv,target=${containerWorkspaceFolder}/.venv,type=volume",
+      "source=kmctl-worktrees,target=${containerWorkspaceFolder}.worktrees,type=volume"
+    ]
+}

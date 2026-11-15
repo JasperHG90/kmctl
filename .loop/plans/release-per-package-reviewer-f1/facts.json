@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "slug": "release-per-package-reviewer-f1",
+  "plan_hash": "fa1e300920cc604669bf5818a1c1ccb1d29aca28d454a608c6de855a945cac3b",
+  "problems": [
+    {
+      "id": "P1",
+      "text": "When the release branch takes an \"Update branch\" merge from main before a later commit, release-tag reads the update merge as the drafted commit and names none of the commits that landed after the notes were drafted."
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "release-tag names every commit of the package that ships without a bullet in the reviewed notes."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "O1",
+      "change": "release-tag reads the Drafted-From trailer from the release branch's commits before falling back to the parent",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        ".github/workflows/release-tag.yml",
+        "tests/scripts/test_workflows.py"
+      ],
+      "checked_by": "a test that merges main into the release branch, adds a notes edit, merges the release and runs the step, which must name the late commit and the drafted commit; the existing merge, squash and no-trailer tests still pass",
+      "seen_by": "operator"
+    }
+  ]
+}

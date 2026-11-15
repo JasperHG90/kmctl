@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "The just install and the starter path followed tests/test_starter.py at the root. The revised plan installs just in the kmctl job (whose directory, packages/kmctl/tests, now holds test_starter.py) and runs packages/kmctl/tests/test_starter.py -m integration in the starter job. O1's checked-by and eval row r1 pin both.",
+      "anchor": ".loop/plans/ci-per-package/README.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "The aggregate tests job now ships in O1, which therefore can ship alone; O2 is support and needs O1. Eval row r2 pins the job's needs, if always(), failure unless every result succeeded, and no name on prek, knowledge or tests.",
+      "anchor": ".loop/plans/ci-per-package/README.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r2"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "c53cfd048d85784dc3d4f9ada3ba5efe3aab0029f76b393cc9bc9741c2276bb3"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T17:52:06+00:00"
+}

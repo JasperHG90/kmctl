@@ -1,0 +1,186 @@
+{
+  "schema_version": "1.0",
+  "slug": "release-skill",
+  "stage": "done",
+  "attempts": 1,
+  "plan_rounds": 2,
+  "review_rounds": 2,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "7683f711c80dd0de3e7b7aad0f143958e6648e7e81c33035e532c08e2886146f",
+    "tree": "be65f1092f5098e07eca00900b32e26912c88db3",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": "j-20261114T223846+0000-8f3b417d",
+        "paths": [
+          ".claude/skills/release/SKILL.md"
+        ]
+      },
+      {
+        "finding": "reviewer:f2",
+        "outcome": "cleared-unreviewed",
+        "by": "fallback",
+        "judgement": "j-20261114T223846+0000-907dc48e",
+        "paths": [
+          "tests/test_release_skill.py"
+        ]
+      }
+    ],
+    "at": "2026-11-14T22:38:46+00:00"
+  },
+  "ask": "j-20261114T171913+0000-6d6b52c3",
+  "split": "j-20261114T175021+0000-266ed6d2",
+  "split_plan_hash": "59daf4df99fedbc63de03bc6ccbc47d39bd6ae305fafcab0c12421bf2bf164f6",
+  "split_hold": false,
+  "commit_sha": "aec195507dd206ee38a4530b8a7cc4787d9aa5a8",
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": "/home/vscode/workspace.worktrees/release-skill",
+  "branch": "loop/release-skill",
+  "stamps": [
+    "c19b70de402217c7a0a829101a3074e42dd3e73fab82bb70ad62d937a430d32a",
+    "7683f711c80dd0de3e7b7aad0f143958e6648e7e81c33035e532c08e2886146f"
+  ],
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "1556ad7b5827b674b8eb309c027849f5307d54d534b913866a0bbd4b04e2168c",
+    "at": "2026-11-14T17:50:46+00:00"
+  },
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "The skill .claude/skills/release/SKILL.md is named release, every -f KEY= it names is a release.yml input, its package values match that input's options, and every path it cites exists. A cited path holding a <tag> or <package> placeholder matches as a glob.",
+      "fails_when": "the name differs, an input or package is made up, or a cited path is missing, or a placeholder path's folder is missing",
+      "command": "uv run pytest tests/test_release_skill.py -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "The skill explains why release.yml and release-tag.yml both exist and that apm/apm.yml is kmctl's version source because users pin the APM package to the CLI tag.",
+      "fails_when": "either explanation is absent",
+      "command": "uv run pytest tests/test_release_skill.py -k explains -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": ".claude/rules/releases.md keeps the no --admin rule and every-release-has-notes, reworded so notes are reviewed in the pull request and a gap after publish is added by hand to the published Release (gh release edit --notes-file) and the committed .github/release-notes/TAG.md, keeping the reviewed text, with scripts/release_notes.py fixed when the draft missed a change; it names .claude/skills/release/.",
+      "fails_when": "a rule is missing, it says to regenerate published notes from the script, it omits either the Release or the committed file, or it does not name the skill",
+      "command": "uv run pytest tests/test_rules.py tests/test_release_skill.py -k rule -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "After the merge the skill watches the release-tag run (gh run watch / gh run view) and reads its ::warning:: or step summary naming late commits; its gap step adds missing entries by hand to both gh release edit and the committed notes file, and never regenerates published notes.",
+      "fails_when": "the skill never names the release-tag run or its warning, or its gap step regenerates notes or edits only one of the Release and the file",
+      "command": "uv run pytest tests/test_release_skill.py -k \"release_tag or gap\" -q",
+      "judgment": false
+    }
+  ],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+      "reason": "plan round 1: gaps after publish are added by hand to the Release and the committed file, and the skill reads release-tag's late-commit warning",
+      "diff": {
+        "added": [
+          "r4"
+        ],
+        "removed": [],
+        "changed": {
+          "r1": [
+            "behavior",
+            "fails_when"
+          ],
+          "r3": [
+            "behavior",
+            "fails_when"
+          ]
+        }
+      },
+      "at": "2026-11-14T17:50:46+00:00"
+    }
+  ],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [],
+  "round": {
+    "kind": "review",
+    "n": 2,
+    "binds": "7683f711c80dd0de3e7b7aad0f143958e6648e7e81c33035e532c08e2886146f",
+    "started_at": "2026-11-14T22:38:54+00:00",
+    "passes": [
+      "reviewer"
+    ],
+    "tree": "be65f1092f5098e07eca00900b32e26912c88db3",
+    "plan_hash": "59daf4df99fedbc63de03bc6ccbc47d39bd6ae305fafcab0c12421bf2bf164f6",
+    "eval_hash": "1556ad7b5827b674b8eb309c027849f5307d54d534b913866a0bbd4b04e2168c",
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": true,
+    "outcome": "pass"
+  },
+  "plan_hash": "59daf4df99fedbc63de03bc6ccbc47d39bd6ae305fafcab0c12421bf2bf164f6",
+  "intent": {
+    "epic": null,
+    "depends_on": [],
+    "priority": null
+  },
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-11-14T17:21:01+00:00",
+      "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-11-14T17:52:12+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-14T22:21:55+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-14T22:30:13+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-14T22:34:52+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-14T22:38:46+00:00",
+      "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-14T22:40:01+00:00",
+      "by": "done"
+    }
+  ],
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T22:40:01+00:00"
+}

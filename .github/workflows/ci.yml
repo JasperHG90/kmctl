@@ -1,4 +1,4 @@
-name: ci
+name: CI
 
 on:
   pull_request:
@@ -8,9 +8,11 @@ on:
 permissions:
   contents: read
 
-# The jobs run one after another: prek, then kmctl's check, then pytest and
-# the starter template's bootstrap side by side, so a cheap failure stops the
-# run before the slower jobs start.
+# The jobs run one after another: prek, then kmctl's check, then each
+# package's tests, the repository's own tests and the starter template's
+# bootstrap side by side, so a cheap failure stops the run before the slower
+# jobs start. main's ruleset requires the checks prek, knowledge and tests,
+# and a check takes its job's id, so those three jobs carry no name:.
 jobs:
   # The hooks in .pre-commit-config.yaml, at the prek version the justfile
   # pins. The hooks call uv run, which the action does not install, so uv
@@ -37,19 +39,44 @@ jobs:
           fetch-depth: 0
       - uses: ./
 
-  # The default test suite. The integration tier reaches GitHub and runs in
-  # the loop's gate instead (.loop/config.toml). The action checks out the
-  # repository.
-  tests:
+  # The default tier of each test directory, one job each, so a red run says
+  # which broke and one can be rerun alone. The integration tier reaches
+  # GitHub and runs in the loop's gate instead (.loop/config.toml). The
+  # pytest action checks out the repository, syncs the workspace at the root
+  # and runs pytest on the directory, so the root pytest config applies.
+  # Together the three directories are what the gate's bare uv run pytest
+  # collects (tests/test_ci.py checks this).
+  kmctl:
     needs: knowledge
     runs-on: ubuntu-latest
     steps:
-      # tests/test_starter.py runs the template's just recipes.
+      # packages/kmctl/tests/test_starter.py runs the template's just recipes.
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: false
       - name: Install just
         run: uv tool install rust-just==1.59.0
+      - uses: JasperHG90/toiminnot/actions/pytest@dc32088cfc239bd550283512de713872370280c2 # v2.0.0
+        with:
+          directory: packages/kmctl/tests
+          markers: not integration
+          python_version: "3.12"
+
+  kmaudit:
+    needs: knowledge
+    runs-on: ubuntu-latest
+    steps:
+      - uses: JasperHG90/toiminnot/actions/pytest@dc32088cfc239bd550283512de713872370280c2 # v2.0.0
+        with:
+          directory: packages/kmaudit/tests
+          markers: not integration
+          python_version: "3.12"
+
+  # The repository's own tests: release scripts, workflows, rules and skills.
+  repo:
+    needs: knowledge
+    runs-on: ubuntu-latest
+    steps:
       - uses: JasperHG90/toiminnot/actions/pytest@dc32088cfc239bd550283512de713872370280c2 # v2.0.0
         with:
           directory: tests
@@ -59,8 +86,8 @@ jobs:
   # The starter template (copier.yml, starter/): render a project from this
   # checkout and run its just bootstrap, with git pointing kmctl's GitHub URL
   # at a file:// clone of the checkout, so the CLI and the package are this
-  # commit's (tests/test_starter.py). The other tests job runs the render
-  # tests; this one runs the integration test that bootstraps.
+  # commit's (packages/kmctl/tests/test_starter.py). The kmctl job runs the
+  # render tests; this one runs the integration test that bootstraps.
   starter:
     needs: knowledge
     runs-on: ubuntu-latest
@@ -72,4 +99,21 @@ jobs:
       - name: Install just
         run: uv tool install rust-just==1.59.0
       - name: Bootstrap a generated project
-        run: uv run pytest tests/test_starter.py -m integration
+        run: uv run pytest packages/kmctl/tests/test_starter.py -m integration
+
+  # The required tests check. It waits for the three test jobs and fails
+  # unless each succeeded. It runs always(), because a job skipped after a
+  # job it needs failed would report as passing to the required check.
+  tests:
+    needs: [kmctl, kmaudit, repo]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check every test job succeeded
+        env:
+          KMCTL: ${{ needs.kmctl.result }}
+          KMAUDIT: ${{ needs.kmaudit.result }}
+          REPO: ${{ needs.repo.result }}
+        run: |
+          echo "kmctl: $KMCTL, kmaudit: $KMAUDIT, repo: $REPO"
+          [ "$KMCTL" = success ] && [ "$KMAUDIT" = success ] && [ "$REPO" = success ]

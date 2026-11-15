@@ -1,0 +1,141 @@
+{
+  "schema_version": "1.0",
+  "slug": "release-notes-hermes-reviewer-f2",
+  "stage": "done",
+  "attempts": 1,
+  "plan_rounds": 1,
+  "review_rounds": 2,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "0f1cd3cd1d400ded7d453ca867cc9df4242baa8723972055564bb7d9cca9cbe7",
+    "tree": "a92afbc01ca3699f00de7d332e6f7a3860cadcef",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": null,
+        "paths": [
+          ".okf/decisions/0035-kmctl-s-repository-answers-and-triages-with-hermes.md"
+        ]
+      }
+    ],
+    "at": "2026-11-15T05:38:22+00:00"
+  },
+  "ask": null,
+  "split": "j-20261115T050111+0000-e70be2e4",
+  "split_plan_hash": "b76dfecd715fa80aa1bf05016df0811828221361af03eb5d67f3221198c9d6bf",
+  "split_hold": false,
+  "commit_sha": "f8affcf7e4e125aef69d17d817dc8c562a12b0b3",
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": "/home/vscode/workspace.worktrees/release-notes-hermes-reviewer-f2",
+  "branch": "loop/release-notes-hermes-reviewer-f2",
+  "stamps": [
+    "81dab927a4613846f256fcf1417a0852c52934024770810eb4071c9184234b7a",
+    "0f1cd3cd1d400ded7d453ca867cc9df4242baa8723972055564bb7d9cca9cbe7"
+  ],
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/implementer",
+    "hash": "a4e57dd340b1a4fe5a7e51f958af909d1097f234d853266dc9582dfb276d0398",
+    "at": "2026-11-15T05:04:58+00:00"
+  },
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "A rewrite with a non-blank line under What changed that is neither a '- ' bullet nor indented under one, such as an intro paragraph before the first bullet or an unindented line after a bullet, fails the stray-line check, so the draft stands with a ::warning:: naming stray-line.",
+      "fails_when": "such a rewrite is kept, or the warning does not name stray-line",
+      "command": "uv run pytest tests/scripts/test_hermes_release_notes.py -k stray -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "An indented continuation line under a bullet is still joined and kept, and a draft whose What changed holds 'None.' passes when the rewrite keeps that line; every earlier check still behaves as before.",
+      "fails_when": "a continuation line or the draft's own 'None.' fails a rewrite, or any existing cleaning-script test fails",
+      "command": "uv run pytest tests/scripts/test_hermes_release_notes.py -q",
+      "judgment": false
+    }
+  ],
+  "resigns": [],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [],
+  "round": {
+    "kind": "review",
+    "n": 2,
+    "binds": "0f1cd3cd1d400ded7d453ca867cc9df4242baa8723972055564bb7d9cca9cbe7",
+    "started_at": "2026-11-15T05:38:27+00:00",
+    "passes": [
+      "reviewer"
+    ],
+    "tree": "a92afbc01ca3699f00de7d332e6f7a3860cadcef",
+    "plan_hash": "b76dfecd715fa80aa1bf05016df0811828221361af03eb5d67f3221198c9d6bf",
+    "eval_hash": "a4e57dd340b1a4fe5a7e51f958af909d1097f234d853266dc9582dfb276d0398",
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": true,
+    "outcome": "pass"
+  },
+  "plan_hash": "b76dfecd715fa80aa1bf05016df0811828221361af03eb5d67f3221198c9d6bf",
+  "intent": {
+    "epic": "monorepo-release",
+    "depends_on": [],
+    "priority": null
+  },
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-11-15T04:47:26+00:00",
+      "by": "promote"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-11-15T05:04:41+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-15T05:07:32+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-15T05:15:21+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-15T05:33:22+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-15T05:38:22+00:00",
+      "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-15T05:45:51+00:00",
+      "by": "done"
+    }
+  ],
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T05:45:51+00:00"
+}

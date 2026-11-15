@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "the edited bullet in ADR 0035 had a 104-character line in a paragraph wrapped near 72 columns",
+      "anchor": ".okf/decisions/0035-kmctl-s-repository-answers-and-triages-with-hermes.md:74",
+      "category": "nit",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "0f1cd3cd1d400ded7d453ca867cc9df4242baa8723972055564bb7d9cca9cbe7",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T05:45:23+00:00"
+}

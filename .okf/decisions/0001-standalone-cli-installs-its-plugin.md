@@ -87,3 +87,13 @@ as `kmctl/_skills`, for the briefing; the agents in `apm/.apm/agents` as
 `kmctl/_agents`, for the Antigravity and OpenCode agents `kmctl plugin
 patch` writes; and the rules in `apm/claude/.apm/instructions` as
 `kmctl/_rules`, for the OpenCode rules. The decision stands.
+
+## Correction, 2026-11-11
+
+The 2026-10-17 correction says `kmctl doctor` compares the `apm.yml`
+entry's `ref` with the CLI. It does not read that ref: `doctor.py` compares
+the ref APM resolved in `apm.lock.yaml` with this kmctl's version, as the
+first 2026-10-17 correction says.
+
+Found by the first `kmctl audit checks` run over the whole bundle
+([ADR 0038](0038-checks-are-step-data-that-kmctl-reruns-and-only-checks-that-notice-a-change-are-stored.md)).

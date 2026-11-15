@@ -1,0 +1,5 @@
+.mypy_cache/
+audit.toml
+.env
+results/probe/stringed-lists.json
+results

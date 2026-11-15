@@ -1,0 +1,125 @@
+##### CONFIG A {'max_iterations': '40', 'enabled_toolsets': '', 'disabled_toolsets': ''}
+=== draft v0.12.1 What changed:
+  D0: - Check a decision index entry against the record's corrected title (#47)
+  D1: - fix(release-notes): list pull requests that a sync merge brings in (#48)
+--- A v0.12.1 run 1: exit 0, KEPT; tools 16 ['terminal', 'terminal', 'terminal', 'search_files', 'terminal', 'search_files', 'terminal', 'search_files', 'terminal', 'search_files', 'terminal', 'terminal', 'terminal', 'terminal', 'terminal', 'terminal']; checkout changed: False
+  R0: - Check a decision index entry against the record's corrected title, so a wrong ADR number no longer flags the right entry (#47)
+  R1: - Release notes now list the pull requests a sync merge brings in, so changes merged on GitHub appear in the notes (#48)
+--- A v0.12.1 run 2: exit 0, KEPT; tools 7 ['terminal', 'search_files', 'terminal', 'search_files', 'terminal', 'terminal', 'read_file']; checkout changed: False
+  R0: - A decision record with the wrong ADR number in its title no longer fails the index check, which now suggests the corrected title (#47)
+  R1: - Release notes now list pull requests merged on GitHub (#48)
+--- A v0.12.1 run 3: exit 0, KEPT; tools 10 ['terminal', 'terminal', 'terminal', 'terminal', 'terminal', 'terminal', 'terminal', 'terminal', 'terminal', 'search_files']; checkout changed: False
+  R0: - Check a decision index entry against the record's corrected title, so a title with the wrong ADR number no longer flags the correct entry (#47)
+  R1: - Include pull requests merged on GitHub in the release notes, even when they arrive through a sync merge (#48)
+=== draft v0.12.0 What changed:
+  D0: - Add --draft to kmctl new decision (#42)
+  D1: - Say when kmctl --version prints the pinned release (#39)
+  D2: - Check that decision records carry their file's number (#43)
+  D3: - Fail kmctl check on a missing link target inside the bundle (#38)
+  D4: - Warn when the summary's checked.against names a missing concept (#40)
+  D5: - Add kmctl mv to rename or renumber a concept (#41)
+--- A v0.12.0 run 1: exit 0, KEPT; tools 12 ['terminal', 'search_files', 'terminal', 'read_file', 'search_files', 'terminal', 'search_files', 'read_file', 'terminal', 'search_files', 'terminal', 'terminal']; checkout changed: False
+  R0: - `kmctl new decision --draft` writes a decision with status draft, for a choice written down but not yet accepted (#42)
+  R1: - `kmctl --version` now says when it prints a project's pinned release, and which version is on PATH (#39)
+  R2: - `kmctl check` now fails when a decision's title or heading names an ADR number other than its file's (#43)
+  R3: - `kmctl check` now fails on a broken link inside `.okf/`, so a link to a renamed or deleted concept no longer passes CI (#38)
+  R4: - `kmctl check` now warns when the summary lists a concept that no longer exists, and `kmctl summary ack` drops deleted concepts from that list (#40)
+  R5: - `kmctl mv` renames or renumbers a concept and rewrites the links to it in `.okf/` and `docs/`, then lists the mentions it leaves for you to fix (#41)
+  REVERSAL? ['not yet']: - `kmctl new decision --draft` writes a decision with status draft, for a choice written down but not yet accepted (#42)
+--- A v0.12.0 run 2: exit 0, KEPT; tools 5 ['terminal', 'search_files', 'terminal', 'terminal', 'terminal']; checkout changed: False
+  R0: - Create a decision record as a draft with `kmctl new decision --draft` (#42)
+  R1: - `kmctl --version` now tells you when it prints the version your project's lock file pins, not the one on your PATH (#39)
+  R2: - `kmctl check` now fails when a decision record's number does not match its file name (#43)
+  R3: - `kmctl check` now fails on a link inside the bundle that points to a missing file (#38)
+  R4: - `kmctl check` now warns when the summary lists a concept the bundle no longer has (#40)
+  R5: - Rename or renumber a concept and update every link to it with `kmctl mv` (#41)
+--- A v0.12.0 run 3: exit 0, KEPT; tools 8 ['terminal', 'search_files', 'terminal', 'search_files', 'terminal', 'search_files', 'terminal', 'terminal']; checkout changed: False
+  R0: - Write a new decision record with `status: draft` using `kmctl new decision --draft` (#42)
+  R1: - See which release `kmctl --version` reports when `apm.lock.yaml` pins an older one (#39)
+  R2: - `kmctl check` now flags a decision record whose title or heading number doesn't match its file (#43)
+  R3: - `kmctl check` now fails when a link inside the bundle points to a missing concept (#38)
+  R4: - `kmctl check` now warns when the summary's `checked.against` names a concept that isn't in the bundle (#40)
+  R5: - Rename or renumber a concept and rewrite the links to it with `kmctl mv OLD NEW` (#41)
+=== draft v0.11.0 What changed:
+  D0: - A decision records that projects commit the files APM and kmctl plugin patch deploy and gitignore only apm_modules/. (`commit-apm-installs`)
+  D1: - Each GitHub Release carries notes built from main's history between its tag and the one before, from a template, instead of GitHub's pull-request list. (`release-notes`)
+  D2: - Pin the composite action's inner actions, and knowledge-audit.yml's, to commit SHAs and test the pins. (`action-pin-shas`)
+  D3: - The okf-bundle rule allows a draft decision status, as the schema and OKF v0.2 do, and says how a draft becomes stable. (`decision-draft-status`)
+  D4: - kmctl doctor warns instead of failing for a harness CLI this person may not use and for Antigravity trust it cannot see, and its project-scope run finds an old claude plugin enabled in the user settings file. (`doctor-correct-setups`)
+  D5: - kmctl init and update write the first decision only when .okf/decisions/ holds no decision record, not when no record has its title. (`first-decision-detect`)
+  D6: - Fix four things kmctl ships into consumer repositories (issues 20 to 23), the hook's install hint, the diagrams rule, the Antigravity rule comment and the block's rules folder. (`consumer-surfaces`)
+  D7: - kmctl review due decides source changed by commit order instead of committer dates, so squash and rebase merges keep a verification, and lists a verified concept or docs page whose own text changed after its verification (issues #17, #18). (`review-due-commit-order`)
+  D8: - Rename okf's MCP server okf-bundle to bundle so apm audit --ci passes its lockfile check, and give a frozen-install gate for the drift Antigravity's patch causes (issue #28). (`antigravity-apm-audit`)
+  D9: - License kmctl under MIT (#30)
+--- A v0.11.0 run 1: exit 0, KEPT; tools 10 ['terminal', 'terminal', 'read_file', 'terminal', 'terminal', 'terminal', 'terminal', 'terminal', 'terminal', 'terminal']; checkout changed: False
+  R0: - A new decision record states that projects commit the files APM and kmctl plugin patch deploy, and ignore only apm_modules/. (`commit-apm-installs`)
+  R1: - Each GitHub Release now gets notes built from the commits between its tag and the previous one, using a template, instead of GitHub's pull-request list. (`release-notes`)
+  R2: - The action and the knowledge-audit workflow now pin every action they use to a commit SHA, and tests keep those pins in place. (`action-pin-shas`)
+  R3: - The okf-bundle rule now allows a draft decision status, matching the schema and OKF v0.2, and explains how a draft becomes stable. (`decision-draft-status`)
+  R4: - kmctl doctor now warns instead of failing when a harness CLI is one you may not use or Antigravity trust cannot be read, and its project-scope run finds an old claude plugin still enabled in your user settings file. (`doctor-correct-setups`)
+  R5: - kmctl init and update now write the first decision only when .okf/decisions/ contains no decision record. (`first-decision-detect`)
+  R6: - kmctl now writes four things into your repository correctly: the hook's install hint, the diagrams rule, the Antigravity rule comment and the rules folder named in the CLAUDE.md/AGENTS.md block. (`consumer-surfaces`)
+  R7: - kmctl review due now decides whether a source changed by commit order instead of committer dates, so squash and rebase merges keep their verification, and it lists a verified concept or docs page whose own text changed after verification. (`review-due-commit-order`)
+  R8: - The okf MCP server is now named bundle instead of okf-bundle, so apm audit --ci passes its lockfile check, and a frozen-install check catches the drift Antigravity's patch causes. (`antigravity-apm-audit`)
+  R9: - kmctl is now licensed under MIT. (#30)
+--- A v0.11.0 run 2: exit 0, KEPT; tools 0 []; checkout changed: False
+  R0: - A new decision record says projects should commit the files APM and the kmctl plugin patch and deploy, and gitignore only `apm_modules/`. (`commit-apm-installs`)
+  R1: - Each GitHub Release now gets notes built from main's history between its tag and the previous tag, from a template, instead of GitHub's pull-request list. (`release-notes`)
+  R2: - The composite action and knowledge-audit.yml now pin their inner actions to commit SHAs, and tests check the pins. (`action-pin-shas`)
+  R3: - The okf-bundle rule now accepts a draft decision status, as the schema and OKF v0.2 do, and explains how a draft becomes stable. (`decision-draft-status`)
+  R4: - kmctl doctor now warns instead of failing for a harness CLI you may not use and for Antigravity trust it cannot see, and its project-scope run finds an old claude plugin enabled in your user settings file. (`doctor-correct-setups`)
+  R5: - kmctl init and update now write the first decision only when `.okf/decisions/` holds no decision record, not when no record has its title. (`first-decision-detect`)
+  R6: - Four fixes now reach the files kmctl ships into consumer repositories: the hook's install hint, the diagrams rule, the Antigravity rule comment and the block's rules folder. (`consumer-surfaces`)
+  R7: - kmctl review due now decides whether a source changed by commit order instead of committer dates, so squash and rebase merges keep a verification, and it lists a verified concept or docs page whose own text changed after its verification (issues #17, #18). (`review-due-commit-order`)
+  R8: - okf's MCP server okf-bundle is now named bundle, so `apm audit --ci` passes its lockfile check, and a frozen-install gate catches the drift Antigravity's patch causes (issue #28). (`antigravity-apm-audit`)
+  R9: - kmctl is now licensed under MIT (#30)
+--- A v0.11.0 run 3: exit 0, KEPT; tools 6 ['terminal', 'search_files', 'terminal', 'read_file', 'terminal', 'terminal']; checkout changed: False
+  R0: - A new decision says projects commit the files APM and the kmctl plugin deploy, and ignore only `apm_modules/`. (`commit-apm-installs`)
+  R1: - Each GitHub Release now carries notes built from the commits between its tag and the previous one, using a template, instead of GitHub's pull-request list. (`release-notes`)
+  R2: - The composite action and `knowledge-audit.yml` now pin every action they use to a commit SHA. (`action-pin-shas`)
+  R3: - Decision records can now be marked as drafts, and the rule explains what turns a draft into a stable decision. (`decision-draft-status`)
+  R4: - `kmctl doctor` now warns instead of failing when a harness CLI isn't installed or when it can't see Antigravity's trust settings, and a project-scope run now finds an old claude plugin enabled in your user settings. (`doctor-correct-setups`)
+  R5: - `kmctl init` and `update` now add the first decision only when `.okf/decisions/` holds no decision record at all, so a record under a different title no longer gets a duplicate. (`first-decision-detect`)
+  R6: - Four things kmctl installs into your repository are fixed: the hook's install hint, the diagrams rule, the Antigravity rule comment and the location of the block's rules folder. (`consumer-surfaces`)
+  R7: - `kmctl review due` now compares commits instead of committer dates, so squash and rebase merges keep a verification, and it lists a verified concept or docs page whose own text changed after it was verified. (`review-due-commit-order`)
+  R8: - The bundle's MCP server is now named `bundle`, so `apm audit --ci` passes its lockfile check, and a new frozen-install check catches the drift Antigravity's patch causes. (`antigravity-apm-audit`)
+  R9: - kmctl is now licensed under MIT. (#30)
+=== draft v0.10.0 What changed:
+  D0: - kmctl stops shipping the PostToolUse summary nudge for all three harnesses and goes back to one hook, the session briefing. (`drop-summary-nudge`)
+--- A v0.10.0 run 1: exit 0, KEPT; tools 0 []; checkout changed: False
+  R0: - kmctl now runs only the session briefing hook, so the PostToolUse summary nudge no longer appears in any harness. (`drop-summary-nudge`)
+--- A v0.10.0 run 2: exit 0, KEPT; tools 0 []; checkout changed: False
+  R0: - kmctl now installs a single hook, the session briefing, and no longer adds the PostToolUse summary nudge to any harness. (`drop-summary-nudge`)
+--- A v0.10.0 run 3: exit 0, KEPT; tools 6 ['terminal', 'search_files', 'search_files', 'terminal', 'terminal', 'terminal']; checkout changed: False
+  R0: - kmctl now has one hook, the session briefing at the start of a session; the reminder it added after tool calls in Claude Code, Antigravity and OpenCode is gone, so tool calls no longer wait on kmctl. (`drop-summary-nudge`)
+=== draft v0.9.0 What changed:
+  D0: - Deferred hardening from verify-verb, reviewer finding f4 in review round 1. (`verify-verb-reviewer-f4`)
+  D1: - Deferred hardening from verify-verb, reviewer finding f6 in review round 3. (`verify-verb-reviewer-f6`)
+  D2: - The bundle's summary distils what the knowledge says and keeps a whole view of the project, rather than listing the decisions, which the indexes do. (`okf-summary-holistic`)
+  D3: - Deferred hardening from apm-distribution, reviewer finding f1 in review round 1. (`apm-distribution-reviewer-f1`)
+  D4: - Right after the agent changes a concept in .okf/, a Claude Code PostToolUse hook asks it to update .okf/summary.md or ack it as still right. (`okf-summary-nudge`)
+  D5: - Antigravity and OpenCode get the summary nudge right after a tool call changes a concept, through agy's PostToolUse hook and OpenCode's execute.after plugin hook. (`okf-summary-nudge-agy-opencode`)
+--- A v0.9.0 run 1: exit 0, KEPT; tools 4 ['search_files', 'search_files', 'search_files', 'terminal']; checkout changed: False
+  R0: =
+  R1: =
+  R2: - The bundle summary now gives you the whole picture of what the knowledge says instead of repeating the decisions, which the indexes already list. (`okf-summary-holistic`)
+  R3: =
+  R4: - In Claude Code, a hook now asks the agent to update `.okf/summary.md` — or confirm it is still accurate — as soon as it changes a concept in `.okf/`. (`okf-summary-nudge`)
+  R5: - The same prompt to refresh the summary now also works in Antigravity and OpenCode, through agy's PostToolUse hook and OpenCode's execute.after plugin hook. (`okf-summary-nudge-agy-opencode`)
+--- A v0.9.0 run 2: exit 0, KEPT; tools 0 []; checkout changed: False
+  R0: =
+  R1: =
+  R2: - The bundle summary now gives you the gist of what the knowledge says and a whole view of the project, while the indexes list the decisions. (`okf-summary-holistic`)
+  R3: =
+  R4: - In Claude Code, the agent is now asked to update .okf/summary.md, or confirm it is still correct, right after it changes a concept in .okf/. (`okf-summary-nudge`)
+  R5: - Antigravity and OpenCode now get the same summary reminder right after a tool call changes a concept. (`okf-summary-nudge-agy-opencode`)
+--- A v0.9.0 run 3: exit 0, KEPT; tools 0 []; checkout changed: False
+  R0: =
+  R1: =
+  R2: - The bundle summary now gives a whole view of the project and distils what the knowledge says, instead of listing the decisions the way the indexes do. (`okf-summary-holistic`)
+  R3: =
+  R4: - As soon as the agent changes a concept in .okf/, a Claude Code hook asks it to update .okf/summary.md or confirm the summary is still right. (`okf-summary-nudge`)
+  R5: - Antigravity and OpenCode now get the summary nudge as soon as a tool call changes a concept. (`okf-summary-nudge-agy-opencode`)
+===== SUMMARY
+A {'max_iterations': '40', 'enabled_toolsets': '', 'disabled_toolsets': ''}: kept 15/15; failures {}; runs using tools 10; runs changing checkout 0; flagged reversal bullets 1
+B {'max_iterations': '3', 'enabled_toolsets': '', 'disabled_toolsets': 'browser,clarify,code_execution,delegation,file,memory,project,session_search,skills,terminal,todo,tts,web,vision'}: kept 15/15; failures {}; runs using tools 0; runs changing checkout 0; flagged reversal bullets 0

@@ -1,0 +1,74 @@
+--- A default mode, same `fixtures` name, duplicate test basenames | paths=(none, rootdir recursion) exit=2
+--- A default mode, same `fixtures` name, duplicate test basenames | paths=['tests', 'packages/kmaudit/tests'] exit=2
+=== clean=no
+    ERROR packages/kmaudit/tests/test_audit.py
+    ERROR packages/kmaudit/tests/test_cli.py
+    !!!!!!!!!!!!!!!!!!! Interrupted: 2 errors during collection !!!!!!!!!!!!!!!!!!!!
+    2 errors in 0.04s
+   > import file mismatch:
+   > import file mismatch:
+
+--- B default mode, same `fixtures` name, unique test basenames | paths=(none, rootdir recursion) exit=1
+--- B default mode, same `fixtures` name, unique test basenames | paths=['tests', 'packages/kmaudit/tests'] exit=1
+=== clean=no
+    FAILED packages/kmaudit/tests/test_kmaudit_audit.py::test_owner - AssertionEr...
+    FAILED packages/kmaudit/tests/test_kmaudit_cli.py::test_owner - AssertionErro...
+    FAILED packages/kmaudit/tests/test_only_kmaudit.py::test_x - AssertionError: ...
+    3 failed, 2 passed in 0.02s
+   > >       assert OWNER == 'kmaudit' and make_repo() == 'kmaudit' and who == 'kmaudit'
+   > E       AssertionError: assert ('kmctl' == 'kmaudit'
+   > packages/kmaudit/tests/test_kmaudit_audit.py:4: AssertionError
+   > >       assert OWNER == 'kmaudit' and make_repo() == 'kmaudit' and who == 'kmaudit'
+   > E       AssertionError: assert ('kmctl' == 'kmaudit'
+   > packages/kmaudit/tests/test_kmaudit_cli.py:4: AssertionError
+   > >   def test_x(): assert OWNER == 'kmaudit'
+   > E   AssertionError: assert 'kmctl' == 'kmaudit'
+   > packages/kmaudit/tests/test_only_kmaudit.py:3: AssertionError
+   > FAILED packages/kmaudit/tests/test_kmaudit_audit.py::test_owner - AssertionEr...
+   > FAILED packages/kmaudit/tests/test_kmaudit_cli.py::test_owner - AssertionErro...
+   > FAILED packages/kmaudit/tests/test_only_kmaudit.py::test_x - AssertionError: ...
+
+--- C default mode, renamed `kmaudit_fixtures`, unique test basenames | paths=(none, rootdir recursion) exit=0
+--- C default mode, renamed `kmaudit_fixtures`, unique test basenames | paths=['tests', 'packages/kmaudit/tests'] exit=0
+=== clean=yes
+    .....                                                                    [100%]
+    5 passed in 0.00s
+--- D default mode, renamed `kmaudit_fixtures`, duplicate test basenames | paths=(none, rootdir recursion) exit=2
+--- D default mode, renamed `kmaudit_fixtures`, duplicate test basenames | paths=['tests', 'packages/kmaudit/tests'] exit=2
+=== clean=no
+    ERROR packages/kmaudit/tests/test_audit.py
+    ERROR packages/kmaudit/tests/test_cli.py
+    !!!!!!!!!!!!!!!!!!! Interrupted: 2 errors during collection !!!!!!!!!!!!!!!!!!!!
+    2 errors in 0.05s
+   > import file mismatch:
+   > import file mismatch:
+
+--- E default mode, kmaudit tests/ is a package (__init__.py), relative fixtures import, duplicate basenames | paths=(none, rootdir recursion) exit=0
+--- E default mode, kmaudit tests/ is a package (__init__.py), relative fixtures import, duplicate basenames | paths=['tests', 'packages/kmaudit/tests'] exit=0
+=== clean=yes
+    .....                                                                    [100%]
+    5 passed in 0.00s
+--- F --import-mode=importlib, nothing else changed, duplicate basenames | paths=(none, rootdir recursion) exit=2
+--- F --import-mode=importlib, nothing else changed, duplicate basenames | paths=['tests', 'packages/kmaudit/tests'] exit=2
+=== clean=no
+    ERROR packages/kmaudit/tests/test_cli.py
+    ERROR packages/kmaudit/tests/test_only_kmaudit.py
+    !!!!!!!!!!!!!!!!!!! Interrupted: 5 errors during collection !!!!!!!!!!!!!!!!!!!!
+    5 errors in 0.04s
+   > ImportError while importing test module '/tmp/tmp69lstwis/tests/test_audit.py'.
+   > E   ModuleNotFoundError: No module named 'fixtures'
+   > ImportError while importing test module '/tmp/tmp69lstwis/tests/test_cli.py'.
+   > E   ModuleNotFoundError: No module named 'fixtures'
+   > ImportError while importing test module '/tmp/tmp69lstwis/packages/kmaudit/tests/test_audit.py'.
+   > E   ModuleNotFoundError: No module named 'kmaudit_fixtures'
+   > ImportError while importing test module '/tmp/tmp69lstwis/packages/kmaudit/tests/test_cli.py'.
+   > E   ModuleNotFoundError: No module named 'kmaudit_fixtures'
+   > ImportError while importing test module '/tmp/tmp69lstwis/packages/kmaudit/tests/test_only_kmaudit.py'.
+   > E   ModuleNotFoundError: No module named 'kmaudit_fixtures'
+
+--- G --import-mode=importlib + pythonpath adds both tests dirs, renamed `kmaudit_fixtures`, duplicate basenames | paths=(none, rootdir recursion) exit=0
+--- G --import-mode=importlib + pythonpath adds both tests dirs, renamed `kmaudit_fixtures`, duplicate basenames | paths=['tests', 'packages/kmaudit/tests'] exit=0
+=== clean=yes
+    .....                                                                    [100%]
+    5 passed in 0.00s
+pytest 9.1.1

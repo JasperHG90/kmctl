@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "release-notes-hermes",
+  "n": 1,
+  "command": "bash -ic python3 /tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-hermes/spike.py \"$PWD\"",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-hermes/spike.py",
+      "copy": "files/spike.py"
+    }
+  ],
+  "where": "worktree",
+  "head": "221c23a601bfc83826b0a3249179abf5413deb9a",
+  "fingerprint": "daa356d14fe747c5a3e85519258c4482eba25a2df7c2d286882684e5793f071d",
+  "started_at": "2026-11-14T19:47:37+00:00",
+  "finished_at": "2026-11-14T19:48:52+00:00",
+  "duration_seconds": 75.225,
+  "timeout_seconds": 900.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "moved_from": null
+}

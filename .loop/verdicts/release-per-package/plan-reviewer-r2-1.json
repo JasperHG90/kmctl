@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "The late-commit check is now in O4 (the bump commit and pull request body carry a Drafted-From trailer) and O5 (release-tag finds the drafted commit and names late commits in a warning and step summary). Eval rows r4 and r5 test both.",
+      "anchor": ".loop/plans/release-per-package/README.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r5"
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "The notes file no longer carries a marker. The drafted commit is the bump commit's parent on release/TAG, or the Drafted-From trailer on a squash merge. Hermes' cleaning and a human edit cannot touch either.",
+      "anchor": ".loop/plans/release-per-package/README.md",
+      "category": "design",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r5"
+    },
+    {
+      "id": "p3",
+      "disposition": "resolved",
+      "claim": "VERSION starts at 0.1.0.dev0. scripts/release.py compare checks for a .dev version before it checks for an empty OLD (release.py:234-237), so the landing push gets skip. The first release passes --version 0.1.0, which next_release_version already requires when no tag exists, and 0.1.0 compares as raised against 0.1.0.dev0. O1 and r1 test this.",
+      "anchor": "scripts/release.py:234",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "b820da51e625c7a4c1d68a1b4b9e0f7c233efd8f5235387c45bb506e01ab3862"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T17:54:27+00:00"
+}

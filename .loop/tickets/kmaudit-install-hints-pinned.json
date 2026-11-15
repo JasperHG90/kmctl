@@ -1,0 +1,195 @@
+{
+  "schema_version": "1.0",
+  "slug": "kmaudit-install-hints-pinned",
+  "stage": "done",
+  "attempts": 2,
+  "plan_rounds": 1,
+  "review_rounds": 4,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 1,
+  "blocker": null,
+  "fix": {
+    "round": 3,
+    "fingerprint": "b387347cf04d8ec14715682c32d5d38b5d91b3fa5cae08266e3aa6108a344b63",
+    "tree": "e0f7350eb10b427067e7e3b7b0b643219f350c46",
+    "decisions": [
+      {
+        "finding": "reviewer:f3",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": null,
+        "paths": [
+          "tests/scripts/test_release.py"
+        ]
+      }
+    ],
+    "at": "2026-11-15T08:37:49+00:00"
+  },
+  "ask": null,
+  "split": "j-20261115T054225+0000-e408492d",
+  "split_plan_hash": "ca1c39750f3413a9c06736ceddc667346614d269d6c528c174b1a141416b203b",
+  "split_hold": false,
+  "commit_sha": "5dc0a18bb1c3f5ee20982ba79998e29db0e45ec9",
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": "/home/vscode/workspace.worktrees/kmaudit-install-hints-pinned",
+  "branch": "loop/kmaudit-install-hints-pinned",
+  "stamps": [
+    "9fbdc4d4bb3b5c4b3837006ebaa090fc68ee4f14415755505775ba199a4774b0",
+    "2bd097ffdc6a89e2c4668d63b6f473eb5c8c565137b79f1956c0bfa86f819d59",
+    "7d01e3e632911497851df3a0b0f2e465c809c4a785e9d1d3ca0953c5de47097c",
+    "1fc3260938e60a2d2e9f3c3f6a14d65cd620672133c65386484d8909d4ff57d1",
+    "b387347cf04d8ec14715682c32d5d38b5d91b3fa5cae08266e3aa6108a344b63"
+  ],
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/implementer",
+    "hash": "a048e0b5c439ed519c4f1fdf5f7eec5e41f61d78bd743c412389cf3ee68784af",
+    "at": "2026-11-15T05:46:31+00:00"
+  },
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "kmaudit builds its install hint from its installed version: a release or pre-release version names its kmaudit-vX.Y.Z tag with #subdirectory=packages/kmaudit, a dev or local version names no ref, and extras go in the requirement, so the tracing refusal asks for kmaudit[tracing]; steps.py, judge.py, check_verbs.py and ui.py use it.",
+      "fails_when": "a release version's hint lacks its tag, a dev version's names one, the tracing refusal leaves out the extra, or a hand-written INSTALL string remains",
+      "command": "uv run pytest packages/kmaudit/tests/test_judge.py packages/kmaudit/tests/test_claims_steps.py -k install -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "release.py set --package kmaudit pins kmaudit's README install line and the tracing line in packages/kmaudit/docs/commands.md to the release tag, and refuses, writing nothing, when either line is missing; the Release run's kmaudit bump stages docs/commands.md.",
+      "fails_when": "either line keeps an old ref, a missing line is not refused or something is written anyway, or the bump leaves docs/commands.md out",
+      "command": "uv run pytest tests/scripts/test_release.py tests/scripts/test_workflows.py -k kmaudit -q",
+      "judgment": false
+    }
+  ],
+  "resigns": [],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [
+    {
+      "edge": "blocked->ready",
+      "reason": "one docs nit left at the review cap: a test docstring rewrapped to match what the test checks",
+      "by": "delegated:jasperginn@gmail.com/implementer",
+      "at": "2026-11-15T08:38:06+00:00"
+    }
+  ],
+  "round": {
+    "kind": "review",
+    "n": 4,
+    "binds": "b387347cf04d8ec14715682c32d5d38b5d91b3fa5cae08266e3aa6108a344b63",
+    "started_at": "2026-11-15T08:41:56+00:00",
+    "passes": [
+      "reviewer"
+    ],
+    "tree": "e0f7350eb10b427067e7e3b7b0b643219f350c46",
+    "plan_hash": "ca1c39750f3413a9c06736ceddc667346614d269d6c528c174b1a141416b203b",
+    "eval_hash": "a048e0b5c439ed519c4f1fdf5f7eec5e41f61d78bd743c412389cf3ee68784af",
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": true,
+    "outcome": "pass"
+  },
+  "plan_hash": "ca1c39750f3413a9c06736ceddc667346614d269d6c528c174b1a141416b203b",
+  "intent": {
+    "epic": "monorepo-release",
+    "depends_on": [
+      "release-per-package"
+    ],
+    "priority": null
+  },
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-11-15T05:42:23+00:00",
+      "by": "promote"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-11-15T05:45:09+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-15T07:52:21+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-15T08:05:51+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-15T08:13:24+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-15T08:17:23+00:00",
+      "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-15T08:22:00+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-15T08:25:47+00:00",
+      "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-15T08:33:50+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "blocked",
+      "at": "2026-11-15T08:37:49+00:00",
+      "by": "review fixed"
+    },
+    {
+      "from": "blocked",
+      "to": "ready",
+      "at": "2026-11-15T08:38:06+00:00",
+      "by": "unblock"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-15T08:38:14+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-15T08:41:54+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-15T08:50:00+00:00",
+      "by": "done"
+    }
+  ],
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T08:50:00+00:00"
+}

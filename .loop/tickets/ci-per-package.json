@@ -1,0 +1,144 @@
+{
+  "schema_version": "1.0",
+  "slug": "ci-per-package",
+  "stage": "done",
+  "attempts": 1,
+  "plan_rounds": 2,
+  "review_rounds": 1,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": null,
+  "ask": "j-20261114T171913+0000-6d6b52c3",
+  "split": "j-20261114T175025+0000-804f4b89",
+  "split_plan_hash": "c53cfd048d85784dc3d4f9ada3ba5efe3aab0029f76b393cc9bc9741c2276bb3",
+  "split_hold": false,
+  "commit_sha": "e52af759b86fe0303ed94799145d3023b2d35ffc",
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": "/home/vscode/workspace.worktrees/ci-per-package",
+  "branch": "loop/ci-per-package",
+  "stamps": [
+    "7bf51f70375c8294dfefe15c4431d3308dbfc8253e02930468584bb7b96fa834"
+  ],
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "4f563484fdb94c814d1cceb39a238e62a30ddd914a2e085c52fc75061bfcc113",
+    "at": "2026-11-14T17:50:58+00:00"
+  },
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "ci.yml is named CI and runs prek, then knowledge, then the kmctl, kmaudit, repo and starter jobs, each test job running pytest with markers not integration in its own directory (packages/kmctl/tests, packages/kmaudit/tests, tests); the kmctl job installs just before pytest, and the starter job runs packages/kmctl/tests/test_starter.py -m integration.",
+      "fails_when": "the name is not CI, a job is missing, the needs order differs, a test job runs the wrong directory or drops the not integration marker, the kmctl job runs pytest before installing just, or the starter job runs any other path",
+      "command": "uv run pytest tests/test_ci.py tests/scripts/test_workflows.py -k 'per_package or install_just or starter_job' -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "A tests job needs kmctl, kmaudit and repo, runs if: always(), and fails unless every one succeeded; prek, knowledge and tests carry no name:, so the ruleset's required checks prek, knowledge and tests keep reporting.",
+      "fails_when": "the tests job is missing, lacks always(), passes when one of the three failed or was skipped, or prek, knowledge or tests has a name:",
+      "command": "uv run pytest tests/test_ci.py -k aggregate -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "Collecting each CI test job's directory on its own gives counts that sum to what the loop's tests gate (uv run pytest at the root) collects; the per-job test ids do not overlap and together equal the gate's ids; each job collects at least one test, and both packages/kmctl and packages/kmaudit appear.",
+      "fails_when": "the per-job counts do not sum to the gate's count, a test id is in two jobs or in none, a job collects nothing, or a package is missing",
+      "command": "uv run pytest tests/test_ci.py -k partition -q",
+      "judgment": false
+    }
+  ],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+      "reason": "plan round 1: just and the starter job follow test_starter.py into packages/kmctl, the aggregate tests job is part of O1, the partition check counts per job",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r1": [
+            "behavior",
+            "fails_when",
+            "command"
+          ],
+          "r2": [
+            "behavior",
+            "fails_when"
+          ],
+          "r3": [
+            "behavior",
+            "fails_when"
+          ]
+        }
+      },
+      "at": "2026-11-14T17:50:58+00:00"
+    }
+  ],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [],
+  "round": {
+    "kind": "review",
+    "n": 1,
+    "binds": "7bf51f70375c8294dfefe15c4431d3308dbfc8253e02930468584bb7b96fa834",
+    "started_at": "2026-11-14T21:00:59+00:00",
+    "passes": [
+      "reviewer"
+    ],
+    "tree": "5ff06244999808951ec10f95427d9505f4b0fadf",
+    "plan_hash": "c53cfd048d85784dc3d4f9ada3ba5efe3aab0029f76b393cc9bc9741c2276bb3",
+    "eval_hash": "4f563484fdb94c814d1cceb39a238e62a30ddd914a2e085c52fc75061bfcc113",
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": true,
+    "outcome": "pass"
+  },
+  "plan_hash": "c53cfd048d85784dc3d4f9ada3ba5efe3aab0029f76b393cc9bc9741c2276bb3",
+  "intent": {
+    "epic": null,
+    "depends_on": [],
+    "priority": null
+  },
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-11-14T17:21:46+00:00",
+      "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-11-14T17:52:24+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-14T20:53:43+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-14T21:00:57+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-14T21:02:48+00:00",
+      "by": "done"
+    }
+  ],
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T21:02:48+00:00"
+}

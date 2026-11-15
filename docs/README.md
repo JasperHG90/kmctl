@@ -6,5 +6,5 @@ page's title and `description`.
 
 - [Tutorials](tutorials/README.md): lessons that build something in one sitting.
 - [How-to guides](how-to/README.md): one task each.
-- [Reference](reference/README.md): the commands and their options.
+- [Reference](reference/README.md): kmctl's and kmaudit's commands and their options.
 - [Explanation](explanation/README.md): why kmctl is shaped the way it is.

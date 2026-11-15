@@ -11,10 +11,18 @@ from scripts.hermes_triage import MAX_CHARS, allowed_labels, cut, parse
 ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW = ROOT / ".github" / "workflows" / "hermes-issue-triage.yaml"
 PROMPT = ROOT / ".github" / "prompts" / "issue-triage-system.md"
-AREAS = ["src", "action", "apm", "starter", "tests", "scripts", "docs", "okf", "ci"]
-TRAILER = (
-    '<!-- hermes-triage: {"priority":"high","labels":["bug","area/src","made-up"]} -->'
-)
+AREAS = [
+    "packages",
+    "action",
+    "apm",
+    "starter",
+    "tests",
+    "scripts",
+    "docs",
+    "okf",
+    "ci",
+]
+TRAILER = '<!-- hermes-triage: {"priority":"high","labels":["bug","area/packages","made-up"]} -->'
 
 
 def test_cut_keeps_a_long_comment_within_800_characters_at_a_line_break() -> None:
@@ -42,7 +50,7 @@ def test_parse_strips_the_trailer_and_returns_allowed_labels() -> None:
 
     assert "hermes-triage" not in comment
     assert comment == "### Summary\nA bug."
-    assert labels == ["priority/high", "bug", "area/src"]
+    assert labels == ["priority/high", "bug", "area/packages"]
 
 
 def test_parse_cuts_the_comment_after_removing_the_trailer() -> None:
@@ -52,7 +60,7 @@ def test_parse_cuts_the_comment_after_removing_the_trailer() -> None:
     comment, labels = parse(f"{long}\n{TRAILER}", AREAS)
 
     assert len(comment) <= MAX_CHARS
-    assert labels == ["priority/high", "bug", "area/src"]
+    assert labels == ["priority/high", "bug", "area/packages"]
 
 
 def test_parse_without_a_trailer_returns_no_labels() -> None:
@@ -78,11 +86,11 @@ def test_the_triage_prompt_asks_for_under_200_tokens() -> None:
 
 
 def test_triage_areas_match_kmctl_s_top_level_folders() -> None:
-    """Each area is a top-level folder, except okf (.okf/) and ci (.github/)."""
+    """Each area is a top-level folder, except okf (.okf/), ci (.github/) and apm (packages/kmctl/apm/, ADR 0045)."""
     env = yaml.safe_load(WORKFLOW.read_text())["jobs"]["triage"]["env"]
     areas = env["TRIAGE_AREAS"].split()
 
     assert areas == AREAS
-    folders = {"okf": ".okf", "ci": ".github"}
+    folders = {"okf": ".okf", "ci": ".github", "apm": "packages/kmctl/apm"}
     for area in areas:
         assert (ROOT / folders.get(area, area)).is_dir(), area

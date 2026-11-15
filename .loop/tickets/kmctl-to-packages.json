@@ -1,0 +1,198 @@
+{
+  "schema_version": "1.0",
+  "slug": "kmctl-to-packages",
+  "stage": "done",
+  "attempts": 1,
+  "plan_rounds": 4,
+  "review_rounds": 1,
+  "extra_plan_rounds": 1,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "261e99c2e676c50ee4c9c2f765ac5baa41768703ee4deffcb527097ff8b69ab5",
+    "tree": "61361ef0d1422d549cb869be26004dc0a49d248f",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "cleared-unreviewed",
+        "by": "fallback",
+        "judgement": "j-20261114T204956+0000-5930215a",
+        "paths": [
+          "tests/conftest.py"
+        ]
+      }
+    ],
+    "at": "2026-11-14T20:49:56+00:00"
+  },
+  "ask": "j-20261114T171913+0000-6d6b52c3",
+  "split": "j-20261114T195622+0000-bcf13a84",
+  "split_plan_hash": "97efc292a06a3688bd249ce74fe0a35115c061c958ca07658a64d85ab9697e5c",
+  "split_hold": false,
+  "commit_sha": "647ff9ed975cee2b88bd4fb6ef2534898c5dd393",
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": "/home/vscode/workspace.worktrees/kmctl-to-packages",
+  "branch": "loop/kmctl-to-packages",
+  "stamps": [
+    "1967960450a15cb2fd6c60f6a838ec971a7cb7ebd14044692dcce5ddcac57d15",
+    "261e99c2e676c50ee4c9c2f765ac5baa41768703ee4deffcb527097ff8b69ab5"
+  ],
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "d066b171f65c36a13ac67b5c116964040d129613f746f975a04e8dc749474d0f",
+    "at": "2026-11-14T19:49:06+00:00"
+  },
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "The root pyproject.toml is a virtual uv workspace root ([tool.uv] package = false, members packages/*, both members workspace sources in the dev group) and kmctl's own pyproject.toml lives in packages/kmctl.",
+      "fails_when": "the root declares an installable package, a member is missing from the workspace or dev group, or src/kmctl still exists at the root",
+      "command": "uv run pytest tests/test_workspace_layout.py -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "`uv build --package kmctl` (wheel built from the sdist) and `uv build --wheel --package kmctl` each give a wheel at apm/apm.yml's version holding _skills, _agents and _rules that scripts/check_wheel.py and scripts/smoke_wheel.py accept.",
+      "fails_when": "either build fails, a wheel's version differs from apm/apm.yml, a folder is missing, or check_wheel or smoke_wheel refuses it",
+      "command": "uv run pytest tests/scripts/test_check_wheel.py -m integration -k package_build -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "One root `uv run pytest -m 'not integration'` collects the root tests/, packages/kmctl/tests and packages/kmaudit/tests with no collection error, and they pass.",
+      "fails_when": "a collection error, a tree collects nothing, or a test fails",
+      "command": "uv run pytest -m 'not integration' -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "The pin hand-off adds #subdirectory=packages/kmctl only for refs newer than v0.12.1, for the command and the not-installed notice; the starter renders kmctl_src the same way.",
+      "fails_when": "a ref at or below v0.12.1 gets the fragment, or a newer ref lacks it",
+      "command": "uv run pytest packages/kmctl/tests -k subdirectory -q",
+      "judgment": false
+    },
+    {
+      "id": "r5",
+      "behavior": "Every install line and hint (README, docs, hooks.json, HOOK_INSTALL, release-notes template, action.yml) installs kmctl from packages/kmctl, and `scripts/release.py set` keeps the fragment.",
+      "fails_when": "any install line for a post-move release lacks #subdirectory=packages/kmctl, action.yml installs from the root, or release.py set drops the fragment",
+      "command": "uv run pytest tests packages/kmctl/tests -k install_subdirectory -q",
+      "judgment": false
+    },
+    {
+      "id": "r6",
+      "behavior": "No .okf source, docs page or local rule cites src/kmctl or the old root tests path, and ADR 0044 records the move.",
+      "fails_when": "kmctl check or the strict OKF validation fails, a cited path does not exist, or there is no ADR 0044",
+      "command": "uv run kmctl check",
+      "judgment": false
+    }
+  ],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+      "reason": "plan review r1: r5 now also searches packages/kmctl/tests, where the moved docs, repo-name and starter tests land",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r5": [
+            "command"
+          ]
+        }
+      },
+      "at": "2026-11-14T19:49:06+00:00"
+    }
+  ],
+  "accepted_risks": [
+    {
+      "risk_hash": "0ca3109decabc459c522a940d4fc7a0fd71d4cfbddc920c7edeb78b3e5c6b24f",
+      "reason": "users upgrade the CLI before pinning a post-move release",
+      "by": "human:jasperginn@gmail.com",
+      "at": "2026-11-14T19:43:10+00:00"
+    }
+  ],
+  "waivers": [],
+  "overrides": [
+    {
+      "edge": "plan-cap",
+      "reason": "operator said to unblock; p6 (tree_repo runs release.py set on its copy) and p7 (real uvx hand-off pins the test-only tag) are fixed in the plan",
+      "by": "delegated:jasperginn@gmail.com/agent",
+      "at": "2026-11-14T20:04:52+00:00"
+    }
+  ],
+  "round": {
+    "kind": "review",
+    "n": 1,
+    "binds": "1967960450a15cb2fd6c60f6a838ec971a7cb7ebd14044692dcce5ddcac57d15",
+    "started_at": "2026-11-14T20:37:49+00:00",
+    "passes": [
+      "reviewer"
+    ],
+    "tree": "c89aca508f1739c040175cb200237c2ff291db14",
+    "plan_hash": "97efc292a06a3688bd249ce74fe0a35115c061c958ca07658a64d85ab9697e5c",
+    "eval_hash": "d066b171f65c36a13ac67b5c116964040d129613f746f975a04e8dc749474d0f",
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": true,
+    "outcome": "fail"
+  },
+  "plan_hash": "97efc292a06a3688bd249ce74fe0a35115c061c958ca07658a64d85ab9697e5c",
+  "intent": {
+    "epic": null,
+    "depends_on": [],
+    "priority": null
+  },
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-11-14T17:22:48+00:00",
+      "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "blocked",
+      "at": "2026-11-14T19:56:09+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "blocked",
+      "to": "ready",
+      "at": "2026-11-14T20:06:31+00:00",
+      "by": "unblock"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-14T20:06:34+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-14T20:37:47+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-14T20:44:28+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "done",
+      "at": "2026-11-14T20:50:14+00:00",
+      "by": "done"
+    }
+  ],
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T20:50:14+00:00"
+}

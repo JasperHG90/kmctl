@@ -180,3 +180,113 @@
 
 - Added `decisions/0035-kmctl-s-repository-answers-and-triages-with-hermes` with `kmctl new decision`.
 - Wrote `decisions/0035-kmctl-s-repository-answers-and-triages-with-hermes` and added the Hermes workflows to `architecture/overview`.
+
+## 2026-11-05
+
+- Added `prototypes/audit-agent` with `kmctl new prototype`.
+- Measured claim extraction in `prototypes/audit-agent`: a gold set, three prompt variants and their scores.
+- Reran v0 and v1 in `prototypes/audit-agent` with the prompt-hashed cache; recorded the run-to-run spread.
+- Recorded the 2026-11-07/08 optimisation round in `prototypes/audit-agent`: Clef checkability, confirmations, second opinions, 120 random labelled claims, and what was tried and dropped.
+- Moved the audit-agent label files and scoring scripts into `prototypes/audit-agent` (`labels/`, `scripts/`), and listed partly claims whose code changed under "Look at first".
+- Traced purpose claims first in `prototypes/audit-agent` and refreshed its stale labels.
+- Added a switch in `prototypes/audit-agent` that reports text a later correction replaces as a warning.
+
+## 2026-11-08
+
+- Added `prototypes/audit-cli`: the audit agent's steps up to claims as a Typer CLI with an audit.toml and a per-project SQLite database.
+- Cut `prototypes/audit-cli` down to `audit claims extract|diff PATH` (a bundle or one concept file), with a progress bar and structlog JSON logs per project.
+- Dropped the third (Flash) run from `prototypes/audit-cli`'s defaults, and made `audit init` write a generic OpenAI-compatible setup with no model.
+- Gave `prototypes/audit-cli`'s extractor a reason per verdict and examples with near misses per kind, stored the reasons, and scored five prompt variants on the gold set (`scripts/gold_compare.py`): the old prompt still has the best recall.
+- Moved `prototypes/audit-cli`'s schema changes to Alembic revisions, added `audit claims list`, made config errors name the setting, and switched its own runs to DeepSeek.
+- Added a corrections pass to `prototypes/audit-cli` (links each correction to the sentences and claims it overturns), reduced telemetry to an on/off switch over LangSmith's own variables, and scored the prompts on DeepSeek: the CLI's prompt reached 99.3 recall merged.
+- Made `prototypes/audit-cli` count an answer that leaves a sentence without a verdict as failed, not as a section with no claims: 20 of 260 saved gold answers were empty, which explains the low single-run recall.
+- Piloted settling `prototypes/audit-cli` claims without a model (`scripts/settle_claims.py`): 8 of 187 settled, all correct; every anchor located for 125 of 135.
+- Piloted turning `prototypes/audit-cli` claims into checks a model writes once and runs free after (`src/audit_cli/checks/`, `scripts/compile_checks.py`): 19 claims, about 23k tokens in per claim, 10 of 16 checks good.
+- Measured each cost idea for `prototypes/audit-cli` (`scripts/pilots/`): one model call per shared file costs 2.5k tokens a claim against 23k for the agent, caught real drift in decision 0017, and a decision model's "enough information" answer predicts which claims it can check.
+- 2026-11-10: `prototypes/audit-cli`: both check prompts guard JMESPath functions against a missing key; Jev now called at api.typesafe.ai/v1/systemone and its dedup and router pilots measured ("enough" sorts as well as Clef's, 4x faster).
+- 2026-11-10: `prototypes/audit-cli`: decision-model questions before extraction and routing scored against the gold sentences (questions.py): Clef's "when = current" and "could the files confirm it" drop 23% of sentences for 3% of checkable claims; restates and stakes sort nothing; routing labels too thin to settle.
+- 2026-11-10: `prototypes/audit-cli`: funnel.py counts how far steps 4 to 7 get on all 187 claims; 52 still need the searching agent.
+- 2026-11-10: `prototypes/audit-cli`: a code step (ast-grep) added to the checks and both prompts; 38 of 44 grep steps search code, but the model run stopped at the 500k cap after 10 of 30 claims.
+- 2026-11-10: `prototypes/audit-cli`: code step measured on the 30 claims: same 17 hold, fewer fail, grep over code 38 to 16 steps; cap raised to 1.1M tokens by the user.
+- 2026-11-10: `prototypes/audit-cli`: code step is presence-only after review (Go out, shell and Ruby variables literal); dossier.py gives lines to the 52 agent claims, and the grouped one call settles about 19 of them at 5.4k tokens a claim.
+- 2026-11-10: `prototypes/audit-cli`: agent with dossier lines and no trimming finished 7 of 7 left-over claims (9.1k uncached tokens a claim, 75-79% cached) where the old agent finished 0 of 4 in 80k; writer counts cached tokens and makes its last submit call when tokens run out; cap at 1.34M of 1.35M.
+- 2026-11-10: `prototypes/audit-cli`: writer's last call fires on the last call's size plus growth, after review; traced rebuild of the agent run made strict.
+- 2026-11-10: `prototypes/audit-cli`: agent code tools (CodeSearch, Outline) and hints measured on 15 claims: hardly used, no effect; the last call now reads a Submit among other calls and retries; the two-call writer settles 36 of 52 at 5.2k tokens a claim, and its fix call can bend drift into a pass.
+- 2026-11-10: `prototypes/audit-cli`: two-call writer rerun with the no-bending rule: 35 of 52 hold at 5.5k tokens a claim; on the drift claim it now gives a proxy with its doubt instead of a plain pass.
+- 2026-11-10: `prototypes/audit-cli`: decision models after the check: Jev ranks the 3 drift checks among 69 failures at 1, 2 and 8 (AUC 0.98); judging claims from their lines, Jev gets prose 8 of 9, point 26 of 30, structural 12 of 15; absence over unseen files is the gap.
+- 2026-11-10: `prototypes/audit-cli`: `audit checks` diff/write/run/triage built into the CLI (migration 0004, change detection by claim text and file hashes, traced, passes measured), three review rounds; on kmctl 183 claims: 5.0k tokens a claim to write, rerun reuses 136 of 144 checks in 0.6 s, Jev ranks the known drift in its top four.
+- 2026-11-10: `prototypes/audit-cli`: strategies from Koenigstein's *AI Agents* recorded: 14 the checks stage already follows, 10 it could add, mutation-testing checks first.
+- 2026-11-10: `prototypes/audit-cli`: checks commands take any folder of the repository (claims, not a bundle, are what they work on); `audit checks list` added.
+- 2026-11-10: `prototypes/audit-cli`: LangSmith's EU endpoint, agent id and environment in the folder's git-ignored .env, so audit run from here traces without a wrapper.
+- 2026-11-10: `prototypes/audit-cli`: checks run takes every claim to a verdict; mutation and link trust scores; per-question decision settings; background runs with status, stop and a one-run lock; three review rounds.
+- 2026-11-10: `prototypes/audit-cli`: weak checks resolved by a rewrite kept only when it notices more and stays on the claim, else accepted automatically until the code changes; `checks accept`, `write --claim`, the unsure level, and mutation version 3; two review rounds.
+- 2026-11-10: `prototypes/audit-cli`: checks run builds a fresh model client for strengthening, since a client reused from the write stage crashed on its closed event loop.
+- 2026-11-10: `prototypes/audit-cli`: the extractor and the checks writer read a list sent as JSON text with a stray closing bracket, and sentence labels sent as numbers; both seen from DeepSeek on decision 0020 (`scripts/probe/stringed_lists.py` reads them from LangSmith).
+- 2026-11-10: `prototypes/audit-cli`: an extractor answer that does not read as a whole keeps each sentence verdict that does and asks again for the rest, so one wrong field (a kind given as a quantifier, on decision 0005) costs a sentence its second ask, not the section.
+- 2026-11-10: `prototypes/audit-cli`: an extraction waits for its slot before its graph starts and holds it through the re-ask, so LangSmith shows at most concurrency.max_model_calls graph runs going, not one per section.
+- 2026-11-10: `prototypes/audit-cli`: checks run runs write, triage and strengthen in one event loop, since langchain_openai shares one connection pool between all its clients; a fresh client alone did not stop "Event loop is closed".
+- 2026-11-10: `prototypes/audit-cli`: Claude Opus as the checker on 60 claims: 5.1k tokens a claim; right where it differed from the pipeline on 9 of 28 (2 false failures, 2 missed drifts, 4 reasons it settled); 3 drifts among 32 unchecked claims.
+- 2026-11-10: `prototypes/audit-cli`: Claude Haiku as the checker on the same 60 claims: 5.4k tokens a claim, agrees with Opus on 46; stricter on two-file claims, shallower on the rest, and accepts docs as proof of outside tools.
+
+## 2026-11-11
+
+- Added `decisions/0036-claims-are-extracted-by-the-agent-through-kmctl-audit-claims` with `kmctl new decision`.
+- Documented the `kmctl audit` group and its claims verbs and store (agent-audit-claims): wrote `decisions/0036-claims-are-extracted-by-the-agent-through-kmctl-audit-claims`, and updated `manifesto` (Parts) and `architecture/overview` (the CLI table, the claims flow, Depicts).
+- Updated `summary` (Where it stands) for the claims verbs, and dropped its line that no prototypes are recorded, which no longer held.
+- Added `decisions/0037-the-claims-and-checks-agents-get-a-plain-shell-and-i2-narrows` with `kmctl new decision`.
+- Added the extract-claims skill and the kmctl-claims-extractor agent (agent-audit-claims-skill): wrote `decisions/0037-the-claims-and-checks-agents-get-a-plain-shell-and-i2-narrows`; narrowed I2 to the read-only auditor and the CI audit and added a Value for the claims and checks agents in `manifesto`, which also names the skill and agent in Parts; `architecture/overview` gains them in its diagram, a bullet and Depicts, with the I2 entry reworded to match.
+- Updated `summary` (Where it stands) for the narrowed I2 and the claims subagent.
+- Added `decisions/0038-checks-are-step-data-that-kmctl-reruns-and-only-checks-that-notice-a-change-are-stored` with `kmctl new decision`.
+- Documented `kmctl audit checks` (agent-audit-checks): wrote `decisions/0038-checks-are-step-data-that-kmctl-reruns-and-only-checks-that-notice-a-change-are-stored`; `manifesto` (Parts) and `architecture/overview` (the CLI table, the claims flow, the diagram node, Depicts) name the checks verbs, the weak bar and the `kmctl[audit]` extra. Also amended `decisions/0036-claims-are-extracted-by-the-agent-through-kmctl-audit-claims` (earlier sections are in a section's key) and the `manifesto` Value (Claude Code's shell limit is unconfirmed), both new in this change.
+- Updated `summary` (Where it stands) for the checks verbs.
+- Added the write-checks skill and the kmctl-check-writer agent (agent-audit-checks-skill): `manifesto` (Parts) and `architecture/overview` (diagram, bullet, Depicts) name them.
+- Amended `decisions/0038-checks-are-step-data-that-kmctl-reruns-and-only-checks-that-notice-a-change-are-stored` (new in this change) after review: markdown is never read, help steps never run uv run on the project, drift needs steps that ran, pruning waits for extraction.
+- Added `decisions/0039-kmctl-audit-judge-asks-an-optional-decision-model-off-by-default` with `kmctl new decision`.
+- Documented `kmctl audit judge` (agent-audit-decide): wrote `decisions/0039-kmctl-audit-judge-asks-an-optional-decision-model-off-by-default`; `manifesto` (Parts) and `architecture/overview` (the CLI table, the claims flow, Depicts) name it, its per-user settings and the extra.
+- Updated `summary` (Where it stands) for `kmctl audit judge`.
+- Drew `kmctl audit judge`, its decision endpoint and optional LangSmith in `architecture/overview` after review.
+- Corrected I2 in `manifesto`: the step that runs the audit agent holds no GitHub token, the publish step does. Found by a `kmctl audit checks` run on the bundle.
+- Corrected `decisions/0037-the-claims-and-checks-agents-get-a-plain-shell-and-i2-narrows` (new in this change) the same way: only the publish step holds a GitHub token.
+- Appended a 2026-11-11 correction, from the first `kmctl audit checks` run over the bundle, to `decisions/0001-standalone-cli-installs-its-plugin`, `decisions/0009-handoff-key-extension-field`, `decisions/0012-releases-come-from-ci`, `decisions/0014-apm-is-the-only-install-route`, `decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script`, `decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity`, `decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest`, `decisions/0022-docs-pages-carry-optional-okf-front-matter-and-generated-folder-indexes`, `decisions/0034-kmctl-mv-renames-a-concept-and-rewrites-the-links-to-it`.
+- Added `decisions/0040-the-audit-pipeline-holds-its-agents-by-a-hook-and-keeps-answers-through-rewording` with `kmctl new decision`.
+- Fixed the audit pipeline's design after its first full run (ADR 0040): wrote `decisions/0040-the-audit-pipeline-holds-its-agents-by-a-hook-and-keeps-answers-through-rewording` and `architecture/audit-pipeline` (the pipeline as a diagram, with the run's numbers and open limits); appended 2026-11-11 corrections to `decisions/0036-claims-are-extracted-by-the-agent-through-kmctl-audit-claims`, `decisions/0037-the-claims-and-checks-agents-get-a-plain-shell-and-i2-narrows` and `decisions/0038-checks-are-step-data-that-kmctl-reruns-and-only-checks-that-notice-a-change-are-stored`; updated the `manifesto` Value for the guard hook and `architecture/overview` (link, Depicts).
+- Updated `summary` (Where it stands) to link `architecture/audit-pipeline`.
+- Updated `decisions/0040-the-audit-pipeline-holds-its-agents-by-a-hook-and-keeps-answers-through-rewording` (new in this change): a correction section now sees the corrections after it, after four drifts came from 2026-10-17 corrections that later ones overturn. Narrowed the `manifesto`'s out-of-scope hooks line to kmctl's own hooks, which an extractor had read as "kmctl ships no other hook".
+- Added `prototypes/audit-ui`: a starter page and its export script for browsing `kmctl audit` results, from the sketch in `mock.excalidraw.png`.
+- Updated `decisions/0040-the-audit-pipeline-holds-its-agents-by-a-hook-and-keeps-answers-through-rewording` (new in this change): `kmctl audit checks todo` cuts a long sentence, usually a table, to the lines its claim is about.
+- Second `kmctl audit checks` pass over the bundle: corrected `decisions/0015-antigravity-gets-skills-and-rules-from-apm-and-a-kmctl-plugin-folder` (OpenCode agents), and extended the 2026-11-11 corrections in `decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script` (action inputs), `decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity` (OpenCode files) and `decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest` (repository URL); dropped `scaffold.py` from the modules `architecture/overview` says read front matter through `okf.py`.
+- After review: added `src/kmctl/claims/check_verbs.py` to the sources of `decisions/0040-the-audit-pipeline-holds-its-agents-by-a-hook-and-keeps-answers-through-rewording`; `prototypes/audit-ui` now marks sentences with only subjective or external claims as not checkable, keeps sections in document order, and gives top-level concepts their own header.
+- Redesigned the page of `prototypes/audit-ui` for reading: underline marks per coverage kind, a per-sentence strip, numbered claims linked across the three tags, search, state chips and keyboard moves.
+- `prototypes/audit-ui` now shows one card per claim holding its check and its confidence, so what belongs together sits together.
+- `prototypes/audit-ui` explains a check's confidence in a sentence, names exact and indirect checks, and groups the missed edits by file.
+- Added `prototypes/mixed-claims`: counted the reasons that sit on a claim joining a fact to an opinion (1 of 384), to decide whether a split rule for the extractor is worth a ticket. It is not.
+
+## 2026-11-12
+
+- Added `decisions/0041-people-review-claims-and-checks-on-a-local-page-and-their-feedback-goes-back-to-the-agents` (draft): `kmctl audit ui` serves a local page for thumbs, notes, verdicts and second opinions, and open feedback goes back to the agents with the next `todo`; listed it in `decisions/index`.
+- Updated `manifesto`, `architecture/audit-pipeline` and `architecture/overview` for `kmctl audit ui` and the `feedback` table (verb, modules, flow step 7), and `summary` for the review page.
+- Updated `prototypes/audit-ui`: the page moved into the package as `kmctl audit ui`.
+- Corrected `architecture/audit-pipeline`'s open issues: dropped the uncounted claim that writers gave reasons when short on context, and said what the 4 false drifts do and do not show.
+- Added `decisions/0042-code-coverage-counts-the-lines-a-check-matched` (draft): steps record the lines they matched, and `kmctl audit coverage` and the page's code view count a line as covered when a check matched it; listed it in `decisions/index`.
+- Updated `manifesto`, `architecture/audit-pipeline` (flow step 8, the coverage verb and module) and `architecture/overview` for `kmctl audit coverage` and the code view.
+- Fixed three drifts the audit found: `architecture/overview` now says `scripts/release.py set` copies the version from `apm/apm.yml` into the other apm.yml files, and `architecture/audit-pipeline` says claims todo also hands out sections a person sent back, and that only grep, code, definition and import steps record matched lines.
+- Added `prototypes/token-costs`: measured what kmctl's audit agents cost from 141 real runs (extraction $0.0068 per section, check writing $0.0081 per claim on Haiku 5.5) and the per-session context the briefing and knowledge rules add.
+- Fixed three more drifts in `architecture/overview`'s table of what each verb writes: the checks verbs also write `.kmctl/.gitignore` when missing, `kmctl audit coverage` creates an empty store when there is none, and `kmctl audit ui` refreshes the sections and claims tables on each page load.
+- Fixed a drift in `architecture/overview`: `kmctl audit checks run` also reruns a check whose last run was skipped, and every check with `--all`.
+- Fixed two drifts in `architecture/overview` (in commit a29ddf1e, which left out this line): `kmctl audit ui` also writes the `cache` table and deletes a removed section's claims, extractions and verdicts, and `kinds.py` names each kind's fields itself, with `tests/test_schema.py` checking they are allowed.
+- Added `prototypes/link-question`: rewording the decision model's link question so finding the exact text or value a claim describes counts as testing it moved 679 checks' median score from 0.70 to 0.76, wording checks from 0.75 to 0.84.
+
+## 2026-11-14
+
+- Added `decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp` with `kmctl new decision`.
+- The audit left kmctl for its own package, kmaudit, in `packages/kmaudit/` (ADR 0043): `manifesto` describes kmaudit as its own part, `architecture/audit-pipeline` and `architecture/overview` name the `kmaudit` verbs and the package's modules, `architecture/index` follows the new description, `decisions/0036-claims-are-extracted-by-the-agent-through-kmctl-audit-claims` gains a correction saying where its verbs went, and `summary` says the audit is kmaudit now.
+- kmaudit audits any folder of markdown docs, each a namespace with its own store under `.kmaudit/`: `decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp` gains an amendment on one file per namespace, and `architecture/audit-pipeline` and `architecture/overview` name the stores, `namespaces.py` and `kmaudit namespaces`.
+- `kmaudit briefing` prints each namespace's audit state read-only, for a session-start hook: `architecture/audit-pipeline` and `architecture/overview` name the verb and `briefing.py`.
+- kmctl moved to `packages/kmctl/` and the root became a uv workspace that installs nothing (ADR 0044): `decisions/0044-kmctl-and-kmaudit-are-both-workspace-packages` records it, `decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp` and `decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins` gain amendments, `summary`, `manifesto` and `architecture/overview` name the moved paths, and every decision's `sources` name `packages/kmctl/` (and, for ADR 0036 to ADR 0042, `packages/kmaudit/`).
+
+## 2026-11-15
+
+- kmaudit's command reference moved to `docs/reference/kmaudit-commands.md` and the root README became a short map to the two package READMEs: `decisions/0012-releases-come-from-ci` gains a correction saying kmaudit owns its `kmaudit-` pages in `docs/` and where `release.py set` now pins the install lines, and `architecture/overview` names the moved files.
+- kmctl's APM package moved to `packages/kmctl/apm/` and kmaudit's version into `packages/kmaudit/apm/apm.yml` (ADR 0045): `decisions/0045-each-package-keeps-its-apm-package-and-version` records it, `decisions/0044-kmctl-and-kmaudit-are-both-workspace-packages` gains an amendment, `summary`, `manifesto` and `architecture/overview` and `architecture/audit-pipeline` name the moved paths, and the `sources` of the decisions that named `apm/` name `packages/kmctl/apm/`.
+- kmaudit's skills and agents moved to kmaudit's own APM package and call its MCP tools (ADR 0043): `decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp` gains an amendment saying where they live, `decisions/0037-the-claims-and-checks-agents-get-a-plain-shell-and-i2-narrows` and `decisions/0040-the-audit-pipeline-holds-its-agents-by-a-hook-and-keeps-answers-through-rewording` keep their prose with `sources` moved to the new files, and `manifesto`, `architecture/overview` and `architecture/audit-pipeline` describe the `kmaudit-claims-extractor` and `kmaudit-check-writer` agents with Read and the MCP tools, no shell.
+- kmaudit's CLI keeps only `mcp`, `ui`, `namespaces`, `briefing`, `claims list` and `checks list`; the other verbs live on as MCP tools, `kmaudit ui` gains a Rerun stale checks button, and `kmaudit guard` is gone (ADR 0043): `decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp` gains an amendment, `decisions/0040-the-audit-pipeline-holds-its-agents-by-a-hook-and-keeps-answers-through-rewording` a correction saying the guard hook is gone, and `manifesto`, `architecture/overview` and `architecture/audit-pipeline` name the MCP tools and the button instead of the dropped verbs.

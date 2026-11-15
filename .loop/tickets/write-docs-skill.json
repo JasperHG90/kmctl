@@ -110,7 +110,9 @@
   "intent": {
     "epic": "plugin",
     "depends_on": [
-      "claude-plugin"
+      "claude-plugin",
+      "new-doc-verb",
+      "knowledge-check"
     ],
     "priority": 9
   },
@@ -158,6 +160,6 @@
       "by": "done"
     }
   ],
-  "by": "process:loopctl/2.0.1.dev47+g2444f9291.d20261015",
-  "at": "2026-10-15T11:29:08+00:00"
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T11:30:31+00:00"
 }

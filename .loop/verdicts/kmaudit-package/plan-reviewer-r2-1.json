@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "The removal of `kmctl audit` and the agent hook, guard prefix and skill commands that call it were split across outcomes that could not ship apart.",
+      "anchor": ".loop/plans/kmaudit-package/README.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r4"
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "r6's grep caught history notes in accepted decision records and the Action's own audit-mode refusal, and O4's touches missed files r6 forced to change.",
+      "anchor": ".loop/evals/kmaudit-package/rows.json",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r6"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "91e38cc5769c6252125f0ccd805de0978a8b85fe014248981ea811fc5ff0199e"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T11:39:57+00:00"
+}

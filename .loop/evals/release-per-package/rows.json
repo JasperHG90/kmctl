@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "kmaudit's version comes from packages/kmaudit/VERSION through hatchling's regex source and starts at 0.1.0.dev0; `release.py --package kmaudit current` prints it, and `release.py compare '' 0.1.0.dev0` prints skip, so the push that adds the file releases nothing.",
+      "fails_when": "the pyproject keeps a static version, the VERSION file is not read, or current prints something else, or the file starts at a releasable version, or compare does not skip it",
+      "command": "uv run pytest tests/scripts/test_release.py -k kmaudit_version -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "next_release_version.py, release.py, check_wheel.py and smoke_wheel.py take --package: kmaudit reads only kmaudit-v* tags and writes only its VERSION file and README install line; kmctl behaves as today.",
+      "fails_when": "a package reads the other family's tags, set touches the other package's files, or kmctl's behaviour changes",
+      "command": "uv run pytest tests/scripts -k package_aware -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "release_notes.py --package P TAG --ref HEAD --out FILE drafts notes for an unpushed tag from the family's previous tag, listing only commits that touch that package's paths.",
+      "fails_when": "it refuses an unpushed tag, starts from the other family's tag, or lists a commit that touches only the other package, or kmaudit's first draft (no kmaudit-v* tag) leaves out an earlier commit that touched packages/kmaudit/",
+      "command": "uv run pytest tests/scripts/test_release_notes.py -k package -q"
+    },
+    {
+      "id": "r4",
+      "behavior": "The Release run takes package (kmctl, kmaudit). A notes job that also runs in dry runs drafts .github/release-notes/TAG.md and uploads it as an artifact; bump downloads it, commits it on top of the drafted commit with a `Drafted-From: <sha>` trailer, and opens the version pull request with a body holding the notes and the trailer.",
+      "fails_when": "the package input is missing, the draft job is skipped in a dry run or does not hand the file to bump, bump does not build on the drafted commit, the trailer is missing from the commit or the body, or the file is not committed or not the body",
+      "command": "uv run pytest tests/scripts/test_workflows.py -k release_package -q"
+    },
+    {
+      "id": "r5",
+      "behavior": "release-tag triggers on apm/apm.yml and packages/kmaudit/VERSION, refuses before tagging when the committed notes file is missing or blank, and publishes exactly that file; it finds the drafted commit from the merge's second parent, or from the Drafted-From trailer on a squash merge, and writes a ::warning:: and a step-summary section naming package commits that landed after it; only kmctl is marked Latest.",
+      "fails_when": "a path is missing, the refusal runs after git tag -a or not at all, notes come from anywhere else or the published file differs from the reviewed one, the drafted commit is not found for a merge or a squash, late commits are not named, or kmaudit is marked Latest",
+      "command": "uv run pytest tests/scripts/test_workflows.py -k release_tag -q"
+    }
+  ]
+}

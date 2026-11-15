@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "release-tag's late-commit step finds the drafted commit from the Drafted-From trailer on the release branch's own commits for a merge, so a release branch that took an 'Update branch' merge from main and then a later commit still has its late package commits named, with the drafted commit, in the warning and the step summary.",
+      "fails_when": "the step reads the update merge as the drafted commit, names no late commit in that case, or leaves the drafted commit out of the warning",
+      "command": "uv run pytest tests/scripts/test_workflows.py -k update_branch_merge -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "The other cases keep working: a plain merge falls back to the parent of the merge's second parent when no trailer is found, a squash merge reads its own trailer, and a commit with neither warns that the drafted commit could not be found.",
+      "fails_when": "any existing release_tag test fails",
+      "command": "uv run pytest tests/scripts/test_workflows.py -k release_tag -q"
+    }
+  ]
+}

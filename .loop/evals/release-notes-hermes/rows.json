@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "The cleaning script keeps Hermes' rewrite only when it is non-empty, keeps the draft's headings in order, leaves Other changes to the end byte for byte, and keeps exactly the draft's (`slug`) and (#N) references under What changed with one per bullet; otherwise it prints the draft with a ::warning:: naming the failed check, and never exits non-zero.",
+      "fails_when": "a rewrite failing any check is kept, a passing one is replaced, the warning does not name the check, or the script exits non-zero",
+      "command": "uv run pytest tests/scripts/test_hermes_release_notes.py -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "The Release run's Hermes step uses the pinned action SHA, OLLAMA_API_KEY, deepseek-v4.1-flash and .github/prompts/release-notes-system.md with every toolset disabled, max_iterations 3, continue-on-error and a timeout; the notes file comes from the cleaning script's output; and when the rewrite is kept, the pull request body and step summary carry the draft's What changed section under 'Draft before Hermes'.",
+      "fails_when": "any of those is missing or differs, a toolset is left enabled, the notes file is written from anything but the cleaning script, or a kept rewrite reaches the pull request body without the draft's What changed section",
+      "command": "uv run pytest tests/scripts/test_workflows.py -k hermes_release -q"
+    }
+  ]
+}

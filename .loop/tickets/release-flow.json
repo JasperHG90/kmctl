@@ -132,7 +132,7 @@
   },
   "plan_hash": "5e096f102ac0445b6d20d8408feaad3bba9c9d39a2d20512bd216cd1f5d9c4dc",
   "intent": {
-    "epic": null,
+    "epic": "repo",
     "depends_on": [],
     "priority": null
   },
@@ -180,6 +180,6 @@
       "by": "done"
     }
   ],
-  "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
-  "at": "2026-10-16T10:27:44+00:00"
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T11:30:30+00:00"
 }

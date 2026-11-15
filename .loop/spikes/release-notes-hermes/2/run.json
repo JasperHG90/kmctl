@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "slug": "release-notes-hermes",
+  "n": 2,
+  "command": "bash -ic 'python3 /tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-hermes-2/spike2.py \"$PWD\" /tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-hermes-2/toiminnot/actions/hermes/runner'",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-hermes-2/spike2.py",
+      "copy": "files/spike2.py"
+    },
+    {
+      "source": "/tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-hermes-2/checks.py",
+      "copy": "files/checks.py"
+    },
+    {
+      "source": "/tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-hermes-2/release-notes-system.md",
+      "copy": "files/release-notes-system.md.txt"
+    }
+  ],
+  "where": "worktree",
+  "head": "25269b7e4c7509c874a1db16e2152214208b419b",
+  "fingerprint": "daa356d14fe747c5a3e85519258c4482eba25a2df7c2d286882684e5793f071d",
+  "started_at": "2026-11-14T19:55:21+00:00",
+  "finished_at": "2026-11-14T19:56:25+00:00",
+  "duration_seconds": 64.055,
+  "timeout_seconds": 1800.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": true,
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "moved_from": null
+}

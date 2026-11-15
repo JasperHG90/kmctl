@@ -1,0 +1,63 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.16, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/vscode/workspace
+configfile: pyproject.toml
+plugins: platformdirs-4.13.4, anyio-4.15.1, respx-0.23.1, langsmith-0.14.17
+collected 1387 items / 1374 deselected / 13 selected
+
+tests/scripts/test_smoke_wheel.py .                                      [  7%]
+tests/test_antigravity.py s.                                             [ 23%]
+tests/test_apm_package.py F                                              [ 30%]
+tests/test_docs_frontmatter.py .                                         [ 38%]
+tests/test_doctor.py ..                                                  [ 53%]
+tests/test_opencode.py .s                                                [ 69%]
+tests/test_pin.py .                                                      [ 76%]
+tests/test_plugin_patch.py .                                             [ 84%]
+tests/test_starter.py ..                                                 [100%]
+
+=================================== FAILURES ===================================
+_________ test_consumer_gets_the_package_hook_and_okf_but_no_dev_items _________
+
+consumer = PosixPath('/tmp/pytest-of-vscode/pytest-105/test_consumer_gets_the_package0/consumer')
+served = 'http://127.0.0.1:50911/o/kmctl.git'
+tmp_path = PosixPath('/tmp/pytest-of-vscode/pytest-105/test_consumer_gets_the_package0')
+
+    @pytest.mark.integration
+    def test_consumer_gets_the_package_hook_and_okf_but_no_dev_items(
+        consumer: Path, served: str, tmp_path: Path
+    ) -> None:
+        """apm install of kmctl's entry for claude, then kmctl plugin patch, against the served tree installs everything once."""
+        before = {rel: (REAL_CLAUDE / rel).exists() for rel in WATCHED}
+    
+        apm_install(consumer, served, "claude")
+        apm_install(consumer, served, "claude")
+    
+        claude = consumer / ".claude"
+        for name in SKILL_NAMES:
+            _same_tree(SKILLS / name, claude / "skills" / name)
+        assert (claude / "agents" / "kmctl-auditor.md").read_bytes() == AGENT.read_bytes()
+        for name, (globs, _) in OLD_RULES.items():
+            meta, body = _split((claude / "rules" / f"{name}.md").read_text())
+            assert meta == {"paths": globs}, name
+            assert body.lstrip("\n") == _split(
+                (INSTRUCTIONS / f"{name}.instructions.md").read_text()
+            )[1].lstrip("\n"), name
+        assert all((claude / "skills" / s / "SKILL.md").is_file() for s in OKF_SKILLS)
+        settings = json.loads((claude / "settings.json").read_text())
+        commands = [
+            hook["command"]
+            for group in settings["hooks"]["SessionStart"]
+            for hook in group["hooks"]
+        ]
+        assert len([c for c in commands if "kmctl briefing" in c]) == 1
+        servers = json.loads((consumer / ".mcp.json").read_text())["mcpServers"]
+        assert list(servers) == ["bundle"]
+        dev = set(_dev_items())
+>       assert len(dev) == 16
+E       AssertionError: assert 17 == 16
+E        +  where 17 = len({'agent-creator', 'async-python', 'dependency-choice', 'frontend-design', 'generate-art', 'httpx-for-http', ...})
+
+/home/vscode/workspace/tests/test_apm_package.py:526: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_apm_package.py::test_consumer_gets_the_package_hook_and_okf_but_no_dev_items
+===== 1 failed, 10 passed, 2 skipped, 1374 deselected in 377.18s (0:06:17) =====

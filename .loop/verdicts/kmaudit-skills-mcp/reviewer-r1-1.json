@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The skills' evals were rewritten for the MCP flow but not rerun, so the plan's checked-by item \"the skills' evals rerun through skill-creator\" and the ticket's done-when (Claude Code's kmaudit-claims-extractor stores claims through the MCP tools with no shell) have no run behind them; the integration test proves install only.",
+      "anchor": "packages/kmaudit/apm/.apm/skills/extract-claims/evals/results.md:220",
+      "category": "missing",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "Both results.md files say the tests/test_skills.py checks cover \"the agents' tools\"; those tools are asserted in packages/kmaudit/tests/test_apm_package.py, not test_skills.py.",
+      "anchor": "packages/kmaudit/apm/.apm/skills/extract-claims/evals/results.md:225",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "2be1566cbfc5da5665f2042e5657945765ce41255f15bb1b38da20ad79dc716a",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T09:31:34+00:00"
+}

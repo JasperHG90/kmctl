@@ -1,0 +1,29 @@
+{"at": "2026-11-14T17:22:48+00:00", "kind": "register", "schema_version": "1.0", "stage": "planning"}
+{"at": "2026-11-14T17:33:28+00:00", "kind": "spike-note", "n": 1, "replaced": false, "schema_version": "1.0"}
+{"at": "2026-11-14T17:44:41+00:00", "kind": "spike-note", "n": 2, "replaced": false, "schema_version": "1.0"}
+{"at": "2026-11-14T17:47:09+00:00", "grant": "g7", "hash": "6e04b48a4938b9a6cd62c03ed0c22470699c5cfbc6921b3ae4000ea4fde4db36", "kind": "signoff", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5", "step": "eval-sign"}
+{"at": "2026-11-14T17:47:49+00:00", "kind": "spike-note", "n": 3, "replaced": false, "schema_version": "1.0"}
+{"at": "2026-11-14T17:48:41+00:00", "kind": "spike-note", "n": 4, "replaced": false, "schema_version": "1.0"}
+{"at": "2026-11-14T19:43:10+00:00", "by": "human:jasperginn@gmail.com", "kind": "accept-risk", "reason": "users upgrade the CLI before pinning a post-move release", "risk": 2, "schema_version": "1.0"}
+{"at": "2026-11-14T19:45:21+00:00", "binds": "e00907b0150676b7d33f954e6afabca8ce4a13bb5e410cd408804c69e2e51287", "kind": "round-start", "n": 1, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
+{"at": "2026-11-14T19:48:08+00:00", "dispatched_at": "2026-11-14T19:45:21+00:00", "kind": "round-close", "n": 1, "outcome": "fail", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-14T19:47:47+00:00"}}
+{"at": "2026-11-14T19:49:06+00:00", "diff": {"added": [], "changed": {"r5": ["command"]}, "removed": []}, "grant": "g7", "hash": "d066b171f65c36a13ac67b5c116964040d129613f746f975a04e8dc749474d0f", "kind": "signoff", "reason": "plan review r1: r5 now also searches packages/kmctl/tests, where the moved docs, repo-name and starter tests land", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5", "step": "eval-sign"}
+{"at": "2026-11-14T19:50:47+00:00", "kind": "spike-note", "n": 5, "replaced": false, "schema_version": "1.0"}
+{"at": "2026-11-14T19:51:39+00:00", "binds": "8841228a1e81ddc2d51615f2625ebb73637bf4d4bfbd02e48e111fa3e707cb32", "kind": "round-start", "n": 2, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
+{"at": "2026-11-14T19:53:47+00:00", "dispatched_at": "2026-11-14T19:51:39+00:00", "kind": "round-close", "n": 2, "outcome": "fail", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-14T19:53:19+00:00"}}
+{"at": "2026-11-14T19:53:56+00:00", "binds": "3746974443955a8928c341776e62b800b51d3a7e92b88e8c3e18f5aa129c44d7", "kind": "round-start", "n": 3, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
+{"at": "2026-11-14T19:56:09+00:00", "code": "finding-open-two-rounds", "from": "planning", "kind": "block", "message": "finding plan-reviewer:p6 stayed open across two rounds", "notified": false, "schema_version": "1.0"}
+{"at": "2026-11-14T19:56:09+00:00", "dispatched_at": "2026-11-14T19:53:56+00:00", "kind": "round-close", "n": 3, "outcome": "blocked", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-14T19:55:54+00:00"}}
+{"at": "2026-11-14T20:04:52+00:00", "by": "delegated:jasperginn@gmail.com/agent", "edge": "plan-cap", "grant": "g7", "kind": "override", "reason": "operator said to unblock; p6 (tree_repo runs release.py set on its copy) and p7 (real uvx hand-off pins the test-only tag) are fixed in the plan", "schema_version": "1.0", "step": "ticket-override"}
+{"at": "2026-11-14T20:04:59+00:00", "binds": "97efc292a06a3688bd249ce74fe0a35115c061c958ca07658a64d85ab9697e5c", "kind": "round-start", "n": 4, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
+{"at": "2026-11-14T20:06:25+00:00", "dispatched_at": "2026-11-14T20:04:59+00:00", "kind": "round-close", "n": 4, "outcome": "pass", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-14T20:06:11+00:00"}}
+{"at": "2026-11-14T20:06:31+00:00", "kind": "unblock", "schema_version": "1.0"}
+{"at": "2026-11-14T20:06:34+00:00", "by": "advance", "from": "ready", "kind": "transition", "schema_version": "1.0", "to": "building"}
+{"at": "2026-11-14T20:37:34+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "building"}
+{"at": "2026-11-14T20:37:47+00:00", "by": "advance", "from": "building", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
+{"at": "2026-11-14T20:37:49+00:00", "binds": "1967960450a15cb2fd6c60f6a838ec971a7cb7ebd14044692dcce5ddcac57d15", "kind": "round-start", "n": 1, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "c89aca508f1739c040175cb200237c2ff291db14"}
+{"at": "2026-11-14T20:44:28+00:00", "by": "review close", "from": "verifying", "kind": "transition", "schema_version": "1.0", "to": "fixing"}
+{"at": "2026-11-14T20:44:28+00:00", "dispatched_at": "2026-11-14T20:37:49+00:00", "kind": "round-close", "n": 1, "outcome": "fail", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-11-14T20:44:07+00:00"}}
+{"at": "2026-11-14T20:49:42+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "fixing"}
+{"at": "2026-11-14T20:50:14+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "647ff9ed975cee2b88bd4fb6ef2534898c5dd393"}
+{"at": "2026-11-14T20:53:31+00:00", "branch": "loop/kmctl-to-packages", "kind": "land", "schema_version": "1.0", "sha": "002f85b41098c12890edeca9284e419615375a19"}

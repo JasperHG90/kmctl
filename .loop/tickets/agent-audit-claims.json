@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "slug": "agent-audit-claims",
+  "stage": "planning",
+  "attempts": 0,
+  "plan_rounds": 0,
+  "review_rounds": 0,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": null,
+  "ask": "j-20261111T071220+0000-61a6a7ff",
+  "split": "j-20261111T081754+0000-bc988518",
+  "split_plan_hash": "c5267961e1f470c95a702efdb314fc7fd59794b3e0fce70375f079d682f333e7",
+  "split_hold": false,
+  "commit_sha": null,
+  "closed_outside": false,
+  "dropped": true,
+  "archived": false,
+  "worktree": null,
+  "branch": null,
+  "stamps": [],
+  "signoff": null,
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [],
+  "resigns": [],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [],
+  "round": null,
+  "plan_hash": "c183d9b9f92c6f2b7b392e0540f4a5a7eb733bfbb39bfa5219aa1cebf64abf11",
+  "intent": {
+    "epic": "agent-audit",
+    "depends_on": [],
+    "priority": 2
+  },
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-11-11T07:24:30+00:00",
+      "by": "register"
+    }
+  ],
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T11:35:22+00:00"
+}

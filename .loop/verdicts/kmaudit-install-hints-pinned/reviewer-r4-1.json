@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "release.yml's WHAT text and release.py's set help named only the README line",
+      "anchor": ".github/workflows/release.yml:328",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "release.yml header comment and release.py module docstring named only the README line",
+      "anchor": "scripts/release.py:21",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "the docstring of test_package_aware_kmaudit_set_writes_only_its_files named only the README pin",
+      "anchor": "tests/scripts/test_release.py:639",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "b387347cf04d8ec14715682c32d5d38b5d91b3fa5cae08266e3aa6108a344b63",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T08:46:07+00:00"
+}

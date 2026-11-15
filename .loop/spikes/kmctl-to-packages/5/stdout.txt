@@ -1,0 +1,206 @@
+restructure: /tmp/k2p-hook-iwz2nhux/moved ready (tests=False, variant=hook, bump=None)
+ 
+
+===== candidate a_addl_only
+--- manifest:
+# Hooks other repositories can use: list this repository under repos: in
+# their .pre-commit-config.yaml (ADR 0022). Add args: [--fix] to rewrite the
+# generated docs/ folder indexes as you commit.
+- id: kmctl-check
+  name: kmctl check
+  description: Check docs/ and .okf/ indexes, docs front matter and links; with --fix, rewrite the generated docs folder indexes first.
+  entry: kmctl check
+  language: python
+  pass_filenames: false
+  always_run: true
+  additional_dependencies: ["./packages/kmctl"]
+
+uv sync ok; kmctl --version -> kmctl 0.12.1; kmctl-workspace installed: False
+
+--- a_addl_only / prek-0.5.5: FAILS
+[no args] exit 2
+.5/hooks/python-uj1MtjRRLdpOcIgYmF3E
+Resolved 21 packages in 1.09s
+Building kmctl @ file:///tmp/k2p-hook-iwz2nhux/a_addl_only/home-prek-0.5.5/repos/64a1e395e2352675/packages/kmctl
+Building kmctl-workspace @ file:///tmp/k2p-hook-iwz2nhux/a_addl_only/home-prek-0.5.5/repos/64a1e395e2352675
+Downloading pygments (1.2MiB)
+Downloading pydantic-core (2.0MiB)
+Built kmctl @ file:///tmp/k2p-hook-iwz2nhux/a_addl_only/home-prek-0.5.5/repos/64a1e395e2352675/packages/kmctl
+Downloaded pygments
+Downloaded pydantic-core
+error: Failed to build `kmctl-workspace @ file:///tmp/k2p-hook-iwz2nhux/a_addl_only/home-prek-0.5.5/repos/64a1e395e2352675`
+cause: The build backend returned an error
+cause: Call to `setuptools.build_meta:__legacy__.get_requires_for_build_wheel` failed (exit status: 1)
+[stderr]
+error: Multiple top-level packages discovered in a flat-layout: ['apm', 'action', 'starter', 'packages'].
+To avoid accidental inclusion of unwanted files or directories,
+setuptools will not proceed with this build.
+If you are trying to create a single distribution with multiple packages
+on purpose, you should not rely on automatic discovery.
+Instead, consider the following options:
+1. set up custom discovery (`find` directive with `include` or `exclude`)
+2. use a `src-layout`
+3. explicitly set `py_modules` or `packages` with a list of names
+To find more information, look for "package discovery" on setuptools docs.
+hint: Build failures usually indicate a problem with the package or the build environment
+
+
+[--fix] exit 2
+d accidental inclusion of unwanted files or directories,
+setuptools will not proceed with this build.
+If you are trying to create a single distribution with multiple packages
+on purpose, you should not rely on automatic discovery.
+Instead, consider the following options:
+1. set up custom discovery (`find` directive with `include` or `exclude`)
+2. use a `src-layout`
+3. explicitly set `py_modules` or `packages` with a list of names
+To find more information, look for "package discovery" on setuptools docs.
+hint: Build failures usually indicate a problem with the package or the build environment
+
+
+[again] exit 2
+d accidental inclusion of unwanted files or directories,
+setuptools will not proceed with this build.
+If you are trying to create a single distribution with multiple packages
+on purpose, you should not rely on automatic discovery.
+Instead, consider the following options:
+1. set up custom discovery (`find` directive with `include` or `exclude`)
+2. use a `src-layout`
+3. explicitly set `py_modules` or `packages` with a list of names
+To find more information, look for "package discovery" on setuptools docs.
+hint: Build failures usually indicate a problem with the package or the build environment
+
+
+
+
+--- a_addl_only / pre-commit: FAILS
+[no args] exit 3
+endencies: started
+      Installing build dependencies: finished with status 'done'
+      Getting requirements to build wheel: started
+      Getting requirements to build wheel: finished with status 'error'
+stderr:
+      error: subprocess-exited-with-error
+      
+      × Getting requirements to build wheel did not run successfully.
+      │ exit code: 1
+      ╰─> [14 lines of output]
+          error: Multiple top-level packages discovered in a flat-layout: ['apm', 'action', 'starter', 'packages'].
+          
+          To avoid accidental inclusion of unwanted files or directories,
+          setuptools will not proceed with this build.
+          
+          If you are trying to create a single distribution with multiple packages
+          on purpose, you should not rely on automatic discovery.
+          Instead, consider the following options:
+          
+          1. set up custom discovery (`find` directive with `include` or `exclude`)
+          2. use a `src-layout`
+          3. explicitly set `py_modules` or `packages` with a list of names
+          
+          To find more information, look for "package discovery" on setuptools docs.
+          [end of output]
+      
+      note: This error originates from a subprocess, and is likely not a problem with pip.
+    ERROR: Failed to build 'file:///tmp/k2p-hook-iwz2nhux/a_addl_only/home-pre-commit/repohit72a5m' when getting requirements to build wheel
+Check the log at /tmp/k2p-hook-iwz2nhux/a_addl_only/home-pre-commit/pre-commit.log
+
+[--fix] exit 3
+ (`find` directive with `include` or `exclude`)
+          2. use a `src-layout`
+          3. explicitly set `py_modules` or `packages` with a list of names
+          
+          To find more information, look for "package discovery" on setuptools docs.
+          [end of output]
+      
+      note: This error originates from a subprocess, and is likely not a problem with pip.
+    ERROR: Failed to build 'file:///tmp/k2p-hook-iwz2nhux/a_addl_only/home-pre-commit/repohit72a5m' when getting requirements to build wheel
+Check the log at /tmp/k2p-hook-iwz2nhux/a_addl_only/home-pre-commit/pre-commit.log
+
+[again] exit 3
+ (`find` directive with `include` or `exclude`)
+          2. use a `src-layout`
+          3. explicitly set `py_modules` or `packages` with a list of names
+          
+          To find more information, look for "package discovery" on setuptools docs.
+          [end of output]
+      
+      note: This error originates from a subprocess, and is likely not a problem with pip.
+    ERROR: Failed to build 'file:///tmp/k2p-hook-iwz2nhux/a_addl_only/home-pre-commit/repohit72a5m' when getting requirements to build wheel
+Check the log at /tmp/k2p-hook-iwz2nhux/a_addl_only/home-pre-commit/pre-commit.log
+
+
+
+===== candidate b_empty_wheel_root_plus_addl
+--- manifest:
+# Hooks other repositories can use: list this repository under repos: in
+# their .pre-commit-config.yaml (ADR 0022). Add args: [--fix] to rewrite the
+# generated docs/ folder indexes as you commit.
+- id: kmctl-check
+  name: kmctl check
+  description: Check docs/ and .okf/ indexes, docs front matter and links; with --fix, rewrite the generated docs folder indexes first.
+  entry: kmctl check
+  language: python
+  pass_filenames: false
+  always_run: true
+  additional_dependencies: ["./packages/kmctl"]
+
+--- root pyproject addition:
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+bypass-selection = true
+
+uv sync ok; kmctl --version -> kmctl 0.12.1; kmctl-workspace installed: False
+
+--- b_empty_wheel_root_plus_addl / prek-0.5.5: WORKS
+[no args] exit 1
+kmctl check..............................................................Failed
+- hook id: kmctl-check
+- description: Check docs/ and .okf/ indexes, docs front matter and links; with --fix, rewrite the generated docs folder indexes first
+- exit code: 1
+
+  error  index  docs/how-to  folder has no README.md index; run kmctl check --fix
+  skipped  index  .okf/  skipped .okf/: no .okf/ folder
+  1 failed
+
+[--fix] exit 0
+kmctl check..............................................................Passed
+
+[again] exit 0
+kmctl check..............................................................Passed
+
+
+
+--- b_empty_wheel_root_plus_addl / pre-commit: WORKS
+[no args] exit 1
+[INFO] Initializing environment for /tmp/k2p-hook-iwz2nhux/b_empty_wheel_root_plus_addl.
+[INFO] Initializing environment for /tmp/k2p-hook-iwz2nhux/b_empty_wheel_root_plus_addl:./packages/kmctl.
+[INFO] Installing environment for /tmp/k2p-hook-iwz2nhux/b_empty_wheel_root_plus_addl.
+[INFO] Once installed this environment will be reused.
+[INFO] This may take a few minutes...
+kmctl check..............................................................Failed
+- hook id: kmctl-check
+- exit code: 1
+
+error  index  docs/how-to  folder has no README.md index; run kmctl check --fix
+skipped  index  .okf/  skipped .okf/: no .okf/ folder
+1 failed
+
+
+[--fix] exit 0
+kmctl check..............................................................Passed
+
+[again] exit 0
+kmctl check..............................................................Passed
+
+
+
+===== summary
+a_addl_only                      prek-0.5.5   FAILS
+a_addl_only                      pre-commit   FAILS
+b_empty_wheel_root_plus_addl     prek-0.5.5   WORKS
+b_empty_wheel_root_plus_addl     pre-commit   WORKS
+works in both tools: ['b_empty_wheel_root_plus_addl']

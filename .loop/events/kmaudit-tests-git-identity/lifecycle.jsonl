@@ -1,0 +1,17 @@
+{"at": "2026-11-15T20:52:49+00:00", "kind": "register", "schema_version": "1.0", "stage": "planning"}
+{"at": "2026-11-15T20:52:55+00:00", "binds": "8d75f206484e4effe1cd461556554f2e2910c2ca870bbfdec433f970e348e24b", "kind": "round-start", "n": 1, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
+{"at": "2026-11-15T20:55:36+00:00", "dispatched_at": "2026-11-15T20:52:55+00:00", "kind": "round-close", "n": 1, "outcome": "pass", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-15T20:54:50+00:00"}}
+{"at": "2026-11-15T20:55:38+00:00", "by": "advance", "from": "planning", "kind": "transition", "schema_version": "1.0", "to": "ready"}
+{"at": "2026-11-15T20:55:39+00:00", "grant": "g8", "hash": "646d87391b2ab5315ebd7f5e49cafaeb21c6e045157fcb1eef814fdf0476a3ad", "kind": "signoff", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/implementer", "step": "eval-sign"}
+{"at": "2026-11-15T20:55:42+00:00", "by": "advance", "from": "ready", "kind": "transition", "schema_version": "1.0", "to": "building"}
+{"at": "2026-11-15T21:00:50+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "building"}
+{"at": "2026-11-15T21:01:08+00:00", "by": "advance", "from": "building", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
+{"at": "2026-11-15T21:01:10+00:00", "binds": "4219b5cb87dcfd6bffe5fe58a49bd538f96ea376fbc1fbfda595626c66d05eb5", "kind": "round-start", "n": 1, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "6024399fdc574489a4c9184329b84ea02bbaba17"}
+{"at": "2026-11-15T21:07:34+00:00", "by": "review close", "from": "verifying", "kind": "transition", "schema_version": "1.0", "to": "fixing"}
+{"at": "2026-11-15T21:07:34+00:00", "dispatched_at": "2026-11-15T21:01:10+00:00", "kind": "round-close", "n": 1, "outcome": "fail", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-11-15T21:07:17+00:00"}}
+{"at": "2026-11-15T21:13:37+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "fixing"}
+{"at": "2026-11-15T21:14:01+00:00", "by": "review fixed", "from": "fixing", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
+{"at": "2026-11-15T21:14:04+00:00", "binds": "b952c61a11feeab424f77e55f2ac39401abff5999c0cddd5db96d2c301d83b43", "kind": "round-start", "n": 2, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "09a1ec2495700093ae8f5a97f8926f0143da183c"}
+{"at": "2026-11-15T21:15:31+00:00", "dispatched_at": "2026-11-15T21:14:04+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-11-15T21:14:24+00:00"}}
+{"at": "2026-11-15T21:15:39+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "c6a065696d299a6aac451fbc8e3768cab79f3d6d"}
+{"at": "2026-11-15T21:20:41+00:00", "branch": "loop/kmaudit-tests-git-identity", "kind": "land", "schema_version": "1.0", "sha": "db5edde2172db2d64a4949c38dd32311e65b5867"}

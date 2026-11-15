@@ -1,0 +1,28 @@
+# kmaudit's APM package (ADR 0043, ADR 0045). A repository's apm.yml names it
+# as {git: https://github.com/JasperHG90/kmctl.git, path: packages/kmaudit/apm,
+# ref: kmaudit-vVERSION}, and apm install brings, for every harness, the
+# extract-claims and write-checks skills and the kmaudit MCP server below;
+# ./claude adds the two agents for Claude Code alone. The version below is
+# kmaudit's one version (ADR 0012): scripts/release.py set --package kmaudit
+# writes it here and into claude/apm.yml, pins the server's ref to the tag,
+# and packages/kmaudit/pyproject.toml reads it.
+name: kmaudit
+version: 0.1.0.dev0
+description: kmaudit's audit of what a folder of markdown docs claims about its repository, with the skills, agents and MCP server that drive it.
+dependencies:
+  apm:
+    - ./claude
+  mcp:
+    # The server from the same release as the skills, so nothing has to be
+    # installed first. A .dev version has no tag, so until the first release
+    # the ref names the tag that release will get (kmaudit-v0.1.0), which
+    # set --package kmaudit then writes unchanged.
+    - name: kmaudit
+      registry: false
+      transport: stdio
+      command: uvx
+      args:
+        - "--from"
+        - "git+https://github.com/JasperHG90/kmctl@kmaudit-v0.1.0#subdirectory=packages/kmaudit"
+        - "kmaudit"
+        - "mcp"

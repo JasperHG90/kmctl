@@ -23,3 +23,4 @@
 {"at": "2026-10-18T05:19:30+00:00", "dispatched_at": "2026-10-18T05:05:11+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-18T05:19:12+00:00"}}
 {"at": "2026-10-18T05:19:56+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "d6bd9a15288b48d749ec3c0ad685d6b74bcfad5a"}
 {"at": "2026-10-18T05:21:32+00:00", "branch": "loop/opencode-harness", "kind": "land", "schema_version": "1.0", "sha": "5f802df9c874afdee29d04fbb5df77929d7096f0"}
+{"at": "2026-11-14T11:30:31+00:00", "by": "reconcile", "kind": "state-write", "schema_version": "1.0", "stage": "done"}

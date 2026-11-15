@@ -1,50 +1,30 @@
+# The workspace root (ADR 0044): it installs nothing itself. kmctl and kmaudit
+# are packages under packages/, each with its own pyproject.toml, sharing the
+# one uv.lock, ruff and pytest config here.
 [project]
-name = "kmctl"
-# apm/apm.yml carries the one version (ADR 0012); see [tool.hatch.version].
-dynamic = ["version"]
-description = "Keep a repository's docs/ and OKF knowledge bundle current, across agent harnesses."
-readme = "README.md"
-license = "MIT"
-license-files = ["LICENSE"]
-authors = [
-    { name = "Jasper Ginn", email = "jasperginn@gmail.com" }
-]
+name = "kmctl-workspace"
+version = "0.0.0"
 requires-python = ">=3.12"
-dependencies = [
-    "httpx>=0.28.1",
-    "pydantic>=2.14.1",
-    "pyyaml>=6.0.3",
-    "typer>=0.27.3",
-]
+dependencies = []
 
-[project.scripts]
-kmctl = "kmctl:main"
-
+# pre-commit and prek pip-install a hook repository's root before the hook's
+# additional_dependencies (.pre-commit-hooks.yaml), so the root builds an empty
+# wheel for them. uv never builds it: see [tool.uv] package = false.
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-# Read from the APM package, not git, so a build from a download with no .git
-# (as action.yml installs) still has the release version (ADR 0012).
-[tool.hatch.version]
-source = "regex"
-path = "apm/apm.yml"
-pattern = '(?m)^version: (?P<version>[^\s#]+)'
-
 [tool.hatch.build.targets.wheel]
-packages = ["src/kmctl"]
-
-# The skills ship inside the release, so kmctl briefing can list them (ADR 0001),
-# and the agents, which kmctl translates for Antigravity (ADR 0015).
-[tool.hatch.build.targets.wheel.force-include]
-"apm/.apm/skills" = "kmctl/_skills"
-"apm/.apm/agents" = "kmctl/_agents"
-"apm/claude/.apm/instructions" = "kmctl/_rules"
+bypass-selection = true
 
 [dependency-groups]
 dev = [
     "copier>=9.19.1",
+    "ipykernel>=7.4.0",
     "jsonschema>=4.26.0",
+    # Both workspace packages, installed editable; their tests run in the root gates.
+    "kmaudit[tracing]",
+    "kmctl",
     "opentelemetry-exporter-otlp-proto-http==1.45.1",
     "opentelemetry-sdk==1.45.1",
     "packaging>=26.3",
@@ -54,19 +34,28 @@ dev = [
     "ruff>=0.17.0",
 ]
 
-# uv rebuilds kmctl when either file changes, so a local uv run picks up a
-# version bump in apm/apm.yml.
 [tool.uv]
-cache-keys = [{ file = "pyproject.toml" }, { file = "apm/apm.yml" }]
+package = false
+
+[tool.uv.workspace]
+members = ["packages/*"]
+
+[tool.uv.sources]
+kmctl = { workspace = true }
+kmaudit = { workspace = true }
 
 [tool.ruff]
 # Spike evidence (.loop/), agent rules and skills (.claude/) and the knowledge
 # bundle (.okf/) are not project code, and tests/vendor/ is a pinned copy:
 # their files are kept as written.
 extend-exclude = [".loop", ".claude", ".okf", "tests/vendor"]
+# kmctl's code, so import sorting still knows kmctl as first-party, as it did at the root.
+src = [".", "packages/kmctl/src"]
 
 [tool.pytest.ini_options]
-addopts = ["--strict-markers", "-m", "not integration"]
+# -p pytester here, not pytest_plugins in a conftest: pytest refuses that
+# outside the top-level conftest, and kmctl's conftest sits in packages/kmctl/tests.
+addopts = ["--strict-markers", "-p", "pytester", "-m", "not integration"]
 # The repository root, so tests/scripts/ imports the release scripts as scripts.*.
 pythonpath = ["."]
 markers = [

@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "kmaudit's APM package holds the extract-claims and write-checks skills and declares the kmaudit MCP server as uvx from its own kmaudit-vX.Y.Z tag; its Claude-only sub-package (packages/kmaudit/apm/claude, targets: [claude]) holds kmaudit-claims-extractor and kmaudit-check-writer, whose tools are Read, Grep, Glob and the five kmaudit MCP tools, with no Bash and no hook.",
+      "fails_when": "a skill or agent is missing from kmaudit's package, the server is not declared at the package's own tag, an agent has Bash or a hook, or the sub-package targets more than claude",
+      "command": "uv run pytest packages/kmaudit/tests/test_apm_package.py -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "kmctl's package, its wheel and its Antigravity and OpenCode translations no longer carry the two skills or agents, and kmctl's own audit skill and kmctl-auditor stay.",
+      "fails_when": "kmctl's package, wheel or plugin patch still holds or translates them, or loses its own audit skill or auditor",
+      "command": "uv run pytest packages/kmctl/tests/test_apm_package.py packages/kmctl/tests/test_opencode.py packages/kmctl/tests/test_antigravity.py packages/kmctl/tests/test_plugin_patch.py -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "release.py set --package kmaudit pins the MCP server's ref to the release tag with the version.",
+      "fails_when": "the server's ref keeps an old tag after set",
+      "command": "uv run pytest tests/scripts/test_release.py -k kmaudit -q"
+    },
+    {
+      "id": "r4",
+      "behavior": "Installing kmaudit's package with APM for claude and opencode puts the kmaudit server in .mcp.json and opencode.json, the two agents in .claude/agents/ and none in .opencode/agents/.",
+      "fails_when": "the server is missing for a harness, the agents are missing for Claude Code, or OpenCode receives agent files",
+      "command": "uv run pytest packages/kmaudit/tests/test_apm_package.py -m integration -q"
+    },
+    {
+      "id": "r5",
+      "behavior": "The skills' evals and the repository's skills tests pass for the moved skills, which name the MCP tools and say what to do where no agent exists.",
+      "fails_when": "a skill test fails, or a skill still names a kmaudit shell command",
+      "command": "uv run pytest tests/test_skills.py -q"
+    }
+  ]
+}

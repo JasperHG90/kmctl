@@ -1,0 +1,111 @@
+{
+  "schema_version": "1.0",
+  "slug": "agent-audit-extract",
+  "plan_hash": "35a0ec9dca6c5f55de29f9a91f0fdc847bc634d032a3b27ddc57b2db6b67c902",
+  "problems": [
+    {
+      "id": "P1",
+      "text": "kmctl cannot extract claims without a coding agent, while the prototype's automatic extraction lives outside kmctl on langchain and langgraph"
+    },
+    {
+      "id": "P2",
+      "text": "kmctl has no place to keep model settings (provider, model, key variable, concurrency), and its only switches are environment variables"
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "A person or CI job extracts a bundle's claims with one kmctl command, and gets the same rows and the same skipped sections as the agent path"
+    },
+    {
+      "id": "G2",
+      "text": "Model settings live in one user file shared by every audit verb that calls a model, with keys read only from the variable a setting names"
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "O1",
+      "change": "Settings for model calls load from a user audit.toml, refusing unknown keys, with keys read only from named variables",
+      "kind": "support",
+      "goal": "G2",
+      "goal_index": 1,
+      "fixes": "P2",
+      "fixes_index": 1,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "new:src/kmctl/audit_settings.py",
+        "new:tests/test_audit_settings.py"
+      ],
+      "checked_by": "`new:tests/test_audit_settings.py` (XDG path and `~/.config` fallback, `--config` and `KMCTL_AUDIT_CONFIG` win, a misspelt key refuses naming it, a missing key variable refuses naming the variable and not a value, no file means extract has no model)",
+      "seen_by": "calling code"
+    },
+    {
+      "id": "O2",
+      "change": "The `kmctl[audit]` extra carries tenacity and langsmith, and LangSmith tracing turns on only when `LANGSMITH_TRACING=true`",
+      "kind": "support",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "pyproject.toml",
+        "uv.lock",
+        "new:src/kmctl/tracing.py"
+      ],
+      "checked_by": "a test in `new:tests/test_claims_extract.py` that tracing is off with the variable unset and wraps calls with it set, and `tests/test_help.py` (help loads without the extra)",
+      "seen_by": "calling code"
+    },
+    {
+      "id": "O3",
+      "change": "`kmctl claims extract` asks a model for each pending section, re-asks skipped sentences, merges two runs, and stores the answer through the submit path",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [
+        "O1",
+        "O2"
+      ],
+      "needs_index": [
+        0,
+        1
+      ],
+      "touches": [
+        "kmctl claims extract",
+        "new:src/kmctl/llm.py",
+        "src/kmctl/__init__.py"
+      ],
+      "checked_by": "`new:tests/test_claims_extract.py` on respx (rows equal those `kmctl claims submit` stores for the same verdicts; `todo` then lists nothing; a second pass sends no request; an edited section is the only one asked; skipped sentences asked once more; a list sent as JSON text with a trailing `]}` is read; an unreadable answer is not stored and exits 1; the second run adds claims only for sentences the first left without one; at most `max_calls` sections in flight; 429 then 200 retries; the key appears in no output; without the extra it refuses naming the install command) and `tests/test_help.py`",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O4",
+      "change": "A decision record, the manifesto, the architecture overview and the command reference describe extract, its settings and the extra",
+      "kind": "support",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [
+        "O3"
+      ],
+      "needs_index": [
+        2
+      ],
+      "touches": [
+        ".okf/manifesto.md",
+        ".okf/architecture/overview.md",
+        ".okf/decisions/index.md",
+        ".okf/summary.md",
+        ".okf/log.md",
+        "docs/reference/commands.md"
+      ],
+      "checked_by": "`kmctl check`, strict OKF validation in the pre-commit hooks, and the docs tests",
+      "seen_by": "operator"
+    }
+  ]
+}

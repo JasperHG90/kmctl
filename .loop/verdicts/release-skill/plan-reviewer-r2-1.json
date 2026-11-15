@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "Step 5 and the reworded every-release-has-notes now add a gap by hand to both the published Release (gh release edit --notes-file) and the committed .github/release-notes/TAG.md, keep the reviewed text, fix release_notes.py only when the draft missed a change, and forbid regenerating published notes. r3 and r4 test this.",
+      "anchor": ".loop/plans/release-skill/README.md",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "Step 4 now finds the release-tag run for the merge commit, follows it with gh run watch, and reads its ::warning:: and step summary of late commits before gh release view. This matches release-per-package's late-commit design. r4 tests it.",
+      "anchor": ".loop/plans/release-skill/README.md",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "59daf4df99fedbc63de03bc6ccbc47d39bd6ae305fafcab0c12421bf2bf164f6"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T17:51:44+00:00"
+}

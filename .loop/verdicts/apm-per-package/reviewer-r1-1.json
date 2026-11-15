@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The _names_old_package docstring, which this change edits, still says \"otherwise write_manifest replaces it\", but no write_manifest exists anywhere in the package, so the docstring describes a code path that is not there.",
+      "anchor": "packages/kmctl/src/kmctl/plugin.py:385",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "cb9d5e473ac4e0ced84d78a279953713c89f8d0432eea9e9cda9c867f2672b80",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T07:18:19+00:00"
+}

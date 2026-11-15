@@ -1,0 +1,167 @@
+{
+  "schema_version": "1.0",
+  "slug": "kmctl-to-packages",
+  "plan_hash": "97efc292a06a3688bd249ce74fe0a35115c061c958ca07658a64d85ab9697e5c",
+  "problems": [
+    {
+      "id": "P1",
+      "text": "kmctl's package (`pyproject.toml`, `src/kmctl/`, its tests) sits at the repository root, so the root is both the workspace and a package, unlike `packages/kmaudit` and the operator's uv-monorepo layout; and the pieces that would have to move with it assume the root: the `parents[2]` fallbacks to `apm/` in `src/kmctl/plugin.py`, `src/kmctl/antigravity.py` and `src/kmctl/opencode.py`, both release workflows' bare `uv build`, `scripts/check_wheel.py`'s default root `pyproject.toml`, and the `kmctl-check` hook that installs the root"
+    },
+    {
+      "id": "P2",
+      "text": "Every install line and install hint names the root as kmctl's source (docs, `README.md`, the hook hints, `HOOK_INSTALL`, the release notes template, the starter justfile, `action.yml`), and `scripts/release.py`'s install pattern would drop a `#subdirectory=` fragment, so each breaks once the package moves"
+    },
+    {
+      "id": "P3",
+      "text": "`src/kmctl/pin.py` hands off to a uvx source with no subdirectory, which cannot install a post-move release"
+    },
+    {
+      "id": "P4",
+      "text": "The knowledge bundle and the repo's own rules cite the old paths: `.okf/` `sources[].resource`, the summary, overview and manifesto, docs pages, and the `paths:` globs of local `.claude/rules/`"
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "The repository has the uv-monorepo shape (a workspace root that installs nothing, `packages/kmctl` and `packages/kmaudit` each a full package, one root `uv.lock`), `uv run pytest` at the root still runs every test, and the release workflows keep building, checking and publishing kmctl from its new folder until `release-per-package` reworks them"
+    },
+    {
+      "id": "G2",
+      "text": "Users install kmctl from post-move tags through `#subdirectory=packages/kmctl`, and projects pinned to v0.12.1 or older keep running their pin"
+    },
+    {
+      "id": "G3",
+      "text": "The knowledge bundle and rules describe the tree as it now is, and an ADR records the move"
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "O1",
+      "change": "The root is a workspace root that installs nothing, kmctl builds, tests and releases from packages/kmctl",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "pyproject.toml",
+        "new:packages/kmctl/pyproject.toml",
+        "new:packages/kmctl/README.md",
+        "new:packages/kmctl/LICENSE",
+        "new:packages/kmctl/src/kmctl/__init__.py",
+        "new:packages/kmctl/hatch_build.py",
+        "src/kmctl/__init__.py",
+        "src/kmctl/plugin.py",
+        "src/kmctl/antigravity.py",
+        "src/kmctl/opencode.py",
+        "uv.lock",
+        "tests/conftest.py",
+        "tests/fixtures/fake_tools.py",
+        "tests/test_plugin.py",
+        "tests/test_repo_apm.py",
+        "tests/test_ci.py",
+        "new:packages/kmctl/tests/conftest.py",
+        "new:packages/kmctl/tests/test_plugin.py",
+        "scripts/check_wheel.py",
+        ".github/workflows/release.yml",
+        ".github/workflows/release-tag.yml",
+        ".github/workflows/ci.yml",
+        "tests/scripts/test_workflows.py",
+        "tests/scripts/test_check_wheel.py",
+        "tests/scripts/test_release.py",
+        ".pre-commit-hooks.yaml",
+        "action.yml",
+        "starter/justfile.jinja",
+        "tests/test_starter.py",
+        "tests/test_pin.py"
+      ],
+      "checked_by": "`uv sync` then `uv run kmctl --version` at the root prints `apm/apm.yml`'s version; `uv build --package kmctl` (wheel built from the sdist) and `uv build --wheel --package kmctl` both give a wheel at that version with `_skills`, `_agents` and `_rules` that `scripts/check_wheel.py` and `scripts/smoke_wheel.py` accept; the skills, agents and rules tests pass against the editable install, where `_skills`, `_agents` and `_rules` do not exist (the source-tree fallbacks find `apm/` at the root); `uv run pytest --collect-only` at the root selects 1407 tests (876 under `packages/kmctl/tests`, 276 under `tests/`, 255 under `packages/kmaudit/tests`) and `uv run pytest` passes; `tests/scripts/test_workflows.py` pins `uv build --package kmctl` and the check_wheel pyproject path in both release workflows, and ci.yml's starter job runs `new:packages/kmctl/tests/test_starter.py` (ci-per-package later splits the rest of ci.yml); the `kmctl-check` hook installs and runs from a post-move commit in another repository (the hook test in the docs front matter tests); the action installs kmctl from `packages/kmctl` and the `knowledge` CI job (`uses: ./`) passes; the starter renders `kmctl_src` with the fragment for a newer `kmctl_ref` and without it for v0.12.1, and `new:packages/kmctl/tests/test_starter.py -m integration` bootstraps from a `file://` clone; the `tree_repo` fixture runs `scripts/release.py set` on its copy at a test-only version one minor past `apm/apm.yml`'s and tags that commit at it, and the starter bootstrap integration test passes against it (doctor's lock check included); a Release dry run on the branch passes the build and smoke-test job",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O2",
+      "change": "The pin hand-off adds the subdirectory only for refs newer than v0.12.1",
+      "kind": "behaviour",
+      "goal": "G2",
+      "goal_index": 1,
+      "fixes": "P3",
+      "fixes_index": 2,
+      "needs": [
+        "O1"
+      ],
+      "needs_index": [
+        0
+      ],
+      "touches": [
+        "src/kmctl/pin.py",
+        "new:packages/kmctl/src/kmctl/pin.py",
+        "tests/test_pin.py"
+      ],
+      "checked_by": "tests that a pin at v0.12.1 hands off to `git+https://github.com/JasperHG90/kmctl@COMMIT` and a pin at a newer tag to `...@COMMIT#subdirectory=packages/kmctl`, for the command and the not-installed notice alike; the real uvx hand-off integration test pins `tree_repo`'s test-only tag (newer than v0.12.1, different from the running version) and runs the copy's kmctl from `packages/kmctl`",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O3",
+      "change": "Every install line, hint and the release tooling install from packages/kmctl",
+      "kind": "behaviour",
+      "goal": "G2",
+      "goal_index": 1,
+      "fixes": "P2",
+      "fixes_index": 1,
+      "needs": [
+        "O1"
+      ],
+      "needs_index": [
+        0
+      ],
+      "touches": [
+        "README.md",
+        "docs/tutorials/get-started-with-kmctl.md",
+        "docs/how-to/install-the-plugin-and-the-ci-action.md",
+        "docs/how-to/install-kmctl-with-apm.md",
+        "docs/reference/commands.md",
+        "apm/claude/.apm/hooks/hooks.json",
+        "src/kmctl/plugin.py",
+        ".github/release-notes.md",
+        "scripts/release.py",
+        "tests/scripts/test_release.py",
+        "tests/test_docs.py",
+        "tests/test_repo_name.py"
+      ],
+      "checked_by": "`scripts/release.py set` keeps the `#subdirectory=packages/kmctl` fragment on every line it pins",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O4",
+      "change": "The knowledge bundle, docs and local rules cite the moved paths, and a new ADR records the move",
+      "kind": "behaviour",
+      "goal": "G3",
+      "goal_index": 2,
+      "fixes": "P4",
+      "fixes_index": 3,
+      "needs": [
+        "O1"
+      ],
+      "needs_index": [
+        0
+      ],
+      "touches": [
+        ".okf/summary.md",
+        ".okf/architecture/overview.md",
+        ".okf/manifesto.md",
+        ".okf/decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp.md",
+        ".okf/decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins.md",
+        "new:.okf/decisions/0044-kmctl-and-kmaudit-are-both-workspace-packages.md",
+        ".claude/rules/cli-interface.md",
+        ".claude/rules/cli-version-floor.md",
+        ".claude/rules/diagrams-stay-current.md",
+        ".claude/rules/adversarial-reviews.md",
+        ".claude/rules/manifesto-invariants.md"
+      ],
+      "checked_by": "`kmctl review due` reports no \"source not resolved\" notice; `kmctl check` and the strict okf-validate hook pass; historical records (`.okf/log.md`, `.okf/prototypes/`, eval results) keep their text",
+      "seen_by": "operator"
+    }
+  ]
+}

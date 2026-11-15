@@ -8,8 +8,8 @@ generated:
   at: 2026-10-18T19:13:06Z
 status: stable
 sources:
-  - resource: "src/kmctl/pin.py"
-  - resource: "src/kmctl/__init__.py"
+  - resource: "packages/kmctl/src/kmctl/pin.py"
+  - resource: "packages/kmctl/src/kmctl/__init__.py"
   - resource: "starter/justfile.jinja"
   - resource: "action.yml"
 ---
@@ -100,3 +100,13 @@ passes the output on unchanged. stdin and stderr are still inherited, and
 the exit code passes through. A script that needs the bare line sets
 `KMCTL_PINNED=1`, as `just kmctl` and the CI action do. The rest of this
 decision holds.
+
+## Amended, 2026-11-14
+
+kmctl moved to `packages/kmctl/` after v0.12.2 (ADR 0044). For a pin to a
+later release, or to a ref that is not a release tag, the hand-off runs
+`uvx --from git+https://github.com/JasperHG90/kmctl@<resolved_commit>#subdirectory=packages/kmctl kmctl ARGS`;
+a pin to v0.12.2 or older keeps the root source above, because those tags
+build from the root. The not-installed notice names the same source. A
+kmctl at v0.12.2 or older cannot hand off to a later pin, so its user
+installs a newer CLI first. The rest of this decision holds.

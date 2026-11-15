@@ -175,3 +175,21 @@ entries for `main`. `.github/workflows/release.yml` and
 `astral-sh/setup-uv` step in both now sets `enable-cache: false`, as CI's
 already did; `tests/scripts/test_workflows.py` checks it. The cost is
 download time on each release run.
+
+## Correction, 2026-11-11
+
+- The shell's clean environment keeps `PATH`, `HOME`, `LANG`, `LC_ALL`,
+  `TERM`, `TMPDIR` and `USER` (`SHELL_ENV_KEEP` in `action/agent.py`), not
+  only `PATH`, `HOME` and the locale. It still holds no API key and no
+  GitHub token.
+- The publish job runs when the audit job fails: it has
+  `if: ${{ !cancelled() }}` (`.github/workflows/knowledge-audit.yml`), so
+  one failed audit does not hold back the others, and it is skipped only
+  when the run is cancelled. The issue is then updated or closed from the
+  report that run has, not left as it was.
+- The audit-mode inputs also hold `path`, `audit` (a shipped audit to
+  run instead of `prompt`) and `report_name`, and publish mode adds
+  `min_severity`, `mention` and `issue_title` (`action.yml`).
+
+Found by the first `kmctl audit checks` run over the whole bundle
+([ADR 0038](0038-checks-are-step-data-that-kmctl-reruns-and-only-checks-that-notice-a-change-are-stored.md)).

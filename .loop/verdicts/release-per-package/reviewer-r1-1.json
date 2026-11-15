@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The late-commit step takes the drafted commit as the first parent of the merge's second parent. If the release branch gets an \"Update branch\" merge from main and then a later commit (for example a notes edit), that parent is the update merge. Its history already holds the late commits, so they go unnamed and no warning is written. Reading the Drafted-From trailer from the release branch's own commits (git log FIRST..SECOND_PARENT) before falling back to the parent would cover this case.",
+      "anchor": ".github/workflows/release-tag.yml:130",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "Two release_notes.py docstrings now read wrong. The module docstring still says the script reads history \"between the v* tag before TAG and TAG\", which is false for --package kmaudit and for --ref. The owns() docstring says \"kmctl the rest but other packages\", which is garbled.",
+      "anchor": "scripts/release_notes.py:24",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "86c2aab1fd22c47884000d44b8616731e30d967ecf430a47732cb7676bac9b79",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T21:29:23+00:00"
+}

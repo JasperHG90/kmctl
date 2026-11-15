@@ -7,10 +7,10 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-10-20T09:09:13Z
+  at: 2026-11-15T18:55:12Z
   against:
     - architecture/overview
-    - decisions/0035-kmctl-s-repository-answers-and-triages-with-hermes
+    - decisions/0012-releases-come-from-ci
 ---
 
 # Summary: kmctl
@@ -26,8 +26,8 @@ Claude Code, Antigravity and OpenCode.
 
 ## How it works
 
-Four parts ([overview](architecture/overview.md)). The CLI in `src/kmctl/`
-alone writes knowledge. An APM package in `apm/` carries skills, an audit
+Four parts ([overview](architecture/overview.md)). The CLI in `packages/kmctl/src/kmctl/`
+alone writes knowledge. An APM package in `packages/kmctl/apm/` carries skills, an audit
 agent, four knowledge rules and its hooks; APM installs it,
 `kmctl plugin patch` fills the gaps, and projects commit all but
 `apm_modules/` ([ADR 0030](decisions/0030-projects-commit-what-apm-deploys.md)).
@@ -88,8 +88,9 @@ The [decision index](decisions/index.md) lists every record.
 
 ## Where it stands
 
-All four parts work, for the three harnesses. Invariants I1, I3 and I4 are
-enforced by tests; I2, that audits never write knowledge, is still
-`planned`. No practices, proposals or prototypes are recorded, and many
-concepts have no `verified` entry, so `kmctl review due` lists them. Work in
-flight lives in `.loop/` tickets, outside the bundle.
+All four parts work, for three harnesses. I1, I3 and I4 are enforced by
+tests; I2 is `planned`. The audit is kmaudit, its own package
+([ADR 0043](decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp.md)):
+agents write checks it reruns with no model, and people review them
+([the audit pipeline](architecture/audit-pipeline.md)).
+Many concepts lack a `verified` entry. Work in flight lives in `.loop/`.

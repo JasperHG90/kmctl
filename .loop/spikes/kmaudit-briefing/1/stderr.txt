@@ -1,0 +1,7 @@
+Using CPython 3.12.16
+Creating virtual environment at: .venv
+   Building kmctl @ file:///tmp/loopctl-spike-bzbnnrng/tree
+   Building kmaudit @ file:///tmp/loopctl-spike-bzbnnrng/tree/packages/kmaudit
+      Built kmaudit @ file:///tmp/loopctl-spike-bzbnnrng/tree/packages/kmaudit
+      Built kmctl @ file:///tmp/loopctl-spike-bzbnnrng/tree
+Installed 105 packages in 1.99s

@@ -8,9 +8,9 @@ generated:
   at: 2026-10-17T16:57:28Z
 status: stable
 sources:
-  - resource: "src/kmctl/docs_index.py"
-  - resource: "src/kmctl/checks.py"
-  - resource: "src/kmctl/review_due.py"
+  - resource: "packages/kmctl/src/kmctl/docs_index.py"
+  - resource: "packages/kmctl/src/kmctl/checks.py"
+  - resource: "packages/kmctl/src/kmctl/review_due.py"
 ---
 
 # ADR 0022: Docs pages carry optional OKF front matter and generated folder indexes
@@ -91,3 +91,12 @@ Rejected:
   its descriptions match the pages.
 - Agents and people never edit a folder index; the knowledge rules, the
   `CLAUDE.md` block and the `write-docs` skill say to run `kmctl check --fix`.
+
+## Correction, 2026-11-11
+
+The error a missing or stale folder index gives names only
+`kmctl check --fix` (`src/kmctl/checks.py`), not `kmctl update`.
+`kmctl update` still writes the indexes.
+
+Found by the first `kmctl audit checks` run over the whole bundle
+([ADR 0038](0038-checks-are-step-data-that-kmctl-reruns-and-only-checks-that-notice-a-change-are-stored.md)).

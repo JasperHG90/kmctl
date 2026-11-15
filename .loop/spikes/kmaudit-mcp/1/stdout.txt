@@ -1,0 +1,5 @@
+claims todo, all pending: 1109408 bytes, ~ 277352 tokens, 211 sections
+largest single section: 26165 bytes
+claims todo --limit 15: 163018 bytes, ~ 40754 tokens
+checks todo --limit 5: 31419 bytes, ~ 7854 tokens, 5 claims
+checks todo --limit 5 --brief: 20245 bytes, ~ 5061 tokens

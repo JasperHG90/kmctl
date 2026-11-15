@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "ADR 0043's amendment and ADR 0040's correction said the CLI writes no store, but kmaudit ui does",
+      "anchor": ".okf/decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp.md:135",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "judge.py's refusals told callers to run dropped CLI verbs",
+      "anchor": "packages/kmaudit/src/kmaudit/judge.py:234",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "c116a2e6ce13ce6702919794c0ad343276cc1dd010816a2d9fa00f4b219c0efa",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T10:47:53+00:00"
+}

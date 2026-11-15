@@ -1,0 +1,23 @@
+---
+type: eval
+title: 'Eval: release-notes-hermes-reviewer-f2'
+description: 'Definition of done for release-notes-hermes-reviewer-f2: 2 row(s).'
+tags:
+- eval
+generated:
+  by: process:loopctl/2.3.1.dev65+g93b143856
+  at: '2026-11-15T05:04:58+00:00'
+slug: release-notes-hermes-reviewer-f2
+signoff:
+  signer: delegated:jasperginn@gmail.com/implementer
+  hash: a4e57dd340b1a4fe5a7e51f958af909d1097f234d853266dc9582dfb276d0398
+  at: '2026-11-15T05:04:58+00:00'
+verified: null
+---
+
+Rows: rows.json; the fields each row takes: loopctl schema eval-rows.
+
+- r1: A rewrite with a non-blank line under What changed that is neither a '- ' bullet nor indented under one, such as an intro paragraph before the first bullet or an unindented line after a bullet, fails the stray-line check, so the draft stands with a ::warning:: naming stray-line.
+  Fails when: such a rewrite is kept, or the warning does not name stray-line
+- r2: An indented continuation line under a bullet is still joined and kept, and a draft whose What changed holds 'None.' passes when the rewrite keeps that line; every earlier check still behaves as before.
+  Fails when: a continuation line or the draft's own 'None.' fails a rewrite, or any existing cleaning-script test fails

@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "the module docstring described the history range as the v* tag before TAG, and the owns() docstring was garbled",
+      "anchor": "scripts/release_notes.py:25",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "3536821959942988fbd3251970589be29e4be96bb68ea90ffd5d1fcd430fe53b",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T21:50:24+00:00"
+}

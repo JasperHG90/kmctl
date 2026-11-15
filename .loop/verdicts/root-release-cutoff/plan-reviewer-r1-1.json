@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The plan names pin.py, the starter, the docs and release.py as the places the cutoff lives, but plugin.py's HOOK_INSTALL is a fifth: it always appends #subdirectory=packages/kmctl to @v{version('kmctl')}. Once `release.py set 0.12.2` strips the fragment from hooks.json, test_plugin.py (hooks.json must equal plugin.HOOK_COMMAND, and test_hook_install_subdirectory_is_packages_kmctl asserts the fragment) fails, and, worse, a kmctl built from this branch at version 0.12.2 writes a broken @v0.12.2#subdirectory hint into consumers' settings.json via the plugin patch. So plugin.py must follow the cutoff too. pin.py imports from plugin.py, so plugin.py cannot import LAST_ROOT_RELEASE from pin.py without a cycle; the constant likely has to move into plugin.py (or a shared module), and the agreement test should cover it. plugin.py is listed in touches, but the prose never says HOOK_INSTALL changes, packages/kmctl/tests/test_plugin.py is missing from touches, and checked-by has no test for the hook hint at v0.12.2 versus a later version. Revise the prose, touches and checked-by to include it.",
+      "anchor": "packages/kmctl/src/kmctl/plugin.py:64",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "1d3b72bd4e2b39d0690d5fa264bc8c2c158a5bdc7da2e80be0dd9d3ff670a436"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T04:47:31+00:00"
+}

@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "Unlisted risk: `.pre-commit-hooks.yaml` offers the `kmctl-check` hook to other repositories with `language: python` (ADR 0022). pre-commit and prek install a python hook by installing the hooked repo's root (`pip install .` / its uv equivalent). After the move, the root is a virtual workspace with no build target, so any user who sets `rev:` to a post-move tag gets a hook that fails to install (setuptools fallback on a flat root with packages/, scripts/, tests/), or installs no `kmctl` entry point. The plan does not mention the file, no outcome touches it, and `test_pre_commit_hook_runs_from_another_repo` (integration) would fail at build time with no planned fix. Whether a fix exists is open: pre-commit has no subdirectory option for python hooks. This needs a spike before the plan is revised. Question: on the moved tree, can a `.pre-commit-hooks.yaml` hook with `language: python` (prek 0.5.5 and pre-commit) install and run `kmctl check` from a post-move commit, for example with `additional_dependencies: [./packages/kmctl]`, or does the root need a build target, which conflicts with `package = false`? If neither works, the operator has to accept that the hook ends (or changes shape) for post-move tags, like risk 2.",
+      "anchor": ".pre-commit-hooks.yaml:4",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "The Outcomes facts say O1 can ship alone, but it cannot. On its own, O1 moves src/kmctl into packages/kmctl. The editable install's `parents[2]` fallbacks then point at packages/kmctl, which has no apm/ (O3), so the skills, agents and rules tests fail. Root tests that cite `src/kmctl` paths break (O2). The release workflows' bare `uv build` fails at a root that installs nothing (O6), so main could not release, which the Intent says must keep working. O2 and O3 are `support` outcomes that no behaviour lists in `needs`, and O6 is a separate behaviour. plan.split could therefore cut O1 off from them and land a red tree. Make O1 need O2, O3 and O6's workflow path change, or fold them into O1, so the move lands as one unit.",
+      "anchor": ".loop/plans/kmctl-to-packages/README.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "open",
+      "claim": "Some `needs` entries leave out outcomes they wait on. O6 checks that ci.yml's starter job runs `packages/kmctl/tests/test_starter.py`, a path that only exists after O2, but O6 lists `needs: O1` only. O5 touches `tests/test_starter.py`, `tests/test_docs.py` and `tests/test_repo_name.py`, which O2 moves into packages/kmctl/tests, and O4 touches `tests/test_pin.py`, which also moves. Their touches and ordering depend on O2, but O2 is not in their `needs`.",
+      "anchor": ".loop/plans/kmctl-to-packages/README.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p4",
+      "disposition": "open",
+      "claim": "P4 lists `scripts/release.py`'s install pattern dropping the `#subdirectory=` fragment. O6, the only outcome that fixes P4, does not touch release.py. O5 does touch it and checks it (`release.py set` keeps the fragment), but O5 lists only `fixes: P2`. Either O5 also fixes P4, or the release.py part of P4 belongs in P2.",
+      "anchor": ".loop/plans/kmctl-to-packages/README.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "e00907b0150676b7d33f954e6afabca8ce4a13bb5e410cd408804c69e2e51287"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T19:47:47+00:00"
+}

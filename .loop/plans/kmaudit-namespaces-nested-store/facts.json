@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0",
+  "slug": "kmaudit-namespaces-nested-store",
+  "plan_hash": "31227332531db0cd0a2b3b3f4a0b8fb61721e1969b551c77247fdab3411be586",
+  "problems": [
+    {
+      "id": "P1",
+      "text": "kmaudit namespaces and kmaudit briefing fail with \"unable to open database file\" whenever a repository has a nested namespace, because the read-only SQLite URI decodes the %2F in its file name."
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "Every namespace kmaudit stores can be listed and briefed."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "O1",
+      "change": "Read-only store URIs are built from Path.as_uri, so nested namespaces open",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "packages/kmaudit/src/kmaudit/namespaces.py",
+        "packages/kmaudit/src/kmaudit/briefing.py",
+        "packages/kmaudit/src/kmaudit/store.py",
+        "packages/kmaudit/tests/test_namespaces.py",
+        "packages/kmaudit/tests/test_briefing.py",
+        "packages/kmaudit/tests/test_claims_store.py"
+      ],
+      "checked_by": "tests that run `kmaudit namespaces --json` and `kmaudit briefing` in a git repository with a store for `handbook/guides` holding a section, which must list its counts; and that the legacy store copy works from a repository path holding `%` and `#`",
+      "seen_by": "operator"
+    }
+  ]
+}

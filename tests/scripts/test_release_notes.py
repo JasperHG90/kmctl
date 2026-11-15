@@ -254,13 +254,23 @@ def test_template_fills_version_install_and_compare(repo: Path) -> None:
             assert line in res.stdout
     assert (
         "uv tool install git+https://github.com/JasperHG90/kmctl@v0.3.0rc1"
-        in res.stdout
+        "#subdirectory=packages/kmctl\n" in res.stdout
     )
     assert "- uses: JasperHG90/kmctl@v0.3.0rc1" in res.stdout
     assert (
         "https://github.com/JasperHG90/kmctl/compare/v0.2.0...v0.3.0rc1" in res.stdout
     )
     assert "$" not in res.stdout
+
+
+def test_template_install_subdirectory_is_packages_kmctl() -> None:
+    """The release notes template installs the tag from packages/kmctl, where releases after v0.12.2 build (ADR 0044)."""
+    text = TEMPLATE.read_text()
+
+    assert (
+        "uv tool install git+https://github.com/JasperHG90/kmctl@$tag"
+        "#subdirectory=packages/kmctl\n" in text
+    )
 
 
 def test_first_release_has_no_compare_link(repo: Path) -> None:
@@ -280,3 +290,169 @@ def test_unknown_tag_is_refused(repo: Path) -> None:
     assert res.returncode == 1
     assert "v9.9.9" in res.stderr
     assert res.stdout == ""
+
+
+KMAUDIT_TEMPLATE = ROOT / ".github" / "release-notes-kmaudit.md"
+
+
+def _change(repo: Path, subject: str, *paths: str) -> None:
+    """Commit ``subject``, writing a new line into each of ``paths``."""
+    for rel in paths:
+        path = repo / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("a") as fh:
+            fh.write(f"{subject}\n")
+        _git(repo, "add", rel)
+    _git(repo, "commit", "-q", "-m", subject)
+
+
+@pytest.fixture
+def split(tmp_path: Path) -> Path:
+    """A repo with kmctl's and kmaudit's commits mixed, both families tagged, and noise.
+
+    kmaudit-v0.1.0 and v0.1.0 tag the same commit; v0.2.0 tags a kmaudit-only
+    commit after it, which kmaudit's next notes still list.
+    """
+    repo = tmp_path / "split"
+    repo.mkdir()
+    _git(repo, "init", "-q", "-b", "main")
+    _change(repo, "kmaudit begins", "packages/kmaudit/src.py")
+    _change(repo, "Start", "README.md")
+    _git(repo, "tag", "-a", "v0.1.0", "-m", "kmctl 0.1.0")
+    _git(repo, "tag", "-a", "kmaudit-v0.1.0", "-m", "kmaudit 0.1.0")
+    _change(repo, "kmaudit adds x", "packages/kmaudit/x.py")
+    _git(repo, "tag", "-a", "v0.2.0", "-m", "kmctl 0.2.0")
+    _change(repo, "kmaudit adds w", "packages/kmaudit/w.py")
+    _change(repo, "kmctl adds y", "packages/kmctl/y.py")
+    _change(repo, "Docs change", "docs/z.md")
+    _git(repo, "switch", "-q", "-c", "loop/both")
+    _change(repo, "Inside both", "packages/kmaudit/a.py", "scripts/b.py")
+    _git(repo, "switch", "-q", "main")
+    _git(
+        repo, "merge", "-q", "--no-ff", "-m", "Merge loop/both: Both move.", "loop/both"
+    )
+    _change(repo, "loop: land both", ".loop/state.json")
+    _change(repo, "release: kmaudit-v0.1.0", "packages/kmaudit/VERSION")
+    _git(repo, "switch", "-q", "-c", "release/kmaudit-v0.1.1")
+    _change(repo, "Bump kmaudit", "packages/kmaudit/VERSION")
+    _git(repo, "switch", "-q", "main")
+    _git(
+        repo,
+        "merge",
+        "-q",
+        "--no-ff",
+        "-m",
+        "Merge pull request #9 from JasperHG90/release/kmaudit-v0.1.1",
+        "release/kmaudit-v0.1.1",
+    )
+    return repo
+
+
+def _draft(repo: Path, tmp_path: Path, package: str, tag: str) -> str:
+    """Draft ``package``'s notes for the unpushed ``tag`` at HEAD into a file and return it."""
+    out = tmp_path / "out" / f"{tag}.md"
+    res = _notes(repo, "--package", package, tag, "--ref", "HEAD", "--out", str(out))
+    assert res.returncode == 0, res.stderr
+    assert res.stdout == ""
+    return out.read_text()
+
+
+def test_package_kmaudit_drafts_its_own_commits_for_an_unpushed_tag(
+    split: Path, tmp_path: Path
+) -> None:
+    """kmaudit's draft starts at kmaudit-v0.1.0, not v0.2.0, and lists only commits touching packages/kmaudit/."""
+    text = _draft(split, tmp_path, "kmaudit", "kmaudit-v0.2.0")
+
+    assert _section(text, "What changed").strip() == "- Both move. (`both`)"
+    assert _section(text, "Other changes").strip() == (
+        "- kmaudit adds x\n- kmaudit adds w"
+    )
+    for outside in ("kmctl adds y", "Docs change", "Start", "begins", "release"):
+        assert outside not in text
+
+
+def test_package_kmctl_drafts_its_own_commits_for_an_unpushed_tag(
+    split: Path, tmp_path: Path
+) -> None:
+    """kmctl's draft starts at v0.2.0 and leaves out the commit touching only packages/kmaudit/."""
+    text = _draft(split, tmp_path, "kmctl", "v0.3.0")
+
+    assert _section(text, "What changed").strip() == "- Both move. (`both`)"
+    assert _section(text, "Other changes").strip() == ("- kmctl adds y\n- Docs change")
+    assert "kmaudit adds" not in text
+    assert "https://github.com/JasperHG90/kmctl/compare/v0.2.0...v0.3.0" in text
+
+
+def test_package_kmaudit_first_draft_walks_the_whole_history(
+    split: Path, tmp_path: Path
+) -> None:
+    """With no kmaudit-v* tag, the draft lists every commit that touched packages/kmaudit/."""
+    _git(split, "tag", "-d", "kmaudit-v0.1.0")
+
+    text = _draft(split, tmp_path, "kmaudit", "kmaudit-v0.1.0")
+
+    assert _section(text, "Other changes").strip() == (
+        "- kmaudit begins\n- kmaudit adds x\n- kmaudit adds w"
+    )
+    assert "First release." in text
+    assert "/compare/" not in text
+
+
+def test_package_kmaudit_template_installs_from_its_subdirectory(
+    split: Path, tmp_path: Path
+) -> None:
+    """kmaudit's notes follow its own template: the install line pins the tag and the subdirectory."""
+    text = _draft(split, tmp_path, "kmaudit", "kmaudit-v0.2.0")
+
+    for line in KMAUDIT_TEMPLATE.read_text().splitlines():
+        if line.startswith("#"):
+            assert line in text
+    assert (
+        "uv tool install 'kmaudit @ git+https://github.com/JasperHG90/kmctl"
+        "@kmaudit-v0.2.0#subdirectory=packages/kmaudit'\n" in text
+    )
+    assert "uses: JasperHG90/kmctl" not in text
+    assert (
+        "https://github.com/JasperHG90/kmctl/compare/kmaudit-v0.1.0...kmaudit-v0.2.0"
+        in text
+    )
+    assert "$" not in text
+
+
+@pytest.mark.parametrize(
+    ("package", "tag"), [("kmaudit", "v0.3.0"), ("kmctl", "kmaudit-v0.2.0")]
+)
+def test_package_refuses_the_other_family_s_tag(
+    split: Path, package: str, tag: str
+) -> None:
+    """A tag from the other family is refused, naming the tag."""
+    res = _notes(split, "--package", package, tag, "--ref", "HEAD")
+
+    assert res.returncode == 1
+    assert tag in res.stderr
+
+
+def test_package_draft_prints_to_stdout_without_out(split: Path) -> None:
+    """Without --out the draft goes to stdout, as a tagged release's notes do."""
+    res = _notes(split, "--package", "kmaudit", "kmaudit-v0.2.0", "--ref", "HEAD")
+
+    assert res.returncode == 0, res.stderr
+    assert "- kmaudit adds w" in res.stdout
+
+
+def test_a_bookkeeping_only_commit_is_in_neither_package_s_notes(
+    split: Path, tmp_path: Path
+) -> None:
+    """A commit touching only .okf/ and uv.lock ships nothing; one with a shipped path counts for its owner."""
+    _change(split, "Bundle and lock only", ".okf/summary.md", "uv.lock")
+    _change(split, "Bundle and kmaudit", ".okf/log.md", "packages/kmaudit/q.py")
+    _change(split, "Rule and docs", ".claude/rules/r.md", "docs/r.md")
+
+    kmctl = _draft(split, tmp_path, "kmctl", "v0.3.0")
+    kmaudit = _draft(split, tmp_path, "kmaudit", "kmaudit-v0.2.0")
+
+    assert "Bundle and lock only" not in kmctl + kmaudit
+    assert "Bundle and kmaudit" in kmaudit
+    assert "Bundle and kmaudit" not in kmctl
+    assert "Rule and docs" in kmctl
+    assert "Rule and docs" not in kmaudit

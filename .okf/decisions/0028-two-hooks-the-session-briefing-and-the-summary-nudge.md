@@ -8,10 +8,10 @@ generated:
   at: 2026-10-18T23:11:18Z
 status: deprecated
 sources:
-  - resource: "src/kmctl/summary.py"
-  - resource: "apm/claude/.apm/hooks/hooks.json"
-  - resource: "src/kmctl/plugin.py"
-  - resource: "src/kmctl/doctor.py"
+  - resource: "packages/kmctl/src/kmctl/summary.py"
+  - resource: "packages/kmctl/apm/claude/.apm/hooks/hooks.json"
+  - resource: "packages/kmctl/src/kmctl/plugin.py"
+  - resource: "packages/kmctl/src/kmctl/doctor.py"
 ---
 
 # ADR 0028: Two hooks: the session briefing and the summary nudge

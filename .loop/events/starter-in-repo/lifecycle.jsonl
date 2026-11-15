@@ -22,3 +22,4 @@
 {"at": "2026-10-18T10:29:54+00:00", "dispatched_at": "2026-10-18T10:25:57+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-10-18T10:29:42+00:00"}}
 {"at": "2026-10-18T10:30:06+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "c4c4edd3324675c37360562571c376289cd359b8"}
 {"at": "2026-10-18T10:31:33+00:00", "branch": "loop/starter-in-repo", "kind": "land", "schema_version": "1.0", "sha": "d38c9bf236cdcdcf8ebde1c9fceddae45065ecff"}
+{"at": "2026-11-14T11:30:31+00:00", "by": "reconcile", "kind": "state-write", "schema_version": "1.0", "stage": "done"}

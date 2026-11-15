@@ -1,0 +1,23 @@
+{"at": "2026-11-14T17:21:08+00:00", "kind": "register", "schema_version": "1.0", "stage": "planning"}
+{"at": "2026-11-14T17:47:15+00:00", "grant": "g7", "hash": "7666d59871b85b7a963199924ff4a2818abff80eefae17a3823ac018a3f54acf", "kind": "signoff", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5", "step": "eval-sign"}
+{"at": "2026-11-14T19:49:08+00:00", "kind": "spike-note", "n": 1, "replaced": false, "schema_version": "1.0"}
+{"at": "2026-11-14T19:49:35+00:00", "binds": "8b9e4405f701b4ec486b6570c74fb0d164a1a4e2ff77276065b15f2400948905", "kind": "round-start", "n": 1, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
+{"at": "2026-11-14T19:51:53+00:00", "dispatched_at": "2026-11-14T19:49:35+00:00", "kind": "round-close", "n": 1, "outcome": "fail", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-14T19:51:21+00:00"}}
+{"at": "2026-11-14T19:59:21+00:00", "kind": "spike-note", "n": 3, "replaced": false, "schema_version": "1.0"}
+{"at": "2026-11-14T19:59:22+00:00", "kind": "spike-note", "n": 2, "replaced": false, "schema_version": "1.0"}
+{"at": "2026-11-14T20:00:14+00:00", "diff": {"added": [], "changed": {"r2": ["behavior", "fails_when"]}, "removed": []}, "grant": "g7", "hash": "9f923ab7d637f4bd76f21eab9e80d669a122a1a2a046f3548d824d5a1d700e46", "kind": "signoff", "reason": "plan review r1: tools off and the draft-before block for the reviewer join r2", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5", "step": "eval-sign"}
+{"at": "2026-11-14T20:00:19+00:00", "binds": "213a6358e28669d2d88b5c36be82ebd299210ce3d217b988cf86fec3a4264a26", "kind": "round-start", "n": 2, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
+{"at": "2026-11-14T20:01:31+00:00", "dispatched_at": "2026-11-14T20:00:19+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-14T20:01:18+00:00"}}
+{"at": "2026-11-14T20:01:32+00:00", "by": "advance", "from": "planning", "kind": "transition", "schema_version": "1.0", "to": "ready"}
+{"at": "2026-11-14T21:54:08+00:00", "by": "advance", "from": "ready", "kind": "transition", "schema_version": "1.0", "to": "building"}
+{"at": "2026-11-14T22:05:47+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "building"}
+{"at": "2026-11-14T22:05:49+00:00", "by": "advance", "from": "building", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
+{"at": "2026-11-14T22:05:50+00:00", "binds": "ef295b1568db381f1a3bac3d8cda4d5070c64c5258b259245f1772576a4c92bf", "kind": "round-start", "n": 1, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "1cc1be675b796983c7c7cdad80af9c8bf1123013"}
+{"at": "2026-11-14T22:10:49+00:00", "by": "review close", "from": "verifying", "kind": "transition", "schema_version": "1.0", "to": "fixing"}
+{"at": "2026-11-14T22:10:49+00:00", "dispatched_at": "2026-11-14T22:05:50+00:00", "kind": "round-close", "n": 1, "outcome": "fail", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-11-14T22:10:32+00:00"}}
+{"at": "2026-11-14T22:14:26+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "fixing"}
+{"at": "2026-11-14T22:14:28+00:00", "by": "review fixed", "from": "fixing", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
+{"at": "2026-11-14T22:14:37+00:00", "binds": "f6a0375aaf67fb6d9b6046223a307cc1924f4c2e7a3b3693b49163b21ab7405d", "kind": "round-start", "n": 2, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "df4ee8bd9949119e1e9ab76962477c27e15ef233"}
+{"at": "2026-11-14T22:18:26+00:00", "dispatched_at": "2026-11-14T22:14:37+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-11-14T22:18:15+00:00"}}
+{"at": "2026-11-14T22:18:34+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "9fb147110bcad63d34e44d34aff4fcc24fac266c"}
+{"at": "2026-11-14T22:21:53+00:00", "branch": "loop/release-notes-hermes", "kind": "land", "schema_version": "1.0", "sha": "16a731dfb8d6b1088b5123c3101bf033606f0188"}

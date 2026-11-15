@@ -1,0 +1,20 @@
+{"at": "2026-11-14T17:21:01+00:00", "kind": "register", "schema_version": "1.0", "stage": "planning"}
+{"at": "2026-11-14T17:47:17+00:00", "grant": "g7", "hash": "309c4f450a90e742c38aedc3fd96c0f883ba92354111cfb7c245d1e5f6217e3b", "kind": "signoff", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5", "step": "eval-sign"}
+{"at": "2026-11-14T17:47:25+00:00", "binds": "a6d479c861ad43f002679b46d99be49bcc4da41c1443ff4d54695eb9b544ea89", "kind": "round-start", "n": 1, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
+{"at": "2026-11-14T17:49:27+00:00", "dispatched_at": "2026-11-14T17:47:24+00:00", "kind": "round-close", "n": 1, "outcome": "fail", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-14T17:48:56+00:00"}}
+{"at": "2026-11-14T17:50:46+00:00", "diff": {"added": ["r4"], "changed": {"r1": ["behavior", "fails_when"], "r3": ["behavior", "fails_when"]}, "removed": []}, "grant": "g7", "hash": "1556ad7b5827b674b8eb309c027849f5307d54d534b913866a0bbd4b04e2168c", "kind": "signoff", "reason": "plan round 1: gaps after publish are added by hand to the Release and the committed file, and the skill reads release-tag's late-commit warning", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5", "step": "eval-sign"}
+{"at": "2026-11-14T17:50:48+00:00", "binds": "59daf4df99fedbc63de03bc6ccbc47d39bd6ae305fafcab0c12421bf2bf164f6", "kind": "round-start", "n": 2, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
+{"at": "2026-11-14T17:52:10+00:00", "dispatched_at": "2026-11-14T17:50:48+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-14T17:51:44+00:00"}}
+{"at": "2026-11-14T17:52:12+00:00", "by": "advance", "from": "planning", "kind": "transition", "schema_version": "1.0", "to": "ready"}
+{"at": "2026-11-14T22:21:55+00:00", "by": "advance", "from": "ready", "kind": "transition", "schema_version": "1.0", "to": "building"}
+{"at": "2026-11-14T22:30:11+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "building"}
+{"at": "2026-11-14T22:30:13+00:00", "by": "advance", "from": "building", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
+{"at": "2026-11-14T22:30:15+00:00", "binds": "c19b70de402217c7a0a829101a3074e42dd3e73fab82bb70ad62d937a430d32a", "kind": "round-start", "n": 1, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "5199defb1caddc975b1f1fa53a271ba95194e0f3"}
+{"at": "2026-11-14T22:34:52+00:00", "by": "review close", "from": "verifying", "kind": "transition", "schema_version": "1.0", "to": "fixing"}
+{"at": "2026-11-14T22:34:52+00:00", "dispatched_at": "2026-11-14T22:30:15+00:00", "kind": "round-close", "n": 1, "outcome": "fail", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-11-14T22:34:36+00:00"}}
+{"at": "2026-11-14T22:38:39+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "fixing"}
+{"at": "2026-11-14T22:38:46+00:00", "by": "review fixed", "from": "fixing", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
+{"at": "2026-11-14T22:38:54+00:00", "binds": "7683f711c80dd0de3e7b7aad0f143958e6648e7e81c33035e532c08e2886146f", "kind": "round-start", "n": 2, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "be65f1092f5098e07eca00900b32e26912c88db3"}
+{"at": "2026-11-14T22:39:52+00:00", "dispatched_at": "2026-11-14T22:38:54+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-11-14T22:39:35+00:00"}}
+{"at": "2026-11-14T22:40:01+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "aec195507dd206ee38a4530b8a7cc4787d9aa5a8"}
+{"at": "2026-11-14T22:43:12+00:00", "branch": "loop/release-skill", "kind": "land", "schema_version": "1.0", "sha": "a6e2df02da8f8684a86d15084fbda74a493c9569"}

@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "commands.md and the mcp_server.py module docstring said every verb runs in a worker thread, but judge awaits on the event loop",
+      "anchor": "packages/kmaudit/docs/commands.md:344",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "e008e449d09cda5b1c88e84b0ffe882414f2602152506968c7296d8af802b3b1",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T18:10:51+00:00"
+}

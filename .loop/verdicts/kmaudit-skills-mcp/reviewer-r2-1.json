@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "Half done. /extract-claims now has a real end-to-end run through MCP (run 3 passes), but /write-checks and its kmaudit-check-writer agent were never run, and the plan's checked-by says the skills' evals are rerun.",
+      "anchor": "packages/kmaudit/apm/.apm/skills/write-checks/evals/results.md",
+      "category": "missing",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "results.md credited tests/test_skills.py with the agents' tools check.",
+      "anchor": "packages/kmaudit/apm/.apm/skills/extract-claims/evals/results.md",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "74d5c007b1ad27a45155c30ef5cd8d67f8452f7703abbc915a910f88aaafbc37",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T09:44:16+00:00"
+}

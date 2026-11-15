@@ -1,0 +1,67 @@
+source at 546f8011
+baseline: exit 0; 1407/1421 tests collected (14 deselected) in 1.74s
+probe: selected per tree {'packages/kmaudit/tests': 255, 'tests': 1152}
+probe: helper imports checked 27, from the wrong tree 0
+restructure: exit 0; restructure: /tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-k2p/k2p-ws-3bq8jhqq/moved ready (tests=True, variant=plain, bump=None)
+uv sync: exit 0;    Building kmaudit @ file:///tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-k2p/k2p-ws-3bq8jhqq/moved/packages/kmaudit |    Building kmctl @ file:///tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-k2p/k2p-ws-3bq8jhqq/moved/packages/kmctl |       Built kmaudit @ file:///tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-k2p/k2p-ws-3bq8jhqq/moved/packages/kmaudit |       Built kmctl @ file:///tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-k2p/k2p-ws-3bq8jhqq/moved/packages/kmctl |  + kmaudit==0.1.0 (from file:///tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-k2p/k2p-ws-3bq8jhqq/moved/packages/kmaudit) |  + kmctl==0.12.1 (from file:///tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-k2p/k2p-ws-3bq8jhqq/moved/packages/kmctl)
+kmctl: editable=True url=file:///tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-k2p/k2p-ws-3bq8jhqq/moved/packages/kmctl
+kmaudit: editable=True url=file:///tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-k2p/k2p-ws-3bq8jhqq/moved/packages/kmaudit
+uv run kmctl --version: exit 0; 'kmctl 0.12.1' (apm.yml says 0.12.1)
+moved: exit 2; 531/533 tests collected (2 deselected), 1 error in 0.99s
+probe: selected per tree {'packages/kmaudit/tests': 255, 'tests': 276}
+probe: helper imports checked 0, from the wrong tree 0
+ERROR packages/kmctl/tests - Failed: Defining 'pytest_plugins' in a non-top-l...
+
+plan as written: selected before 1407, after 531; result FAIL
+
+fix addopts: exit 0; 1407/1421 tests collected (14 deselected) in 0.97s; OK
+probe: selected per tree {'packages/kmaudit/tests': 255, 'packages/kmctl/tests': 876, 'tests': 276}
+probe: helper imports checked 27, from the wrong tree 0
+full run after addopts: exit 1; 31 failed, 1376 passed, 14 deselected in 79.22s (0:01:19)
+  failures naming a missing fixture/import: 0
+  FAILED test_retry_network_error_twice_then_pass.py::test_flaky - AssertionErr...
+  FAILED test_retry_network_error_twice_then_pass.py::test_flaky - AssertionErr...
+  FAILED test_retry_network_error_twice_then_pass.py::test_flaky - AssertionErr...
+  FAILED test_retry_network_error_twice_then_pass.py::test_flaky - AssertionErr...
+  FAILED test_retry_network_error_twice_then_pass.py::test_flaky - AssertionErr...
+  FAILED test_retry_network_error_twice_then_pass.py::test_flaky - AssertionErr...
+  FAILED test_retry_three_network_failures_still_fail.py::test_flaky - Assertio...
+  FAILED packages/kmctl/tests/test_adr_audit_fixes.py::test_supersede_docstring
+  FAILED packages/kmctl/tests/test_antigravity.py::test_okf_stop_continues_on_the_first_stop_with_okf_reason
+  FAILED packages/kmctl/tests/test_antigravity.py::test_okf_stop_prints_nothing_to_do_otherwise[True-True-1]
+  FAILED packages/kmctl/tests/test_antigravity.py::test_okf_stop_prints_nothing_to_do_otherwise[True-False-0]
+  FAILED packages/kmctl/tests/test_antigravity.py::test_okf_stop_prints_nothing_to_do_otherwise[False-True-0]
+  FAILED packages/kmctl/tests/test_antigravity.py::test_okf_stop_with_bundle_change_lets_it_stop
+  FAILED packages/kmctl/tests/test_antigravity.py::test_okf_stop_never_blocks_without_a_working_script[fails]
+  FAILED packages/kmctl/tests/test_apm_package.py::test_wheel_reports_the_set_version_and_carries_the_skills
+  FAILED packages/kmctl/tests/test_network_retry.py::test_tier_default_run_collects_no_network_test
+  FAILED packages/kmctl/tests/test_network_retry.py::test_marked_every_test_that_runs_the_real_install
+  FAILED packages/kmctl/tests/test_network_retry.py::test_installs_asserted_with_expected_exit_and_output
+  FAILED packages/kmctl/tests/test_network_retry.py::test_retry_network_error_twice_then_pass[Could not resolve host: github.com]
+  FAILED packages/kmctl/tests/test_network_retry.py::test_retry_network_error_twice_then_pass[Failed to connect to github.com port 443]
+  FAILED packages/kmctl/tests/test_network_retry.py::test_retry_network_error_twice_then_pass[Connection refused]
+  FAILED packages/kmctl/tests/test_network_retry.py::test_retry_network_error_twice_then_pass[Connection timed out after 300000 milliseconds]
+  FAILED packages/kmctl/tests/test_network_retry.py::test_retry_network_error_twice_then_pass[Operation timed out]
+  FAILED packages/kmctl/tests/test_network_retry.py::test_retry_network_error_twice_then_pass[Temporary failure in name resolution]
+  FAILED packages/kmctl/tests/test_network_retry.py::test_retry_three_network_failures_still_fail
+  FAILED packages/kmctl/tests/test_no_audit.py::test_no_file_mentions_kmctl_audit_outside_history
+  FAILED packages/kmctl/tests/test_repo_name.py::test_old_name_only_where_it_describes_old_installs
+  FAILED packages/kmctl/tests/test_schema.py::test_schema_tables_have_one_definition
+  FAILED tests/scripts/test_check_wheel.py::test_expected_entries_follow_pyproject
+  FAILED tests/scripts/test_check_wheel.py::test_a_complete_wheel_passes - Asse...
+  FAILED tests/scripts/test_check_wheel.py::test_a_wheel_without_an_entry_fails[kmctl/_skills/]
+  FAILED tests/scripts/test_check_wheel.py::test_a_wheel_without_an_entry_fails[kmctl/_agents/]
+  FAILED tests/scripts/test_check_wheel.py::test_a_wheel_without_an_entry_fails[kmctl/_rules/]
+  FAILED tests/scripts/test_hermes_triage.py::test_triage_areas_match_kmctl_s_top_level_folders
+  FAILED tests/scripts/test_release.py::test_version_source_is_the_apm_package
+  FAILED tests/scripts/test_release.py::test_version_source_builds_the_manifest_version
+  FAILED tests/scripts/test_release.py::test_version_source_follows_a_changed_manifest
+  FAILED tests/test_rules.py::test_cited_paths_exist_or_are_planned[adversarial-reviews.md]
+
+fix root-conftest: exit 0; 1407/1421 tests collected (14 deselected) in 0.51s; OK
+probe: selected per tree {'packages/kmaudit/tests': 255, 'packages/kmctl/tests': 876, 'tests': 276}
+probe: helper imports checked 27, from the wrong tree 0
+
+fix testpaths: exit 0; 1407/1421 tests collected (14 deselected) in 0.44s; OK
+probe: selected per tree {'packages/kmaudit/tests': 255, 'packages/kmctl/tests': 876, 'tests': 276}
+probe: helper imports checked 27, from the wrong tree 0

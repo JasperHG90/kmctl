@@ -1,0 +1,116 @@
+{
+  "schema_version": "1.0",
+  "slug": "agent-audit-claims-skill",
+  "plan_hash": "c72f19a2d4d6faceb165b03a08b64fceb084394930be8ed18d3d052006d7e1ef",
+  "problems": [
+    {
+      "id": "P1",
+      "text": "No skill or agent drives the `kmctl audit claims` verbs, so a session that wants a bundle's claims must do the extraction itself and hold every claim in its own context"
+    },
+    {
+      "id": "P2",
+      "text": "I2 says audits never write knowledge, but a subagent's shell cannot be limited to `kmctl audit claims` commands in Antigravity (spike:agent-audit-claims/1), so the extractor can hold I2 only by its instructions"
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "A main session in Claude Code or Antigravity gets a bundle's claims extracted by a subagent and sees only a short summary"
+    },
+    {
+      "id": "G2",
+      "text": "The manifesto's invariants claim only what holds by construction, and the agents' write discipline is stated as a Value"
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "O1",
+      "change": "The extract-claims skill dispatches a Haiku extractor agent that runs `kmctl audit claims todo` and `kmctl audit claims submit` and returns a summary",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "new:apm/.apm/skills/extract-claims/SKILL.md",
+        "new:apm/.apm/skills/extract-claims/evals/evals.json",
+        "new:apm/.apm/skills/extract-claims/evals/results.md",
+        "new:apm/.apm/agents/kmctl-claims-extractor.md",
+        "tests/test_apm_package.py",
+        "tests/test_skills.py"
+      ],
+      "checked_by": "`tests/test_apm_package.py` (package and wheel carry the skill and the agent), a test in `tests/test_skills.py` that every `kmctl` command the skill and agent name exists, and the skill's skill-creator evals",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O2",
+      "change": "`kmctl plugin patch` translates the extractor agent, with Read and a shell, for Antigravity and OpenCode",
+      "kind": "support",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [
+        "O1"
+      ],
+      "needs_index": [
+        0
+      ],
+      "touches": [
+        "tests/test_antigravity.py",
+        "tests/test_opencode.py"
+      ],
+      "checked_by": "`tests/test_antigravity.py` and `tests/test_opencode.py` (the extractor translates with `view_file` and `run_command` in Antigravity and without `commandExecutionPolicy: \"off\"`, and the auditor's translation is unchanged)",
+      "seen_by": "nobody"
+    },
+    {
+      "id": "O3",
+      "change": "The briefing stays in budget and the manifesto names the skill and agent",
+      "kind": "support",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [
+        "O1"
+      ],
+      "needs_index": [
+        0
+      ],
+      "touches": [
+        ".okf/manifesto.md",
+        ".okf/summary.md",
+        ".okf/log.md",
+        "tests/test_briefing.py"
+      ],
+      "checked_by": "`tests/test_briefing.py::test_briefing_token_budget`, `kmctl check` and strict OKF validation in the pre-commit hooks",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O4",
+      "change": "The manifesto narrows I2 to what holds by construction, adds a Value for the agents' shell, and a decision record says why",
+      "kind": "support",
+      "goal": "G2",
+      "goal_index": 1,
+      "fixes": "P2",
+      "fixes_index": 1,
+      "needs": [
+        "O1"
+      ],
+      "needs_index": [
+        0
+      ],
+      "touches": [
+        ".okf/manifesto.md",
+        ".okf/architecture/overview.md",
+        ".okf/decisions/index.md",
+        ".okf/summary.md",
+        ".okf/log.md"
+      ],
+      "checked_by": "`kmctl check`, strict OKF validation in the pre-commit hooks, and a hand check that the overview's Depicts entry for I2 matches the manifesto (`.claude/rules/diagrams-stay-current.md`)",
+      "seen_by": "operator"
+    }
+  ]
+}

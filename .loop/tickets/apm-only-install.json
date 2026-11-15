@@ -165,9 +165,9 @@
   },
   "plan_hash": "0cab79b9bd406ef40750a280dbb08b02aa5b0a404a63948fc9c3477f5ece3abc",
   "intent": {
-    "epic": null,
+    "epic": "multi-harness",
     "depends_on": [],
-    "priority": null
+    "priority": 1
   },
   "history": [
     {
@@ -213,6 +213,6 @@
       "by": "done"
     }
   ],
-  "by": "process:loopctl/2.1.1.dev213+ge1bc3680f.d20261016",
-  "at": "2026-10-16T21:18:30+00:00"
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T11:30:29+00:00"
 }

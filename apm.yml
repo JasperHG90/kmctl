@@ -19,6 +19,4 @@ dependencies:
     - jasperhg90/skills/rules/python-type-hints.instructions.md#7a5e072ae8aad76caa9c13645317347c64cce729
     - jasperhg90/skills/rules/uv-installer.instructions.md#7a5e072ae8aad76caa9c13645317347c64cce729
     - jasperhg90/skills/rules/prek-code-quality.instructions.md#7a5e072ae8aad76caa9c13645317347c64cce729
-    - jasperhg90/skills/skills/tools/agent-creator#7a5e072ae8aad76caa9c13645317347c64cce729
-    - jasperhg90/skills/skills/tools/rule-creator#7a5e072ae8aad76caa9c13645317347c64cce729
-    - jasperhg90/skills/skills/tools/generate-art#7a5e072ae8aad76caa9c13645317347c64cce729
+    - anthropics/skills/skills/frontend-design#2c5958ecac7cee2b583967a2c4981d0f4a75c579

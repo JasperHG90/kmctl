@@ -1,0 +1,22 @@
+{"at": "2026-11-15T19:44:43+00:00", "kind": "register", "schema_version": "1.0", "stage": "planning"}
+{"at": "2026-11-15T19:44:48+00:00", "binds": "b2bd87833e0ab893113b0a585a27cb2bf4c7766965bdc19d6447979cd387a804", "kind": "round-start", "n": 1, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
+{"at": "2026-11-15T19:46:28+00:00", "dispatched_at": "2026-11-15T19:44:48+00:00", "kind": "round-close", "n": 1, "outcome": "fail", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-15T19:46:05+00:00"}}
+{"at": "2026-11-15T19:46:33+00:00", "binds": "66e4c26c1ed2b69ab6e11b35e946fe77ae0f56ecdddbd8813518932e7d2abb0f", "kind": "round-start", "n": 2, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
+{"at": "2026-11-15T19:47:11+00:00", "dispatched_at": "2026-11-15T19:46:33+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-15T19:46:53+00:00"}}
+{"at": "2026-11-15T19:47:13+00:00", "by": "advance", "from": "planning", "kind": "transition", "schema_version": "1.0", "to": "ready"}
+{"at": "2026-11-15T19:47:14+00:00", "grant": "g8", "hash": "ad944ae5e3c8faff63ebf9a2cc1575467b11eb7675a7c878d90a721a2bef5002", "kind": "signoff", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/implementer", "step": "eval-sign"}
+{"at": "2026-11-15T19:47:17+00:00", "by": "advance", "from": "ready", "kind": "transition", "schema_version": "1.0", "to": "building"}
+{"at": "2026-11-15T20:03:39+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "building"}
+{"at": "2026-11-15T20:03:41+00:00", "by": "advance", "from": "building", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
+{"at": "2026-11-15T20:03:43+00:00", "binds": "e67f2f253517e6e86bd575019680aa861240615e2f991c8f09ae31b9540352a5", "kind": "round-start", "n": 1, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "9d72a20e57006adce1ba56570cf25e0a36905ea6"}
+{"at": "2026-11-15T20:10:09+00:00", "by": "review close", "from": "verifying", "kind": "transition", "schema_version": "1.0", "to": "fixing"}
+{"at": "2026-11-15T20:10:09+00:00", "dispatched_at": "2026-11-15T20:03:43+00:00", "kind": "round-close", "n": 1, "outcome": "fail", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-11-15T20:09:43+00:00"}}
+{"at": "2026-11-15T20:14:13+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "fixing"}
+{"at": "2026-11-15T20:14:21+00:00", "by": "review fixed", "from": "fixing", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
+{"at": "2026-11-15T20:14:32+00:00", "binds": "c5667b7b6b06b5afa2b78a4e45863eb708296196c5eb37852c0b98c8a69046e5", "kind": "round-start", "n": 2, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "d5448b7d72c00a8a028129fdc5c92b47256914e3"}
+{"at": "2026-11-15T20:19:38+00:00", "dispatched_at": "2026-11-15T20:14:32+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-11-15T20:19:18+00:00"}}
+{"at": "2026-11-15T20:24:03+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "verifying"}
+{"at": "2026-11-15T20:24:12+00:00", "binds": "7fd72251532329f48a5636398c77e3898b46d584b71fc2f830bfc83550448058", "kind": "round-start", "n": 3, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "90b58420a1b6e879e527cf299212ce2b54a9eede"}
+{"at": "2026-11-15T20:25:06+00:00", "dispatched_at": "2026-11-15T20:24:12+00:00", "kind": "round-close", "n": 3, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-11-15T20:24:48+00:00"}}
+{"at": "2026-11-15T20:25:10+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "6b50ed9a3392ea185c4dfe6eb77744cf97f9e913"}
+{"at": "2026-11-15T20:29:44+00:00", "branch": "loop/upgrade-from-v0-12-docs", "kind": "land", "schema_version": "1.0", "sha": "42eaeac02c8ae54308a3b3997e38a97d14b6bb6a"}

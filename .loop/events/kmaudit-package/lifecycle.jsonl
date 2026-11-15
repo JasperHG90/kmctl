@@ -1,0 +1,22 @@
+{"at": "2026-11-14T11:31:31+00:00", "kind": "register", "schema_version": "1.0", "stage": "planning"}
+{"at": "2026-11-14T11:34:41+00:00", "grant": "g7", "hash": "f60184004ebf96b13e54fb6ba3e6e2d529f6e5fe238762ffefb87a195fba868c", "kind": "signoff", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/claude-main", "step": "eval-sign"}
+{"at": "2026-11-14T11:34:43+00:00", "kind": "spike-note", "n": 1, "replaced": false, "schema_version": "1.0"}
+{"at": "2026-11-14T11:35:36+00:00", "binds": "30a477a48d4063abc25337b9c3178977a5088b9afce72ee8f1d979ef53024cdf", "kind": "round-start", "n": 1, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
+{"at": "2026-11-14T11:38:14+00:00", "dispatched_at": "2026-11-14T11:35:36+00:00", "kind": "round-close", "n": 1, "outcome": "fail", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-14T11:37:41+00:00"}}
+{"at": "2026-11-14T11:38:45+00:00", "binds": "91e38cc5769c6252125f0ccd805de0978a8b85fe014248981ea811fc5ff0199e", "kind": "round-start", "n": 2, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
+{"at": "2026-11-14T11:38:52+00:00", "diff": {"added": [], "changed": {"r4": ["behavior", "fails_when", "command"], "r6": ["behavior"]}, "removed": []}, "grant": "g7", "hash": "94a41d0f7dfb74a64be9910a3bd164fece21de376c6a2a4dd52e5d7a5070f63c", "kind": "signoff", "reason": "plan review round 1: r4 now covers the agents' guard hook moving to kmaudit guard with the removal; r6 excludes decision records' history and the Action's own audit-mode refusal", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/claude-main", "step": "eval-sign"}
+{"at": "2026-11-14T11:40:17+00:00", "dispatched_at": "2026-11-14T11:38:45+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-14T11:39:57+00:00"}}
+{"at": "2026-11-14T11:40:19+00:00", "by": "advance", "from": "planning", "kind": "transition", "schema_version": "1.0", "to": "ready"}
+{"at": "2026-11-14T11:40:33+00:00", "by": "advance", "from": "ready", "kind": "transition", "schema_version": "1.0", "to": "building"}
+{"at": "2026-11-14T12:39:44+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "building"}
+{"at": "2026-11-14T12:39:53+00:00", "by": "advance", "from": "building", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
+{"at": "2026-11-14T12:39:55+00:00", "binds": "c82a2043ba2aeb52f349239284c143345980de6179ece326eb9060b876231a30", "kind": "round-start", "n": 1, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "706a976913d9ef3713d07e4be6fa56dd94111d07"}
+{"at": "2026-11-14T12:45:21+00:00", "by": "review close", "from": "verifying", "kind": "transition", "schema_version": "1.0", "to": "fixing"}
+{"at": "2026-11-14T12:45:21+00:00", "dispatched_at": "2026-11-14T12:39:55+00:00", "kind": "round-close", "n": 1, "outcome": "fail", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-11-14T12:45:02+00:00"}}
+{"at": "2026-11-14T12:50:21+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "fixing"}
+{"at": "2026-11-14T12:54:08+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "fixing"}
+{"at": "2026-11-14T12:54:17+00:00", "by": "review fixed", "from": "fixing", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
+{"at": "2026-11-14T12:54:23+00:00", "binds": "d57c7a1c289ecd1b49fbda3208328f66910e7c3c11d739490795e7d582273556", "kind": "round-start", "n": 2, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "d30bf7ab757bdb58ce0344d343172e69a0b91384"}
+{"at": "2026-11-14T12:59:07+00:00", "dispatched_at": "2026-11-14T12:54:23+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-11-14T12:58:50+00:00"}}
+{"at": "2026-11-14T12:59:45+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "f7fb724e8c55c6c9500f1d7d2cf1dc3d58aaa4ad"}
+{"at": "2026-11-14T13:02:39+00:00", "branch": "loop/kmaudit-package", "kind": "land", "schema_version": "1.0", "sha": "56587c0d34a4a588d0830254f2138624250fbf8c"}

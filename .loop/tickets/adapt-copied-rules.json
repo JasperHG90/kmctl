@@ -127,9 +127,9 @@
   },
   "plan_hash": "3154a76ecf8e3a339a58542782606cc9d7e06e5e6385d2cb0fb763f23c74c50b",
   "intent": {
-    "epic": null,
+    "epic": "foundations",
     "depends_on": [],
-    "priority": null
+    "priority": 1
   },
   "history": [
     {
@@ -175,6 +175,6 @@
       "by": "done"
     }
   ],
-  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T08:36:06+00:00"
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T11:30:28+00:00"
 }

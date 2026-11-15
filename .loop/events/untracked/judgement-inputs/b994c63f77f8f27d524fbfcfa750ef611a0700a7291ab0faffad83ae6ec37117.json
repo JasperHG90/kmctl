@@ -1,0 +1,1 @@
+{"ask":"Namespaces command yields error if no db (kmaudit namespaces: OperationalError unable to open database file in namespaces._count)"}

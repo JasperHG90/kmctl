@@ -1,0 +1,37 @@
+map: 1406 default-suite tests; kmctl files measured outside src/: 0
+tests with lines in a kmctl copy outside src/: 0
+tests that started a Python subprocess running measured kmctl code: 30 (30 of them ran this tree's src/ in it), 37 processes
+
+tests that drive kmctl as a process (static scan): 23 in 4 files
+  with no src/ line in the map: 0
+  with no measured subprocess: 0
+
+per test: src lines | measured subprocesses (with src) | test
+    2102 |   2 (  2) | tests/test_action.py::test_script_passes_and_writes_both_reports
+    2236 |   2 (  2) | tests/test_action.py::test_script_passes_and_shows_root_missing_folder_link
+    2168 |   2 (  2) | tests/test_action.py::test_script_fails_when_check_fails
+    2174 |   2 (  2) | tests/test_action.py::test_script_passes_when_concepts_due
+    2174 |   2 (  2) | tests/test_action.py::test_script_deepens_shallow_clone
+    2047 |   1 (  1) | tests/test_action.py::test_script_fails_when_review_due_crashes
+    2100 |   1 (  1) | tests/test_antigravity.py::test_briefing_format_antigravity_stdin_path_runs_from_any_folder
+    1985 |   1 (  1) | tests/test_pin.py::test_hands_off_to_the_pinned_commit
+    1985 |   1 (  1) | tests/test_pin.py::test_hands_off_by_the_path_option[--path]
+    1985 |   1 (  1) | tests/test_pin.py::test_hands_off_by_the_path_option[--path=]
+    2013 |   1 (  1) | tests/test_pin.py::test_hands_off_from_agents_with_the_hook_json
+    1994 |   1 (  1) | tests/test_pin.py::test_version_names_the_pin[--version]
+    1994 |   1 (  1) | tests/test_pin.py::test_version_names_the_pin[-V]
+    1993 |   1 (  1) | tests/test_pin.py::test_version_of_a_failed_pin_is_left_as_is
+    1971 |   1 (  1) | tests/test_pin.py::test_runs_itself_without_a_pin_to_hand_off_to[_no_lock]
+    1973 |   1 (  1) | tests/test_pin.py::test_runs_itself_without_a_pin_to_hand_off_to[_bad_lock]
+    1977 |   1 (  1) | tests/test_pin.py::test_runs_itself_without_a_pin_to_hand_off_to[_no_package]
+    1979 |   1 (  1) | tests/test_pin.py::test_runs_itself_without_a_pin_to_hand_off_to[_own_ref]
+    1977 |   1 (  1) | tests/test_pin.py::test_runs_itself_without_a_pin_to_hand_off_to[_no_commit]
+    1957 |   1 (  1) | tests/test_pin.py::test_runs_itself_when_pinned
+    1985 |   1 (  1) | tests/test_pin.py::test_runs_itself_without_uvx
+    1971 |   2 (  2) | tests/test_pin.py::test_runs_itself_and_never_crosses_a_git_folder
+    2572 |   2 (  2) | tests/test_summary.py::test_clears_ci_action_reports_a_stale_summary_without_failing
+
+tests that build a kmctl wheel or sdist (run no kmctl code): 3
+       0 |   0 (  0) | tests/scripts/test_release.py::test_version_source_builds_the_manifest_version
+       0 |   0 (  0) | tests/scripts/test_release.py::test_version_source_follows_a_changed_manifest
+       0 |   0 (  0) | tests/test_apm_package.py::test_wheel_reports_the_set_version_and_carries_the_skills

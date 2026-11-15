@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "With the default path (the current directory) in a repository root that holds no .okf/, resolve_target opens a namespace named '.' that covers the whole repository (store .kmaudit/..sqlite). Every later path then narrows it, so `kmaudit claims todo docs` reports namespace '.' and never gets its own store. That is the clash the ticket exists to prevent, and the old code refused this case.",
+      "anchor": "packages/kmaudit/src/kmaudit/sections.py:157",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "The first open of the .okf namespace from a legacy store is not safe when several processes run it at once. Every process copies into the same .okf.partial and then renames it over .okf.sqlite, possibly under a process that already has the file open. Six parallel `kmaudit claims list .okf` runs on a copy of the real store: 5 of 6 exit 1 with 'disk I/O error' in each of 5 trials. The store docstring promises that parallel agents can work at once.",
+      "anchor": "packages/kmaudit/src/kmaudit/store.py:156",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "The r2b command (-k maps) selects only test_a_path_inside_a_namespace_maps_to_it. The refusal half of the row, a parent of an existing namespace exits 1 naming it, is tested by test_a_folder_holding_a_namespace_is_refused_naming_it, but the row's command never runs that test.",
+      "anchor": "packages/kmaudit/tests/test_namespaces.py:150",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "open",
+      "claim": "r1 says todo hands out a section for every heading of every .md file, but test_plain_folder_hands_out_every_page compares only the set of concepts. A dropped section inside a file (guide.md has two) would still pass.",
+      "anchor": "packages/kmaudit/tests/test_namespaces.py:104",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "4f5a1f3f7021085022a1e35d0ae24be22c37507eb70f27a963a8ecdf09d6c14f",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T13:47:15+00:00"
+}

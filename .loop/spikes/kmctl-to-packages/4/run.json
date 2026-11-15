@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "slug": "kmctl-to-packages",
+  "n": 4,
+  "command": "python3 /tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-k2p/collect_confirm.py",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-k2p/collect_confirm.py",
+      "copy": "files/collect_confirm.py"
+    },
+    {
+      "source": "/tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/spike-k2p/restructure.py",
+      "copy": "files/restructure.py"
+    }
+  ],
+  "where": "worktree",
+  "head": "27ddd7aa69e46f01724f0ac8a5848f1c3465be51",
+  "fingerprint": "b7ee3e91cd170f2867e6733ab0e5ce7302641a5002b143a22c5897d11f034f14",
+  "started_at": "2026-11-14T17:48:15+00:00",
+  "finished_at": "2026-11-14T17:48:31+00:00",
+  "duration_seconds": 15.953,
+  "timeout_seconds": 400.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "moved_from": null
+}

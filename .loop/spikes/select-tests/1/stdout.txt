@@ -1,0 +1,48 @@
+map recorded at 4453fa8e: 1406 tests, 494 with no kmctl line (always selected), 40 measured files
+commits: last 40 non-merge commits touching a path outside .loop/
+SEL    1091/1406  9dcbb0bd prototypes: measure how the reworded link question moved its 
+FULL   1406/1406  a29ddf1e audit: honest second opinions, others' feedback apart, two ov  [src/kmctl/claims/ui.html is a non-Python file in the package]
+FULL   1406/1406  f9aaa2dc audit ui: a View code button on each check  [src/kmctl/claims/ui.html is a non-Python file in the package]
+FULL   1406/1406  36d0e273 audit: code view, code coverage, clearer check results, measu  [src/kmctl/claims/ui.html is a non-Python file in the package]
+FULL   1406/1406  b537c3b7 agent-audit: claims, checks, judge, and a review page with fe  [apm/.apm/agents/kmctl-check-writer.md changed]
+FULL   1406/1406  0a2c301a operator: manual commits  [pyproject.toml changed]
+FULL   1406/1406  da289263 operator: manual commits  [.okf/prototypes/audit-cli/tests/conftest.py changed]
+SEL    1055/1406  7999e154 operator: manual commits
+SEL    1182/1406  bf9cc21b check: make the summary word limit a warning, add --strict
+SEL     494/1406  bc05e104 ci: read Hermes' response file from env in the triage step
+SEL    1055/1406  3cd304d2 okf: ack the summary after merging main
+SEL    1156/1406  32dc92df ci: answer /hermes comments and triage new issues with Hermes
+SEL     494/1406  64137973 Add a rule: releases come from CI and always carry notes
+FULL   1406/1406  398a5da9 release: v0.12.1  [apm/antigravity/apm.yml changed]
+SEL    1156/1406  09c82013 fix(release-notes): list pull requests that a sync merge brin
+SEL     494/1406  9616a194 test(release-notes): cover pull requests a sync merge brings 
+SEL     928/1406  c586f168 Check a decision index entry against the record's corrected t
+SEL     530/1406  f970b494 Test that a decision index entry is checked against the corre
+FULL   1406/1406  3bdcba50 release: v0.12.0  [apm/antigravity/apm.yml changed]
+SEL    1181/1406  bc845eb0 Correct ADR 0026 for --version and name KMCTL_PINNED=1 for th
+SEL     524/1406  6aa2c9bf Say in the decision schema that --draft writes a draft
+SEL     976/1406  0dd240f9 Check that decision records carry their file's number
+SEL    1032/1406  668cbda9 Add --draft to kmctl new decision to write status draft
+FULL   1406/1406  3d09bb52 Add kmctl mv to rename or renumber a concept  [apm/antigravity/.apm/instructions/okf-bundle.instructions.md changed]
+SEL    1182/1406  2c2e05b0 Warn when the summary's checked.against names a missing conce
+SEL     951/1406  e8ea7c8b Say when kmctl --version prints the pinned release
+SEL    1182/1406  1dadafa5 Fail kmctl check on a missing link target inside the bundle
+FULL   1406/1406  d6947a17 release: v0.11.0  [apm/antigravity/apm.yml changed]
+SEL    1055/1406  532ebe47 Acknowledge the summary after merging main
+SEL    1055/1406  83f1972e Acknowledge the summary after merging main
+SEL    1055/1406  113d549e Acknowledge the summary after merging main
+FULL   1406/1406  b33cc173 apm audit works as a CI gate for kmctl installs  [apm/apm.yml changed]
+FULL   1406/1406  60880f19 kmctl review due decides by commit order, not dates  [apm/antigravity/.apm/instructions/docs-layout.instructions.md changed]
+FULL   1406/1406  080e7a72 Fix what kmctl ships into a consumer repository  [apm/.apm/skills/decision-log-review/SKILL.md changed]
+SEL    1182/1406  fa4bc30d kmctl init writes the first decision only into an empty decis
+SEL    1032/1406  4baf5bbc kmctl doctor passes correct setups and finds user-scope old p
+FULL   1406/1406  64544edf A decision record may be draft until it is accepted  [apm/antigravity/.apm/instructions/okf-bundle.instructions.md changed]
+SEL     494/1406  fc5dab87 Pin the action's inner actions to commit SHAs
+FULL   1406/1406  ce8b712c License kmctl under MIT  [pyproject.toml changed]
+SEL    1156/1406  0134e8fa Release notes come from main's history, not GitHub's PR list
+
+full-run fallbacks: 15/40  by cause: {'non-Python file in src': 3, 'apm/': 9, 'pyproject.toml': 2, 'conftest': 1}
+selected runs: 25; tests run min 494, median 1055, max 1182 of 1406
+median share of the suite per commit, fallbacks counted as 100%: 83%
+mean share: 80%
+sensitivity, .okf not a readable root: selected runs median 496, min 494, max 1032 of 1406

@@ -112,7 +112,8 @@
   "intent": {
     "epic": "cli",
     "depends_on": [
-      "scaffold-init"
+      "scaffold-init",
+      "knowledge-check"
     ],
     "priority": 5
   },
@@ -166,6 +167,6 @@
       "by": "done"
     }
   ],
-  "by": "process:loopctl/2.0.1.dev1+g4552fe226.d20261015",
-  "at": "2026-10-15T10:50:35+00:00"
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T11:30:30+00:00"
 }

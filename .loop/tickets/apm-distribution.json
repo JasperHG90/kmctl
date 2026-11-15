@@ -110,8 +110,11 @@
   },
   "plan_hash": "f894364e85faeb39cb30295b41f42ebdcdab94826b106285bffde76324155b50",
   "intent": {
-    "epic": null,
-    "depends_on": [],
+    "epic": "plugin",
+    "depends_on": [
+      "repo-uses-apm",
+      "release-flow"
+    ],
     "priority": null
   },
   "history": [
@@ -158,6 +161,6 @@
       "by": "done"
     }
   ],
-  "by": "process:loopctl/2.1.1.dev72+ge53d4208b.d20261016",
-  "at": "2026-10-16T11:14:54+00:00"
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T11:30:29+00:00"
 }

@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "Narrowed but still open. O1's touches now cover verbs.py, check_verbs.py, judge.py, sections.py, instructions.py, check_instructions.py, ui.py, ui.html, the manifesto and overview.md. They still leave out mcp_server.py, where agents read the dropped verbs. Its server INSTRUCTIONS (line 50) tell agents that results and instructions name CLI verbs like `kmaudit claims submit - --path NAMESPACE`, which stops being true once instructions.py names the tools. Every tool description ends 'as `kmaudit claims todo --json`' (lines 141 to 304), naming a command that will exit 2. The touches also leave out models.py (lines 76 to 83) and check_store.py (lines 32 and 54), whose Field descriptions ('The claim id that kmaudit checks todo gave') land in the answer schema the todo tools hand to agents. coverage.py:113 ('run kmaudit checks run') and the docstrings in anchors.py, feedback.py, __init__.py and settings.py name dropped verbs too. The plan's own test, that no string in kmaudit's source names a dropped verb as a command, will fail on these files, so the build must change files O1 does not list. plan.split reads touches. Add at least mcp_server.py, models.py, check_store.py and coverage.py, or say which of these strings the test exempts.",
+      "anchor": "packages/kmaudit/src/kmaudit/mcp_server.py:50",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "The operator chose a 'Rerun stale checks' button backed by POST /api/rerun, which calls the same function as the MCP checks_run tool (check_verbs.run). The plan states it and O1's checked-by tests it. ui.py already serves POSTs (/api/feedback, /api/opinion) from a ThreadingHTTPServer, so a rerun that takes minutes does not block the page's other requests.",
+      "anchor": null,
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "resolved",
+      "claim": "The plan now names the CLI-only behaviours whose tests go (reading answers from a file or stdin, the counts claims todo prints, the --help walk, the checks run exit codes, the refusal outside a git repository, the CLI-against-MCP comparisons). It keeps every other behaviour through the MCP tools or the Python functions, and the build notes list each deleted test.",
+      "anchor": null,
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "ea684cc398699bd81f0fa77b0d5711951d7fdcd1a13f592978d59540c1603b84"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T06:39:27+00:00"
+}

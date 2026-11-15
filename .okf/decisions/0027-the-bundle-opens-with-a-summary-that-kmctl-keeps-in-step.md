@@ -8,11 +8,11 @@ generated:
   at: 2026-10-18T20:10:32Z
 status: stable
 sources:
-  - resource: "src/kmctl/summary.py"
-  - resource: "src/kmctl/review_due.py"
-  - resource: "src/kmctl/checks.py"
-  - resource: "src/kmctl/briefing.py"
-  - resource: "src/kmctl/kinds.py"
+  - resource: "packages/kmctl/src/kmctl/summary.py"
+  - resource: "packages/kmctl/src/kmctl/review_due.py"
+  - resource: "packages/kmctl/src/kmctl/checks.py"
+  - resource: "packages/kmctl/src/kmctl/briefing.py"
+  - resource: "packages/kmctl/src/kmctl/kinds.py"
 ---
 
 # ADR 0027: The bundle opens with a summary that kmctl keeps in step

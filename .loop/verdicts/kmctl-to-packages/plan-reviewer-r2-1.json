@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "Settled by spike:kmctl-to-packages/5: additional_dependencies ./packages/kmctl plus a hatchling empty-wheel root build-system installs and runs kmctl-check in prek 0.5.5 and pre-commit 4.7.0, and uv sync --locked still installs no root package. O1 now carries it.",
+      "anchor": ".pre-commit-hooks.yaml:4",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "The tests move, apm fallbacks, release workflow builds and hook are now folded into O1. The remaining gap (action.yml and the starter) is a different fact, raised as p5.",
+      "anchor": ".loop/plans/kmctl-to-packages/README.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "resolved",
+      "claim": "O2, O3 and O4 each need O1, which now holds the test move.",
+      "anchor": ".loop/plans/kmctl-to-packages/README.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p4",
+      "disposition": "resolved",
+      "claim": "release.py's fragment now sits in P2, which O3 fixes.",
+      "anchor": ".loop/plans/kmctl-to-packages/README.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p5",
+      "disposition": "open",
+      "claim": "O1 still cannot ship alone: two pieces it waits on sit in O3. (a) action.yml:142 runs `uv tool install \"${{ github.action_path }}\"`, the root. After O1 the root builds only the empty hatchling wheel (risk 4's fix), so that install gives no kmctl executable and fails. ci.yml's `knowledge` job (`uses: ./`) is the job every other CI job `needs`, so O1 alone leaves all of CI red. (b) O1's checked-by has ci.yml's starter job running packages/kmctl/tests/test_starter.py -m integration. That test bootstraps a generated project whose justfile runs `uv tool install git+...kmctl@REF` against a file:// clone of the moved tree, which needs starter/justfile.jinja's fragment, an O3 change. Move action.yml and the starter's kmctl_src into O1 (or make O1 need them), so plan.split keeps them together.",
+      "anchor": "action.yml:142",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r5"
+    },
+    {
+      "id": "p6",
+      "disposition": "open",
+      "claim": "The v0.12.1 cutoff breaks the two integration tests that install this tree from a tag. tests/conftest.py:122 `tree_repo` tags the copied working tree `v{version('kmctl')}`, which is v0.12.1 (apm/apm.yml:10) until the next release bumps it. tests/test_starter.py (TAG = v0.12.1, copier's kmctl_ref default) and tests/test_pin.py:339 (pin at TAG) then install `git+...@v0.12.1` from a clone whose v0.12.1 tag points at the moved tree. The plan's rule gives v0.12.1 no fragment, so uv installs the root, which holds no kmctl, and both tests fail. That contradicts O1's and O3's checked-by (the starter integration job passes) and O2's. Nothing in the plan bumps the version. The plan needs a rule for the in-tree version: for example tree_repo tags a version above v0.12.1, the tests pass a newer kmctl_ref, or the version bumps to a pre-release in this ticket. Pick one before building, because it decides what the cutoff compares against.",
+      "anchor": "tests/conftest.py:122",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r4"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "8841228a1e81ddc2d51615f2625ebb73637bf4d4bfbd02e48e111fa3e707cb32"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T19:53:19+00:00"
+}

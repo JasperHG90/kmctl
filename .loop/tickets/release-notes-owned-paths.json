@@ -1,0 +1,149 @@
+{
+  "schema_version": "1.0",
+  "slug": "release-notes-owned-paths",
+  "stage": "done",
+  "attempts": 1,
+  "plan_rounds": 2,
+  "review_rounds": 2,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "803217b0dd146bb41b4c76c92e33623a9315c53f9ef18231eb0c7b2b49494d9e",
+    "tree": "d50c2e54afd1c0482357524010f75cfa9177bd17",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "blocking",
+        "judgement": null,
+        "paths": [
+          "scripts/release_paths.py",
+          "tests/scripts/test_release_paths.py"
+        ]
+      }
+    ],
+    "at": "2026-11-15T06:40:42+00:00"
+  },
+  "ask": "j-20261115T044532+0000-36930b48",
+  "split": "j-20261115T053348+0000-45d1ec47",
+  "split_plan_hash": "9a9daf71ec65d83291ffb6867f46a0ef41eb1ad33661fa0f88c0699925d703cb",
+  "split_hold": false,
+  "commit_sha": "f43ebffc5940d66ee20931b617fd83c6f52f094f",
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": "/home/vscode/workspace.worktrees/release-notes-owned-paths",
+  "branch": "loop/release-notes-owned-paths",
+  "stamps": [
+    "6338d4810d893969149e25d845e9ef5a9666846cb76c446fda8b01b736d86854",
+    "803217b0dd146bb41b4c76c92e33623a9315c53f9ef18231eb0c7b2b49494d9e"
+  ],
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/implementer",
+    "hash": "4b731d1706a8398df08a9d1bc99e090f8a5190432bee707e6221b1bc0d9887cb",
+    "at": "2026-11-15T05:35:15+00:00"
+  },
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "scripts/release_paths.py's owns gives no package .loop/, .okf/, .claude/ or uv.lock; kmaudit owns packages/kmaudit/, kmctl packages/kmctl/ and every other path outside packages/; its command reads paths on stdin and exits 0 when the package owns any of them, else 1.",
+      "fails_when": "a bookkeeping path counts for either package, a shipped path is not owned by its package, or the command's exit code disagrees with owns",
+      "command": "uv run pytest tests/scripts/test_release_paths.py -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "release_notes.py takes owns from release_paths.py: a commit touching only .okf/ and uv.lock is in neither package's notes, one touching .okf/ and packages/kmaudit/ is in kmaudit's, one touching .claude/ and docs/ is in kmctl's, and every earlier release_notes test passes.",
+      "fails_when": "a bookkeeping-only commit is listed, a mixed commit is left out of its package's notes, or any release_notes test fails",
+      "command": "uv run pytest tests/scripts/test_release_notes.py -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "release-tag's late-commit step decides ownership by piping each late commit's paths to release_paths.py, holds no awk copy of the rule, does not name a late bookkeeping-only commit but names a late shipped one, and still never runs release_notes.py or --generate-notes.",
+      "fails_when": "the step keeps an awk ownership rule, names a bookkeeping-only commit, misses a shipped one, or release-tag.yml names release_notes.py",
+      "command": "uv run pytest tests/scripts/test_workflows.py -k release_tag -q",
+      "judgment": false
+    }
+  ],
+  "resigns": [],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [],
+  "round": {
+    "kind": "review",
+    "n": 2,
+    "binds": "803217b0dd146bb41b4c76c92e33623a9315c53f9ef18231eb0c7b2b49494d9e",
+    "started_at": "2026-11-15T06:40:54+00:00",
+    "passes": [
+      "reviewer"
+    ],
+    "tree": "d50c2e54afd1c0482357524010f75cfa9177bd17",
+    "plan_hash": "9a9daf71ec65d83291ffb6867f46a0ef41eb1ad33661fa0f88c0699925d703cb",
+    "eval_hash": "4b731d1706a8398df08a9d1bc99e090f8a5190432bee707e6221b1bc0d9887cb",
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": true,
+    "outcome": "pass"
+  },
+  "plan_hash": "9a9daf71ec65d83291ffb6867f46a0ef41eb1ad33661fa0f88c0699925d703cb",
+  "intent": {
+    "epic": null,
+    "depends_on": [],
+    "priority": null
+  },
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-11-15T05:20:25+00:00",
+      "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-11-15T05:35:13+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-15T05:35:23+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-15T05:44:27+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-15T06:36:24+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-15T06:40:42+00:00",
+      "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-15T06:48:05+00:00",
+      "by": "done"
+    }
+  ],
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T06:48:05+00:00"
+}

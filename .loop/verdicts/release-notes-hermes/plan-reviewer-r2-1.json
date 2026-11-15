@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "Risk 1 now rests on spike:release-notes-hermes/3, which ran the toiminnot hermes runner at 551e8a6 in a fresh clone per run: 15/15 kept with default tools, 15/15 with the plan's disabled_toolsets list and max_iterations 3 (0 tools loaded, 0 calls). The plan takes the tools-off configuration and O2 and eval r2 pin it.",
+      "anchor": ".loop/spikes/release-notes-hermes/3/stdout.txt:125",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r2"
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "The plan now handles changes in meaning: the prompt keeps bare ticket and finding lines word for word and bans postponed/deferred/planned wording (0 reversals in 30 runs). Risk 2 names the merger as the guard on meaning, and the plan shows the draft's What changed section under a collapsed 'Draft before Hermes' block in the pull request body and step summary, which O2 and eval r2 check.",
+      "anchor": ".loop/plans/release-notes-hermes/README.md (Could invalidate this plan)",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r2"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "213a6358e28669d2d88b5c36be82ebd299210ce3d217b988cf86fec3a4264a26"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T20:01:18+00:00"
+}

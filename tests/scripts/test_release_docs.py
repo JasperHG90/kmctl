@@ -73,6 +73,32 @@ def test_decision_0012_names_what_it_rejected_and_needs() -> None:
     assert SETTING in sections["Consequences"]
 
 
+def test_decision_0012_corrects_for_releases_per_package() -> None:
+    """A dated Correction names the package input, both tag families, kmaudit's VERSION file and the committed notes file."""
+    sections = _sections(DECISION.read_text())
+    corrections = [
+        " ".join(body.split())
+        for heading, body in sections.items()
+        if heading.startswith("Correction, ")
+    ]
+
+    assert any(
+        all(
+            needle in c
+            for needle in (
+                "`package`",
+                "`vX.Y.Z`",
+                "`kmaudit-vX.Y.Z`",
+                "`packages/kmaudit/VERSION`",
+                "`.github/release-notes/TAG.md`",
+                "Drafted-From",
+                "Latest",
+            )
+        )
+        for c in corrections
+    )
+
+
 def test_the_overview_shows_the_release_path() -> None:
     """The architecture page names both release workflows, in the diagram and its Depicts list."""
     text = OVERVIEW.read_text()

@@ -8,11 +8,11 @@ generated:
   at: 2026-10-17T14:20:56Z
 status: stable
 sources:
-  - resource: "apm/apm.yml"
-  - resource: "apm/claude/apm.yml"
-  - resource: "apm/antigravity/apm.yml"
-  - resource: "src/kmctl/plugin.py"
-  - resource: "src/kmctl/antigravity.py"
+  - resource: "packages/kmctl/apm/apm.yml"
+  - resource: "packages/kmctl/apm/claude/apm.yml"
+  - resource: "packages/kmctl/apm/antigravity/apm.yml"
+  - resource: "packages/kmctl/src/kmctl/plugin.py"
+  - resource: "packages/kmctl/src/kmctl/antigravity.py"
   - resource: "scripts/sync_antigravity_rules.py"
 ---
 

@@ -106,7 +106,15 @@ def test_version_matches_exactly(printed: str, expect: str, ok: bool) -> None:
 def test_the_wheel_built_from_this_tree_passes(tmp_path: Path) -> None:
     """The real kmctl wheel passes both wheel checks; installing it fetches typer and pyyaml."""
     build = subprocess.run(
-        ["uv", "build", "-q", "--wheel", "-o", str(tmp_path), str(ROOT)],
+        [
+            "uv",
+            "build",
+            "-q",
+            "--wheel",
+            "-o",
+            str(tmp_path),
+            str(ROOT / "packages" / "kmctl"),
+        ],
         capture_output=True,
         text=True,
         check=False,
@@ -125,3 +133,47 @@ def test_the_wheel_built_from_this_tree_passes(tmp_path: Path) -> None:
 
     assert checked.returncode == 0, checked.stderr
     assert smoked.returncode == 0, smoked.stderr
+
+
+def _kmaudit_wheel(tmp_path: Path, version: str, prints: str) -> Path:
+    """Write a dependency-free kmaudit wheel, with no skills, whose ``kmaudit --version`` prints ``prints``."""
+    info = f"kmaudit-{version}.dist-info"
+    files = {
+        "kmaudit/__init__.py": f"def main() -> None:\n    print({prints!r})\n",
+        f"{info}/METADATA": f"Metadata-Version: 2.1\nName: kmaudit\nVersion: {version}\n",
+        f"{info}/WHEEL": "Wheel-Version: 1.0\nGenerator: test\nRoot-Is-Purelib: true\nTag: py3-none-any\n",
+        f"{info}/entry_points.txt": "[console_scripts]\nkmaudit = kmaudit:main\n",
+    }
+    files[f"{info}/RECORD"] = "".join(
+        f"{name},,\n" for name in [*files, f"{info}/RECORD"]
+    )
+    wheel = tmp_path / f"kmaudit-{version}-py3-none-any.whl"
+    with zipfile.ZipFile(wheel, "w") as zf:
+        for name, text in files.items():
+            zf.writestr(name, text)
+    return wheel
+
+
+def test_package_aware_kmaudit_checks_its_version_and_no_skills(
+    tmp_path: Path,
+) -> None:
+    """``--package kmaudit`` runs ``kmaudit --version`` and does not look for skills."""
+    wheel = _kmaudit_wheel(tmp_path, "0.2.0", "kmaudit 0.2.0")
+
+    ok = _smoke(wheel, "--package", "kmaudit", "--version", "0.2.0")
+    wrong = _smoke(wheel, "--package", "kmaudit", "--version", "0.2.1")
+
+    assert ok.returncode == 0, ok.stderr
+    assert wrong.returncode == 1
+    assert "kmaudit --version printed 'kmaudit 0.2.0', not 0.2.1" in wrong.stderr
+    assert "skills" not in wrong.stderr
+
+
+def test_package_aware_kmctl_is_the_default(tmp_path: Path) -> None:
+    """``--package kmctl`` checks what the default always has, so a kmaudit wheel fails it."""
+    kmctl = _wheel(tmp_path, "0.2.0", "kmctl 0.2.0")
+    kmaudit = _kmaudit_wheel(tmp_path, "0.2.0", "kmaudit 0.2.0")
+
+    assert _smoke(kmctl, "--package", "kmctl").returncode == 0
+    assert _smoke(kmaudit, "--package", "kmctl").returncode == 1
+    assert _smoke(kmaudit).returncode == 1

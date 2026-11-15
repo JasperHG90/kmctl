@@ -1,7 +1,7 @@
 ---
 type: decision
 title: "ADR 0035: kmctl's repository answers and triages with Hermes"
-description: "Two workflows in kmctl's own repository run the toiminnot Hermes actions: one answers a member's /hermes comment, the other posts a triage comment of under 200 tokens and labels each new issue; the knowledge audit stays on action/agent.py."
+description: "kmctl's own repository runs the toiminnot Hermes actions three ways: one workflow answers a member's /hermes comment, one posts a triage comment of under 200 tokens and labels each new issue, and the Release run rewrites the drafted release notes for users with every tool off, kept only when a script's checks pass; the knowledge audit stays on action/agent.py."
 tags: [decision]
 generated:
   by: process:kmctl/0.5.1
@@ -11,6 +11,9 @@ sources:
   - resource: ".github/workflows/hermes-interactive.yaml"
   - resource: ".github/workflows/hermes-issue-triage.yaml"
   - resource: "scripts/hermes_triage.py"
+  - resource: ".github/workflows/release.yml"
+  - resource: ".github/prompts/release-notes-system.md"
+  - resource: "scripts/hermes_release_notes.py"
 ---
 
 # ADR 0035: kmctl's repository answers and triages with Hermes
@@ -53,7 +56,30 @@ rather than port them.
   only the type, `area/*` and `priority/*` labels the workflow allows. The
   areas are kmctl's top-level folders, with `okf` for `.okf/` and `ci` for
   `.github/`.
-- Both use the `OLLAMA_API_KEY` secret and an Ollama Cloud model.
+- The Release run (`.github/workflows/release.yml`,
+  [ADR 0012](0012-releases-come-from-ci.md)) runs
+  `JasperHG90/toiminnot/actions/hermes` at the same pin on the release
+  notes `scripts/release_notes.py` drafts, added 2026-11-14 when the
+  operator asked for proper release notes from the triage setup. Its prompt,
+  `.github/prompts/release-notes-system.md`, asks Hermes to rewrite only the
+  What changed bullets for users, keep each bullet's reference, leave a line
+  that names only a ticket or finding as written, and never say work was
+  deferred. Every toolset is disabled by name and `max_iterations` is 3, so
+  Hermes answers from the draft alone; the step may fail
+  (`continue-on-error`) and times out after 10 minutes.
+- `scripts/hermes_release_notes.py` keeps the rewrite only when it is
+  non-empty once cleaned, keeps the draft's headings in order, leaves
+  everything after What changed as the draft wrote it, and carries exactly
+  the draft's `` (`slug`) `` and `(#N)` references, one or more on each
+  bullet, with no line under What changed that is not a bullet or indented
+  under one, unless the draft has it too. Otherwise it prints the draft
+  with a warning naming the failed check, so a Hermes failure never blocks
+  a release or empties its notes.
+  When the rewrite is kept, the run's summary and the version pull request's
+  body show the draft's What changed section under "Draft before Hermes",
+  because no check can tell whether a rewritten line kept its meaning: the
+  person who merges reads each line against the one it came from.
+- All three use the `OLLAMA_API_KEY` secret and an Ollama Cloud model.
 
 Rejected:
 
@@ -66,7 +92,7 @@ Rejected:
 ## Consequences
 
 - kmctl runs two CI agents: `action/agent.py` for the audits and Hermes for
-  these two jobs. ADR 0017's reasons against Hermes still apply to the
+  these three jobs. ADR 0017's reasons against Hermes still apply to the
   audit.
 - A member's `/hermes` in a fork's pull request conversation runs in this
   repository with the key and checks out the fork's code, so Hermes reads
@@ -76,6 +102,13 @@ Rejected:
   secrets, so the job skips them.
 - An issue's body reaches Hermes with the API key in its environment, as
   in the audit. Use a key scoped to these jobs, with a spending limit.
+- Commit subjects from main reach Hermes in the release notes draft with the
+  key in its environment, as issue bodies do. With every tool off a crafted
+  subject can change only the reply, and the checks and the merging person
+  catch a reply that adds, drops or twists a change.
 - `tests/scripts/test_workflows.py` and `tests/scripts/test_hermes_triage.py`
   pin the triggers, the trusted checkout, the SHA pins, the cut and the
-  label allowlist.
+  label allowlist. `tests/scripts/test_workflows.py` also pins the release
+  notes step's toolsets, turns and fallback, and
+  `tests/scripts/test_hermes_release_notes.py` shows each failed check
+  yields the draft byte for byte.

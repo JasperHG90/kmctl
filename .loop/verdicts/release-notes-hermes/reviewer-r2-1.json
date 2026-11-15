@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "A Hermes response file that is not valid UTF-8 crashed hermes_release_notes.py with exit 1.",
+      "anchor": "scripts/hermes_release_notes.py:123",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "f6a0375aaf67fb6d9b6046223a307cc1924f4c2e7a3b3693b49163b21ab7405d",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T22:18:15+00:00"
+}

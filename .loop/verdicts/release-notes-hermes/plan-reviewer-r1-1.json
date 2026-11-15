@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "Risk 1 is settled with evidence from a different call path. The spike sent one bare chat completion; the plan runs the toiminnot hermes action, which runs Hermes' AIAgent with its default toolsets (enabled_toolsets is empty, max_iterations defaults to 40) inside a checkout of the repo. An agent with file and terminal tools, asked to rewrite a draft, can write the notes to a file and reply with a summary, or run git log and fold in what it finds. Either way the response file fails the checks and the draft stands every time, which is the exact failure risk 1 names. The plan does not pin toolsets or iterations, and its workflow test does not check them. Either pin the step to no tools (enabled_toolsets or disabled_toolsets, a low max_iterations) and test that pin, or run a spike through the hermes_runner at the pinned SHA. Spike question: with the new prompt and the five real drafts, how often does the response_file written by actions/hermes at 551e8a6 pass the cleaning checks, with default toolsets and with tools off? Turning tools off also shrinks what a crafted commit subject can make the agent do in a job that holds the Ollama key.",
+      "anchor": ".loop/plans/release-notes-hermes/README.md (Could invalidate this plan)",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r2"
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "The plan says the checks miss only vague wording. The spike it cites shows they also pass a rewrite that reverses a bullet's meaning. The v0.9.0 draft says 'Deferred hardening from verify-verb, reviewer finding f4' (the deferred work shipped in this release). Run 3 rewrote it as 'Hardening work on the verify verb has been postponed to a later release', and did the same for f6 and apm-distribution-reviewer-f1. That tells users three shipped changes did not ship, and the checks kept it. G2 says the notes never miss a change the release holds; a bullet that keeps the reference but says the change was postponed misses it in substance. The cause is a draft line too thin for the model to rewrite safely. The plan has to say how it handles this: give Hermes more to work from (the ticket's intent or the commit body), have the prompt leave bullets it cannot expand unchanged, or record an operator acceptance that the reviewer of the version pull request is the only guard against wrong meaning, and say so in the pull request body or step summary.",
+      "anchor": ".loop/spikes/release-notes-hermes/1/stdout.txt:383",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "8b9e4405f701b4ec486b6570c74fb0d164a1a4e2ff77276065b15f2400948905"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T19:51:21+00:00"
+}

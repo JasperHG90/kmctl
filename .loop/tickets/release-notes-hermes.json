@@ -1,0 +1,158 @@
+{
+  "schema_version": "1.0",
+  "slug": "release-notes-hermes",
+  "stage": "done",
+  "attempts": 1,
+  "plan_rounds": 2,
+  "review_rounds": 2,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "f6a0375aaf67fb6d9b6046223a307cc1924f4c2e7a3b3693b49163b21ab7405d",
+    "tree": "df4ee8bd9949119e1e9ab76962477c27e15ef233",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": "j-20261114T221428+0000-93f94bc7",
+        "paths": [
+          "scripts/hermes_release_notes.py",
+          "tests/scripts/test_hermes_release_notes.py"
+        ]
+      }
+    ],
+    "at": "2026-11-14T22:14:28+00:00"
+  },
+  "ask": "j-20261114T171913+0000-6d6b52c3",
+  "split": "j-20261114T200016+0000-cacc639c",
+  "split_plan_hash": "213a6358e28669d2d88b5c36be82ebd299210ce3d217b988cf86fec3a4264a26",
+  "split_hold": false,
+  "commit_sha": "9fb147110bcad63d34e44d34aff4fcc24fac266c",
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": "/home/vscode/workspace.worktrees/release-notes-hermes",
+  "branch": "loop/release-notes-hermes",
+  "stamps": [
+    "ef295b1568db381f1a3bac3d8cda4d5070c64c5258b259245f1772576a4c92bf",
+    "f6a0375aaf67fb6d9b6046223a307cc1924f4c2e7a3b3693b49163b21ab7405d"
+  ],
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "9f923ab7d637f4bd76f21eab9e80d669a122a1a2a046f3548d824d5a1d700e46",
+    "at": "2026-11-14T20:00:14+00:00"
+  },
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "The cleaning script keeps Hermes' rewrite only when it is non-empty, keeps the draft's headings in order, leaves Other changes to the end byte for byte, and keeps exactly the draft's (`slug`) and (#N) references under What changed with one per bullet; otherwise it prints the draft with a ::warning:: naming the failed check, and never exits non-zero.",
+      "fails_when": "a rewrite failing any check is kept, a passing one is replaced, the warning does not name the check, or the script exits non-zero",
+      "command": "uv run pytest tests/scripts/test_hermes_release_notes.py -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "The Release run's Hermes step uses the pinned action SHA, OLLAMA_API_KEY, deepseek-v4.1-flash and .github/prompts/release-notes-system.md with every toolset disabled, max_iterations 3, continue-on-error and a timeout; the notes file comes from the cleaning script's output; and when the rewrite is kept, the pull request body and step summary carry the draft's What changed section under 'Draft before Hermes'.",
+      "fails_when": "any of those is missing or differs, a toolset is left enabled, the notes file is written from anything but the cleaning script, or a kept rewrite reaches the pull request body without the draft's What changed section",
+      "command": "uv run pytest tests/scripts/test_workflows.py -k hermes_release -q",
+      "judgment": false
+    }
+  ],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+      "reason": "plan review r1: tools off and the draft-before block for the reviewer join r2",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r2": [
+            "behavior",
+            "fails_when"
+          ]
+        }
+      },
+      "at": "2026-11-14T20:00:14+00:00"
+    }
+  ],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [],
+  "round": {
+    "kind": "review",
+    "n": 2,
+    "binds": "f6a0375aaf67fb6d9b6046223a307cc1924f4c2e7a3b3693b49163b21ab7405d",
+    "started_at": "2026-11-14T22:14:37+00:00",
+    "passes": [
+      "reviewer"
+    ],
+    "tree": "df4ee8bd9949119e1e9ab76962477c27e15ef233",
+    "plan_hash": "213a6358e28669d2d88b5c36be82ebd299210ce3d217b988cf86fec3a4264a26",
+    "eval_hash": "9f923ab7d637f4bd76f21eab9e80d669a122a1a2a046f3548d824d5a1d700e46",
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": true,
+    "outcome": "pass"
+  },
+  "plan_hash": "213a6358e28669d2d88b5c36be82ebd299210ce3d217b988cf86fec3a4264a26",
+  "intent": {
+    "epic": null,
+    "depends_on": [],
+    "priority": null
+  },
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-11-14T17:21:08+00:00",
+      "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-11-14T20:01:32+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-14T21:54:08+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-14T22:05:49+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-14T22:10:49+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-14T22:14:28+00:00",
+      "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-14T22:18:34+00:00",
+      "by": "done"
+    }
+  ],
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T22:18:34+00:00"
+}

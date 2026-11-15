@@ -30,7 +30,7 @@ jobs:
     env:
       # One area label per top-level part of the repo. The labels are created,
       # offered to the agent and accepted from this one list.
-      TRIAGE_AREAS: src action apm starter tests scripts docs okf ci
+      TRIAGE_AREAS: packages action apm starter tests scripts docs okf ci
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -65,7 +65,7 @@ jobs:
             echo -n "Area:"
             for area in $TRIAGE_AREAS; do echo -n " area/$area"; done
             echo
-            echo "Area names are top-level folders, except area/okf (.okf/) and area/ci (.github/)."
+            echo "Area names are top-level folders, except area/okf (.okf/), area/ci (.github/) and area/apm (packages/kmctl/apm/, kmctl's APM package)."
           } >> "$ISSUE_MD"
 
       - name: Ensure triage labels exist

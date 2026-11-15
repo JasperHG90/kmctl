@@ -1,0 +1,190 @@
+{
+  "schema_version": "1.0",
+  "slug": "release-per-package",
+  "stage": "done",
+  "attempts": 1,
+  "plan_rounds": 2,
+  "review_rounds": 2,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "3536821959942988fbd3251970589be29e4be96bb68ea90ffd5d1fcd430fe53b",
+    "tree": "027e2a7fa45517209fb6098907f1825a62e34a1e",
+    "decisions": [
+      {
+        "finding": "reviewer:f2",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": null,
+        "paths": [
+          "scripts/release_notes.py"
+        ]
+      }
+    ],
+    "at": "2026-11-14T21:46:31+00:00"
+  },
+  "ask": "j-20261114T171913+0000-6d6b52c3",
+  "split": "j-20261114T175243+0000-8f03a66d",
+  "split_plan_hash": "b820da51e625c7a4c1d68a1b4b9e0f7c233efd8f5235387c45bb506e01ab3862",
+  "split_hold": false,
+  "commit_sha": "5dafbb4c67d8b21204bfcf03a6703af6ce24842b",
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": "/home/vscode/workspace.worktrees/release-per-package",
+  "branch": "loop/release-per-package",
+  "stamps": [
+    "86c2aab1fd22c47884000d44b8616731e30d967ecf430a47732cb7676bac9b79",
+    "97d2a9170c99439a22f44949a3d9c06f67190dc1dda50e4d7f4a5bb3134553ef",
+    "3536821959942988fbd3251970589be29e4be96bb68ea90ffd5d1fcd430fe53b"
+  ],
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "26196799b50bca34b5d76f297adfeb015410d898b1659a74ccc7b1cd52a4af52",
+    "at": "2026-11-14T17:53:11+00:00"
+  },
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "kmaudit's version comes from packages/kmaudit/VERSION through hatchling's regex source and starts at 0.1.0.dev0; `release.py --package kmaudit current` prints it, and `release.py compare '' 0.1.0.dev0` prints skip, so the push that adds the file releases nothing.",
+      "fails_when": "the pyproject keeps a static version, the VERSION file is not read, or current prints something else, or the file starts at a releasable version, or compare does not skip it",
+      "command": "uv run pytest tests/scripts/test_release.py -k kmaudit_version -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "next_release_version.py, release.py, check_wheel.py and smoke_wheel.py take --package: kmaudit reads only kmaudit-v* tags and writes only its VERSION file and README install line; kmctl behaves as today.",
+      "fails_when": "a package reads the other family's tags, set touches the other package's files, or kmctl's behaviour changes",
+      "command": "uv run pytest tests/scripts -k package_aware -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "release_notes.py --package P TAG --ref HEAD --out FILE drafts notes for an unpushed tag from the family's previous tag, listing only commits that touch that package's paths.",
+      "fails_when": "it refuses an unpushed tag, starts from the other family's tag, or lists a commit that touches only the other package, or kmaudit's first draft (no kmaudit-v* tag) leaves out an earlier commit that touched packages/kmaudit/",
+      "command": "uv run pytest tests/scripts/test_release_notes.py -k package -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "The Release run takes package (kmctl, kmaudit). A notes job that also runs in dry runs drafts .github/release-notes/TAG.md and uploads it as an artifact; bump downloads it, commits it on top of the drafted commit with a `Drafted-From: <sha>` trailer, and opens the version pull request with a body holding the notes and the trailer.",
+      "fails_when": "the package input is missing, the draft job is skipped in a dry run or does not hand the file to bump, bump does not build on the drafted commit, the trailer is missing from the commit or the body, or the file is not committed or not the body",
+      "command": "uv run pytest tests/scripts/test_workflows.py -k release_package -q",
+      "judgment": false
+    },
+    {
+      "id": "r5",
+      "behavior": "release-tag triggers on apm/apm.yml and packages/kmaudit/VERSION, refuses before tagging when the committed notes file is missing or blank, and publishes exactly that file; it finds the drafted commit from the merge's second parent, or from the Drafted-From trailer on a squash merge, and writes a ::warning:: and a step-summary section naming package commits that landed after it; only kmctl is marked Latest.",
+      "fails_when": "a path is missing, the refusal runs after git tag -a or not at all, notes come from anywhere else or the published file differs from the reviewed one, the drafted commit is not found for a merge or a squash, late commits are not named, or kmaudit is marked Latest",
+      "command": "uv run pytest tests/scripts/test_workflows.py -k release_tag -q",
+      "judgment": false
+    }
+  ],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+      "reason": "plan round 1: kmaudit starts at 0.1.0.dev0, a notes job hands the draft to bump, late commits are found through Drafted-From instead of a marker",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r1": [
+            "behavior",
+            "fails_when"
+          ],
+          "r3": [
+            "fails_when"
+          ],
+          "r4": [
+            "behavior",
+            "fails_when"
+          ],
+          "r5": [
+            "behavior",
+            "fails_when"
+          ]
+        }
+      },
+      "at": "2026-11-14T17:53:11+00:00"
+    }
+  ],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [],
+  "round": {
+    "kind": "review",
+    "n": 2,
+    "binds": "3536821959942988fbd3251970589be29e4be96bb68ea90ffd5d1fcd430fe53b",
+    "started_at": "2026-11-14T21:46:37+00:00",
+    "passes": [
+      "reviewer"
+    ],
+    "tree": "027e2a7fa45517209fb6098907f1825a62e34a1e",
+    "plan_hash": "b820da51e625c7a4c1d68a1b4b9e0f7c233efd8f5235387c45bb506e01ab3862",
+    "eval_hash": "26196799b50bca34b5d76f297adfeb015410d898b1659a74ccc7b1cd52a4af52",
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": true,
+    "outcome": "pass"
+  },
+  "plan_hash": "b820da51e625c7a4c1d68a1b4b9e0f7c233efd8f5235387c45bb506e01ab3862",
+  "intent": {
+    "epic": null,
+    "depends_on": [],
+    "priority": null
+  },
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-11-14T17:22:54+00:00",
+      "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-11-14T17:54:44+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-14T21:05:56+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-14T21:26:48+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-14T21:29:42+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-14T21:46:31+00:00",
+      "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-14T21:50:47+00:00",
+      "by": "done"
+    }
+  ],
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-14T21:50:47+00:00"
+}

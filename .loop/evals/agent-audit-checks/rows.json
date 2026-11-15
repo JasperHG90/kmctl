@@ -1,0 +1,77 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "Each step kind (file, grep, code, query, definition, imports, help) holds and fails on a fixture git repository; markdown, .okf/ and untracked files are never read; a code step tests presence only.",
+      "fails_when": "a step gives the wrong verdict on the fixture, reads a markdown, .okf/ or untracked file, or a code step asserts absence",
+      "command": "uv run pytest tests/test_claims_steps.py -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "Without ast-grep-py and jmespath installed, code and query steps report skipped and the other five step kinds run.",
+      "fails_when": "a code or query step fails or crashes instead of reporting skipped when its package is hidden, or another step kind stops working",
+      "command": "uv run pytest tests/test_claims_steps.py -k extra -q"
+    },
+    {
+      "id": "r3",
+      "behavior": "Each claim in todo comes with the lines around its anchors (paths, flags, Python names) or keyword windows from its concept's sources, and Python definitions resolve without the extra.",
+      "fails_when": "a named path, flag or Python name gets no lines, a claim naming nothing gets no keyword windows, or definition lookup needs the extra",
+      "command": "uv run pytest tests/test_claims_lines.py -q"
+    },
+    {
+      "id": "r4",
+      "behavior": "Mutation testing marks a holding check weak when it notices no change or matched only comments, credits a check on the code's condition, drops unparsable mutants and writes nothing to disk.",
+      "fails_when": "a comment-only grep is not weak, a code step on the condition kills no mutant, an unparsable mutant is counted, or any file on disk changes",
+      "command": "uv run pytest tests/test_claims_mutate.py -q"
+    },
+    {
+      "id": "r5",
+      "behavior": "The store keeps each check's claim, steps, reads and last run with step detail, readable by check id; it reruns a check only when its claim or a read changes (including a newly matching glob file), and reuses a mutation score until its key moves.",
+      "fails_when": "an unchanged repository reruns a check, an edited read or changed claim does not rerun exactly its check, a score is recomputed without a key change, or a check's claim, steps or step detail cannot be read back by id",
+      "command": "uv run pytest tests/test_claims_check_store.py -q"
+    },
+    {
+      "id": "r6",
+      "behavior": "kmctl audit checks todo, try, submit, run and list take a fixture repository from no checks to stored, holding checks; try stores nothing; run exits 0 when a check fails.",
+      "fails_when": "the flow in the plan's intent does not end with the expected stored checks, try writes to the store, or run exits nonzero because a check fails",
+      "command": "uv run pytest tests/test_checks_cli.py -k 'flow or try or run' -q"
+    },
+    {
+      "id": "r7",
+      "behavior": "kmctl audit checks submit refuses a weak check naming the changes it missed, a failing check without drift and a reason, a stale claim id, a malformed answer and a code step without the extra, each with one stderr line naming the fix, and keeps the good answers in the same file; a reason (no check possible) is accepted.",
+      "fails_when": "a weak, failing-without-drift, stale or malformed answer is stored, a refusal lacks the fix or the survivors, a reason is refused, or a good answer in the same file is lost",
+      "command": "uv run pytest tests/test_checks_cli.py -k submit -q"
+    },
+    {
+      "id": "r8",
+      "behavior": "No kmctl audit checks verb changes a tracked or unignored file or opens a network connection, and the help names every verb and flag.",
+      "fails_when": "git status --porcelain is not empty after a verb, a verb opens a socket, or the help test fails",
+      "command": "uv run pytest tests/test_checks_cli.py -k 'tree or network' -q && uv run pytest tests/test_help.py -q"
+    },
+    {
+      "id": "r9",
+      "behavior": "pyproject.toml defines the kmctl[audit] extra with ast-grep-py and jmespath, and base kmctl keeps only httpx, pydantic, pyyaml and typer.",
+      "fails_when": "the audit extra lacks ast-grep-py or jmespath, or the base dependencies change",
+      "command": "python3 -c \"import tomllib,sys; p=tomllib.load(open('pyproject.toml','rb'))['project']; n=lambda xs: sorted(x.split('>')[0].split('=')[0].split('[')[0].strip() for x in xs); a=n(p['optional-dependencies']['audit']); sys.exit(0 if n(p['dependencies'])==['httpx','pydantic','pyyaml','typer'] and {'ast-grep-py','jmespath'}<=set(a) else 1)\""
+    },
+    {
+      "id": "r10",
+      "behavior": "A decision record, the manifesto, the architecture overview and docs/reference/commands.md describe the checks verbs, the extra and the weak bar.",
+      "fails_when": "commands.md lacks any of kmctl audit checks todo, try, submit, run, list, or no decision record names the weak bar",
+      "command": "bash -c 'for v in todo try submit run list; do grep -q \"kmctl audit checks $v\" docs/reference/commands.md || exit 1; done; grep -lqi \"weak\" .okf/decisions/*.md'"
+    },
+    {
+      "id": "r11",
+      "behavior": "kmctl check and the strict OKF validation pass on the changed .okf/ concepts and docs/ pages, with every touched concept named in .okf/log.md.",
+      "fails_when": "kmctl check exits nonzero, or the pre-commit OKF validation reports an error on .okf/",
+      "command": "uv run kmctl check && just lint"
+    },
+    {
+      "id": "r12",
+      "behavior": "The repository's own gates stay green: lint, types and the full default test suite.",
+      "fails_when": "just lint or just test exits nonzero",
+      "command": "just lint && just test"
+    }
+  ]
+}

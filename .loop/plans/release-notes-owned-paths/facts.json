@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0",
+  "slug": "release-notes-owned-paths",
+  "plan_hash": "9a9daf71ec65d83291ffb6867f46a0ef41eb1ad33661fa0f88c0699925d703cb",
+  "problems": [
+    {
+      "id": "P1",
+      "text": "kmctl's release notes list commits that change only the repository's bookkeeping, so a kmaudit-only change shows up in kmctl's notes."
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "Each package's notes list only commits that change what it ships."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "O1",
+      "change": "Bookkeeping paths belong to no package, in the notes and in release-tag's late-commit check alike",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "new:scripts/release_paths.py",
+        "scripts/release_notes.py",
+        ".github/workflows/release-tag.yml",
+        "tests/scripts/test_release_notes.py",
+        "tests/scripts/test_workflows.py",
+        ".okf/decisions/0012-releases-come-from-ci.md"
+      ],
+      "checked_by": "release_notes tests that a commit touching only `.okf/` and `uv.lock` is in neither package's notes, one touching `.okf/` and `packages/kmaudit/` is in kmaudit's, and one touching `.claude/` and `docs/` is in kmctl's; release_paths.py tests over those path sets, as a function and as a command; a release-tag test that a late bookkeeping-only commit is not named and a late shipped one is; the workflow step calls `release_paths.py` with no awk copy of the rule, and still never names `release_notes.py`",
+      "seen_by": "operator"
+    }
+  ]
+}

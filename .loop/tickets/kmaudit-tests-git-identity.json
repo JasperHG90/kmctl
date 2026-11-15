@@ -1,0 +1,134 @@
+{
+  "schema_version": "1.0",
+  "slug": "kmaudit-tests-git-identity",
+  "stage": "done",
+  "attempts": 1,
+  "plan_rounds": 1,
+  "review_rounds": 2,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "b952c61a11feeab424f77e55f2ac39401abff5999c0cddd5db96d2c301d83b43",
+    "tree": "09a1ec2495700093ae8f5a97f8926f0143da183c",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": "j-20261115T211401+0000-a5b0ffa6",
+        "paths": [
+          "packages/kmaudit/tests/fixtures/audit_repo.py"
+        ]
+      }
+    ],
+    "at": "2026-11-15T21:14:01+00:00"
+  },
+  "ask": "j-20261115T205233+0000-61b39bb7",
+  "split": "j-20261115T205251+0000-56a612c2",
+  "split_plan_hash": "8d75f206484e4effe1cd461556554f2e2910c2ca870bbfdec433f970e348e24b",
+  "split_hold": false,
+  "commit_sha": "c6a065696d299a6aac451fbc8e3768cab79f3d6d",
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": "/home/vscode/workspace.worktrees/kmaudit-tests-git-identity",
+  "branch": "loop/kmaudit-tests-git-identity",
+  "stamps": [
+    "4219b5cb87dcfd6bffe5fe58a49bd538f96ea376fbc1fbfda595626c66d05eb5",
+    "b952c61a11feeab424f77e55f2ac39401abff5999c0cddd5db96d2c301d83b43"
+  ],
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/implementer",
+    "hash": "646d87391b2ab5315ebd7f5e49cafaeb21c6e045157fcb1eef814fdf0476a3ad",
+    "at": "2026-11-15T20:55:39+00:00"
+  },
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "kmaudit's tests pass on a machine with no global or system git config, as on a fresh CI runner, because the fixture's git helper commits with its own identity.",
+      "fails_when": "any kmaudit test fails or errors with GIT_CONFIG_GLOBAL=/dev/null and GIT_CONFIG_NOSYSTEM=1",
+      "command": "env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 uv run pytest packages/kmaudit/tests -q -p no:cacheprovider",
+      "judgment": false
+    }
+  ],
+  "resigns": [],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [],
+  "round": {
+    "kind": "review",
+    "n": 2,
+    "binds": "b952c61a11feeab424f77e55f2ac39401abff5999c0cddd5db96d2c301d83b43",
+    "started_at": "2026-11-15T21:14:04+00:00",
+    "passes": [
+      "reviewer"
+    ],
+    "tree": "09a1ec2495700093ae8f5a97f8926f0143da183c",
+    "plan_hash": "8d75f206484e4effe1cd461556554f2e2910c2ca870bbfdec433f970e348e24b",
+    "eval_hash": "646d87391b2ab5315ebd7f5e49cafaeb21c6e045157fcb1eef814fdf0476a3ad",
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": true,
+    "outcome": "pass"
+  },
+  "plan_hash": "8d75f206484e4effe1cd461556554f2e2910c2ca870bbfdec433f970e348e24b",
+  "intent": {
+    "epic": null,
+    "depends_on": [],
+    "priority": null
+  },
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-11-15T20:52:49+00:00",
+      "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-11-15T20:55:38+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-15T20:55:42+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-15T21:01:08+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-15T21:07:34+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-15T21:14:01+00:00",
+      "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-15T21:15:39+00:00",
+      "by": "done"
+    }
+  ],
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T21:15:39+00:00"
+}

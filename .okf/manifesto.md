@@ -44,7 +44,8 @@ ADR 0027), `manifesto.md` (the root concept), `decisions/`, `architecture/`, `pr
 
 ## Parts
 
-- **`kmctl`, a standalone CLI** (ADR 0001). It serves the briefing that is
+- **`kmctl`, a standalone CLI** (ADR 0001), a package in `packages/kmctl/`
+  of this repository beside kmaudit (ADR 0044). It serves the briefing that is
   injected into context, adds what APM cannot install yet for its package
   (`kmctl plugin patch`, ADR 0021) and checks the install (`kmctl doctor`,
   which writes nothing), and does the bookkeeping a
@@ -57,14 +58,47 @@ ADR 0027), `manifesto.md` (the root concept), `decisions/`, `architecture/`, `pr
   ack`, ADR 0027), check indexes, docs front matter and links
   (`kmctl check --fix` writes the generated `docs/` folder indexes, and the
   `kmctl-check` pre-commit hook runs the check, ADR 0022), and list live
-  and expired handoffs.
-- **An APM package**, `apm/`, which APM installs from the user's `apm.yml`
-  entry (ADR 0014, ADR 0021). It holds an
+  and expired handoffs. kmctl holds no audit: that is kmaudit's (ADR 0043).
+- **kmaudit, a package of its own** in `packages/kmaudit/` of this
+  repository, which installs and runs without kmctl (ADR 0043). Agents
+  drive it through the tools of its stdio MCP server, `kmaudit mcp`; its
+  CLI keeps only that, `kmaudit ui`, `kmaudit namespaces`, `kmaudit
+  briefing` and the `kmaudit claims list` and `kmaudit checks list` reads.
+  The `claims_todo` and `claims_submit` tools hand a coding agent a
+  folder's sections, validate its verdicts against one schema and keep the
+  claims in a git-ignored store per audited folder under `.kmaudit/`;
+  kmaudit calls no model for them (ADR 0036). `checks_todo`, `checks_try`,
+  `checks_submit` and `checks_run` turn those claims into checks, steps
+  kmaudit reruns with no model when the files they read change;
+  `checks_submit` refuses a weak check, one that notices no change to the
+  code it matched (ADR 0038). The `judge` tool is the one model call
+  kmaudit makes: off by default, it asks a decision model set in a
+  per-user `audit.toml` whether a failed check shows drift, whether lines
+  show a claim true, or whether a check tests its claim, and caches each
+  answer in the store (ADR 0039). `kmaudit ui` serves a page on 127.0.0.1
+  where a person reviews claims and checks: a thumbs up or down and a note
+  on either, their own verdict on whether a claim holds, a second opinion
+  from that model, and a Rerun stale checks button that calls what
+  `checks_run` calls. A thumbs down, or a verdict the check disagrees
+  with, goes back to the agent with the next todo (ADR 0041). Its code
+  view, and the `coverage` tool, show which lines of code a check matched,
+  and what share of the code that is (ADR 0042).
+- **An APM package**, `packages/kmctl/apm/`, which APM installs from the
+  user's `apm.yml` entry (ADR 0014, ADR 0021, ADR 0045). It holds an
   audit agent with three review skills (architecture, decision log,
   practices), a skill for writing Diataxis docs, `/handoff` and `/continue`,
   which write and read back handoffs in `.okf/handoffs/` (ADR 0008), and the
   four knowledge rules, and it depends on the okf skills for OKF authoring and
-  validation. Skills route; `kmctl` decides and writes.
+  validation. kmaudit's own APM package, `packages/kmaudit/apm/`, brings
+  `/extract-claims`, `/write-checks` and the kmaudit MCP server from one
+  kmaudit release. `/extract-claims` hands the bundle's changed sections to
+  the `kmaudit-claims-extractor` agent (Haiku, Read and kmaudit's MCP tools,
+  no shell), which stores claims through `claims_submit` and returns only a
+  summary; `/write-checks` hands the claims with no check to the
+  `kmaudit-check-writer` agent, built the same way, which tries and stores
+  checks through `checks_try` and `checks_submit`. The agents come only to
+  Claude Code; elsewhere the skills do the batch with the same tools.
+  Skills route; `kmctl` and `kmaudit` decide and write.
   The package also ships, per harness, the SessionStart hook that relays
   `kmctl`'s briefing (ADR 0029), okf's MCP server and, for Antigravity, okf's
   Stop check (ADR 0018), so APM (Agent Package Manager) installs all of it
@@ -92,19 +126,22 @@ Each is `planned` until the test named for it passes, then `enforced`.
   fails. In Antigravity kmctl also relays okf's opt-in Stop check, which
   APM's copy cannot run there (ADR 0018); it exits 0 and prints `{}` when
   okf's script is missing or fails. Status: enforced by
-  `tests/test_plugin.py` (the package ships one SessionStart hook; it exits
+  `packages/kmctl/tests/test_plugin.py` (the package ships one SessionStart hook; it exits
   0 without `kmctl` and when it fails) and
-  `tests/test_antigravity.py` (Antigravity's SessionStart hook prints `{}`
+  `packages/kmctl/tests/test_antigravity.py` (Antigravity's SessionStart hook prints `{}`
   and exits 0 in both cases; the okf Stop relay prints `{}` and exits 0
-  without a working script) and `tests/test_opencode.py` (OpenCode's
+  without a working script) and `packages/kmctl/tests/test_opencode.py` (OpenCode's
   briefing plugin adds nothing and throws nothing without a working
   `kmctl`).
-- **I2. Audits never write knowledge.** The audit agent, its skills and the
-  CI action report findings; they never edit `.okf/` or `docs/` and never
-  write a `verified` stamp. Status: planned.
+- **I2. The audit agent and the CI audit never write knowledge.** The
+  `kmctl-auditor` agent has no shell and no write tool, and nothing the CI
+  action's audit changes is committed or pushed (the step that runs the
+  audit agent holds no GitHub token; only the later publish step does),
+  so neither writes `.okf/`, `docs/` or a `verified` stamp (ADR 0037).
+  Status: planned.
 - **I3. The briefing comes from the CLI and fits a budget.** The hook prints
   what `kmctl` prints, so upgrading the CLI updates the briefing, and it
-  stays under 500 tokens (estimated at four characters a token). Status: enforced by `tests/test_briefing.py::test_briefing_token_budget`.
+  stays under 500 tokens (estimated at four characters a token). Status: enforced by `packages/kmctl/tests/test_briefing.py::test_briefing_token_budget`.
 - **I4. kmctl reads OKF as it is.** It uses the fields the OKF v0.2 spec
   defines (`stale_after`, `verified`, `sources`, `status`) plus the extension
   fields an ADR names. There are two: `handoff_key` (ADR 0009) and
@@ -112,7 +149,7 @@ Each is `planned` until the test named for it passes, then `enforced`.
   (ADR 0006). `docs/` pages may carry four of those
   fields (`description`, `stale_after`, `verified`, `sources`) with their OKF
   meaning, and nothing else of OKF: `docs/` is not a bundle (ADR 0022).
-  Status: enforced by `tests/test_okf_fields.py` (written keys, and reads through
+  Status: enforced by `packages/kmctl/tests/test_okf_fields.py` (written keys, and reads through
   `okf.field`).
 
 ## Values
@@ -125,12 +162,17 @@ Each is `planned` until the test named for it passes, then `enforced`.
   catches something.
 - **Plain language** in everything kmctl prints and every page it writes.
 - **Every skill is made with the skill-creator skill** (ADR 0007).
+- **The claims and checks agents write only through `kmaudit`.** They
+  have no shell: their tools are Read, Grep, Glob and kmaudit's MCP tools,
+  and they ship to Claude Code alone; in Antigravity and OpenCode the
+  skills do the same work with the same tools. They never write `.okf/`,
+  `docs/` or a `verified` stamp (ADR 0037, ADR 0040, ADR 0043).
 
 ## Out of scope for now
 
 - A `covers` field mapping concepts to code paths (ADR 0006).
-- Hooks beyond SessionStart: a nudge after code edits, a reminder at Stop,
-  a commit gate (ADR 0004, ADR 0029).
+- Hooks of kmctl's own beyond SessionStart: a nudge after code edits, a
+  reminder at Stop, a commit gate (ADR 0004, ADR 0029).
 - More harnesses than the three in Parts: Hermes and others come later
   (ADR 0014, ADR 0015).
 - Writing `verified` stamps from an audit (ADR 0005).

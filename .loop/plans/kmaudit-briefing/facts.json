@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0",
+  "slug": "kmaudit-briefing",
+  "plan_hash": "2a01acebbd7a279e07e84238ab92484b3100f45186684258afbf8ffe111a1de8",
+  "problems": [
+    {
+      "id": "P1",
+      "text": "Nothing summarises a repository's audit state without running a verb that changes the store."
+    },
+    {
+      "id": "P2",
+      "text": "A session-start hook built on kmaudit would block or spam a session when there is no audit or an error."
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "An agent starts a session knowing where the audit stands and what to do next."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "O1",
+      "change": "kmaudit briefing prints each namespace's state and the next step",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "new:packages/kmaudit/src/kmaudit/briefing.py",
+        "packages/kmaudit/src/kmaudit/cli.py",
+        "new:packages/kmaudit/tests/test_briefing.py",
+        "packages/kmaudit/docs/commands.md"
+      ],
+      "checked_by": "a test that sections, claims, check statuses and open feedback per namespace match `claims list` and `checks list`; that with only an old .kmctl/audit.sqlite no file appears or changes; that a changed page counts pending; and that a store keyed under a previous hash reads as up to date",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O2",
+      "change": "The briefing never fails a session start",
+      "kind": "support",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P2",
+      "fixes_index": 1,
+      "needs": [
+        "O1"
+      ],
+      "needs_index": [
+        0
+      ],
+      "touches": [
+        "packages/kmaudit/src/kmaudit/briefing.py",
+        "packages/kmaudit/README.md"
+      ],
+      "checked_by": "tests that a repository with no namespace prints nothing and exits 0, and that a broken store prints one unavailable line and exits 0",
+      "seen_by": "operator"
+    }
+  ]
+}
