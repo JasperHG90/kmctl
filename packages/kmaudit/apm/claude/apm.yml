@@ -3,7 +3,7 @@
 # sub-package and those harnesses' skills do the work themselves.
 # scripts/release.py set --package kmaudit writes the version.
 name: kmaudit-claude
-version: 0.1.0.dev0
+version: 0.1.0
 description: kmaudit's claims-extractor and check-writer agents for Claude Code, which call the kmaudit MCP tools.
 targets:
   - claude

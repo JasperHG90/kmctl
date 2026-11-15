@@ -316,7 +316,7 @@ tenacity; kmaudit installs all three. Tracing needs langsmith, in the
 `tracing` extra:
 
 ```
-uv tool install --force 'kmaudit[tracing] @ git+https://github.com/JasperHG90/kmctl#subdirectory=packages/kmaudit'
+uv tool install --force 'kmaudit[tracing] @ git+https://github.com/JasperHG90/kmctl@kmaudit-v0.1.0#subdirectory=packages/kmaudit'
 ```
 
 When one of them is missing, those steps report `skipped`, `checks_submit`

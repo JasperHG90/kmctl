@@ -7,7 +7,7 @@
 # writes it here and into claude/apm.yml, pins the server's ref to the tag,
 # and packages/kmaudit/pyproject.toml reads it.
 name: kmaudit
-version: 0.1.0.dev0
+version: 0.1.0
 description: kmaudit's audit of what a folder of markdown docs claims about its repository, with the skills, agents and MCP server that drive it.
 dependencies:
   apm:
