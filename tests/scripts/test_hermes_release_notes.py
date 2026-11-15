@@ -212,3 +212,64 @@ def test_a_response_that_is_not_utf8_falls_back_to_the_draft(tmp_path: Path) -> 
     assert res.returncode == 0
     assert res.stdout == DRAFT.encode()
     assert "the missing check" in res.stderr.decode()
+
+
+@pytest.mark.parametrize(
+    "response",
+    [
+        REWRITE.replace(
+            "## What changed\n\n", "## What changed\n\nThis release is a big one.\n\n"
+        ),
+        REWRITE.replace("(#42)\n", "(#42)\nIt also makes every command faster.\n"),
+        REWRITE.replace(
+            "(`kmaudit-mcp`)\n", "(`kmaudit-mcp`)\n\nThe server is now stable.\n\n"
+        ),
+    ],
+    ids=["intro", "after-a-bullet", "between-bullets"],
+)
+def test_a_stray_line_under_what_changed_keeps_the_draft(
+    tmp_path: Path, response: str
+) -> None:
+    """A line under What changed that is not a bullet or indented under one fails the stray-line check."""
+    res, before = _run(tmp_path, response)
+
+    assert res.stdout == DRAFT.encode()
+    [warning] = [
+        ln for ln in res.stderr.decode().splitlines() if ln.startswith("::warning::")
+    ]
+    assert "the stray-line check" in warning
+    assert not before.exists()
+
+
+def test_an_indented_continuation_line_is_kept(tmp_path: Path) -> None:
+    """A bullet wrapped onto an indented second line still passes and is kept."""
+    wrapped = REWRITE.replace(
+        "each with its own notes. (#42)", "each with its own\n  notes. (#42)"
+    )
+
+    res, _ = _run(tmp_path, wrapped)
+
+    assert res.stdout.decode() == wrapped
+    assert b"::warning::" not in res.stderr
+
+
+def test_the_draft_s_own_none_line_passes(tmp_path: Path) -> None:
+    """A draft whose What changed says None. keeps a rewrite that keeps that line."""
+    draft = tmp_path / "draft.md"
+    empty = (
+        DRAFT.split("## What changed")[0]
+        + "## What changed\n\nNone.\n\n## Other changes"
+        + DRAFT.split("## Other changes")[1]
+    )
+    draft.write_text(empty)
+    resp = tmp_path / "response.md"
+    resp.write_text(empty)
+
+    res = subprocess.run(
+        [sys.executable, str(SCRIPT), str(draft), str(resp)],
+        capture_output=True,
+        check=False,
+    )
+
+    assert res.stdout.decode() == empty
+    assert b"::warning::" not in res.stderr
