@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "root-release-cutoff",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
@@ -13,7 +13,7 @@
   "split": "j-20261115T044805+0000-f8f37508",
   "split_plan_hash": "0814150b4bdfbe773d79ae961100eac0ad65840ce07625d187e1416efce823b1",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "fd866f07a29e5ca3d12a81203c2565a19e92f55d",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -147,8 +147,14 @@
       "to": "verifying",
       "at": "2026-11-15T05:37:58+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-15T05:43:45+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T05:43:32+00:00"
+  "at": "2026-11-15T05:43:45+00:00"
 }
