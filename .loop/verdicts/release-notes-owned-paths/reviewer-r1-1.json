@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "release_paths.py's command stops reading stdin at the first owned path, so under release-tag's `set -o pipefail` a late commit with a long path list kills `git diff` with SIGPIPE (exit 141), the `if` reads the pipeline as false, and the commit the package owns is silently left out of the warning. The awk it replaces read all input for exactly this reason (the step's own comment on drafted_from says so).",
+      "anchor": "scripts/release_paths.py:46",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "6338d4810d893969149e25d845e9ef5a9666846cb76c446fda8b01b736d86854",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T05:50:19+00:00"
+}
