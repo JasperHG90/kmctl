@@ -1,0 +1,1 @@
+{"at": "2026-11-15T07:42:59+00:00", "command": "uv run pytest -m integration", "exit": 1, "fingerprint": "4b8d22081d875919721cb2c9ad9083f9b460733f552a3056c9118cfb6b9f18cf", "kind": "red", "name": "integration", "note": null, "output": ".loop/events/apm-per-package/gate-output/d904b10ebb2371393aeb07af1b590fd19f3892b6a6ca9e2c821a00481a93be75.txt", "schema_version": "1.0"}
