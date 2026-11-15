@@ -1,14 +1,36 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-install-hints-pinned",
-  "stage": "fixing",
+  "stage": "blocked",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 3,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
-  "blocker": null,
-  "fix": null,
+  "blocker": {
+    "code": "review-cap",
+    "message": "the review round cap (3) is reached with 1 finding(s) to review again",
+    "plan_hash": "ca1c39750f3413a9c06736ceddc667346614d269d6c528c174b1a141416b203b",
+    "at": "2026-11-15T08:37:49+00:00",
+    "resign_eval": false
+  },
+  "fix": {
+    "round": 3,
+    "fingerprint": "b387347cf04d8ec14715682c32d5d38b5d91b3fa5cae08266e3aa6108a344b63",
+    "tree": "e0f7350eb10b427067e7e3b7b0b643219f350c46",
+    "decisions": [
+      {
+        "finding": "reviewer:f3",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": null,
+        "paths": [
+          "tests/scripts/test_release.py"
+        ]
+      }
+    ],
+    "at": "2026-11-15T08:37:49+00:00"
+  },
   "ask": null,
   "split": "j-20261115T054225+0000-e408492d",
   "split_plan_hash": "ca1c39750f3413a9c06736ceddc667346614d269d6c528c174b1a141416b203b",
@@ -135,8 +157,14 @@
       "to": "fixing",
       "at": "2026-11-15T08:33:50+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "blocked",
+      "at": "2026-11-15T08:37:49+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T08:37:40+00:00"
+  "at": "2026-11-15T08:37:49+00:00"
 }
