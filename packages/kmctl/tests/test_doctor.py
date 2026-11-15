@@ -36,7 +36,7 @@ from typer.testing import CliRunner, Result
 from kmctl import antigravity, app, doctor, plugin
 
 ROOT = Path(__file__).resolve().parents[3]
-SKILLS = ROOT / "apm" / ".apm" / "skills"
+SKILLS = ROOT / "packages" / "kmctl" / "apm" / ".apm" / "skills"
 SKILL_NAMES = sorted(p.name for p in SKILLS.iterdir() if p.is_dir())
 COMMANDS = ROOT / "docs" / "reference" / "commands.md"
 INSTALL_HOW_TO = ROOT / "docs" / "how-to" / "install-the-plugin-and-the-ci-action.md"
@@ -55,10 +55,16 @@ CLAUDE_FIX = (
 PATCH_FIX = "run kmctl plugin patch"
 
 
-def _update_fix(harness: str) -> str:
+KMCTL_GIT = "https://github.com/JasperHG90/kmctl.git"
+#: The last release whose package sat in apm/ (kmctl.plugin.LAST_ROOT_RELEASE).
+ROOT_RELEASE = "v0.12.2"
+
+
+def _update_fix(harness: str, entry: dict[str, str] | None = None) -> str:
+    """Doctor's update fix: the whole entry for this CLI (``entry``, by default ``new_entry()``)."""
     return (
-        f"set kmctl's ref in apm.yml to {REF}, run apm install --target {harness}, "
-        "then kmctl plugin patch"
+        f"set kmctl's entry in apm.yml to {json.dumps(entry or plugin.new_entry())}, "
+        f"run apm install --target {harness}, then kmctl plugin patch"
     )
 
 
@@ -121,25 +127,29 @@ def _okf(harnesses: tuple[str, ...]) -> tuple[dict[str, str], list[str]]:
     return files, [f"{FOLDERS[h]}/skills/okf" for h in harnesses]
 
 
-def _lock(harnesses: tuple[str, ...], ref: str = REF) -> str:
-    """An apm.lock.yaml as APM 0.33.0 writes it for kmctl's package and okf-skills."""
+def _lock(harnesses: tuple[str, ...], ref: str = REF, path: str | None = None) -> str:
+    """An apm.lock.yaml as APM 0.33.0 writes it for kmctl's package and okf-skills.
+
+    ``path`` is the package's folder, by default the one ``ref`` keeps it in.
+    """
+    path = path or plugin.package_path(ref)
     kmctl = {
         "repo_url": "JasperHG90/kmctl",
         "name": "kmctl",
         "resolved_ref": ref,
-        "virtual_path": "apm",
+        "virtual_path": path,
     }
     okf = {"repo_url": "scaccogatto/okf-skills", "name": "okf", "resolved_ref": "a8b9"}
     files, folders = _package(harnesses)
     # APM lists each sub-package's rules under its own entry (spike in review
-    # round 1 of apm-hands-back): kmctl-claude at apm/claude, and so on.
+    # round 1 of apm-hands-back): kmctl-claude at PATH/claude, and so on.
     shared = {p: t for p, t in files.items() if "/rules/" not in p}
     parts = [(kmctl, (shared, folders))]
     for harness in harnesses:
         sub = {
             **kmctl,
             "name": f"kmctl-{harness}",
-            "virtual_path": f"apm/{harness}",
+            "virtual_path": f"{path}/{harness}",
             "resolved_by": kmctl["repo_url"],
         }
         rules = {
@@ -522,8 +532,14 @@ def test_broken_piece_fails_naming_it_and_its_fix(complete: Setup, case: str) ->
     assert line.endswith(f"; {fix}"), line
 
 
-def test_broken_lock_and_hook_still_name_the_harness(complete: Setup) -> None:
-    """apm.yml's targets keep the harness found when the lock and the hook are both gone."""
+@pytest.mark.parametrize("path", ["packages/kmctl/apm", "apm"])
+def test_broken_lock_and_hook_still_name_the_harness(
+    complete: Setup, path: str
+) -> None:
+    """apm.yml's targets keep the harness found when the lock and the hook are both gone, under either package path."""
+    manifest = yaml.safe_load((complete.repo / "apm.yml").read_text())
+    manifest["dependencies"]["apm"] = [{"git": KMCTL_GIT, "path": path, "ref": REF}]
+    (complete.repo / "apm.yml").write_text(yaml.safe_dump(manifest))
     (complete.repo / "apm.lock.yaml").unlink()
     (complete.repo / ".claude" / "settings.json").write_text("{}")
 
@@ -533,6 +549,50 @@ def test_broken_lock_and_hook_still_name_the_harness(complete: Setup) -> None:
     _fail_line(result.stdout, "claude.lock")
     _fail_line(result.stdout, "claude.hook")
     assert "fail kmctl.harness" not in result.stdout
+
+
+@pytest.mark.parametrize("path", ["packages/kmctl/apm", "apm"])
+def test_lock_under_either_package_path_is_kmctls(complete: Setup, path: str) -> None:
+    """A lock that records kmctl's package and sub-packages under either path passes every check."""
+    harnesses = ("claude", "antigravity")
+    (complete.repo / "apm.lock.yaml").write_text(_lock(harnesses, REF, path))
+
+    result = _kmctl("doctor")
+
+    assert result.exit_code == 0, result.output
+    assert [
+        line for line in result.stdout.splitlines() if not line.startswith("ok ")
+    ] == []
+
+
+def test_old_release_entry_gets_the_whole_new_entry(
+    complete: Setup, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A project pinned to {path: apm, ref: v0.12.2} is told to move to packages/kmctl/apm at this CLI's ref.
+
+    The CLI is a release after the cutoff, v0.13.0, as the first one to ship
+    the moved package is.
+    """
+    monkeypatch.setattr(plugin, "cli_version", lambda: "0.13.0")
+    manifest = yaml.safe_load((complete.repo / "apm.yml").read_text())
+    manifest["dependencies"]["apm"] = [
+        {"git": KMCTL_GIT, "path": "apm", "ref": ROOT_RELEASE}
+    ]
+    (complete.repo / "apm.yml").write_text(yaml.safe_dump(manifest))
+    lock = _lock(("claude", "antigravity"), ROOT_RELEASE)
+    assert "virtual_path: apm\n" in lock
+    (complete.repo / "apm.lock.yaml").write_text(lock)
+
+    result = _kmctl("doctor")
+
+    assert result.exit_code == 1, result.output
+    for harness in ("claude", "antigravity"):
+        line = _fail_line(result.stdout, f"{harness}.lock")
+        assert f"kmctl's package at {ROOT_RELEASE}" in line, line
+        new = {"git": KMCTL_GIT, "path": "packages/kmctl/apm", "ref": "v0.13.0"}
+        assert line.endswith(f"; {_update_fix(harness, new)}"), line
+    assert "fail claude.files" not in result.stdout
+    assert "fail antigravity.files" not in result.stdout
 
 
 def test_broken_each_problem_is_listed_once_capped(complete: Setup) -> None:
@@ -1109,7 +1169,7 @@ def test_hands_back_real_install_over_an_old_one_then_uninstall(
     assert antigravity.hook_present(consumer)
     assert antigravity.mcp_present(consumer)
 
-    entry = plugin.uninstall_name({"git": served, "path": "apm"})
+    entry = plugin.uninstall_name({"git": served, "path": plugin.PACKAGE_PATH})
     proc = subprocess.run(
         ["uvx", "--from", plugin.APM_CLI, "apm", "uninstall", entry],
         cwd=consumer,

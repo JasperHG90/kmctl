@@ -1,7 +1,7 @@
 """What kmctl adds to APM's Antigravity install, and the commands its package ships (ADR 0020).
 
 APM 0.33.0 writes kmctl's skills, rules, SessionStart hook and okf's MCP
-server for Antigravity from the package's ``apm/antigravity/`` sub-package
+server for Antigravity from the package's ``antigravity/`` sub-package
 (spike:apm-hands-back/1, /2). Two things it cannot do yet, and kmctl does:
 
 - Agents: APM writes none for Antigravity (APM issue #2990). kmctl
@@ -92,7 +92,7 @@ def agents_dir() -> Path:
     package = Path(str(files("kmctl")))
     if (package / "_agents").is_dir():
         return package / "_agents"
-    return Path(__file__).resolve().parents[4] / "apm" / ".apm" / "agents"
+    return Path(__file__).resolve().parents[2] / "apm" / ".apm" / "agents"
 
 
 class _ClaudeAgent(BaseModel):
@@ -172,7 +172,7 @@ def translate_agent(text: str, source: str) -> str:
 
 
 def package_hooks(harness: str) -> dict[str, object]:
-    """The hooks.json kmctl's ``apm/HARNESS/`` sub-package ships, in Claude Code's format APM reads.
+    """The hooks.json kmctl's ``packages/kmctl/apm/HARNESS/`` sub-package ships, in Claude Code's format APM reads.
 
     Claude Code gets the briefing's SessionStart hook; Antigravity gets
     ``HOOK_COMMAND`` at SessionStart and ``STOP_COMMAND`` at Stop. The files

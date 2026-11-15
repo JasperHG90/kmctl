@@ -158,13 +158,15 @@ def test_skill_explains_apm_yml_is_the_kmctl_version_source() -> None:
     why = _section(SKILL.read_text(), "Why two workflows")
 
     for needed in (
-        "`apm/apm.yml`",
+        "`packages/kmctl/apm/apm.yml`",
         "ref: v<cli version>",
         "`vX.Y.Z`",
-        "`packages/kmaudit/VERSION`",
+        "`packages/kmaudit/apm/apm.yml`",
         "`kmaudit-vX.Y.Z`",
     ):
         assert needed in why, needed
+    for gone in ("`apm/apm.yml`", "`packages/kmaudit/VERSION`"):
+        assert gone not in why, gone
 
 
 def test_skill_watches_the_release_tag_run_after_the_merge() -> None:

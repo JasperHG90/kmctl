@@ -13,7 +13,7 @@ Run it with ``uv run action/agent.py run --help``. It needs nothing from kmctl.
 It ships three audits, one prompt file each in ``action/prompts``, that
 ``--audit`` picks: ``docs/`` against the code, ``.okf/`` against the code (the
 default) and ``docs/`` against ``.okf/``. ``--prompt`` gives it any other task,
-and kmctl's skills in ``apm/.apm/skills`` are there for it to use.
+and kmctl's skills in ``packages/kmctl/apm/.apm/skills`` are there for it to use.
 
 The agent reads the repository, every ``--context`` folder and every
 ``--skills`` folder, and can run shell commands so it can use the scripts
@@ -58,7 +58,7 @@ from pydantic_ai.usage import UsageLimits
 
 HERE = Path(__file__).resolve().parent
 #: kmctl's skills and agents, in the action's own checkout.
-PACKAGE = HERE.parent / "apm" / ".apm"
+PACKAGE = HERE.parent / "packages" / "kmctl" / "apm" / ".apm"
 DEFAULT_SKILLS = PACKAGE / "skills"
 #: The shipped audits, one prompt file each.
 PROMPTS = HERE / "prompts"

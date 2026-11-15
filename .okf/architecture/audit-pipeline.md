@@ -9,10 +9,10 @@ tags: [architecture, diagram, audit]
 status: stable
 sources:
   - resource: "packages/kmaudit/src/kmaudit/"
-  - resource: "apm/.apm/skills/extract-claims/SKILL.md"
-  - resource: "apm/.apm/skills/write-checks/SKILL.md"
-  - resource: "apm/.apm/agents/kmctl-claims-extractor.md"
-  - resource: "apm/.apm/agents/kmctl-check-writer.md"
+  - resource: "packages/kmctl/apm/.apm/skills/extract-claims/SKILL.md"
+  - resource: "packages/kmctl/apm/.apm/skills/write-checks/SKILL.md"
+  - resource: "packages/kmctl/apm/.apm/agents/kmctl-claims-extractor.md"
+  - resource: "packages/kmctl/apm/.apm/agents/kmctl-check-writer.md"
 ---
 
 # The audit pipeline
@@ -193,6 +193,7 @@ Still open:
   `check_verbs.py`, `guard.py`, `feedback.py`, `ui.py`, `ui.html`,
   `coverage.py`, `judge.py`, `settings.py`, `tracing.py`,
   `frontmatter.py`);
-  `apm/.apm/skills/extract-claims/`, `apm/.apm/skills/write-checks/`,
-  `apm/.apm/agents/kmctl-claims-extractor.md`,
-  `apm/.apm/agents/kmctl-check-writer.md`.
+  `packages/kmctl/apm/.apm/skills/extract-claims/`,
+  `packages/kmctl/apm/.apm/skills/write-checks/`,
+  `packages/kmctl/apm/.apm/agents/kmctl-claims-extractor.md`,
+  `packages/kmctl/apm/.apm/agents/kmctl-check-writer.md`.

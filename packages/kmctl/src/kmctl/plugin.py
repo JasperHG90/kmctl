@@ -44,14 +44,19 @@ REPO = "JasperHG90/kmctl"
 OLD_REPO = "JasperHG90/Knowledge-management"
 #: Where kmctl's package comes from: the git URL of the apm.yml entry it suggests.
 DEFAULT_SOURCE = f"https://github.com/{REPO}.git"
-#: The package's folder inside the source repository.
-PACKAGE_PATH = "apm"
+#: The package's folder inside the source repository, for releases after
+#: LAST_ROOT_RELEASE (ADR 0045).
+PACKAGE_PATH = "packages/kmctl/apm"
+#: The package's folder in releases up to LAST_ROOT_RELEASE.
+ROOT_PACKAGE_PATH = "apm"
+#: Every folder kmctl's package has had, so an entry or lock pinned to either is kmctl's.
+PACKAGE_PATHS = (PACKAGE_PATH, ROOT_PACKAGE_PATH)
 #: How an apm.yml written by hand (ADR 0013) names the package.
 OLD_PACKAGE = f"{OLD_REPO}/apm"
 #: The claude plugin and marketplace the install route before ADR 0014 added.
 OLD_PLUGIN = "kmctl@kmctl"
 OLD_MARKETPLACE = "kmctl"
-#: The okf-skills commit apm/apm.yml pins; a test keeps the two equal.
+#: The okf-skills commit packages/kmctl/apm/apm.yml pins; a test keeps the two equal.
 OKF_COMMIT = "a8b96420de90d102c43cda1693d01ec4f925f2ab"
 #: The name kmctl gives okf's MCP server. It is okf's own name for it, so one
 #: direct server holds it and apm audit finds that server in the lock (issue #28).
@@ -79,18 +84,25 @@ def tag_version(tag: str) -> tuple[int, ...] | None:
     return (int(major), int(minor), int(patch), *tail)
 
 
-def subdirectory_fragment(ref: str) -> str:
-    """``#subdirectory=packages/kmctl`` when ``ref`` builds from there, else empty.
+def is_root_release(ref: str) -> bool:
+    """Whether ``ref`` is a release tag at or before ``LAST_ROOT_RELEASE``.
 
-    Release tags up to ``LAST_ROOT_RELEASE`` built kmctl from the repository
-    root. A later tag builds from packages/kmctl, and so does a ref that is
-    not a release tag, such as a branch or a dev build, because it points at
-    a commit after the move.
+    Those tags built kmctl from the repository root and kept its APM package
+    in ``apm/``. A later tag, or a ref that is not a release tag, such as a
+    branch or a dev build, points at a commit after both moves.
     """
     tag, last = tag_version(ref), tag_version(LAST_ROOT_RELEASE)
-    if tag is not None and last is not None and tag <= last:
-        return ""
-    return f"#subdirectory={SUBDIRECTORY}"
+    return tag is not None and last is not None and tag <= last
+
+
+def subdirectory_fragment(ref: str) -> str:
+    """``#subdirectory=packages/kmctl`` when ``ref`` builds from there, else empty (``is_root_release``)."""
+    return "" if is_root_release(ref) else f"#subdirectory={SUBDIRECTORY}"
+
+
+def package_path(ref: str) -> str:
+    """The folder of kmctl's APM package at ``ref``: ``apm`` up to ``LAST_ROOT_RELEASE``, else ``PACKAGE_PATH``."""
+    return ROOT_PACKAGE_PATH if is_root_release(ref) else PACKAGE_PATH
 
 
 def hook_install(cli_version: str) -> str:
@@ -197,7 +209,7 @@ def skills_dir() -> Path:
     package = Path(str(files("kmctl")))
     if (package / "_skills").is_dir():
         return package / "_skills"
-    return Path(__file__).resolve().parents[4] / "apm" / ".apm" / "skills"
+    return Path(__file__).resolve().parents[2] / "apm" / ".apm" / "skills"
 
 
 def claude_config_dir() -> Path:
@@ -368,9 +380,10 @@ def _names_old_package(entry: object, old_layout: str | None) -> bool:
     """Whether an apm.yml dependency entry is the hand-written form ADR 0013 users added.
 
     The string form (the only one ADR 0013's docs gave) always is. kmctl's own
-    ``{git, path: apm}`` form is only when the lock shows the old layout
-    installed, since that layout's hook needs ``apm uninstall``
-    (spike:apm-only-install/6); otherwise ``write_manifest`` replaces it.
+    ``{git, path}`` form, under either package path, is only when the lock
+    shows the old layout installed, since that layout's hook needs
+    ``apm uninstall`` (spike:apm-only-install/6); otherwise the entry already
+    names kmctl's package and is left as it is.
     """
     if isinstance(entry, str):
         repo = _repo_of(entry)
@@ -379,7 +392,7 @@ def _names_old_package(entry: object, old_layout: str | None) -> bool:
         return (
             old_layout is not None
             and _repo_of(str(entry.get("git", ""))) is not None
-            and entry.get("path") == PACKAGE_PATH
+            and entry.get("path") in PACKAGE_PATHS
         )
     return False
 
@@ -431,7 +444,7 @@ def read_lock(cwd: Path, scope: Scope) -> Lock | None:
 def kmctl_package(lock: Lock | None) -> LockDependency | None:
     """The kmctl package's entry in the lock, or None."""
     for dep in lock.dependencies if lock else []:
-        if dep.name == "kmctl" and dep.virtual_path == PACKAGE_PATH:
+        if dep.name == "kmctl" and dep.virtual_path in PACKAGE_PATHS:
             return dep
     return None
 
@@ -439,7 +452,8 @@ def kmctl_package(lock: Lock | None) -> LockDependency | None:
 def kmctl_files(lock: Lock | None) -> LockDependency | None:
     """kmctl's package with its sub-packages' deployed files folded in, or None.
 
-    APM records ``apm/claude`` and ``apm/antigravity`` as entries of their
+    APM records the package's ``claude`` and ``antigravity`` folders (under
+    ``packages/kmctl/apm/`` or, for an older release, ``apm/``) as entries of their
     own (named ``kmctl-claude`` and ``kmctl-antigravity``, from the same
     repository), and the rules and hooks are listed there, not under
     ``kmctl`` (ADR 0020).
@@ -450,7 +464,7 @@ def kmctl_files(lock: Lock | None) -> LockDependency | None:
     files = list(package.deployed_files)
     hashes = dict(package.deployed_file_hashes)
     for dep in lock.dependencies:
-        sub = (dep.virtual_path or "").startswith(PACKAGE_PATH + "/")
+        sub = (dep.virtual_path or "").startswith(f"{package.virtual_path}/")
         if sub and dep.repo_url == package.repo_url:
             files += [f for f in dep.deployed_files if f not in files]
             hashes.update(dep.deployed_file_hashes)
@@ -693,8 +707,12 @@ class PatchResult:
 
 
 def new_entry() -> dict[str, str]:
-    """The apm.yml entry for this CLI's package: ``{git, path: apm, ref: v<cli version>}``."""
-    return {"git": DEFAULT_SOURCE, "path": PACKAGE_PATH, "ref": package_ref()}
+    """The apm.yml entry for this CLI's package: ``{git, path, ref: v<cli version>}``.
+
+    The path is the package's folder at that ref (``package_path``).
+    """
+    ref = package_ref()
+    return {"git": DEFAULT_SOURCE, "path": package_path(ref), "ref": ref}
 
 
 def _old_entry(cwd: Path, scope: Scope, lock: Lock | None) -> object | None:
@@ -705,7 +723,7 @@ def _old_entry(cwd: Path, scope: Scope, lock: Lock | None) -> object | None:
         if _names_old_package(entry, old_layout):
             return entry
     if old_layout:
-        return f"{old_layout}/{PACKAGE_PATH}"
+        return f"{old_layout}/{ROOT_PACKAGE_PATH}"
     return None
 
 
@@ -873,4 +891,6 @@ def uninstall_name(entry: object) -> str:
             url.partition("@")[2].partition(":") if "@" in url else ("", "", url)
         )
     path = path.strip("/").removesuffix(".git")
-    return "/".join(p for p in (host, path, str(entry.get("path", PACKAGE_PATH))) if p)
+    return "/".join(
+        p for p in (host, path, str(entry.get("path", ROOT_PACKAGE_PATH))) if p
+    )

@@ -54,7 +54,10 @@ def test_new_name_in_entry_hooks_and_generated_files() -> None:
     assert plugin.new_entry()["git"] == "https://github.com/JasperHG90/kmctl.git"
     assert plugin.HOOK_COMMAND.count(install) == 2
     assert plugin.OLD_REPO not in plugin.HOOK_COMMAND
-    assert install in (ROOT / "apm/claude/.apm/hooks/hooks.json").read_text()
+    assert (
+        install
+        in (ROOT / "packages/kmctl/apm/claude/.apm/hooks/hooks.json").read_text()
+    )
 
 
 def _copy_release_files(dest: Path) -> None:

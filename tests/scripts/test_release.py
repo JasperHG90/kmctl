@@ -1,7 +1,7 @@
-"""The release version: one source in ``apm/apm.yml``, and ``scripts/release.py`` (ADR 0012).
+"""The release version: one source per package in its ``apm/apm.yml``, and ``scripts/release.py`` (ADR 0012, ADR 0045).
 
-``packages/kmctl/pyproject.toml`` reads the version from ``apm/apm.yml``, kmctl's APM package
-(ADR 0014), so a build needs no git history. ``scripts/release.py`` reads, writes and
+``packages/kmctl/pyproject.toml`` reads the version from ``packages/kmctl/apm/apm.yml``,
+kmctl's APM package (ADR 0014), so a build needs no git history. ``scripts/release.py`` reads, writes and
 compares that version for the release workflows, and points the docs' install
 lines at the release tag. It never commits or tags.
 """
@@ -18,11 +18,20 @@ from pathlib import Path
 import pytest
 import yaml
 
-from scripts.release import APM_DOC, APM_FILES, COPIER, DOC_FILES, HOOKS, MANIFEST
+from scripts.release import (
+    APM_DOC,
+    APM_FILES,
+    COPIER,
+    DOC_FILES,
+    HOOKS,
+    KMAUDIT_MANIFEST,
+    MANIFEST,
+    OLD_MANIFEST,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "release.py"
-#: kmctl's package, whose pyproject reads the version two folders up (ADR 0044).
+#: kmctl's package, whose pyproject reads the version from its own apm/ (ADR 0045).
 KMCTL = Path("packages/kmctl")
 GIT = ["git", "-c", "user.email=o@e.com", "-c", "user.name=O"]
 #: Every release after v0.12.2 builds kmctl from this folder (ADR 0044).
@@ -37,7 +46,7 @@ USES_RE = re.compile(r"^\s*- uses: JasperHG90/kmctl@(\S+)$", re.MULTILINE)
 
 
 def _manifest_version(root: Path) -> str:
-    """Return the version ``apm/apm.yml`` under ``root`` declares."""
+    """Return the version ``packages/kmctl/apm/apm.yml`` under ``root`` declares."""
     return _apm_version(root / MANIFEST)
 
 
@@ -54,9 +63,10 @@ def _build(project: Path, out: Path) -> list[str]:
 
 
 def test_version_source_is_the_apm_package() -> None:
-    """kmctl's ``pyproject.toml`` sets no fixed version; hatchling's regex source reads apm/apm.yml."""
+    """kmctl's ``pyproject.toml`` sets no fixed version; hatchling's regex source reads its apm/apm.yml."""
     data = tomllib.loads((ROOT / KMCTL / "pyproject.toml").read_text())
-    manifest = f"../../{MANIFEST.as_posix()}"
+    manifest = "apm/apm.yml"
+    assert KMCTL / manifest == MANIFEST
 
     assert "version" not in data["project"]
     assert "version" in data["project"]["dynamic"]
@@ -69,7 +79,7 @@ def test_version_source_is_the_apm_package() -> None:
 
 
 def test_version_source_builds_the_manifest_version(tmp_path: Path) -> None:
-    """``uv build`` of kmctl's package gives a wheel and sdist at apm/apm.yml's version."""
+    """``uv build`` of kmctl's package gives a wheel and sdist at its apm.yml's version."""
     version = _manifest_version(ROOT)
 
     names = _build(ROOT / KMCTL, tmp_path)
@@ -78,15 +88,14 @@ def test_version_source_builds_the_manifest_version(tmp_path: Path) -> None:
 
 
 def test_version_source_follows_a_changed_manifest(tmp_path: Path) -> None:
-    """A copy of the project with apm/apm.yml at another version builds that version."""
+    """A copy of kmctl's package with its apm.yml at another version builds that version."""
     project = tmp_path / "project"
     project.mkdir()
-    for folder in (KMCTL, Path("apm")):
-        shutil.copytree(
-            ROOT / folder,
-            project / folder,
-            ignore=shutil.ignore_patterns("__pycache__", "tests"),
-        )
+    shutil.copytree(
+        ROOT / KMCTL,
+        project / KMCTL,
+        ignore=shutil.ignore_patterns("__pycache__", "tests"),
+    )
     _set_apm_version(project / MANIFEST, "9.8.7")
 
     names = _build(project / KMCTL, tmp_path / "dist")
@@ -148,7 +157,7 @@ def _refs(root: Path) -> list[str | None]:
 
 
 def test_release_py_current_prints_the_manifest_version(tmp_path: Path) -> None:
-    """``current`` prints apm/apm.yml's version and nothing else."""
+    """``current`` prints packages/kmctl/apm/apm.yml's version and nothing else."""
     res = _run(_repo(tmp_path, version="0.2.0a1"), "current")
 
     assert res.returncode == 0, res.stderr
@@ -163,7 +172,7 @@ def test_release_py_docs_start_with_six_install_lines() -> None:
 def test_release_py_set_writes_the_version_and_the_six_doc_lines(
     tmp_path: Path,
 ) -> None:
-    """``set`` writes the version, keeps apm/apm.yml's other lines and pins each doc line.
+    """``set`` writes the version, keeps the package apm.yml's other lines and pins each doc line.
 
     The target is far past any real release, so it never equals the repository's version.
     """
@@ -200,10 +209,11 @@ def test_release_py_set_writes_the_apm_version_into_both_apm_yml_files(
     assert _manifest_version(root) == "0.2.0"
     assert {rel.as_posix(): _apm_version(root / rel) for rel in APM_FILES} == {
         "apm.yml": "0.2.0",
-        "apm/apm.yml": "0.2.0",
-        "apm/claude/apm.yml": "0.2.0",
-        "apm/antigravity/apm.yml": "0.2.0",
+        "packages/kmctl/apm/apm.yml": "0.2.0",
+        "packages/kmctl/apm/claude/apm.yml": "0.2.0",
+        "packages/kmctl/apm/antigravity/apm.yml": "0.2.0",
     }
+    assert not (root / OLD_MANIFEST).exists()
     for rel, text in before.items():
         changed = set((root / rel).read_text().splitlines()) ^ set(text.splitlines())
         assert changed == {"version: 0.1.0", "version: 0.2.0"}, rel
@@ -211,7 +221,7 @@ def test_release_py_set_writes_the_apm_version_into_both_apm_yml_files(
 
 
 def test_release_py_current_refuses_a_differing_apm_version(tmp_path: Path) -> None:
-    """``current`` exits nonzero when the root apm.yml's version differs from apm/apm.yml's."""
+    """``current`` exits nonzero when the root apm.yml's version differs from the package's."""
     root = _repo(tmp_path, version="0.2.0")
     _set_apm_version(root / "apm.yml", "0.1.9")
 
@@ -219,27 +229,34 @@ def test_release_py_current_refuses_a_differing_apm_version(tmp_path: Path) -> N
 
     assert res.returncode == 1
     assert res.stdout == ""
-    assert "apm.yml has version 0.1.9 but apm/apm.yml has 0.2.0" in res.stderr
+    assert (
+        "apm.yml has version 0.1.9 but packages/kmctl/apm/apm.yml has 0.2.0"
+        in res.stderr
+    )
     assert "scripts/release.py set 0.2.0" in res.stderr
 
 
 def test_release_py_current_refuses_a_missing_apm_version(tmp_path: Path) -> None:
-    """``current`` exits nonzero when apm/apm.yml is gone or the root apm.yml is."""
+    """``current`` exits nonzero when the package's apm.yml is gone or the root apm.yml is.
+
+    It never falls back to the old apm/apm.yml, which only ``manifest`` reads.
+    """
     root = _repo(tmp_path)
     (root / "apm.yml").unlink()
     assert "apm.yml has version none" in _run(root, "current").stderr
-    (root / "apm" / "apm.yml").unlink()
+    (root / OLD_MANIFEST).parent.mkdir()
+    shutil.move(root / MANIFEST, root / OLD_MANIFEST)
 
     res = _run(root, "current")
 
     assert res.returncode == 1
-    assert "apm/apm.yml has no top-level version: line" in res.stderr
+    assert "packages/kmctl/apm/apm.yml has no top-level version: line" in res.stderr
 
 
 def test_release_py_manifest_reads_a_before_commit_whose_root_apm_yml_differs(
     tmp_path: Path,
 ) -> None:
-    """``manifest`` prints apm/apm.yml's version even when the root apm.yml differs or is gone.
+    """``manifest`` prints the package apm.yml's version even when the root apm.yml differs or is gone.
 
     release-tag.yml reads the before commit this way, so an old commit whose
     copies disagree still gives its version to ``compare``.
@@ -258,7 +275,7 @@ def test_release_py_manifest_reads_a_before_commit_whose_root_apm_yml_differs(
 def test_release_py_manifest_refuses_a_before_commit_with_no_version(
     tmp_path: Path,
 ) -> None:
-    """``manifest`` exits nonzero and prints nothing when apm/apm.yml has no version."""
+    """``manifest`` exits nonzero and prints nothing when neither the moved nor the old apm.yml has a version."""
     root = _repo(tmp_path)
     (root / MANIFEST).unlink()
 
@@ -267,6 +284,36 @@ def test_release_py_manifest_refuses_a_before_commit_with_no_version(
     assert res.returncode == 1
     assert res.stdout == ""
     assert "apm/apm.yml has no top-level version: line" in res.stderr
+
+
+def test_release_py_manifest_falls_back_to_apm_yml_on_a_commit_before_the_move(
+    tmp_path: Path,
+) -> None:
+    """On a commit from before ADR 0045, with apm/apm.yml and no packages/kmctl/apm, ``manifest`` reads apm/apm.yml.
+
+    The first release after the move compares against such a commit.
+    """
+    root = _repo(tmp_path, version="0.12.2")
+    shutil.move(root / MANIFEST.parent, root / "apm")
+    _set_apm_version(root / "apm.yml", "0.11.0")
+    assert (root / OLD_MANIFEST).is_file() and not (root / MANIFEST).exists()
+
+    res = _run(root, "manifest")
+
+    assert res.returncode == 0, res.stderr
+    assert res.stdout == "0.12.2\n"
+    _set_apm_version(root / OLD_MANIFEST, "0.12.1")
+    assert _run(root, "manifest").stdout == "0.12.1\n"
+
+
+def test_release_py_manifest_prefers_the_moved_apm_yml(tmp_path: Path) -> None:
+    """With both files present, ``manifest`` reads packages/kmctl/apm/apm.yml, not apm/apm.yml."""
+    root = _repo(tmp_path, version="0.13.0")
+    (root / OLD_MANIFEST).parent.mkdir()
+    shutil.copy(root / MANIFEST, root / OLD_MANIFEST)
+    _set_apm_version(root / OLD_MANIFEST, "0.12.2")
+
+    assert _run(root, "manifest").stdout == "0.13.0\n"
 
 
 def test_release_py_set_moves_the_pins_from_an_older_tag(tmp_path: Path) -> None:
@@ -506,21 +553,25 @@ def test_release_py_set_refuses_a_copier_yml_without_the_default(
     assert status.stdout == ""
 
 
-#: kmaudit's package, whose pyproject reads the version from its VERSION file.
+#: kmaudit's package, whose pyproject reads the version from its apm/apm.yml.
 KMAUDIT = Path("packages/kmaudit")
 
 
-def test_kmaudit_version_source_is_the_version_file() -> None:
-    """kmaudit's pyproject sets no fixed version; hatchling's regex source reads VERSION."""
+def test_kmaudit_version_source_is_its_apm_package() -> None:
+    """kmaudit's pyproject sets no fixed version; hatchling's regex source reads its apm/apm.yml, as kmctl's does."""
     data = tomllib.loads((ROOT / KMAUDIT / "pyproject.toml").read_text())
 
     assert "version" not in data["project"]
     assert "version" in data["project"]["dynamic"]
     source = data["tool"]["hatch"]["version"]
     assert source["source"] == "regex"
-    assert source["path"] == "VERSION"
+    assert source["path"] == "apm/apm.yml"
+    assert KMAUDIT / source["path"] == KMAUDIT_MANIFEST
+    kmctl = tomllib.loads((ROOT / KMCTL / "pyproject.toml").read_text())
+    assert source["pattern"] == kmctl["tool"]["hatch"]["version"]["pattern"]
     # A local uv run rebuilds kmaudit when the file changes.
-    assert {"file": "VERSION"} in data["tool"]["uv"]["cache-keys"]
+    assert {"file": "apm/apm.yml"} in data["tool"]["uv"]["cache-keys"]
+    assert not (ROOT / KMAUDIT / "VERSION").exists()
 
 
 def test_kmaudit_version_is_not_copied_into_the_lock() -> None:
@@ -532,8 +583,8 @@ def test_kmaudit_version_is_not_copied_into_the_lock() -> None:
 
 
 def test_kmaudit_version_starts_unreleasable(tmp_path: Path) -> None:
-    """VERSION starts at 0.1.0.dev0, which compare skips, so the push adding it releases nothing."""
-    assert (ROOT / KMAUDIT / "VERSION").read_text() == "0.1.0.dev0\n"
+    """kmaudit's apm.yml starts at 0.1.0.dev0, which compare skips, so the push adding it releases nothing."""
+    assert _apm_version(ROOT / KMAUDIT_MANIFEST) == "0.1.0.dev0"
 
     current = _run(ROOT, "--package", "kmaudit", "current")
     verdict = _run(ROOT, "compare", "", "0.1.0.dev0")
@@ -544,14 +595,14 @@ def test_kmaudit_version_starts_unreleasable(tmp_path: Path) -> None:
 
 
 def test_kmaudit_version_builds_the_file_s_version(tmp_path: Path) -> None:
-    """A copy of kmaudit's package with VERSION at 9.8.7 builds 9.8.7, and current prints it."""
+    """A copy of kmaudit's package with its apm.yml at 9.8.7 builds 9.8.7, and current prints it."""
     project = tmp_path / "project"
     shutil.copytree(
         ROOT / KMAUDIT,
         project / KMAUDIT,
         ignore=shutil.ignore_patterns("__pycache__", "tests", "docs"),
     )
-    (project / KMAUDIT / "VERSION").write_text("9.8.7\n")
+    _set_apm_version(project / KMAUDIT_MANIFEST, "9.8.7")
 
     names = _build(project / KMAUDIT, tmp_path / "dist")
 
@@ -560,9 +611,9 @@ def test_kmaudit_version_builds_the_file_s_version(tmp_path: Path) -> None:
 
 
 def _kmaudit_repo(tmp_path: Path) -> Path:
-    """``_repo`` plus kmaudit's VERSION file and README, committed."""
+    """``_repo`` plus kmaudit's apm.yml and README, committed."""
     root = _repo(tmp_path)
-    for rel in (KMAUDIT / "VERSION", KMAUDIT / "README.md"):
+    for rel in (KMAUDIT_MANIFEST, KMAUDIT / "README.md"):
         (root / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(ROOT / rel, root / rel)
     subprocess.run(["git", "add", "."], cwd=root, check=True)
@@ -583,21 +634,23 @@ def _changed(root: Path) -> set[str]:
 
 
 def test_package_aware_kmaudit_set_writes_only_its_files(tmp_path: Path) -> None:
-    """``--package kmaudit set`` writes VERSION and pins the README install line to kmaudit-vX.Y.Z."""
+    """``--package kmaudit set`` writes its apm.yml's version and pins the README install line to kmaudit-vX.Y.Z."""
     root = _kmaudit_repo(tmp_path)
 
     res = _run(root, "--package", "kmaudit", "set", "0.2.0")
 
     assert res.returncode == 0, res.stderr
     assert res.stdout.splitlines() == [
-        f"wrote {KMAUDIT / 'VERSION'}",
+        f"wrote {KMAUDIT_MANIFEST}",
         f"wrote {KMAUDIT / 'README.md'}",
     ]
     assert _changed(root) == {
-        (KMAUDIT / "VERSION").as_posix(),
+        KMAUDIT_MANIFEST.as_posix(),
         (KMAUDIT / "README.md").as_posix(),
     }
-    assert (root / KMAUDIT / "VERSION").read_text() == "0.2.0\n"
+    before = (ROOT / KMAUDIT_MANIFEST).read_text().splitlines()
+    after = (root / KMAUDIT_MANIFEST).read_text().splitlines()
+    assert set(before) ^ set(after) == {"version: 0.1.0.dev0", "version: 0.2.0"}
     assert (
         "uv tool install 'kmaudit @ git+https://github.com/JasperHG90/kmctl"
         "@kmaudit-v0.2.0#subdirectory=packages/kmaudit'"
@@ -676,3 +729,22 @@ def test_package_aware_tag_refuses_an_unreleasable_version(tmp_path: Path) -> No
 
     assert res.returncode == 1
     assert "0.1.0.dev0" in res.stderr
+
+
+def test_package_aware_kmaudit_set_refuses_an_apm_yml_with_no_version(
+    tmp_path: Path,
+) -> None:
+    """``--package kmaudit set`` writes nothing when kmaudit's apm.yml has no ``version:`` line."""
+    root = _kmaudit_repo(tmp_path)
+    manifest = root / KMAUDIT_MANIFEST
+    manifest.write_text(
+        re.sub(r"^version: .*\n", "", manifest.read_text(), flags=re.MULTILINE)
+    )
+    subprocess.run([*GIT, "commit", "-qam", "drop version"], cwd=root, check=True)
+
+    res = _run(root, "--package", "kmaudit", "set", "0.2.0")
+
+    assert res.returncode == 1
+    assert f"{KMAUDIT_MANIFEST} has no top-level version: line" in res.stderr
+    assert _changed(root) == set()
+    assert _run(root, "--package", "kmaudit", "manifest").returncode == 1

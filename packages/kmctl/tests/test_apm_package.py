@@ -1,9 +1,9 @@
-"""kmctl's APM package, apm/, and the knowledge that describes it (ADR 0014).
+"""kmctl's APM package, packages/kmctl/apm/, and the knowledge that describes it (ADR 0014, ADR 0045).
 
-apm/apm.yml names the package, carries the one release version and depends
+Its apm.yml names the package, carries the one release version and depends
 on a pinned okf-skills and the two per-harness sub-packages (ADR 0020); the
-skills and the audit agent sit under apm/.apm/, the rules and hooks under
-apm/claude/ and apm/antigravity/. The tests without a marker read files
+skills and the audit agent sit under its .apm/, the rules and hooks under
+its claude/ and antigravity/. The tests without a marker read files
 only. The ``integration`` test serves this tree from a local git server and,
 in a scratch consumer, adds kmctl's entry to apm.yml, runs the real APM
 0.33.0 (which fetches okf-skills from GitHub) and kmctl plugin patch.
@@ -46,7 +46,7 @@ from scripts.release import (
 )
 
 ROOT = Path(__file__).resolve().parents[3]
-PACKAGE = ROOT / "apm"
+PACKAGE = ROOT / "packages" / "kmctl" / "apm"
 DOT_APM = PACKAGE / ".apm"
 SKILLS = DOT_APM / "skills"
 AGENT = DOT_APM / "agents" / "kmctl-auditor.md"
@@ -132,7 +132,7 @@ def _dev_items() -> list[str]:
 
 
 def test_package_names_itself_and_has_a_version() -> None:
-    """apm/apm.yml has a name and a version, both of which APM requires."""
+    """packages/kmctl/apm/apm.yml has a name and a version, both of which APM requires."""
     data = _load(PACKAGE / "apm.yml")
 
     assert data["name"] == "kmctl"
@@ -151,7 +151,7 @@ def test_package_depends_only_on_a_pinned_okf() -> None:
 
 
 def test_package_holds_the_skills_and_the_agent() -> None:
-    """The 9 skills and the three agents sit under apm/.apm/, nothing else beside them."""
+    """The 9 skills and the three agents sit under packages/kmctl/apm/.apm/, nothing else beside them."""
     assert sorted(p.name for p in SKILLS.iterdir()) == list(SKILL_NAMES)
     assert all((SKILLS / name / "SKILL.md").is_file() for name in SKILL_NAMES)
     assert sorted(p.name for p in (DOT_APM / "agents").iterdir()) == [
@@ -195,18 +195,23 @@ def test_package_old_layout_is_gone() -> None:
 
 
 def test_version_copies_equal_the_package() -> None:
-    """The root apm.yml and the two sub-packages carry apm/apm.yml's version, the one release version."""
+    """The root apm.yml and the two sub-packages carry the package's version, the one release version."""
     versions = {rel.as_posix(): str(_load(ROOT / rel)["version"]) for rel in APM_FILES}
 
-    assert MANIFEST.as_posix() == "apm/apm.yml"
+    assert MANIFEST.as_posix() == "packages/kmctl/apm/apm.yml"
     assert versions == dict.fromkeys(
-        ("apm.yml", "apm/apm.yml", "apm/claude/apm.yml", "apm/antigravity/apm.yml"),
-        versions["apm/apm.yml"],
+        (
+            "apm.yml",
+            "packages/kmctl/apm/apm.yml",
+            "packages/kmctl/apm/claude/apm.yml",
+            "packages/kmctl/apm/antigravity/apm.yml",
+        ),
+        versions["packages/kmctl/apm/apm.yml"],
     )
 
 
 def test_version_installed_cli_matches_the_package() -> None:
-    """The kmctl this tree builds reports apm/apm.yml's version."""
+    """The kmctl this tree builds reports its apm.yml's version."""
     assert version("kmctl") == str(_load(PACKAGE / "apm.yml")["version"])
 
 
@@ -217,11 +222,12 @@ def test_wheel_reports_the_set_version_and_carries_the_skills(tmp_path: Path) ->
     for name in ("README.md", str(COPIER), *map(str, APM_FILES)):
         (project / name).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(ROOT / name, project / name)
-    for folder in ("packages/kmctl", "apm/.apm", "apm/claude/.apm", "docs"):
+    for folder in ("packages/kmctl", "docs"):
         shutil.copytree(
             ROOT / folder,
             project / folder,
             ignore=shutil.ignore_patterns("__pycache__", "tests"),
+            dirs_exist_ok=True,
         )
     set_version(project, "9.8.7")
     assert {str(_load(project / rel)["version"]) for rel in APM_FILES} == {"9.8.7"}
@@ -250,7 +256,7 @@ def test_wheel_reports_the_set_version_and_carries_the_skills(tmp_path: Path) ->
     assert "kmctl/_agents/kmctl-claims-extractor.md" in names
     assert "kmctl/_agents/kmctl-check-writer.md" in names
     # The rules, which kmctl plugin patch writes for OpenCode (ADR 0024).
-    rules = sorted((ROOT / "apm" / "claude" / ".apm" / "instructions").glob("*.md"))
+    rules = sorted(INSTRUCTIONS.glob("*.md"))
     assert len(rules) == 4
     for path in rules:
         assert f"kmctl/_rules/{path.name}" in names
@@ -261,12 +267,17 @@ def test_wheel_reports_the_set_version_and_carries_the_skills(tmp_path: Path) ->
 
 
 def test_rule_paths_scope_to_the_apm_package() -> None:
-    """No rule here scopes to plugin/; the ones that did scope to apm/ instead."""
+    """No rule here scopes to plugin/ or the old apm/; the ones that did scope to packages/kmctl/apm/ instead."""
     rules = ROOT / ".claude" / "rules"
     paths = {p.stem: _split(p.read_text())[0].get("paths") for p in rules.glob("*.md")}
 
     assert [
         n for n, globs in paths.items() if any("plugin/" in g for g in globs or [])
+    ] == []
+    assert [
+        n
+        for n, globs in paths.items()
+        if any(g.startswith("apm/") for g in globs or [])
     ] == []
     for name in (
         "skills-are-thin",
@@ -275,7 +286,7 @@ def test_rule_paths_scope_to_the_apm_package() -> None:
         "cli-version-floor",
         "diagrams-stay-current",
     ):
-        assert any(g.startswith("apm/") for g in paths[name]), name
+        assert any(g.startswith("packages/kmctl/apm/") for g in paths[name]), name
         assert "plugin/" not in (rules / f"{name}.md").read_text(), name
 
 
@@ -422,11 +433,11 @@ def test_docs_pages_drop_the_marketplace_route(page: Path) -> None:
 
 
 def test_docs_overview_names_the_package_and_the_hook_writer() -> None:
-    """The architecture overview shows apm/.apm, settings.json and plugin.py."""
+    """The architecture overview shows packages/kmctl/apm/.apm, settings.json and plugin.py."""
     text = OVERVIEW.read_text()
     depicts = _sections(text)["Depicts"]
 
-    assert "apm/.apm" in text
+    assert "packages/kmctl/apm/.apm" in text
     assert "settings.json" in text
     assert "packages/kmctl/src/kmctl/plugin.py" in depicts
 
@@ -698,7 +709,7 @@ def test_hands_back_docs_pages_say_apm_writes_them(page: Path) -> None:
 
 
 def test_antigravity_rules_pre_commit_hook_regenerates_them() -> None:
-    """A pre-commit hook runs the generator when a rule or the script is staged."""
+    """A pre-commit hook runs the generator when a rule under packages/kmctl/apm/ or the script is staged."""
     config = yaml.safe_load((ROOT / ".pre-commit-config.yaml").read_text())
     hooks = [h for repo in config["repos"] for h in repo["hooks"]]
     [hook] = [h for h in hooks if h["id"] == "sync-antigravity-rules"]
@@ -707,12 +718,25 @@ def test_antigravity_rules_pre_commit_hook_regenerates_them() -> None:
     assert hook["pass_filenames"] is False
     pattern = re.compile(hook["files"])
     for path in (
-        "apm/claude/.apm/instructions/okf-bundle.instructions.md",
-        "apm/antigravity/.apm/instructions/okf-bundle.instructions.md",
+        "packages/kmctl/apm/claude/.apm/instructions/okf-bundle.instructions.md",
+        "packages/kmctl/apm/antigravity/.apm/instructions/okf-bundle.instructions.md",
         "scripts/sync_antigravity_rules.py",
     ):
         assert pattern.search(path), path
-    assert not pattern.search("apm/.apm/skills/audit/SKILL.md")
+    for path in (
+        "packages/kmctl/apm/.apm/skills/audit/SKILL.md",
+        "apm/claude/.apm/instructions/okf-bundle.instructions.md",
+    ):
+        assert not pattern.search(path), path
+
+
+def test_antigravity_rules_sync_reads_and_writes_the_moved_package() -> None:
+    """The generator reads the Claude rules and writes the copies under packages/kmctl/apm/, not apm/."""
+    from scripts import sync_antigravity_rules as sync
+
+    assert sync.SOURCE == INSTRUCTIONS
+    assert sync.TARGET == AG_INSTRUCTIONS
+    assert sync.SOURCE.is_dir() and sync.TARGET.is_dir()
 
 
 # drop-summary-nudge r1: kmctl ships no hook after a tool call --------------------

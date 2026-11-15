@@ -32,7 +32,7 @@ from kmctl.plugin import (
     HARNESSES,
     MCP_NAME,
     OLD_PLUGIN,
-    PACKAGE_PATH,
+    PACKAGE_PATHS,
     Lock,
     LockDependency,
     PluginError,
@@ -48,6 +48,7 @@ from kmctl.plugin import (
     kmctl_files,
     kmctl_hooks,
     kmctl_package,
+    new_entry,
     okf_mcp_url,
     other_okf_server,
     package_ref,
@@ -168,10 +169,14 @@ def _install_fix(harness: str, scope: Scope) -> str:
 
 
 def _update_fix(harness: str, scope: Scope) -> str:
-    """The steps that bring ``harness``'s install to this kmctl's version."""
+    """The steps that bring ``harness``'s install to this kmctl's version.
+
+    They give the whole entry, because a move across ``LAST_ROOT_RELEASE``
+    changes its path as well as its ref (ADR 0045).
+    """
     g = " -g" if scope == "user" else ""
     return (
-        f"set kmctl's ref in apm.yml to {package_ref()}, run apm install{g} "
+        f"set kmctl's entry in apm.yml to {json.dumps(new_entry())}, run apm install{g} "
         f"--target {harness}, then kmctl plugin patch{_suffix(scope)}"
     )
 
@@ -194,7 +199,8 @@ def _manifest_targets(cwd: Path, scope: Scope) -> list[str]:
     except PluginError:
         return []
     names_kmctl = any(
-        isinstance(e, dict) and e.get("path") == PACKAGE_PATH for e in apm_entries(data)
+        isinstance(e, dict) and e.get("path") in PACKAGE_PATHS
+        for e in apm_entries(data)
     )
     targets = data.get("targets") if names_kmctl else None
     if isinstance(targets, str):

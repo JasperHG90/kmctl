@@ -5,7 +5,7 @@
 repos:
   - repo: local
     hooks:
-      # apm/antigravity/.apm/instructions/ is generated from the Claude rules
+      # packages/kmctl/apm/antigravity/.apm/instructions/ is generated from the Claude rules
       # (ADR 0020). When a staged change touches either side or the script,
       # this writes the copies again; if that changed them, the commit stops
       # so you can stage the new copies.
@@ -13,7 +13,7 @@ repos:
         name: generate the Antigravity rules
         entry: uv run python -m scripts.sync_antigravity_rules
         language: system
-        files: ^(apm/(claude|antigravity)/\.apm/instructions/|scripts/sync_antigravity_rules\.py$)
+        files: ^(packages/kmctl/apm/(claude|antigravity)/\.apm/instructions/|scripts/sync_antigravity_rules\.py$)
         pass_filenames: false
       # kmctl check on this repository's own docs/ and .okf/, as the
       # kmctl-check hook in .pre-commit-hooks.yaml runs it elsewhere. --fix

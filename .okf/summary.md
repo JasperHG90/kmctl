@@ -26,7 +26,7 @@ Claude Code, Antigravity and OpenCode.
 ## How it works
 
 Four parts ([overview](architecture/overview.md)). The CLI in `packages/kmctl/src/kmctl/`
-alone writes knowledge. An APM package in `apm/` carries skills, an audit
+alone writes knowledge. An APM package in `packages/kmctl/apm/` carries skills, an audit
 agent, four knowledge rules and its hooks; APM installs it,
 `kmctl plugin patch` fills the gaps, and projects commit all but
 `apm_modules/` ([ADR 0030](decisions/0030-projects-commit-what-apm-deploys.md)).

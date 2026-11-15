@@ -1,0 +1,6 @@
+# kmaudit's APM package (ADR 0045). For now it carries kmaudit's one version
+# (ADR 0012): scripts/release.py set --package kmaudit writes it, and
+# packages/kmaudit/pyproject.toml reads it.
+name: kmaudit
+version: 0.1.0.dev0
+description: kmaudit's audit of what a folder of markdown docs claims about its repository.

@@ -6,8 +6,10 @@ dependencies:
   apm:
     # kmctl: knowledge skills, rules, the session briefing hook and okf's
     # MCP server. Keep the ref the same as the kmctl CLI (`just kmctl`).
+{#- Releases after v0.12.2 keep kmctl's APM package in packages/kmctl/apm; older ones in apm. #}
+{%- set kmctl_release = (kmctl_ref[1:] | regex_replace('(a|b|rc)[0-9]+$', '')).split('.') | map('int') | list %}
     - git: https://github.com/JasperHG90/kmctl.git
-      path: apm
+      path: {% if kmctl_release > [0, 12, 2] %}packages/kmctl/apm{% else %}apm{% endif %}
       ref: {{ kmctl_ref }}
 {%- if adversarial_review and 'claude' in harnesses %}
     # The agent the adversarial-reviews rule in AGENTS.md hands each finished

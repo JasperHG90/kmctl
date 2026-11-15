@@ -8,7 +8,7 @@ generated:
   at: 2026-10-16T20:52:21Z
 status: stable
 sources:
-  - resource: "apm"
+  - resource: "packages/kmctl/apm"
   - resource: "packages/kmctl/src/kmctl/plugin.py"
 ---
 

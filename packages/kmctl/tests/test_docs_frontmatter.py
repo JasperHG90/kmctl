@@ -379,11 +379,11 @@ def test_own_pre_commit_runs_kmctl_check() -> None:
 
 
 AGENT_INSTRUCTIONS = (
-    "apm/claude/.apm/instructions/docs-layout.instructions.md",
-    "apm/antigravity/.apm/instructions/docs-layout.instructions.md",
-    "apm/.apm/skills/write-docs/SKILL.md",
-    "apm/.apm/agents/kmctl-auditor.md",
-    "apm/.apm/skills/audit/SKILL.md",
+    "packages/kmctl/apm/claude/.apm/instructions/docs-layout.instructions.md",
+    "packages/kmctl/apm/antigravity/.apm/instructions/docs-layout.instructions.md",
+    "packages/kmctl/apm/.apm/skills/write-docs/SKILL.md",
+    "packages/kmctl/apm/.apm/agents/kmctl-auditor.md",
+    "packages/kmctl/apm/.apm/skills/audit/SKILL.md",
 )
 
 

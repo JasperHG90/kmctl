@@ -418,7 +418,9 @@ def test_skills_default_to_kmctls(repo: Path, tmp_path: Path) -> None:
     rec = Recorder()
 
     assert _main(repo, tmp_path, FunctionModel(rec)) == 0
-    assert agent.DEFAULT_SKILLS == ROOT / "apm" / ".apm" / "skills"
+    assert (
+        agent.DEFAULT_SKILLS == ROOT / "packages" / "kmctl" / "apm" / ".apm" / "skills"
+    )
     assert rec.instructions and "- audit: " in rec.instructions
     assert str(agent.DEFAULT_SKILLS / "audit" / "SKILL.md") in rec.instructions
 

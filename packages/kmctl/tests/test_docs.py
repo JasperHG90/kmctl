@@ -145,7 +145,14 @@ def test_install_subdirectory_follows_the_cutoff_on_every_install_line() -> None
     files = [
         ROOT / "README.md",
         *sorted(DOCS.rglob("*.md")),
-        ROOT / "apm" / "claude" / ".apm" / "hooks" / "hooks.json",
+        ROOT
+        / "packages"
+        / "kmctl"
+        / "apm"
+        / "claude"
+        / ".apm"
+        / "hooks"
+        / "hooks.json",
         ROOT / ".github" / "release-notes.md",
     ]
     found = {

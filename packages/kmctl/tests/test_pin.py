@@ -18,6 +18,7 @@ import pytest
 import yaml
 from conftest import bumped_version, tree_repo
 
+from kmctl import plugin
 from kmctl.pin import Pin, not_installed_notice, uvx_source
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -55,7 +56,7 @@ def write_lock(
     entry: dict[str, object] = {
         "repo_url": "jasperhg90/kmctl",
         "name": name,
-        "virtual_path": "apm",
+        "virtual_path": plugin.package_path(ref),
         "resolved_ref": ref,
     }
     if commit is not None:
@@ -479,12 +480,26 @@ def test_docs_say_the_pin_wins() -> None:
         assert words in decision, words
 
 
+def _tag_has(tag: str, path: str) -> bool:
+    """Whether the commit ``tag`` names holds ``path``."""
+    return (
+        subprocess.run(
+            ["git", "cat-file", "-e", f"{tag}:{path}"],
+            cwd=ROOT,
+            capture_output=True,
+            check=False,
+        ).returncode
+        == 0
+    )
+
+
 @pytest.mark.integration
 def test_cutoff_matches_tags() -> None:
-    """Every v* tag without packages/kmctl/pyproject.toml is at or below LAST_ROOT_RELEASE, every tag with it above.
+    """Every v* tag after LAST_ROOT_RELEASE has packages/kmctl/pyproject.toml and packages/kmctl/apm/apm.yml and no apm/apm.yml; every older tag the reverse.
 
     A root release from main after the cutoff would otherwise get a
-    subdirectory it does not have (ADR 0044).
+    subdirectory it does not have (ADR 0044), and an apm.yml entry a path it
+    does not have (ADR 0045); such a release moves the cutoff for both.
     """
     from kmctl.plugin import LAST_ROOT_RELEASE, tag_version
 
@@ -500,15 +515,12 @@ def test_cutoff_matches_tags() -> None:
     assert LAST_ROOT_RELEASE in releases, "the clone has no tags; fetch them"
     wrong = []
     for tag in releases:
-        moved = (
-            subprocess.run(
-                ["git", "cat-file", "-e", f"{tag}:packages/kmctl/pyproject.toml"],
-                cwd=ROOT,
-                capture_output=True,
-                check=False,
-            ).returncode
-            == 0
+        after = tag_version(tag) > last
+        layout = (
+            _tag_has(tag, "packages/kmctl/pyproject.toml"),
+            _tag_has(tag, "packages/kmctl/apm/apm.yml"),
+            not _tag_has(tag, "apm/apm.yml"),
         )
-        if moved != (tag_version(tag) > last):
+        if layout != (after, after, after):
             wrong.append(tag)
     assert wrong == []

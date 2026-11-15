@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-SKILLS = ROOT / "apm" / ".apm" / "skills"
+SKILLS = ROOT / "packages" / "kmctl" / "apm" / ".apm" / "skills"
 
 
 def test_write_docs_skill_layout() -> None:
@@ -86,7 +86,7 @@ def test_write_docs_grader_joins_metadata(tmp_path: Path) -> None:
     assert not (it / "wrong-prompt" / "with_skill" / "grading.json").exists()
 
 
-AGENTS = ROOT / "apm" / ".apm" / "agents"
+AGENTS = ROOT / "packages" / "kmctl" / "apm" / ".apm" / "agents"
 #: ``kmaudit`` followed by its words and flags, up to the first word that is neither.
 COMMAND = re.compile(r"\bkmaudit((?: +(?:[a-z][a-z-]*|--[a-z][a-z-]*|-(?= )))+)")
 #: Code: fenced blocks and inline code spans, where a file names a command to run.

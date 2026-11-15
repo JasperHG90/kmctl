@@ -21,7 +21,7 @@ from typer.testing import CliRunner, Result
 from kmctl import app, plugin
 
 ROOT = Path(__file__).resolve().parents[3]
-SKILLS = ROOT / "apm" / ".apm" / "skills"
+SKILLS = ROOT / "packages" / "kmctl" / "apm" / ".apm" / "skills"
 REF = f"v{version('kmctl')}"
 APM = ["--from", "apm-cli==0.33.0", "apm"]
 GITHUB = "https://github.com/JasperHG90/kmctl.git"
@@ -53,8 +53,10 @@ def _kmctl(*args: str) -> Result:
 
 
 def test_hook_the_package_ships_is_one_sessionstart_entry() -> None:
-    """kmctl's own hook is one SessionStart entry relaying kmctl briefing (I1), shipped in apm/claude/."""
-    shipped = json.loads((ROOT / "apm/claude/.apm/hooks/hooks.json").read_text())
+    """kmctl's own hook is one SessionStart entry relaying kmctl briefing (I1), shipped in packages/kmctl/apm/claude/."""
+    shipped = json.loads(
+        (ROOT / "packages/kmctl/apm/claude/.apm/hooks/hooks.json").read_text()
+    )
 
     assert list(shipped["hooks"]) == ["SessionStart"]
     [group] = shipped["hooks"]["SessionStart"]
@@ -107,11 +109,13 @@ def test_hook_exits_zero_when_kmctl_fails(repo: Path, tmp_path: Path) -> None:
 
 
 def test_install_hint_names_release(repo: Path, tmp_path: Path) -> None:
-    """Both install hints name the release in apm/apm.yml, in hooks.json and hook_entry() alike, and the hook still exits 0."""
-    manifest = (ROOT / "apm/apm.yml").read_text()
+    """Both install hints name the release in packages/kmctl/apm/apm.yml, in hooks.json and hook_entry() alike, and the hook still exits 0."""
+    manifest = (ROOT / "packages/kmctl/apm/apm.yml").read_text()
     [apm_version] = re.findall(r"(?m)^version: (\S+)$", manifest)
     install = plugin.hook_install(apm_version)
-    shipped = json.loads((ROOT / "apm/claude/.apm/hooks/hooks.json").read_text())
+    shipped = json.loads(
+        (ROOT / "packages/kmctl/apm/claude/.apm/hooks/hooks.json").read_text()
+    )
     [group] = shipped["hooks"]["SessionStart"]
     [hook] = group["hooks"]
     command = plugin.hook_entry()["command"]
@@ -199,3 +203,89 @@ def test_hook_install_subdirectory_only_after_the_cutoff(
 def test_hook_install_is_this_release_s() -> None:
     """HOOK_INSTALL is the hint for this CLI's own version."""
     assert plugin.HOOK_INSTALL == plugin.hook_install(plugin.package_ref()[1:])
+
+
+# apm-per-package: the package moved to packages/kmctl/apm (ADR 0045) ----------
+
+
+@pytest.mark.parametrize(
+    ("cli", "path"),
+    [
+        ("0.12.1", "apm"),
+        ("0.12.2", "apm"),
+        ("0.12.3rc1", "packages/kmctl/apm"),
+        ("0.13.0", "packages/kmctl/apm"),
+        # A dev build is not a release tag: it is a commit after the move.
+        ("0.13.0.dev3+gabc", "packages/kmctl/apm"),
+    ],
+)
+def test_new_entry_names_the_package_folder_of_this_cli_s_release(
+    monkeypatch: pytest.MonkeyPatch, cli: str, path: str
+) -> None:
+    """new_entry writes path packages/kmctl/apm for a CLI after v0.12.2, and apm for one at or before it."""
+    monkeypatch.setattr(plugin, "cli_version", lambda: cli)
+
+    assert plugin.new_entry() == {"git": GITHUB, "path": path, "ref": f"v{cli}"}
+
+
+def _lock(path: str) -> plugin.Lock:
+    """A lock holding kmctl's package at ``path``, its two sub-packages under it, and okf."""
+
+    def dep(name: str, virtual: str | None, files: list[str]) -> dict[str, object]:
+        return {
+            "repo_url": "JasperHG90/kmctl" if virtual else "scaccogatto/okf-skills",
+            "name": name,
+            "resolved_ref": REF,
+            "virtual_path": virtual,
+            "deployed_files": files,
+            "deployed_file_hashes": {f: "h" for f in files},
+        }
+
+    return plugin.Lock.model_validate(
+        {
+            "dependencies": [
+                dep("kmctl", path, [".claude/skills/audit"]),
+                dep("kmctl-claude", f"{path}/claude", [".claude/rules/a.md"]),
+                dep("kmctl-antigravity", f"{path}/antigravity", [".agents/rules/a.md"]),
+                dep("okf", None, [".claude/skills/okf"]),
+            ]
+        }
+    )
+
+
+@pytest.mark.parametrize("path", ["packages/kmctl/apm", "apm"])
+def test_kmctl_package_and_sub_packages_are_found_under_either_path(path: str) -> None:
+    """The lock's kmctl entry and its claude and antigravity sub-packages count as kmctl's under either path."""
+    lock = _lock(path)
+
+    package = plugin.kmctl_package(lock)
+    files = plugin.kmctl_files(lock)
+
+    assert package is not None and package.virtual_path == path
+    assert files is not None
+    assert files.deployed_files == [
+        ".claude/skills/audit",
+        ".claude/rules/a.md",
+        ".agents/rules/a.md",
+    ]
+
+
+def test_kmctl_files_keeps_another_path_s_sub_packages_out() -> None:
+    """Sub-packages under the other path are not folded into the package the lock names."""
+    lock = _lock("packages/kmctl/apm")
+    for dep in lock.dependencies:
+        if dep.virtual_path and dep.virtual_path.endswith("/claude"):
+            dep.virtual_path = "apm/claude"
+
+    files = plugin.kmctl_files(lock)
+
+    assert files is not None
+    assert ".claude/rules/a.md" not in files.deployed_files
+
+
+@pytest.mark.parametrize("path", ["packages/kmctl/apm", "apm"])
+def test_uninstall_name_ends_with_the_entry_s_path(path: str) -> None:
+    """apm uninstall gets HOST/OWNER/REPO/PATH for an entry under either path."""
+    entry = {"git": GITHUB, "path": path, "ref": "v0.12.2"}
+
+    assert plugin.uninstall_name(entry) == f"github.com/JasperHG90/kmctl/{path}"

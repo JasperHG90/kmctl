@@ -283,3 +283,7 @@
 - kmaudit audits any folder of markdown docs, each a namespace with its own store under `.kmaudit/`: `decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp` gains an amendment on one file per namespace, and `architecture/audit-pipeline` and `architecture/overview` name the stores, `namespaces.py` and `kmaudit namespaces`.
 - `kmaudit briefing` prints each namespace's audit state read-only, for a session-start hook: `architecture/audit-pipeline` and `architecture/overview` name the verb and `briefing.py`.
 - kmctl moved to `packages/kmctl/` and the root became a uv workspace that installs nothing (ADR 0044): `decisions/0044-kmctl-and-kmaudit-are-both-workspace-packages` records it, `decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp` and `decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins` gain amendments, `summary`, `manifesto` and `architecture/overview` name the moved paths, and every decision's `sources` name `packages/kmctl/` (and, for ADR 0036 to ADR 0042, `packages/kmaudit/`).
+
+## 2026-11-15
+
+- kmctl's APM package moved to `packages/kmctl/apm/` and kmaudit's version into `packages/kmaudit/apm/apm.yml` (ADR 0045): `decisions/0045-each-package-keeps-its-apm-package-and-version` records it, `decisions/0044-kmctl-and-kmaudit-are-both-workspace-packages` gains an amendment, `summary`, `manifesto` and `architecture/overview` and `architecture/audit-pipeline` name the moved paths, and the `sources` of the decisions that named `apm/` name `packages/kmctl/apm/`.

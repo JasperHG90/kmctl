@@ -35,8 +35,8 @@ LINK_EACH = re.compile(r"\b(link|list)\w*\s+each\b", re.IGNORECASE)
 #: Where the guidance on writing the summary lives, besides the AGENTS.md block.
 GUIDANCE = (
     ".claude/rules/okf-bundle.md",
-    "apm/claude/.apm/instructions/okf-bundle.instructions.md",
-    "apm/antigravity/.apm/instructions/okf-bundle.instructions.md",
+    "packages/kmctl/apm/claude/.apm/instructions/okf-bundle.instructions.md",
+    "packages/kmctl/apm/antigravity/.apm/instructions/okf-bundle.instructions.md",
     "docs/reference/commands.md",
 )
 

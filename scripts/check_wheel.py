@@ -30,15 +30,14 @@ def expected_entries(pyproject: Path) -> list[str]:
     """Return the wheel paths the pyproject's build hook adds.
 
     A directory source maps to a ``<target>/`` prefix; a file maps to its path.
-    Sources are relative to the repository's ``apm/``, two folders above the
-    package.
+    Sources are relative to the package's own ``apm/`` folder (ADR 0045).
     """
     data = tomllib.loads(pyproject.read_text())
     wheel = data["tool"]["hatch"]["build"]["targets"]["wheel"]
     if "apm-include" not in wheel.get("hooks", {}).get("custom", {}):
         return _package_entries(pyproject.parent, wheel["packages"])
     table = wheel["hooks"]["custom"]["apm-include"]
-    root = pyproject.parent / ".." / ".." / "apm"
+    root = pyproject.parent / "apm"
     return [
         f"{target}/" if (root / source).is_dir() else str(target)
         for source, target in table.items()

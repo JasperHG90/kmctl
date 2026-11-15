@@ -9,7 +9,7 @@ generated:
 status: deprecated
 sources:
   - resource: "packages/kmctl/src/kmctl/summary.py"
-  - resource: "apm/claude/.apm/hooks/hooks.json"
+  - resource: "packages/kmctl/apm/claude/.apm/hooks/hooks.json"
   - resource: "packages/kmctl/src/kmctl/plugin.py"
   - resource: "packages/kmctl/src/kmctl/doctor.py"
 ---

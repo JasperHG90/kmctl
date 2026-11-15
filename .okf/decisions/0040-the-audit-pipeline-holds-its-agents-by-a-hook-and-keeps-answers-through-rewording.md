@@ -14,8 +14,8 @@ sources:
   - resource: "packages/kmaudit/src/kmaudit/check_verbs.py"
   - resource: "packages/kmaudit/src/kmaudit/steps.py"
   - resource: "packages/kmaudit/src/kmaudit/mutate.py"
-  - resource: "apm/.apm/agents/kmctl-claims-extractor.md"
-  - resource: "apm/.apm/agents/kmctl-check-writer.md"
+  - resource: "packages/kmctl/apm/.apm/agents/kmctl-claims-extractor.md"
+  - resource: "packages/kmctl/apm/.apm/agents/kmctl-check-writer.md"
 ---
 
 # ADR 0040: The audit pipeline holds its agents by a hook and keeps answers through rewording

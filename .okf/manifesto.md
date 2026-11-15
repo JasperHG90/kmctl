@@ -78,8 +78,8 @@ ADR 0027), `manifesto.md` (the root concept), `decisions/`, `architecture/`, `pr
   check disagrees with, goes back to the agent with the next `todo`
   (ADR 0041). Its code view, and `kmaudit coverage`, show which lines of
   code a check matched, and what share of the code that is (ADR 0042).
-- **An APM package**, `apm/`, which APM installs from the user's `apm.yml`
-  entry (ADR 0014, ADR 0021). It holds an
+- **An APM package**, `packages/kmctl/apm/`, which APM installs from the
+  user's `apm.yml` entry (ADR 0014, ADR 0021, ADR 0045). It holds an
   audit agent with three review skills (architecture, decision log,
   practices), a skill for writing Diataxis docs, `/handoff` and `/continue`,
   which write and read back handoffs in `.okf/handoffs/` (ADR 0008), and the

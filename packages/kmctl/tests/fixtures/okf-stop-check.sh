@@ -1,5 +1,5 @@
 #!/bin/bash
-# okf-skills hooks/okf-stop-check.sh at a8b96420de90d102c43cda1693d01ec4f925f2ab, the commit apm/apm.yml pins; a test fixture.
+# okf-skills hooks/okf-stop-check.sh at a8b96420de90d102c43cda1693d01ec4f925f2ab, the commit packages/kmctl/apm/apm.yml pins; a test fixture.
 # OKF Stop hook - dormant by default.
 # Fires only when BOTH hold:
 #   1. the repo's bundle opts in: `upkeep: enforced` in .okf/index.md frontmatter

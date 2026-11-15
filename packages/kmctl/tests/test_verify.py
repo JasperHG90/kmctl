@@ -429,9 +429,9 @@ def test_verify_output(tmp_path: Path) -> None:
 @pytest.mark.parametrize(
     "rel",
     [
-        "apm/.apm/skills/audit/SKILL.md",
-        "apm/claude/.apm/instructions/okf-bundle.instructions.md",
-        "apm/antigravity/.apm/instructions/okf-bundle.instructions.md",
+        "packages/kmctl/apm/.apm/skills/audit/SKILL.md",
+        "packages/kmctl/apm/claude/.apm/instructions/okf-bundle.instructions.md",
+        "packages/kmctl/apm/antigravity/.apm/instructions/okf-bundle.instructions.md",
     ],
 )
 def test_the_package_names_kmctl_verify(rel: str) -> None:

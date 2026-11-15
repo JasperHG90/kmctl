@@ -1,6 +1,7 @@
 [project]
 name = "kmaudit"
-# packages/kmaudit/VERSION carries the version; see [tool.hatch.version].
+# apm/apm.yml, kmaudit's APM package, carries the version (ADR 0045); see
+# [tool.hatch.version].
 dynamic = ["version"]
 description = "Audit what a folder of markdown docs claims about its repository, through a coding agent."
 readme = "README.md"
@@ -32,11 +33,11 @@ build-backend = "hatchling.build"
 
 [tool.hatch.version]
 source = "regex"
-path = "VERSION"
-pattern = '^(?P<version>[^\s#]+)'
+path = "apm/apm.yml"
+pattern = '(?m)^version: (?P<version>[^\s#]+)'
 
 [tool.uv]
-cache-keys = [{ file = "pyproject.toml" }, { file = "VERSION" }]
+cache-keys = [{ file = "pyproject.toml" }, { file = "apm/apm.yml" }]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/kmaudit"]
