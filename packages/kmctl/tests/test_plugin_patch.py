@@ -24,7 +24,7 @@ from typer.testing import CliRunner, Result
 from kmctl import antigravity, app, plugin
 
 ROOT = Path(__file__).resolve().parents[3]
-README = ROOT / "README.md"
+README = ROOT / "packages" / "kmctl" / "README.md"
 COMMANDS = ROOT / "docs" / "reference" / "commands.md"
 DECISIONS = ROOT / ".okf" / "decisions"
 OLD_GROUP = {"hooks": [plugin.hook_entry()]}

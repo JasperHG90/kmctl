@@ -1060,7 +1060,7 @@ _PATCH_EPILOG = (
     "entry (apm uninstall stops on an agent patch rewrote). With --scope user, "
     "--undo leaves this repository's .agents/plugins/kmctl/ and OpenCode files, "
     "which are patched at project scope only, and names them. "
-    "Installing is in the README's install section."
+    "Installing is in the install section of kmctl's README."
 )
 
 

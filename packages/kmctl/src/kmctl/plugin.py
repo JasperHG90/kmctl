@@ -797,8 +797,8 @@ def patch(cwd: Path, scope: Scope = "project") -> PatchResult:
     if package is None:
         raise PluginError(
             f"apm.lock.yaml lists no kmctl package; add {json.dumps(new_entry())} "
-            f"to apm.yml's dependencies.apm and run apm install{g} (the README's "
-            "install section), then kmctl plugin patch again"
+            f"to apm.yml's dependencies.apm and run apm install{g} (the install "
+            "section of kmctl's README), then kmctl plugin patch again"
         )
     harnesses = _harnesses_of(package)
     notes: list[str] = []

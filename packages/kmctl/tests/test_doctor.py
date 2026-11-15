@@ -968,7 +968,7 @@ def test_doctor_replaces_plugin_status() -> None:
 
 
 def test_docs_name_doctor_and_not_plugin_status() -> None:
-    pages = [ROOT / "README.md", *(ROOT / "docs").rglob("*.md")]
+    pages = [ROOT / "packages" / "kmctl" / "README.md", *(ROOT / "docs").rglob("*.md")]
 
     for page in pages:
         assert "plugin status" not in page.read_text(), page

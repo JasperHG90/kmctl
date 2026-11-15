@@ -28,7 +28,7 @@ calls to LangSmith.
 The CLI starts the MCP server and the review page, and reads a store.
 Every command takes `--help`, and those that print take `--json` for
 scripts. The full reference, MCP tools included, is
-[`docs/commands.md`](docs/commands.md).
+[kmaudit commands](../../docs/reference/kmaudit-commands.md).
 
 | Command | What it does |
 |---|---|
@@ -57,7 +57,7 @@ any other folder audits every `.md` file in it.
 speaks MCP drives the audit through them, with no shell: `namespaces`, `claims_todo`,
 `claims_submit`, `claims_list`, `checks_todo`, `checks_try`,
 `checks_submit`, `checks_run`, `checks_list`, `coverage` and `judge`. The
-tools are listed in [`docs/commands.md`](docs/commands.md#kmaudit-mcp).
+tools are listed in [kmaudit commands](../../docs/reference/kmaudit-commands.md#kmaudit-mcp).
 
 Every tool takes `folder`, the folder to audit. A relative `folder` is read
 from the directory the harness starts the server in, which is not always

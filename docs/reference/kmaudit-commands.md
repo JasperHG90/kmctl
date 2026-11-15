@@ -1,3 +1,10 @@
+---
+description: "Every kmaudit command and MCP tool, with their options."
+sources:
+  - packages/kmaudit/src/kmaudit/cli.py
+  - packages/kmaudit/src/kmaudit/mcp_server.py
+---
+
 # kmaudit commands
 
 kmaudit has two ways in. Agents drive the audit through the tools of its
@@ -36,8 +43,8 @@ and have no shell.
 
 Serve kmaudit's verbs as the tools of an MCP server over stdio. A harness
 that speaks MCP starts it and talks to it over stdin and stdout; you do not
-run it by hand. The [README](../README.md#mcp-server) says how to add it to
-Claude Code, Codex, Antigravity and a LangGraph agent.
+run it by hand. kmaudit's [README](../../packages/kmaudit/README.md#mcp-server)
+says how to add it to Claude Code, Codex, Antigravity and a LangGraph agent.
 
 Every tool takes `folder`, the namespace: absolute, or relative to the
 directory the harness starts the server in. Pass an absolute path when the

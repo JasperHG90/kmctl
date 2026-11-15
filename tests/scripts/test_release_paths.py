@@ -20,6 +20,12 @@ SCRIPT = ROOT / "scripts" / "release_paths.py"
         ("packages/kmctl/src/kmctl/cli.py", True, False),
         ("packages/kmaudit/src/kmaudit/cli.py", False, True),
         ("docs/how-to/x.md", True, False),
+        # kmaudit's pages in docs/ start with kmaudit-.
+        ("docs/reference/kmaudit-commands.md", False, True),
+        ("docs/how-to/kmaudit-x.md", False, True),
+        ("docs/reference/commands.md", True, False),
+        ("docs/reference/x-kmaudit-y.md", True, False),
+        ("packages/kmctl/kmaudit-x.md", True, False),
         ("README.md", True, False),
         ("action.yml", True, False),
         (".github/workflows/release.yml", True, False),
@@ -32,7 +38,7 @@ SCRIPT = ROOT / "scripts" / "release_paths.py"
     ],
 )
 def test_owns(path: str, kmctl: bool, kmaudit: bool) -> None:
-    """kmaudit owns packages/kmaudit/, kmctl packages/kmctl/ and the rest outside packages/, and nobody the bookkeeping."""
+    """kmaudit owns packages/kmaudit/ and docs pages named kmaudit-*, kmctl packages/kmctl/ and the rest outside packages/, and nobody the bookkeeping."""
     assert (owns("kmctl", path), owns("kmaudit", path)) == (kmctl, kmaudit)
 
 
@@ -43,6 +49,8 @@ def test_owns(path: str, kmctl: bool, kmaudit: bool) -> None:
         ("kmaudit", ".okf/summary.md\nuv.lock\n", 1),
         ("kmaudit", ".okf/summary.md\npackages/kmaudit/x.py\n", 0),
         ("kmctl", ".claude/rules/x.md\ndocs/y.md\n", 0),
+        ("kmctl", "docs/reference/kmaudit-commands.md\n", 1),
+        ("kmaudit", "docs/reference/kmaudit-commands.md\n", 0),
         ("kmctl", "", 1),
     ],
 )

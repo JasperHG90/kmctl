@@ -15,7 +15,7 @@ for people. Warnings and refusals go to stderr.
 
 The audit commands are not kmctl's: they belong to kmaudit, a separate
 package in this repository. Its commands are in
-[`packages/kmaudit/docs/commands.md`](../../packages/kmaudit/docs/commands.md).
+[kmaudit commands](kmaudit-commands.md).
 
 | Command | What it does |
 |---|---|
@@ -133,7 +133,7 @@ line, or a generated docs folder index) or `kept`, then a `linked PAGE from
 .okf/index.md, with a line in .okf/log.md` line for each new page it added
 to a kept index, and ends with the next steps:
 install kmctl's package with APM for the skills and the knowledge rules
-(the README's install section: an `apm.yml` entry, `apm install`,
+(the install section of kmctl's README: an `apm.yml` entry, `apm install`,
 `kmctl plugin patch`), fill the purpose and invariants in the manifesto (its values are the
 operator's), add an architecture page once there is code, and record each
 choice with `kmctl new decision`.
@@ -567,7 +567,7 @@ Exit code: 1 when kmctl refuses, with the reason on stderr.
 
 Add what APM cannot install yet for kmctl's package. APM installs,
 upgrades and removes the package itself (`apm install`, `apm update`,
-`apm uninstall`; the README's install section gives the steps per
+`apm uninstall`; the install section of kmctl's README gives the steps per
 harness). Run `kmctl plugin patch` after every `apm install` or
 `apm update`, in the repository, or with `--scope user` after
 `apm install -g`. It never runs APM, so it needs neither uv nor APM on PATH.

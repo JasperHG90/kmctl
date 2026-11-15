@@ -18,7 +18,8 @@ agents and with a Stop hook that fails.
 
 Docs and skills install the package only with the `apm.yml` entry
 `{git, path: packages/kmctl/apm, ref: v<cli version>}`, `apm install`, then
-`kmctl plugin patch`, as the README's install section gives them. A move from
+`kmctl plugin patch`, as the install section of kmctl's README
+(`packages/kmctl/README.md`) gives them. A move from
 a release up to v0.12.2 to a later one changes `path: apm` to
 `path: packages/kmctl/apm` as well as the ref.
 </constraint>

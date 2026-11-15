@@ -467,7 +467,7 @@ def test_docs_say_the_pin_wins() -> None:
     howto = " ".join(
         (ROOT / "docs" / "how-to" / "install-kmctl-with-apm.md").read_text().split()
     )
-    readme = " ".join((ROOT / "README.md").read_text().split())
+    readme = " ".join((ROOT / "packages" / "kmctl" / "README.md").read_text().split())
     decisions = list((ROOT / ".okf" / "decisions").glob("*pin*.md"))
 
     for text in (howto, readme):

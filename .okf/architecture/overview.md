@@ -413,9 +413,9 @@ script takes `--package kmctl|kmaudit` (ADR 0012).
   with `scripts/check_wheel.py` and `scripts/smoke_wheel.py`. A real run
   commits `scripts/release.py set` (the version in `packages/kmctl/apm/apm.yml` and its
   copies in the root `apm.yml`, `packages/kmctl/apm/claude/apm.yml` and
-  `packages/kmctl/apm/antigravity/apm.yml`, the docs' six install lines and the APM how-to's
+  `packages/kmctl/apm/antigravity/apm.yml`, the six install lines in kmctl's README and the docs, the APM how-to's
   pin, and `kmctl_ref`'s default in `copier.yml`; for kmaudit, its `apm.yml` and
-  its README's install line) on `release/TAG` and opens the version pull
+  the install lines in its README and `docs/reference/kmaudit-commands.md`) on `release/TAG` and opens the version pull
   request. A notes job, in dry runs too, drafts the package's notes with
   `scripts/release_notes.py`; the version pull request commits them as
   `.github/release-notes/TAG.md` with a `Drafted-From` trailer and carries

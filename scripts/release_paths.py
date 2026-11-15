@@ -4,8 +4,9 @@ Usage::
 
     git diff --name-only A B | python3 scripts/release_paths.py kmctl|kmaudit
 
-kmaudit owns ``packages/kmaudit/``. kmctl owns ``packages/kmctl/`` and every
-path outside ``packages/``, except the repository's bookkeeping, which ships
+kmaudit owns ``packages/kmaudit/`` and its pages in ``docs/``, whose file
+names start with ``kmaudit-``. kmctl owns ``packages/kmctl/`` and every
+other path outside ``packages/``, except the repository's bookkeeping, which ships
 in no package: the loop's state (``.loop/``), the knowledge bundle
 (``.okf/``), the repository's own agent rules (``.claude/``) and the shared
 ``uv.lock``. ``release_notes.py`` lists a commit in a package's notes when the
@@ -24,14 +25,21 @@ PACKAGES = ("kmctl", "kmaudit")
 BOOKKEEPING = (".loop/", ".okf/", ".claude/")
 #: Files that ship in no package.
 BOOKKEEPING_FILES = ("uv.lock",)
+#: The start of a kmaudit page's file name in ``docs/``.
+KMAUDIT_DOCS_PREFIX = "kmaudit-"
 
 
 def owns(package: str, path: str) -> bool:
     """Whether ``path`` belongs to ``package``; bookkeeping belongs to neither."""
     if path.startswith(BOOKKEEPING) or path in BOOKKEEPING_FILES:
         return False
+    kmaudit_doc = path.startswith("docs/") and path.rsplit("/", 1)[-1].startswith(
+        KMAUDIT_DOCS_PREFIX
+    )
     if package == "kmaudit":
-        return path.startswith("packages/kmaudit/")
+        return path.startswith("packages/kmaudit/") or kmaudit_doc
+    if kmaudit_doc:
+        return False
     return path.startswith("packages/kmctl/") or not path.startswith("packages/")
 
 
