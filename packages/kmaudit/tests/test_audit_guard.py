@@ -21,7 +21,7 @@ def guard(command: str, allow: str = "claims", tool: str = "Bash") -> tuple[int,
         "kmaudit claims todo .okf/manifesto.md --json",
         "cd /home/me/repo && kmaudit claims todo --json",
         (
-            "kmaudit claims submit - --json --by kmctl-claims-extractor <<'ANSWERS'\n"
+            "kmaudit claims submit - --json --by kmaudit-claims-extractor <<'ANSWERS'\n"
             '[{"section": "a#b", "key": "k", "sentences": [{"n": 1, "kind": "none", "reason": "x | y; $(z)"}]}]\n'
             "ANSWERS"
         ),

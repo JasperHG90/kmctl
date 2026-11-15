@@ -1,0 +1,62 @@
+{
+  "skill_name": "write-checks",
+  "harness": "Claude Code with kmaudit's APM package installed (the skills, the kmaudit-check-writer agent and the kmaudit MCP server) and mcp__kmaudit__* allowed; eval 4 runs where no agent exists",
+  "evals": [
+    {
+      "id": 1,
+      "name": "code-backed-claims",
+      "prompt": "/write-checks",
+      "repo": "tests/fixtures/audit_repo.py's repository with three stored claims (store_claims): two the code bears out, one it does not",
+      "expected_output": "The kmaudit-check-writer agent tests each check with the checks_try MCP tool, stores it with checks_submit, and marks the false claim as drift; the main session sees only the summary.",
+      "files": [],
+      "expectations": [
+        "The main session calls checks_todo first and dispatches kmaudit-check-writer with the concept paths it lists",
+        "The agent calls mcp__kmaudit__checks_try before mcp__kmaudit__checks_submit and runs no shell command",
+        "checks_todo reports 0 pending afterwards",
+        "The two true claims hold with code steps that are not weak",
+        "The SQLite claim is stored as drift with a one-sentence reason",
+        "The main session's transcript holds the summary but no step",
+        "git status --porcelain is empty"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "claims-the-repo-lacks",
+      "prompt": "write checks for the bundle's claims",
+      "repo": "the extract-claims eval repository after /extract-claims: 22 checkable claims, most about files the fixture does not have",
+      "expected_output": "Each claim gets a check or a reason; claims about missing files are drift or reasons, never bent until they hold.",
+      "files": [],
+      "expectations": [
+        "No claim is left pending",
+        "No claim is refused twice",
+        "Checks on files the repository lacks are marked drift rather than rewritten to hold"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "no-claims-yet",
+      "prompt": "/write-checks",
+      "repo": "a repository with an .okf/ bundle and no stored claims",
+      "expected_output": "checks_todo reports 0 checkable claims, so the skill points to /extract-claims and dispatches no agent.",
+      "files": [],
+      "expectations": [
+        "No kmaudit-check-writer agent is dispatched",
+        "The reply names /extract-claims"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "no-agent-harness",
+      "prompt": "/write-checks",
+      "repo": "the repository of eval 1, in a harness with the kmaudit MCP server and no kmaudit-check-writer agent (Antigravity or OpenCode)",
+      "expected_output": "The main session works through the batch itself with checks_todo, checks_try and checks_submit, then reports the same summary.",
+      "files": [],
+      "expectations": [
+        "Every claim gets a check or reason through the checks_submit MCP tool, each check tried first with checks_try",
+        "No kmaudit shell command is run",
+        "checks_todo reports 0 pending afterwards",
+        "git status --porcelain is empty"
+      ]
+    }
+  ]
+}

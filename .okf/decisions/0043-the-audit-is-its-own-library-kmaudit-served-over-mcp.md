@@ -96,3 +96,19 @@ kmctl no longer stays at the root: it moved to `packages/kmctl/` beside
 kmaudit, and the root became a uv workspace that installs nothing
 (ADR 0044). Its install URLs for releases after v0.12.2 carry
 `#subdirectory=packages/kmctl`. The rest of this decision holds.
+
+
+## Amended, 2026-11-15
+
+The `extract-claims` and `write-checks` skills now live in kmaudit's own
+APM package, `packages/kmaudit/apm/.apm/skills/`, and their agents, renamed
+`kmaudit-claims-extractor` and `kmaudit-check-writer`, in its Claude-only
+sub-package, `packages/kmaudit/apm/claude/.apm/agents/` (`targets:
+[claude]`). The package's `apm.yml` declares the kmaudit MCP server as
+`uvx` running `kmaudit mcp` from the package's own `kmaudit-vX.Y.Z` tag,
+which `scripts/release.py set --package kmaudit` pins with the version.
+The agents call the MCP tools and have no shell, so the guard hook left
+their front matter; `kmaudit guard` stays in the CLI. Antigravity and
+OpenCode get the skills and the server but no agents, and the skills do
+each batch themselves there; kmctl's package and `kmctl plugin patch` no
+longer carry or translate these agents.

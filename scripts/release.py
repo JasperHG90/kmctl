@@ -18,9 +18,10 @@ source and tag family, each in its own APM package's apm.yml (ADR 0045):
 kmctl's is described below and tags ``vX.Y.Z``; kmaudit's is
 ``packages/kmaudit/apm/apm.yml``, which its pyproject reads, and tags
 ``kmaudit-vX.Y.Z``. For kmaudit, ``current`` and ``manifest`` print that
-file's version and ``set`` writes it and pins the install lines in
-``packages/kmaudit/README.md`` and the ``kmaudit[tracing]`` line in
-``packages/kmaudit/docs/commands.md`` to the tag. ``tag`` prints a version's tag.
+file's version and ``set`` writes it there and into its Claude Code
+sub-package's apm.yml, pins the MCP server that apm.yml declares, the
+install lines in ``packages/kmaudit/README.md`` and the ``kmaudit[tracing]``
+line in ``packages/kmaudit/docs/commands.md`` to the tag. ``tag`` prints a version's tag.
 
 ``packages/kmctl/apm/apm.yml``, kmctl's APM package, carries the one version,
 and ``packages/kmctl/pyproject.toml`` reads it from there (ADR 0014). APM needs a ``version:`` in
@@ -108,6 +109,8 @@ _COPIER_DEFAULT = re.compile(
 TAG_PREFIX = {"kmctl": "v", "kmaudit": "kmaudit-v"}
 #: kmaudit's one version source, its APM package, which packages/kmaudit/pyproject.toml reads.
 KMAUDIT_MANIFEST = Path("packages/kmaudit/apm/apm.yml")
+#: kmaudit's Claude Code sub-package, whose version ``set --package kmaudit`` writes too.
+KMAUDIT_CLAUDE = Path("packages/kmaudit/apm/claude/apm.yml")
 #: kmaudit's README, whose install line ``set --package kmaudit`` pins.
 KMAUDIT_README = Path("packages/kmaudit/README.md")
 #: kmaudit's commands reference, whose ``kmaudit[tracing]`` install line
@@ -192,10 +195,11 @@ def kmaudit_version(repo: Path) -> str:
 
 
 def set_kmaudit_version(repo: Path, version_text: str) -> list[Path]:
-    """Write the version into ``packages/kmaudit/apm/apm.yml`` and pin the README's and commands reference's install lines.
+    """Write the version into kmaudit's two apm.yml files and pin its MCP server and install lines to the tag.
 
-    Nothing is written unless the version is valid, the apm.yml has a
-    ``version:`` line, the README holds an install line and the commands
+    Nothing is written unless the version is valid, both apm.yml files have
+    a ``version:`` line, the package's apm.yml declares the MCP server from
+    kmaudit's git URL, the README holds an install line and the commands
     reference holds its ``kmaudit[tracing]`` install line.
 
     Returns
@@ -206,9 +210,10 @@ def set_kmaudit_version(repo: Path, version_text: str) -> list[Path]:
     Raises
     ------
     ReleaseRefused
-        When the version is malformed, the apm.yml has no ``version:`` line,
-        the README has no install line or the commands reference has no
-        ``kmaudit[tracing]`` install line.
+        When the version is malformed, an apm.yml is missing or has no
+        ``version:`` line, the package's apm.yml has no MCP server install line, the README has
+        no install line or the commands reference has no ``kmaudit[tracing]``
+        install line.
     """
     version = str(parse_release(version_text))
     manifest, count = _APM_VERSION.subn(
@@ -217,6 +222,22 @@ def set_kmaudit_version(repo: Path, version_text: str) -> list[Path]:
     if count != 1:
         raise ReleaseRefused(
             f"{KMAUDIT_MANIFEST} has no top-level version: line; restore it"
+        )
+    manifest, count = _KMAUDIT_INSTALL.subn(rf"\g<1>@kmaudit-v{version}\g<3>", manifest)
+    if count == 0:
+        raise ReleaseRefused(
+            f"{KMAUDIT_MANIFEST} declares no kmaudit MCP server from "
+            "git+https://github.com/JasperHG90/kmctl; restore its uvx --from args"
+        )
+    claude_path = repo / KMAUDIT_CLAUDE
+    claude, count = _APM_VERSION.subn(
+        rf"\g<1>{version}",
+        claude_path.read_text() if claude_path.is_file() else "",
+        count=1,
+    )
+    if count != 1:
+        raise ReleaseRefused(
+            f"{KMAUDIT_CLAUDE} is missing or has no top-level version: line; restore it"
         )
     readme, count = _KMAUDIT_INSTALL.subn(
         rf"\g<1>@kmaudit-v{version}\g<3>", (repo / KMAUDIT_README).read_text()
@@ -234,9 +255,10 @@ def set_kmaudit_version(repo: Path, version_text: str) -> list[Path]:
             "uv tool install line in its tracing section"
         )
     (repo / KMAUDIT_MANIFEST).write_text(manifest)
+    (repo / KMAUDIT_CLAUDE).write_text(claude)
     (repo / KMAUDIT_README).write_text(readme)
     (repo / KMAUDIT_DOCS).write_text(docs)
-    return [KMAUDIT_MANIFEST, KMAUDIT_README, KMAUDIT_DOCS]
+    return [KMAUDIT_MANIFEST, KMAUDIT_CLAUDE, KMAUDIT_README, KMAUDIT_DOCS]
 
 
 def tag(package: str, version_text: str) -> str:
@@ -388,7 +410,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     p_set = sub.add_parser(
         "set",
-        help="kmctl: write the version into the four apm.yml files, pin the docs, the hook's install hints and copier.yml's kmctl_ref; kmaudit: write packages/kmaudit/apm/apm.yml and pin the install lines in its README and docs/commands.md",
+        help="kmctl: write the version into the four apm.yml files, pin the docs, the hook's install hints and copier.yml's kmctl_ref; kmaudit: write packages/kmaudit/apm/apm.yml and apm/claude/apm.yml and pin its MCP server and the install lines in its README and docs/commands.md",
     )
     p_set.add_argument("version", help="the release version, e.g. 0.2.0 or 0.2.0rc1")
     p_tag = sub.add_parser(

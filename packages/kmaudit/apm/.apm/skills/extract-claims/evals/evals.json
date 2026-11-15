@@ -1,0 +1,62 @@
+{
+  "skill_name": "extract-claims",
+  "harness": "Claude Code with kmaudit's APM package installed (the skills, the kmaudit-claims-extractor agent and the kmaudit MCP server) and mcp__kmaudit__* allowed; eval 4 runs where no agent exists",
+  "evals": [
+    {
+      "id": 1,
+      "name": "fixture-first-pass",
+      "prompt": "/extract-claims",
+      "repo": "tests/fixtures/audit_repo.py's repository plus .okf/decisions/0005-audits-report-only.md (11 sections in 3 concepts)",
+      "expected_output": "Every pending section is stored by the kmaudit-claims-extractor agent through the claims_submit MCP tool; the main session reports the agent's summary and the counts from claims_todo and claims_list, and holds no claim text.",
+      "files": [],
+      "expectations": [
+        "The main session calls claims_todo first and dispatches kmaudit-claims-extractor with the concept paths it lists",
+        "The agent stores every section through mcp__kmaudit__claims_submit and runs no shell command",
+        "claims_todo reports 0 pending afterwards",
+        "claims_list shows claims for all three concepts",
+        "git status --porcelain is empty: nothing under .okf/ or docs/ changed",
+        "The main session's transcript holds the agent's summary but no claim text",
+        "Sentences about history, status and rejected options are kind none"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "fixture-after-an-edit",
+      "prompt": "I just edited .okf/tool.md - refresh the claims",
+      "repo": "the repository of eval 1 after it ran, with one sentence of .okf/tool.md changed",
+      "expected_output": "Only the edited section is handed to the agent; the other ten stay as stored.",
+      "files": [],
+      "expectations": [
+        "claims_todo lists only .okf/tool.md (1 section) before the agent runs",
+        "The agent is dispatched with that one file",
+        "claims_todo reports 0 pending afterwards"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "nothing-to-do",
+      "prompt": "are the bundle's claims up to date? extract any that aren't",
+      "repo": "the repository of eval 1 after it ran, unchanged",
+      "expected_output": "The skill sees 0 pending in claims_todo, dispatches no agent and shows the counts from claims_list.",
+      "files": [],
+      "expectations": [
+        "No kmaudit-claims-extractor agent is dispatched",
+        "The reply says the claims are up to date and shows the counts"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "no-agent-harness",
+      "prompt": "/extract-claims",
+      "repo": "the repository of eval 1 before it ran, in a harness with the kmaudit MCP server and no kmaudit-claims-extractor agent (Antigravity or OpenCode)",
+      "expected_output": "The main session works through the batch itself with claims_todo and claims_submit, then reports the same summary and counts.",
+      "files": [],
+      "expectations": [
+        "Every section is stored through the claims_submit MCP tool, with folder the repository root joined with the namespace",
+        "No kmaudit shell command is run",
+        "claims_todo reports 0 pending afterwards",
+        "git status --porcelain is empty"
+      ]
+    }
+  ]
+}

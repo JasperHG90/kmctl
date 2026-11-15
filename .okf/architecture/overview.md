@@ -41,15 +41,16 @@ flowchart LR
         audit["skills/audit"]
         reviews["skills/architecture-review<br/>decision-log-review<br/>practices-review"]
         auditor["agents/kmctl-auditor<br/>Read, Grep, Glob"]
-        extract["skills/extract-claims"]
-        extractor["agents/kmctl-claims-extractor<br/>Read, Bash; Haiku"]
-        writeChecks["skills/write-checks"]
-        checkWriter["agents/kmctl-check-writer<br/>Read, Bash; Haiku"]
     end
 
     subgraph kmaudit["packages/kmaudit/ (kmaudit, its own package; ADR 0043)"]
         claimsPkg["src/kmaudit/<br/>claims, checks, ui, coverage, guard;<br/>.kmaudit/NAMESPACE.sqlite per folder"]
+        mcpPy["mcp_server.py<br/>kmaudit mcp: the verbs as MCP tools"]
         judgePy["judge.py, settings.py, tracing.py<br/>kmaudit judge (off by default)"]
+        extract["apm/ skills/extract-claims"]
+        writeChecks["apm/ skills/write-checks"]
+        extractor["apm/claude/ agents/kmaudit-claims-extractor<br/>Read, Grep, Glob, MCP tools; Haiku"]
+        checkWriter["apm/claude/ agents/kmaudit-check-writer<br/>Read, Grep, Glob, MCP tools; Haiku"]
     end
 
     subgraph cli["packages/kmctl/src/kmctl/ (kmctl CLI)"]
@@ -119,12 +120,13 @@ flowchart LR
     audit --> reviews
     audit -- "dispatches" --> auditor
     auditor -. "reads only" .-> repo
-    extract -- "kmaudit claims todo, list" --> claimsPkg
-    extract -- "dispatches" --> extractor
-    extractor -- "kmaudit claims todo --json, submit" --> claimsPkg
-    writeChecks -- "kmaudit checks todo, list" --> claimsPkg
-    writeChecks -- "dispatches" --> checkWriter
-    checkWriter -- "kmaudit checks todo --json, try, submit" --> claimsPkg
+    mcpPy -- "runs the verbs" --> claimsPkg
+    extract -- "claims_todo, claims_list" --> mcpPy
+    extract -- "dispatches (Claude Code)" --> extractor
+    extractor -- "claims_todo, claims_submit" --> mcpPy
+    writeChecks -- "checks_todo, checks_list" --> mcpPy
+    writeChecks -- "dispatches (Claude Code)" --> checkWriter
+    checkWriter -- "checks_todo, checks_try, checks_submit" --> mcpPy
     judgePy -- "reads checks and claims,<br/>caches answers" --> claimsPkg
     judgePy -- "only a question switched on:<br/>{model, state, questions}" --> decider
     judgePy -. "only with LANGSMITH_TRACING=true" .-> langsmith
@@ -325,14 +327,21 @@ and `claude/.apm/instructions/`, for the OpenCode rules.
   agent with one of the three review skills. The auditor's tools are Read,
   Grep and Glob (I2, ADR 0005). In CI, `action/agent.py` does the auditor's
   work itself and also has a shell, but nothing it changes is committed.
-- **Claims come from a subagent.** The `extract-claims` skill reads the
-  pending files from `kmaudit claims todo` and dispatches the
-  `kmctl-claims-extractor` agent per batch. The agent has Read and a shell,
-  writes only through `kmaudit claims submit` by its instructions, and
-  returns a short summary, so the main session sees no claim (ADR 0036,
-  ADR 0037). The `write-checks` skill and its `kmctl-check-writer` agent do
-  the same for checks, trying each draft with `kmaudit checks try`
-  before `submit` (ADR 0038).
+- **Claims come from a subagent.** kmaudit's own APM package,
+  `packages/kmaudit/apm/`, holds the `extract-claims` and `write-checks`
+  skills and declares the kmaudit MCP server (`uvx` running `kmaudit mcp`
+  from the package's own release tag); its Claude-only sub-package
+  `packages/kmaudit/apm/claude/` holds the agents (ADR 0043). The
+  `extract-claims` skill reads the pending files from the `claims_todo`
+  tool and dispatches the `kmaudit-claims-extractor` agent per batch. The
+  agent has Read, Grep, Glob and the `claims_todo` and `claims_submit` MCP
+  tools, no shell, and returns a short summary, so the main session sees no
+  claim (ADR 0036, ADR 0037). The `write-checks` skill and its
+  `kmaudit-check-writer` agent do the same for checks, trying each draft
+  with `checks_try` before `checks_submit` (ADR 0038). Antigravity and
+  OpenCode get no agents, so there the skills do each batch themselves with
+  the same tools, and `kmctl plugin patch` translates only kmctl's and
+  okf's agents.
 
 ## The action
 
@@ -452,9 +461,10 @@ script takes `--package kmctl|kmaudit` (ADR 0012).
   `check_instructions.py`, `check_store.py`, `check_verbs.py`, `guard.py`,
   `judge.py`, `settings.py`, `tracing.py`, `frontmatter.py`); `packages/kmctl/apm/.apm/skills/` (write-docs, handoff,
   continue, audit and the three review skills),
-  `packages/kmctl/apm/.apm/agents/kmctl-auditor.md`, `packages/kmctl/apm/.apm/skills/extract-claims/`
-  and `packages/kmctl/apm/.apm/agents/kmctl-claims-extractor.md`, `packages/kmctl/apm/.apm/skills/write-checks/`
-  and `packages/kmctl/apm/.apm/agents/kmctl-check-writer.md`, `packages/kmctl/apm/claude/.apm/instructions/`,
+  `packages/kmctl/apm/.apm/agents/kmctl-auditor.md`, `packages/kmaudit/apm/.apm/skills/extract-claims/`
+  and `packages/kmaudit/apm/claude/.apm/agents/kmaudit-claims-extractor.md`, `packages/kmaudit/apm/.apm/skills/write-checks/`
+  and `packages/kmaudit/apm/claude/.apm/agents/kmaudit-check-writer.md`, `packages/kmaudit/src/kmaudit/mcp_server.py`,
+  `packages/kmctl/apm/claude/.apm/instructions/`,
   `packages/kmctl/apm/antigravity/.apm/instructions/`; `action.yml`,
   `action/knowledge-ci.sh`, `action/agent.py` (run and publish), `action/prompts/` (the three
   audits); `.github/workflows/knowledge-audit.yml`.

@@ -52,3 +52,37 @@ The first sentence is the briefing line and stays short: with this skill
 and extract-claims, the worst-case briefing test
 (`tests/test_briefing.py`) still passes. The trigger optimisation loop
 (`run_loop`) did not run for this ticket.
+
+## Moved to kmaudit's package and its MCP tools (ticket kmaudit-skills-mcp)
+
+The skill moved to kmaudit's APM package, its agent became
+`kmaudit-*` with Read, Grep, Glob and the kmaudit MCP tools only, and
+both now call those tools instead of the CLI. `evals.json` names the tools
+in each expectation and adds eval 4, the same work in a harness with no
+agent (Antigravity, OpenCode). The runs above used the CLI and are kept as
+the record of the flow's results then.
+
+The evals were not rerun for this change. A run needs a session where the
+kmaudit MCP server is configured and `mcp__kmaudit__*` allowed: the
+building session had no such server, and starting one meant a nested
+`claude` session, which the build left out (the loop's guards refuse one,
+as the plan's spike found). The `tests/test_skills.py`
+checks (every tool named exists in the server, no kmaudit shell command is
+named) and `packages/kmaudit/tests/test_apm_package.py`'s check of the
+agents' tools hold, and the APM integration test in
+`packages/kmaudit/tests/test_apm_package.py` installs the agents and
+server. Rerun these evals in such a session before tuning the description.
+
+**End-to-end run through MCP, 2026-11-15.** One run of the eval-1 shape,
+made from the parent session with a plain script (Claude Code 2.1.325,
+`claude -p --model sonnet`), since the loop's guards refuse a nested
+session inside a recorded spike. In kmaudit's test fixture repository
+(`packages/kmaudit/tests/fixtures/audit_repo.py`), with both skills in
+`.claude/skills/`, both agents in `.claude/agents/`, the kmaudit server from
+this tree in `.mcp.json` and `--allowedTools` naming the claims and checks
+tools, Read, Grep, Glob and Agent, `/extract-claims` stored the claims and
+then `/write-checks` ran. The main session dispatched
+`kmaudit-check-writer` once; the agent called `checks_submit` twice;
+nothing called Bash; the checkable claims pending went from 4 to 0. The
+script passes only on all of that, and it passed. The no-agent eval was not
+run.

@@ -24,6 +24,7 @@ from scripts.release import (
     COPIER,
     DOC_FILES,
     HOOKS,
+    KMAUDIT_CLAUDE,
     KMAUDIT_MANIFEST,
     MANIFEST,
     OLD_MANIFEST,
@@ -557,6 +558,16 @@ def test_release_py_set_refuses_a_copier_yml_without_the_default(
 KMAUDIT = Path("packages/kmaudit")
 #: kmaudit's commands reference, whose tracing install line kmaudit set pins.
 KMAUDIT_DOCS = KMAUDIT / "docs" / "commands.md"
+#: The git URL kmaudit's MCP server is installed from, before its ``@ref``.
+KMAUDIT_SERVER = "git+https://github.com/JasperHG90/kmctl"
+
+
+def _kmaudit_server_ref(root: Path) -> str:
+    """The ref the kmaudit MCP server in ``root``'s kmaudit apm.yml installs from."""
+    data = yaml.safe_load((root / KMAUDIT_MANIFEST).read_text())
+    [server] = [s for s in data["dependencies"]["mcp"] if s["name"] == "kmaudit"]
+    [source] = [a for a in server["args"] if a.startswith(KMAUDIT_SERVER)]
+    return source.removeprefix(f"{KMAUDIT_SERVER}@").split("#")[0]
 
 
 def test_kmaudit_version_source_is_its_apm_package() -> None:
@@ -613,9 +624,9 @@ def test_kmaudit_version_builds_the_file_s_version(tmp_path: Path) -> None:
 
 
 def _kmaudit_repo(tmp_path: Path) -> Path:
-    """``_repo`` plus kmaudit's apm.yml, README and commands reference, committed."""
+    """``_repo`` plus kmaudit's two apm.yml files, README and commands reference, committed."""
     root = _repo(tmp_path)
-    for rel in (KMAUDIT_MANIFEST, KMAUDIT / "README.md", KMAUDIT_DOCS):
+    for rel in (KMAUDIT_MANIFEST, KMAUDIT_CLAUDE, KMAUDIT / "README.md", KMAUDIT_DOCS):
         (root / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(ROOT / rel, root / rel)
     subprocess.run(["git", "add", "."], cwd=root, check=True)
@@ -636,7 +647,7 @@ def _changed(root: Path) -> set[str]:
 
 
 def test_package_aware_kmaudit_set_writes_only_its_files(tmp_path: Path) -> None:
-    """``--package kmaudit set`` writes its apm.yml's version and pins the README's and docs/commands.md's install lines to kmaudit-vX.Y.Z."""
+    """``--package kmaudit set`` writes its apm.yml files' version and pins the README's and docs/commands.md's install lines to kmaudit-vX.Y.Z."""
     root = _kmaudit_repo(tmp_path)
 
     res = _run(root, "--package", "kmaudit", "set", "0.2.0")
@@ -644,11 +655,13 @@ def test_package_aware_kmaudit_set_writes_only_its_files(tmp_path: Path) -> None
     assert res.returncode == 0, res.stderr
     assert res.stdout.splitlines() == [
         f"wrote {KMAUDIT_MANIFEST}",
+        f"wrote {KMAUDIT_CLAUDE}",
         f"wrote {KMAUDIT / 'README.md'}",
         f"wrote {KMAUDIT_DOCS}",
     ]
     assert _changed(root) == {
         KMAUDIT_MANIFEST.as_posix(),
+        KMAUDIT_CLAUDE.as_posix(),
         (KMAUDIT / "README.md").as_posix(),
         KMAUDIT_DOCS.as_posix(),
     }
@@ -659,7 +672,17 @@ def test_package_aware_kmaudit_set_writes_only_its_files(tmp_path: Path) -> None
     )
     before = (ROOT / KMAUDIT_MANIFEST).read_text().splitlines()
     after = (root / KMAUDIT_MANIFEST).read_text().splitlines()
-    assert set(before) ^ set(after) == {"version: 0.1.0.dev0", "version: 0.2.0"}
+    assert set(before) - set(after) == {
+        "version: 0.1.0.dev0",
+        f'        - "{KMAUDIT_SERVER}@kmaudit-v0.1.0#subdirectory=packages/kmaudit"',
+    }
+    assert set(after) - set(before) == {
+        "version: 0.2.0",
+        f'        - "{KMAUDIT_SERVER}@kmaudit-v0.2.0#subdirectory=packages/kmaudit"',
+    }
+    assert _kmaudit_server_ref(root) == "kmaudit-v0.2.0"
+    claude = yaml.safe_load((root / KMAUDIT_CLAUDE).read_text())
+    assert claude["version"] == "0.2.0"
     assert (
         "uv tool install 'kmaudit @ git+https://github.com/JasperHG90/kmctl"
         "@kmaudit-v0.2.0#subdirectory=packages/kmaudit'"
@@ -670,7 +693,7 @@ def test_package_aware_kmaudit_set_writes_only_its_files(tmp_path: Path) -> None
 
 
 def test_package_aware_kmaudit_set_moves_an_older_pin(tmp_path: Path) -> None:
-    """A second kmaudit release moves the README pin from the older kmaudit-v tag."""
+    """A second kmaudit release moves the README pin and the MCP server's ref from the older kmaudit-v tag."""
     root = _kmaudit_repo(tmp_path)
 
     assert _run(root, "--package", "kmaudit", "set", "0.2.0").returncode == 0
@@ -679,6 +702,57 @@ def test_package_aware_kmaudit_set_moves_an_older_pin(tmp_path: Path) -> None:
     text = (root / KMAUDIT / "README.md").read_text()
     assert "@kmaudit-v0.3.0#subdirectory=packages/kmaudit'" in text
     assert "kmaudit-v0.2.0" not in text
+    assert _kmaudit_server_ref(root) == "kmaudit-v0.3.0"
+    assert "kmaudit-v0.2.0" not in (root / KMAUDIT_MANIFEST).read_text()
+
+
+def test_kmaudit_server_ref_is_the_next_tag_while_unreleased() -> None:
+    """At a .dev version, the server names the tag the coming release gets, which set then keeps."""
+    from packaging.version import Version
+
+    version = Version(_apm_version(ROOT / KMAUDIT_MANIFEST) or "")
+
+    assert _kmaudit_server_ref(ROOT) == f"kmaudit-v{version.base_version}"
+
+
+def test_package_aware_kmaudit_set_refuses_an_apm_yml_without_the_server(
+    tmp_path: Path,
+) -> None:
+    """With no kmaudit MCP server to pin in its apm.yml, kmaudit set writes nothing and names the file."""
+    root = _kmaudit_repo(tmp_path)
+    manifest = root / KMAUDIT_MANIFEST
+    manifest.write_text(manifest.read_text().replace(KMAUDIT_SERVER, "kmaudit"))
+    subprocess.run([*GIT, "commit", "-qam", "drop"], cwd=root, check=True)
+
+    res = _run(root, "--package", "kmaudit", "set", "0.2.0")
+
+    assert res.returncode == 1
+    assert f"{KMAUDIT_MANIFEST} declares no kmaudit MCP server" in res.stderr
+    assert _changed(root) == set()
+
+
+@pytest.mark.parametrize("drop", ["file", "version"])
+def test_package_aware_kmaudit_set_refuses_a_missing_claude_sub_package(
+    tmp_path: Path, drop: str
+) -> None:
+    """With the claude sub-package's apm.yml gone or versionless, kmaudit set writes nothing and names it."""
+    root = _kmaudit_repo(tmp_path)
+    claude = root / KMAUDIT_CLAUDE
+    if drop == "file":
+        claude.unlink()
+    else:
+        claude.write_text(
+            re.sub(r"^version: .*\n", "", claude.read_text(), flags=re.MULTILINE)
+        )
+    subprocess.run([*GIT, "commit", "-qam", "drop"], cwd=root, check=True)
+
+    res = _run(root, "--package", "kmaudit", "set", "0.2.0")
+
+    assert res.returncode == 1
+    assert (
+        f"{KMAUDIT_CLAUDE} is missing or has no top-level version: line" in res.stderr
+    )
+    assert _changed(root) == set()
 
 
 def test_package_aware_kmaudit_set_refuses_a_readme_without_the_install_line(

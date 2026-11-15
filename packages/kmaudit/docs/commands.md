@@ -310,15 +310,17 @@ holding the reason). It always exits 0.
 
 `kmaudit guard --allow claims|checks`
 
-A Claude Code PreToolUse hook. The `kmctl-claims-extractor` and
-`kmctl-check-writer` agents run it from their front matter before each Bash
-call. It reads the hook's JSON on stdin and lets the call through only when
-it is one `kmaudit claims` (or `checks`) command, optionally after
-`cd DIR &&`, optionally fed by one quoted heredoc (`<<'ANSWERS'`) whose body
-is data. A pipe, redirect, second command, unquoted heredoc or command
-substitution is blocked: exit 2, with the reason on stderr. Calls to other
-tools pass. Antigravity and OpenCode have no per-agent hook, so there the
-agents' instructions hold the same rule.
+A Claude Code PreToolUse hook for an agent that drives kmaudit through a
+shell, run from its front matter before each Bash call. kmaudit's own
+agents, `kmaudit-claims-extractor` and `kmaudit-check-writer`, call the
+MCP tools of [`kmaudit mcp`](#kmaudit-mcp) instead and need no guard. It
+reads the hook's JSON on stdin and lets the call through only when it is
+one `kmaudit claims` (or `checks`) command, optionally after `cd DIR &&`,
+optionally fed by one quoted heredoc (`<<'ANSWERS'`) whose body is data. A
+pipe, redirect, second command, unquoted heredoc or command substitution
+is blocked: exit 2, with the reason on stderr. Calls to other tools pass.
+Antigravity and OpenCode have no per-agent hook, so there an agent's
+instructions must hold the same rule.
 
 | Option | Meaning |
 |---|---|
