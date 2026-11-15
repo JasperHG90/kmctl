@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "O1's touches missed mcp_server.py, models.py, check_store.py, coverage.py and docstrings that name dropped verbs. The prose now names those sites and touches covers packages/kmaudit/src/kmaudit/*.py and ui.html.",
+      "anchor": ".loop/plans/kmaudit-cli-slim/README.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "The UI rerun button with POST /api/rerun sharing checks_run's function is in the plan and its checks.",
+      "anchor": null,
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "resolved",
+      "claim": "The plan lists the CLI-only behaviours whose tests go.",
+      "anchor": null,
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "d147aacb6235f3441b3d4bd6be11bb35f01ae6f8e7313c61d1205838deb0dac1"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T06:40:56+00:00"
+}
