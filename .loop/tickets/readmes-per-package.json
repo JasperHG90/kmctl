@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "readmes-per-package",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
@@ -30,7 +30,7 @@
   "split": "j-20261115T184622+0000-87e132e1",
   "split_plan_hash": "19fc835eacad09d29946fe2dacf91b9408e32f5549e487d4abc64815dc28b196",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "1214eba4cb4bf314b71fd4224ff03ab0f29d25bf",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -150,8 +150,14 @@
       "to": "verifying",
       "at": "2026-11-15T19:18:03+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-15T19:23:14+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T19:23:10+00:00"
+  "at": "2026-11-15T19:23:14+00:00"
 }
