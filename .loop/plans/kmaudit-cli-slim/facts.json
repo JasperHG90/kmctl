@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-cli-slim",
-  "plan_hash": "ea684cc398699bd81f0fa77b0d5711951d7fdcd1a13f592978d59540c1603b84",
+  "plan_hash": "d147aacb6235f3441b3d4bd6be11bb35f01ae6f8e7313c61d1205838deb0dac1",
   "problems": [
     {
       "id": "P1",
@@ -26,16 +26,8 @@
       "needs": [],
       "needs_index": [],
       "touches": [
-        "packages/kmaudit/src/kmaudit/cli.py",
-        "packages/kmaudit/src/kmaudit/guard.py",
-        "packages/kmaudit/src/kmaudit/ui.py",
+        "packages/kmaudit/src/kmaudit/*.py",
         "packages/kmaudit/src/kmaudit/ui.html",
-        "packages/kmaudit/src/kmaudit/verbs.py",
-        "packages/kmaudit/src/kmaudit/check_verbs.py",
-        "packages/kmaudit/src/kmaudit/judge.py",
-        "packages/kmaudit/src/kmaudit/sections.py",
-        "packages/kmaudit/src/kmaudit/instructions.py",
-        "packages/kmaudit/src/kmaudit/check_instructions.py",
         ".okf/manifesto.md",
         ".okf/architecture/overview.md",
         "packages/kmaudit/README.md",
