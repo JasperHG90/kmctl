@@ -264,7 +264,7 @@ def test_template_fills_version_install_and_compare(repo: Path) -> None:
 
 
 def test_template_install_subdirectory_is_packages_kmctl() -> None:
-    """The release notes template installs the tag from packages/kmctl, where releases after v0.12.1 build (ADR 0044)."""
+    """The release notes template installs the tag from packages/kmctl, where releases after v0.12.2 build (ADR 0044)."""
     text = TEMPLATE.read_text()
 
     assert (

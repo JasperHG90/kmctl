@@ -16,6 +16,7 @@ Antigravity harness can reuse the hook entry, the MCP entry and its launcher.
 
 import json
 import os
+import re
 import shutil
 import subprocess
 from collections.abc import Sequence
@@ -59,11 +60,47 @@ MCP_NAME = "bundle"
 OKF_MCP_SCRIPT = "okf_mcp.py"
 #: The text that marks a settings.json hook as kmctl's.
 HOOK_MARK = "kmctl briefing"
-#: What the hook's hints install: this CLI's own release, as the package's hooks.json names it,
-#: from packages/kmctl, where releases after v0.12.1 build (ADR 0044).
-HOOK_INSTALL = (
-    f"git+https://github.com/{REPO}@v{version('kmctl')}#subdirectory=packages/kmctl"
-)
+#: The last release built from the repository root; later ones build from
+#: packages/kmctl (ADR 0044). scripts/release.py keeps the same cutoff.
+LAST_ROOT_RELEASE = "v0.12.2"
+#: The folder releases after LAST_ROOT_RELEASE build kmctl from.
+SUBDIRECTORY = "packages/kmctl"
+_TAG = re.compile(r"^v(\d+)\.(\d+)\.(\d+)(?:(a|b|rc)(\d+))?$")
+_PRE = {"a": 0, "b": 1, "rc": 2}
+
+
+def tag_version(tag: str) -> tuple[int, ...] | None:
+    """``tag`` (vX.Y.Z, or with an a, b or rc suffix) as a sortable tuple, or None."""
+    match = _TAG.match(tag)
+    if match is None:
+        return None
+    major, minor, patch, pre, n = match.groups()
+    tail = (_PRE[pre], int(n)) if pre else (3, 0)
+    return (int(major), int(minor), int(patch), *tail)
+
+
+def subdirectory_fragment(ref: str) -> str:
+    """``#subdirectory=packages/kmctl`` when ``ref`` builds from there, else empty.
+
+    Release tags up to ``LAST_ROOT_RELEASE`` built kmctl from the repository
+    root. A later tag builds from packages/kmctl, and so does a ref that is
+    not a release tag, such as a branch or a dev build, because it points at
+    a commit after the move.
+    """
+    tag, last = tag_version(ref), tag_version(LAST_ROOT_RELEASE)
+    if tag is not None and last is not None and tag <= last:
+        return ""
+    return f"#subdirectory={SUBDIRECTORY}"
+
+
+def hook_install(cli_version: str) -> str:
+    """The source the hook's hints install for kmctl at ``cli_version`` (ADR 0044)."""
+    ref = f"v{cli_version}"
+    return f"git+https://github.com/{REPO}@{ref}{subdirectory_fragment(ref)}"
+
+
+#: What the hook's hints install: this CLI's own release, as the package's hooks.json names it.
+HOOK_INSTALL = hook_install(version("kmctl"))
 HOOK_COMMAND = (
     "command -v kmctl >/dev/null 2>&1 || { echo '[kmctl] kmctl is not installed, "
     "so there is no knowledge briefing. Install it with: uv tool install "

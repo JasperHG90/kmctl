@@ -103,10 +103,10 @@ decision holds.
 
 ## Amended, 2026-11-14
 
-kmctl moved to `packages/kmctl/` after v0.12.1 (ADR 0044). For a pin to a
+kmctl moved to `packages/kmctl/` after v0.12.2 (ADR 0044). For a pin to a
 later release, or to a ref that is not a release tag, the hand-off runs
 `uvx --from git+https://github.com/JasperHG90/kmctl@<resolved_commit>#subdirectory=packages/kmctl kmctl ARGS`;
-a pin to v0.12.1 or older keeps the root source above, because those tags
+a pin to v0.12.2 or older keeps the root source above, because those tags
 build from the root. The not-installed notice names the same source. A
-kmctl at v0.12.1 or older cannot hand off to a later pin, so its user
+kmctl at v0.12.2 or older cannot hand off to a later pin, so its user
 installs a newer CLI first. The rest of this decision holds.

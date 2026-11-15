@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import json
 import os
-import re
 import shutil
 import subprocess
 import sys
@@ -25,15 +24,18 @@ from pathlib import Path
 import yaml
 from pydantic import ValidationError
 
-from kmctl.plugin import Lock, cli_version, kmctl_package, package_ref
+from kmctl.plugin import (
+    Lock,
+    cli_version,
+    kmctl_package,
+    package_ref,
+    subdirectory_fragment,
+    tag_version,
+)
 
 PINNED_ENV = "KMCTL_PINNED"
 NO_UPDATE_CHECK_ENV = "KMCTL_NO_UPDATE_CHECK"
 SOURCE = "git+https://github.com/JasperHG90/kmctl"
-#: The last release built from the repository root; later ones build from
-#: packages/kmctl (ADR 0044).
-LAST_ROOT_RELEASE = "v0.12.1"
-SUBDIRECTORY = "packages/kmctl"
 REMOTE = "https://github.com/JasperHG90/kmctl"
 LOCK = "apm.lock.yaml"
 #: How old the cached newest release may get before a refresh starts.
@@ -43,8 +45,6 @@ REFRESH_TIMEOUT_SECONDS = 30
 #: How long the briefing waits for the offline probe; a miss takes about 60 ms
 #: (spike:kmctl-follows-the-pin/4).
 PROBE_TIMEOUT_SECONDS = 5
-_TAG = re.compile(r"^v(\d+)\.(\d+)\.(\d+)(?:(a|b|rc)(\d+))?$")
-_PRE = {"a": 0, "b": 1, "rc": 2}
 
 
 @dataclass(frozen=True)
@@ -132,17 +132,11 @@ def project_pin(start: Path) -> Pin | None:
 def uvx_source(pin: Pin) -> str:
     """The ``uvx --from`` source of ``pin``'s commit.
 
-    Releases up to v0.12.1 built kmctl from the repository root; later ones
-    build it from packages/kmctl, so their source names that subdirectory. A
-    ref that is not a release tag, such as a branch, gets it too, because it
-    points at a commit after the move.
+    Releases up to ``LAST_ROOT_RELEASE`` built kmctl from the repository
+    root; later ones, and refs that are not release tags, build it from
+    packages/kmctl (``kmctl.plugin.subdirectory_fragment``).
     """
-    source = f"{SOURCE}@{pin.commit}"
-    tag = _version(pin.ref)
-    last = _version(LAST_ROOT_RELEASE)
-    if tag is not None and last is not None and tag <= last:
-        return source
-    return f"{source}#subdirectory={SUBDIRECTORY}"
+    return f"{SOURCE}@{pin.commit}{subdirectory_fragment(pin.ref)}"
 
 
 def _uvx(pin: Pin, args: list[str], *, offline: bool) -> list[str] | None:
@@ -336,19 +330,9 @@ def update_notices(ref: str) -> list[Notice]:
     ]
 
 
-def _version(tag: str) -> tuple[int, ...] | None:
-    """``tag`` (vX.Y.Z, or with an a, b or rc suffix) as a sortable tuple, or None."""
-    match = _TAG.match(tag)
-    if match is None:
-        return None
-    major, minor, patch, pre, n = match.groups()
-    tail = (_PRE[pre], int(n)) if pre else (3, 0)
-    return (int(major), int(minor), int(patch), *tail)
-
-
 def newer(latest: str, ref: str) -> bool:
     """Whether release ``latest`` is newer than the pinned ``ref``."""
-    a, b = _version(latest), _version(ref)
+    a, b = tag_version(latest), tag_version(ref)
     return a is not None and b is not None and a > b
 
 
@@ -396,8 +380,8 @@ def newest_release(ls_remote: str) -> str | None:
         for line in ls_remote.splitlines()
         if "refs/tags/" in line
     ]
-    releases = [t for t in tags if (v := _version(t)) is not None and v[3] == 3]
-    return max(releases, key=lambda t: _version(t) or (), default=None)
+    releases = [t for t in tags if (v := tag_version(t)) is not None and v[3] == 3]
+    return max(releases, key=lambda t: tag_version(t) or (), default=None)
 
 
 def refresh() -> None:

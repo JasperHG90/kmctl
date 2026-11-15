@@ -25,7 +25,7 @@ SCRIPT = ROOT / "scripts" / "release.py"
 #: kmctl's package, whose pyproject reads the version two folders up (ADR 0044).
 KMCTL = Path("packages/kmctl")
 GIT = ["git", "-c", "user.email=o@e.com", "-c", "user.name=O"]
-#: Every release after v0.12.1 builds kmctl from this folder (ADR 0044).
+#: Every release after v0.12.2 builds kmctl from this folder (ADR 0044).
 SUBDIRECTORY = "#subdirectory=packages/kmctl"
 # The six lines `set` points at the release tag, as they start in the docs.
 INSTALL_RE = re.compile(
@@ -382,7 +382,7 @@ def _hook_refs(root: Path) -> list[str]:
     text = (root / HOOKS).read_text()
     return re.findall(
         r"git\+https://github\.com/JasperHG90/kmctl@(v[0-9a-z.]+?)"
-        r"#subdirectory=packages/kmctl\.?'",
+        r"(?:#subdirectory=packages/kmctl)?\.?'",
         text,
     )
 
@@ -422,6 +422,37 @@ def test_release_py_set_keeps_the_install_subdirectory(tmp_path: Path) -> None:
         hooks = (root / HOOKS).read_text()
         assert hooks.count(f"@v{version}{SUBDIRECTORY}") == 2
         assert SUBDIRECTORY * 2 not in hooks
+
+
+@pytest.mark.parametrize("version", ["0.12.2", "0.12.2rc1", "0.12.1"])
+def test_release_py_set_at_or_below_the_cutoff_writes_no_subdirectory(
+    tmp_path: Path, version: str
+) -> None:
+    """A release up to v0.12.2 built from the root, so set writes no fragment, and removes one it finds (subdirectory)."""
+    root = _repo(tmp_path)
+    assert _run(root, "set", "0.13.0").returncode == 0
+
+    assert _run(root, "set", version).returncode == 0
+
+    installs = [
+        m
+        for rel in (*DOC_FILES, APM_DOC)
+        for m in INSTALL_RE.finditer((root / rel).read_text())
+    ]
+    assert len(installs) == 4
+    for m in installs:
+        assert (m.group(1), m.group(2)) == (f"@v{version}", None)
+    hooks = (root / HOOKS).read_text()
+    assert SUBDIRECTORY not in hooks
+    assert hooks.count(f"@v{version}") == 2
+
+
+def test_release_py_cutoff_is_plugin_s() -> None:
+    """release.py and kmctl.plugin name the same last root release (cutoff)."""
+    from kmctl.plugin import LAST_ROOT_RELEASE as plugin_cutoff
+    from scripts.release import LAST_ROOT_RELEASE
+
+    assert LAST_ROOT_RELEASE == plugin_cutoff
 
 
 def _kmctl_ref_default(root: Path) -> str:
