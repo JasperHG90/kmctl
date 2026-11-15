@@ -15,7 +15,7 @@
   "split_hold": false,
   "commit_sha": null,
   "closed_outside": false,
-  "dropped": false,
+  "dropped": true,
   "archived": false,
   "worktree": null,
   "branch": null,
@@ -46,5 +46,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T19:37:53+00:00"
+  "at": "2026-11-15T19:40:16+00:00"
 }
