@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "Moving kmaudit's reference to docs/reference/kmaudit-commands.md hands it to kmctl in the release ownership rule. scripts/release_paths.py owns() gives kmaudit only packages/kmaudit/ and gives kmctl every path outside packages/. release_notes.py and release-tag's late-commit check both use that rule. After the move, a kmaudit docs change goes into kmctl's release notes and is left out of kmaudit's, and release-tag flags it as a late kmctl commit. That breaks the ADR 0012 rule that each package owns its own paths. The plan has to decide this, either by giving that page to kmaudit in owns() with a test_release_paths row or by stating that kmctl owns it, and it must list scripts/release_paths.py in touches.",
+      "anchor": "scripts/release_paths.py:29",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "packages/kmctl/tests/test_docs.py::test_install_subdirectory_follows_the_cutoff_on_every_install_line scans every docs/**/*.md with AT_REF and requires each match's fragment to equal subdirectory_fragment(ref). Today kmaudit's kmaudit[tracing] line (commands.md:312) has no ref, so it does not match and the test passes on this ticket's branch. The first `release.py set --package kmaudit` pins it to @kmaudit-vX.Y.Z#subdirectory=packages/kmaudit. AT_REF then matches it, and subdirectory_fragment('kmaudit-v0.2.0') returns '#subdirectory=packages/kmctl' (I checked), so kmaudit's version pull request goes red. The same test, and test_readme_install_and_links, read kmctl's install lines from the root README, which will no longer have them, so they must read packages/kmctl/README.md. The plan's checks pin the lines but never run kmctl's docs test on a tree where kmaudit's line is pinned. It needs to say how the test tells kmaudit's line apart from kmctl's (it is kmctl-only) and add a check that runs after a kmaudit pin.",
+      "anchor": "packages/kmctl/tests/test_docs.py:143",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "open",
+      "claim": "O1's touches leave out a file the prose says changes. docs/reference/commands.md:18 links ../../packages/kmaudit/docs/commands.md, which is a link to a moved path the prose promises to fix, but it is not in touches. Also missing is scripts/release_paths.py, if p1 is settled by changing ownership. plan.split and the build read touches, so the list must name every file that changes.",
+      "anchor": "docs/reference/commands.md:18",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "b93b45c4a1b067cdf02871c2543031b75c764db253c8c18c8795eedcc0134d49"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T18:45:31+00:00"
+}
