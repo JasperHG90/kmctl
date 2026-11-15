@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "kmctl's README says auditing a folder of docs against the code 'moved to its own package, kmaudit'. Nothing moved: v0.12.2 users had the action's audit mode (audit: docs-vs-code, okf-vs-code, okf-vs-docs), the /audit skill and the kmctl-auditor agent, and all three still ship unchanged. kmaudit is a new, separate package. A v0.12 user who runs mode: audit would read this as having to install kmaudit, and it contradicts the same README's intro (line 12) and /audit entry (line 312).",
+      "anchor": "packages/kmctl/README.md:222",
+      "category": "docs",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "e67f2f253517e6e86bd575019680aa861240615e2f991c8f09ae31b9540352a5",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T20:09:43+00:00"
+}
