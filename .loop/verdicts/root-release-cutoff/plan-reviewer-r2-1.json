@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "plugin.py HOOK_INSTALL always writes the fragment; it must follow the cutoff, with test_plugin.py in touches and a checked-by test.",
+      "anchor": "packages/kmctl/src/kmctl/plugin.py:64",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "0814150b4bdfbe773d79ae961100eac0ad65840ce07625d187e1416efce823b1"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T04:48:59+00:00"
+}
