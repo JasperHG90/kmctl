@@ -12,8 +12,10 @@ Usage::
 ``--package`` names the package the tag releases: kmctl's tags are ``vX.Y.Z``
 and kmaudit's ``kmaudit-vX.Y.Z``. Its notes start at that family's tag before
 ``TAG`` and list only commits whose diff against their first parent touches
-the package's paths: kmaudit owns ``packages/kmaudit/``, and kmctl owns
-``packages/kmctl/`` and every path outside ``packages/``. Without
+the package's paths, as ``release_paths.py`` decides them: kmaudit owns
+``packages/kmaudit/``, and kmctl owns ``packages/kmctl/`` and every path
+outside ``packages/`` but the repository's bookkeeping (``.loop/``,
+``.okf/``, ``.claude/``, ``uv.lock``), which ships in neither. Without
 ``--package``, the tag is a kmctl tag and every commit counts, as for the
 releases before the split. ``--ref`` drafts the notes for a tag not pushed
 yet, reading the history up to ``REF``; ``release.yml`` drafts them so before
@@ -50,6 +52,11 @@ from string import Template
 
 from packaging.version import InvalidVersion, Version
 
+# Run as a script (uv run scripts/release_notes.py), so its sibling is imported
+# from this file's folder.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from release_paths import owns
+
 #: The notes' layout, filled by ``render``; read from this checkout, so notes
 #: written for an old tag use today's layout.
 TEMPLATE = Path(__file__).resolve().parents[1] / ".github" / "release-notes.md"
@@ -80,13 +87,6 @@ def _git(repo: Path, *args: str) -> str:
     return subprocess.run(
         ["git", "-C", str(repo), *args], capture_output=True, text=True, check=True
     ).stdout
-
-
-def owns(package: str, path: str) -> bool:
-    """Whether ``path`` belongs to ``package``: kmaudit owns ``packages/kmaudit/``; kmctl owns ``packages/kmctl/`` and every path outside ``packages/``."""
-    if package == "kmaudit":
-        return path.startswith("packages/kmaudit/")
-    return path.startswith("packages/kmctl/") or not path.startswith("packages/")
 
 
 def _touched(repo: Path, sha: str, parents: list[str]) -> list[str]:

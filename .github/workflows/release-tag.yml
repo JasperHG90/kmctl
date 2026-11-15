@@ -151,10 +151,9 @@ jobs:
           for c in $(git rev-list --first-parent "$DRAFTED..$FIRST"); do
             subject="$(git log -1 --format=%s "$c")"
             case "$subject" in "loop: "* | "release: "* | "Merge pull request #"*/release/*) continue ;; esac
-            if git diff --name-only "$c^1" "$c" | awk -v p="$PACKAGE" '
-                p == "kmaudit" && /^packages\/kmaudit\// { f = 1 }
-                p == "kmctl" && (/^packages\/kmctl\// || !/^packages\//) { f = 1 }
-                END { exit !f }'; then
+            # scripts/release_paths.py decides which package owns a path, for
+            # the notes and this warning alike; bookkeeping is in neither.
+            if git diff --name-only "$c^1" "$c" | python3 scripts/release_paths.py "$PACKAGE"; then
               LATE+=("$(git log -1 --format='%h %s' "$c")")
             fi
           done

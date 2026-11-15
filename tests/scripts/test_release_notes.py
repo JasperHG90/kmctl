@@ -438,3 +438,21 @@ def test_package_draft_prints_to_stdout_without_out(split: Path) -> None:
 
     assert res.returncode == 0, res.stderr
     assert "- kmaudit adds w" in res.stdout
+
+
+def test_a_bookkeeping_only_commit_is_in_neither_package_s_notes(
+    split: Path, tmp_path: Path
+) -> None:
+    """A commit touching only .okf/ and uv.lock ships nothing; one with a shipped path counts for its owner."""
+    _change(split, "Bundle and lock only", ".okf/summary.md", "uv.lock")
+    _change(split, "Bundle and kmaudit", ".okf/log.md", "packages/kmaudit/q.py")
+    _change(split, "Rule and docs", ".claude/rules/r.md", "docs/r.md")
+
+    kmctl = _draft(split, tmp_path, "kmctl", "v0.3.0")
+    kmaudit = _draft(split, tmp_path, "kmaudit", "kmaudit-v0.2.0")
+
+    assert "Bundle and lock only" not in kmctl + kmaudit
+    assert "Bundle and kmaudit" in kmaudit
+    assert "Bundle and kmaudit" not in kmctl
+    assert "Rule and docs" in kmctl
+    assert "Rule and docs" not in kmaudit

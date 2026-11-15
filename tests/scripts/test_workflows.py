@@ -924,7 +924,17 @@ def _merge_release(repo: Path, squash: bool, trailer: bool = True) -> None:
 def _late(
     repo: Path, tmp_path: Path, package: str
 ) -> tuple[subprocess.CompletedProcess[str], str]:
-    """Run the late-commits step for ``package`` on HEAD; return the result and the step summary."""
+    """Run the late-commits step for ``package`` on HEAD; return the result and the step summary.
+
+    The step runs from the checkout's root, so the repo gets this tree's
+    scripts/release_paths.py, untracked and excluded, which the step asks who owns a path.
+    """
+    (repo / "scripts").mkdir(exist_ok=True)
+    (repo / "scripts" / "release_paths.py").write_text(
+        (ROOT / "scripts" / "release_paths.py").read_text()
+    )
+    with (repo / ".git" / "info" / "exclude").open("a") as fh:
+        fh.write("/scripts/release_paths.py\n")
     summary = tmp_path / f"summary-{package}"
     summary.write_text("")
     res = _bash(
@@ -1251,3 +1261,30 @@ def test_release_tag_falls_back_to_the_parent_for_a_merge_without_a_trailer(
     assert "Late kmaudit fix" in warning
     assert released["drafted"] in warning
     assert "Late kmaudit fix" in summary
+
+
+@pytest.mark.parametrize("package", ["kmctl", "kmaudit"])
+def test_release_tag_leaves_out_late_bookkeeping_commits(
+    released: dict[str, Any], tmp_path: Path, package: str
+) -> None:
+    """A late commit touching only .okf/ and uv.lock ships in no package, so neither release names it."""
+    repo: Path = released["repo"]
+    _change(repo, "Late bundle edit", ".okf/summary.md", "uv.lock")
+    _land_late_commits(repo)
+    _merge_release(repo, squash=False)
+
+    res, summary = _late(repo, tmp_path, package)
+
+    assert res.returncode == 0, res.stdout + res.stderr
+    [warning] = [ln for ln in res.stdout.splitlines() if ln.startswith("::warning::")]
+    assert f"Late {package} fix" in warning
+    assert "Late bundle edit" not in warning + summary
+
+
+def test_release_tag_asks_release_paths_who_owns_a_path() -> None:
+    """The late-commit step pipes paths to release_paths.py and keeps no copy of the rule."""
+    run = _step(RELEASE_TAG, "tag", LATE)["run"]
+
+    assert "scripts/release_paths.py" in run
+    assert "awk" not in run.split("LATE=()")[1].split("done")[0]
+    assert "packages/kmaudit" not in run

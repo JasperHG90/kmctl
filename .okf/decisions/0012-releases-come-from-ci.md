@@ -166,9 +166,12 @@ which `scripts/release.py compare` skips, so adding it released nothing.
 The notes are now written before the release and reviewed with it. A notes
 job, which runs in dry runs too, drafts them with
 `scripts/release_notes.py --package P TAG --ref HEAD`, listing only commits
-that touch the package's paths since its family's previous tag: kmaudit owns
-`packages/kmaudit/`, kmctl owns `packages/kmctl/` and everything outside
-`packages/`. The bump job commits the draft as
+that touch the package's paths since its family's previous tag, as
+`scripts/release_paths.py` decides them: kmaudit owns `packages/kmaudit/`,
+kmctl owns `packages/kmctl/` and everything outside `packages/` but the
+repository's bookkeeping (`.loop/`, `.okf/`, `.claude/`, `uv.lock`), which
+ships in neither. release-tag asks the same script, so its warning and the
+notes agree. The bump job commits the draft as
 `.github/release-notes/TAG.md` in the version pull request, on top of the
 exact commit it was drafted from, with a `Drafted-From: <sha>` trailer, and
 puts the notes and the trailer in the pull request body. Merging approves
