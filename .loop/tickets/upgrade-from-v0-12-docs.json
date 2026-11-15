@@ -19,7 +19,9 @@
   "archived": false,
   "worktree": "/home/vscode/workspace.worktrees/upgrade-from-v0-12-docs",
   "branch": "loop/upgrade-from-v0-12-docs",
-  "stamps": [],
+  "stamps": [
+    "6738526b3651f0f39f496b565fb766d928c79038a722f9ef1fcb27c079177be9"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/implementer",
     "hash": "ad944ae5e3c8faff63ebf9a2cc1575467b11eb7675a7c878d90a721a2bef5002",
@@ -87,5 +89,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T19:47:17+00:00"
+  "at": "2026-11-15T19:53:58+00:00"
 }
