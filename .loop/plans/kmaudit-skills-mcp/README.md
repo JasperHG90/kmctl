@@ -66,7 +66,13 @@ from their lists, with their tests.
 The skills keep sequencing (see what is left, batch, hand each batch to
 the agent or do it, report) through `claims_todo` and `claims_list`. Both
 skills are changed through skill-creator with their evals, as
-`.claude/rules/skills-via-skill-creator.md` asks. kmaudit's CLI help that
+`.claude/rules/skills-via-skill-creator.md` asks. The knowledge pages that
+describe the agents as they are now follow: `.okf/architecture/overview.md`
+(the agents in kmctl's package with Read and Bash), `.okf/manifesto.md`
+(the extractor has "Read and a shell") and `.okf/architecture/audit-pipeline.md`;
+ADR 0037 and ADR 0040 keep their prose but their `sources` move to the new
+agent files, so `kmctl review due` still resolves them, and ADR 0043 gets an
+amendment saying where the skills and agents live now. kmaudit's CLI help that
 names the old agents (`--by kmctl-claims-extractor`,
 `--by kmctl-check-writer`) follows the rename.
 
@@ -102,7 +108,7 @@ two skills or agents.
 - goal: G1
 - fixes: P1
 - needs: none
-- touches: `new:packages/kmaudit/apm`, `new:packages/kmctl/apm`, `packages/kmctl/src/kmctl/opencode.py`, `packages/kmctl/src/kmctl/antigravity.py`, `packages/kmctl/tests/test_opencode.py`, `packages/kmctl/tests/test_antigravity.py`, `packages/kmctl/tests/test_plugin_patch.py`, `packages/kmaudit/src/kmaudit/cli.py`, `scripts/release.py`, `.github/workflows/release.yml`, `packages/kmaudit/README.md`, `packages/kmaudit/docs/commands.md`, `new:packages/kmaudit/tests/test_apm_package.py`, `packages/kmctl/tests/test_apm_package.py`, `tests/test_skills.py`, `tests/scripts/test_release.py`, `.okf/decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp.md`, `.okf/architecture/audit-pipeline.md`
+- touches: `new:packages/kmaudit/apm`, `new:packages/kmctl/apm`, `packages/kmctl/src/kmctl/opencode.py`, `packages/kmctl/src/kmctl/antigravity.py`, `packages/kmctl/tests/test_opencode.py`, `packages/kmctl/tests/test_antigravity.py`, `packages/kmctl/tests/test_plugin_patch.py`, `packages/kmaudit/src/kmaudit/cli.py`, `scripts/release.py`, `.github/workflows/release.yml`, `packages/kmaudit/README.md`, `packages/kmaudit/docs/commands.md`, `new:packages/kmaudit/tests/test_apm_package.py`, `packages/kmctl/tests/test_apm_package.py`, `tests/test_skills.py`, `tests/scripts/test_release.py`, `.okf/decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp.md`, `.okf/decisions/0037-the-claims-and-checks-agents-get-a-plain-shell-and-i2-narrows.md`, `.okf/decisions/0040-the-audit-pipeline-holds-its-agents-by-a-hook-and-keeps-answers-through-rewording.md`, `.okf/architecture/audit-pipeline.md`, `.okf/architecture/overview.md`, `.okf/manifesto.md`
 - checked by: tests that kmaudit's apm.yml declares the kmaudit server at its own tag and lists the skills and agents, that the agents' tools are Read, Grep, Glob and the five kmaudit MCP tools with no Bash and no hook, that kmctl's package and wheel no longer hold them, and that `set --package kmaudit` pins the server's ref; the skills' evals rerun through skill-creator; an integration test that installs kmaudit's package with APM for claude and opencode into a project and finds the server in .mcp.json and opencode.json, the agents in .claude/agents/ and none in .opencode/agents/; kmctl's plugin patch tests no longer translate the two agents
 - seen by: operator
 
