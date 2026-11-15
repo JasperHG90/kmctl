@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-tests-git-identity",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 2,
@@ -29,7 +29,7 @@
   "split": "j-20261115T205251+0000-56a612c2",
   "split_plan_hash": "8d75f206484e4effe1cd461556554f2e2910c2ca870bbfdec433f970e348e24b",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "c6a065696d299a6aac451fbc8e3768cab79f3d6d",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -121,8 +121,14 @@
       "to": "verifying",
       "at": "2026-11-15T21:14:01+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-15T21:15:39+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T21:15:31+00:00"
+  "at": "2026-11-15T21:15:39+00:00"
 }
