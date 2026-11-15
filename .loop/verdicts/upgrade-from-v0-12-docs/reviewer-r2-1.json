@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "kmctl's README Upgrade section said auditing moved to kmaudit, but kmctl's own audit still ships.",
+      "anchor": "packages/kmctl/README.md:222",
+      "category": "docs",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "c5667b7b6b06b5afa2b78a4e45863eb708296196c5eb37852c0b98c8a69046e5",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T20:19:18+00:00"
+}
