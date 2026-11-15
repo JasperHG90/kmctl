@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "Two descriptions of what set --package kmaudit writes still say it pins only the README's install line. One is release.yml's kmaudit WHAT text, which goes into the version pull request body. The other is release.py's set help text. Both should name docs/commands.md's tracing line too.",
+      "anchor": ".github/workflows/release.yml:327",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "2bd097ffdc6a89e2c4668d63b6f473eb5c8c565137b79f1956c0bfa86f819d59",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T08:13:08+00:00"
+}
