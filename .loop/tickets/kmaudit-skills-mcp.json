@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-skills-mcp",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 3,
   "review_rounds": 3,
@@ -29,7 +29,7 @@
   "split": "j-20261115T063733+0000-e9d4e034",
   "split_plan_hash": "391f0ca0e8b683447074a73ef857c2f3326f0485166e076a13bda8451b3722ad",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "e48a9605f53173a64dd125029e3fe4a73d886b78",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -166,8 +166,14 @@
       "to": "verifying",
       "at": "2026-11-15T09:50:22+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-15T09:55:25+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T09:55:22+00:00"
+  "at": "2026-11-15T09:55:25+00:00"
 }
