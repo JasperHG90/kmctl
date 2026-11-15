@@ -3,7 +3,7 @@
   "slug": "kmaudit-namespaces-nested-store",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "49f5ca0e684087571362997c890bcbaf0c6ee070e5daa044f9db446ddb0b0f78",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "31227332531db0cd0a2b3b3f4a0b8fb61721e1969b551c77247fdab3411be586",
+    "started_at": "2026-11-15T05:02:44+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "31227332531db0cd0a2b3b3f4a0b8fb61721e1969b551c77247fdab3411be586",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -44,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T05:02:36+00:00"
+  "at": "2026-11-15T05:02:44+00:00"
 }
