@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "slug": "kmaudit-skills-mcp",
+  "plan_hash": "09ce4a17d83ab8429b307d1ad34a2085f1870a107057b401af290930e0b903af",
+  "problems": [
+    {
+      "id": "P1",
+      "text": "kmaudit's skills and agents ship in kmctl's package and drive kmaudit through a shell, which needs a per-harness guard hook and heredoc quoting, and arrive only with kmctl."
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "kmaudit's skills ship with kmaudit and drive it through its MCP tools in every harness APM installs them for."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "O1",
+      "change": "kmaudit's package carries the two skills, the two agents and the MCP server, and the agents call MCP tools with no shell",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "new:packages/kmaudit/apm",
+        "new:packages/kmctl/apm",
+        "scripts/release.py",
+        ".github/workflows/release.yml",
+        "packages/kmaudit/README.md",
+        "packages/kmaudit/docs/commands.md",
+        "new:packages/kmaudit/tests/test_apm_package.py",
+        "packages/kmctl/tests/test_apm_package.py",
+        "tests/test_skills.py",
+        "tests/scripts/test_release.py",
+        ".okf/decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp.md",
+        ".okf/architecture/audit-pipeline.md"
+      ],
+      "checked_by": "tests that kmaudit's apm.yml declares the kmaudit server at its own tag and lists the skills and agents, that the agents' tools are Read, Grep, Glob and the five kmaudit MCP tools with no Bash and no hook, that kmctl's package and wheel no longer hold them, and that `set --package kmaudit` pins the server's ref; the skills' evals rerun through skill-creator; an integration test that installs kmaudit's package with APM into a project and finds the server in .mcp.json and the agents in .claude/agents/",
+      "seen_by": "operator"
+    }
+  ]
+}
