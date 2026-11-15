@@ -3,7 +3,7 @@
   "slug": "root-release-cutoff",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "86544f2b3ca86c50cbfc9a13c0835ba9d44b44392d42c80f606658a2a8cdec36",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "1d3b72bd4e2b39d0690d5fa264bc8c2c158a5bdc7da2e80be0dd9d3ff670a436",
+    "started_at": "2026-11-15T04:46:12+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "1d3b72bd4e2b39d0690d5fa264bc8c2c158a5bdc7da2e80be0dd9d3ff670a436",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -44,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T04:46:05+00:00"
+  "at": "2026-11-15T04:46:12+00:00"
 }
