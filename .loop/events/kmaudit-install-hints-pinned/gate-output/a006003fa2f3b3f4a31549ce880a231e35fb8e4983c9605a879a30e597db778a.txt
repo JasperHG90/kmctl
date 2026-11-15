@@ -1,0 +1,172 @@
+warning: `VIRTUAL_ENV=/home/vscode/workspace/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+============================= test session starts ==============================
+platform linux -- Python 3.12.16, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/vscode/workspace.worktrees/kmaudit-install-hints-pinned
+configfile: pyproject.toml
+plugins: langsmith-0.14.17, platformdirs-4.13.4, anyio-4.15.1, respx-0.23.1
+collected 1664 items / 18 deselected / 1646 selected
+
+packages/kmaudit/tests/test_audit_coverage.py .........                  [  0%]
+packages/kmaudit/tests/test_audit_feedback.py .....................      [  1%]
+packages/kmaudit/tests/test_audit_guard.py ...............               [  2%]
+packages/kmaudit/tests/test_audit_settings.py ........                   [  3%]
+packages/kmaudit/tests/test_audit_ui.py ..........................       [  4%]
+packages/kmaudit/tests/test_briefing.py ...........                      [  5%]
+packages/kmaudit/tests/test_checks_cli.py ...........................    [  7%]
+packages/kmaudit/tests/test_claims_check_store.py ........               [  7%]
+packages/kmaudit/tests/test_claims_cli.py .........................      [  9%]
+packages/kmaudit/tests/test_claims_lines.py ......                       [  9%]
+packages/kmaudit/tests/test_claims_mutate.py .....                       [  9%]
+packages/kmaudit/tests/test_claims_sections.py ................          [ 10%]
+packages/kmaudit/tests/test_claims_steps.py ............................ [ 12%]
+....                                                                     [ 12%]
+packages/kmaudit/tests/test_claims_store.py .......                      [ 13%]
+packages/kmaudit/tests/test_independent.py ..                            [ 13%]
+packages/kmaudit/tests/test_judge.py ................................    [ 15%]
+packages/kmaudit/tests/test_mcp.py ......                                [ 15%]
+packages/kmaudit/tests/test_namespaces.py ....................           [ 16%]
+packages/kmctl/tests/test_action.py ..............                       [ 17%]
+packages/kmctl/tests/test_adr_audit_fixes.py ....                        [ 17%]
+packages/kmctl/tests/test_antigravity.py ............................... [ 19%]
+............................                                             [ 21%]
+packages/kmctl/tests/test_apm_package.py ............................... [ 23%]
+................                                                         [ 24%]
+packages/kmctl/tests/test_briefing.py .................................. [ 26%]
+........                                                                 [ 26%]
+packages/kmctl/tests/test_check.py ....................................  [ 29%]
+packages/kmctl/tests/test_cli.py ..                                      [ 29%]
+packages/kmctl/tests/test_docs.py ........                               [ 29%]
+packages/kmctl/tests/test_docs_frontmatter.py .......................... [ 31%]
+                                                                         [ 31%]
+packages/kmctl/tests/test_doctor.py .................................... [ 33%]
+.........................................................                [ 36%]
+packages/kmctl/tests/test_handoff_key.py ........                        [ 37%]
+packages/kmctl/tests/test_handoffs.py .........                          [ 37%]
+packages/kmctl/tests/test_help.py ...................................... [ 40%]
+...................                                                      [ 41%]
+packages/kmctl/tests/test_init.py ...................................... [ 43%]
+.............................                                            [ 45%]
+packages/kmctl/tests/test_mv.py .....................                    [ 46%]
+packages/kmctl/tests/test_network_retry.py ...............               [ 47%]
+packages/kmctl/tests/test_new_concept.py ..........................      [ 49%]
+packages/kmctl/tests/test_new_doc.py .......                             [ 49%]
+packages/kmctl/tests/test_no_audit.py ....                               [ 49%]
+packages/kmctl/tests/test_okf_fields.py .......                          [ 50%]
+packages/kmctl/tests/test_opencode.py .................................. [ 52%]
+....................                                                     [ 53%]
+packages/kmctl/tests/test_pin.py ...............................         [ 55%]
+packages/kmctl/tests/test_plugin.py ........................             [ 56%]
+packages/kmctl/tests/test_plugin_error.py .......                        [ 57%]
+packages/kmctl/tests/test_plugin_patch.py .............................. [ 59%]
+......                                                                   [ 59%]
+packages/kmctl/tests/test_repo_name.py ..........                        [ 60%]
+packages/kmctl/tests/test_review_due.py ................................ [ 62%]
+.......                                                                  [ 62%]
+packages/kmctl/tests/test_schema.py ..................................   [ 64%]
+packages/kmctl/tests/test_starter.py ................................... [ 66%]
+...........                                                              [ 67%]
+packages/kmctl/tests/test_summary.py ................................... [ 69%]
+......                                                                   [ 69%]
+packages/kmctl/tests/test_supersede.py .......                           [ 70%]
+packages/kmctl/tests/test_verify.py .................................... [ 72%]
+.........                                                                [ 73%]
+tests/scripts/test_check_wheel.py ...........                            [ 73%]
+tests/scripts/test_hermes_release_notes.py ......................        [ 75%]
+tests/scripts/test_hermes_triage.py ........                             [ 75%]
+tests/scripts/test_next_release_version.py ............................. [ 77%]
+..                                                                       [ 77%]
+tests/scripts/test_release.py .......................................... [ 79%]
+.............                                                            [ 80%]
+tests/scripts/test_release_docs.py ......                                [ 81%]
+tests/scripts/test_release_notes.py ............................         [ 82%]
+tests/scripts/test_release_paths.py ..................                   [ 83%]
+tests/scripts/test_smoke_wheel.py ...........                            [ 84%]
+tests/scripts/test_workflows.py ........................................ [ 86%]
+....F............................F......                                 [ 89%]
+tests/test_agent.py .................................................... [ 92%]
+...                                                                      [ 92%]
+tests/test_audit.py .....                                                [ 93%]
+tests/test_ci.py ....................                                    [ 94%]
+tests/test_release_skill.py ...............                              [ 95%]
+tests/test_repo_apm.py ..........                                        [ 95%]
+tests/test_rules.py ..................................                   [ 97%]
+tests/test_skills.py .......................                             [ 99%]
+tests/test_workspace_layout.py ............                              [100%]
+
+=================================== FAILURES ===================================
+_____ test_release_package_bump_commits_the_notes_and_makes_them_the_body ______
+
+tmp_path = PosixPath('/tmp/pytest-of-vscode/pytest-842/test_release_package_bump_comm0')
+
+    def test_release_package_bump_commits_the_notes_and_makes_them_the_body(
+        tmp_path: Path,
+    ) -> None:
+        """Run in bash for kmaudit, bump commits its apm.yml, the README and the notes file on the drafted commit.
+    
+        The commit carries a Drafted-From trailer, and the pull request body
+        holds the notes file and the same trailer.
+        """
+        notes = "## What changed\n\n- kmaudit learns a trick. (`trick`)\n"
+    
+        res, origin, drafted, temp = _run_bump(tmp_path, notes)
+    
+>       assert res.returncode == 0, res.stdout + res.stderr
+E       AssertionError: Traceback (most recent call last):
+E           File "/home/vscode/workspace.worktrees/kmaudit-install-hints-pinned/scripts/release.py", line 438, in <module>
+E             raise SystemExit(main())
+E                              ^^^^^^
+E           File "/home/vscode/workspace.worktrees/kmaudit-install-hints-pinned/scripts/release.py", line 419, in main
+E             set_kmaudit_version(repo, args.version)
+E           File "/home/vscode/workspace.worktrees/kmaudit-install-hints-pinned/scripts/release.py", line 228, in set_kmaudit_version
+E             rf"\g<1>@kmaudit-v{version}\g<3>", (repo / KMAUDIT_DOCS).read_text()
+E                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           File "/home/vscode/.local/share/uv/python/cpython-3.12.16-linux-aarch64-gnu/lib/python3.12/pathlib.py", line 1027, in read_text
+E             with self.open(mode='r', encoding=encoding, errors=errors) as f:
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           File "/home/vscode/.local/share/uv/python/cpython-3.12.16-linux-aarch64-gnu/lib/python3.12/pathlib.py", line 1013, in open
+E             return io.open(self, mode, buffering, encoding, errors, newline)
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-vscode/pytest-842/test_release_package_bump_comm0/repo/packages/kmaudit/docs/commands.md'
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['bash', '-e', '-c', 'set -euo pipefail\nBRANCH="release/$TAG"\nNOTES=".github/release-notes/$TA...ectory: \'/tmp/pytest-of-vscode/pytest-842/test_release_package_bump_comm0/repo/packages/kmaudit/docs/commands.md\'\n').returncode
+
+tests/scripts/test_workflows.py:758: AssertionError
+_________ test_hermes_release_pr_body_carries_the_draft_before_hermes __________
+
+tmp_path = PosixPath('/tmp/pytest-of-vscode/pytest-842/test_hermes_release_pr_body_ca0')
+
+    def test_hermes_release_pr_body_carries_the_draft_before_hermes(
+        tmp_path: Path,
+    ) -> None:
+        """When Hermes won, the body adds the draft's What changed, collapsed; the file is not committed."""
+        before = "<details>\n<summary>Draft before Hermes</summary>\n\n## What changed\n\n- Add kmaudit mcp. (`kmaudit-mcp`)\n\n</details>\n"
+    
+        res, origin, drafted, temp = _run_bump(tmp_path, HERMES_REWRITE, before)
+    
+>       assert res.returncode == 0, res.stdout + res.stderr
+E       AssertionError: Traceback (most recent call last):
+E           File "/home/vscode/workspace.worktrees/kmaudit-install-hints-pinned/scripts/release.py", line 438, in <module>
+E             raise SystemExit(main())
+E                              ^^^^^^
+E           File "/home/vscode/workspace.worktrees/kmaudit-install-hints-pinned/scripts/release.py", line 419, in main
+E             set_kmaudit_version(repo, args.version)
+E           File "/home/vscode/workspace.worktrees/kmaudit-install-hints-pinned/scripts/release.py", line 228, in set_kmaudit_version
+E             rf"\g<1>@kmaudit-v{version}\g<3>", (repo / KMAUDIT_DOCS).read_text()
+E                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           File "/home/vscode/.local/share/uv/python/cpython-3.12.16-linux-aarch64-gnu/lib/python3.12/pathlib.py", line 1027, in read_text
+E             with self.open(mode='r', encoding=encoding, errors=errors) as f:
+E                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           File "/home/vscode/.local/share/uv/python/cpython-3.12.16-linux-aarch64-gnu/lib/python3.12/pathlib.py", line 1013, in open
+E             return io.open(self, mode, buffering, encoding, errors, newline)
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E         FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-vscode/pytest-842/test_hermes_release_pr_body_ca0/repo/packages/kmaudit/docs/commands.md'
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['bash', '-e', '-c', 'set -euo pipefail\nBRANCH="release/$TAG"\nNOTES=".github/release-notes/$TA...ectory: \'/tmp/pytest-of-vscode/pytest-842/test_hermes_release_pr_body_ca0/repo/packages/kmaudit/docs/commands.md\'\n').returncode
+
+tests/scripts/test_workflows.py:1272: AssertionError
+=========================== short test summary info ============================
+FAILED tests/scripts/test_workflows.py::test_release_package_bump_commits_the_notes_and_makes_them_the_body
+FAILED tests/scripts/test_workflows.py::test_hermes_release_pr_body_carries_the_draft_before_hermes
+=========== 2 failed, 1644 passed, 18 deselected in 87.44s (0:01:27) ===========

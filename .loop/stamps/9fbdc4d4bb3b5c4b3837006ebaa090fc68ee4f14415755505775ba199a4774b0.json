@@ -1,0 +1,83 @@
+{
+  "schema_version": "1.0",
+  "fingerprint": "9fbdc4d4bb3b5c4b3837006ebaa090fc68ee4f14415755505775ba199a4774b0",
+  "slug": "kmaudit-install-hints-pinned",
+  "results": [
+    {
+      "name": "lint",
+      "kind": "gate",
+      "command": "uv run ruff check",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "format",
+      "kind": "gate",
+      "command": "uv run ruff format --check",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "tests",
+      "kind": "gate",
+      "command": "uv run pytest",
+      "exit": 1,
+      "passed": false,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "integration",
+      "kind": "gate",
+      "command": "uv run pytest -m integration",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r1",
+      "kind": "eval-row",
+      "command": "uv run pytest packages/kmaudit/tests/test_judge.py packages/kmaudit/tests/test_claims_steps.py -k install -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 8,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r2",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/scripts/test_release.py tests/scripts/test_workflows.py -k kmaudit -q",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 19,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    }
+  ],
+  "green": false,
+  "at": "2026-11-15T07:58:16+00:00",
+  "commit": null,
+  "by": "process:loopctl/2.3.1.dev65+g93b143856"
+}
