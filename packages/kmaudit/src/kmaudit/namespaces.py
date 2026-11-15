@@ -84,9 +84,20 @@ def repository_root(path: Path) -> Path:
     return Path(out.strip()).resolve()
 
 
+def read_only_uri(path: Path) -> str:
+    """The SQLite URI that opens the file at ``path`` read-only.
+
+    ``Path.as_uri`` percent-encodes ``%``, ``#`` and ``?``, so a nested
+    namespace's store (``handbook%2Fguides.sqlite``) opens as itself, where a
+    hand-built ``file:`` URI decodes its ``%2F`` back to ``/``. A relative
+    path resolves against the working directory first.
+    """
+    return path.resolve().as_uri() + "?mode=ro"
+
+
 def _count(store: Path, sql: str) -> int:
     """One count from the store at ``store``, read-only; 0 when its table is not there yet."""
-    db = sqlite3.connect(f"file:{store}?mode=ro", uri=True)
+    db = sqlite3.connect(read_only_uri(store), uri=True)
     try:
         return int(db.execute(sql).fetchone()[0])
     except sqlite3.OperationalError:
