@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "upgrade-from-v0-12-docs",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
@@ -60,8 +60,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "66e4c26c1ed2b69ab6e11b35e946fe77ae0f56ecdddbd8813518932e7d2abb0f",
   "intent": {
@@ -93,8 +93,14 @@
       "to": "verifying",
       "at": "2026-11-15T20:03:41+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-15T20:10:09+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T20:03:43+00:00"
+  "at": "2026-11-15T20:10:09+00:00"
 }
