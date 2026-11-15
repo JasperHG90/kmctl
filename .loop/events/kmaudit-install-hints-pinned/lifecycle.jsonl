@@ -22,3 +22,5 @@
 {"at": "2026-11-15T08:33:50+00:00", "dispatched_at": "2026-11-15T08:25:56+00:00", "kind": "round-close", "n": 3, "outcome": "fail", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-11-15T08:33:32+00:00"}}
 {"at": "2026-11-15T08:37:40+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "fixing"}
 {"at": "2026-11-15T08:37:49+00:00", "code": "review-cap", "from": "fixing", "kind": "block", "message": "the review round cap (3) is reached with 1 finding(s) to review again", "notified": false, "schema_version": "1.0"}
+{"at": "2026-11-15T08:38:06+00:00", "by": "delegated:jasperginn@gmail.com/implementer", "edge": "blocked->ready", "grant": "g7", "kind": "override", "reason": "one docs nit left at the review cap: a test docstring rewrapped to match what the test checks", "schema_version": "1.0", "step": "ticket-override"}
+{"at": "2026-11-15T08:38:07+00:00", "kind": "unblock", "schema_version": "1.0"}

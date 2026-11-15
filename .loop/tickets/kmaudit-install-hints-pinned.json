@@ -1,19 +1,13 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-install-hints-pinned",
-  "stage": "blocked",
+  "stage": "ready",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 3,
   "extra_plan_rounds": 0,
-  "extra_review_rounds": 0,
-  "blocker": {
-    "code": "review-cap",
-    "message": "the review round cap (3) is reached with 1 finding(s) to review again",
-    "plan_hash": "ca1c39750f3413a9c06736ceddc667346614d269d6c528c174b1a141416b203b",
-    "at": "2026-11-15T08:37:49+00:00",
-    "resign_eval": false
-  },
+  "extra_review_rounds": 1,
+  "blocker": null,
   "fix": {
     "round": 3,
     "fingerprint": "b387347cf04d8ec14715682c32d5d38b5d91b3fa5cae08266e3aa6108a344b63",
@@ -74,7 +68,14 @@
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
-  "overrides": [],
+  "overrides": [
+    {
+      "edge": "blocked->ready",
+      "reason": "one docs nit left at the review cap: a test docstring rewrapped to match what the test checks",
+      "by": "delegated:jasperginn@gmail.com/implementer",
+      "at": "2026-11-15T08:38:06+00:00"
+    }
+  ],
   "round": {
     "kind": "review",
     "n": 3,
@@ -163,8 +164,14 @@
       "to": "blocked",
       "at": "2026-11-15T08:37:49+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "blocked",
+      "to": "ready",
+      "at": "2026-11-15T08:38:06+00:00",
+      "by": "unblock"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T08:37:49+00:00"
+  "at": "2026-11-15T08:38:06+00:00"
 }
