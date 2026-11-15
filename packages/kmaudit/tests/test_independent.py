@@ -79,16 +79,24 @@ def test_the_wheel_runs_in_a_venv_without_kmctl(tmp_path: Path) -> None:
     ).stdout.strip()
     repo = make_repo(tmp_path / "repo")
 
-    result = subprocess.run(
-        [str(venv / "bin" / "kmaudit"), "claims", "todo", "--json"],
-        cwd=repo,
-        check=False,
-        capture_output=True,
-        text=True,
-        timeout=120,
-    )
+    def kmaudit(*args: str) -> subprocess.CompletedProcess[str]:
+        """Run the venv's kmaudit with ``args`` in the fixture repository."""
+        return subprocess.run(
+            [str(venv / "bin" / "kmaudit"), *args],
+            cwd=repo,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+
+    listed = kmaudit("claims", "list", ".okf", "--json")  # opens the .okf store
+    briefed = kmaudit("briefing", "--json")  # cuts the pages to count pending sections
 
     assert has_kmctl == "False"
-    assert result.returncode == 0, result.stderr
-    sections = {s["id"] for s in json.loads(result.stdout)["sections"]}
-    assert "tool#parts" in sections
+    assert listed.returncode == 0, listed.stderr
+    assert json.loads(listed.stdout) == {"documents": [], "totals": {}}
+    assert briefed.returncode == 0, briefed.stderr
+    [okf] = json.loads(briefed.stdout)["namespaces"]
+    assert "unavailable" not in json.loads(briefed.stdout)
+    assert (okf["namespace"], okf["pending"]) == (".okf", 4)

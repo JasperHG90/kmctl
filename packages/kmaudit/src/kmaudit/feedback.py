@@ -7,8 +7,8 @@ claim and target is the current judgment and the earlier ones are history.
 
 Feedback that asks for a new answer (a thumbs down, or a verdict the check
 disagrees with) stays open until an agent's next answer for that claim or
-section takes it in; ``kmaudit claims todo`` and ``kmaudit checks
-todo`` hand it out with the work, and submitting marks it answered (ADR 0041).
+section takes it in; the ``claims_todo`` and ``checks_todo`` MCP
+tools hand it out with the work, and submitting marks it answered (ADR 0041).
 """
 
 import json
@@ -289,7 +289,7 @@ def is_open(feedback: Feedback) -> bool:
 
 
 def wants_check(feedback: Feedback, status: str, fresh: bool) -> bool:
-    """Whether open feedback on a check sends the claim back to ``checks todo``.
+    """Whether open feedback on a check sends the claim back to ``checks_todo``.
 
     A thumbs down always does. A verdict does while it is ``fresh`` (the
     files it was given on are unchanged) and the check says the opposite,
@@ -308,7 +308,7 @@ def wants_check(feedback: Feedback, status: str, fresh: bool) -> bool:
 
 
 def wants_extraction(feedback: Feedback) -> bool:
-    """Whether open feedback on a claim sends its section back to ``claims todo``: a thumbs down."""
+    """Whether open feedback on a claim sends its section back to ``claims_todo``: a thumbs down."""
     return feedback.answered_at is None and feedback.vote == "down"
 
 

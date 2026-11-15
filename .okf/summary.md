@@ -7,11 +7,10 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-11-15T09:06:30Z
+  at: 2026-11-15T10:14:01Z
   against:
     - architecture/audit-pipeline
     - architecture/overview
-    - decisions/0037-the-claims-and-checks-agents-get-a-plain-shell-and-i2-narrows
     - decisions/0040-the-audit-pipeline-holds-its-agents-by-a-hook-and-keeps-answers-through-rewording
     - decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp
     - manifesto

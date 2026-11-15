@@ -4,7 +4,7 @@ A line is covered when the last run of a stored check matched it: a grep
 line, a code pattern's whole node, a definition or an import. A file that a
 check only reads (a file, query or help step) is "read", not covered, and is
 counted apart. A run whose files changed since is stale: its lines are not
-counted until ``kmaudit checks run`` runs it again. Only answers to
+counted until a rerun (the ``checks_run`` MCP tool or the audit page) runs it again. Only answers to
 claims now in the store count, as in ``kmaudit checks list``. The code is every
 file a check may read that is on disk, without tests, fixtures, evals, lock
 files and the folders harnesses install packages into (ADR 0042).
@@ -102,7 +102,7 @@ def coverage(path: Path) -> Coverage:
         live = {c.id for c in store.claims() if c.kind in CHECKABLE}
         for claim_id in check_ids(store):
             if claim_id not in live:
-                continue  # its section waits for extraction; kmaudit claims todo hands it out
+                continue  # its section waits for extraction; claims_todo hands it out
             stored = check(store, claim_id)
             if stored is None or stored.kind != "check" or stored.holds is None:
                 continue
@@ -110,7 +110,7 @@ def coverage(path: Path) -> Coverage:
                 if read in wanted:
                     read_by[read].add(claim_id)
             if any(repo.sha(p) != h for p, h in stored.reads.items()):
-                stale += 1  # its lines may have moved; run kmaudit checks run
+                stale += 1  # its lines may have moved; checks_run reruns it
                 continue
             fails = not stored.holds and not stored.skipped
             for result in stored.results:

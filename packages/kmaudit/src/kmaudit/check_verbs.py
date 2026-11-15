@@ -1,4 +1,4 @@
-"""What the ``kmaudit checks`` verbs do, callable without the CLI: todo, try, submit, run and list."""
+"""What the checks verbs do: todo, try, submit, run and list, which the MCP tools, the audit page and ``kmaudit checks list`` call."""
 
 import json
 import re
@@ -151,7 +151,7 @@ class CheckCounts(BaseModel):
 
 
 class ChecksTodo(BaseModel):
-    """What ``kmaudit checks todo`` hands out."""
+    """What the ``checks_todo`` MCP tool hands out."""
 
     instructions: str | None = Field(
         default=None, description="How to write checks; left out with brief."
@@ -172,7 +172,7 @@ class ChecksTodo(BaseModel):
         description="Checks and reasons people marked good, with their notes, to learn what works.",
     )
     namespace: str = Field(
-        description="The namespace these claims belong to: the audited folder below the repository root; pass it as --path to try and submit."
+        description="The namespace these claims belong to: the audited folder below the repository root; pass it as folder to checks_try and checks_submit."
     )
     next: str
 
@@ -219,7 +219,7 @@ class Refused(BaseModel):
 
 
 class SubmitChecks(BaseModel):
-    """What ``kmaudit checks submit`` stored and refused."""
+    """What the ``checks_submit`` MCP tool stored and refused."""
 
     stored: list[Stored] = Field(default_factory=list)
     refused: list[Refused] = Field(default_factory=list)
@@ -239,7 +239,7 @@ class RunRow(BaseModel):
 
 
 class RunResult(BaseModel):
-    """What ``kmaudit checks run`` found."""
+    """What a rerun found, for the ``checks_run`` MCP tool and the audit page's Rerun stale checks button."""
 
     counts: dict[str, int]
     rerun: int
@@ -493,8 +493,8 @@ def todo(path: Path, limit: int | None = None, brief: bool = False) -> ChecksTod
         examples=examples,
         namespace=target.namespace,
         next=(
-            f"kmaudit checks try - --path {target.namespace}, "
-            f"then kmaudit checks submit - --path {target.namespace}"
+            f"checks_try with folder {target.namespace}, "
+            f"then checks_submit with folder {target.namespace}"
         ),
     )
 
@@ -519,13 +519,11 @@ def _parse(text: str, verb: str) -> list[object]:
     except json.JSONDecodeError as error:
         raise AuditError(
             f"the answer is not JSON ({error.msg} at line {error.lineno}); "
-            f"pipe a list of answers to kmaudit checks {verb} -, as kmaudit checks todo --json describes"
+            f"pass a list of answers to checks_{verb}, as checks_todo describes"
         ) from error
     items = _ITEMS.validate_python(data if isinstance(data, list) else [data])
     if not items:
-        raise AuditError(
-            f"the answer list is empty; pipe the answers to kmaudit checks {verb} -"
-        )
+        raise AuditError(f"the answer list is empty; pass the answers to checks_{verb}")
     return items
 
 
@@ -628,7 +626,7 @@ def submit(path: Path, text: str, by: str = "agent") -> SubmitChecks:
                     Refused(
                         claim=label,
                         reason=f"malformed answer for claim {label or '?'}: {_first_error(error)}; "
-                        "fix it to the answer_schema kmaudit checks todo --json gives and submit again",
+                        "fix it to the answer_schema checks_todo gives and submit again",
                     )
                 )
                 continue
@@ -638,7 +636,7 @@ def submit(path: Path, text: str, by: str = "agent") -> SubmitChecks:
                     Refused(
                         claim=answer.claim,
                         reason=f"unknown or stale claim id {answer.claim!r} (its text changed or it is not "
-                        "checkable); run kmaudit checks todo for the current ids",
+                        "checkable); call checks_todo for the current ids",
                     )
                 )
                 continue
@@ -673,7 +671,7 @@ def _store_check(
         detail = failing.detail[:200] if failing else "no step held"
         return (
             (
-                f"claim {answer.claim}: the check fails ({detail}); fix the steps with kmaudit checks try, "
+                f"claim {answer.claim}: the check fails ({detail}); fix the steps with checks_try, "
                 "or set drift to what the code does if the claim is wrong"
             ),
             None,
@@ -683,7 +681,7 @@ def _store_check(
         return (
             (
                 f"claim {answer.claim}: a step {broken.detail[:200]}, so the check cannot show drift; "
-                "fix the step with kmaudit checks try"
+                "fix the step with checks_try"
             ),
             None,
         )
@@ -702,7 +700,7 @@ def _store_check(
             return (
                 (
                     f"claim {answer.claim}: weak check, {_survivors(quality)}; pin a step to the code that does "
-                    "what the claim says, test it with kmaudit checks try, or give a reason"
+                    "what the claim says, test it with checks_try, or give a reason"
                 ),
                 None,
             )
@@ -898,7 +896,7 @@ def claim_lines(path: Path, claim_id: str) -> str:
         found = store.claim(claim_id)
         if found is None:
             raise AuditError(
-                f"no stored claim {claim_id!r}; list them with kmaudit claims list --claims"
+                f"no stored claim {claim_id!r}; list them with the claims_list tool"
             )
         return lines_for(store, repo, target, [found])[claim_id].text
 

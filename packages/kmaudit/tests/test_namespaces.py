@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from kmaudit import AuditError, verbs
 from kmaudit.cli import app
 from kmaudit.coverage import coverage
 from kmaudit.sections import concept_sections, resolve_target
@@ -55,11 +56,21 @@ def run(*args: str, stdin: str | None = None) -> tuple[int, str, str]:
     return result.exit_code, result.stdout, result.stderr
 
 
-def todo(*args: str) -> dict:
-    """``kmaudit claims todo ARGS --json``, parsed."""
-    code, out, err = run("claims", "todo", *args, "--json")
-    assert code == 0, err
-    return json.loads(out)
+def todo(path: str = ".") -> dict:
+    """What the claims_todo tool returns for ``path``, parsed."""
+    return json.loads(verbs.todo(Path(path)).model_dump_json())
+
+
+def submit(text: str, path: str = ".") -> dict:
+    """What the claims_submit tool returns for the answers ``text`` sent to ``path``, parsed."""
+    return json.loads(verbs.submit(Path(path), text).model_dump_json())
+
+
+def refusal(path: str) -> str:
+    """Why the claims_todo tool refuses ``path``."""
+    with pytest.raises(AuditError) as refused:
+        todo(path)
+    return str(refused.value)
 
 
 def answers(sections: list[dict], tag: str) -> str:
@@ -115,16 +126,10 @@ def test_namespaces_stay_apart_and_submit_names_its_own(repo: Path) -> None:
     docs = todo("docs")
     okf = todo(".okf")
 
-    assert docs["next"] == "kmaudit claims submit - --path docs"
+    assert docs["next"] == "claims_submit with folder docs"
     assert okf["namespace"] == ".okf"
-    code, _, err = run(
-        "claims", "submit", "-", "--path", "docs", stdin=answers(docs["sections"], "D")
-    )
-    assert code == 0, err
-    code, _, err = run(
-        "claims", "submit", "-", "--path", ".okf", stdin=answers(okf["sections"], "O")
-    )
-    assert code == 0, err
+    assert submit(answers(docs["sections"], "D"), "docs")["refused"] == []
+    assert submit(answers(okf["sections"], "O"), ".okf")["refused"] == []
     assert claims_of("docs") and all(c.startswith("D ") for c in claims_of("docs"))
     assert claims_of(".okf") and all(c.startswith("O ") for c in claims_of(".okf"))
     assert sorted(p.name for p in (repo / ".kmaudit").glob("*.sqlite")) == [
@@ -137,10 +142,9 @@ def test_docs_answers_sent_to_okf_are_refused_not_stored(repo: Path) -> None:
     docs = todo("docs")
     todo(".okf")
 
-    code, _, err = run("claims", "submit", "-", stdin=answers(docs["sections"], "D"))
+    result = submit(answers(docs["sections"], "D"))
 
-    assert code == 1
-    assert "refused" in err
+    assert result["stored"] == [] and result["refused"]
     assert not any(c.startswith("D ") for c in claims_of(".okf"))
 
 
@@ -160,18 +164,13 @@ def test_a_path_inside_a_namespace_maps_to_it(repo: Path) -> None:
 def test_a_folder_holding_a_namespace_maps_to_a_refusal_naming_it(repo: Path) -> None:
     todo("docs/sub")
 
-    code, out, err = run("claims", "todo", "docs")
-
-    assert code == 1
-    assert "docs/sub" in err
-    assert out == ""
+    assert "docs/sub" in refusal("docs")
 
 
 def test_a_page_with_no_namespace_above_it_is_refused(repo: Path) -> None:
-    code, _, err = run("claims", "todo", "docs/guide.md")
+    err = refusal("docs/guide.md")
 
-    assert code == 1
-    assert "kmaudit claims todo docs" in err
+    assert "give its folder first, such as docs," in err
 
 
 def test_a_check_never_reads_the_audited_folder(repo: Path) -> None:
@@ -191,7 +190,7 @@ def test_a_check_never_reads_the_audited_folder(repo: Path) -> None:
 
 def test_namespaces_lists_each_with_counts(repo: Path) -> None:
     docs = todo("docs")
-    run("claims", "submit", "-", "--path", "docs", stdin=answers(docs["sections"], "D"))
+    submit(answers(docs["sections"], "D"), "docs")
     todo(".okf")
 
     code, out, err = run("namespaces", "--json")
@@ -224,7 +223,7 @@ def _rows(path: Path) -> dict[str, int]:
 
 def test_the_old_store_is_copied_into_okf(repo: Path) -> None:
     okf = todo(".okf")
-    run("claims", "submit", "-", stdin=answers(okf["sections"], "O"))
+    submit(answers(okf["sections"], "O"))
     old = repo / ".kmctl" / "audit.sqlite"
     old.parent.mkdir()
     shutil.move(repo / ".kmaudit" / ".okf.sqlite", old)
@@ -250,14 +249,11 @@ def test_a_root_without_okf_is_refused_rather_than_a_namespace_for_everything(
 ) -> None:
     shutil.rmtree(repo / ".okf")
 
-    code, out, err = run("claims", "todo")
-    later, _, _ = run("claims", "todo", "docs", "--json")
+    err = refusal(".")
 
-    assert code == 1
     assert "such as docs" in err
-    assert out == ""
     assert not (repo / ".kmaudit" / "..sqlite").exists()
-    assert later == 0
+    assert todo("docs")["namespace"] == "docs"
 
 
 def test_page_and_coverage_work_for_a_plain_folder(repo: Path) -> None:
@@ -280,7 +276,7 @@ def test_page_and_coverage_work_for_a_plain_folder(repo: Path) -> None:
 
 def test_the_old_store_copies_once_when_processes_open_it_at_once(repo: Path) -> None:
     okf = todo(".okf")
-    run("claims", "submit", "-", stdin=answers(okf["sections"], "O"))
+    submit(answers(okf["sections"], "O"))
     old = repo / ".kmctl" / "audit.sqlite"
     old.parent.mkdir()
     shutil.move(repo / ".kmaudit" / ".okf.sqlite", old)
@@ -313,14 +309,7 @@ def nested(repo: Path) -> Path:
     git(repo, "add", ".")
     git(repo, "commit", "-qm", "handbook")
     sections = todo("handbook/guides")["sections"]
-    run(
-        "claims",
-        "submit",
-        "-",
-        "--path",
-        "handbook/guides",
-        stdin=answers(sections, "H"),
-    )
+    submit(answers(sections, "H"), "handbook/guides")
     return repo
 
 
@@ -378,7 +367,7 @@ def test_the_old_store_copies_from_a_repository_path_with_uri_characters(
     root = make_repo(tmp_path / "r%x#y")
     monkeypatch.chdir(root)
     okf = todo(".okf")
-    run("claims", "submit", "-", stdin=answers(okf["sections"], "O"))
+    submit(answers(okf["sections"], "O"))
     old = root / ".kmctl" / "audit.sqlite"
     old.parent.mkdir()
     shutil.move(root / ".kmaudit" / ".okf.sqlite", old)

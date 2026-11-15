@@ -1,7 +1,7 @@
-"""Per-user settings for ``kmaudit judge``: which decision questions are on, and who answers them.
+"""Per-user settings for the decision model behind the ``judge`` MCP tool and the audit page's Second opinion: which decision questions are on, and who answers them.
 
 The file is ``$XDG_CONFIG_HOME/kmctl/audit.toml`` (``~/.config/kmctl/audit.toml``
-when the variable is unset), or the file ``--config`` or
+when the variable is unset), or the file ``kmaudit ui --config`` or
 ``KMCTL_AUDIT_CONFIG`` names. With no file, every question is off. A key is
 read only from the variable a provider's ``api_key_env`` names, and never
 printed.

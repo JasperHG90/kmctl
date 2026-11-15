@@ -73,14 +73,14 @@ class SentenceVerdict(BaseModel):
 
 
 class SectionAnswer(BaseModel):
-    """One section's answer, as ``kmaudit claims submit`` reads it."""
+    """One section's answer, as the ``claims_submit`` MCP tool reads it."""
 
     model_config = ConfigDict(extra="forbid")
 
     section: str = Field(
-        description="The section id that kmaudit claims todo gave, like manifesto#parts."
+        description="The section id that claims_todo gave, like manifesto#parts."
     )
-    key: str = Field(description="The section's key that kmaudit claims todo gave.")
+    key: str = Field(description="The section's key that claims_todo gave.")
     sentences: list[SentenceVerdict] = Field(
         description="One verdict per numbered sentence, in order."
     )

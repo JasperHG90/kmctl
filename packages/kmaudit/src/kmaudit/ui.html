@@ -54,6 +54,8 @@
   .stamp { color: var(--soft); font-size: 12px; white-space: nowrap; }
   .reload { color: var(--pencil); font-size: 12px; font-weight: 600; margin-left: 8px; }
   .reload:hover { text-decoration: underline; }
+  .reload:disabled { color: var(--soft); cursor: wait; text-decoration: none; }
+  .ran { margin-left: 8px; }
 
   .desk { display: grid; grid-template-columns: 290px minmax(0, 1fr) 400px; flex: 1; min-height: 0; }
   .desk > section { overflow: auto; min-height: 0; }
@@ -281,6 +283,7 @@
     .viewer-head, .page { padding-left: 16px; padding-right: 16px; }
     .detail { border-left: 0; border-top: 1px solid var(--rule); padding: 16px; }
     .bar { flex-wrap: wrap; gap: 6px 16px; padding: 10px 16px; }
+    .stamp { white-space: normal; }
     .key .hint { display: none; }
   }
 </style>
@@ -376,11 +379,27 @@ function renderBar() {
     waiting ? part(waiting, "need extraction") : null,
     el("span", { title: "Lines of code a check matched on its last run, out of all non-blank lines of code (tests, lock files and installed packages left out)" },
       el("b", {}, pctOf(DATA.code.covered, DATA.code.lines)), " of code covered"),
-    DATA.code.stale ? el("span", { title: "These checks ran on files that have changed since, so their lines are not counted. Run kmaudit checks run, then Reload." },
+    DATA.code.stale ? el("span", { title: "These checks ran on files that have changed since, so their lines are not counted. Press Rerun stale checks." },
       el("b", {}, String(DATA.code.stale)), DATA.code.stale === 1 ? " stale check" : " stale checks") : null].filter(Boolean));
   const when = new Date(DATA.generated);
-  $("stamp").replaceChildren("Read " + when.toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }),
-    el("button", { class: "reload", title: "Read the store again, after an agent's run", onclick: () => load() }, "Reload"));
+  $("stamp").replaceChildren(...["Read " + when.toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }),
+    el("button", { class: "reload", title: "Read the store again, after an agent's run", onclick: () => load() }, "Reload"),
+    el("button", { class: "reload", id: "rerun", title: "Rerun the checks whose files changed since their last run, with no model", onclick: () => rerun() }, "Rerun stale checks"),
+    lastRun ? el("span", { class: "ran" }, lastRun) : null].filter(Boolean));
+}
+
+// Rerun the stale checks of this namespace, then read the store again to show what changed.
+let lastRun = "";
+async function rerun() {
+  $("rerun").disabled = true;
+  $("stamp").textContent = "Rerunning stale checks…";
+  try {
+    const run = await post("/api/rerun", {});
+    lastRun = run.rerun ? `Reran ${plural(run.rerun, "check")}.` : "No check was stale.";
+  } catch (e) {
+    lastRun = `Rerun failed: ${e.message}`;
+  }
+  await load();
 }
 
 /* ---------- left: documents ---------- */
@@ -529,7 +548,7 @@ function stepLine(step, passed, saw) {
 // The check's result in words, first thing in the Check part.
 function verdictLine(k) {
   const n = k.passed.length, failed = k.passed.filter((p) => !p).length;
-  if (k.holds == null) return el("div", { class: "verdict pending" }, "Not run yet. Run kmaudit checks run.");
+  if (k.holds == null) return el("div", { class: "verdict pending" }, "Not run yet. Press Rerun stale checks.");
   if (k.holds) return el("div", { class: "verdict ok" }, "✓ Holds", el("span", {}, n === 1 ? ": its step passed on the last run." : `: all ${n} steps passed on the last run.`));
   return el("div", { class: "verdict bad" }, k.drift ? "✗ Fails: the claim is wrong" : "✗ Fails",
     el("span", {}, `: ${failed} of ${n} steps failed on the last run.`));
@@ -705,11 +724,11 @@ function feedback(c, target) {
     // Mirrors kmaudit's rule: a thumbs down, or a current verdict the check contradicts or no check settles, sends it back.
     const unsettled = ["no check", "reason", "stale reason"].includes(c.status);
     const back = f.vote === "down" || (target === "check" && (c.disagrees || (c.human === "false" && unsettled)));
-    const todo = target === "claim" ? "claims todo" : "checks todo";
+    const skill = target === "claim" ? "/extract-claims" : "/write-checks";
     const when = target === "claim" ? "its section is next extracted" : "this claim is next handed out";
     box.append(el("div", { class: "fb-state" + (back && !f.answered ? " sent" : "") },
       f.answered ? `The agent has answered since your feedback of ${since(f.at)}.`
-        : back ? `Sent back to the agent with your note. It shows in the next kmaudit ${todo}.`
+        : back ? `Sent back to the agent with your note. It shows in the next ${skill} run.`
         : f.vote === "up" ? `Saved as a good example${f.note ? ", with your note," : ""} for the agent.`
         : `Saved. The agent sees it when ${when}; a thumbs down sends it back now.`));
   }
@@ -750,7 +769,7 @@ function opinion(c) {
       el("div", { class: "sub" }, el("span", {}, `a guess from ${o.model}, not measured against people's votes yet; your thumbs decide`)));
   }
   if (!DATA.questions.includes(c.ask)) {
-    box.append(el("p", { class: "note" }, "Second opinion is off: switch on ", el("code", {}, `[decisions.${c.ask}]`), " in audit.toml (see kmaudit judge --help) and restart kmaudit ui."));
+    box.append(el("p", { class: "note" }, "Second opinion is off: switch on ", el("code", {}, `[decisions.${c.ask}]`), " in audit.toml and restart kmaudit ui."));
     return box;
   }
   if (o) return box;
@@ -814,7 +833,7 @@ function claimCard(sec, c, fold, fromCode = false) {
     card.append(part("check", "Check", el("div", { class: "what dim" }, "Not checkable: an opinion or a fact outside this repository.")));
   } else if (!k) {
     card.append(
-      part("check", "Check", el("div", { class: "what dim" }, "No check or reason stored yet. Run kmaudit checks todo."), feedback(c, "check"), verdictNotes),
+      part("check", "Check", el("div", { class: "what dim" }, "No check or reason stored yet. Run /write-checks."), feedback(c, "check"), verdictNotes),
       part("conf", "Confidence", el("div", { class: "what dim" }, "Not measured: there is no check yet."), opinion(c)));
   } else if (k.kind === "reason") {
     card.append(part("check", "Reason", el("div", { class: "what" }, k.reason), feedback(c, "check"), verdictNotes),
@@ -855,7 +874,7 @@ function renderCards() {
       whole ? `, whole section, ${plural(claims.length, "claim")}` : `, sentence ${selection.n} of ${sec.sentences.length}, ${plural(claims.length, "claim")}`,
       fold ? ". Click a claim to open its check." : ""),
     claims.length ? claims.map((c) => claimCard(sec, c, fold)) : el("p", { class: "blank" },
-      sec.pending ? "This text changed since kmaudit last read it. Run kmaudit claims todo to extract it again."
+      sec.pending ? "This text changed since kmaudit last read it. Run /extract-claims to extract it again."
         : why ? `No claim here: ${why}` : "kmaudit found nothing to check in this text.")));
   box.scrollTop = moved ? 0 : top;
 }
@@ -952,7 +971,7 @@ async function fillSnippets(panel, c, spans, reads) {
       cut > 0 ? el("p", { class: "dim snip-more" }, `${cut} more ${cut === 1 ? "line" : "lines"}`) : null));
   }
   if (c.check?.stale) parts.unshift(el("p", { class: "disagree" },
-    "A file this check reads changed since it last ran, so these lines may have moved. Run kmaudit checks run, then Reload."));
+    "A file this check reads changed since it last ran, so these lines may have moved. Press Rerun stale checks."));
   const more = all.length - wanted.length;
   if (more > 0) parts.push(el("p", { class: "dim snip-more" }, `and ${more} more ${spans.length ? "matches" : "files"}: see the links above`));
   panel.replaceChildren(...parts);

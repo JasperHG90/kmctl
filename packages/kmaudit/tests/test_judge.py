@@ -1,4 +1,4 @@
-"""kmaudit judge against a fake decision endpoint (respx): shapes, cache, limits, retries and refusals."""
+"""The judge MCP tool's function, run_judge, against a fake decision endpoint (respx): shapes, cache, limits, retries and refusals."""
 
 import asyncio
 import json
@@ -11,10 +11,8 @@ import httpx
 import pytest
 import respx
 import tenacity
-from kmaudit import check_verbs, tracing
-from kmaudit.cli import app
-from kmaudit.judge import FAILURE, JUDGE, LINK
-from typer.testing import CliRunner
+from kmaudit import AuditError, check_verbs, tracing
+from kmaudit.judge import FAILURE, JUDGE, LINK, run_judge
 
 from .fixtures.audit_repo import git, make_repo, store_claims
 
@@ -113,10 +111,34 @@ def ids(repo: Path) -> dict[str, str]:
     return {"exits": exits, "writes": writes, "sqlite": sqlite}
 
 
-def judge(*args: str, stdin: str | None = None) -> tuple[int, str, str]:
-    result = CliRunner().invoke(app, ["judge", *args], input=stdin)
-    assert KEY not in result.stdout + result.stderr
-    return result.exit_code, result.stdout, result.stderr
+def judge(question: str, *ids: str, lines: str = "") -> tuple[list[dict], list[str]]:
+    """What the judge tool returns: each judgement given, and each id's error.
+
+    Raises
+    ------
+    AuditError
+        When the whole call is refused, as the tool refuses it.
+    """
+    result = asyncio.run(run_judge(Path("."), question, list(ids), lines))
+    text = result.model_dump_json(exclude_none=True)
+    assert KEY not in text
+    entries = json.loads(text)["entries"]
+    return (
+        [e["judgement"] for e in entries if "judgement" in e],
+        [e["error"] for e in entries if "judgement" not in e],
+    )
+
+
+def refusal(question: str, *ids: str) -> str:
+    """The one reason the judge tool gives no answer: the call's refusal or its one id's error."""
+    try:
+        answered, errors = judge(question, *ids)
+    except AuditError as error:
+        assert KEY not in str(error)
+        return str(error)
+    assert answered == []
+    [error] = errors
+    return error
 
 
 def test_failure_shape_and_answer(repo: Path, ids: dict[str, str]) -> None:
@@ -124,33 +146,33 @@ def test_failure_shape_and_answer(repo: Path, ids: dict[str, str]) -> None:
         route = respx.post(URL).mock(
             return_value=httpx.Response(200, json=FAILURE_REPLY)
         )
-        code, out, err = judge("failure", ids["sqlite"], "--json")
+        answered, errors = judge("failure", ids["sqlite"])
 
-    assert code == 0, err
+    assert errors == []
     body = json.loads(route.calls[0].request.content)
     assert body["model"] == "jev-latest"
     assert body["questions"] == FAILURE
     assert body["state"]["claim"] == "The store is SQLite."
     assert body["state"]["holds"] is False
     assert route.calls[0].request.headers["Authorization"] == f"Bearer {KEY}"
-    assert json.loads(out) == [
+    assert answered == [
         {"question": "failure", "id": ids["sqlite"], "model": "jev-latest", "cached": False,
          "chance": 0.82, "cause": "claim_false"}
     ]  # fmt: skip
 
 
-def test_claim_shape_takes_lines_on_stdin(repo: Path, ids: dict[str, str]) -> None:
+def test_claim_shape_takes_the_lines_given(repo: Path, ids: dict[str, str]) -> None:
     with respx.mock:
         route = respx.post(URL).mock(return_value=httpx.Response(200, json=JUDGE_REPLY))
-        code, out, _ = judge(
-            "claim", ids["writes"], "--json", stdin="3: open('out.txt', 'w')\n"
+        answered, errors = judge(
+            "claim", ids["writes"], lines="3: open('out.txt', 'w')\n"
         )
 
-    assert code == 0
+    assert errors == []
     body = json.loads(route.calls[0].request.content)
     assert body["questions"] == JUDGE
     assert body["state"]["lines"] == "3: open('out.txt', 'w')\n"
-    assert json.loads(out)[0] | {} == {
+    assert answered[0] == {
         "question": "claim", "id": ids["writes"], "model": "jev-latest", "cached": False,
         "chance": 0.9, "verdict": "true",
     }  # fmt: skip
@@ -159,10 +181,9 @@ def test_claim_shape_takes_lines_on_stdin(repo: Path, ids: dict[str, str]) -> No
 def test_link_score_from_level_probabilities(repo: Path, ids: dict[str, str]) -> None:
     with respx.mock:
         route = respx.post(URL).mock(return_value=httpx.Response(200, json=LINK_REPLY))
-        _, out, _ = judge("link", ids["exits"], "--json")
+        [answer], _ = judge("link", ids["exits"])
 
     assert json.loads(route.calls[0].request.content)["questions"] == LINK
-    answer = json.loads(out)[0]
     assert (answer["score"], answer["level"]) == (0.767, "the claim")
     assert answer["levels"] == LINK_LEVELS_SHOWN
 
@@ -178,21 +199,19 @@ def test_link_levels_outside_0_to_3_are_refused(
     reply = {"answers": {"link": {"probabilities": levels}}}
     with respx.mock:
         respx.post(URL).mock(return_value=httpx.Response(200, json=reply))
-        code, _, err = judge("link", ids["exits"])
+        err = refusal("link", ids["exits"])
 
-    assert code == 1
     assert "the levels are 0 to 3" in err
 
 
 def test_cache_a_repeat_sends_no_request(repo: Path, ids: dict[str, str]) -> None:
     with respx.mock:
         route = respx.post(URL).mock(return_value=httpx.Response(200, json=LINK_REPLY))
-        judge("link", ids["exits"])
-        code, out, _ = judge("link", ids["exits"])
+        [first], _ = judge("link", ids["exits"])
+        [again], _ = judge("link", ids["exits"])
 
-    assert code == 0
     assert route.call_count == 1
-    assert "[cached]" in out
+    assert (first["cached"], again["cached"]) == (False, True)
 
 
 def test_cache_a_changed_check_result_asks_again(
@@ -226,9 +245,9 @@ def test_limit_keeps_max_calls_in_flight(
 
     with respx.mock:
         route = respx.post(URL).mock(side_effect=answer)
-        code, _, _ = judge("link", ids["exits"], ids["writes"])
+        answered, errors = judge("link", ids["exits"], ids["writes"])
 
-    assert code == 0
+    assert (len(answered), errors) == (2, [])
     assert route.call_count == 2
     assert most == 1
 
@@ -238,9 +257,9 @@ def test_retry_a_503_then_200(repo: Path, ids: dict[str, str]) -> None:
         route = respx.post(URL).mock(
             side_effect=[httpx.Response(503), httpx.Response(200, json=LINK_REPLY)]
         )
-        code, _, err = judge("link", ids["exits"])
+        answered, errors = judge("link", ids["exits"])
 
-    assert code == 0, err
+    assert (len(answered), errors) == (1, [])
     assert route.call_count == 2
 
 
@@ -258,14 +277,13 @@ def test_retry_a_503_then_200(repo: Path, ids: dict[str, str]) -> None:
     ],
     ids=["401", "missing-question"],
 )
-def test_error_is_one_stderr_line(
+def test_error_is_one_line(
     repo: Path, ids: dict[str, str], response: httpx.Response, words: str
 ) -> None:
     with respx.mock:
         respx.post(URL).mock(return_value=response)
-        code, _, err = judge("failure", ids["sqlite"])
+        err = refusal("failure", ids["sqlite"])
 
-    assert code == 1
     assert len(err.strip().splitlines()) == 1
     assert words in err
 
@@ -277,17 +295,14 @@ def test_off_question_refuses_naming_its_table(
 
     with respx.mock:
         route = respx.post(URL)
-        code, _, err = judge("link", ids["exits"])
+        err = refusal("link", ids["exits"])
 
-    assert code == 1
     assert "[decisions.link]" in err
     assert route.call_count == 0
 
 
 def test_failure_refuses_a_check_that_holds(repo: Path, ids: dict[str, str]) -> None:
-    code, _, err = judge("failure", ids["exits"])
-
-    assert code == 1 and "holds" in err
+    assert "holds" in refusal("failure", ids["exits"])
 
 
 def test_extra_missing_refuses_naming_the_install(
@@ -295,9 +310,8 @@ def test_extra_missing_refuses_naming_the_install(
 ) -> None:
     monkeypatch.setitem(sys.modules, "tenacity", None)
 
-    code, _, err = judge("link", ids["exits"])
+    err = refusal("link", ids["exits"])
 
-    assert code == 1
     assert "uv tool install" in err and "kmaudit" in err
 
 
@@ -305,13 +319,12 @@ def test_key_never_printed_and_tree_unchanged(
     repo: Path, ids: dict[str, str], monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.delenv("CLEF_TEST_KEY")
-    code, _, err = judge("link", ids["exits"])
-    assert code == 1 and "CLEF_TEST_KEY" in err
+    assert "CLEF_TEST_KEY" in refusal("link", ids["exits"])
 
     monkeypatch.setenv("CLEF_TEST_KEY", KEY)
     with respx.mock:
         respx.post(URL).mock(return_value=httpx.Response(200, json=LINK_REPLY))
-        judge("link", ids["exits"], "--json")
+        judge("link", ids["exits"])
 
     assert git(repo, "status", "--porcelain") == ""
 
@@ -350,14 +363,13 @@ def test_tracing_off_unless_the_variable_is_true(
     ],
     ids=["html-200", "multi-line-400", "wrong-type", "no-probability"],
 )
-def test_error_from_a_malformed_reply_is_one_stderr_line(
+def test_error_from_a_malformed_reply_is_one_line(
     repo: Path, ids: dict[str, str], response: httpx.Response
 ) -> None:
     with respx.mock:
         respx.post(URL).mock(return_value=response)
-        code, _, err = judge("failure", ids["sqlite"])
+        err = refusal("failure", ids["sqlite"])
 
-    assert code == 1
     assert len(err.strip().splitlines()) == 1, err
 
 
@@ -413,9 +425,9 @@ def test_tracing_wraps_the_call_when_on(
     monkeypatch.setenv("LANGSMITH_TRACING", "true")
     with respx.mock:
         respx.post(URL).mock(return_value=httpx.Response(200, json=LINK_REPLY))
-        code, _, err = judge("link", ids["exits"])
+        _, errors = judge("link", ids["exits"])
 
-    assert code == 0, err
+    assert errors == []
     assert names == ["llm:decision model"]
 
 
@@ -425,9 +437,8 @@ def test_tracing_on_without_langsmith_refuses(
     monkeypatch.setenv("LANGSMITH_TRACING", "true")
     monkeypatch.setitem(sys.modules, "langsmith", None)
 
-    code, _, err = judge("link", ids["exits"])
+    err = refusal("link", ids["exits"])
 
-    assert code == 1
     assert len(err.strip().splitlines()) == 1 and "langsmith" in err
 
 
@@ -449,7 +460,7 @@ from typer.testing import CliRunner
 
 from kmaudit.cli import app
 
-for words in (["--help"], ["judge", "--help"], ["checks", "--help"]):
+for words in (["--help"], ["claims", "--help"], ["checks", "--help"], ["ui", "--help"]):
     result = CliRunner().invoke(app, words)
     assert result.exit_code == 0, (words, result.output)
 assert "kmaudit.judge" not in sys.modules

@@ -60,24 +60,29 @@ ADR 0027), `manifesto.md` (the root concept), `decisions/`, `architecture/`, `pr
   `kmctl-check` pre-commit hook runs the check, ADR 0022), and list live
   and expired handoffs. kmctl holds no audit: that is kmaudit's (ADR 0043).
 - **kmaudit, a package of its own** in `packages/kmaudit/` of this
-  repository, which installs and runs without kmctl (ADR 0043). Its
-  `kmaudit claims todo`, `submit` and `list` hand a coding agent a bundle's
-  sections, validate its verdicts against one schema and keep the claims in
-  a git-ignored store, `.kmctl/audit.sqlite`; kmaudit calls no model for
-  them (ADR 0036). `kmaudit checks todo`, `try`, `submit`, `run` and `list`
-  turn those claims into checks, steps kmaudit reruns with no model when
-  the files they read change; `submit` refuses a weak check, one that
-  notices no change to the code it matched (ADR 0038). `kmaudit judge` is
-  the one model call kmaudit makes: off by default, it asks a decision
-  model set in a per-user `audit.toml` whether a failed check shows drift,
-  whether lines show a claim true, or whether a check tests its claim, and
-  caches each answer in the store (ADR 0039). `kmaudit ui` serves a page
-  on 127.0.0.1 where a person reviews claims and checks: a thumbs up or
-  down and a note on either, their own verdict on whether a claim holds,
-  and a second opinion from that model. A thumbs down, or a verdict the
-  check disagrees with, goes back to the agent with the next `todo`
-  (ADR 0041). Its code view, and `kmaudit coverage`, show which lines of
-  code a check matched, and what share of the code that is (ADR 0042).
+  repository, which installs and runs without kmctl (ADR 0043). Agents
+  drive it through the tools of its stdio MCP server, `kmaudit mcp`; its
+  CLI keeps only that, `kmaudit ui`, `kmaudit namespaces`, `kmaudit
+  briefing` and the `kmaudit claims list` and `kmaudit checks list` reads.
+  The `claims_todo` and `claims_submit` tools hand a coding agent a
+  folder's sections, validate its verdicts against one schema and keep the
+  claims in a git-ignored store per audited folder under `.kmaudit/`;
+  kmaudit calls no model for them (ADR 0036). `checks_todo`, `checks_try`,
+  `checks_submit` and `checks_run` turn those claims into checks, steps
+  kmaudit reruns with no model when the files they read change;
+  `checks_submit` refuses a weak check, one that notices no change to the
+  code it matched (ADR 0038). The `judge` tool is the one model call
+  kmaudit makes: off by default, it asks a decision model set in a
+  per-user `audit.toml` whether a failed check shows drift, whether lines
+  show a claim true, or whether a check tests its claim, and caches each
+  answer in the store (ADR 0039). `kmaudit ui` serves a page on 127.0.0.1
+  where a person reviews claims and checks: a thumbs up or down and a note
+  on either, their own verdict on whether a claim holds, a second opinion
+  from that model, and a Rerun stale checks button that calls what
+  `checks_run` calls. A thumbs down, or a verdict the check disagrees
+  with, goes back to the agent with the next todo (ADR 0041). Its code
+  view, and the `coverage` tool, show which lines of code a check matched,
+  and what share of the code that is (ADR 0042).
 - **An APM package**, `packages/kmctl/apm/`, which APM installs from the
   user's `apm.yml` entry (ADR 0014, ADR 0021, ADR 0045). It holds an
   audit agent with three review skills (architecture, decision log,
