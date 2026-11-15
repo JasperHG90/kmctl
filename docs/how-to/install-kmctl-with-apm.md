@@ -178,6 +178,23 @@ After `apm uninstall -g`, APM leaves `bundle` in your user
 claude mcp remove bundle --scope user
 ```
 
+## Upgrade from v0.12
+
+kmctl moved into the repository's `packages/kmctl` folder after v0.12.2.
+A repository pinned to v0.12.2 or older moves to a later release in this
+order; a project made from the starter does it with `just upgrade vX.Y.Z`.
+
+1. Install the new CLI first, since a kmctl at v0.12.2 or older looks for
+   kmctl at the repository root and cannot run a later pin:
+   `uv tool install --force 'git+https://github.com/JasperHG90/kmctl@vX.Y.Z#subdirectory=packages/kmctl'`.
+2. In `apm.yml`, change kmctl's entry from `path: apm` to
+   `path: packages/kmctl/apm` with `ref: vX.Y.Z`.
+3. Run your `apm install` line, then `kmctl plugin patch`.
+4. Run `kmctl doctor` last. It runs the release `apm.lock.yaml` names, so
+   before `apm install` it would still check the old release.
+
+The GitHub Action and the pre-commit hook change only their tag.
+
 ## Older installs
 
 kmctl 0.3.0 and older named the package with a string entry, such as:
