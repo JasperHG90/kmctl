@@ -334,7 +334,8 @@ def test_action_runs_its_own_kmctl() -> None:
 # The subdirectory: releases after v0.12.2 build from packages/kmctl (ADR 0044) --
 
 SUBDIRECTORY = "#subdirectory=packages/kmctl"
-NEWER = "v0.13.0"
+#: A release newer than this CLI, so the hand-off runs rather than being skipped.
+NEWER = f"v{bumped_version()}"
 
 
 @pytest.mark.parametrize(
