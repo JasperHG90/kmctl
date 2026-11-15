@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "Two of kmctl's user-facing strings still send the user to \"the README's install section\": the `kmctl plugin patch --help` epilog (packages/kmctl/src/kmctl/__init__.py:1063) and the refusal when apm.lock.yaml lists no kmctl package (packages/kmctl/src/kmctl/plugin.py:800). The README a user finds first, the root one on GitHub, no longer has an install section. They should name kmctl's README (packages/kmctl/README.md), as the change already does in docs/reference/commands.md and as init's output does (\"the kmctl README's install section\").",
+      "anchor": "packages/kmctl/src/kmctl/plugin.py:800",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "8d6f88d8732f7a1f8bc06c8f3c8702be74ec31810cc6b571036e1d690f5c1df9",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-15T19:11:46+00:00"
+}
