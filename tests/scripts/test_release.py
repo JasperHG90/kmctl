@@ -613,15 +613,15 @@ def test_kmaudit_version_is_not_copied_into_the_lock() -> None:
     assert "version" not in entry
 
 
-def test_kmaudit_version_starts_unreleasable(tmp_path: Path) -> None:
-    """kmaudit's apm.yml starts at 0.1.0.dev0, which compare skips, so the push adding it releases nothing."""
-    assert _apm_version(ROOT / KMAUDIT_MANIFEST) == "0.1.0.dev0"
-
+def test_kmaudit_current_reads_its_apm_yml_and_a_dev_version_is_skipped(
+    tmp_path: Path,
+) -> None:
+    """``current --package kmaudit`` prints its apm.yml's version, and compare skips a .dev version, so a dev push releases nothing."""
     current = _run(ROOT, "--package", "kmaudit", "current")
     verdict = _run(ROOT, "compare", "", "0.1.0.dev0")
 
     assert current.returncode == 0, current.stderr
-    assert current.stdout == "0.1.0.dev0\n"
+    assert current.stdout == f"{_apm_version(ROOT / KMAUDIT_MANIFEST)}\n"
     assert verdict.stdout == "skip\n"
 
 
@@ -690,9 +690,13 @@ def test_package_aware_kmaudit_set_writes_only_its_files(tmp_path: Path) -> None
     )
     before = (ROOT / KMAUDIT_MANIFEST).read_text().splitlines()
     after = (root / KMAUDIT_MANIFEST).read_text().splitlines()
+    live = _apm_version(ROOT / KMAUDIT_MANIFEST)
+    # The tree's own server ref: the release it is at, or for a .dev version
+    # the release it leads to.
+    live_ref = f"kmaudit-v{live.split('.dev')[0]}"
     assert set(before) - set(after) == {
-        "version: 0.1.0.dev0",
-        f'        - "{KMAUDIT_SERVER}@kmaudit-v0.1.0#subdirectory=packages/kmaudit"',
+        f"version: {live}",
+        f'        - "{KMAUDIT_SERVER}@{live_ref}#subdirectory=packages/kmaudit"',
     }
     assert set(after) - set(before) == {
         "version: 0.2.0",
