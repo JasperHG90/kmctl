@@ -17,6 +17,7 @@ from scripts.release import (
     COPIER,
     DOC_FILES,
     HOOKS,
+    KMAUDIT_DOCS,
     KMAUDIT_MANIFEST,
     KMAUDIT_README,
     MANIFEST,
@@ -167,6 +168,7 @@ def test_release_bump_opens_the_version_pull_request() -> None:
         HOOKS,
         KMAUDIT_MANIFEST,
         KMAUDIT_README,
+        KMAUDIT_DOCS,
     }
     assert {p.as_posix() for p in written} <= staged
     assert not [p for p in staged if p.startswith("apm/") or p.endswith("/VERSION")]
@@ -709,7 +711,7 @@ def _run_bump(
     repo = tmp_path / "repo"
     repo.mkdir()
     _git_out(repo, "init", "-q", "-b", "main")
-    for rel in (KMAUDIT_MANIFEST, KMAUDIT_README):
+    for rel in (KMAUDIT_MANIFEST, KMAUDIT_README, KMAUDIT_DOCS):
         (repo / rel).parent.mkdir(parents=True, exist_ok=True)
         (repo / rel).write_bytes((ROOT / rel).read_bytes())
     _git_out(repo, "add", ".")
@@ -770,6 +772,7 @@ def test_release_package_bump_commits_the_notes_and_makes_them_the_body(
     ) == {
         KMAUDIT_MANIFEST.as_posix(),
         KMAUDIT_README.as_posix(),
+        KMAUDIT_DOCS.as_posix(),
         ".github/release-notes/kmaudit-v0.2.0.md",
     }
     committed = _git_out(
@@ -1348,3 +1351,15 @@ def test_release_tag_asks_release_paths_who_owns_a_path() -> None:
     assert "scripts/release_paths.py" in run
     assert "awk" not in run.split("LATE=()")[1].split("done")[0]
     assert "packages/kmaudit" not in run
+
+
+def test_release_kmaudit_bump_stages_what_set_writes() -> None:
+    """The kmaudit bump stages every file set --package kmaudit writes, the commands reference included."""
+    [line] = [
+        ln.strip()
+        for ln in _runs(RELEASE, "bump").splitlines()
+        if ln.strip().startswith("git add") and "packages/kmaudit" in ln
+    ]
+
+    for rel in (KMAUDIT_MANIFEST, KMAUDIT_README, KMAUDIT_DOCS):
+        assert rel.as_posix() in line.split()

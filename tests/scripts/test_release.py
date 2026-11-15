@@ -555,6 +555,8 @@ def test_release_py_set_refuses_a_copier_yml_without_the_default(
 
 #: kmaudit's package, whose pyproject reads the version from its apm/apm.yml.
 KMAUDIT = Path("packages/kmaudit")
+#: kmaudit's commands reference, whose tracing install line kmaudit set pins.
+KMAUDIT_DOCS = KMAUDIT / "docs" / "commands.md"
 
 
 def test_kmaudit_version_source_is_its_apm_package() -> None:
@@ -611,9 +613,9 @@ def test_kmaudit_version_builds_the_file_s_version(tmp_path: Path) -> None:
 
 
 def _kmaudit_repo(tmp_path: Path) -> Path:
-    """``_repo`` plus kmaudit's apm.yml and README, committed."""
+    """``_repo`` plus kmaudit's apm.yml, README and commands reference, committed."""
     root = _repo(tmp_path)
-    for rel in (KMAUDIT_MANIFEST, KMAUDIT / "README.md"):
+    for rel in (KMAUDIT_MANIFEST, KMAUDIT / "README.md", KMAUDIT_DOCS):
         (root / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(ROOT / rel, root / rel)
     subprocess.run(["git", "add", "."], cwd=root, check=True)
@@ -634,7 +636,7 @@ def _changed(root: Path) -> set[str]:
 
 
 def test_package_aware_kmaudit_set_writes_only_its_files(tmp_path: Path) -> None:
-    """``--package kmaudit set`` writes its apm.yml's version and pins the README install line to kmaudit-vX.Y.Z."""
+    """``--package kmaudit set`` writes its apm.yml's version and pins the README's and docs/commands.md's install lines to kmaudit-vX.Y.Z."""
     root = _kmaudit_repo(tmp_path)
 
     res = _run(root, "--package", "kmaudit", "set", "0.2.0")
@@ -643,11 +645,18 @@ def test_package_aware_kmaudit_set_writes_only_its_files(tmp_path: Path) -> None
     assert res.stdout.splitlines() == [
         f"wrote {KMAUDIT_MANIFEST}",
         f"wrote {KMAUDIT / 'README.md'}",
+        f"wrote {KMAUDIT_DOCS}",
     ]
     assert _changed(root) == {
         KMAUDIT_MANIFEST.as_posix(),
         (KMAUDIT / "README.md").as_posix(),
+        KMAUDIT_DOCS.as_posix(),
     }
+    assert (
+        "uv tool install --force 'kmaudit[tracing] @ git+https://github.com/JasperHG90/kmctl"
+        "@kmaudit-v0.2.0#subdirectory=packages/kmaudit'"
+        in (root / KMAUDIT_DOCS).read_text()
+    )
     before = (ROOT / KMAUDIT_MANIFEST).read_text().splitlines()
     after = (root / KMAUDIT_MANIFEST).read_text().splitlines()
     assert set(before) ^ set(after) == {"version: 0.1.0.dev0", "version: 0.2.0"}
@@ -684,6 +693,26 @@ def test_package_aware_kmaudit_set_refuses_a_readme_without_the_install_line(
 
     assert res.returncode == 1
     assert "README.md" in res.stderr
+    assert _changed(root) == set()
+
+
+def test_package_aware_kmaudit_set_refuses_docs_without_the_tracing_install_line(
+    tmp_path: Path,
+) -> None:
+    """With the tracing install line gone from the commands reference, kmaudit set writes nothing (install hints)."""
+    root = _kmaudit_repo(tmp_path)
+    docs = root / KMAUDIT_DOCS
+    docs.write_text(
+        "\n".join(
+            ln for ln in docs.read_text().splitlines() if "kmaudit[tracing] @" not in ln
+        )
+    )
+    subprocess.run([*GIT, "commit", "-qam", "drop"], cwd=root, check=True)
+
+    res = _run(root, "--package", "kmaudit", "set", "0.2.0")
+
+    assert res.returncode == 1
+    assert "commands.md" in res.stderr
     assert _changed(root) == set()
 
 

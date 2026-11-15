@@ -26,6 +26,7 @@ from pydantic import BaseModel, Field, ValidationError
 
 from kmaudit import AuditError
 from kmaudit.check_store import STEPS_ADAPTER, check, claim
+from kmaudit.install import installed_hint
 from kmaudit.settings import Question, Settings, api_key
 from kmaudit.store import Store
 from kmaudit.tracing import traced
@@ -93,7 +94,8 @@ QUESTION_SETS: dict[str, dict[str, Any]] = {
     "link": LINK,
 }
 ATTEMPTS = 3
-INSTALL = "uv tool install --force 'kmaudit @ git+https://github.com/JasperHG90/kmctl#subdirectory=packages/kmaudit'"
+#: How to reinstall the running kmaudit, named in refusals.
+INSTALL = installed_hint()
 
 
 class DecisionError(RuntimeError):
@@ -545,7 +547,8 @@ async def run_judge(
         )
     if tracing_on() and importlib.util.find_spec("langsmith") is None:
         raise AuditError(
-            f"LANGSMITH_TRACING=true needs langsmith from the kmaudit[tracing] extra; {INSTALL}"
+            f"LANGSMITH_TRACING=true needs langsmith from the kmaudit[tracing] extra; "
+            f"{installed_hint('tracing')}"
         )
     settings = load(config)
     asked = cast(Question, question)
