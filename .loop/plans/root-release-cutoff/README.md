@@ -31,7 +31,15 @@ v0.12.2 gets `#subdirectory=packages/kmctl`, and both the starter's
 subdirectory `packages/kmctl`" (measured with a starter rendered at
 `kmctl_ref=v0.12.2`).
 
-This ticket moves the cutoff to v0.12.2 in pin.py, the starter and the docs.
+A fifth site follows the same rule: `HOOK_INSTALL` in
+`packages/kmctl/src/kmctl/plugin.py` always appends the fragment to
+`@v{version('kmctl')}`, and `kmctl plugin patch` writes that hint into
+users' `settings.json`, so a kmctl at 0.12.2 would hand out a hint that
+cannot install. This ticket moves the cutoff to v0.12.2 and makes it one
+constant, `LAST_ROOT_RELEASE` in plugin.py (pin.py imports from plugin.py,
+so plugin.py cannot import from pin.py; pin.py re-uses plugin.py's), with
+one helper deciding the fragment for a version, which `HOOK_INSTALL` and
+the pin hand-off both call. The starter and the docs move to v0.12.2 too.
 `scripts/release.py set` also learns the cutoff: it writes the fragment only
 for a version after it, and strips it from a line it re-pins at or below it.
 Then `set 0.12.2` on this branch writes install lines that build
@@ -40,12 +48,14 @@ and the "install lines on main name a tag that cannot build" caveat in ADR
 0044 goes away. An integration test reads every `v*` tag in the clone and
 fails when a tag whose tree has no `packages/kmctl/pyproject.toml` is newer
 than the cutoff, or one that has it is not, so the next root release from
-main cannot slip past again. The two cutoffs (pin.py and release.py) are
+main cannot slip past again. The two cutoffs (plugin.py and release.py) are
 compared by a test, since release.py is a script that does not import kmctl.
 
 It worked when a starter rendered at v0.12.2 installs kmctl from the root,
 one rendered at a later tag from `packages/kmctl`, the pin hand-off does the
-same, and `release.py set 0.12.2` leaves no fragment on any install line.
+same, the hook hint of a kmctl at 0.12.2 has no fragment and one at a later
+version has it, and `release.py set 0.12.2` leaves no fragment on any
+install line.
 
 ## Problems
 
@@ -62,8 +72,8 @@ same, and `release.py set 0.12.2` leaves no fragment on any install line.
 - goal: G1
 - fixes: P1
 - needs: none
-- touches: `packages/kmctl/src/kmctl/pin.py`, `packages/kmctl/src/kmctl/plugin.py`, `starter/justfile.jinja`, `scripts/release.py`, `packages/kmctl/tests/test_pin.py`, `packages/kmctl/tests/test_starter.py`, `packages/kmctl/tests/test_docs.py`, `packages/kmctl/tests/conftest.py`, `tests/scripts/test_release.py`, `tests/scripts/test_release_notes.py`, `apm.yml`, `apm/apm.yml`, `apm/claude/apm.yml`, `apm/antigravity/apm.yml`, `apm/claude/.apm/hooks/hooks.json`, `copier.yml`, `README.md`, `docs/tutorials/get-started-with-kmctl.md`, `docs/how-to/install-kmctl-with-apm.md`, `docs/how-to/install-the-plugin-and-the-ci-action.md`, `.okf/decisions/0044-kmctl-and-kmaudit-are-both-workspace-packages.md`
-- checked by: test_pin and test_starter parametrised over v0.12.1, v0.12.2 (no fragment) and v0.12.3rc1, v0.13.0 (fragment); a test_release test that `set 0.12.2` writes no fragment and `set 0.13.0` writes it once, also when re-pinning a line that had it; a test that pin.py's and release.py's cutoffs agree; an integration test over the clone's `v*` tags; the starter bootstrap integration test still passes
+- touches: `packages/kmctl/src/kmctl/pin.py`, `packages/kmctl/src/kmctl/plugin.py`, `starter/justfile.jinja`, `scripts/release.py`, `packages/kmctl/tests/test_pin.py`, `packages/kmctl/tests/test_plugin.py`, `packages/kmctl/tests/test_starter.py`, `packages/kmctl/tests/test_docs.py`, `packages/kmctl/tests/conftest.py`, `tests/scripts/test_release.py`, `tests/scripts/test_release_notes.py`, `apm.yml`, `apm/apm.yml`, `apm/claude/apm.yml`, `apm/antigravity/apm.yml`, `apm/claude/.apm/hooks/hooks.json`, `copier.yml`, `README.md`, `docs/tutorials/get-started-with-kmctl.md`, `docs/how-to/install-kmctl-with-apm.md`, `docs/how-to/install-the-plugin-and-the-ci-action.md`, `.okf/decisions/0044-kmctl-and-kmaudit-are-both-workspace-packages.md`
+- checked by: a test_plugin test that the hook hint carries the fragment for a version after v0.12.2 and not for v0.12.2, and that hooks.json still equals the hook command; test_pin and test_starter parametrised over v0.12.1, v0.12.2 (no fragment) and v0.12.3rc1, v0.13.0 (fragment); a test_release test that `set 0.12.2` writes no fragment and `set 0.13.0` writes it once, also when re-pinning a line that had it; a test that pin.py's and release.py's cutoffs agree; an integration test over the clone's `v*` tags; the starter bootstrap integration test still passes
 - seen by: operator
 
 ## Could invalidate this plan
