@@ -7,7 +7,7 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-11-14T22:00:43Z
+  at: 2026-11-15T05:08:19Z
   against:
     - decisions/0035-kmctl-s-repository-answers-and-triages-with-hermes
 ---

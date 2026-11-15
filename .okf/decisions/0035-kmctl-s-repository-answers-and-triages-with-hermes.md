@@ -71,8 +71,10 @@ rather than port them.
   non-empty once cleaned, keeps the draft's headings in order, leaves
   everything after What changed as the draft wrote it, and carries exactly
   the draft's `` (`slug`) `` and `(#N)` references, one or more on each
-  bullet. Otherwise it prints the draft with a warning naming the failed
-  check, so a Hermes failure never blocks a release or empties its notes.
+  bullet, with no line under What changed that is not a bullet or indented
+  under one, unless the draft has it too. Otherwise it prints the draft
+  with a warning naming the failed check, so a Hermes failure never blocks
+  a release or empties its notes.
   When the rewrite is kept, the run's summary and the version pull request's
   body show the draft's What changed section under "Draft before Hermes",
   because no check can tell whether a rewritten line kept its meaning: the
