@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "kmaudit-skills-mcp",
-  "plan_hash": "74a3cd4518aa0990d6b9f29589f4556da8dd8929ab493195eedb91241ae92962",
+  "plan_hash": "391f0ca0e8b683447074a73ef857c2f3326f0485166e076a13bda8451b3722ad",
   "problems": [
     {
       "id": "P1",
@@ -43,7 +43,11 @@
         "tests/test_skills.py",
         "tests/scripts/test_release.py",
         ".okf/decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp.md",
-        ".okf/architecture/audit-pipeline.md"
+        ".okf/decisions/0037-the-claims-and-checks-agents-get-a-plain-shell-and-i2-narrows.md",
+        ".okf/decisions/0040-the-audit-pipeline-holds-its-agents-by-a-hook-and-keeps-answers-through-rewording.md",
+        ".okf/architecture/audit-pipeline.md",
+        ".okf/architecture/overview.md",
+        ".okf/manifesto.md"
       ],
       "checked_by": "tests that kmaudit's apm.yml declares the kmaudit server at its own tag and lists the skills and agents, that the agents' tools are Read, Grep, Glob and the five kmaudit MCP tools with no Bash and no hook, that kmctl's package and wheel no longer hold them, and that `set --package kmaudit` pins the server's ref; the skills' evals rerun through skill-creator; an integration test that installs kmaudit's package with APM for claude and opencode into a project and finds the server in .mcp.json and opencode.json, the agents in .claude/agents/ and none in .opencode/agents/; kmctl's plugin patch tests no longer translate the two agents",
       "seen_by": "operator"
