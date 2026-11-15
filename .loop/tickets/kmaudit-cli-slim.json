@@ -20,10 +20,43 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/implementer",
+    "hash": "79018a77b126b90b7c2e98b4980ba0dff32c72bad5aaceff45416690243a5b2d",
+    "at": "2026-11-15T06:41:26+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "kmaudit --help lists exactly mcp, ui, namespaces, briefing, claims (with only list) and checks (with only list); each dropped verb (claims todo/submit, checks todo/try/submit/run, judge, coverage, guard) exits 2 with a line naming the MCP tool that replaced it, or saying guard is gone.",
+      "fails_when": "a dropped verb still runs, exits other than 2, or names no replacement, or a kept command is missing",
+      "command": "uv run pytest packages/kmaudit/tests/test_cli_slim.py -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "The UI shows a Rerun stale checks button, and POST /api/rerun reruns the stale checks of the namespace on screen through the same function the MCP checks_run tool calls, returning the run's result.",
+      "fails_when": "the button is missing, the endpoint is missing, or it does not rerun a stale check",
+      "command": "uv run pytest packages/kmaudit/tests/test_audit_ui.py -k rerun -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "No string in kmaudit's source, its MCP server's instructions and tool descriptions, its answer schema or ui.html names a dropped verb as a command to run, and ADR 0043 says the guard hook is gone.",
+      "fails_when": "any such string names kmaudit claims todo/submit, checks todo/try/submit/run, judge, coverage or guard as a command, or ADR 0043 still describes the guard hook as current",
+      "command": "uv run pytest packages/kmaudit/tests/test_cli_slim.py -k names -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "Every kmaudit test passes with the slim CLI: behaviours that did not leave with the CLI are tested through the MCP tools or the Python functions, and the docs list every tool and kept command.",
+      "fails_when": "any kmaudit test fails",
+      "command": "uv run pytest packages/kmaudit/tests -q",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -77,5 +110,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T06:41:14+00:00"
+  "at": "2026-11-15T06:41:26+00:00"
 }
