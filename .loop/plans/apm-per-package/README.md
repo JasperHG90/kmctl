@@ -47,19 +47,39 @@ What follows the move:
   `manifest` read of the commit before the push tries the moved
   `apm.yml` and falls back to `apm/apm.yml`, because the
   first release after the move compares against a commit from before it.
-- The consumer entry: releases after the cutoff (root-release-cutoff's
-  `LAST_ROOT_RELEASE`) are added as
+- The consumer entry: both moves (the code in kmctl-to-packages, `apm/`
+  here) ship in the same release, the first after the cutoff
+  (root-release-cutoff's `LAST_ROOT_RELEASE`), because both land on
+  agent-audit before it merges to main. root-release-cutoff's tag test grows
+  to hold that: a tag after the cutoff has the moved `apm.yml` and
+  no `apm/apm.yml`, an older one the reverse, so a release main cuts in
+  between fails the test and moves the cutoff for both. Releases after the
+  cutoff are added as
   `{git: …/kmctl.git, path: packages/kmctl/apm, ref: vX.Y.Z}`, older ones
   keep `path: apm`. `kmctl.plugin.new_entry()` writes the path for this CLI's
   version; `kmctl.plugin` and `kmctl.doctor` recognise kmctl's entry and its
-  sub-packages under either path. The starter's `apm.yml.jinja` picks the
-  path from `kmctl_ref` the way its justfile picks `kmctl_src`.
+  sub-packages under either path. Every piece of advice that tells a user
+  to move the entry to this CLI's release gives the whole entry, path and
+  ref: doctor's update fix (`_update_fix`) says to set kmctl's entry to
+  `{git, path, ref}` for this version, and the install how-tos and
+  `.claude/rules/cli-version-floor.md` say a move across the cutoff changes
+  `path: apm` to `path: packages/kmctl/apm`. The starter's `apm.yml.jinja`
+  picks the path from `kmctl_ref` the way its justfile picks `kmctl_src`.
 - Source-tree fallbacks in `plugin.py`, `antigravity.py` and `opencode.py`,
-  the action's agent (`action/agent.py`) and every test that reads `apm/`.
-- Docs, rules and decisions that give the entry or the path: the README,
-  the install how-tos, `.claude/rules/cli-version-floor.md` and the other
-  rules that cite `apm/`, the release skill, ADR 0012, 0014, 0021 and 0044
-  and the architecture overview.
+  the action's agent (`action/agent.py`) and every test that reads `apm/`
+  (fifteen test files today).
+- The repository's own tooling: the `files:` pattern of the Antigravity
+  rules hook in `.pre-commit-config.yaml`, which would otherwise stop
+  matching without an error, and `scripts/sync_antigravity_rules.py`, which
+  reads and writes under `apm/`; the `paths:` globs of the rules in
+  `.claude/rules/` that name `apm/`.
+- Docs and knowledge that give the entry or the path as it is now: the
+  README, the install how-tos, `docs/reference/commands.md`, the release
+  skill, `.okf/manifesto.md`, `.okf/summary.md` and the architecture
+  concepts (`overview.md`, and `audit-pipeline.md`'s `resource:` paths). A
+  new ADR 0045 records the move and amends ADR 0044. Older decisions keep
+  their prose, which records what was true then; their `sources` front
+  matter moves to the new paths, so `kmctl review due` still resolves them.
 
 The root `apm.yml`, this repository's own install of its dependencies
 from jasperhg90/skills, stays at the root; it does not install kmctl's
@@ -68,7 +88,8 @@ package.
 It worked when a project generated from the starter at a release after the
 cutoff installs kmctl's package from `packages/kmctl/apm` with
 `just bootstrap`, doctor passes on it and on a project pinned to an old
-release with `path: apm`, both wheels carry the release version read from
+release with `path: apm` and tells that project the new path when it is
+behind, both wheels carry the release version read from
 their `apm.yml`, and no `VERSION` file is left.
 
 ## Problems
@@ -86,8 +107,8 @@ their `apm.yml`, and no `VERSION` file is left.
 - goal: G1
 - fixes: P1
 - needs: none
-- touches: `apm`, `new:packages/kmctl/apm`, `new:packages/kmaudit/apm`, `packages/kmaudit/VERSION`, `packages/kmctl/pyproject.toml`, `packages/kmctl/hatch_build.py`, `packages/kmaudit/pyproject.toml`, `packages/kmctl/src/kmctl/plugin.py`, `packages/kmctl/src/kmctl/doctor.py`, `packages/kmctl/src/kmctl/antigravity.py`, `packages/kmctl/src/kmctl/opencode.py`, `action/agent.py`, `scripts/release.py`, `scripts/check_wheel.py`, `.github/workflows/release.yml`, `.github/workflows/release-tag.yml`, `starter/apm.yml.jinja`, `README.md`, `docs/how-to/install-kmctl-with-apm.md`, `docs/how-to/install-the-plugin-and-the-ci-action.md`, `.claude/rules/cli-version-floor.md`, `.claude/skills/release/SKILL.md`, `.okf/decisions/0044-kmctl-and-kmaudit-are-both-workspace-packages.md`, `.okf/architecture/overview.md`, `packages/kmctl/tests/test_plugin.py`, `packages/kmctl/tests/test_doctor.py`, `packages/kmctl/tests/test_starter.py`, `tests/scripts/test_release.py`, `tests/scripts/test_workflows.py`
-- checked by: the starter bootstrap integration test (a release after the cutoff, `path: packages/kmctl/apm`, doctor passes); test_starter renders `path: apm` at v0.12.2 and `path: packages/kmctl/apm` at v0.13.0; doctor and plugin patch tests recognise kmctl's entry and sub-packages under both paths and new_entry writes the new one; release.py tests read kmctl's version from its moved apm.yml and kmaudit's from its new one, `manifest` falls back to apm/apm.yml on an old commit, and `set --package kmaudit` writes the apm.yml; the package build test checks both wheels' versions and contents; a test that no `apm/` folder and no `packages/kmaudit/VERSION` remain
+- touches: `apm`, `new:packages/kmctl/apm`, `.pre-commit-config.yaml`, `scripts/sync_antigravity_rules.py`, `.claude/rules/*.md`, `.okf/decisions/*.md`, `new:.okf/decisions/0045-each-package-keeps-its-apm-package-and-version.md`, `.okf/manifesto.md`, `.okf/summary.md`, `.okf/architecture/audit-pipeline.md`, `docs/reference/commands.md`, `packages/kmctl/tests/*.py`, `tests/*.py`, `tests/scripts/*.py`, `packages/kmctl/tests/test_pin.py`, `new:packages/kmaudit/apm`, `packages/kmaudit/VERSION`, `packages/kmctl/pyproject.toml`, `packages/kmctl/hatch_build.py`, `packages/kmaudit/pyproject.toml`, `packages/kmctl/src/kmctl/plugin.py`, `packages/kmctl/src/kmctl/doctor.py`, `packages/kmctl/src/kmctl/antigravity.py`, `packages/kmctl/src/kmctl/opencode.py`, `action/agent.py`, `scripts/release.py`, `scripts/check_wheel.py`, `.github/workflows/release.yml`, `.github/workflows/release-tag.yml`, `starter/apm.yml.jinja`, `README.md`, `docs/how-to/install-kmctl-with-apm.md`, `docs/how-to/install-the-plugin-and-the-ci-action.md`, `.claude/rules/cli-version-floor.md`, `.claude/skills/release/SKILL.md`, `.okf/decisions/0044-kmctl-and-kmaudit-are-both-workspace-packages.md`, `.okf/architecture/overview.md`, `packages/kmctl/tests/test_plugin.py`, `packages/kmctl/tests/test_doctor.py`, `packages/kmctl/tests/test_starter.py`, `tests/scripts/test_release.py`, `tests/scripts/test_workflows.py`
+- checked by: root-release-cutoff's tag test extended to the moved apm.yml against `apm/apm.yml`; a doctor test that a project with `{path: apm, ref: v0.12.2}` on this CLI gets a fix naming `path: packages/kmctl/apm` and this ref; a test that the Antigravity rules hook's `files:` pattern matches a rule file under `packages/kmctl/apm/`; the starter bootstrap integration test (a release after the cutoff, `path: packages/kmctl/apm`, doctor passes); test_starter renders `path: apm` at v0.12.2 and `path: packages/kmctl/apm` at v0.13.0; doctor and plugin patch tests recognise kmctl's entry and sub-packages under both paths and new_entry writes the new one; release.py tests read kmctl's version from its moved apm.yml and kmaudit's from its new one, `manifest` falls back to apm/apm.yml on an old commit, and `set --package kmaudit` writes the apm.yml; the package build test checks both wheels' versions and contents; a test that no `apm/` folder and no `packages/kmaudit/VERSION` remain
 - seen by: operator
 
 ## Could invalidate this plan
