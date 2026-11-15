@@ -3,7 +3,7 @@
   "slug": "kmaudit-tests-git-identity",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "ae8da283e289a71b2d7ed1b5890105462d651d36d47f94ebaba565da599338dd",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "8d75f206484e4effe1cd461556554f2e2910c2ca870bbfdec433f970e348e24b",
+    "started_at": "2026-11-15T20:52:55+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "8d75f206484e4effe1cd461556554f2e2910c2ca870bbfdec433f970e348e24b",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -44,5 +63,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T20:52:52+00:00"
+  "at": "2026-11-15T20:52:55+00:00"
 }
