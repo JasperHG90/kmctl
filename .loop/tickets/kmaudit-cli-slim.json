@@ -21,7 +21,8 @@
   "branch": "loop/kmaudit-cli-slim",
   "stamps": [
     "ee5721937d933e502887fa594de792750d3e7e6cda7532b3a411e5c4e491027d",
-    "9eac5b5209ea2a3b3e053523f85701b4cf46dd2530a7c914d9a641decf5a9902"
+    "9eac5b5209ea2a3b3e053523f85701b4cf46dd2530a7c914d9a641decf5a9902",
+    "c116a2e6ce13ce6702919794c0ad343276cc1dd010816a2d9fa00f4b219c0efa"
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/implementer",
@@ -131,5 +132,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T10:35:33+00:00"
+  "at": "2026-11-15T10:40:31+00:00"
 }
