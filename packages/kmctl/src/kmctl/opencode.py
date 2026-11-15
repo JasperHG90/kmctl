@@ -117,7 +117,7 @@ def rules_dir() -> Path:
     if (package / "_rules").is_dir():
         return package / "_rules"
     return (
-        Path(__file__).resolve().parents[4] / "apm" / "claude" / ".apm" / "instructions"
+        Path(__file__).resolve().parents[2] / "apm" / "claude" / ".apm" / "instructions"
     )
 
 

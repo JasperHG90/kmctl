@@ -17,7 +17,7 @@ import pytest
 import yaml
 from conftest import plain
 from fixtures.fake_tools import FakeTools
-from test_doctor import OKF_AGENTS, _apm_writes
+from test_doctor import OKF_AGENTS, _apm_writes, _lock
 from typer.main import get_command
 from typer.testing import CliRunner, Result
 
@@ -123,6 +123,23 @@ def test_patch_writes_the_agents_and_drops_apms_okf_stop(
     assert antigravity.hook_present(repo)
     assert fakes.calls("uvx") == []
     assert "patched kmctl's package" in result.stdout
+
+
+@pytest.mark.parametrize("path", ["packages/kmctl/apm", "apm"])
+def test_patch_finds_kmctls_package_and_sub_packages_under_either_path(
+    repo: Path, fakes: FakeTools, path: str
+) -> None:
+    """A lock that records kmctl's package under packages/kmctl/apm or apm is patched alike."""
+    _apm_install(repo)
+    harnesses = ("claude", "antigravity")
+    (repo / "apm.lock.yaml").write_text(_lock(harnesses, plugin.package_ref(), path))
+
+    result = _patch("--json")
+
+    data = json.loads(result.stdout)
+    assert data["harnesses"] == list(harnesses)
+    assert data["package_ref"] == plugin.package_ref()
+    assert "plugin.json" in _files(antigravity.plugin_dir(repo))
 
 
 def test_patch_writes_nothing_for_a_harness_apm_did_not_install(
@@ -233,7 +250,7 @@ def test_patch_refuses_without_a_kmctl_package(repo: Path, fakes: FakeTools) -> 
 
     assert result.exit_code == 1
     assert "apm.lock.yaml lists no kmctl package" in result.stderr
-    assert '"path": "apm"' in result.stderr
+    assert json.dumps(plugin.new_entry()) in result.stderr
     assert "apm install" in result.stderr
     assert fakes.calls() == []
 
@@ -383,7 +400,7 @@ def test_patch_docs_readme_installs_per_harness() -> None:
     ):
         assert harness in install, harness
     for step in (
-        "path: apm",
+        "path: packages/kmctl/apm",
         "uvx --from apm-cli==0.33.0 apm install --target claude",
         "uvx --from apm-cli==0.33.0 apm install --target antigravity",
         "uvx --from apm-cli==0.33.0 apm install --target opencode",
@@ -427,7 +444,7 @@ def test_patch_after_a_real_apm_install_then_undo_and_uninstall(
     trust.write_text(json.dumps({"trustedWorkspaces": [str(consumer.resolve())]}))
     entry = {
         "git": served,
-        "path": "apm",
+        "path": plugin.PACKAGE_PATH,
         "ref": plugin.package_ref(),
         "allow_insecure": True,
     }

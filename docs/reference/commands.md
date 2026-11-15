@@ -155,8 +155,9 @@ listed every page there, `kmctl check` warns until you link each folder's
 index from it. Bumping kmctl (or the CI action's ref) without running
 `kmctl update` or `kmctl check --fix` fails `kmctl check` once, on each
 missing folder index, with that fix in the message. To refresh the skills and the knowledge rules,
-set kmctl's `ref` in `apm.yml` to the new version, run `apm install` and
-then `kmctl plugin patch`.
+set kmctl's `ref` in `apm.yml` to the new version (and, moving past
+v0.12.2, its `path` from `apm` to `packages/kmctl/apm`), run `apm install`
+and then `kmctl plugin patch`.
 
 ### `kmctl check`
 
@@ -580,8 +581,9 @@ It runs, in order:
    `apm.lock.yaml` shows the old layout (`virtual_path: plugin`). That old
    package's SessionStart hook goes only with `apm uninstall`, so the
    refusal names the `apm uninstall` to run first (with `-g` at user
-   scope), the `{"git": "https://github.com/JasperHG90/kmctl.git", "path": "apm", "ref": "vVERSION"}`
-   entry to add, where `VERSION` is this kmctl's, and the `apm install` to
+   scope), the `{"git": "https://github.com/JasperHG90/kmctl.git", "path": "packages/kmctl/apm", "ref": "vVERSION"}`
+   entry to add, where `VERSION` is this kmctl's (with `"path": "apm"` for
+   v0.12.2 and older), and the `apm install` to
    run after it.
 2. Refuses when `apm.lock.yaml` (`~/.apm/apm.lock.yaml` with
    `--scope user`) lists no kmctl package, naming the same entry to add to
@@ -739,8 +741,9 @@ it allows: `apm approve --pending` lists kmctl's package, and `apm approve`
 allows it.
 
 `apm uninstall NAME` (with `-g` at user scope) removes all of it, where
-`NAME` is `HOST/OWNER/REPO/apm` from the `git:` URL of kmctl's entry, for
-example `github.com/JasperHG90/kmctl/apm`. For OpenCode, run
+`NAME` is `HOST/OWNER/REPO/PATH` from the `git:` URL and `path` of kmctl's
+entry, for example `github.com/JasperHG90/kmctl/packages/kmctl/apm`
+(`github.com/JasperHG90/kmctl/apm` for v0.12.2 and older). For OpenCode, run
 `kmctl plugin patch --undo` first, or `apm uninstall` stops on the
 rewritten agents (`Retained user-edited file`). At user scope it
 leaves `bundle` in the user `.claude.json`; remove it with
@@ -786,10 +789,10 @@ installed gets no checks.
 | `init.docs` | all, project scope | `docs/README.md` exists. | `kmctl init` |
 | `kmctl.harness` | all | A harness is installed; the detail names them. | `apm install --target claude (kmctl's package must be in apm.yml), then kmctl plugin patch` |
 | `claude.scope` | claude | Passes, at project scope, when Claude Code is installed at user scope but not here; it says to run `kmctl doctor --scope user`. | none |
-| `claude.lock`, `antigravity.lock`, `opencode.lock` | each | `apm.lock.yaml` names kmctl's package at `v<this version>`. | `apm install --target H (kmctl's package must be in apm.yml), then kmctl plugin patch` when the lock or the package is missing; `set kmctl's ref in apm.yml to vVERSION, run apm install --target H, then kmctl plugin patch` for another version |
+| `claude.lock`, `antigravity.lock`, `opencode.lock` | each | `apm.lock.yaml` names kmctl's package at `v<this version>`. | `apm install --target H (kmctl's package must be in apm.yml), then kmctl plugin patch` when the lock or the package is missing; `set kmctl's entry in apm.yml to {"git": "https://github.com/JasperHG90/kmctl.git", "path": "packages/kmctl/apm", "ref": "vVERSION"}, run apm install --target H, then kmctl plugin patch` for another version (the entry has `"path": "apm"` when this kmctl is v0.12.2 or older) |
 | `claude.files`, `antigravity.files`, `opencode.files` | each | Every path the lock lists for kmctl's package for the harness (under `.claude/`; under `.agents/`; or under `.opencode/` and `.agents/skills/`) exists, and each file matches the sha256 the lock records. This covers the skills, the rules and, for `claude`, the agent. For `opencode` it skips the agents patch rewrites, which `opencode.agents` checks. | `apm install --target H (kmctl's package must be in apm.yml), then kmctl plugin patch` |
 | `claude.okf-skills`, `antigravity.okf-skills`, `opencode.okf-skills` | each | The same for okf's skills (and, for `opencode`, without its rewritten agents). | `apm install --target H (kmctl's package must be in apm.yml), then kmctl plugin patch` |
-| `claude.hook` | claude | `.claude/settings.json` (at user scope, the one in `$CLAUDE_CONFIG_DIR`) holds exactly the SessionStart hook kmctl's package ships, which APM writes. | when missing, `apm install --target claude (kmctl's package must be in apm.yml), then kmctl plugin patch`; when changed, `set kmctl's ref in apm.yml to vVERSION, run apm install --target claude, then kmctl plugin patch` |
+| `claude.hook` | claude | `.claude/settings.json` (at user scope, the one in `$CLAUDE_CONFIG_DIR`) holds exactly the SessionStart hook kmctl's package ships, which APM writes. | when missing, `apm install --target claude (kmctl's package must be in apm.yml), then kmctl plugin patch`; when changed, `set kmctl's entry in apm.yml to {"git": …, "path": …, "ref": "vVERSION"}, run apm install --target claude, then kmctl plugin patch`, with the same entry as the lock check's fix |
 | `claude.okf-mcp` | claude | `.mcp.json` (at user scope, `.claude.json` in `$CLAUDE_CONFIG_DIR`, by default `~/.claude.json`) declares `bundle` running `okf_mcp.py`, which kmctl's package declares and okf names its own server, or another server that runs `okf_mcp.py`. | when missing, `apm install --target claude (kmctl's package must be in apm.yml), then kmctl plugin patch`; when `bundle` runs no `okf_mcp.py`, `take bundle out of .mcp.json` (at user scope, `run claude mcp remove bundle --scope user`) first, since APM skips a server that is already there |
 | `claude.old-plugin` | claude | No settings file enables `kmctl@kmctl` or `okf@scaccogatto`: `.claude/settings.json`, `.claude/settings.local.json` and the user `settings.json` in `$CLAUDE_CONFIG_DIR` (a plugin enabled there loads in every repository); at user scope, only the user `settings.json`. The detail names each file. A plugin in the user file does not mark Claude Code as installed in the repository. | per file: `kmctl plugin patch` when `kmctl@kmctl` is enabled (it removes okf too when okf came as its dependency); for `kmctl@kmctl` in the user file at project scope, `claude plugin uninstall kmctl@kmctl --scope user, claude plugin prune --scope user --yes, claude plugin marketplace remove kmctl --scope user`; otherwise `claude plugin uninstall okf@scaccogatto --scope SCOPE`, the scope of the file that enables it |
 | `antigravity.plugin` | antigravity | Every file under `.agents/plugins/kmctl/` is what this kmctl writes, `plugin.json` and the translated agents, with none missing or extra. Fails with `apm_modules/ is missing` when okf's agents cannot be read to compare. | `kmctl plugin patch`; for a missing `apm_modules/`, `apm install --target antigravity (kmctl's package must be in apm.yml), then kmctl plugin patch` |

@@ -17,9 +17,10 @@ from scripts.release import (
     COPIER,
     DOC_FILES,
     HOOKS,
+    KMAUDIT_MANIFEST,
     KMAUDIT_README,
-    KMAUDIT_VERSION,
     MANIFEST,
+    OLD_MANIFEST,
 )
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -164,25 +165,51 @@ def test_release_bump_opens_the_version_pull_request() -> None:
         APM_DOC,
         COPIER,
         HOOKS,
-        KMAUDIT_VERSION,
+        KMAUDIT_MANIFEST,
         KMAUDIT_README,
     }
     assert {p.as_posix() for p in written} <= staged
+    assert not [p for p in staged if p.startswith("apm/") or p.endswith("/VERSION")]
     assert "gh pr create --base main" in runs
     assert "Allow GitHub Actions to create and approve pull requests" in runs
     assert 'git push origin --delete "$BRANCH"' in runs
 
 
 def test_release_tag_runs_on_a_version_source_change_on_main() -> None:
-    """release-tag.yml runs on a push to main touching either package's version source, and nothing else."""
+    """release-tag.yml runs on a push to main touching either package's apm.yml, and nothing else."""
     on = _load(RELEASE_TAG)["on"]
 
     assert on == {
         "push": {
             "branches": ["main"],
-            "paths": [MANIFEST.as_posix(), KMAUDIT_VERSION.as_posix()],
+            "paths": [MANIFEST.as_posix(), KMAUDIT_MANIFEST.as_posix()],
         }
     }
+    assert on["push"]["paths"] == [
+        "packages/kmctl/apm/apm.yml",
+        "packages/kmaudit/apm/apm.yml",
+    ]
+
+
+@pytest.mark.parametrize("path", [RELEASE, RELEASE_TAG], ids=lambda p: p.name)
+def test_release_workflows_name_no_old_version_source_as_current(path: Path) -> None:
+    """Neither workflow stages, triggers on or describes apm/apm.yml or packages/kmaudit/VERSION as a version source.
+
+    release-tag's one mention of apm/apm.yml is the comment on the before read,
+    which falls back to it on a commit from before the move.
+    """
+    text = path.read_text()
+    old = re.compile(r"(?<![\w/])apm/apm\.yml")
+    mentions = [line.strip() for line in text.splitlines() if old.search(line)]
+
+    assert "packages/kmaudit/VERSION" not in text
+    assert "kmaudit/VERSION" not in text
+    if path == RELEASE:
+        assert mentions == []
+    else:
+        assert mentions == [
+            "# the version source alone (for kmctl, apm/apm.yml on a commit from"
+        ]
 
 
 def test_release_tag_builds_before_it_tags_and_publishes_the_release() -> None:
@@ -262,6 +289,39 @@ def test_release_tag_reports_lowered_when_the_before_root_apm_yml_differs(
     assert res.returncode == 0, res.stderr
     assert res.stdout == "0.3.0"
     assert verdict.stdout == "lowered\n"
+
+
+def test_release_tag_reads_apm_yml_on_a_before_commit_from_before_the_move(
+    tmp_path: Path,
+) -> None:
+    """A before commit with only apm/apm.yml at 0.12.2 gives OLD 0.12.2, so 0.13.0 is raised.
+
+    The first release after ADR 0045 compares against such a commit.
+    """
+    before = tmp_path / "before"
+    (before / OLD_MANIFEST).parent.mkdir(parents=True)
+    (before / OLD_MANIFEST).write_text("name: kmctl\nversion: 0.12.2\n")
+    script = _before_read().replace("uv run ", f"{sys.executable} ")
+
+    res = subprocess.run(
+        ["bash", "-c", f'set -euo pipefail\n{script}\nprintf %s "$OLD"'],
+        cwd=ROOT,
+        env={"RUNNER_TEMP": str(tmp_path), "PACKAGE": "kmctl", "PATH": "/usr/bin:/bin"},
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    verdict = subprocess.run(
+        [sys.executable, "scripts/release.py", "compare", res.stdout, "0.13.0"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert res.returncode == 0, res.stderr
+    assert res.stdout == "0.12.2"
+    assert verdict.stdout == "raised\n"
 
 
 @pytest.mark.parametrize("path", [RELEASE, RELEASE_TAG], ids=lambda p: p.name)
@@ -649,7 +709,7 @@ def _run_bump(
     repo = tmp_path / "repo"
     repo.mkdir()
     _git_out(repo, "init", "-q", "-b", "main")
-    for rel in (KMAUDIT_VERSION, KMAUDIT_README):
+    for rel in (KMAUDIT_MANIFEST, KMAUDIT_README):
         (repo / rel).parent.mkdir(parents=True, exist_ok=True)
         (repo / rel).write_bytes((ROOT / rel).read_bytes())
     _git_out(repo, "add", ".")
@@ -686,7 +746,7 @@ def _run_bump(
 def test_release_package_bump_commits_the_notes_and_makes_them_the_body(
     tmp_path: Path,
 ) -> None:
-    """Run in bash for kmaudit, bump commits VERSION, the README and the notes file on the drafted commit.
+    """Run in bash for kmaudit, bump commits its apm.yml, the README and the notes file on the drafted commit.
 
     The commit carries a Drafted-From trailer, and the pull request body
     holds the notes file and the same trailer.
@@ -708,7 +768,7 @@ def test_release_package_bump_commits_the_notes_and_makes_them_the_body(
     assert set(
         _git_out(origin, "diff", "--name-only", drafted, branch).splitlines()
     ) == {
-        KMAUDIT_VERSION.as_posix(),
+        KMAUDIT_MANIFEST.as_posix(),
         KMAUDIT_README.as_posix(),
         ".github/release-notes/kmaudit-v0.2.0.md",
     }
@@ -741,7 +801,7 @@ def test_release_tag_runs_once_per_package() -> None:
 def test_release_tag_kmaudit_before_its_version_file_releases_nothing(
     tmp_path: Path,
 ) -> None:
-    """A before commit with no packages/kmaudit/VERSION gives an empty OLD, and 0.1.0.dev0 then skips."""
+    """A before commit with no packages/kmaudit/apm/apm.yml gives an empty OLD, and 0.1.0.dev0 then skips."""
     (tmp_path / "before").mkdir()
     script = _before_read().replace("uv run ", f"{sys.executable} ")
 
@@ -865,13 +925,13 @@ def released(tmp_path: Path) -> dict[str, Any]:
     repo = tmp_path / "repo"
     repo.mkdir()
     _git_out(repo, "init", "-q", "-b", "main")
-    _change(repo, "Start", "README.md", "packages/kmaudit/VERSION")
+    _change(repo, "Start", "README.md", "packages/kmaudit/apm/apm.yml")
     drafted = _git_out(repo, "rev-parse", "HEAD")
     _git_out(repo, "switch", "-q", "-c", "release/kmaudit-v0.2.0")
     notes = repo / ".github" / "release-notes" / "kmaudit-v0.2.0.md"
     notes.parent.mkdir(parents=True)
     notes.write_text("## What changed\n\n- Reviewed.\n")
-    (repo / "packages" / "kmaudit" / "VERSION").write_text("0.2.0\n")
+    (repo / "packages" / "kmaudit" / "apm" / "apm.yml").write_text("version: 0.2.0\n")
     _git_out(repo, "add", ".")
     _git_out(
         repo,

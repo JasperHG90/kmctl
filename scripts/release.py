@@ -14,19 +14,20 @@ Usage::
     uv run scripts/release.py is-prerelease VERSION
 
 ``--package`` picks the package, kmctl by default. Each has its own version
-source and tag family: kmctl's is described below and tags ``vX.Y.Z``;
-kmaudit's is the one-line ``packages/kmaudit/VERSION``, which its
-pyproject reads, and tags ``kmaudit-vX.Y.Z``. For kmaudit, ``current`` and
-``manifest`` print that file's version and ``set`` writes it and pins the
-install line in ``packages/kmaudit/README.md`` to the tag. ``tag`` prints a
-version's tag.
+source and tag family, each in its own APM package's apm.yml (ADR 0045):
+kmctl's is described below and tags ``vX.Y.Z``; kmaudit's is
+``packages/kmaudit/apm/apm.yml``, which its pyproject reads, and tags
+``kmaudit-vX.Y.Z``. For kmaudit, ``current`` and ``manifest`` print that
+file's version and ``set`` writes it and pins the install line in
+``packages/kmaudit/README.md`` to the tag. ``tag`` prints a version's tag.
 
-``apm/apm.yml``, kmctl's APM package, carries the one version, and
-``packages/kmctl/pyproject.toml`` reads it from there (ADR 0014). APM needs a ``version:`` in
+``packages/kmctl/apm/apm.yml``, kmctl's APM package, carries the one version,
+and ``packages/kmctl/pyproject.toml`` reads it from there (ADR 0014). APM needs a ``version:`` in
 each apm.yml, so ``set`` writes it into every file in ``APM_FILES``;
-``current`` refuses when one differs. ``manifest`` prints ``apm/apm.yml``'s
+``current`` refuses when one differs. ``manifest`` prints that apm.yml's
 version alone, for ``release-tag.yml``'s read of the commit before a push,
-where an older commit's copies may disagree. ``set`` also points the six install lines in the docs, and the
+where an older commit's copies may disagree; on a commit from before the
+move it reads ``apm/apm.yml`` instead (``OLD_MANIFEST``). ``set`` also points the six install lines in the docs, and the
 APM how-to's CLI install line, at the tag ``vVERSION``, each kmctl install
 line building from ``packages/kmctl`` (ADR 0044), and moves the starter
 template's ``kmctl_ref`` default in ``copier.yml`` to that tag, so the template
@@ -47,7 +48,9 @@ from pathlib import Path
 from packaging.version import InvalidVersion, Version
 
 #: The one version source, which packages/kmctl/pyproject.toml's [tool.hatch.version] reads.
-MANIFEST = Path("apm/apm.yml")
+MANIFEST = Path("packages/kmctl/apm/apm.yml")
+#: Where ``MANIFEST`` was before ADR 0045, which ``manifest`` reads on an older commit.
+OLD_MANIFEST = Path("apm/apm.yml")
 #: The docs whose install lines ``set`` points at the release tag.
 DOC_FILES = (
     Path("README.md"),
@@ -61,15 +64,15 @@ DOC_LINES = 6
 APM_FILES = (
     Path("apm.yml"),
     MANIFEST,
-    Path("apm/claude/apm.yml"),
-    Path("apm/antigravity/apm.yml"),
+    Path("packages/kmctl/apm/claude/apm.yml"),
+    Path("packages/kmctl/apm/antigravity/apm.yml"),
 )
 #: The APM how-to, whose install line ``set`` pins with the others.
 APM_DOC = Path("docs/how-to/install-kmctl-with-apm.md")
 #: The starter template's questions, whose ``kmctl_ref`` default ``set`` moves.
 COPIER = Path("copier.yml")
 #: The Claude Code hook, whose two install hints ``set`` points at the release tag.
-HOOKS = Path("apm/claude/.apm/hooks/hooks.json")
+HOOKS = Path("packages/kmctl/apm/claude/.apm/hooks/hooks.json")
 #: How many install hints ``HOOKS`` holds.
 HOOK_HINTS = 2
 #: The folder releases after ``LAST_ROOT_RELEASE`` build kmctl from (ADR 0044);
@@ -102,8 +105,8 @@ _COPIER_DEFAULT = re.compile(
 
 #: The packages a release can name, and each one's tag prefix.
 TAG_PREFIX = {"kmctl": "v", "kmaudit": "kmaudit-v"}
-#: kmaudit's one version source, which packages/kmaudit/pyproject.toml reads.
-KMAUDIT_VERSION = Path("packages/kmaudit/VERSION")
+#: kmaudit's one version source, its APM package, which packages/kmaudit/pyproject.toml reads.
+KMAUDIT_MANIFEST = Path("packages/kmaudit/apm/apm.yml")
 #: kmaudit's README, whose install line ``set --package kmaudit`` pins.
 KMAUDIT_README = Path("packages/kmaudit/README.md")
 # kmaudit's install line, with or without a tag before its subdirectory.
@@ -151,39 +154,44 @@ def _apm_version(path: Path) -> str | None:
 
 
 def manifest_version(repo: Path) -> str:
-    """Return the version ``apm/apm.yml`` declares, whatever the other apm.yml files hold.
+    """Return the version ``MANIFEST`` declares, whatever the other apm.yml files hold.
+
+    A commit from before ADR 0045 has no ``MANIFEST``, so its ``OLD_MANIFEST``
+    is read instead.
 
     Raises
     ------
     ReleaseRefused
-        When ``apm/apm.yml`` is missing or has no version.
+        When the apm.yml it reads is missing or has no version.
     """
-    version = _apm_version(repo / MANIFEST)
+    path = MANIFEST if (repo / MANIFEST).is_file() else OLD_MANIFEST
+    version = _apm_version(repo / path)
     if version is None:
-        raise ReleaseRefused(f"{MANIFEST} has no top-level version: line; restore it")
+        raise ReleaseRefused(f"{path} has no top-level version: line; restore it")
     return version
 
 
 def kmaudit_version(repo: Path) -> str:
-    """Return the version ``packages/kmaudit/VERSION`` holds.
+    """Return the version ``packages/kmaudit/apm/apm.yml`` declares.
 
     Raises
     ------
     ReleaseRefused
-        When the file is missing or blank.
+        When the file is missing or has no top-level ``version:`` line.
     """
-    path = repo / KMAUDIT_VERSION
-    version = path.read_text().strip() if path.is_file() else ""
-    if not version:
-        raise ReleaseRefused(f"{KMAUDIT_VERSION} is missing or blank; restore it")
+    version = _apm_version(repo / KMAUDIT_MANIFEST)
+    if version is None:
+        raise ReleaseRefused(
+            f"{KMAUDIT_MANIFEST} is missing or has no top-level version: line; restore it"
+        )
     return version
 
 
 def set_kmaudit_version(repo: Path, version_text: str) -> list[Path]:
-    """Write the version into ``packages/kmaudit/VERSION`` and pin the README's install line.
+    """Write the version into ``packages/kmaudit/apm/apm.yml`` and pin the README's install line.
 
-    Nothing is written unless the version is valid and the README holds an
-    install line.
+    Nothing is written unless the version is valid, the apm.yml has a
+    ``version:`` line and the README holds an install line.
 
     Returns
     -------
@@ -193,9 +201,17 @@ def set_kmaudit_version(repo: Path, version_text: str) -> list[Path]:
     Raises
     ------
     ReleaseRefused
-        When the version is malformed or the README has no install line.
+        When the version is malformed, the apm.yml has no ``version:`` line or
+        the README has no install line.
     """
     version = str(parse_release(version_text))
+    manifest, count = _APM_VERSION.subn(
+        rf"\g<1>{version}", (repo / KMAUDIT_MANIFEST).read_text(), count=1
+    )
+    if count != 1:
+        raise ReleaseRefused(
+            f"{KMAUDIT_MANIFEST} has no top-level version: line; restore it"
+        )
     readme, count = _KMAUDIT_INSTALL.subn(
         rf"\g<1>@kmaudit-v{version}\g<3>", (repo / KMAUDIT_README).read_text()
     )
@@ -203,9 +219,9 @@ def set_kmaudit_version(repo: Path, version_text: str) -> list[Path]:
         raise ReleaseRefused(
             f"{KMAUDIT_README} has no kmaudit install line; restore the uv tool install line"
         )
-    (repo / KMAUDIT_VERSION).write_text(f"{version}\n")
+    (repo / KMAUDIT_MANIFEST).write_text(manifest)
     (repo / KMAUDIT_README).write_text(readme)
-    return [KMAUDIT_VERSION, KMAUDIT_README]
+    return [KMAUDIT_MANIFEST, KMAUDIT_README]
 
 
 def tag(package: str, version_text: str) -> str:
@@ -214,15 +230,17 @@ def tag(package: str, version_text: str) -> str:
 
 
 def current(repo: Path) -> str:
-    """Return the version ``apm/apm.yml`` declares, once every copy agrees.
+    """Return the version ``MANIFEST`` declares, once every copy agrees.
 
     Raises
     ------
     ReleaseRefused
-        When ``apm/apm.yml`` has no version, or another file in ``APM_FILES``
+        When ``MANIFEST`` has no version, or another file in ``APM_FILES``
         is missing or holds another version.
     """
-    version = manifest_version(repo)
+    version = _apm_version(repo / MANIFEST)
+    if version is None:
+        raise ReleaseRefused(f"{MANIFEST} has no top-level version: line; restore it")
     for rel in APM_FILES:
         found = _apm_version(repo / rel)
         if found != version:
@@ -342,20 +360,20 @@ def main(argv: list[str] | None = None) -> int:
         "--package",
         choices=tuple(TAG_PREFIX),
         default="kmctl",
-        help="the package to release (default kmctl); kmaudit reads packages/kmaudit/VERSION",
+        help="the package to release (default kmctl); each reads packages/<package>/apm/apm.yml",
     )
     sub = parser.add_subparsers(dest="cmd", required=True)
     p_cur = sub.add_parser(
         "current",
-        help="print the version (kmctl: apm/apm.yml's, refusing when another apm.yml differs)",
+        help="print the version in packages/<package>/apm/apm.yml (kmctl: refusing when another apm.yml differs)",
     )
     p_man = sub.add_parser(
         "manifest",
-        help="print the version source's version alone (kmctl: apm/apm.yml); refuse only when it has none",
+        help="print the version source's version alone (kmctl: packages/kmctl/apm/apm.yml, or apm/apm.yml on a commit from before it moved); refuse only when it has none",
     )
     p_set = sub.add_parser(
         "set",
-        help="kmctl: write the version into the four apm.yml files, pin the docs, the hook's install hints and copier.yml's kmctl_ref; kmaudit: write VERSION and pin its README's install line",
+        help="kmctl: write the version into the four apm.yml files, pin the docs, the hook's install hints and copier.yml's kmctl_ref; kmaudit: write packages/kmaudit/apm/apm.yml and pin its README's install line",
     )
     p_set.add_argument("version", help="the release version, e.g. 0.2.0 or 0.2.0rc1")
     p_tag = sub.add_parser(

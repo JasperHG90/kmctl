@@ -1,5 +1,5 @@
 ---
-paths: ["apm/.apm/skills/**", "apm/.apm/agents/**"]
+paths: ["packages/kmctl/apm/.apm/skills/**", "packages/kmctl/apm/.apm/agents/**"]
 ---
 
 # Skills are thin

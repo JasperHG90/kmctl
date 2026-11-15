@@ -1,7 +1,8 @@
 # Tag and publish a release when its version pull request lands on main
 # (ADR 0012). The job runs once per package: kmctl, whose version source is
-# apm/apm.yml and whose tags are vX.Y.Z, and kmaudit, whose version source is
-# packages/kmaudit/VERSION and whose tags are kmaudit-vX.Y.Z. Only a push that
+# packages/kmctl/apm/apm.yml and whose tags are vX.Y.Z, and kmaudit, whose
+# version source is packages/kmaudit/apm/apm.yml and whose tags are
+# kmaudit-vX.Y.Z (ADR 0045). Only a push that
 # raises a package's version to a releasable version releases it; an unchanged
 # or .dev version does nothing, a lowered one fails, and a push with no
 # previous commit to compare against (the repository's first push) is skipped.
@@ -21,8 +22,8 @@ on:
   push:
     branches: [main]
     paths:
-      - apm/apm.yml
-      - packages/kmaudit/VERSION
+      - packages/kmctl/apm/apm.yml
+      - packages/kmaudit/apm/apm.yml
 
 permissions:
   contents: read
@@ -66,8 +67,9 @@ jobs:
           fi
           git worktree add -q --detach "$RUNNER_TEMP/before" "$BEFORE"
           # The before commit's copies of kmctl's version may disagree, so read
-          # the version source alone; only a commit with no version there (for
-          # kmaudit, one before VERSION existed) gives an empty OLD.
+          # the version source alone (for kmctl, apm/apm.yml on a commit from
+          # before it moved); only a commit with no version there (for
+          # kmaudit, one before its apm.yml existed) gives an empty OLD.
           OLD="$(uv run scripts/release.py --repo "$RUNNER_TEMP/before" manifest --package "$PACKAGE" || true)"
           VERDICT="$(uv run scripts/release.py compare "$OLD" "$VERSION")"
           case "$VERDICT" in

@@ -101,12 +101,14 @@ version: 0.1.0
 dependencies:
   apm:
     - git: https://github.com/JasperHG90/kmctl.git
-      path: apm
+      path: packages/kmctl/apm
       ref: vX.Y.Z
 ```
 
 Set `ref` to `v` and your kmctl version (`kmctl --version` prints it), so
-the package matches the CLI. Commit `apm.yml` and `apm.lock.yaml`.
+the package matches the CLI. Releases after v0.12.2 keep the package in
+`packages/kmctl/apm`; for v0.12.2 and older, write `path: apm`. Commit
+`apm.yml` and `apm.lock.yaml`.
 
 APM installs the package's hooks and MCP server unless `apm.yml` limits
 which packages may run them, with an `executables:` block (or the older
@@ -197,8 +199,9 @@ install; each `fail` line names its fix.
 ### Upgrade
 
 Set `ref` in `apm.yml` to the new tag and run your `apm install` line and
-`kmctl plugin patch` again; the kmctl on PATH then runs the new pinned
-release. Install a newer CLI with
+`kmctl plugin patch` again. Moving from v0.12.2 or older to a later release,
+also change `path: apm` to `path: packages/kmctl/apm`; the kmctl on PATH
+then runs the new pinned release. Install a newer CLI with
 `uv tool install --force git+https://github.com/JasperHG90/kmctl@vX.Y.Z#subdirectory=packages/kmctl`
 only for its own fixes.
 
@@ -206,8 +209,11 @@ only for its own fixes.
 
 ```
 kmctl plugin patch --undo
-uvx --from apm-cli==0.33.0 apm uninstall github.com/JasperHG90/kmctl/apm
+uvx --from apm-cli==0.33.0 apm uninstall github.com/JasperHG90/kmctl/packages/kmctl/apm
 ```
+
+The name ends with the entry's `path`: for a release at v0.12.2 or older it
+is `github.com/JasperHG90/kmctl/apm`.
 
 `--undo` deletes what patch wrote: `.agents/plugins/kmctl/`, and for
 OpenCode the rewritten agents, the rules, their `instructions` entry and

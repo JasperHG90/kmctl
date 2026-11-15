@@ -1,11 +1,11 @@
 ---
-paths: ["apm/**", "packages/kmctl/src/kmctl/**", "packages/kmctl/pyproject.toml", ".github/workflows/**"]
+paths: ["packages/kmctl/apm/**", "packages/kmctl/src/kmctl/**", "packages/kmctl/pyproject.toml", ".github/workflows/**"]
 ---
 
 # The package matches the CLI
 
 kmctl's skills, audit agent and knowledge rules ship in its APM package,
-`apm/`. The user adds its `apm.yml` entry at the tag of the CLI's own
+`packages/kmctl/apm/` (`apm/` in releases up to v0.12.2, ADR 0045). The user adds its `apm.yml` entry at the tag of the CLI's own
 version, `ref: v<cli version>`, runs `apm install`, then `kmctl plugin patch`,
 so the package and the CLI match (ADR 0001, ADR 0014, ADR 0021). The one
 hook kmctl's package ships never blocks (ADR 0029, invariant I1 in
@@ -17,8 +17,10 @@ and an install without `kmctl plugin patch` leaves Antigravity without its
 agents and with a Stop hook that fails.
 
 Docs and skills install the package only with the `apm.yml` entry
-`{git, path: apm, ref: v<cli version>}`, `apm install`, then
-`kmctl plugin patch`, as the README's install section gives them.
+`{git, path: packages/kmctl/apm, ref: v<cli version>}`, `apm install`, then
+`kmctl plugin patch`, as the README's install section gives them. A move from
+a release up to v0.12.2 to a later one changes `path: apm` to
+`path: packages/kmctl/apm` as well as the ref.
 </constraint>
 
 <constraint name="the-hook-survives-a-missing-cli">

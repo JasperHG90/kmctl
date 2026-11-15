@@ -8,8 +8,8 @@ generated:
   at: 2026-11-11T09:22:28Z
 status: stable
 sources:
-  - resource: "apm/.apm/agents/kmctl-claims-extractor.md"
-  - resource: "apm/.apm/skills/extract-claims/SKILL.md"
+  - resource: "packages/kmctl/apm/.apm/agents/kmctl-claims-extractor.md"
+  - resource: "packages/kmctl/apm/.apm/skills/extract-claims/SKILL.md"
 ---
 
 # ADR 0037: The claims and checks agents get a plain shell and I2 narrows

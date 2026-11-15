@@ -6,7 +6,8 @@ against the file's absolute path, so a repository-relative glob never matches
 (spike:antigravity-rules/3). Written as one string of ``**/`` globs joined by
 escaped commas, ``applyTo`` comes out of APM as the single ``globs:`` string
 agy reads (spike:apm-hands-back/1). This script writes those copies into
-``apm/antigravity/.apm/instructions/`` from ``apm/claude/.apm/instructions/``,
+``packages/kmctl/apm/antigravity/.apm/instructions/`` from
+``packages/kmctl/apm/claude/.apm/instructions/``,
 the one source; ``--check`` exits 1, naming each stale file, when a copy
 differs, which a test runs. Edit the Claude copy, never these. The copies
 carry no comment saying so, because APM installs them into other
@@ -24,9 +25,9 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 #: The rules as written for Claude Code: the one source.
-SOURCE = ROOT / "apm" / "claude" / ".apm" / "instructions"
+SOURCE = ROOT / "packages" / "kmctl" / "apm" / "claude" / ".apm" / "instructions"
 #: The generated copies for Antigravity.
-TARGET = ROOT / "apm" / "antigravity" / ".apm" / "instructions"
+TARGET = ROOT / "packages" / "kmctl" / "apm" / "antigravity" / ".apm" / "instructions"
 #: The prefix agy needs on a glob that holds a ``/``.
 ANY_FOLDER = "**/"
 

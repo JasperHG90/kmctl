@@ -34,12 +34,12 @@ from kmctl.kinds import schema, skeleton
 from kmctl.okf import front_matter
 
 ROOT = Path(__file__).resolve().parents[3]
-DOT_APM = ROOT / "apm" / ".apm"
+DOT_APM = ROOT / "packages" / "kmctl" / "apm" / ".apm"
 SKILLS = DOT_APM / "skills"
 AUDITOR = DOT_APM / "agents" / "kmctl-auditor.md"
 EXTRACTOR = DOT_APM / "agents" / "kmctl-claims-extractor.md"
 CHECK_WRITER = DOT_APM / "agents" / "kmctl-check-writer.md"
-INSTRUCTIONS = ROOT / "apm" / "claude" / ".apm" / "instructions"
+INSTRUCTIONS = ROOT / "packages" / "kmctl" / "apm" / "claude" / ".apm" / "instructions"
 DECISIONS = ROOT / ".okf" / "decisions"
 MANIFESTO = ROOT / ".okf" / "manifesto.md"
 ADR_0003 = DECISIONS / "0003-claude-code-plugin-first-depends-on-okf.md"
@@ -114,7 +114,7 @@ def _lock(harnesses: tuple[str, ...] = ("antigravity",)) -> str:
             "repo_url": "JasperHG90/kmctl",
             "name": "kmctl",
             "resolved_ref": REF,
-            "virtual_path": "apm",
+            "virtual_path": plugin.PACKAGE_PATH,
             "deployed_files": [f"{tops[h]}/skills/audit" for h in harnesses],
         }
     ]
@@ -124,7 +124,7 @@ def _lock(harnesses: tuple[str, ...] = ("antigravity",)) -> str:
                 "repo_url": "JasperHG90/kmctl",
                 "name": "kmctl-antigravity",
                 "resolved_ref": REF,
-                "virtual_path": "apm/antigravity",
+                "virtual_path": f"{plugin.PACKAGE_PATH}/antigravity",
                 "deployed_files": [".agents/rules/okf-bundle.md"],
             }
         )

@@ -86,11 +86,11 @@ def test_the_triage_prompt_asks_for_under_200_tokens() -> None:
 
 
 def test_triage_areas_match_kmctl_s_top_level_folders() -> None:
-    """Each area is a top-level folder, except okf (.okf/) and ci (.github/)."""
+    """Each area is a top-level folder, except okf (.okf/), ci (.github/) and apm (packages/kmctl/apm/, ADR 0045)."""
     env = yaml.safe_load(WORKFLOW.read_text())["jobs"]["triage"]["env"]
     areas = env["TRIAGE_AREAS"].split()
 
     assert areas == AREAS
-    folders = {"okf": ".okf", "ci": ".github"}
+    folders = {"okf": ".okf", "ci": ".github", "apm": "packages/kmctl/apm"}
     for area in areas:
         assert (ROOT / folders.get(area, area)).is_dir(), area

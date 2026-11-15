@@ -1,4 +1,4 @@
-"""``scripts/check_wheel.py``: a built wheel carries what kmctl's pyproject adds from apm/ (ADR 0012, ADR 0044)."""
+"""``scripts/check_wheel.py``: a built wheel carries what kmctl's pyproject adds from packages/kmctl/apm (ADR 0012, ADR 0044, ADR 0045)."""
 
 from __future__ import annotations
 
@@ -95,9 +95,9 @@ def test_the_default_pyproject_is_kmctl_s(tmp_path: Path) -> None:
     assert "kmctl/_rules/" in res.stdout
 
 
-def _manifest_version() -> str:
-    """apm/apm.yml's version, which kmctl's build reads."""
-    text = (ROOT / "apm" / "apm.yml").read_text()
+def _manifest_version(package: str = "kmctl") -> str:
+    """The version in ``packages/<package>/apm/apm.yml``, which the package's build reads."""
+    text = (ROOT / "packages" / package / "apm" / "apm.yml").read_text()
     [line] = [x for x in text.splitlines() if x.startswith("version: ")]
     return line.removeprefix("version: ").strip()
 
@@ -197,8 +197,8 @@ def test_package_aware_kmctl_is_unchanged(tmp_path: Path) -> None:
 
 @pytest.mark.integration
 def test_package_aware_kmaudit_build_passes_both_scripts(tmp_path: Path) -> None:
-    """uv build --package kmaudit gives a wheel at VERSION's version that both scripts accept."""
-    version = (ROOT / "packages" / "kmaudit" / "VERSION").read_text().strip()
+    """uv build --package kmaudit gives a wheel at its apm.yml's version that both scripts accept."""
+    version = _manifest_version("kmaudit")
     out = tmp_path / "dist"
 
     build = subprocess.run(
@@ -221,3 +221,24 @@ def test_package_aware_kmaudit_build_passes_both_scripts(tmp_path: Path) -> None
             check=False,
         )
         assert res.returncode == 0, res.stdout + res.stderr
+
+
+def test_both_wheels_build_at_their_apm_yml_version(tmp_path: Path) -> None:
+    """Each package's wheel carries the version its apm.yml names, and kmctl's holds the skills, agents and rules."""
+    for package in ("kmctl", "kmaudit"):
+        version = _manifest_version(package)
+        out = tmp_path / package
+        build = subprocess.run(
+            ["uv", "build", "-q", "--wheel", "--package", package, "-o", str(out)],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+        assert build.returncode == 0, build.stderr
+        [wheel] = out.glob("*.whl")
+        assert wheel.name == f"{package}-{version}-py3-none-any.whl"
+    names = zipfile.ZipFile(next((tmp_path / "kmctl").glob("*.whl"))).namelist()
+    for folder in ("kmctl/_skills/", "kmctl/_agents/", "kmctl/_rules/"):
+        assert any(n.startswith(folder) for n in names), folder

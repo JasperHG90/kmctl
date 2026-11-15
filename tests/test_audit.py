@@ -7,7 +7,7 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
-PACKAGE = ROOT / "apm" / ".apm"
+PACKAGE = ROOT / "packages" / "kmctl" / "apm" / ".apm"
 AGENT = PACKAGE / "agents" / "kmctl-auditor.md"
 SKILLS = PACKAGE / "skills"
 #: The files that set or read the folder the CI audit takes the skills and agent from.
@@ -71,12 +71,13 @@ def test_review_skills_exist() -> None:
 
 
 def test_audit_paths_read_the_apm_package() -> None:
-    """The CI audit takes the skills and agent from apm/.apm, and nothing names plugin/."""
+    """The CI audit takes the skills and agent from packages/kmctl/apm/.apm, and nothing names plugin/ or the old apm/."""
     texts = {rel: (ROOT / rel).read_text() for rel in AUDIT_FILES}
 
     assert [rel for rel, text in texts.items() if "plugin/" in text] == []
     script = texts["action/agent.py"]
-    assert 'PACKAGE = HERE.parent / "apm" / ".apm"' in script
+    assert 'PACKAGE = HERE.parent / "packages" / "kmctl" / "apm" / ".apm"' in script
+    assert 'HERE.parent / "apm"' not in script
     assert 'DEFAULT_SKILLS = PACKAGE / "skills"' in script
     assert 'PROMPTS = HERE / "prompts"' in script
     assert (PACKAGE / "skills").is_dir() and AGENT.is_file()

@@ -61,8 +61,9 @@ uv tool install git+https://github.com/JasperHG90/kmctl@v0.12.2
 ```
 
 Releases after v0.12.2 build kmctl from the repository's `packages/kmctl`
-folder: add `#subdirectory=packages/kmctl` to the line above to install
-one. v0.12.2 and older build from the repository root, as written.
+folder: to install one, change the tag in the line above to it and add
+`#subdirectory=packages/kmctl` after the tag. v0.12.2 and older build from
+the repository root, as written.
 
 One kmctl on your PATH serves every repository. When a repository's
 `apm.lock.yaml` pins another kmctl release, the kmctl on PATH runs that
@@ -86,9 +87,12 @@ Add the package to `dependencies.apm` in the repository's `apm.yml`, with
 dependencies:
   apm:
     - git: https://github.com/JasperHG90/kmctl.git
-      path: apm
+      path: packages/kmctl/apm
       ref: vX.Y.Z
 ```
+
+Releases after v0.12.2 keep the package in `packages/kmctl/apm`; for
+v0.12.2 and older, write `path: apm`.
 
 and then, from the repository root, install it for your harnesses and patch:
 
@@ -160,8 +164,9 @@ and okf's MCP server (`claude.okf-mcp`) along with the rest; when one is
 missing, check whether `apm approve --pending` lists kmctl's package.
 
 To upgrade a repository, set `ref` to the new tag and run `apm install`
-and `kmctl plugin patch` again; the kmctl on PATH then runs the new pinned
-release. To remove the package, run `kmctl plugin patch --undo`, then
+and `kmctl plugin patch` again. Moving from v0.12.2 or older to a later
+release, also change `path: apm` to `path: packages/kmctl/apm`; the kmctl
+on PATH then runs the new pinned release. To remove the package, run `kmctl plugin patch --undo`, then
 `apm uninstall` on kmctl's entry. For OpenCode the order matters:
 `apm uninstall` stops on the agents patch rewrote, and `--undo` deletes
 them first. The steps, with the name `apm uninstall` takes, are in

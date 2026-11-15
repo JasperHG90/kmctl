@@ -30,9 +30,10 @@ release-tag is not an APM workflow, but APM is why kmctl's tags matter. Users
 pin kmctl's APM package with `ref: v<cli version>`
 (`.claude/rules/cli-version-floor.md`), the GitHub Action by its tag, and the
 starter template by the `kmctl_ref` default in `copier.yml`. So the package
-and the CLI must carry one version and one tag: `apm/apm.yml` is kmctl's
-version source, and release-tag tags it `vX.Y.Z`. kmaudit has its own version
-source, `packages/kmaudit/VERSION`, and its own `kmaudit-vX.Y.Z` tags. Only a
+and the CLI must carry one version and one tag: `packages/kmctl/apm/apm.yml`
+is kmctl's version source, and release-tag tags it `vX.Y.Z`. kmaudit has its
+own version source, its APM package's `packages/kmaudit/apm/apm.yml`, and its
+own `kmaudit-vX.Y.Z` tags (ADR 0045). Only a
 kmctl release becomes Latest.
 
 ## Inputs

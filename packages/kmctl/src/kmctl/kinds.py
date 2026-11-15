@@ -17,7 +17,7 @@ DRAFT, STABLE, DEPRECATED = "draft", "stable", "deprecated"
 STATUS_VALUES = (DRAFT, STABLE, DEPRECATED)
 
 #: An architecture page's type, and the section every one ends with
-#: (``apm/.apm/instructions/diagrams-stay-current.instructions.md``).
+#: (``packages/kmctl/apm/claude/.apm/instructions/diagrams-stay-current.instructions.md``).
 ARCHITECTURE = "architecture"
 DEPICTS = "Depicts"
 

@@ -64,9 +64,12 @@ version: 0.1.0
 dependencies:
   apm:
     - git: https://github.com/JasperHG90/kmctl.git
-      path: apm
+      path: packages/kmctl/apm
       ref: vX.Y.Z
 ```
+
+Releases after v0.12.2 keep the package in `packages/kmctl/apm`; for
+v0.12.2 and older, write `path: apm`.
 
 In an existing `apm.yml`, add only the entry under `dependencies.apm`. If
 it limits which packages may run hooks and MCP servers (an `executables:`
@@ -518,7 +521,9 @@ its `vX.Y.Z` tag. To move to a newer one:
    the pin.
 
 2. In each repository where you installed kmctl's package, set `ref` in
-   kmctl's `apm.yml` entry to the same tag, then run the `apm install` line
+   kmctl's `apm.yml` entry to the same tag (moving from v0.12.2 or older to
+   a later release, also change `path: apm` to `path: packages/kmctl/apm`),
+   then run the `apm install` line
    you installed with and `kmctl plugin patch` again, for example:
 
    ```
@@ -540,7 +545,7 @@ From the repository root:
 
 ```
 kmctl plugin patch --undo
-uvx --from apm-cli==0.33.0 apm uninstall github.com/JasperHG90/kmctl/apm
+uvx --from apm-cli==0.33.0 apm uninstall github.com/JasperHG90/kmctl/packages/kmctl/apm
 ```
 
 `kmctl plugin patch --undo` deletes what patch wrote:
@@ -551,7 +556,8 @@ Run it first: `apm uninstall` stops on an agent patch rewrote.
 `apm uninstall` takes kmctl's entry out of `apm.yml` and removes the
 package for every harness: the skills, agent, rules, hooks and okf's MCP
 server. The name is the host, owner and repository of the entry's `git:`
-URL, then `apm`.
+URL, then its `path`: `packages/kmctl/apm`, or `apm` for a release at
+v0.12.2 or older.
 
 For a user-scope install, run `apm uninstall -g` with the same name, then
 remove okf's MCP server, which APM leaves in your user `.claude.json`:

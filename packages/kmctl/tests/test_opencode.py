@@ -35,17 +35,27 @@ from kmctl.kinds import schema
 from kmctl.okf import front_matter
 
 ROOT = Path(__file__).resolve().parents[3]
-SKILLS = ROOT / "apm" / ".apm" / "skills"
+SKILLS = ROOT / "packages" / "kmctl" / "apm" / ".apm" / "skills"
 SKILL_NAMES = sorted(p.name for p in SKILLS.iterdir() if p.is_dir())
-AUDITOR = ROOT / "apm" / ".apm" / "agents" / "kmctl-auditor.md"
-EXTRACTOR = ROOT / "apm" / ".apm" / "agents" / "kmctl-claims-extractor.md"
-CHECK_WRITER = ROOT / "apm" / ".apm" / "agents" / "kmctl-check-writer.md"
+AUDITOR = ROOT / "packages" / "kmctl" / "apm" / ".apm" / "agents" / "kmctl-auditor.md"
+EXTRACTOR = (
+    ROOT
+    / "packages"
+    / "kmctl"
+    / "apm"
+    / ".apm"
+    / "agents"
+    / "kmctl-claims-extractor.md"
+)
+CHECK_WRITER = (
+    ROOT / "packages" / "kmctl" / "apm" / ".apm" / "agents" / "kmctl-check-writer.md"
+)
 KMCTL_AGENTS = {
     "kmctl-auditor": AUDITOR,
     "kmctl-check-writer": CHECK_WRITER,
     "kmctl-claims-extractor": EXTRACTOR,
 }
-INSTRUCTIONS = ROOT / "apm" / "claude" / ".apm" / "instructions"
+INSTRUCTIONS = ROOT / "packages" / "kmctl" / "apm" / "claude" / ".apm" / "instructions"
 RULE_NAMES = sorted(
     p.name.removesuffix(".instructions.md") for p in INSTRUCTIONS.glob("*.md")
 )
@@ -151,7 +161,7 @@ def _apm_writes(antigravity: bool = False) -> dict[str, str]:
         "repo_url": "JasperHG90/kmctl",
         "name": "kmctl",
         "resolved_ref": REF,
-        "virtual_path": "apm",
+        "virtual_path": plugin.PACKAGE_PATH,
     }
     okf = {"repo_url": "scaccogatto/okf-skills", "name": "okf", "resolved_ref": "a8b9"}
     files = {
@@ -170,7 +180,11 @@ def _apm_writes(antigravity: bool = False) -> dict[str, str]:
     out = {**files, **okf_files}
     if antigravity:
         rules = {".agents/rules/okf-bundle.md": "a rule\n"}
-        sub = {**kmctl, "name": "kmctl-antigravity", "virtual_path": "apm/antigravity"}
+        sub = {
+            **kmctl,
+            "name": "kmctl-antigravity",
+            "virtual_path": f"{plugin.PACKAGE_PATH}/antigravity",
+        }
         deps.append(_dep(sub, rules, []))
         out.update(rules)
     out["apm.lock.yaml"] = yaml.safe_dump(
@@ -467,7 +481,7 @@ def _lock_of(paths: list[str], sub: list[str] | None = None) -> plugin.Lock:
         {
             "repo_url": "JasperHG90/kmctl",
             "name": "kmctl",
-            "virtual_path": "apm",
+            "virtual_path": plugin.PACKAGE_PATH,
             "deployed_files": paths,
         }
     ]
@@ -476,7 +490,7 @@ def _lock_of(paths: list[str], sub: list[str] | None = None) -> plugin.Lock:
             {
                 "repo_url": "JasperHG90/kmctl",
                 "name": "kmctl-antigravity",
-                "virtual_path": "apm/antigravity",
+                "virtual_path": f"{plugin.PACKAGE_PATH}/antigravity",
                 "deployed_files": sub,
             }
         )

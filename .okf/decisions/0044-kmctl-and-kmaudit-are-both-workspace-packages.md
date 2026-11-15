@@ -80,3 +80,12 @@ Rejected:
   fallbacks to `apm/` in `plugin.py`, `antigravity.py` and `opencode.py`,
   `uv build --package kmctl` in both release workflows, and the starter
   job's test path in `ci.yml`.
+
+## Amended, 2026-11-15
+
+kmctl's APM package moved from `apm/` to `packages/kmctl/apm/`, and kmaudit
+got one in `packages/kmaudit/apm/` whose `apm.yml` carries its version
+(ADR 0045). The version source, the build hook, the sdist and
+`scripts/check_wheel.py` read `apm/` inside the package folder rather than
+`../../apm`, and the tag test also holds where each tag keeps `apm.yml`.
+The rest of this decision holds.

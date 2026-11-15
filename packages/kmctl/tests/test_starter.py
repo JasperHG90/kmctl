@@ -24,6 +24,7 @@ import yaml
 from conftest import tree_repo
 from jsonschema import Draft202012Validator
 
+from kmctl import plugin
 from kmctl.kinds import schema
 from kmctl.okf import front_matter
 
@@ -151,7 +152,7 @@ def test_render_writes_the_project_pinned_to_this_release(
     assert apm["targets"] == yaml.safe_load(harnesses)
     assert apm["dependencies"]["apm"][0] == {
         "git": KMCTL_GIT,
-        "path": "apm",
+        "path": plugin.package_path(TAG),
         "ref": TAG,
     }
     assert f'kmctl_ref := "{TAG}"' in (out / "justfile").read_text()
@@ -164,8 +165,10 @@ def test_render_writes_the_project_pinned_to_this_release(
 
 
 def test_render_default_is_this_release() -> None:
-    """copier.yml's kmctl_ref default is the tag of the version apm/apm.yml holds."""
-    manifest = yaml.safe_load((ROOT / "apm" / "apm.yml").read_text())
+    """copier.yml's kmctl_ref default is the tag of the version packages/kmctl/apm/apm.yml holds."""
+    manifest = yaml.safe_load(
+        (ROOT / "packages" / "kmctl" / "apm" / "apm.yml").read_text()
+    )
     questions = yaml.safe_load((ROOT / "copier.yml").read_text())
 
     assert questions["kmctl_ref"]["default"] == f"v{manifest['version']}"
@@ -241,6 +244,30 @@ def test_render_kmctl_src_has_the_subdirectory_only_after_v0_12_2(
     url = '"git+https://github.com/JasperHG90/kmctl@" + kmctl_ref'
     want = f'kmctl_src := {url} + "{fragment}"' if fragment else f"kmctl_src := {url}"
     assert line == want
+
+
+@pytest.mark.parametrize(
+    ("ref", "path"),
+    [
+        ("v0.6.0", "apm"),
+        ("v0.12.2rc1", "apm"),
+        ("v0.12.2", "apm"),
+        ("v0.12.3rc1", "packages/kmctl/apm"),
+        ("v0.13.0", "packages/kmctl/apm"),
+    ],
+)
+def test_render_apm_entry_path_is_packages_kmctl_apm_only_after_v0_12_2(
+    template: Path, tmp_path: Path, ref: str, path: str
+) -> None:
+    """apm.yml's kmctl entry names path packages/kmctl/apm for a kmctl_ref newer than v0.12.2, and apm up to it (ADR 0045)."""
+    out = tmp_path / "demo"
+
+    res = _copier(template, out, "harnesses=[claude]", f"kmctl_ref={ref}")
+
+    assert res.returncode == 0, res.stderr
+    entry = yaml.safe_load((out / "apm.yml").read_text())["dependencies"]["apm"][0]
+    assert entry == {"git": KMCTL_GIT, "path": path, "ref": ref}
+    assert path == plugin.package_path(ref)
 
 
 # just kmctl ------------------------------------------------------------------------
@@ -350,7 +377,7 @@ def test_adversarial_review_off_writes_neither(
     assert res.returncode == 0, res.stderr
     assert "adversarial" not in (out / "AGENTS.md").read_text()
     deps = yaml.safe_load((out / "apm.yml").read_text())["dependencies"]["apm"]
-    assert deps == [{"git": KMCTL_GIT, "path": "apm", "ref": TAG}]
+    assert deps == [{"git": KMCTL_GIT, "path": plugin.package_path(TAG), "ref": TAG}]
 
 
 # The drift gate -----------------------------------------------------------------
@@ -473,9 +500,16 @@ def test_bootstrap_installs_this_checkout(
     # A missing harness CLI and Antigravity trust only warn, so nothing fails.
     assert report["ok"], report
     assert (consumer / ".claude" / "agents" / "adversarial-reviewer.md").is_file()
+    # A release after v0.12.2 installs the package from packages/kmctl/apm.
+    entry = yaml.safe_load((consumer / "apm.yml").read_text())["dependencies"]["apm"][0]
+    assert entry["path"] == "packages/kmctl/apm"
     lock = yaml.safe_load((consumer / "apm.lock.yaml").read_text())
     [kmctl] = [d for d in lock["dependencies"] if d["name"] == "kmctl"]
     assert kmctl["resolved_commit"] == commit
+    assert kmctl["virtual_path"] == "packages/kmctl/apm"
+    subs = {d["name"]: d.get("virtual_path") for d in lock["dependencies"]}
+    assert subs["kmctl-claude"] == "packages/kmctl/apm/claude"
+    assert subs["kmctl-antigravity"] == "packages/kmctl/apm/antigravity"
     [receipt] = glob.glob(
         str(
             Path(os.environ["XDG_DATA_HOME"])
