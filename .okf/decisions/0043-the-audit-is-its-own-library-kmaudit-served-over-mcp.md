@@ -94,5 +94,5 @@ use and left as it was; settings stay at the kmctl path for now.
 
 kmctl no longer stays at the root: it moved to `packages/kmctl/` beside
 kmaudit, and the root became a uv workspace that installs nothing
-(ADR 0044). Its install URLs for releases after v0.12.1 carry
+(ADR 0044). Its install URLs for releases after v0.12.2 carry
 `#subdirectory=packages/kmctl`. The rest of this decision holds.

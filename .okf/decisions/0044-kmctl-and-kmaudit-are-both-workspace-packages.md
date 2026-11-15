@@ -1,7 +1,7 @@
 ---
 type: decision
 title: "ADR 0044: kmctl and kmaudit are both workspace packages"
-description: "kmctl moves from the repository root to packages/kmctl beside kmaudit, the root becomes a uv workspace that installs nothing, and releases after v0.12.1 install from #subdirectory=packages/kmctl."
+description: "kmctl moves from the repository root to packages/kmctl beside kmaudit, the root becomes a uv workspace that installs nothing, and releases after v0.12.2 install from #subdirectory=packages/kmctl."
 tags: [decision]
 generated:
   by: process:kmctl/0.12.1
@@ -44,11 +44,14 @@ the wheel: from `../../apm` in a checkout, and from the sdist's own copy of
 those folders when a wheel is built from the sdist. `scripts/check_wheel.py`
 reads that hook's table.
 
-Releases after v0.12.1 install from
+Releases after v0.12.2 install from
 `git+https://github.com/JasperHG90/kmctl@vX.Y.Z#subdirectory=packages/kmctl`.
-`scripts/release.py set` writes the fragment on every install line and
-hook hint. The pin hand-off (ADR 0026) and the starter's `kmctl_src` add it
-only for refs newer than v0.12.1, since older tags build from the root.
+`scripts/release.py set`, the hook hint in `kmctl.plugin`, the pin hand-off
+(ADR 0026) and the starter's `kmctl_src` add the fragment only for refs
+newer than v0.12.2, since older tags build from the root. The cutoff is one
+constant, `LAST_ROOT_RELEASE` in `kmctl.plugin`; `scripts/release.py`
+keeps a copy that a test holds equal, and an integration test fails when a
+tag's layout disagrees with it.
 The action installs `packages/kmctl` from its own checkout. The
 `kmctl-check` pre-commit hook installs `./packages/kmctl` as an extra
 dependency; pre-commit and prek install the hook repository's root first,
@@ -66,13 +69,13 @@ Rejected:
 
 ## Consequences
 
-- A kmctl at v0.12.1 or older on someone's PATH cannot hand off to a
+- A kmctl at v0.12.2 or older on someone's PATH cannot hand off to a
   project pinned to a later release, because it asks uvx for the root. They
   install a newer CLI first; the starter's `just kmctl` already installs one
   as new as the pin.
-- Until the next release, the install lines on main name v0.12.1 with the
-  fragment, which that tag cannot build; `scripts/release.py set` points
-  them at the new tag in the version pull request.
+- main released v0.12.2 from the root after this decision was written, so
+  the cutoff moved from v0.12.1 to v0.12.2. A root release made on main
+  before this layout merges moves it again, and the tag test says so.
 - Paths that named the root moved with the package: the source-tree
   fallbacks to `apm/` in `plugin.py`, `antigravity.py` and `opencode.py`,
   `uv build --package kmctl` in both release workflows, and the starter

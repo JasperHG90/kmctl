@@ -1,4 +1,17 @@
 {
   "schema_version": "1.0",
-  "rows": []
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "kmaudit builds its install hint from its installed version: a release or pre-release version names its kmaudit-vX.Y.Z tag with #subdirectory=packages/kmaudit, a dev or local version names no ref, and extras go in the requirement, so the tracing refusal asks for kmaudit[tracing]; steps.py, judge.py, check_verbs.py and ui.py use it.",
+      "fails_when": "a release version's hint lacks its tag, a dev version's names one, the tracing refusal leaves out the extra, or a hand-written INSTALL string remains",
+      "command": "uv run pytest packages/kmaudit/tests/test_judge.py packages/kmaudit/tests/test_claims_steps.py -k install -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "release.py set --package kmaudit pins kmaudit's README install line and the tracing line in packages/kmaudit/docs/commands.md to the release tag, and refuses, writing nothing, when either line is missing; the Release run's kmaudit bump stages docs/commands.md.",
+      "fails_when": "either line keeps an old ref, a missing line is not refused or something is written anyway, or the bump leaves docs/commands.md out",
+      "command": "uv run pytest tests/scripts/test_release.py tests/scripts/test_workflows.py -k kmaudit -q"
+    }
+  ]
 }

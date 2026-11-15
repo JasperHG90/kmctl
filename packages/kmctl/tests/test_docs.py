@@ -9,12 +9,16 @@ from typer.main import get_command
 from typer.testing import CliRunner
 
 from kmctl import app
+from kmctl.plugin import subdirectory_fragment
 
 ROOT = Path(__file__).resolve().parents[3]
 DOCS = ROOT / "docs"
 INSTALL = "uv tool install git+https://github.com/JasperHG90/kmctl"
-#: kmctl's source at a ref: every release after v0.12.1 builds from packages/kmctl (ADR 0044).
-AT_REF = re.compile(r"git\+https://github\.com/JasperHG90/kmctl@[^\s#'`]+(\S*)")
+#: kmctl's source at a ref: every release after v0.12.2 builds from packages/kmctl (ADR 0044).
+#: The ref (group 1) never ends in a full stop, so a hint's closing one is left out.
+AT_REF = re.compile(
+    r"git\+https://github\.com/JasperHG90/kmctl@([^\s#'`]*[^\s#'`.])(#[^\s'`]*[^\s'`.])?"
+)
 SUBDIRECTORY = "#subdirectory=packages/kmctl"
 
 
@@ -136,8 +140,8 @@ def test_reference_new_json_keys_match_the_help() -> None:
     )
 
 
-def test_install_subdirectory_on_every_install_line() -> None:
-    """Every kmctl install line in the README, docs, hook hints and release notes template builds from packages/kmctl."""
+def test_install_subdirectory_follows_the_cutoff_on_every_install_line() -> None:
+    """Every kmctl install line in the README, docs, hook hints and release notes template builds from packages/kmctl exactly when its ref is after v0.12.2."""
     files = [
         ROOT / "README.md",
         *sorted(DOCS.rglob("*.md")),
@@ -145,10 +149,13 @@ def test_install_subdirectory_on_every_install_line() -> None:
         ROOT / ".github" / "release-notes.md",
     ]
     found = {
-        f"{path.relative_to(ROOT)}: {m.group(0)}": m.group(1)
+        f"{path.relative_to(ROOT)}: {m.group(0)}": (m.group(1), m.group(2) or "")
         for path in files
         for m in AT_REF.finditer(path.read_text())
     }
 
     assert len(found) >= 8
-    assert [k for k, rest in found.items() if not rest.startswith(SUBDIRECTORY)] == []
+    wrong = [
+        k for k, (ref, rest) in found.items() if rest != subdirectory_fragment(ref)
+    ]
+    assert wrong == []

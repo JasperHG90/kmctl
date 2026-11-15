@@ -95,7 +95,7 @@ def _git(*args: str, cwd: Path) -> None:
 
 
 def bumped_version() -> str:
-    """A test-only release one minor past this kmctl's version: newer than v0.12.1, and not the running CLI's."""
+    """A test-only release one minor past this kmctl's version: newer than v0.12.2, and not the running CLI's."""
     major, minor, *_ = version("kmctl").split(".")
     return f"{major}.{int(minor) + 1}.0"
 
@@ -105,7 +105,7 @@ def tree_repo(dest: Path, *, bump: bool = False) -> Path:
 
     With ``bump``, ``scripts/release.py set`` first moves the copy to
     ``bumped_version()``, and the tag names that version. A copy installed
-    from git then builds from packages/kmctl, as releases after v0.12.1 do
+    from git then builds from packages/kmctl, as releases after v0.12.2 do
     (ADR 0044), and its tag, apm.yml files, copier default and CLI agree.
     """
     dest.mkdir(parents=True, exist_ok=True)

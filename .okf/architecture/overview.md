@@ -381,7 +381,7 @@ the root runs `tests/` (the repository's own files: workflows, release
 scripts, rules and skills) and both packages' tests.
 `packages/kmctl/hatch_build.py` puts `apm/`'s skills, agents and rules in
 the wheel, from `../../apm` in a checkout or the sdist's copy. Releases
-after v0.12.1 install from `#subdirectory=packages/kmctl`; the action
+after v0.12.2 install from `#subdirectory=packages/kmctl`; the action
 installs that folder of its own checkout.
 
 kmaudit releases on its own: its version is the one line in
