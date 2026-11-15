@@ -86,10 +86,18 @@ parser.parse_args()
 """
 
 
+#: The identity every fixture commit uses, so a machine with no git user
+#: (a fresh CI runner) can commit too.
+IDENTITY = ("-c", "user.name=t", "-c", "user.email=t@example.com")
+
+
 def git(root: Path, *args: str) -> str:
-    """Run git in ``root`` and return its stdout."""
+    """Run git in ``root`` with the fixture identity and return its stdout."""
     return subprocess.run(
-        ["git", "-C", str(root), *args], capture_output=True, text=True, check=True
+        ["git", "-C", str(root), *IDENTITY, *args],
+        capture_output=True,
+        text=True,
+        check=True,
     ).stdout
 
 
@@ -114,17 +122,8 @@ def make_repo(root: Path) -> Path:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text, encoding="utf-8")
     git(root, "init", "-q", "-b", "main")
-    git(root, "-c", "user.name=t", "-c", "user.email=t@example.com", "add", ".")
-    git(
-        root,
-        "-c",
-        "user.name=t",
-        "-c",
-        "user.email=t@example.com",
-        "commit",
-        "-qm",
-        "init",
-    )
+    git(root, "add", ".")
+    git(root, "commit", "-qm", "init")
     return root
 
 
