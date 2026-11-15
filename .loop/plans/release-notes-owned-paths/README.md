@@ -35,10 +35,16 @@ only bookkeeping is in neither package's notes. A commit that touches
 bookkeeping and a shipped path still counts for the package owning the
 shipped path.
 
-release-tag's late-commit step copies the rule in awk. It calls
-`release_notes.py` for it instead: a new `--owns` mode reads paths on stdin
-and exits 0 when the package owns any of them, so the notes and the warning
-cannot drift apart.
+release-tag's late-commit step copies the rule in awk. The rule moves into
+its own small script, `new:scripts/release_paths.py`: `owns(package, path)`
+and a command that reads paths on stdin and exits 0 when the package owns
+any of them. `release_notes.py` imports `owns` from it, and release-tag's
+step pipes each late commit's paths to it instead of its awk, so the notes
+and the warning cannot drift apart. release-tag still never runs
+`release_notes.py`, so `test_release_tag_never_writes_its_own_notes` and
+ADR 0012's "it no longer runs release_notes.py" stand unchanged: published
+notes are never regenerated. The test gains one check, that the step calls
+`release_paths.py` and holds no awk copy of the rule.
 
 It worked when a commit touching only `.okf/` and `uv.lock` is in neither
 package's notes nor in release-tag's late-commit warning, and a commit
@@ -59,8 +65,8 @@ touching `.okf/` and `packages/kmaudit/` is in kmaudit's.
 - goal: G1
 - fixes: P1
 - needs: none
-- touches: `scripts/release_notes.py`, `.github/workflows/release-tag.yml`, `tests/scripts/test_release_notes.py`, `tests/scripts/test_workflows.py`, `.okf/decisions/0012-releases-come-from-ci.md`
-- checked by: release_notes tests that a commit touching only `.okf/` and `uv.lock` is in neither package's notes, one touching `.okf/` and `packages/kmaudit/` is in kmaudit's, and one touching `.claude/` and `docs/` is in kmctl's; `--owns` tests over those path sets; a release-tag test that a late bookkeeping-only commit is not named and a late shipped one is; the workflow step calls `release_notes.py --owns`, with no awk copy of the rule
+- touches: `new:scripts/release_paths.py`, `scripts/release_notes.py`, `.github/workflows/release-tag.yml`, `tests/scripts/test_release_notes.py`, `tests/scripts/test_workflows.py`, `.okf/decisions/0012-releases-come-from-ci.md`
+- checked by: release_notes tests that a commit touching only `.okf/` and `uv.lock` is in neither package's notes, one touching `.okf/` and `packages/kmaudit/` is in kmaudit's, and one touching `.claude/` and `docs/` is in kmctl's; release_paths.py tests over those path sets, as a function and as a command; a release-tag test that a late bookkeeping-only commit is not named and a late shipped one is; the workflow step calls `release_paths.py` with no awk copy of the rule, and still never names `release_notes.py`
 - seen by: operator
 
 ## Could invalidate this plan
