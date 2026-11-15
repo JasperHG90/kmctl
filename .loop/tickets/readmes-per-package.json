@@ -20,10 +20,50 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/implementer",
+    "hash": "dce6e90d926d13cfe0c43dab3c124dca971a3ce4a2dbad7e9d589baa10624014",
+    "at": "2026-11-15T18:48:17+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "The root README is a short map (under 80 lines) that links packages/kmctl/README.md, packages/kmaudit/README.md and docs/, and every relative link in the three READMEs resolves.",
+      "fails_when": "the root README runs to 80 lines or more, misses a link to either package README or docs/, or any README link points at a missing file",
+      "command": "uv run pytest tests/test_readmes.py -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "packages/kmctl/README.md tells a user how to install and use kmctl: the CLI install line, the apm.yml entry, the harness sections, upgrade and remove, and links into docs/; the tests that read kmctl's install lines read them there.",
+      "fails_when": "kmctl's README lacks any of those, or a docs test still reads kmctl's install lines from the root README",
+      "command": "uv run pytest packages/kmctl/tests/test_docs.py -q",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "kmaudit's command reference lives at docs/reference/kmaudit-commands.md with docs front matter, documents every kmaudit MCP tool and command, packages/kmaudit/docs/ is gone, and kmctl check passes with the indexes regenerated.",
+      "fails_when": "packages/kmaudit/docs/ remains, the page lacks a tool or command, or kmctl check reports an error or warning",
+      "command": "uv run pytest packages/kmaudit/tests/test_mcp.py packages/kmctl/tests/test_docs_frontmatter.py -q",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "release.py set pins kmctl's install lines in packages/kmctl/README.md and set --package kmaudit pins the tracing line in docs/reference/kmaudit-commands.md; release_paths gives docs pages named kmaudit-* to kmaudit and not kmctl; the release workflow stages the moved files.",
+      "fails_when": "a pin targets an old path, a kmaudit docs page counts for kmctl, or the workflow stages a path that no longer exists",
+      "command": "uv run pytest tests/scripts/test_release.py tests/scripts/test_release_paths.py tests/scripts/test_workflows.py -q",
+      "judgment": false
+    },
+    {
+      "id": "r5",
+      "behavior": "The docs install-line check tells kmaudit's lines from kmctl's, and passes on a copy of the tree after set --package kmaudit 0.2.0.",
+      "fails_when": "a pinned kmaudit line is held to kmctl's subdirectory, or the check fails after a kmaudit pin",
+      "command": "uv run pytest packages/kmctl/tests/test_docs.py -k install -q",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -69,5 +109,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T18:48:15+00:00"
+  "at": "2026-11-15T18:48:17+00:00"
 }
