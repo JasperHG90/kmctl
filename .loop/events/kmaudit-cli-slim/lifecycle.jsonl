@@ -11,3 +11,4 @@
 {"at": "2026-11-15T06:41:26+00:00", "grant": "g7", "hash": "79018a77b126b90b7c2e98b4980ba0dff32c72bad5aaceff45416690243a5b2d", "kind": "signoff", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/implementer", "step": "eval-sign"}
 {"at": "2026-11-15T09:59:08+00:00", "by": "advance", "from": "ready", "kind": "transition", "schema_version": "1.0", "to": "building"}
 {"at": "2026-11-15T10:28:21+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "building"}
+{"at": "2026-11-15T10:29:14+00:00", "by": "advance", "from": "building", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
