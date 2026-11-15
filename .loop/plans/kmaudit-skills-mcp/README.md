@@ -10,6 +10,7 @@ epic: kmaudit
 depends_on:
 - kmaudit-mcp
 - apm-per-package
+- kmaudit-install-hints-pinned
 priority: 2
 schema_version: '2.0'
 generated:
@@ -33,20 +34,41 @@ drive kmaudit through a shell: heredoc answers to `kmaudit claims submit`
 and `kmaudit checks submit`, held to those commands by a `kmaudit guard`
 PreToolUse hook.
 
-This ticket moves both skills and both agents into kmaudit's package
-(`git mv` from `packages/kmctl/apm/.apm/` to `packages/kmaudit/apm/.apm/`),
-renames the agents `kmaudit-claims-extractor` and `kmaudit-check-writer`,
-and rewrites them to call the MCP tools kmaudit-mcp added (`claims_todo`,
-`claims_submit`, `checks_todo`, `checks_try`, `checks_submit`) with
-structured answers. The agents need no shell, so their `tools` become Read,
-Grep, Glob and those MCP tools, named as Claude Code names them
-(`mcp__kmaudit__claims_todo`), and the guard hook leaves their front matter.
-The skills keep sequencing (see what is left, batch, hand each batch to the
-agent, report) through `claims_todo` and `claims_list`; where a harness has
-no such agent (Antigravity, which APM gives no agents), the skill does a
-batch itself with the same tools. Both skills are changed through
-skill-creator with their evals, as `.claude/rules/skills-via-skill-creator.md`
-asks.
+This ticket moves both skills into kmaudit's package
+(`git mv` from `packages/kmctl/apm/.apm/skills/` to
+`packages/kmaudit/apm/.apm/skills/`), and both agents into a Claude Code
+sub-package, `packages/kmaudit/apm/claude/` (an `apm.yml` with
+`targets: [claude]`, pulled in by kmaudit's `apm.yml` as `./claude`), the
+way kmctl's package keeps its Claude-only rules and hooks in
+`packages/kmctl/apm/claude/`. The agents are renamed
+`kmaudit-claims-extractor` and `kmaudit-check-writer` and rewritten to call
+the MCP tools kmaudit-mcp added (`claims_todo`, `claims_submit`,
+`checks_todo`, `checks_try`, `checks_submit`) with structured answers. They
+need no shell, so their `tools` become Read, Grep, Glob and those MCP
+tools, named as Claude Code names them (`mcp__kmaudit__claims_todo`), and
+the guard hook leaves their front matter.
+
+Who serves which harness, decided: Claude Code gets the skills, the agents
+and the server. Antigravity and OpenCode get the skills and the server, and
+no agents: APM writes the Claude-only sub-package for Claude Code alone, so
+OpenCode no longer receives untranslated copies it would strip of their
+front matter. In those harnesses each skill does its batches itself with
+the same MCP tools, and says so in one step ("when the agent is not
+available, work through the batch yourself as below"). Today kmctl's
+`plugin patch` translates these two agents for Antigravity and OpenCode;
+that stops, because kmctl's translation reads only kmctl's own agents and
+its tool maps have no MCP names, and teaching kmctl kmaudit's agents would
+tie the two packages together again. The cost is that those harnesses run
+extraction in the main session, on its model, instead of a cheap isolated
+subagent. kmctl's `opencode.py` and `antigravity.py` lose the two agents
+from their lists, with their tests.
+
+The skills keep sequencing (see what is left, batch, hand each batch to
+the agent or do it, report) through `claims_todo` and `claims_list`. Both
+skills are changed through skill-creator with their evals, as
+`.claude/rules/skills-via-skill-creator.md` asks. kmaudit's CLI help that
+names the old agents (`--by kmctl-claims-extractor`,
+`--by kmctl-check-writer`) follows the rename.
 
 kmaudit's `apm.yml` declares the kmaudit MCP server, as kmctl's declares
 okf's: `uvx --from git+https://github.com/JasperHG90/kmctl@kmaudit-vX.Y.Z#subdirectory=packages/kmaudit kmaudit mcp`,
@@ -80,8 +102,8 @@ two skills or agents.
 - goal: G1
 - fixes: P1
 - needs: none
-- touches: `new:packages/kmaudit/apm`, `new:packages/kmctl/apm`, `scripts/release.py`, `.github/workflows/release.yml`, `packages/kmaudit/README.md`, `packages/kmaudit/docs/commands.md`, `new:packages/kmaudit/tests/test_apm_package.py`, `packages/kmctl/tests/test_apm_package.py`, `tests/test_skills.py`, `tests/scripts/test_release.py`, `.okf/decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp.md`, `.okf/architecture/audit-pipeline.md`
-- checked by: tests that kmaudit's apm.yml declares the kmaudit server at its own tag and lists the skills and agents, that the agents' tools are Read, Grep, Glob and the five kmaudit MCP tools with no Bash and no hook, that kmctl's package and wheel no longer hold them, and that `set --package kmaudit` pins the server's ref; the skills' evals rerun through skill-creator; an integration test that installs kmaudit's package with APM into a project and finds the server in .mcp.json and the agents in .claude/agents/
+- touches: `new:packages/kmaudit/apm`, `new:packages/kmctl/apm`, `packages/kmctl/src/kmctl/opencode.py`, `packages/kmctl/src/kmctl/antigravity.py`, `packages/kmctl/tests/test_opencode.py`, `packages/kmctl/tests/test_antigravity.py`, `packages/kmctl/tests/test_plugin_patch.py`, `packages/kmaudit/src/kmaudit/cli.py`, `scripts/release.py`, `.github/workflows/release.yml`, `packages/kmaudit/README.md`, `packages/kmaudit/docs/commands.md`, `new:packages/kmaudit/tests/test_apm_package.py`, `packages/kmctl/tests/test_apm_package.py`, `tests/test_skills.py`, `tests/scripts/test_release.py`, `.okf/decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp.md`, `.okf/architecture/audit-pipeline.md`
+- checked by: tests that kmaudit's apm.yml declares the kmaudit server at its own tag and lists the skills and agents, that the agents' tools are Read, Grep, Glob and the five kmaudit MCP tools with no Bash and no hook, that kmctl's package and wheel no longer hold them, and that `set --package kmaudit` pins the server's ref; the skills' evals rerun through skill-creator; an integration test that installs kmaudit's package with APM for claude and opencode into a project and finds the server in .mcp.json and opencode.json, the agents in .claude/agents/ and none in .opencode/agents/; kmctl's plugin patch tests no longer translate the two agents
 - seen by: operator
 
 ## Could invalidate this plan
