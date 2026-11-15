@@ -1,0 +1,1 @@
+{"at": "2026-11-15T10:21:24+00:00", "command": "uv run pytest -m integration", "exit": 1, "fingerprint": "ee5721937d933e502887fa594de792750d3e7e6cda7532b3a411e5c4e491027d", "kind": "red", "name": "integration", "note": null, "output": ".loop/events/kmaudit-cli-slim/gate-output/d9c64bd053845c6110b27803985f402ec866a11ab2a808e670e13b7e4e89e61f.txt", "schema_version": "1.0"}
