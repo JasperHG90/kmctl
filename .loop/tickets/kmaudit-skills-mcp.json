@@ -3,7 +3,7 @@
   "slug": "kmaudit-skills-mcp",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -28,8 +28,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "387691a22ca4376820a1306f1da2f1fd9d9fce9fa4175c7129f1808c062afde8",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "09ce4a17d83ab8429b307d1ad34a2085f1870a107057b401af290930e0b903af",
+    "started_at": "2026-11-15T05:41:38+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "09ce4a17d83ab8429b307d1ad34a2085f1870a107057b401af290930e0b903af",
   "intent": {
     "epic": "kmaudit",
     "depends_on": [
@@ -46,5 +65,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T05:41:35+00:00"
+  "at": "2026-11-15T05:41:38+00:00"
 }
