@@ -24,8 +24,8 @@
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/implementer",
-    "hash": "0ef1bd5ced8c0d6f2b32a7ecba5c87660d38120b6b5d8e91638a046989cbca90",
-    "at": "2026-11-15T05:28:15+00:00"
+    "hash": "4a0e305f74a5998f8aebe004d88550f77155c8641894bb2f041cb728b2e0768d",
+    "at": "2026-11-15T05:33:15+00:00"
   },
   "delegation": null,
   "budget_base": null,
@@ -60,13 +60,39 @@
     },
     {
       "id": "r5",
-      "behavior": "This branch's version files and install lines read v0.12.2, the last root release, with no subdirectory, and the docs and ADR 0044 name v0.12.2 as the cutoff.",
-      "fails_when": "a version file or install line still names v0.12.1, an install line at v0.12.2 carries the fragment, or the docs or ADR name v0.12.1 as the last root release",
-      "command": "uv run pytest packages/kmctl/tests/test_docs.py tests/scripts/test_release.py -q",
+      "behavior": "The README, docs and hook hints install v0.12.2, the last root release, with no subdirectory, and every install line carries the subdirectory exactly when its ref is after v0.12.2.",
+      "fails_when": "an install line still names v0.12.1, a line at v0.12.2 carries the fragment, or a line after the cutoff lacks it",
+      "command": "uv run pytest packages/kmctl/tests/test_docs.py -q",
+      "judgment": false
+    },
+    {
+      "id": "r6",
+      "behavior": "Every release.py test passes with the cutoff, including set's version, docs, copier and hook pinning.",
+      "fails_when": "any release.py test fails",
+      "command": "uv run pytest tests/scripts/test_release.py -q",
       "judgment": false
     }
   ],
-  "resigns": [],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/implementer",
+      "reason": "r5 ran packages/kmctl/tests and tests/ in one pytest call, where the two conftest modules clash; split into r5 (test_docs) and r6 (test_release)",
+      "diff": {
+        "added": [
+          "r6"
+        ],
+        "removed": [],
+        "changed": {
+          "r5": [
+            "behavior",
+            "fails_when",
+            "command"
+          ]
+        }
+      },
+      "at": "2026-11-15T05:33:15+00:00"
+    }
+  ],
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
@@ -117,5 +143,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T05:28:15+00:00"
+  "at": "2026-11-15T05:33:15+00:00"
 }
