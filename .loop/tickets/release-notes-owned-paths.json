@@ -20,7 +20,8 @@
   "worktree": "/home/vscode/workspace.worktrees/release-notes-owned-paths",
   "branch": "loop/release-notes-owned-paths",
   "stamps": [
-    "6338d4810d893969149e25d845e9ef5a9666846cb76c446fda8b01b736d86854"
+    "6338d4810d893969149e25d845e9ef5a9666846cb76c446fda8b01b736d86854",
+    "803217b0dd146bb41b4c76c92e33623a9315c53f9ef18231eb0c7b2b49494d9e"
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/implementer",
@@ -115,5 +116,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T06:36:24+00:00"
+  "at": "2026-11-15T06:40:34+00:00"
 }
