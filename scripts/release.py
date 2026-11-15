@@ -21,7 +21,7 @@ kmctl's is described below and tags ``vX.Y.Z``; kmaudit's is
 file's version and ``set`` writes it there and into its Claude Code
 sub-package's apm.yml, pins the MCP server that apm.yml declares, the
 install lines in ``packages/kmaudit/README.md`` and the ``kmaudit[tracing]``
-line in ``packages/kmaudit/docs/commands.md`` to the tag. ``tag`` prints a version's tag.
+line in ``docs/reference/kmaudit-commands.md`` to the tag. ``tag`` prints a version's tag.
 
 ``packages/kmctl/apm/apm.yml``, kmctl's APM package, carries the one version,
 and ``packages/kmctl/pyproject.toml`` reads it from there (ADR 0014). APM needs a ``version:`` in
@@ -55,7 +55,7 @@ MANIFEST = Path("packages/kmctl/apm/apm.yml")
 OLD_MANIFEST = Path("apm/apm.yml")
 #: The docs whose install lines ``set`` points at the release tag.
 DOC_FILES = (
-    Path("README.md"),
+    Path("packages/kmctl/README.md"),
     Path("docs/tutorials/get-started-with-kmctl.md"),
     Path("docs/how-to/install-the-plugin-and-the-ci-action.md"),
 )
@@ -115,7 +115,7 @@ KMAUDIT_CLAUDE = Path("packages/kmaudit/apm/claude/apm.yml")
 KMAUDIT_README = Path("packages/kmaudit/README.md")
 #: kmaudit's commands reference, whose ``kmaudit[tracing]`` install line
 #: ``set --package kmaudit`` pins too.
-KMAUDIT_DOCS = Path("packages/kmaudit/docs/commands.md")
+KMAUDIT_DOCS = Path("docs/reference/kmaudit-commands.md")
 # kmaudit's install line, with or without a tag before its subdirectory.
 _KMAUDIT_INSTALL = re.compile(
     r"(git\+https://github\.com/JasperHG90/kmctl)(@[^\s#']+)?(#subdirectory=packages/kmaudit)"
@@ -410,7 +410,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     p_set = sub.add_parser(
         "set",
-        help="kmctl: write the version into the four apm.yml files, pin the docs, the hook's install hints and copier.yml's kmctl_ref; kmaudit: write packages/kmaudit/apm/apm.yml and apm/claude/apm.yml and pin its MCP server and the install lines in its README and docs/commands.md",
+        help="kmctl: write the version into the four apm.yml files, pin the docs, the hook's install hints and copier.yml's kmctl_ref; kmaudit: write packages/kmaudit/apm/apm.yml and apm/claude/apm.yml and pin its MCP server and the install lines in its README and docs/reference/kmaudit-commands.md",
     )
     p_set.add_argument("version", help="the release version, e.g. 0.2.0 or 0.2.0rc1")
     p_tag = sub.add_parser(

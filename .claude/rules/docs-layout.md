@@ -6,8 +6,10 @@ paths: ["docs/**", ".okf/**", "README.md"]
 
 Two places hold prose, and they have different readers.
 
-- `docs/` is for people who USE kmctl: someone installing it in a
-  repository, running an audit, or reading why `kmctl check` failed. Its
+- `docs/` is for people who USE kmctl or kmaudit: someone installing one in
+  a repository, running an audit, or reading why `kmctl check` failed.
+  kmaudit's pages take file names that start with `kmaudit-`, so their
+  changes land in kmaudit's release notes (`scripts/release_paths.py`). Its
   index page, README.md at the top of `docs/`, links each folder's own
   README.md index, which `kmctl check --fix` generates.
 - `.okf/` is for agents and people working ON this repository: decisions and

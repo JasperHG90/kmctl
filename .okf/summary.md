@@ -7,13 +7,10 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-11-15T10:14:01Z
+  at: 2026-11-15T18:55:12Z
   against:
-    - architecture/audit-pipeline
     - architecture/overview
-    - decisions/0040-the-audit-pipeline-holds-its-agents-by-a-hook-and-keeps-answers-through-rewording
-    - decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp
-    - manifesto
+    - decisions/0012-releases-come-from-ci
 ---
 
 # Summary: kmctl

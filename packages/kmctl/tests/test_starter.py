@@ -597,16 +597,18 @@ def test_docs_how_to_covers_the_starter() -> None:
 
 
 def test_docs_readme_and_index_link_the_how_to() -> None:
-    """README.md and the how-to index link the page."""
+    """kmctl's README and the how-to index link the page."""
     link = "start-a-repository-with-kmctl-starter.md"
 
-    assert f"docs/how-to/{link}" in (ROOT / "README.md").read_text()
+    assert (
+        f"docs/how-to/{link}" in (ROOT / "packages" / "kmctl" / "README.md").read_text()
+    )
     assert link in (ROOT / "docs" / "how-to" / "README.md").read_text()
 
 
 def test_docs_readme_says_the_template_offers_the_reviewer() -> None:
-    """README.md's reviewer section says the copier template offers it, with the .agent.md entry."""
-    readme = (ROOT / "README.md").read_text()
+    """kmctl's README's reviewer section says the copier template offers it, with the .agent.md entry."""
+    readme = (ROOT / "packages" / "kmctl" / "README.md").read_text()
     section = readme.split("## Works better with an adversarial reviewer", 1)[1]
     section = " ".join(section.split("\n## ", 1)[0].split())
 

@@ -186,3 +186,14 @@ landed between the drafted commit and the merge, so someone adds them with
 `gh release edit`. It finds the drafted commit from the `Drafted-From`
 trailer on the release branch's own commits, so an "Update branch" merge
 from main on that branch does not hide the late commits. Only a kmctl release is marked Latest.
+
+## Correction, 2026-11-15
+
+kmaudit's command reference moved from `packages/kmaudit/docs/commands.md`
+to `docs/reference/kmaudit-commands.md`, beside kmctl's, so the repository
+keeps one `docs/`. `scripts/release_paths.py` now gives kmaudit its pages in
+`docs/` too: those whose file names start with `kmaudit-`. kmctl owns every
+other path outside `packages/`, as before. `release.py set --package kmaudit`
+pins the tracing install line in the moved page, and `release.py set` pins
+kmctl's CLI install line in `packages/kmctl/README.md`, since the root
+`README.md` is now a short map with no install line.

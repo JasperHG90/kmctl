@@ -197,6 +197,24 @@ def test_release_py_set_writes_the_version_and_the_six_doc_lines(
     ]
 
 
+def test_release_py_set_pins_kmctl_s_install_line_in_its_package_readme(
+    tmp_path: Path,
+) -> None:
+    """kmctl's install line lives in packages/kmctl/README.md, which set pins; the root README holds none."""
+    root = _repo(tmp_path)
+
+    res = _run(root, "set", "9.9.9")
+
+    assert res.returncode == 0, res.stderr
+    assert Path("README.md") not in DOC_FILES
+    assert INSTALL_RE.search((ROOT / "README.md").read_text()) is None
+    text = (root / "packages" / "kmctl" / "README.md").read_text()
+    assert (
+        "uv tool install git+https://github.com/JasperHG90/kmctl"
+        "@v9.9.9#subdirectory=packages/kmctl\n" in text
+    )
+
+
 def test_release_py_set_writes_the_apm_version_into_both_apm_yml_files(
     tmp_path: Path,
 ) -> None:
@@ -332,7 +350,7 @@ def test_release_py_set_moves_the_pins_from_an_older_tag(tmp_path: Path) -> None
 def test_release_py_set_refuses_fewer_than_six_doc_lines(tmp_path: Path) -> None:
     """With an install line gone, ``set`` exits nonzero and writes nothing."""
     root = _repo(tmp_path)
-    readme = root / "README.md"
+    readme = root / "packages" / "kmctl" / "README.md"
     readme.write_text(INSTALL_RE.sub("", readme.read_text()))
     before = {rel: (root / rel).read_text() for rel in (MANIFEST, *DOC_FILES)}
 
@@ -557,7 +575,7 @@ def test_release_py_set_refuses_a_copier_yml_without_the_default(
 #: kmaudit's package, whose pyproject reads the version from its apm/apm.yml.
 KMAUDIT = Path("packages/kmaudit")
 #: kmaudit's commands reference, whose tracing install line kmaudit set pins.
-KMAUDIT_DOCS = KMAUDIT / "docs" / "commands.md"
+KMAUDIT_DOCS = Path("docs/reference/kmaudit-commands.md")
 #: The git URL kmaudit's MCP server is installed from, before its ``@ref``.
 KMAUDIT_SERVER = "git+https://github.com/JasperHG90/kmctl"
 
@@ -613,7 +631,7 @@ def test_kmaudit_version_builds_the_file_s_version(tmp_path: Path) -> None:
     shutil.copytree(
         ROOT / KMAUDIT,
         project / KMAUDIT,
-        ignore=shutil.ignore_patterns("__pycache__", "tests", "docs"),
+        ignore=shutil.ignore_patterns("__pycache__", "tests"),
     )
     _set_apm_version(project / KMAUDIT_MANIFEST, "9.8.7")
 
@@ -647,7 +665,7 @@ def _changed(root: Path) -> set[str]:
 
 
 def test_package_aware_kmaudit_set_writes_only_its_files(tmp_path: Path) -> None:
-    """``--package kmaudit set`` writes its apm.yml files' version and pins the README's and docs/commands.md's install lines to kmaudit-vX.Y.Z."""
+    """``--package kmaudit set`` writes its apm.yml files' version and pins the README's and docs/reference/kmaudit-commands.md's install lines to kmaudit-vX.Y.Z."""
     root = _kmaudit_repo(tmp_path)
 
     res = _run(root, "--package", "kmaudit", "set", "0.2.0")

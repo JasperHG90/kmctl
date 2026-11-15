@@ -280,7 +280,9 @@ def test_documented_every_tool_and_harness_and_absolute_folder(repo: Path) -> No
         return names, relative, absolute
 
     names, relative, absolute = drive(repo, steps)
-    commands = (PACKAGE / "docs" / "commands.md").read_text(encoding="utf-8")
+    commands = (
+        PACKAGE.parents[1] / "docs" / "reference" / "kmaudit-commands.md"
+    ).read_text(encoding="utf-8")
     readme = (PACKAGE / "README.md").read_text(encoding="utf-8")
     headings = re.findall(r"^#{2,4} (.+)$", readme, flags=re.MULTILINE)
 
@@ -292,3 +294,6 @@ def test_documented_every_tool_and_harness_and_absolute_folder(repo: Path) -> No
     for harness in HARNESSES:
         assert any(harness in h for h in headings), harness
     assert absolute == relative
+    # kmaudit's reference lives in the repository's docs/, not in the package.
+    assert not (PACKAGE / "docs").exists()
+    assert "(../../docs/reference/kmaudit-commands.md" in readme
