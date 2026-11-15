@@ -6,9 +6,9 @@ and writes a check for each claim: steps kmaudit reruns with no model
 whenever the files the check reads change. People review the claims and
 checks on a local page.
 
-kmaudit calls no model itself, except the optional `kmaudit judge`. The
-agent you already work with does the reading and writing through
-kmaudit's commands.
+kmaudit calls no model itself, except the optional `judge` tool. The agent
+you already work with does the reading and writing through kmaudit's MCP
+tools; you review the result, and rerun stale checks, on its local page.
 
 kmaudit lives in the kmctl repository as a package of its own. It does not
 need kmctl, though the two work well together: kmctl keeps an `.okf/`
@@ -20,28 +20,32 @@ knowledge bundle current, and kmaudit checks that bundle against the code.
 uv tool install 'kmaudit @ git+https://github.com/JasperHG90/kmctl#subdirectory=packages/kmaudit'
 ```
 
-Add the `tracing` extra (`kmaudit[tracing]`) to trace `kmaudit judge` calls
-to LangSmith.
+Add the `tracing` extra (`kmaudit[tracing]`) to trace the `judge` tool's
+calls to LangSmith.
 
 ## Commands
 
-Every command takes `--help` and prints `--json` for scripts. The full
-reference is [`docs/commands.md`](docs/commands.md).
+The CLI starts the MCP server and the review page, and reads a store.
+Every command takes `--help`, and those that print take `--json` for
+scripts. The full reference, MCP tools included, is
+[`docs/commands.md`](docs/commands.md).
 
 | Command | What it does |
 |---|---|
-| `kmaudit claims todo`, `submit`, `list` | Hand an agent the sections to read, store its claims, read them back |
-| `kmaudit checks todo`, `try`, `submit`, `run`, `list` | Hand an agent claims to check, test a draft check, store it, rerun what changed |
-| `kmaudit judge failure\|claim\|link` | Ask an optional decision model about stored checks (off by default) |
-| `kmaudit coverage` | How much of the code the checks match |
-| `kmaudit ui` | A local page to review claims and checks and give feedback |
+| `kmaudit mcp` | kmaudit's verbs as tools of an MCP server over stdio, for any harness that speaks MCP |
+| `kmaudit ui` | A local page to review claims and checks, give feedback and rerun stale checks |
+| `kmaudit claims list` | The stored claims, per concept and kind or one by one |
+| `kmaudit checks list` | Each claim's check status, strength and why |
 | `kmaudit namespaces` | Each audited folder, with its counts |
 | `kmaudit briefing` | Each namespace's state and the next step, for a session-start hook |
-| `kmaudit guard --allow claims\|checks` | A Claude Code PreToolUse hook that holds an agent to kmaudit commands |
-| `kmaudit mcp` | The verbs as tools of an MCP server over stdio, for any harness that speaks MCP |
 
-Point kmaudit at any folder of markdown docs: `kmaudit claims todo docs`,
-`kmaudit claims todo .okf`. Each folder is a namespace with its own store
+Extracting claims, writing and testing checks, rerunning them, coverage and
+the decision model are MCP tools, not commands; the `/extract-claims` and
+`/write-checks` skills drive them. A command that once did one of these
+(`kmaudit checks run`, say) exits 2 and names its replacement.
+
+Point kmaudit at any folder of markdown docs: `/extract-claims docs`,
+`/extract-claims .okf`, or `folder` set to `docs` in an MCP tool call. Each folder is a namespace with its own store
 under `.kmaudit/` in the repository, which ignores itself in git, so two
 folders never clash; `kmaudit namespaces` lists them. An OKF bundle keeps
 its own rules (its `index.md`, `log.md` and `prototypes/` are skipped);
@@ -50,7 +54,7 @@ any other folder audits every `.md` file in it.
 ## MCP server
 
 `kmaudit mcp` serves the verbs as MCP tools over stdio, so any harness that
-speaks MCP can drive the audit without a shell: `namespaces`, `claims_todo`,
+speaks MCP drives the audit through them, with no shell: `namespaces`, `claims_todo`,
 `claims_submit`, `claims_list`, `checks_todo`, `checks_try`,
 `checks_submit`, `checks_run`, `checks_list`, `coverage` and `judge`. The
 tools are listed in [`docs/commands.md`](docs/commands.md#kmaudit-mcp).
@@ -103,7 +107,7 @@ config, and add kmaudit to `mcp_config.json`:
 
 Antigravity may start the server outside your workspace, so pass an
 absolute `folder`. If `checks_run` times out, narrow `folder` to part of
-the docs, or run `kmaudit checks run` in a terminal.
+the docs, or press Rerun stale checks on `kmaudit ui`.
 
 ### LangGraph
 

@@ -1,4 +1,4 @@
-"""What the ``kmaudit claims`` verbs do, callable without the CLI: todo, submit and list."""
+"""What the claims verbs do: todo, submit and list, which the MCP tools and ``kmaudit claims list`` call."""
 
 import json
 import re
@@ -83,7 +83,7 @@ class PendingConcept(BaseModel):
 
 
 class TodoResult(BaseModel):
-    """What ``kmaudit claims todo`` hands out."""
+    """What the ``claims_todo`` MCP tool hands out."""
 
     instructions: str | None = Field(
         default=None,
@@ -105,10 +105,10 @@ class TodoResult(BaseModel):
         description="Claims people marked good, with their notes, to learn what works.",
     )
     namespace: str = Field(
-        description="The namespace these sections belong to: the audited folder below the repository root; pass it as --path to submit."
+        description="The namespace these sections belong to: the audited folder below the repository root; pass it as folder to claims_submit."
     )
     next: str = Field(
-        description="The verb that usually follows, with --path naming the namespace."
+        description="The MCP tool that usually follows, with the folder to pass it."
     )
 
 
@@ -127,7 +127,7 @@ class Refused(BaseModel):
 
 
 class SubmitResult(BaseModel):
-    """What ``kmaudit claims submit`` stored and refused."""
+    """What the ``claims_submit`` MCP tool stored and refused."""
 
     stored: list[Stored] = Field(default_factory=list)
     refused: list[Refused] = Field(default_factory=list)
@@ -228,7 +228,7 @@ def todo(path: Path, limit: int | None = None, brief: bool = False) -> TodoResul
         else None,
         examples=examples,
         namespace=target.namespace,
-        next=f"kmaudit claims submit - --path {target.namespace}",
+        next=f"claims_submit with folder {target.namespace}",
     )
 
 
@@ -270,12 +270,12 @@ def _check_answer(
     row = store.section(answer.section)
     if row is None:
         raise AuditError(
-            f"unknown section {answer.section!r}; run kmaudit claims todo for the current section ids"
+            f"unknown section {answer.section!r}; call claims_todo for the current section ids"
         )
     if row["key"] != answer.key:
         raise AuditError(
             f"stale key {answer.key!r} for {answer.section} (the section or its context changed); "
-            "run kmaudit claims todo and answer the section again"
+            "call claims_todo and answer the section again"
         )
     sentences: list[str] = json.loads(row["sentences"])
     earlier_ids: list[str] = json.loads(row["earlier_ids"])
@@ -359,13 +359,13 @@ def submit(path: Path, text: str, by: str = "agent") -> SubmitResult:
     except json.JSONDecodeError as error:
         raise AuditError(
             f"the answer is not JSON ({error.msg} at line {error.lineno}); "
-            "pipe a list of section answers, as kmaudit claims todo --json describes"
+            "pass a list of section answers, as claims_todo describes"
         ) from error
     items = _ANSWERS.validate_python(data if isinstance(data, list) else [data])
     if not items:
         raise AuditError(
-            "the answer list is empty; pipe the section answers, "
-            "as kmaudit claims todo --json describes"
+            "the answer list is empty; pass the section answers, "
+            "as claims_todo describes"
         )
     result = SubmitResult()
     with Store(target.root, target.namespace) as store:
@@ -379,7 +379,7 @@ def submit(path: Path, text: str, by: str = "agent") -> SubmitResult:
                     Refused(
                         section=label,
                         reason=f"malformed answer for {label or 'a section'}: {_first_error(error)}; "
-                        "fix it to the shape kmaudit claims todo --json gives and submit again",
+                        "fix it to the shape claims_todo gives and submit again",
                     )
                 )
                 continue
@@ -395,7 +395,7 @@ def submit(path: Path, text: str, by: str = "agent") -> SubmitResult:
                     Refused(
                         section=label,
                         reason=f"{answer.section} changed while the answer was checked; "
-                        "run kmaudit claims todo and answer it again",
+                        "call claims_todo and answer it again",
                     )
                 )
                 continue

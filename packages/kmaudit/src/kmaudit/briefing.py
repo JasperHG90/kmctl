@@ -6,7 +6,7 @@ store file with SQLite's read-only mode into memory and migrates only that
 copy, so a store at any schema step reads like a current one and the file
 is not changed; SQLite may still create its ``-wal`` and ``-shm``
 sidecars, which hold nothing new. Pending sections come from cutting the pages and
-comparing keys, as ``claims todo`` would, without its refresh.
+comparing keys, as ``claims_todo`` would, without its refresh.
 """
 
 import sqlite3
@@ -38,7 +38,7 @@ class NamespaceBrief:
     sections : int
         Sections in the store, as ``kmaudit claims list`` counts them.
     pending : int
-        Sections of the pages as they are now that ``claims todo`` would hand out.
+        Sections of the pages as they are now that ``claims_todo`` would hand out.
     claims : int
         Claims in the store.
     checks : dict[str, int]

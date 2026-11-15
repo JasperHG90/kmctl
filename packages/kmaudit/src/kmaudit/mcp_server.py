@@ -1,13 +1,14 @@
 """``kmaudit mcp``: kmaudit's verbs as the tools of a stdio MCP server.
 
 Any harness that speaks MCP (Claude Code, Codex, Antigravity, a LangGraph
-agent) starts ``kmaudit mcp`` and calls these tools instead of a shell. Each
-tool takes ``folder``, the namespace, as the CLI takes its path: absolute, or
-relative to the directory the harness starts the server in. Each returns the
-JSON the matching CLI verb prints with ``--json``. A refusal of the whole call
-is a tool error whose text is the CLI's refusal line, naming the fix; a submit
-that refuses some answers and stores others is a result whose ``refused``
-list names each one.
+agent) starts ``kmaudit mcp`` and calls these tools; they are the only way an
+agent drives the audit, since the CLI keeps only ``mcp``, ``ui``,
+``namespaces``, ``briefing`` and the two list commands. Each tool takes
+``folder``, the namespace: absolute, or relative to the directory the harness
+starts the server in. Each returns JSON. A refusal of the whole call is a
+tool error, ``Error executing tool TOOL: refused: REASON``, naming the fix; a submit that refuses
+some answers and stores others is a result whose ``refused`` list names each
+one.
 
 stdin and stdout carry the MCP messages, so the verbs run in a worker thread
 (except ``judge``, which awaits its model calls on the event loop) and every
@@ -46,10 +47,9 @@ coverage says how much code the checks match; namespaces lists the audited \
 folders; judge asks the optional decision model.
 
 The todo tools hand out 5 items by default; pass brief=true after the first \
-round to leave out the instructions you already have. Where a result or \
-instruction names a CLI verb (kmaudit claims submit - --path NAMESPACE), \
-call the tool of the same name (claims_submit) with that namespace as folder. \
-A refused call is a tool error naming the fix; a submit that stores some \
+round to leave out the instructions you already have. Where a result's next \
+names a tool and a folder (claims_submit with folder docs), call that tool \
+with that namespace as folder. A refused call is a tool error naming the fix; a submit that stores some \
 answers lists the rest under refused, each with its fix."""
 
 server = MCPServer(
@@ -96,18 +96,19 @@ By = Annotated[
 ]
 
 
-async def _run(verb: str, work: Callable[[], str]) -> CallToolResult:
-    """Run ``work`` in a worker thread and return its JSON, or refuse as ``kmaudit VERB`` does.
+async def _run(work: Callable[[], str]) -> CallToolResult:
+    """Run ``work`` in a worker thread and return its JSON, or refuse the call.
 
     Raises
     ------
     ToolError
-        With the CLI's refusal line when the verb refuses the call.
+        With ``refused: REASON`` when the verb refuses the call; the SDK puts
+        the tool's name in front.
     """
     try:
         text = await anyio.to_thread.run_sync(work)
     except (AuditError, sqlite3.Error) as error:
-        raise ToolError(f"kmaudit {verb}: refused: {error}") from error
+        raise ToolError(f"refused: {error}") from error
     return CallToolResult(content=[TextContent(type="text", text=text)])
 
 
@@ -125,11 +126,10 @@ async def namespaces(
         ),
     ] = ".",
 ) -> CallToolResult:
-    """List the repository's namespaces: each audited folder with its sections, claims and checks, as `kmaudit namespaces --json`."""
+    """List the repository's namespaces: each audited folder with its sections, claims and checks."""
     from kmaudit.namespaces import listing
 
     return await _run(
-        "namespaces",
         lambda: json.dumps({"namespaces": [asdict(r) for r in listing(Path(folder))]}),
     )
 
@@ -138,14 +138,13 @@ async def namespaces(
 async def claims_todo(
     folder: Folder, limit: Limit = 5, brief: Brief = False
 ) -> CallToolResult:
-    """List the sections with no claims extracted for their current text, with the instructions for answering them, as `kmaudit claims todo --json`.
+    """List the sections with no claims extracted for their current text, with the instructions for answering them.
 
     Answer each section per the instructions and pass the answers to claims_submit.
     """
     from kmaudit.verbs import todo
 
     return await _run(
-        "claims todo",
         lambda: todo(Path(folder), limit, brief).model_dump_json(exclude_none=brief),
     )
 
@@ -154,7 +153,7 @@ async def claims_todo(
 async def claims_submit(
     folder: Folder, answers: Answers, by: By = "agent"
 ) -> CallToolResult:
-    """Store an agent's verdicts and claims for sections claims_todo handed out, as `kmaudit claims submit --json`.
+    """Store an agent's verdicts and claims for sections claims_todo handed out.
 
     Returns stored (section, claims) and refused (section, reason with the fix); a stale key
     or a bad answer is refused on its own while the good answers are stored.
@@ -162,7 +161,6 @@ async def claims_submit(
     from kmaudit.verbs import submit
 
     return await _run(
-        "claims submit",
         lambda: submit(Path(folder), _text(answers), by).model_dump_json(),
     )
 
@@ -181,11 +179,10 @@ async def claims_list(
         ),
     ] = False,
 ) -> CallToolResult:
-    """Show the stored claims: counts per concept and kind, or each claim, as `kmaudit claims list --json`."""
+    """Show the stored claims: counts per concept and kind, or each claim."""
     from kmaudit.verbs import list_claims
 
     return await _run(
-        "claims list",
         lambda: list_claims(Path(folder), kind, claims).model_dump_json(
             exclude_none=True
         ),
@@ -196,25 +193,23 @@ async def claims_list(
 async def checks_todo(
     folder: Folder, limit: Limit = 5, brief: Brief = False
 ) -> CallToolResult:
-    """List the stored claims with no check or current reason, with the lines they are about, the instructions and the answer schema, as `kmaudit checks todo --json`.
+    """List the stored claims with no check or current reason, with the lines they are about, the instructions and the answer schema.
 
     Draft each answer, test it with checks_try, then store it with checks_submit.
     """
     from kmaudit.check_verbs import todo
 
     return await _run(
-        "checks todo",
         lambda: todo(Path(folder), limit, brief).model_dump_json(exclude_none=brief),
     )
 
 
 @server.tool()
 async def checks_try(folder: Folder, answers: Answers) -> CallToolResult:
-    """Run draft checks and say whether each holds and which changes to the code it would miss, as `kmaudit checks try --json`. It stores nothing."""
+    """Run draft checks and say whether each holds and which changes to the code it would miss. It stores nothing."""
     from kmaudit.check_verbs import Tried, try_answers
 
     return await _run(
-        "checks try",
         lambda: (
             TypeAdapter(list[Tried])
             .dump_json(try_answers(Path(folder), _text(answers)))
@@ -227,14 +222,13 @@ async def checks_try(folder: Folder, answers: Answers) -> CallToolResult:
 async def checks_submit(
     folder: Folder, answers: Answers, by: By = "agent"
 ) -> CallToolResult:
-    """Store checks and reasons for claims, refusing weak and failing checks, as `kmaudit checks submit --json`.
+    """Store checks and reasons for claims, refusing weak and failing checks.
 
     Returns stored and refused (claim, reason with the fix); the good answers are stored.
     """
     from kmaudit.check_verbs import submit
 
     return await _run(
-        "checks submit",
         lambda: submit(Path(folder), _text(answers), by).model_dump_json(),
     )
 
@@ -249,10 +243,10 @@ async def checks_run(
         ),
     ] = False,
 ) -> CallToolResult:
-    """Rerun the stored checks whose files changed, with no model, and report each claim's status, as `kmaudit checks run --json`. It can take minutes."""
+    """Rerun the stored checks whose files changed, with no model, and report each claim's status. It can take minutes; the audit page's Rerun stale checks button does the same."""
     from kmaudit.check_verbs import run
 
-    return await _run("checks run", lambda: run(Path(folder), all).model_dump_json())
+    return await _run(lambda: run(Path(folder), all).model_dump_json())
 
 
 @server.tool()
@@ -262,21 +256,20 @@ async def checks_list(
         Status | None, Field(description="Only claims with this status.")
     ] = None,
 ) -> CallToolResult:
-    """Show each claim's check status, strength and why, as the last checks_run or checks_submit left it, as `kmaudit checks list --json`."""
+    """Show each claim's check status, strength and why, as the last checks_run or checks_submit left it."""
     from kmaudit.check_verbs import list_checks
 
     return await _run(
-        "checks list",
         lambda: list_checks(Path(folder), status).model_dump_json(exclude_none=True),
     )
 
 
 @server.tool()
 async def coverage(folder: Folder) -> CallToolResult:
-    """Show how much of the repository's code the checks match, line by line, as `kmaudit coverage --json`."""
+    """Show how much of the repository's code the checks match, line by line."""
     from kmaudit.coverage import coverage as measure
 
-    return await _run("coverage", lambda: measure(Path(folder)).model_dump_json())
+    return await _run(lambda: measure(Path(folder)).model_dump_json())
 
 
 @server.tool()
@@ -301,7 +294,7 @@ async def judge(
         str, Field(description="claim only: the lines to judge the claim on.")
     ] = "",
 ) -> CallToolResult:
-    """Ask the configured decision model one question about stored checks or a claim, as `kmaudit judge` does.
+    """Ask the configured decision model one question about stored checks or a claim.
 
     Off unless the question is switched on in the user's audit.toml. Returns one entry per
     id: its judgement, or the error that stopped it.
@@ -311,7 +304,7 @@ async def judge(
     try:
         result = await run_judge(Path(folder), question, ids, lines)
     except (AuditError, sqlite3.Error) as error:
-        raise ToolError(f"kmaudit judge: refused: {error}") from error
+        raise ToolError(f"refused: {error}") from error
     return CallToolResult(
         content=[
             TextContent(type="text", text=result.model_dump_json(exclude_none=True))

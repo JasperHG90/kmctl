@@ -29,7 +29,7 @@ class CheckAnswer(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    claim: str = Field(description="The claim id that kmaudit checks todo gave.")
+    claim: str = Field(description="The claim id that checks_todo gave.")
     steps: list[Step] = Field(
         min_length=1, description="At least one step; with none, give a reason instead."
     )
@@ -51,7 +51,7 @@ class ReasonAnswer(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    claim: str = Field(description="The claim id that kmaudit checks todo gave.")
+    claim: str = Field(description="The claim id that checks_todo gave.")
     reason: str = Field(
         min_length=1, description="One sentence: why no step can test the claim."
     )

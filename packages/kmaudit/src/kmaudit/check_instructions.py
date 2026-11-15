@@ -1,4 +1,4 @@
-"""The check-writing instructions ``kmaudit checks todo --json`` hands an agent, once, with the answer's schema."""
+"""The check-writing instructions the ``checks_todo`` MCP tool hands an agent, once, with the answer's schema."""
 
 INSTRUCTIONS = """
 You turn claims about a repository into checks. A check is a list of steps
@@ -47,12 +47,12 @@ Rules:
   Guard a function against a missing key: [?uses && starts_with(uses, 'x')].
   YAML reads a workflow's on: key as true, so test triggers with grep.
 
-Try before you submit. Pipe a draft to kmaudit checks try - --json: it
+Try before you submit. Pass a draft to the checks_try tool: it
 runs the steps, says whether each holds and what it saw, and changes the code
 it matched in memory (flip a boolean, change a number or string, negate a
 condition, delete a statement) to see whether the check notices. A check
 that holds but notices none of those changes is weak: it tests a comment, a
-name, or nothing the claim depends on. kmaudit checks submit refuses a
+name, or nothing the claim depends on. checks_submit refuses a
 weak check, naming the changes it missed; pin it to the code that does the
 thing instead.
 
@@ -60,8 +60,8 @@ A check that fails may mean the claim is wrong. Look once more; do not bend
 the check until it holds. If the claim is wrong, submit the check that tests
 it with drift set to one sentence saying what the code does instead.
 
-Answer each claim with one JSON object, and pipe a list of them to
-kmaudit checks submit -:
+Answer each claim with one JSON object, and pass a list of them to the
+checks_submit tool as answers, with the namespace as folder:
 
 {"claim": "<claim id from todo>", "steps": [{"op": "code", "pattern":
  "sys.exit(1)", "paths": "src/tool/cli.py"}], "strength": "exact",

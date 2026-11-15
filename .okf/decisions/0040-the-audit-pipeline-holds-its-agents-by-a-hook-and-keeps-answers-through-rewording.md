@@ -8,7 +8,6 @@ generated:
   at: 2026-11-11T13:30:41Z
 status: stable
 sources:
-  - resource: "packages/kmaudit/src/kmaudit/guard.py"
   - resource: "packages/kmaudit/src/kmaudit/sections.py"
   - resource: "packages/kmaudit/src/kmaudit/check_store.py"
   - resource: "packages/kmaudit/src/kmaudit/check_verbs.py"
@@ -112,3 +111,12 @@ can sit on a claim that means something slightly different: `run` reruns
 it and drift shows up as a failure. The hook needs `kmctl` on PATH and, for
 a project agent, the trusted workspace Claude Code asks for; without them
 it does not run.
+
+## Correction, 2026-11-15
+
+The guard hook is gone. kmaudit's agents call its MCP tools and have no
+shell, and the CLI's only command that writes to a store is `kmaudit ui`,
+which no agent runs, so
+`kmaudit guard` and `guard.py` were removed; typed now, `kmaudit guard`
+exits 2 and says so. The rest of this record still holds. See ADR 0043's
+amendment of the same date.

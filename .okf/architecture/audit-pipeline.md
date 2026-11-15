@@ -21,7 +21,7 @@ kmaudit, a package of its own in `packages/kmaudit/`
 ([ADR 0043](../decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp.md)),
 checks what a folder of markdown docs says against the code: `.okf/`,
 `docs/` or any other, each folder a namespace with its own store. It calls no model
-except the optional `kmaudit judge`: two Haiku subagents, driven by two
+except the optional `judge` tool: two Haiku subagents, driven by two
 skills in kmaudit's own APM package (`packages/kmaudit/apm/`), do the
 reading and writing through the kmaudit MCP tools, and kmaudit hands out
 the work, validates and measures what comes back, stores it and
@@ -47,15 +47,15 @@ flowchart TB
         writer["kmaudit-check-writer<br/>Haiku, Read + MCP tools"]
     end
 
-    subgraph cli["kmaudit (no model)"]
-        ctodo["claims todo<br/>sections whose key moved"]
-        csubmit["claims submit<br/>schema, stale key, every sentence"]
-        ktodo["checks todo<br/>claim + anchors + lines"]
-        ktry["checks try<br/>run + mutate, writes nothing"]
-        ksubmit["checks submit<br/>refuse weak, failing w/o drift"]
-        krun["checks run<br/>rerun on changed reads"]
+    subgraph cli["kmaudit mcp tools and kmaudit ui (no model)"]
+        ctodo["claims_todo<br/>sections whose key moved"]
+        csubmit["claims_submit<br/>schema, stale key, every sentence"]
+        ktodo["checks_todo<br/>claim + anchors + lines"]
+        ktry["checks_try<br/>run + mutate, writes nothing"]
+        ksubmit["checks_submit<br/>refuse weak, failing w/o drift"]
+        krun["checks_run<br/>rerun on changed reads"]
         judge["judge failure | claim | link<br/>optional decision model"]
-        ui["ui<br/>local page on 127.0.0.1"]
+        ui["kmaudit ui<br/>local page on 127.0.0.1"]
         cover["coverage<br/>lines checks matched"]
     end
 
@@ -83,6 +83,7 @@ flowchart TB
     person -- "thumbs, notes, verdicts" --> ui
     ui -- "feedback" --> store
     ui -- "second opinion" --> judge
+    ui -- "Rerun stale checks" --> krun
     store -- "open feedback, examples" --> ctodo
     store --> cover
     code --> cover
@@ -91,44 +92,46 @@ flowchart TB
 
 ## The flow
 
-1. **Sections.** `kmaudit claims todo` cuts each live concept at its
+1. **Sections.** The `claims_todo` tool cuts each live concept at its
    `#` to `###` headers into numbered sentences. A section's key hashes its
    text, its concept's id, title, status and type, the sections before it
    and the extraction instructions; it hands out the sections whose key
    moved and those a person sent back from `kmaudit ui`.
 2. **Claims.** The extractor gives every sentence a verdict (kind,
-   quantifier, standalone claims) and passes them to `claims_submit`
-   (`kmaudit claims submit`), which refuses a stale key, a missing or doubled sentence and a
-   malformed answer, one stderr line each. A claim's id hashes its concept
+   quantifier, standalone claims) and passes them to `claims_submit`,
+   which refuses a stale key, a missing or doubled sentence and a
+   malformed answer, each with its fix. A claim's id hashes its concept
    and text.
-3. **Lines.** `kmaudit checks todo` hands out the point, structural and
+3. **Lines.** `checks_todo` hands out the point, structural and
    broad claims with no answer, each with its anchors (every backticked
    span resolved to a path, command, flag or name) and the lines around
    them, or keyword windows from the concept's `sources`.
 4. **Checks.** The check writer drafts steps from a fixed DSL and runs them
-   with `try`, which also changes the matched lines in memory (flip a
+   with `checks_try`, which also changes the matched lines in memory (flip a
    boolean, change a number, string or YAML value, rename a definition or
-   YAML key, negate a condition, delete a statement). `submit` stores a
+   YAML key, negate a condition, delete a statement). `checks_submit` stores a
    check only when it notices some of those changes, a failing check only
    with `drift`, and a reason when no step fits.
-5. **Reruns.** `kmaudit checks run` reruns a check only when the set or
-   content of the files it reads changed, and measures it again only when
-   its steps or reads moved. It exits 0 whatever it finds.
-6. **Judgement.** `kmaudit judge` asks a decision model, when a person
+5. **Reruns.** `checks_run`, and the Rerun stale checks button on
+   `kmaudit ui`, which calls the same function, rerun a check only when the
+   set or content of the files it reads changed, and measure it again only
+   when its steps or reads moved. A failing check is a result, not an
+   error.
+6. **Judgement.** The `judge` tool asks a decision model, when a person
    switched the question on, whether a failure is drift, whether lines show
    a claim, or whether a check tests its claim.
 7. **Review.** `kmaudit ui` shows each document with its claims and
    checks. A person gives a claim or its check a thumbs up or down and a
    note, says whether the claim holds, or asks `judge` for a second
    opinion. A thumbs down on a claim hands its section out again in
-   `claims todo`; a thumbs down on a check, a verdict the check
+   `claims_todo`; a thumbs down on a check, a verdict the check
    disagrees with, or "false" on a claim no check decides yet, hands the
-   claim out again, first, in `checks todo`. Any feedback rides along when
+   claim out again, first, in `checks_todo`. Any feedback rides along when
    its item is handed out, and the agent's next submit marks it answered.
    Answers people liked go to agents as examples.
 8. **Coverage.** Grep, code, definition and import steps record the lines
-   they matched; file, query and help steps test whole files. `kmaudit
-   coverage` counts a line of code as covered when a stored check matched
+   they matched; file, query and help steps test whole files. The
+   `coverage` tool counts a line of code as covered when a stored check matched
    it on its last run, and the page's code view marks those lines and
    shows the claims behind each one (ADR 0042).
 
@@ -137,8 +140,10 @@ flowchart TB
 - **No shell.** In Claude Code the agents' tools are Read, Grep, Glob and
   their kmaudit MCP tools, so they can write only through kmaudit's submit
   tools. Antigravity and OpenCode get no agents; there the skill does the
-  batch in the main session with the same tools. `kmaudit guard` stays in
-  the CLI for an agent that still drives kmaudit through a shell.
+  batch in the main session with the same tools. kmaudit's CLI keeps no
+  verb that writes to a store, so an agent has nothing to reach through a
+  shell; `kmaudit guard`, the hook that once held a shell to kmaudit
+  commands, is gone (ADR 0043).
 - **The weak bar.** A check that notices none of the changes to the code
   it matched, or matched only comments and docstrings, is never stored.
 - **Answers follow rewording.** When re-extraction rewords a claim, its
@@ -174,22 +179,22 @@ Still open:
 - **Extraction errors.** 4 of the 16 drifts were not real: wrong
   extractions or files the writer could not read, not counted apart. One
   known case is the claim "kmctl is a standalone CLI with thin skills",
-  read from a correction that restates ADR 0001. `kmaudit judge
-  failure` and a person's verdict in `kmaudit ui` are the second look.
+  read from a correction that restates ADR 0001. The `judge`
+  tool's failure question and a person's verdict in `kmaudit ui` are the second look.
 
 ## Depicts
 
 - Invariants: I2 (the audit agent and CI audit never write knowledge; the
   claims and checks agents are a Value, held by their tools in Claude Code).
-- Verbs: `kmaudit claims todo`, `kmaudit claims submit`,
-  `kmaudit claims list`, `kmaudit checks todo`,
-  `kmaudit checks try`, `kmaudit checks submit`,
-  `kmaudit checks run`, `kmaudit checks list`, `kmaudit judge`,
-  `kmaudit ui`, `kmaudit coverage`, `kmaudit namespaces`, `kmaudit briefing`, `kmaudit guard`.
+- Verbs: `kmaudit mcp`, `kmaudit ui`, `kmaudit claims list`,
+  `kmaudit checks list`, `kmaudit namespaces`, `kmaudit briefing`; MCP
+  tools `claims_todo`, `claims_submit`, `claims_list`, `checks_todo`,
+  `checks_try`, `checks_submit`, `checks_run`, `checks_list`, `coverage`,
+  `judge`, `namespaces`.
 - Modules: `packages/kmaudit/src/kmaudit/` (`cli.py`, `namespaces.py`, `briefing.py`, `sections.py`, `instructions.py`,
   `models.py`, `store.py`, `verbs.py`, `steps.py`, `anchors.py`,
   `lines.py`, `mutate.py`, `check_instructions.py`, `check_store.py`,
-  `check_verbs.py`, `guard.py`, `feedback.py`, `ui.py`, `ui.html`,
+  `check_verbs.py`, `feedback.py`, `ui.py`, `ui.html`,
   `coverage.py`, `judge.py`, `settings.py`, `tracing.py`,
   `frontmatter.py`);
   `packages/kmaudit/src/kmaudit/mcp_server.py`,

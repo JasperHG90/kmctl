@@ -10,7 +10,7 @@ Every backticked span in a claim is an anchor, resolved against the repository:
 - any other name: defined (Python ``ast``, and keys of YAML, TOML and JSON
   files), mentioned in code, mentioned only in tests, or absent.
 
-``kmaudit checks todo`` hands an agent the anchors and the lines around
+The ``checks_todo`` MCP tool hands an agent the anchors and the lines around
 them, so a check writer sees the code it is about.
 """
 

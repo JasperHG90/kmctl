@@ -1,14 +1,12 @@
-"""Code coverage by claims: which lines the stored checks matched, what counts as code, and kmaudit coverage."""
+"""Code coverage by claims: which lines the stored checks matched and what counts as code, as the coverage MCP tool reports them."""
 
 import json
 from pathlib import Path
 
 import pytest
-from kmaudit import check_verbs
-from kmaudit.cli import app
+from kmaudit import AuditError, check_verbs
 from kmaudit.coverage import code_files, coverage
 from kmaudit.steps import Repository
-from typer.testing import CliRunner
 
 from .fixtures.audit_repo import git, make_repo, store_claims
 
@@ -108,31 +106,13 @@ def test_a_reason_covers_nothing(repo: Path, ids: dict[str, str]) -> None:
     assert coverage(repo).covered == 0
 
 
-def test_coverage_prints_the_share_and_the_largest_bare_files(
-    repo: Path, ids: dict[str, str]
-) -> None:
-    answer(
-        repo, {"claim": ids["exits"], "steps": [CODE], "strength": "exact", "why": "w"}
-    )
-
-    result = CliRunner().invoke(app, ["coverage", "--files", "1"])
-    as_json = json.loads(CliRunner().invoke(app, ["coverage", "--json"]).stdout)
-
-    assert result.exit_code == 0, result.output
-    assert result.stdout.splitlines()[0].startswith("2 of ")
-    assert result.stdout.splitlines()[1].startswith("no line matched  ")
-    assert as_json["covered"] == 2
-
-
 def test_coverage_refuses_a_folder_with_no_bundle(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.chdir(tmp_path)
 
-    result = CliRunner().invoke(app, ["coverage"])
-
-    assert result.exit_code == 1
-    assert result.stderr.startswith("kmaudit coverage: refused:")
+    with pytest.raises(AuditError, match="give a folder of markdown docs"):
+        coverage(Path("."))
 
 
 def test_a_run_on_files_that_changed_since_is_stale_and_not_counted(

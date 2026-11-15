@@ -112,3 +112,25 @@ their front matter; `kmaudit guard` stays in the CLI. Antigravity and
 OpenCode get the skills and the server but no agents, and the skills do
 each batch themselves there; kmctl's package and `kmctl plugin patch` no
 longer carry or translate these agents.
+
+
+## Amended, 2026-11-15, the CLI slims down
+
+The CLI now keeps only what the Decision above set out: `kmaudit mcp`,
+`kmaudit ui`, `kmaudit namespaces`, `kmaudit briefing`, `kmaudit claims
+list` and `kmaudit checks list`. The verbs that wrote to a store, ran checks
+or asked the decision model left it and live on as the MCP tools of the
+same names (`claims_todo`, `claims_submit`, `checks_todo`, `checks_try`,
+`checks_submit`, `checks_run`, `coverage`, `judge`); typed anyway, each
+exits 2 with one line naming its tool, so two surfaces no longer have to be
+kept correct. `kmaudit guard` is gone, and the guard hook ADR 0040 describes
+is gone with it: no agent drives kmaudit through a shell any more, so there
+is no shell to hold. A person reruns stale checks with the Rerun stale
+checks button on `kmaudit ui`, which calls the function the `checks_run`
+tool calls; an agent calls `checks_run`; a CI job uses an MCP client or a
+short Python call to `kmaudit.check_verbs.run`. Reading answers from a file
+or stdin, and the plain-text output of the dropped verbs, left with them.
+
+Rejected: keeping `kmaudit checks run` on the CLI for people and CI. The
+operator chose the page's button, so a person changes a store only
+through `kmaudit ui`, and an agent only through the MCP tools.

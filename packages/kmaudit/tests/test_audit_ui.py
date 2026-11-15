@@ -387,3 +387,51 @@ def test_a_binary_file_or_a_link_out_of_the_repository_is_refused(
     res = client.get("/api/file", params={"path": name})
 
     assert res.status_code == 404
+
+
+def test_the_page_shows_a_rerun_stale_checks_button(client: httpx.Client) -> None:
+    page = client.get("/").text
+
+    assert '"Rerun stale checks"' in page
+    assert 'post("/api/rerun", {})' in page
+    assert "await load();" in page.split("async function rerun()")[1].split("\n}")[0]
+
+
+def test_rerun_reruns_a_stale_check_and_returns_the_run(
+    client: httpx.Client, repo: Path, ids: dict[str, str]
+) -> None:
+    tool = repo / "src" / "tool.py"
+    tool.write_text("# moved down\n" + tool.read_text())
+    assert claim_in(client.get("/api/data").json(), ids["exits"])["check"]["stale"]
+
+    res = client.post("/api/rerun", json={})
+
+    assert res.status_code == 200
+    run = res.json()
+    assert run["rerun"] == 1
+    assert {r["claim"]: r["rerun"] for r in run["claims"]}[ids["exits"]] is True
+    after = claim_in(client.get("/api/data").json(), ids["exits"])
+    assert (after["check"]["stale"], after["status"]) == (False, "holds")
+
+
+def test_rerun_calls_the_function_the_checks_run_tool_calls() -> None:
+    import inspect
+
+    from kmaudit import mcp_server, ui
+
+    assert ui.run is check_verbs.run
+    assert "from kmaudit.check_verbs import run" in inspect.getsource(
+        mcp_server.checks_run
+    )
+
+
+def test_rerun_from_another_site_is_refused_and_reruns_nothing(
+    client: httpx.Client, repo: Path, ids: dict[str, str]
+) -> None:
+    tool = repo / "src" / "tool.py"
+    tool.write_text("# moved down\n" + tool.read_text())
+
+    res = client.post("/api/rerun", json={}, headers={"Origin": "https://evil.example"})
+
+    assert res.status_code == 403
+    assert claim_in(client.get("/api/data").json(), ids["exits"])["check"]["stale"]

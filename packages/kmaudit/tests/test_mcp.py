@@ -33,6 +33,8 @@ TOOLS = {
     "judge",
 }
 HARNESSES = ["Claude Code", "Codex", "Antigravity", "LangGraph"]
+#: The commands the slim CLI keeps, each documented in commands.md and the README.
+KEPT = ["mcp", "ui", "namespaces", "briefing", "claims list", "checks list"]
 
 
 @pytest.fixture
@@ -123,11 +125,11 @@ def test_lists_every_tool_each_taking_folder(repo: Path) -> None:
         if name != "namespaces":
             assert "folder" in schema.get("required", []), name
     assert {"folder", "question", "ids", "lines"} <= set(schemas["judge"]["properties"])
-    # The judge tool refuses an off question with the CLI's refusal line.
-    assert error and "kmaudit judge: refused:" in text and "[decisions.link]" in text
+    # The judge tool refuses an off question with a line naming the tool and the fix.
+    assert error and "tool judge: refused:" in text and "[decisions.link]" in text
 
 
-def test_lists_judge_tool_and_cli_await_one_function(
+def test_lists_judge_tool_awaiting_run_judge(
     repo: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     import kmaudit.judge as judging
@@ -153,20 +155,18 @@ def test_lists_judge_tool_and_cli_await_one_function(
 
     monkeypatch.setattr(judging, "run_judge", fake)
 
-    code = CliRunner().invoke(app, ["judge", "link", "a", "b", "--json"]).exit_code
     result = asyncio.run(
         server.call_tool(
             "judge", {"folder": ".okf", "question": "link", "ids": ["a", "b"]}
         )
     )
 
-    assert code == 0
-    assert [s[1:] for s in seen] == [("link", ["a", "b"], "")] * 2
+    assert seen == [(Path(".okf"), "link", ["a", "b"], "")]
     entries = json.loads(result.content[0].text)["entries"]
     assert [e["id"] for e in entries] == ["a", "b"]
 
 
-def test_round_trip_todo_submit_list_matches_cli_json(repo: Path) -> None:
+def test_round_trip_todo_submit_list_matches_the_list_command(repo: Path) -> None:
     async def steps(session: ClientSession) -> Any:
         first = await ok(session, "claims_todo", folder=".okf")
         stored = await ok(
@@ -188,7 +188,9 @@ def test_round_trip_todo_submit_list_matches_cli_json(repo: Path) -> None:
     ]
     assert stored["refused"] == []
     assert sum(s["claims"] for s in stored["stored"]) > 0
-    assert again == cli("claims", "todo", ".okf", "--limit", "15")
+    assert again["sections"] == [] and again["counts"]["up_to_date"] == len(
+        first["sections"]
+    )
     assert listed == cli("claims", "list", ".okf")
     assert each == cli("claims", "list", ".okf", "--claims")
     assert {c["section"] for c in each["claims"]} == {
@@ -220,16 +222,16 @@ def test_refusal_is_a_tool_error_and_mixed_batch_lists_refused(repo: Path) -> No
 
     error, text = unknown
     assert error
-    assert "kmaudit claims todo: refused:" in text
+    assert "tool claims_todo: refused:" in text
     assert "does not exist; give a folder of markdown docs" in text
     error, text = garbled
     assert error
-    assert "kmaudit claims submit: refused: the answer is not JSON" in text
+    assert "tool claims_submit: refused: the answer is not JSON" in text
     assert [s["section"] for s in mixed["stored"]] == [sections[0]["id"]]
     [refused] = mixed["refused"]
     assert refused["section"] == sections[1]["id"]
     assert "stale key" in refused["reason"]
-    assert "run kmaudit claims todo" in refused["reason"]
+    assert "call claims_todo" in refused["reason"]
     assert stale["stored"] == [] and len(stale["refused"]) == 1
     assert alive["totals"]
 
@@ -268,8 +270,6 @@ def test_paging_default_limit_stays_small_and_brief_drops_instructions(
     assert len(text.encode()) < 100_000
     assert full["instructions"]
     assert "instructions" not in brief and len(brief["sections"]) == 5
-    on_cli = cli("claims", "todo", "docs", "--limit", "5", "--brief")
-    assert "instructions" not in on_cli and len(on_cli["sections"]) == 5
 
 
 def test_documented_every_tool_and_harness_and_absolute_folder(repo: Path) -> None:
@@ -286,6 +286,9 @@ def test_documented_every_tool_and_harness_and_absolute_folder(repo: Path) -> No
 
     for name in names:
         assert f"`{name}`" in commands, name
+    for command in KEPT:
+        assert f"## `kmaudit {command}`" in commands, command
+        assert f"`kmaudit {command}" in readme, command
     for harness in HARNESSES:
         assert any(harness in h for h in headings), harness
     assert absolute == relative

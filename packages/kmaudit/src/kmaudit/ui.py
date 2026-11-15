@@ -1,9 +1,10 @@
-"""The audit page: what ``kmaudit ui`` serves on localhost, and the feedback and second opinions it writes.
+"""The audit page: what ``kmaudit ui`` serves on localhost, and the feedback, second opinions and reruns it asks for.
 
 The page shows each document of the bundle with its claims, checks and how
 sure each check is. People give a thumbs up or down and a note on a claim or
 its check, say whether a claim holds, and ask the decision model for a second
-opinion. Everything is read from and written to the namespace's store under ``.kmaudit/``
+opinion. A person reruns the stale checks with the page's Rerun stale checks
+button, which calls the function the ``checks_run`` MCP tool calls. Everything is read from and written to the namespace's store under ``.kmaudit/``
 (ADR 0041). The server listens on 127.0.0.1 only and refuses requests whose
 Host or Origin is not local, so no other site can write through it.
 """
@@ -26,7 +27,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from kmaudit import AuditError
 from kmaudit.check_store import check
-from kmaudit.check_verbs import CHECKABLE, lines_for, status_row
+from kmaudit.check_verbs import CHECKABLE, lines_for, run, status_row
 from kmaudit.coverage import FileCoverage, coverage
 from kmaudit.feedback import (
     Feedback,
@@ -401,7 +402,7 @@ def _opinions(
 def build(root: Path, by: str = "human", config: Path | None = None) -> AuditView:
     """Read everything the page shows from the bundle and the store at ``root``.
 
-    It refreshes the stored sections first, as ``kmaudit claims todo``
+    It refreshes the stored sections first, as the ``claims_todo`` MCP tool
     does, so a section whose text changed shows as needing extraction.
 
     Raises
@@ -564,7 +565,7 @@ def give_feedback(
 
     A verdict on a claim whose answer read no files (no check yet, or a
     reason found by keyword) is kept with the files behind the lines
-    ``kmaudit checks todo`` shows for it, so it goes stale when they
+    ``checks_todo`` shows for it, so it goes stale when they
     change.
 
     Raises
@@ -588,8 +589,8 @@ def second_opinion(root: Path, claim_id: str, config: Path | None = None) -> Cla
     """Ask the decision model about one claim, and return the claim with its answer.
 
     The question depends on the claim's answer: link for a check that holds,
-    failure for one that fails, and claim, on the lines ``kmaudit checks
-    todo`` would show, for a reason or no answer yet. A question asked of the
+    failure for one that fails, and claim, on the lines ``checks_todo``
+    would show, for a reason or no answer yet. A question asked of the
     same state before is answered from the store with no request.
 
     Raises
@@ -614,7 +615,7 @@ def second_opinion(root: Path, claim_id: str, config: Path | None = None) -> Cla
         raise AuditError(
             "this claim is not checkable"
             if found.kind not in CHECKABLE
-            else "its check has not run yet; run kmaudit checks run, then reload the page"
+            else "its check has not run yet; press Rerun stale checks"
         )
     if importlib.util.find_spec("tenacity") is None:
         raise AuditError(
@@ -666,7 +667,7 @@ class AuditServer(ThreadingHTTPServer):
 
 
 class _Handler(BaseHTTPRequestHandler):
-    """Serves the page and its three calls: the data, feedback and a second opinion."""
+    """Serves the page and its calls: the data, a file, feedback, a second opinion and a rerun."""
 
     server: AuditServer
 
@@ -726,7 +727,7 @@ class _Handler(BaseHTTPRequestHandler):
             self._error(HTTPStatus.NOT_FOUND, f"no page at {path}")
 
     def do_POST(self) -> None:
-        """Store feedback, or ask for a second opinion, and answer with the claim as it now shows."""
+        """Store feedback or ask for a second opinion, answering with the claim as it now shows, or rerun the stale checks, answering with the run."""
         if not self._local() or not self._same_origin():
             self._error(
                 HTTPStatus.FORBIDDEN, "writes come only from the audit page itself"
@@ -755,6 +756,8 @@ class _Handler(BaseHTTPRequestHandler):
             elif path == "/api/opinion":
                 asked = OpinionRequest.model_validate_json(body)
                 view = second_opinion(self.server.root, asked.claim, self.server.config)
+            elif path == "/api/rerun":
+                view = run(self.server.root)
             else:
                 self._error(HTTPStatus.NOT_FOUND, f"no call at {path}")
                 return

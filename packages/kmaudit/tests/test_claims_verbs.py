@@ -1,10 +1,11 @@
-"""kmaudit claims todo, submit and list, driven as an agent would drive them."""
+"""The claims verbs (todo, submit and list) driven as an agent drives them through the MCP tools, and kmaudit claims list."""
 
 import json
 import socket
 from pathlib import Path
 
 import pytest
+from kmaudit import AuditError, verbs
 from kmaudit.cli import app
 from typer.testing import CliRunner
 
@@ -23,10 +24,24 @@ def run(*args: str, stdin: str | None = None) -> tuple[int, str, str]:
     return result.exit_code, result.stdout, result.stderr
 
 
-def todo(*args: str) -> dict:
-    code, out, err = run("claims", "todo", *args, "--json")
-    assert code == 0, err
-    return json.loads(out)
+def todo(path: str = ".", limit: int | None = None) -> dict:
+    """What the claims_todo tool returns for ``path``, parsed."""
+    return json.loads(verbs.todo(Path(path), limit).model_dump_json())
+
+
+def submit(answers: object) -> dict:
+    """What the claims_submit tool returns for ``answers``, parsed."""
+    text = answers if isinstance(answers, str) else json.dumps(answers)
+    return json.loads(verbs.submit(Path("."), text).model_dump_json())
+
+
+def refusals(answers: object) -> list[str]:
+    """The reasons a submit gives: the whole call's refusal, or each refused answer's."""
+    try:
+        result = submit(answers)
+    except AuditError as error:
+        return [str(error)]
+    return [r["reason"] for r in result["refused"]]
 
 
 def answer(section: dict, kind: str = "point") -> dict:
@@ -53,13 +68,7 @@ def answer(section: dict, kind: str = "point") -> dict:
 
 def submit_all() -> None:
     sections = todo()["sections"]
-    code, _, err = run(
-        "claims",
-        "submit",
-        "-",
-        stdin=json.dumps([answer(s) for s in sections]),
-    )
-    assert code == 0, err
+    assert submit([answer(s) for s in sections])["refused"] == []
 
 
 def test_todo_first_run_lists_every_section_with_key_and_instructions(
@@ -74,8 +83,7 @@ def test_todo_first_run_lists_every_section_with_key_and_instructions(
         "tool#values",
     ]
     assert (
-        "kind" in result["instructions"]
-        and "kmaudit claims submit" in result["instructions"]
+        "kind" in result["instructions"] and "claims_submit" in result["instructions"]
     )
     assert all(s["key"] and s["sentences"][0]["n"] == 1 for s in result["sections"])
     assert result["counts"]["pending"] == 4
@@ -132,13 +140,11 @@ def test_todo_on_one_concept_leaves_the_others(repo: Path) -> None:
     }
 
 
-def test_todo_limit_and_counts_for_people(repo: Path) -> None:
-    assert len(todo("--limit", "1")["sections"]) == 1
-    code, out, _ = run("claims", "todo")
-    assert code == 0
-    assert "to extract" in out and out.strip().splitlines()[-1].startswith("Next: ")
-    assert "kmaudit claims submit" in out
-    assert "pending .okf/tool.md  (2 sections)" in out
+def test_todo_limit_keeps_the_counts_and_names_the_next_tool(repo: Path) -> None:
+    limited = todo(limit=1)
+    assert len(limited["sections"]) == 1
+    assert limited["counts"]["pending"] == 4
+    assert limited["next"] == "claims_submit with folder .okf"
     assert todo()["concepts"][1] == {
         "concept": "tool",
         "path": ".okf/tool.md",
@@ -149,42 +155,19 @@ def test_todo_limit_and_counts_for_people(repo: Path) -> None:
 def test_submit_stores_a_valid_answer(repo: Path) -> None:
     section = todo()["sections"][2]
 
-    code, out, err = run(
-        "claims", "submit", "-", "--json", stdin=json.dumps(answer(section))
-    )
-
-    assert code == 0, err
-    assert json.loads(out) == {
+    assert submit(answer(section)) == {
         "stored": [{"section": "tool#parts", "claims": 3}],
         "refused": [],
     }
-
-
-def test_submit_from_a_file(repo: Path, tmp_path: Path) -> None:
-    section = todo()["sections"][2]
-    file = tmp_path / "answers.json"
-    file.write_text(json.dumps([answer(section, "none")]))
-
-    code, out, _ = run("claims", "submit", str(file))
-
-    assert code == 0
-    assert "stored tool#parts (0 claims)" in out
-
-
-def _refusal(stdin: str) -> tuple[int, str, str]:
-    code, out, err = run("claims", "submit", "-", stdin=stdin)
-    return code, out, err
 
 
 def test_submit_refuses_a_stale_key(repo: Path) -> None:
     section = todo()["sections"][2]
     stale = answer(section) | {"key": "0000"}
 
-    code, _, err = _refusal(json.dumps(stale))
+    [reason] = refusals(stale)
 
-    assert code == 1
-    assert len(err.strip().splitlines()) == 1
-    assert "stale key" in err and "kmaudit claims todo" in err
+    assert "stale key" in reason and "call claims_todo" in reason
 
 
 def test_submit_refuses_a_missing_sentence_verdict(repo: Path) -> None:
@@ -192,11 +175,9 @@ def test_submit_refuses_a_missing_sentence_verdict(repo: Path) -> None:
     short = answer(section)
     short["sentences"] = short["sentences"][:1]
 
-    code, _, err = _refusal(json.dumps(short))
+    [reason] = refusals(short)
 
-    assert code == 1
-    assert len(err.strip().splitlines()) == 1
-    assert "no verdict for sentences [2, 3]" in err
+    assert "no verdict for sentences [2, 3]" in reason
 
 
 @pytest.mark.parametrize(
@@ -207,11 +188,10 @@ def test_submit_refuses_a_missing_sentence_verdict(repo: Path) -> None:
 def test_submit_refuses_a_malformed_answer(repo: Path, bad: str) -> None:
     todo()
 
-    code, _, err = _refusal(bad)
+    [reason] = refusals(bad)
 
-    assert code == 1
-    assert len(err.strip().splitlines()) == 1
-    assert "submit again" in err or "pipe a list" in err
+    assert "submit again" in reason or "pass a list" in reason
+    assert todo()["counts"]["up_to_date"] == 0
 
 
 def test_submit_keeps_good_sections_of_a_mixed_file(repo: Path) -> None:
@@ -219,13 +199,10 @@ def test_submit_keeps_good_sections_of_a_mixed_file(repo: Path) -> None:
     good = answer(sections[2])
     bad = answer(sections[3]) | {"key": "0000"}
 
-    code, out, err = run(
-        "claims", "submit", "-", "--json", stdin=json.dumps([good, bad])
-    )
+    result = submit([good, bad])
 
-    assert code == 1
-    assert len(err.strip().splitlines()) == 1
-    assert [s["section"] for s in json.loads(out)["stored"]] == ["tool#parts"]
+    assert len(result["refused"]) == 1
+    assert [s["section"] for s in result["stored"]] == ["tool#parts"]
     assert [s["id"] for s in todo()["sections"]] == [
         "decisions/0001-use-sqlite#decision",
         "decisions/0001-use-sqlite#correction-2026-01-02",
@@ -240,7 +217,7 @@ def test_list_counts_per_kind(repo: Path) -> None:
         answer(sections[3], "none"),
         answer(sections[0], "external"),
     ]
-    run("claims", "submit", "-", stdin=json.dumps(answers))
+    submit(answers)
 
     code, out, _ = run("claims", "list", "--json")
 
@@ -258,12 +235,7 @@ def test_list_counts_per_kind(repo: Path) -> None:
 
 def test_list_one_concept_and_kind(repo: Path) -> None:
     sections = todo()["sections"]
-    run(
-        "claims",
-        "submit",
-        "-",
-        stdin=json.dumps([answer(sections[2]), answer(sections[0], "external")]),
-    )
+    submit([answer(sections[2]), answer(sections[0], "external")])
 
     _, out, _ = run("claims", "list", ".okf/tool.md", "--claims", "--json")
     claims = json.loads(out)["claims"]
@@ -289,7 +261,7 @@ def test_refers_to_labels_resolve_to_section_ids(repo: Path) -> None:
     reply = answer(values)
     reply["sentences"][0]["claims"][0]["refers_to"] = ["1.2", 1, "9.9"]
 
-    run("claims", "submit", "-", stdin=json.dumps(reply))
+    submit(reply)
 
     _, out, _ = run("claims", "list", "--claims", "--json")
     assert json.loads(out)["claims"][0]["refers_to"] == ["tool#parts|2"]
@@ -341,11 +313,9 @@ def test_submit_refuses_claims_under_none_and_an_empty_list(
     none_with_claims["sentences"][0]["claims"] = [{"claim": "x"}]
     reply = none_with_claims if change == "none-with-claims" else []
 
-    code, _, err = _refusal(json.dumps(reply))
+    [reason] = refusals(reply)
 
-    assert code == 1
-    assert len(err.strip().splitlines()) == 1
-    assert words in err
+    assert words in reason
 
 
 def test_submit_counts_one_claim_for_a_repeated_text(repo: Path) -> None:
@@ -354,16 +324,12 @@ def test_submit_counts_one_claim_for_a_repeated_text(repo: Path) -> None:
     for verdict in reply["sentences"]:
         verdict["claims"] = [{"claim": "The same claim."}]
 
-    _, out, _ = run("claims", "submit", "-", "--json", stdin=json.dumps(reply))
-
-    assert json.loads(out)["stored"] == [{"section": "tool#parts", "claims": 1}]
+    assert submit(reply)["stored"] == [{"section": "tool#parts", "claims": 1}]
 
 
 def test_todo_refuses_a_skipped_file(repo: Path) -> None:
-    code, _, err = run("claims", "todo", ".okf/prototypes/spike/README.md")
-
-    assert code == 1
-    assert "not a page kmaudit audits" in err
+    with pytest.raises(AuditError, match="not a page kmaudit audits"):
+        todo(".okf/prototypes/spike/README.md")
 
 
 def test_list_claims_json_holds_only_claims(repo: Path) -> None:

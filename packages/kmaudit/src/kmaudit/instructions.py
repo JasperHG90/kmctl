@@ -1,4 +1,4 @@
-"""The extraction instructions ``kmaudit claims todo --json`` hands an agent, once, with the sections.
+"""The extraction instructions the ``claims_todo`` MCP tool hands an agent, once, with the sections.
 
 They live here, in the package, so the skill and the agent that drive the
 verbs stay thin. The hash of ``GUIDANCE`` is part of every section's key, so
@@ -116,8 +116,8 @@ none.
 """.strip()
 
 SUBMIT = """
-Answer each section with one JSON object, and pipe a list of them to
-kmaudit claims submit -:
+Answer each section with one JSON object, and pass a list of them to the
+claims_submit tool as answers, with the namespace as folder:
 
 {"section": "<id from todo>", "key": "<key from todo>", "sentences": [
   {"n": 1, "how_to_check": "...", "reason": "...", "kind": "point",
@@ -127,7 +127,7 @@ kmaudit claims submit -:
 ]}
 """.strip()
 
-#: What ``kmaudit claims todo --json`` hands the agent: the guidance, then how to submit.
+#: What ``claims_todo`` hands the agent: the guidance, then how to submit.
 INSTRUCTIONS = f"{GUIDANCE}\n\n{SUBMIT}"
 #: Hashes of earlier instructions whose stored answers still stand: the
 #: guidance is the same and only the way answers are submitted changed.

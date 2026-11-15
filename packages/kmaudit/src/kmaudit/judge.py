@@ -1,4 +1,4 @@
-"""``kmaudit judge``: the one optional model call, a decision model's judgement about a stored check or claim.
+"""The ``judge`` MCP tool: the one optional model call, a decision model's judgement about a stored check or claim.
 
 The endpoint takes ``{model, state, questions}`` and answers each question by
 name: a noul as a probability of yes (``noul`` or ``value``), a choice as
@@ -140,7 +140,7 @@ class Reply(BaseModel):
 
 
 class Judgement(BaseModel):
-    """One answered question about one check or claim, as ``kmaudit judge`` prints it."""
+    """One answered question about one check or claim, as the ``judge`` MCP tool returns it."""
 
     question: str = Field(description="failure, claim or link.")
     id: str = Field(description="The check id (failure, link) or claim id (claim).")
@@ -231,20 +231,22 @@ def state_for(
         found = claim(store, subject)
         if found is None:
             raise AuditError(
-                f"no stored claim {subject!r}; list them with kmaudit claims list --claims"
+                f"no stored claim {subject!r}; list them with the claims_list tool"
             )
         if not lines.strip():
             raise AuditError(
-                "the claim question needs the lines to judge on stdin; pipe them in"
+                "the claim question needs the lines to judge it on; pass them as lines"
             )
         return {"claim": found.claim, "sentence": found.sentence, "lines": lines}
     stored = check(store, subject)
     if stored is None or stored.kind != "check":
         raise AuditError(
-            f"no stored check {subject!r}; list them with kmaudit checks list"
+            f"no stored check {subject!r}; list them with the checks_list tool"
         )
     if stored.holds is None:
-        raise AuditError(f"check {subject} has not run; run kmaudit checks run")
+        raise AuditError(
+            f"check {subject} has not run; rerun it with checks_run or the audit page's Rerun stale checks button"
+        )
     if question == "failure" and stored.holds:
         raise AuditError(
             f"check {subject} holds; the failure question is for a failed check"
@@ -520,7 +522,7 @@ async def run_judge(
 ) -> JudgeResult:
     """Check the question, load the settings and ask it about each id in the namespace ``folder`` names.
 
-    ``kmaudit judge`` and the MCP server's ``judge`` tool both await this.
+    The MCP server's ``judge`` tool awaits this.
 
     Raises
     ------
@@ -538,12 +540,10 @@ async def run_judge(
     if question not in QUESTIONS:
         raise AuditError(f"unknown question {question!r}; use failure, claim or link")
     if question == "claim" and len(ids) != 1:
-        raise AuditError(
-            "the claim question takes one claim id, with its lines on stdin"
-        )
+        raise AuditError("the claim question takes one claim id, with its lines")
     if importlib.util.find_spec("tenacity") is None:
         raise AuditError(
-            f"kmaudit judge needs tenacity, which kmaudit installs; reinstall it: {INSTALL}"
+            f"the judge tool needs tenacity, which kmaudit installs; reinstall it: {INSTALL}"
         )
     if tracing_on() and importlib.util.find_spec("langsmith") is None:
         raise AuditError(

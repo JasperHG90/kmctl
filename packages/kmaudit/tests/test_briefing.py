@@ -6,7 +6,7 @@ import shutil
 from pathlib import Path
 
 import pytest
-from kmaudit import instructions
+from kmaudit import check_verbs, instructions, verbs
 from kmaudit.cli import app
 from typer.testing import CliRunner
 
@@ -35,12 +35,6 @@ def run(*args: str) -> tuple[int, str, str]:
     return result.exit_code, result.stdout, result.stderr
 
 
-def run_stdin(*args: str, stdin: str) -> tuple[int, str, str]:
-    """Run kmaudit with ``args`` and ``stdin``; (exit code, stdout, stderr)."""
-    result = CliRunner().invoke(app, list(args), input=stdin)
-    return result.exit_code, result.stdout, result.stderr
-
-
 def briefing() -> dict[str, dict]:
     """``kmaudit briefing --json``, by namespace."""
     code, out, err = run("briefing", "--json")
@@ -63,8 +57,7 @@ def test_counts_match_the_list_commands(repo: Path) -> None:
 
     exits = claim_id("tool", EXITS)
     answer = {"claim": exits, "steps": [CODE], "strength": "exact", "why": "w"}
-    code, _, err = run_stdin("checks", "submit", "-", stdin=json.dumps([answer]))
-    assert code == 0, err
+    assert not check_verbs.submit(repo, json.dumps([answer])).refused
     give_feedback(
         repo,
         FeedbackIn(claim=exits, target="check", vote="down", note="look again"),
@@ -211,8 +204,7 @@ def test_a_nested_namespace_briefs(repo: Path) -> None:
     (guides / "a.md").write_text("# A\n\n## Part\n\nThe tool writes out.txt.\n")
     git(repo, "add", ".")
     git(repo, "commit", "-qm", "handbook")
-    code, _, err = run("claims", "todo", "handbook/guides", "--json")
-    assert code == 0, err
+    verbs.todo(guides)
 
     rows = briefing()
 

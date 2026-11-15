@@ -170,8 +170,8 @@ def resolve_target(path: Path) -> Target:
         if path.is_file():
             hint = start.relative_to(root) if start.is_relative_to(root) else start
             raise AuditError(
-                f"{path} is in no audited folder yet; give the folder first, as in "
-                f"kmaudit claims todo {hint}"
+                f"{path} is in no audited folder yet; give its folder first, "
+                f"such as {hint}, to audit it as a namespace"
             )
         inside = sorted(n for n, f in taken.items() if path in f.parents)
         if inside:

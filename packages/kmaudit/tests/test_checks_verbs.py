@@ -1,4 +1,4 @@
-"""kmaudit checks todo, try, submit, run and list, driven as a check-writing agent would."""
+"""The checks verbs (todo, try, submit, run and list) driven as a check-writing agent drives them through the MCP tools, and kmaudit checks list."""
 
 import json
 import socket
@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from kmaudit import AuditError, check_verbs, verbs
 from kmaudit.cli import app
 from typer.testing import CliRunner
 
@@ -50,41 +51,60 @@ def check(claim: str, *steps: dict, drift: str | None = None) -> dict:
     return answer
 
 
-def submit(*answers: dict) -> tuple[int, str, str]:
-    return run("checks", "submit", "-", "--json", stdin=json.dumps(list(answers)))
+def todo(limit: int | None = None, brief: bool = False) -> dict:
+    """What the checks_todo tool returns, parsed."""
+    found = check_verbs.todo(Path("."), limit, brief)
+    return json.loads(found.model_dump_json(exclude_none=brief))
+
+
+def submit(*answers: dict) -> dict:
+    """What the checks_submit tool returns for ``answers``, parsed."""
+    return json.loads(
+        check_verbs.submit(Path("."), json.dumps(list(answers))).model_dump_json()
+    )
+
+
+def try_answers(answers: list[dict]) -> list[dict]:
+    """What the checks_try tool returns for ``answers``, parsed."""
+    return [
+        t.model_dump() for t in check_verbs.try_answers(Path("."), json.dumps(answers))
+    ]
+
+
+def rerun(everything: bool = False) -> dict:
+    """What the checks_run tool (and the page's Rerun stale checks) returns, parsed."""
+    return json.loads(check_verbs.run(Path("."), everything).model_dump_json())
 
 
 def test_flow_from_no_checks_to_stored_checks(repo: Path, ids: dict[str, str]) -> None:
-    code, out, _ = run("checks", "todo", "--json")
-    assert code == 0
-    todo = json.loads(out)
-    assert {c["id"] for c in todo["claims"]} == set(ids.values())
-    assert "kmaudit checks try" in todo["instructions"]
-    assert todo["answer_schema"]["anyOf"]
-    exits = next(c for c in todo["claims"] if c["id"] == ids["exits"])
+    handed = todo()
+    assert {c["id"] for c in handed["claims"]} == set(ids.values())
+    assert "checks_try" in handed["instructions"]
+    assert (
+        handed["next"]
+        == "checks_try with folder .okf, then checks_submit with folder .okf"
+    )
+    assert handed["answer_schema"]["anyOf"]
+    exits = next(c for c in handed["claims"] if c["id"] == ids["exits"])
     assert "sys.exit(1)" in exits["lines"]["text"]
 
-    code, _, err = submit(check(ids["exits"], GREP_COMMENT))
-    assert code == 1
-    assert "matched only comments or docstrings" in err
+    [refused] = submit(check(ids["exits"], GREP_COMMENT))["refused"]
+    assert "matched only comments or docstrings" in refused["reason"]
 
-    code, out, err = submit(
+    stored = submit(
         check(ids["exits"], CODE),
         {"claim": ids["config"], "reason": "Nothing in the code reads config.toml."},
     )
-    assert code == 0, err
-    assert [s["status"] for s in json.loads(out)["stored"]] == ["holds", "reason"]
+    assert stored["refused"] == []
+    assert [s["status"] for s in stored["stored"]] == ["holds", "reason"]
 
-    code, out, _ = run("checks", "todo", "--json")
-    assert json.loads(out)["claims"] == []
+    assert todo()["claims"] == []
 
-    _, out, _ = run("checks", "run", "--json")
-    assert json.loads(out)["rerun"] == 0
+    assert rerun()["rerun"] == 0
 
     tool = repo / "src" / "tool.py"
     tool.write_text(tool.read_text().replace('"hi"', '"hello"'))
-    _, out, _ = run("checks", "run", "--json")
-    result = json.loads(out)
+    result = rerun()
     assert [r["claim"] for r in result["claims"] if r["rerun"]] == [ids["exits"]]
     assert result["counts"] == {"holds": 1, "reason": 1}
 
@@ -94,13 +114,10 @@ def test_try_reports_holds_weak_and_misses_and_writes_nothing(
 ) -> None:
     before = (repo / ".kmaudit" / ".okf.sqlite").read_bytes()
 
-    code, out, _ = run(
-        "checks", "try", "-", "--json",
-        stdin=json.dumps([check(ids["exits"], GREP_COMMENT), check(ids["exits"], CODE), check(ids["exits"], FAILING)]),
+    weak, good, failing = try_answers(
+        [check(ids["exits"], GREP_COMMENT), check(ids["exits"], CODE), check(ids["exits"], FAILING)]
     )  # fmt: skip
 
-    assert code == 0
-    weak, good, failing = json.loads(out)
     assert (weak["holds"], weak["weak"]) == (True, True)
     assert weak["missed"]
     assert (good["holds"], good["weak"]) == (True, False)
@@ -109,14 +126,16 @@ def test_try_reports_holds_weak_and_misses_and_writes_nothing(
     assert (repo / ".kmaudit" / ".okf.sqlite").read_bytes() == before
 
 
-def _one_refusal(stdin_answers: list[dict] | str) -> str:
-    stdin = (
-        stdin_answers if isinstance(stdin_answers, str) else json.dumps(stdin_answers)
-    )
-    code, _, err = run("checks", "submit", "-", stdin=stdin)
-    assert code == 1
-    assert len(err.strip().splitlines()) == 1, err
-    return err
+def _one_refusal(answers: list[dict] | str) -> str:
+    """The one reason a submit refuses ``answers`` for, the whole call's or its one answer's; nothing is stored."""
+    text = answers if isinstance(answers, str) else json.dumps(answers)
+    try:
+        result = check_verbs.submit(Path("."), text)
+    except AuditError as error:
+        return str(error)
+    assert result.stored == []
+    [refused] = result.refused
+    return refused.reason
 
 
 def test_submit_refuses_a_weak_check_naming_what_it_missed(
@@ -126,7 +145,7 @@ def test_submit_refuses_a_weak_check_naming_what_it_missed(
 
     err = _one_refusal([check(ids["exits"], grep_name)])
 
-    assert "weak check" in err and "kmaudit checks try" in err
+    assert "weak check" in err and "checks_try" in err
 
 
 def test_submit_refuses_a_failing_check_without_drift(
@@ -140,18 +159,16 @@ def test_submit_refuses_a_failing_check_without_drift(
 def test_submit_stores_a_failing_check_marked_drift(
     repo: Path, ids: dict[str, str]
 ) -> None:
-    code, out, err = submit(
-        check(ids["exits"], FAILING, drift="The CLI exits 1, not 3.")
-    )
+    result = submit(check(ids["exits"], FAILING, drift="The CLI exits 1, not 3."))
 
-    assert code == 0, err
-    assert json.loads(out)["stored"][0]["status"] == "drift"
+    assert result["refused"] == []
+    assert result["stored"][0]["status"] == "drift"
 
 
 def test_submit_refuses_a_stale_claim_id(repo: Path, ids: dict[str, str]) -> None:
     err = _one_refusal([check("000000000000", CODE)])
 
-    assert "kmaudit checks todo" in err
+    assert "call checks_todo" in err
 
 
 @pytest.mark.parametrize(
@@ -169,7 +186,7 @@ def test_submit_refuses_a_malformed_answer(
 ) -> None:
     err = _one_refusal(bad)
 
-    assert "kmaudit checks" in err
+    assert "checks_todo" in err
 
 
 def test_submit_refuses_a_code_step_without_the_extra(
@@ -185,25 +202,23 @@ def test_submit_refuses_a_code_step_without_the_extra(
 def test_submit_keeps_good_answers_in_a_mixed_file(
     repo: Path, ids: dict[str, str]
 ) -> None:
-    code, out, err = submit(
+    result = submit(
         check(ids["exits"], FAILING),
         {"claim": ids["config"], "reason": "No code reads it."},
     )
 
-    assert code == 1
-    assert len(err.strip().splitlines()) == 1
-    assert [s["claim"] for s in json.loads(out)["stored"]] == [ids["config"]]
+    assert [r["claim"] for r in result["refused"]] == [ids["exits"]]
+    assert [s["claim"] for s in result["stored"]] == [ids["config"]]
 
 
-def test_run_exits_0_when_a_check_fails(repo: Path, ids: dict[str, str]) -> None:
+def test_run_reports_a_check_that_now_fails(repo: Path, ids: dict[str, str]) -> None:
     submit(check(ids["exits"], CODE))
     tool = repo / "src" / "tool.py"
     tool.write_text(tool.read_text().replace("> 2", ">= 2"))
 
-    code, out, _ = run("checks", "run")
+    result = rerun()
 
-    assert code == 0
-    assert "fails" in out
+    assert {r["claim"]: r["status"] for r in result["claims"]}[ids["exits"]] == "fails"
 
 
 def test_list_shows_status_strength_and_quality(
@@ -226,10 +241,10 @@ def test_list_shows_status_strength_and_quality(
 
 
 def test_no_verb_changes_the_tree(repo: Path, ids: dict[str, str]) -> None:
-    run("checks", "todo", "--json")
-    run("checks", "try", "-", stdin=json.dumps([check(ids["exits"], CODE)]))
+    todo()
+    try_answers([check(ids["exits"], CODE)])
     submit(check(ids["exits"], CODE))
-    run("checks", "run", "--all")
+    rerun(everything=True)
     run("checks", "list")
 
     assert git(repo, "status", "--porcelain") == ""
@@ -244,14 +259,11 @@ def test_no_verb_opens_a_network_connection(
     monkeypatch.setattr(socket.socket, "connect", refuse)
     monkeypatch.setattr(socket, "create_connection", refuse)
 
-    for args, stdin in (
-        (("checks", "todo", "--json"), None),
-        (("checks", "submit", "-"), json.dumps([check(ids["exits"], CODE)])),
-        (("checks", "run", "--all"), None),
-        (("checks", "list"), None),
-    ):
-        code, _, err = run(*args, stdin=stdin)
-        assert code == 0, err
+    todo()
+    assert submit(check(ids["exits"], CODE))["refused"] == []
+    rerun(everything=True)
+    code, _, err = run("checks", "list")
+    assert code == 0, err
 
 
 def test_help_walk_and_help_steps_leave_the_tree_and_ignored_files_alone(
@@ -266,11 +278,9 @@ def test_help_walk_and_help_steps_leave_the_tree_and_ignored_files_alone(
         ),
     ]
 
-    run("checks", "todo", "--json")
-    code, out, _ = run("checks", "try", "-", "--json", stdin=json.dumps(help_steps))
+    todo()
+    not_installed, script = try_answers(help_steps)
 
-    assert code == 0
-    not_installed, script = json.loads(out)
     assert "not installed" in not_installed["steps"][0]["detail"]
     assert script["holds"] is True
     assert git(repo, "status", "--porcelain", "--ignored") == "!! .kmaudit/\n"
@@ -282,8 +292,8 @@ def test_editing_a_section_keeps_the_checks_of_claims_that_come_back(
     submit(check(ids["exits"], CODE))
     path = repo / ".okf" / "tool.md"
     path.write_text(path.read_text().replace("on start", "at start"))
-    run("claims", "todo")
-    run("checks", "todo", "--json")  # between dropping and re-extracting
+    verbs.todo(Path("."))
+    todo()  # between dropping and re-extracting
 
     again = store_claims(
         repo,
@@ -317,12 +327,11 @@ def test_a_check_with_nothing_to_change_is_not_measured(
 ) -> None:
     absent = {"op": "grep", "pattern": "zzqqxx", "paths": "src/*.py", "present": False}
 
-    code, out, _ = submit(check(ids["exits"], absent))
+    result = submit(check(ids["exits"], absent))
 
-    assert code == 0
-    assert json.loads(out)["stored"][0]["status"] == "not measured"
-    _, out, _ = run("checks", "run", "--json")
-    assert json.loads(out)["counts"]["not measured"] == 1
+    assert result["refused"] == []
+    assert result["stored"][0]["status"] == "not measured"
+    assert rerun()["counts"]["not measured"] == 1
 
 
 def test_a_skipped_check_reruns_once_the_extra_is_back(
@@ -333,16 +342,13 @@ def test_a_skipped_check_reruns_once_the_extra_is_back(
     tool.write_text(tool.read_text() + "\n")
     with monkeypatch.context() as hidden:
         hidden.setitem(sys.modules, "ast_grep_py", None)
-        _, out, _ = run("checks", "run", "--json")
         assert [
-            r["status"] for r in json.loads(out)["claims"] if r["claim"] == ids["exits"]
+            r["status"] for r in rerun()["claims"] if r["claim"] == ids["exits"]
         ] == ["skipped"]
 
-    _, out, _ = run("checks", "run", "--json")
-
-    assert [
-        r["status"] for r in json.loads(out)["claims"] if r["claim"] == ids["exits"]
-    ] == ["holds"]
+    assert [r["status"] for r in rerun()["claims"] if r["claim"] == ids["exits"]] == [
+        "holds"
+    ]
 
 
 def test_outside_git_refuses_in_one_line(
@@ -354,7 +360,7 @@ def test_outside_git_refuses_in_one_line(
     )
     monkeypatch.chdir(tmp_path / "plain")
 
-    code, _, err = run("checks", "todo")
+    code, _, err = run("checks", "list")
 
     assert code == 1
     assert len(err.strip().splitlines()) == 1
@@ -364,10 +370,8 @@ def test_outside_git_refuses_in_one_line(
 def test_todo_brief_leaves_out_the_instructions_and_schema(
     repo: Path, ids: dict[str, str]
 ) -> None:
-    code, out, _ = run("checks", "todo", "--json", "--brief", "--limit", "1")
+    data = todo(limit=1, brief=True)
 
-    assert code == 0
-    data = json.loads(out)
     assert "instructions" not in data and "answer_schema" not in data
     assert len(data["claims"]) == 1
 
@@ -417,10 +421,7 @@ def test_a_claim_from_a_long_table_gets_only_its_rows(repo: Path) -> None:
         repo, {"tool#files": [(1, "point", "The CLI reads its config on start.")]}
     )
 
-    code, out, _ = run("checks", "todo", "--json", "--brief")
-
-    assert code == 0
-    claim = next(c for c in json.loads(out)["claims"] if c["id"] in found.values())
+    claim = next(c for c in todo(brief=True)["claims"] if c["id"] in found.values())
     assert "config.toml" in claim["sentence"]
     assert "file7.txt" not in claim["sentence"]
     assert [a["text"] for a in claim["anchors"]] == ["config.toml"]
