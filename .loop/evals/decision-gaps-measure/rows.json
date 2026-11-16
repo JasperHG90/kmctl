@@ -9,8 +9,8 @@
     },
     {
       "id": "r2",
-      "behavior": "The README's judge numbers (recall on hidden positives, missing-decision rate on the negative sample, precision of those claims from the committed labels, and cost and time per unit) equal what score.py prints from the committed judge results and labels, and every judged unit in the sample has a result and every judge claim on a negative a label.",
-      "fails_when": "a judged unit lacks a result, a claim lacks a label, or a judge number in the README differs from score.py's output",
+      "behavior": "The judge ran on every unit in the range from an empty folder with no tools or settings; the README's judge numbers (recall on counted positives with its 95% Wilson interval, record-only positives listed apart, the share of negatives called missing, the precision of those claims from the committed labels, cost and time per unit and for the range) and its build verdict against the bars in the plan (recall >= 70% with Wilson lower end >= 50%, precision >= 50%, range cost <= $10) equal what score.py prints from the committed judge results and labels; every unit has a judge result and every claim on a negative a label.",
+      "fails_when": "a unit lacks a judge result, a claim lacks a label, a judge number or the verdict in the README differs from score.py's output, or a record-only positive is counted in recall",
       "command": "uv run pytest tests/test_decision_gaps_prototype.py -q -k judge -m 'not llm'"
     },
     {
