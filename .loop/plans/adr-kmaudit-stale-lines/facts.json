@@ -1,11 +1,11 @@
 {
   "schema_version": "1.0",
   "slug": "adr-kmaudit-stale-lines",
-  "plan_hash": "9ed7e7326353a85507e5a0a83126b5fffd168d446f1538a79fb90391a1af6911",
+  "plan_hash": "a5b811bbd0c3da349907f4b0320b50696d3fa359da4f610b0289771f8d52f9fb",
   "problems": [
     {
       "id": "P1",
-      "text": "ADRs 0001, 0011, 0012, 0014 and 0020 and the decisions index give apm/apm.yml and packages/kmaudit/VERSION, which no longer exist, as the latest version sources and package path."
+      "text": "ADRs 0001, 0011, 0012, 0014 and 0020 and the decisions index give the apm/ folder, apm/apm.yml and packages/kmaudit/VERSION, which no longer exist, as the latest package path and version sources."
     }
   ],
   "goals": [
