@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "decision-gaps-measure",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 3,
@@ -29,7 +29,7 @@
   "split": "j-20261116T115206+0000-7ba3ede4",
   "split_plan_hash": "c8a94e7cb127a6c683448ff2282f5a326a2112aa37cdfcbba6725b88be04ef2e",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "dcb2499687412b37d6e280eabfb3532f94a9df60",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -180,8 +180,14 @@
       "to": "verifying",
       "at": "2026-11-16T14:57:52+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-16T15:05:18+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-16T15:05:13+00:00"
+  "at": "2026-11-16T15:05:18+00:00"
 }
