@@ -3,7 +3,7 @@
   "slug": "decision-gaps-measure",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 1,
+  "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -72,9 +72,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 1,
-    "binds": "66ed0258db4b89a8c02ea1c59491c79e0ce35c43588541955fc18610ac83ce73",
-    "started_at": "2026-11-16T11:47:45+00:00",
+    "n": 2,
+    "binds": "c8a94e7cb127a6c683448ff2282f5a326a2112aa37cdfcbba6725b88be04ef2e",
+    "started_at": "2026-11-16T11:52:27+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -87,10 +87,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "66ed0258db4b89a8c02ea1c59491c79e0ce35c43588541955fc18610ac83ce73",
+  "plan_hash": "c8a94e7cb127a6c683448ff2282f5a326a2112aa37cdfcbba6725b88be04ef2e",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -105,5 +105,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-16T11:52:25+00:00"
+  "at": "2026-11-16T11:52:27+00:00"
 }
