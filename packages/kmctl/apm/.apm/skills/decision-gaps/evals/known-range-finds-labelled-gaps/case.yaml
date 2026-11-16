@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: known-range-finds-labelled-gaps
+expected_outcome: |
+  The report lists the MIT licence choice, pinning every GitHub Action to a commit SHA, and keeping main's required tests check through a collector job as decisions with no record; it does not list the kmctl doctor warn outcome or any change that added or amended its own ADR; nothing is written.

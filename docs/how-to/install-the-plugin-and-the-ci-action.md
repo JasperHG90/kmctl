@@ -92,7 +92,7 @@ patched kmctl's package v0.3.0 for claude (project scope)
 Next: start a new Claude Code session, then kmctl doctor
 ```
 
-APM writes kmctl's seven skills and okf's four to `.claude/skills/`, the
+APM writes kmctl's eight skills and okf's four to `.claude/skills/`, the
 audit agent to `.claude/agents/`, the four knowledge rules to
 `.claude/rules/`, the SessionStart hook into `.claude/settings.json`, and
 okf's MCP server, `bundle`, into `.mcp.json`. Commit `apm.yml` and
@@ -134,7 +134,7 @@ patched kmctl's package v0.3.0 for antigravity (project scope)
 Next: open this folder in Antigravity, trust it and start a new session, then kmctl doctor
 ```
 
-APM writes kmctl's seven skills and okf's four to `.agents/skills/`, the
+APM writes kmctl's eight skills and okf's four to `.agents/skills/`, the
 four knowledge rules to `.agents/rules/`, okf's MCP server, `bundle`, to
 `.agents/mcp_config.json`, and two hooks to `.agents/hooks.json`: one
 SessionStart hook that runs `kmctl briefing --format antigravity`, and one

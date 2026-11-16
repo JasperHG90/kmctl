@@ -7,10 +7,9 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-11-16T16:08:35Z
+  at: 2026-11-16T17:14:06Z
   against:
-    - decisions/0047-unrecorded-decisions-are-listed-by-kmctl-and-judged-by-a-skill-that-only-reports
-    - prototypes/decision-gaps
+    - architecture/overview
 ---
 
 # Summary: kmctl
