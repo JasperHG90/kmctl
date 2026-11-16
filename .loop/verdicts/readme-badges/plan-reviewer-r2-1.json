@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "O2 said needs: none while its check reads the lifecycle badges O1 adds. O2 is now kind: support with needs: O1, so plan.split cannot cut it away from O1.",
+      "anchor": ".loop/plans/readme-badges/README.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "61aed9e2962839decdbf59b2b375d04e0bc8350625d32c1357cfdfdf2dc34c79"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-16T09:09:11+00:00"
+}
