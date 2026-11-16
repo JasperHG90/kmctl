@@ -17,3 +17,4 @@
 {"at": "2026-11-16T14:10:23+00:00", "diff": {"added": [], "changed": {"r3": ["command"]}, "removed": []}, "grant": "g8", "hash": "2f0a521f7ce4669fa2f3d2b498c43cd157ad7020a0a517e3da8cd29421276e17", "kind": "signoff", "reason": "review r1 f6: row r3 also runs strict OKF validation, as its behavior says", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/implementer", "step": "eval-sign"}
 {"at": "2026-11-16T14:30:13+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "fixing"}
 {"at": "2026-11-16T14:35:58+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "fixing"}
+{"at": "2026-11-16T14:36:01+00:00", "by": "review fixed", "from": "fixing", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
