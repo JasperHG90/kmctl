@@ -15,3 +15,4 @@
 {"at": "2026-11-16T07:04:12+00:00", "binds": "61724f2e037b96ca8b3163f0e2a474cfce334a56dc8691d947f81c1958e723a9", "kind": "round-start", "n": 1, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "51ab57ba602b73e6d6752f038f31ad0baa39d50c"}
 {"at": "2026-11-16T07:20:00+00:00", "dispatched_at": "2026-11-16T07:04:12+00:00", "kind": "round-close", "n": 1, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-11-16T07:09:41+00:00"}}
 {"at": "2026-11-16T07:20:03+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "5a83ad7ffaca998bb007b85b993418c97bd83698"}
+{"at": "2026-11-16T07:54:37+00:00", "branch": "loop/adr-kmaudit-stale-lines", "kind": "land", "schema_version": "1.0", "sha": "99d65b44f783e33fdf476ee9351238bebd5a4120"}

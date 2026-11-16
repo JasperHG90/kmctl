@@ -90,3 +90,4 @@
 {"at": "2026-11-16T06:42:17+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "3ba947f8a5872c23869c0c6be5a19959c4feb84d", "subject": "chore: set integration branch to main"}
 {"ask": "j-20261116T070909+0000-0908fe31", "at": "2026-11-16T07:29:44+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "9db8ce2dbf6a4ec7fb824257f6613f0012055758", "subject": "Test release notes for a pull request of tickets a sync brings in"}
 {"at": "2026-11-16T07:41:06+00:00", "branch": "loop/adr-kmaudit-stale-lines", "kind": "commit", "schema_version": "1.0", "sha": "a4d1e861e3a8f4169a8d169f3a4cf4e707b389e5", "subject": "Merge branch 'main' into loop/adr-kmaudit-stale-lines"}
+{"at": "2026-11-16T07:50:09+00:00", "branch": "loop/adr-kmaudit-stale-lines", "kind": "commit", "schema_version": "1.0", "sha": "85ef946b767a6e26645b6de1126a60eea74de468", "subject": "Merge branch 'main' into loop/adr-kmaudit-stale-lines"}
