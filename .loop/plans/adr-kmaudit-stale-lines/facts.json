@@ -1,23 +1,23 @@
 {
   "schema_version": "1.0",
   "slug": "adr-kmaudit-stale-lines",
-  "plan_hash": "23769548b1a2f69aa724c715f1b93346c90fc018c03101aa25512d5aa916fde3",
+  "plan_hash": "a658e9801b6ca60a2efdc1a957c82d8e85ca269a5606800358aadf507073f9d5",
   "problems": [
     {
       "id": "P1",
-      "text": "ADR 0012's latest word on version sources names apm/apm.yml (gone) and packages/kmaudit/VERSION (gone), which no longer exist."
+      "text": "ADRs 0001, 0012 and 0014 and the decisions index give apm/apm.yml and packages/kmaudit/VERSION, which no longer exist, as the latest version sources and package path."
     }
   ],
   "goals": [
     {
       "id": "G1",
-      "text": "The release decision describes the release flow as it is."
+      "text": "The decisions describe where each package's version and APM package live today."
     }
   ],
   "outcomes": [
     {
       "id": "O1",
-      "change": "ADR 0012 records where each package's version lives since ADR 0045",
+      "change": "ADRs 0001, 0012 and 0014 and the index record the package paths since ADR 0045",
       "kind": "behaviour",
       "goal": "G1",
       "goal_index": 0,
@@ -26,9 +26,13 @@
       "needs": [],
       "needs_index": [],
       "touches": [
-        ".okf/decisions/0012-releases-come-from-ci.md"
+        ".okf/decisions/0001-standalone-cli-installs-its-plugin.md",
+        ".okf/decisions/0012-releases-come-from-ci.md",
+        ".okf/decisions/0014-apm-is-the-only-install-route.md",
+        ".okf/decisions/index.md",
+        "tests/scripts/test_release_docs.py"
       ],
-      "checked_by": "a test that ADR 0012's last correction names both apm.yml version sources and links ADR 0045, and that every path in release-tag.yml's paths filter is named in it; strict OKF validation",
+      "checked_by": "tests that each of the three ADRs has a correction naming packages/kmctl/apm/apm.yml and linking ADR 0045, that ADR 0012's names both apm.yml files and every path in release-tag.yml's paths filter, and that the index notes for 0012 and 0014 name no old path; strict OKF validation",
       "seen_by": "operator"
     }
   ]
