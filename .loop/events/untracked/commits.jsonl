@@ -87,3 +87,4 @@
 {"at": "2026-11-15T06:32:16+00:00", "branch": "loop/release-notes-hermes-reviewer-f2", "kind": "commit", "schema_version": "1.0", "sha": "330264beaac29c3f10c413dd93c12557af31c035", "subject": "Merge branch 'agent-audit' into loop/release-notes-hermes-reviewer-f2"}
 {"at": "2026-11-15T06:52:13+00:00", "branch": "loop/release-notes-owned-paths", "kind": "commit", "schema_version": "1.0", "sha": "87749124a2ea35f7a1193261e54e15d8cc741ddf", "subject": "Merge branch 'agent-audit' into loop/release-notes-owned-paths"}
 {"at": "2026-11-15T20:47:35+00:00", "branch": "agent-audit", "kind": "commit", "schema_version": "1.0", "sha": "1e11d268e03b102726744b897ed7a6d28adbd7f4", "subject": "Merge remote-tracking branch 'origin/main' into agent-audit"}
+{"at": "2026-11-16T06:42:17+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "3ba947f8a5872c23869c0c6be5a19959c4feb84d", "subject": "chore: set integration branch to main"}
