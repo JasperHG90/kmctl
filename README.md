@@ -4,16 +4,26 @@
 
 # kmctl
 
+[![CI](https://github.com/JasperHG90/kmctl/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/JasperHG90/kmctl/actions/workflows/ci.yml?query=branch%3Amain)
+[![License: MIT](https://img.shields.io/github/license/JasperHG90/kmctl)](LICENSE)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue)](pyproject.toml)
+
 This repository keeps a project's knowledge current and checks it against
 the code. It holds two packages in one uv workspace. They work well
 together and install apart.
 
 ## Packages
 
-- **[kmctl](packages/kmctl/README.md)** keeps `docs/` and an `.okf/`
+- **[kmctl](packages/kmctl/README.md)**
+  ![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen)
+  [![kmctl release](https://img.shields.io/github/v/release/JasperHG90/kmctl?filter=v*&sort=semver&label=release)](https://github.com/JasperHG90/kmctl/releases/latest)
+  keeps `docs/` and an `.okf/`
   knowledge bundle current through your coding agent, with a CLI, an APM
   package of skills and rules, and a GitHub Action.
-- **[kmaudit](packages/kmaudit/README.md)** checks what a folder of markdown
+- **[kmaudit](packages/kmaudit/README.md)**
+  ![Lifecycle: beta](https://img.shields.io/badge/lifecycle-beta-orange)
+  [![kmaudit release](https://img.shields.io/github/v/release/JasperHG90/kmctl?filter=kmaudit-v*&sort=semver&label=release)](https://github.com/JasperHG90/kmctl/releases?q=kmaudit-v)
+  is in beta. It checks what a folder of markdown
   docs claims against the code: an agent lists the claims and writes a check
   for each, and kmaudit reruns the checks with no model.
 

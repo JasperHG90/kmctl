@@ -10,6 +10,7 @@ authors = [
     { name = "Jasper Ginn", email = "jasperginn@gmail.com" }
 ]
 requires-python = ">=3.12"
+classifiers = ["Development Status :: 4 - Beta"]
 dependencies = [
     "ast-grep-py>=0.51.2",
     "httpx>=0.28.1",
