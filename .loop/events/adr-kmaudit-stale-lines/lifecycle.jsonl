@@ -1,3 +1,4 @@
 {"at": "2026-11-16T06:43:00+00:00", "kind": "register", "schema_version": "1.0", "stage": "planning"}
 {"at": "2026-11-16T06:44:34+00:00", "grant": "g8", "hash": "97ce8561c8e3a10809c6c469c9b5a00f9b4130164f58ec94c99891941a0723e7", "kind": "signoff", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/implementer", "step": "eval-sign"}
 {"at": "2026-11-16T06:44:36+00:00", "binds": "23769548b1a2f69aa724c715f1b93346c90fc018c03101aa25512d5aa916fde3", "kind": "round-start", "n": 1, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
+{"at": "2026-11-16T06:46:21+00:00", "dispatched_at": "2026-11-16T06:44:36+00:00", "kind": "round-close", "n": 1, "outcome": "fail", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-16T06:45:39+00:00"}}
