@@ -4,3 +4,4 @@
 {"at": "2026-11-16T11:37:28+00:00", "dispatched_at": "2026-11-16T11:35:45+00:00", "kind": "round-close", "n": 1, "outcome": "pass", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-16T11:36:51+00:00"}}
 {"at": "2026-11-16T11:37:30+00:00", "by": "advance", "from": "planning", "kind": "transition", "schema_version": "1.0", "to": "ready"}
 {"at": "2026-11-16T11:37:34+00:00", "by": "advance", "from": "ready", "kind": "transition", "schema_version": "1.0", "to": "building"}
+{"at": "2026-11-16T11:39:25+00:00", "diff": {"added": [], "changed": {"r1": ["behavior", "fails_when"]}, "removed": []}, "grant": "g8", "hash": "3a558331194da49e40ce8a0102a3529e4fecaf11e0974dfd80370ee4a29b1fe1", "kind": "signoff", "reason": "the README links the decision once, under the Packages list, not inside each entry", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/implementer", "step": "eval-sign"}

@@ -3,8 +3,8 @@
   "rows": [
     {
       "id": "r1",
-      "behavior": "Decision 0046 exists, its front matter matches the decision schema, its sections are the decision skeleton, it says kmctl works from code and decisions toward docs/ and .okf/ and kmaudit from docs/ and .okf/ toward code, and it links ADR 0043; the root README's kmctl and kmaudit entries each name their direction and link decision 0046; CLAUDE.md's routing table links decision 0046.",
-      "fails_when": "the decision is missing or off-schema, either direction is missing from it, the ADR 0043 link is missing, a README entry lacks its direction or the link, or CLAUDE.md does not link the decision",
+      "behavior": "Decision 0046 exists, its front matter matches the decision schema, its sections are the decision skeleton, it says kmctl works from code and decisions toward docs/ and .okf/ and kmaudit from docs/ and .okf/ toward code, and it links ADR 0043; the root README's kmctl and kmaudit entries each name their direction and the README links decision 0046; CLAUDE.md's routing table links decision 0046.",
+      "fails_when": "the decision is missing or off-schema, either direction is missing from it, the ADR 0043 link is missing, a README entry lacks its direction, the README does not link the decision, or CLAUDE.md does not link the decision",
       "command": "uv run pytest tests/test_readmes.py -q -k direction"
     },
     {
