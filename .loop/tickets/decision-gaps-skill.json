@@ -22,8 +22,8 @@
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/implementer",
-    "hash": "3f6e399bc22a05294c7f074128dd757dfbd151d074a13236805eef093f20c91b",
-    "at": "2026-11-16T16:17:09+00:00"
+    "hash": "5d8f345f85bcaea310d593f5ba00d1fee5c0ad06012c7cdc0f58cf260170deef",
+    "at": "2026-11-16T16:50:20+00:00"
   },
   "delegation": null,
   "budget_base": null,
@@ -37,8 +37,8 @@
     },
     {
       "id": "r2",
-      "behavior": "The skill was made with the skill-creator skill: evals/evals.json holds its test prompts (one asking to find unrecorded decisions, one naming a starting point, one asking to write a decision record that should not trigger it, and one known-answer range of this repository scored against .okf/prototypes/decision-gaps/results/labels.json) with expectations, and evals/results.md records each run's outcome, the known-answer run's gaps found and false alarms raised against the labels, and that no run wrote to .okf/.",
-      "fails_when": "evals.json is missing, malformed or lacks one of those prompt kinds or their expectations, results.md lacks a result for a prompt, the known-answer result lacks its counts against the labels, or results.md does not say whether .okf/ stayed unchanged",
+      "behavior": "The skill was made with the skill-creator skill, its tests kept as the skill-creator's case folders under evals/ (prompt.md, case.yaml, graders/): one asking to find unrecorded decisions in a named range of this repository that holds labelled gaps and false alarms from .okf/prototypes/decision-gaps/results/labels.json, one asking with no range, and one asking to write a decision record, which must not run kmctl decision candidates; evals/results.md records each run's outcome, the known-answer run's labelled gaps found and false alarms raised, and that no run of the skill wrote to .okf/.",
+      "fails_when": "a case folder is missing or malformed, one of those three cases is absent, results.md lacks a case's result or the known-answer counts against the labels, or results.md does not say whether .okf/ stayed unchanged",
       "command": "uv run pytest packages/kmctl/tests/test_decision_gaps_skill.py -q -k evals",
       "judgment": false
     },
@@ -69,6 +69,21 @@
         }
       },
       "at": "2026-11-16T16:17:09+00:00"
+    },
+    {
+      "signer": "delegated:jasperginn@gmail.com/implementer",
+      "reason": "tests kept in the skill-creator case-folder format, which replaced evals.json",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r2": [
+            "behavior",
+            "fails_when"
+          ]
+        }
+      },
+      "at": "2026-11-16T16:50:20+00:00"
     }
   ],
   "accepted_risks": [],
@@ -115,5 +130,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-16T16:18:31+00:00"
+  "at": "2026-11-16T16:50:20+00:00"
 }
