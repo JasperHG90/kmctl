@@ -7,3 +7,4 @@
 {"at": "2026-11-16T16:18:29+00:00", "dispatched_at": "2026-11-16T16:17:11+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-16T16:18:16+00:00"}}
 {"at": "2026-11-16T16:18:31+00:00", "by": "advance", "from": "planning", "kind": "transition", "schema_version": "1.0", "to": "ready"}
 {"at": "2026-11-16T16:50:20+00:00", "diff": {"added": [], "changed": {"r2": ["behavior", "fails_when"]}, "removed": []}, "grant": "g8", "hash": "5d8f345f85bcaea310d593f5ba00d1fee5c0ad06012c7cdc0f58cf260170deef", "kind": "signoff", "reason": "tests kept in the skill-creator case-folder format, which replaced evals.json", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/implementer", "step": "eval-sign"}
+{"at": "2026-11-16T16:50:22+00:00", "by": "advance", "from": "ready", "kind": "transition", "schema_version": "1.0", "to": "building"}
