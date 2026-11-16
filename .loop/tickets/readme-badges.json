@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "readme-badges",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
@@ -13,7 +13,7 @@
   "split": "j-20261116T090809+0000-74c1554c",
   "split_plan_hash": "61aed9e2962839decdbf59b2b375d04e0bc8350625d32c1357cfdfdf2dc34c79",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "d2be004240c2a105a4a207b168b23c56a3f7e627",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -100,8 +100,14 @@
       "to": "verifying",
       "at": "2026-11-16T09:20:07+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-16T09:27:59+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-16T09:27:54+00:00"
+  "at": "2026-11-16T09:27:59+00:00"
 }
