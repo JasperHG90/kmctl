@@ -3,7 +3,7 @@
   "slug": "decision-gaps-skill",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -54,8 +54,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "2bd3d96ab8faaa24b9e7dd778182fc55abf40c88521076d732f9b743f6b819bc",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "1bac83d7836ffd258a1cfdec2d313c35fc97b4a0186e83b566cd48ffe855c857",
+    "started_at": "2026-11-16T16:13:52+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "1bac83d7836ffd258a1cfdec2d313c35fc97b4a0186e83b566cd48ffe855c857",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -70,5 +89,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-16T16:13:50+00:00"
+  "at": "2026-11-16T16:13:52+00:00"
 }
