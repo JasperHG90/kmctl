@@ -1,0 +1,95 @@
+{
+  "schema_version": "1.0",
+  "fingerprint": "31ccc1c5e4ff56a2dbde43bb7fa1a38705599f0ee2231a714d6a9f235dbe5962",
+  "slug": "decision-gaps-measure",
+  "results": [
+    {
+      "name": "lint",
+      "kind": "gate",
+      "command": "uv run ruff check",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "format",
+      "kind": "gate",
+      "command": "uv run ruff format --check",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "tests",
+      "kind": "gate",
+      "command": "uv run pytest",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "integration",
+      "kind": "gate",
+      "command": "uv run pytest -m integration",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r1",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_decision_gaps_prototype.py -q -m 'not llm'",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 4,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r2",
+      "kind": "eval-row",
+      "command": "uv run pytest tests/test_decision_gaps_prototype.py -q -k judge -m 'not llm'",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 2,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    },
+    {
+      "name": "r3",
+      "kind": "eval-row",
+      "command": "uv run pytest packages/kmctl/tests/test_docs_frontmatter.py -q && uv run python tests/vendor/okf/okf_validate.py .okf --strict",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": 26,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null
+    }
+  ],
+  "green": true,
+  "at": "2026-11-16T14:30:13+00:00",
+  "commit": null,
+  "by": "process:loopctl/2.3.1.dev65+g93b143856"
+}
