@@ -459,16 +459,20 @@ def test_a_bookkeeping_only_commit_is_in_neither_package_s_notes(
 
 
 def _integration_pull_request(
-    repo: Path, number: int, tickets: dict[str, list[str]], plain: str
+    repo: Path,
+    number: int,
+    tickets: dict[str, list[str]],
+    plain: str,
+    base: str = "main",
 ) -> None:
-    """Merge an integration branch into main as GitHub does: ticket merges, a plain commit and loop noise on it.
+    """Merge an integration branch into ``base`` as GitHub does: ticket merges, a plain commit and loop noise on it.
 
     ``tickets`` maps each slug to the paths its one commit changes; the
-    branch also takes a sync of main and a ``loop:`` commit, as an
+    branch also takes a sync of ``base`` and a ``loop:`` commit, as an
     integration branch does.
     """
     branch = f"integration-{number}"
-    _git(repo, "switch", "-q", "-c", branch, "main")
+    _git(repo, "switch", "-q", "-c", branch, base)
     for slug, paths in tickets.items():
         _git(repo, "switch", "-q", "-c", f"loop/{slug}", branch)
         _change(repo, f"Inside {slug}", *paths)
@@ -484,7 +488,7 @@ def _integration_pull_request(
         )
         _change(repo, f"loop: land {slug}", ".loop/state.json")
     _change(repo, plain, "scripts/plain.py")
-    _git(repo, "switch", "-q", "main")
+    _git(repo, "switch", "-q", base)
     _change(repo, "Main moves on", "README.md")
     _git(repo, "switch", "-q", branch)
     _git(
@@ -494,9 +498,9 @@ def _integration_pull_request(
         "--no-ff",
         "-m",
         "Merge remote-tracking branch 'origin/main'",
-        "main",
+        base,
     )
-    _git(repo, "switch", "-q", "main")
+    _git(repo, "switch", "-q", base)
     subject = f"Merge pull request #{number} from JasperHG90/{branch}"
     _git(
         repo,
@@ -578,3 +582,27 @@ def test_a_pull_request_without_tickets_keeps_its_title_bullet(repo: Path) -> No
     changes = _section(res.stdout, "What changed")
     assert "- Add a gizmo (#7)" in changes
     assert _section(res.stdout, "Other changes").count("Add a gizmo") == 0
+
+
+def test_a_pull_request_of_tickets_a_sync_brings_in_lists_each_ticket(
+    split: Path, tmp_path: Path
+) -> None:
+    """A pull request of tickets merged on GitHub and pulled into main through a sync lists each ticket, not the pull request."""
+    _git(split, "branch", "github")
+    _integration_pull_request(
+        split,
+        53,
+        {"alpha": ["packages/kmctl/a.py"], "beta": ["docs/b.md"]},
+        "Hand fix on the branch",
+        base="github",
+    )
+    _sync(split, "main", "github")
+
+    notes = _draft(split, tmp_path, "kmctl", "v0.3.0")
+
+    changes = _section(notes, "What changed")
+    assert "#53" not in notes
+    assert "The whole integration branch" not in notes
+    assert changes.count("(`alpha`)") == 1
+    assert changes.count("(`beta`)") == 1
+    assert "- Hand fix on the branch" in _section(notes, "Other changes")
