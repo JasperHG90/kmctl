@@ -1,14 +1,31 @@
 {
   "schema_version": "1.0",
   "slug": "decision-candidates",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 2,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 2,
+    "fingerprint": "81c3d86256be444aa91fcf9c0d321472a78f3d64ea18e280a691928695cda872",
+    "tree": "797c9fa92650b9cb89fec7f8f7cd14f1baea594c",
+    "decisions": [
+      {
+        "finding": "reviewer:f3",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": "j-20261116T164003+0000-81bbaba0",
+        "paths": [
+          "docs/reference/commands.md",
+          "packages/kmctl/src/kmctl/__init__.py"
+        ]
+      }
+    ],
+    "at": "2026-11-16T16:40:03+00:00"
+  },
   "ask": "j-20261116T160153+0000-e46521b0",
   "split": "j-20261116T160229+0000-ad6f36ee",
   "split_plan_hash": "4a2e41aeb8d0c4679774cae91d98e39b49a6df53836456ca80b9b4352c1af91d",
@@ -126,8 +143,14 @@
       "to": "fixing",
       "at": "2026-11-16T16:35:00+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-16T16:40:03+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-16T16:39:52+00:00"
+  "at": "2026-11-16T16:40:03+00:00"
 }
