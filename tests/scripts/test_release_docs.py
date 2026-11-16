@@ -7,6 +7,7 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
+import pytest
 from jsonschema import Draft202012Validator
 from typer.testing import CliRunner
 
@@ -128,3 +129,65 @@ def test_the_bundle_passes_kmctl_check() -> None:
     result = CliRunner().invoke(app, ["check", "--path", str(ROOT)])
 
     assert result.exit_code == 0, result.output
+
+
+DECISIONS = ROOT / ".okf" / "decisions"
+ADR_0045 = "(0045-each-package-keeps-its-apm-package-and-version.md)"
+
+
+def _corrections(path: Path) -> list[str]:
+    """Each dated Correction section of the decision at ``path``, whitespace collapsed."""
+    return [
+        " ".join(body.split())
+        for heading, body in _sections(path.read_text()).items()
+        if heading.startswith("Correction, ")
+    ]
+
+
+def _watched() -> list[str]:
+    """The paths in release-tag.yml's ``paths`` filter."""
+    workflow = (ROOT / ".github" / "workflows" / "release-tag.yml").read_text()
+    block = workflow.split("paths:\n", 1)[1]
+    return re.findall(r"^\s+- (\S+)$", block.split("\n\n", 1)[0], re.MULTILINE)
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        "0001-standalone-cli-installs-its-plugin.md",
+        "0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md",
+        "0012-releases-come-from-ci.md",
+        "0014-apm-is-the-only-install-route.md",
+        "0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md",
+    ],
+)
+def test_decision_names_kmctl_s_apm_package_since_adr_0045(name: str) -> None:
+    """A Correction names packages/kmctl/apm/apm.yml and links ADR 0045, so the old apm/ path is not the latest word."""
+    assert any(
+        "`packages/kmctl/apm/apm.yml`" in c and ADR_0045 in c
+        for c in _corrections(DECISIONS / name)
+    )
+
+
+def test_decision_0012_names_both_version_sources_since_adr_0045() -> None:
+    """ADR 0012's Correction for ADR 0045 names kmaudit's apm.yml and every path release-tag.yml watches."""
+    watched = _watched()
+
+    assert "packages/kmaudit/apm/apm.yml" in watched
+    assert any(
+        ADR_0045 in c and all(f"`{path}`" in c for path in watched)
+        for c in _corrections(DECISION)
+    )
+
+
+@pytest.mark.parametrize(
+    "number", ["0012-releases-come-from-ci", "0014-apm-is-the-only-install-route"]
+)
+def test_index_note_names_no_path_adr_0045_removed(number: str) -> None:
+    """The index note for the decision names no bare apm/apm.yml and no apm/ folder outside packages/."""
+    index = (DECISIONS / "index.md").read_text()
+    entry = index.split(f"]({number}.md)", 1)[1].split("\n- [", 1)[0]
+    note = " ".join(entry.split())
+
+    assert not re.search(r"(?<![\w/])apm/apm\.yml", note)
+    assert not re.search(r"(?<![\w/])in apm/", note)

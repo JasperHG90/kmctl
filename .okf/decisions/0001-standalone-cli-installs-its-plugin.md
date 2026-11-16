@@ -97,3 +97,11 @@ first 2026-10-17 correction says.
 
 Found by the first `kmctl audit checks` run over the whole bundle
 ([ADR 0038](0038-checks-are-step-data-that-kmctl-reruns-and-only-checks-that-notice-a-change-are-stored.md)).
+
+## Correction, 2026-11-16
+
+The 2026-10-16 correction says `apm/apm.yml` carries the release version.
+Since [ADR 0045](0045-each-package-keeps-its-apm-package-and-version.md)
+kmctl's APM package lives in `packages/kmctl/apm`, so
+`packages/kmctl/apm/apm.yml` carries it. Releases up to v0.12.2 still have
+the package at `apm/`.

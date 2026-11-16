@@ -140,3 +140,13 @@ same name, and only an older kmctl wrote the entry it was for. kmctl has no
 users on those versions. `kmctl doctor`'s Claude Code check passes a
 `bundle` that runs okf's script, kmctl's launcher or not; its Antigravity
 and OpenCode checks still want kmctl's launcher (`src/kmctl/doctor.py`).
+
+## Correction, 2026-11-16
+
+The Decision puts kmctl's three APM packages in `apm/`, `apm/claude/` and
+`apm/antigravity/`. Since
+[ADR 0045](0045-each-package-keeps-its-apm-package-and-version.md) they
+live in `packages/kmctl/apm/`, `packages/kmctl/apm/claude/` and
+`packages/kmctl/apm/antigravity/`, with the shared package's `apm.yml` at
+`packages/kmctl/apm/apm.yml`. What each one holds is unchanged. Releases up
+to v0.12.2 still have them in `apm/`.
