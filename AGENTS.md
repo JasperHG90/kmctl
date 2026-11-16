@@ -75,6 +75,7 @@ rather than a summary of it.
 |---|---|
 | What kmctl is, its invariants and values | `.okf/manifesto.md` |
 | Why a choice was made | `.okf/decisions/` (start at `.okf/index.md`) |
+| Which package a feature belongs in | `.okf/decisions/0046-kmctl-works-from-code-toward-knowledge-and-kmaudit-from-knowledge-toward-code.md` |
 | Rules for working on this repo | `.claude/rules/` |
 | Loop state: tickets, plans, evals, verdicts | `.loop/` |
 
