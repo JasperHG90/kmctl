@@ -1,41 +1,14 @@
 {
   "schema_version": "1.0",
   "slug": "decision-gaps-skill",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": {
-    "round": 1,
-    "fingerprint": "78a2c2433c34c9feebd3ca33aafd5e4b34553166aa8da4b6d62625723ae3929d",
-    "tree": "915341535b68a5c7e054026eb90fae0702592209",
-    "decisions": [
-      {
-        "finding": "reviewer:f1",
-        "outcome": "sent-back",
-        "by": "fallback",
-        "judgement": "j-20261116T181523+0000-b3d77233",
-        "paths": [
-          "packages/kmctl/apm/.apm/skills/decision-gaps/SKILL.md",
-          "packages/kmctl/apm/.apm/skills/decision-gaps/evals/results.md"
-        ]
-      },
-      {
-        "finding": "reviewer:f2",
-        "outcome": "sent-back",
-        "by": "fallback",
-        "judgement": "j-20261116T181523+0000-32f4ca47",
-        "paths": [
-          "packages/kmctl/apm/.apm/skills/decision-gaps/references/judging.md",
-          "packages/kmctl/tests/test_decision_gaps_skill.py"
-        ]
-      }
-    ],
-    "at": "2026-11-16T18:15:23+00:00"
-  },
+  "fix": null,
   "ask": "j-20261116T160153+0000-e46521b0",
   "split": "j-20261116T161654+0000-d89bac99",
   "split_plan_hash": "137fbfaf426472579a4f7cc0b2979beb9e8912f9e3ac43f7dd2bc1cd98a071cb",
@@ -137,8 +110,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "137fbfaf426472579a4f7cc0b2979beb9e8912f9e3ac43f7dd2bc1cd98a071cb",
   "intent": {
@@ -182,8 +155,14 @@
       "to": "verifying",
       "at": "2026-11-16T18:15:23+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-16T18:22:13+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-16T18:15:25+00:00"
+  "at": "2026-11-16T18:22:13+00:00"
 }
