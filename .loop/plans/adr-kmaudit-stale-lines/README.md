@@ -1,7 +1,7 @@
 ---
 type: plan
 title: 'Plan: adr-kmaudit-stale-lines'
-description: ADR 0012 gets a correction saying each package's version now lives in its APM package's apm.yml and release-tag watches those two files, since its 2026-11-14 correction still names packages/kmaudit/VERSION and apm/apm.yml.
+description: ADRs 0001, 0012 and 0014 get corrections, and the decisions index its notes, saying each package's version and APM package now live under packages/<name>/apm (ADR 0045), since they still name apm/apm.yml and packages/kmaudit/VERSION.
 tags:
 - plan
 generated:
@@ -20,38 +20,48 @@ Relayed from: none
 
 ## Intent
 
-ADR 0012's correction of 2026-11-14 says kmctl's version source is
-apm/apm.yml (gone), kmaudit's is packages/kmaudit/VERSION (gone), and `release-tag.yml`
-runs on a change to either. ADR 0045 moved kmctl's APM package to
-`packages/kmctl/apm`, gave kmaudit `packages/kmaudit/apm/apm.yml` in place of
-the VERSION file, and `release-tag.yml` now watches those two files, but ADR
-0012 never says so: a reader of the release decision gets two paths that do
-not exist. ADR 0012 gets a dated correction naming the two version sources
-and the two watched paths, linking ADR 0045. Earlier sections stay as the
-record of what was true then, as the repo's other corrections do.
+ADR 0045 moved kmctl's APM package from apm/ (gone) to `packages/kmctl/apm`
+and gave kmaudit `packages/kmaudit/apm/apm.yml` in place of
+packages/kmaudit/VERSION (gone); `release-tag.yml` now watches those two
+apm.yml files. Several decisions still give the old paths as their latest
+word, with no correction pointing at ADR 0045:
 
-It worked when ADR 0012's last correction names
-`packages/kmctl/apm/apm.yml` and `packages/kmaudit/apm/apm.yml` as the
-version sources and release-tag's paths, links ADR 0045, and the bundle
-validates.
+- ADR 0012's 2026-11-14 correction names apm/apm.yml (gone) and
+  packages/kmaudit/VERSION (gone) as the version sources and release-tag's
+  trigger.
+- ADR 0001 says apm/apm.yml (gone) carries the release version.
+- ADR 0014 says kmctl's package is apm/ (gone) and its `version:` is the one
+  version source.
+- `.okf/decisions/index.md` notes ADR 0012 as "apm/apm.yml is the one
+  version source" and ADR 0014 as shipping "the APM package in apm/".
+
+Each of ADRs 0001, 0012 and 0014 gets a dated correction naming the paths as
+they are and linking ADR 0045; the index notes for 0012 and 0014 follow.
+Earlier sections stay as the record of what was true then, as the repo's
+other corrections do. ADR 0013 is superseded by ADR 0014 and stays as it is.
+
+It worked when each of the three ADRs has a correction that names
+`packages/kmctl/apm/apm.yml` and links ADR 0045, ADR 0012's names both
+apm.yml files and every path release-tag watches, the two index notes no
+longer name the old paths, and the bundle validates.
 
 ## Problems
 
-- P1: ADR 0012's latest word on version sources names apm/apm.yml (gone) and packages/kmaudit/VERSION (gone), which no longer exist.
+- P1: ADRs 0001, 0012 and 0014 and the decisions index give apm/apm.yml and packages/kmaudit/VERSION, which no longer exist, as the latest version sources and package path.
 
 ## Goals
 
-- G1: The release decision describes the release flow as it is.
+- G1: The decisions describe where each package's version and APM package live today.
 
 ## Outcomes
 
-### O1: ADR 0012 records where each package's version lives since ADR 0045
+### O1: ADRs 0001, 0012 and 0014 and the index record the package paths since ADR 0045
 - kind: behaviour
 - goal: G1
 - fixes: P1
 - needs: none
-- touches: `.okf/decisions/0012-releases-come-from-ci.md`
-- checked by: a test that ADR 0012's last correction names both apm.yml version sources and links ADR 0045, and that every path in release-tag.yml's paths filter is named in it; strict OKF validation
+- touches: `.okf/decisions/0001-standalone-cli-installs-its-plugin.md`, `.okf/decisions/0012-releases-come-from-ci.md`, `.okf/decisions/0014-apm-is-the-only-install-route.md`, `.okf/decisions/index.md`, `tests/scripts/test_release_docs.py`
+- checked by: tests that each of the three ADRs has a correction naming packages/kmctl/apm/apm.yml and linking ADR 0045, that ADR 0012's names both apm.yml files and every path in release-tag.yml's paths filter, and that the index notes for 0012 and 0014 name no old path; strict OKF validation
 - seen by: operator
 
 ## Could invalidate this plan
