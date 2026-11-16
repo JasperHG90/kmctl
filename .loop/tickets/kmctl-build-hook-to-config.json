@@ -16,7 +16,7 @@
   "commit_sha": null,
   "closed_outside": false,
   "dropped": true,
-  "archived": false,
+  "archived": true,
   "worktree": null,
   "branch": null,
   "stamps": [],
@@ -46,5 +46,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-15T19:40:16+00:00"
+  "at": "2026-11-16T06:42:44+00:00"
 }

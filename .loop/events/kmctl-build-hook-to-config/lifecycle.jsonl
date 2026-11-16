@@ -1,3 +1,4 @@
 {"at": "2026-11-15T18:43:44+00:00", "kind": "register", "schema_version": "1.0", "stage": "stub"}
 {"at": "2026-11-15T19:37:53+00:00", "by": "promote", "from": "stub", "grant": "g8", "kind": "transition", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/implementer", "step": "ticket-promote", "to": "planning"}
 {"at": "2026-11-15T19:40:16+00:00", "kind": "drop", "reason": "Measured: hatch's wheel force-include also copies kmctl's _skills/_agents/_rules into an editable install's site-packages (an empty force-include-editable table is ignored and falls back), leaving stale copies an editable kmctl never reads. The hook's remaining job is skipping editable installs, which plain config cannot do, so hatch_build.py stays.", "schema_version": "1.0"}
+{"at": "2026-11-16T06:42:44+00:00", "kind": "archive", "moved": 2, "schema_version": "1.0"}
