@@ -281,3 +281,4 @@
 {"at": "2026-11-16T16:01:53+00:00", "evidence": "the operator said so", "judgement": "j-20261116T160153+0000-e46521b0", "kind": "judgement-label", "label": "loop", "schema_version": "1.0", "source": "relayed"}
 {"at": "2026-11-16T16:02:04+00:00", "judgement": "j-20261116T160153+0000-e46521b0", "kind": "judgement-link", "schema_version": "1.0", "ticket": "decision-candidates"}
 {"at": "2026-11-16T16:02:05+00:00", "judgement": "j-20261116T160153+0000-e46521b0", "kind": "judgement-link", "schema_version": "1.0", "ticket": "decision-gaps-skill"}
+{"at": "2026-11-16T16:45:35+00:00", "evidence": "3 review round(s), 0 block(s), 894 changed line(s)", "judgement": "j-20261116T160153+0000-e46521b0", "kind": "judgement-label", "label": "loop", "schema_version": "1.0", "source": "outcome"}

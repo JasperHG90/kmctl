@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "decision-candidates",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 3,
@@ -30,7 +30,7 @@
   "split": "j-20261116T160229+0000-ad6f36ee",
   "split_plan_hash": "4a2e41aeb8d0c4679774cae91d98e39b49a6df53836456ca80b9b4352c1af91d",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "c9439c3dbb7c3f24f1265fc5353da62cc1765b2a",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -149,8 +149,14 @@
       "to": "verifying",
       "at": "2026-11-16T16:40:03+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-16T16:45:35+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-16T16:45:31+00:00"
+  "at": "2026-11-16T16:45:35+00:00"
 }
