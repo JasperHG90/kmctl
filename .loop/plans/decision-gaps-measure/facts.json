@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "decision-gaps-measure",
-  "plan_hash": "1afca299e75d084b81dbb848953a61bc49f4ff50ca21b2eb117ab390f9a304c3",
+  "plan_hash": "66ed0258db4b89a8c02ea1c59491c79e0ce35c43588541955fc18610ac83ce73",
   "problems": [
     {
       "id": "P1",
@@ -28,11 +28,15 @@
       "touches": [
         "new:.okf/prototypes/decision-gaps/README.md",
         "new:.okf/prototypes/decision-gaps/scripts/units.py",
+        "new:.okf/prototypes/decision-gaps/scripts/hide.py",
+        "new:.okf/prototypes/decision-gaps/scripts/leak_check.py",
+        "new:.okf/prototypes/decision-gaps/scripts/signals.py",
         "new:.okf/prototypes/decision-gaps/scripts/judge.py",
         "new:.okf/prototypes/decision-gaps/scripts/score.py",
         ".okf/prototypes/index.md",
         ".okf/log.md",
-        ".okf/summary.md"
+        ".okf/summary.md",
+        "new:tests/test_decision_gaps_prototype.py"
       ],
       "checked_by": "the README states recall and narrowing per threshold, judge recall, false-alarm rate and precision, and cost per unit, each produced by a script in the folder from results in the folder; a test that rerunning the units and score scripts reproduces the README's filter numbers; kmctl check and strict OKF validation",
       "seen_by": "operator"
