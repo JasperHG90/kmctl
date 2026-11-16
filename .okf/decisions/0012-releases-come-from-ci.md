@@ -197,3 +197,16 @@ other path outside `packages/`, as before. `release.py set --package kmaudit`
 pins the tracing install line in the moved page, and `release.py set` pins
 kmctl's CLI install line in `packages/kmctl/README.md`, since the root
 `README.md` is now a short map with no install line.
+
+## Correction, 2026-11-16
+
+The 2026-11-14 correction names `apm/apm.yml` as kmctl's version source,
+`packages/kmaudit/VERSION` as kmaudit's, and those two files as what
+`release-tag.yml` watches. Since
+[ADR 0045](0045-each-package-keeps-its-apm-package-and-version.md) each
+package keeps its APM package and its version in its own folder: kmctl's
+version is the `version:` line of `packages/kmctl/apm/apm.yml`, kmaudit's
+the `version:` line of `packages/kmaudit/apm/apm.yml`, and the VERSION file
+is gone. `release-tag.yml` runs on a change to
+`packages/kmctl/apm/apm.yml` or `packages/kmaudit/apm/apm.yml`, once per
+package. The tag families are unchanged.
