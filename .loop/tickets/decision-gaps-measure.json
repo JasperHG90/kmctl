@@ -1,79 +1,14 @@
 {
   "schema_version": "1.0",
   "slug": "decision-gaps-measure",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": {
-    "round": 1,
-    "fingerprint": "cdfa89cdf90d4d9c1b8d7a417065977afd549dd474b92ba29bf48936d957affb",
-    "tree": "8b3ed6d953cdd2b944a4396773ef47509296a906",
-    "decisions": [
-      {
-        "finding": "reviewer:f1",
-        "outcome": "sent-back",
-        "by": "fallback",
-        "judgement": "j-20261116T143601+0000-5ef1b33c",
-        "paths": [
-          ".okf/log.md",
-          ".okf/prototypes/decision-gaps/README.md",
-          ".okf/prototypes/index.md"
-        ]
-      },
-      {
-        "finding": "reviewer:f2",
-        "outcome": "sent-back",
-        "by": "fallback",
-        "judgement": "j-20261116T143601+0000-0b6d5770",
-        "paths": [
-          ".okf/prototypes/decision-gaps/README.md",
-          ".okf/prototypes/decision-gaps/results/labels.json",
-          ".okf/prototypes/decision-gaps/scripts/score.py"
-        ]
-      },
-      {
-        "finding": "reviewer:f3",
-        "outcome": "sent-back",
-        "by": "fallback",
-        "judgement": "j-20261116T143601+0000-164fe19f",
-        "paths": [
-          ".okf/prototypes/decision-gaps/scripts/leak_check.py"
-        ]
-      },
-      {
-        "finding": "reviewer:f4",
-        "outcome": "sent-back",
-        "by": "fallback",
-        "judgement": "j-20261116T143601+0000-ae9e098c",
-        "paths": [
-          ".okf/prototypes/decision-gaps/scripts/judge.py",
-          ".okf/prototypes/decision-gaps/scripts/signals.py"
-        ]
-      },
-      {
-        "finding": "reviewer:f5",
-        "outcome": "sent-back",
-        "by": "fallback",
-        "judgement": "j-20261116T143601+0000-ec6cc2c5",
-        "paths": [
-          ".okf/prototypes/decision-gaps/README.md",
-          ".okf/prototypes/decision-gaps/scripts/leak_check.py"
-        ]
-      },
-      {
-        "finding": "reviewer:f6",
-        "outcome": "sent-back",
-        "by": "fallback",
-        "judgement": null,
-        "paths": []
-      }
-    ],
-    "at": "2026-11-16T14:36:01+00:00"
-  },
+  "fix": null,
   "ask": "j-20261116T113458+0000-e9031cf0",
   "split": "j-20261116T115206+0000-7ba3ede4",
   "split_plan_hash": "c8a94e7cb127a6c683448ff2282f5a326a2112aa37cdfcbba6725b88be04ef2e",
@@ -171,8 +106,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "c8a94e7cb127a6c683448ff2282f5a326a2112aa37cdfcbba6725b88be04ef2e",
   "intent": {
@@ -216,8 +151,14 @@
       "to": "verifying",
       "at": "2026-11-16T14:36:01+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-16T14:52:54+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-16T14:36:11+00:00"
+  "at": "2026-11-16T14:52:54+00:00"
 }
