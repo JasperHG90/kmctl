@@ -1,0 +1,41 @@
+{
+  "schema_version": "1.0",
+  "slug": "decision-gaps-measure",
+  "plan_hash": "1afca299e75d084b81dbb848953a61bc49f4ff50ca21b2eb117ab390f9a304c3",
+  "problems": [
+    {
+      "id": "P1",
+      "text": "Nobody knows whether a filter plus a judge finds unrecorded decisions well enough to build into kmctl."
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "The decision to build the history scan rests on measured recall, precision and cost."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "O1",
+      "change": "A prototype measures the filter and the judge on this repository's history",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "new:.okf/prototypes/decision-gaps/README.md",
+        "new:.okf/prototypes/decision-gaps/scripts/units.py",
+        "new:.okf/prototypes/decision-gaps/scripts/judge.py",
+        "new:.okf/prototypes/decision-gaps/scripts/score.py",
+        ".okf/prototypes/index.md",
+        ".okf/log.md",
+        ".okf/summary.md"
+      ],
+      "checked_by": "the README states recall and narrowing per threshold, judge recall, false-alarm rate and precision, and cost per unit, each produced by a script in the folder from results in the folder; a test that rerunning the units and score scripts reproduces the README's filter numbers; kmctl check and strict OKF validation",
+      "seen_by": "operator"
+    }
+  ]
+}
