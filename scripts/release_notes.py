@@ -28,8 +28,11 @@ This script reads main's first-parent history between the previous tag of
 ``TAG``'s family and ``TAG``, or ``REF`` with ``--ref``. Pull requests merged on GitHub reach that line through a
 sync merge such as ``Merge remote-tracking branch 'origin/main'``, so the
 script also reads the first-parent history each sync brought in. Each ticket
-merge becomes a bullet under What changed, and so does each pull request
-merge, with the title GitHub wrote in its body. Each other commit becomes a
+merge becomes a bullet under What changed. A pull request whose branch
+brought ticket merges in, such as an integration branch, is read the same
+way: its tickets become bullets and its other commits go under Other
+changes, and the pull request gets no bullet of its own. Each other pull
+request merge becomes a bullet, with the title GitHub wrote in its body. Each other commit becomes a
 bullet under Other changes, unless a listed pull request has the same title.
 Loop state commits, release commits, release pull request merges, the syncs
 themselves and manual placeholder commits are left out. The bullets fill
@@ -106,6 +109,9 @@ def _first_parent(
     The walk stops at commits that any of ``exclude`` reaches. Each sync merge
     is followed by the commits it brought in, read the same way, so a pull
     request merged on GitHub sits where main took it in and is listed once.
+    A pull request merge whose branch brought ticket merges in, such as an
+    integration branch, yields the commits on that branch's first-parent line
+    in its place, so each ticket is listed and the pull request is not.
     """
     log = _git(
         repo,
@@ -117,10 +123,15 @@ def _first_parent(
     )
     for record in log.split("\x1e")[:-1]:
         sha, parents, subject, body = record.lstrip("\n").split("\x1f")
-        yield sha, parents.split(), subject, body
-        if _SYNC.match(subject) and len(parents.split()) == 2:
-            first, second = parents.split()
-            yield from _first_parent(repo, second, [*exclude, first])
+        pair = parents.split()
+        if len(pair) == 2 and _PULL.match(subject) and not _SKIP.match(subject):
+            brought = list(_first_parent(repo, pair[1], [*exclude, pair[0]]))
+            if any(_TICKET.match(commit[2]) for commit in brought):
+                yield from brought
+                continue
+        yield sha, pair, subject, body
+        if _SYNC.match(subject) and len(pair) == 2:
+            yield from _first_parent(repo, pair[1], [*exclude, pair[0]])
 
 
 def previous_tag(repo: Path, tag: str, prefix: str = "v") -> str | None:

@@ -222,3 +222,13 @@ format, the rules, their `instructions` entry and the briefing plugin.
 
 Found by the first `kmctl audit checks` run over the whole bundle
 ([ADR 0038](0038-checks-are-step-data-that-kmctl-reruns-and-only-checks-that-notice-a-change-are-stored.md)).
+
+## Correction, 2026-11-16
+
+The Decision says kmctl's APM package is `apm/` and that
+`apm/apm.yml`'s `version:` is the one version source. Since
+[ADR 0045](0045-each-package-keeps-its-apm-package-and-version.md) the
+package lives in `packages/kmctl/apm`, its `version:` in
+`packages/kmctl/apm/apm.yml` is kmctl's version, and an `apm.yml` entry for
+a release after v0.12.2 names `path: packages/kmctl/apm`. kmaudit has its
+own package in `packages/kmaudit/apm`.

@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "slug": "release-notes-pr-tickets",
+  "plan_hash": "bc8115df7aac4f42943528c81913a41c6cc5cff5cdd0fbf50b2d2aca692f3fa1",
+  "problems": [
+    {
+      "id": "P1",
+      "text": "A pull request merge that brought ticket merges in drafts as one bullet, hiding every change it carried."
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "The drafted release notes list each change a release ships."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "O1",
+      "change": "A pull request that brought ticket merges in drafts one bullet per ticket",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "scripts/release_notes.py",
+        "tests/scripts/test_release_notes.py",
+        ".okf/decisions/0012-releases-come-from-ci.md"
+      ],
+      "checked_by": "tests that a pull request holding ticket merges drafts each ticket and not the pull request, that its plain commits go under Other changes, that a pull request with no ticket merges keeps its title bullet, and that the kmaudit package filter still applies inside the pull request",
+      "seen_by": "operator"
+    }
+  ]
+}

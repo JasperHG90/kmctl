@@ -1,0 +1,113 @@
+{
+  "schema_version": "1.0",
+  "slug": "release-notes-pr-tickets",
+  "stage": "done",
+  "attempts": 1,
+  "plan_rounds": 1,
+  "review_rounds": 1,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": null,
+  "ask": "j-20261116T064251+0000-b8d510ed",
+  "split": "j-20261116T064315+0000-f222f428",
+  "split_plan_hash": "bc8115df7aac4f42943528c81913a41c6cc5cff5cdd0fbf50b2d2aca692f3fa1",
+  "split_hold": false,
+  "commit_sha": "691d9168bff420e87e5c2abec5d9364b4d3aed42",
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": "/home/vscode/workspace.worktrees/release-notes-pr-tickets",
+  "branch": "loop/release-notes-pr-tickets",
+  "stamps": [
+    "0b2def1c69b140b72781afb7b4a3842e4951606a6388ffcc34fdd28b8bdc0bcd",
+    "2e9e84e55447f064218e9e649be370843ef517be8d5e1a7273ebe2ccc09fe1bf"
+  ],
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/implementer",
+    "hash": "6ffacc460087f676a57ed1beab7d495b9659be01470ad1853e33a75217499f64",
+    "at": "2026-11-16T06:43:40+00:00"
+  },
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "A pull request merge whose branch brought ticket merges into main drafts one What changed bullet per ticket (its summary and slug), in merge order, and no bullet for the pull request; plain commits on that branch's first-parent line go under Other changes; loop: commits and syncs on it stay out.",
+      "fails_when": "the pull request's title shows as a bullet, a ticket on its branch is missing or listed twice, a plain commit on its branch is missing from Other changes, or a loop: commit shows",
+      "command": "uv run pytest tests/scripts/test_release_notes.py -q -k pull_request_of_tickets",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "A pull request with no ticket merges keeps its one title bullet; release pull requests stay out; with --package kmaudit only the tickets inside the pull request that touch packages/kmaudit/ are listed; every earlier release_notes test passes.",
+      "fails_when": "a plain pull request loses its bullet or gets its commits listed instead, a release pull request shows, a kmctl-only ticket inside the pull request is in kmaudit's notes, or any release_notes test fails",
+      "command": "uv run pytest tests/scripts/test_release_notes.py -q",
+      "judgment": false
+    }
+  ],
+  "resigns": [],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [],
+  "round": {
+    "kind": "review",
+    "n": 1,
+    "binds": "2e9e84e55447f064218e9e649be370843ef517be8d5e1a7273ebe2ccc09fe1bf",
+    "started_at": "2026-11-16T06:55:16+00:00",
+    "passes": [
+      "reviewer"
+    ],
+    "tree": "67eaef31c5b3e44b8584a01328e3f09ae83f5c17",
+    "plan_hash": "bc8115df7aac4f42943528c81913a41c6cc5cff5cdd0fbf50b2d2aca692f3fa1",
+    "eval_hash": "6ffacc460087f676a57ed1beab7d495b9659be01470ad1853e33a75217499f64",
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": true,
+    "outcome": "pass"
+  },
+  "plan_hash": "bc8115df7aac4f42943528c81913a41c6cc5cff5cdd0fbf50b2d2aca692f3fa1",
+  "intent": {
+    "epic": null,
+    "depends_on": [],
+    "priority": null
+  },
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-11-16T06:42:58+00:00",
+      "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-11-16T06:45:37+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-16T06:45:41+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-16T06:55:14+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-16T07:04:28+00:00",
+      "by": "done"
+    }
+  ],
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-16T07:04:28+00:00"
+}

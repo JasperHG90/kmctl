@@ -231,3 +231,13 @@ longer asks the user to edit its globs: a repository whose code lives
 elsewhere adds a rule of its own under another name, since `apm install`
 overwrites the package's file and doctor counts an edit as drift
 (`apm/claude/.apm/instructions/`).
+
+## Correction, 2026-11-16
+
+The last 2026-10-19 correction puts the four rules in
+`apm/claude/.apm/instructions/` and `apm/antigravity/.apm/instructions/`.
+Since [ADR 0045](0045-each-package-keeps-its-apm-package-and-version.md)
+kmctl's APM package lives in `packages/kmctl/apm`, whose `apm.yml`,
+`packages/kmctl/apm/apm.yml`, carries kmctl's version, so the rules sit in
+`packages/kmctl/apm/claude/.apm/instructions/` and
+`packages/kmctl/apm/antigravity/.apm/instructions/`.

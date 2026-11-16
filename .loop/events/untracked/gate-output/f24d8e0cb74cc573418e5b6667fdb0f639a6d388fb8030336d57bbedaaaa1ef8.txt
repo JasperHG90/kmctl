@@ -1,0 +1,114 @@
+warning: `VIRTUAL_ENV=/home/vscode/workspace/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+============================= test session starts ==============================
+platform linux -- Python 3.12.16, pytest-9.1.1, pluggy-1.6.0
+rootdir: /tmp/loopctl-land-adr-kmaudit-stale-lines-i7z35xf5/tree
+configfile: pyproject.toml
+plugins: platformdirs-4.13.4, respx-0.23.1, anyio-4.15.1, langsmith-0.14.17
+collected 1728 items / 19 deselected / 1709 selected
+
+packages/kmaudit/tests/test_apm_package.py .......                       [  0%]
+packages/kmaudit/tests/test_audit_coverage.py ........                   [  0%]
+packages/kmaudit/tests/test_audit_feedback.py .....................      [  2%]
+packages/kmaudit/tests/test_audit_settings.py ........                   [  2%]
+packages/kmaudit/tests/test_audit_ui.py ..............................   [  4%]
+packages/kmaudit/tests/test_briefing.py ...........                      [  4%]
+packages/kmaudit/tests/test_checks_verbs.py ...........................  [  6%]
+packages/kmaudit/tests/test_claims_check_store.py ........               [  7%]
+packages/kmaudit/tests/test_claims_lines.py ......                       [  7%]
+packages/kmaudit/tests/test_claims_mutate.py .....                       [  7%]
+packages/kmaudit/tests/test_claims_sections.py ................          [  8%]
+packages/kmaudit/tests/test_claims_steps.py ............................ [ 10%]
+....                                                                     [ 10%]
+packages/kmaudit/tests/test_claims_store.py .......                      [ 10%]
+packages/kmaudit/tests/test_claims_verbs.py ........................     [ 12%]
+packages/kmaudit/tests/test_cli_slim.py ................................ [ 14%]
+                                                                         [ 14%]
+packages/kmaudit/tests/test_independent.py ..                            [ 14%]
+packages/kmaudit/tests/test_judge.py ................................    [ 16%]
+packages/kmaudit/tests/test_mcp.py ......                                [ 16%]
+packages/kmaudit/tests/test_namespaces.py ....................           [ 17%]
+packages/kmctl/tests/test_action.py ..............                       [ 18%]
+packages/kmctl/tests/test_adr_audit_fixes.py ....                        [ 18%]
+packages/kmctl/tests/test_antigravity.py ............................... [ 20%]
+...........................                                              [ 22%]
+packages/kmctl/tests/test_apm_package.py ............................... [ 23%]
+..............                                                           [ 24%]
+packages/kmctl/tests/test_briefing.py .................................. [ 26%]
+........                                                                 [ 27%]
+packages/kmctl/tests/test_check.py ....................................  [ 29%]
+packages/kmctl/tests/test_cli.py ..                                      [ 29%]
+packages/kmctl/tests/test_docs.py ............                           [ 30%]
+packages/kmctl/tests/test_docs_frontmatter.py ................F......... [ 31%]
+                                                                         [ 31%]
+packages/kmctl/tests/test_doctor.py .................................... [ 33%]
+.........................................................                [ 37%]
+packages/kmctl/tests/test_handoff_key.py ........                        [ 37%]
+packages/kmctl/tests/test_handoffs.py .........                          [ 38%]
+packages/kmctl/tests/test_help.py ...................................... [ 40%]
+...................                                                      [ 41%]
+packages/kmctl/tests/test_init.py ...................................... [ 43%]
+.............................                                            [ 45%]
+packages/kmctl/tests/test_mv.py .....................                    [ 46%]
+packages/kmctl/tests/test_network_retry.py ...............               [ 47%]
+packages/kmctl/tests/test_new_concept.py ..........................      [ 48%]
+packages/kmctl/tests/test_new_doc.py .......                             [ 49%]
+packages/kmctl/tests/test_no_audit.py ....                               [ 49%]
+packages/kmctl/tests/test_okf_fields.py .......                          [ 50%]
+packages/kmctl/tests/test_opencode.py .................................. [ 52%]
+.....................                                                    [ 53%]
+packages/kmctl/tests/test_pin.py ...............................         [ 55%]
+packages/kmctl/tests/test_plugin.py ........................             [ 56%]
+packages/kmctl/tests/test_plugin_error.py .......                        [ 56%]
+packages/kmctl/tests/test_plugin_patch.py .............................. [ 58%]
+......                                                                   [ 58%]
+packages/kmctl/tests/test_repo_name.py ..........                        [ 59%]
+packages/kmctl/tests/test_review_due.py ................................ [ 61%]
+.......                                                                  [ 61%]
+packages/kmctl/tests/test_schema.py ..................................   [ 63%]
+packages/kmctl/tests/test_starter.py ................................... [ 65%]
+...........                                                              [ 66%]
+packages/kmctl/tests/test_summary.py ................................... [ 68%]
+......                                                                   [ 68%]
+packages/kmctl/tests/test_supersede.py .......                           [ 69%]
+packages/kmctl/tests/test_verify.py .................................... [ 71%]
+.........                                                                [ 71%]
+tests/scripts/test_check_wheel.py ...........                            [ 72%]
+tests/scripts/test_hermes_release_notes.py ......................        [ 73%]
+tests/scripts/test_hermes_triage.py ........                             [ 74%]
+tests/scripts/test_next_release_version.py ............................. [ 76%]
+..                                                                       [ 76%]
+tests/scripts/test_release.py .......................................... [ 78%]
+..................                                                       [ 79%]
+tests/scripts/test_release_docs.py ..............                        [ 80%]
+tests/scripts/test_release_notes.py .................................    [ 82%]
+tests/scripts/test_release_paths.py .........................            [ 83%]
+tests/scripts/test_smoke_wheel.py ...........                            [ 84%]
+tests/scripts/test_workflows.py ........................................ [ 86%]
+........................................                                 [ 89%]
+tests/test_agent.py .................................................... [ 92%]
+...                                                                      [ 92%]
+tests/test_audit.py .....                                                [ 92%]
+tests/test_ci.py ....................                                    [ 93%]
+tests/test_readmes.py ....                                               [ 94%]
+tests/test_release_skill.py ...............                              [ 95%]
+tests/test_repo_apm.py ..........                                        [ 95%]
+tests/test_rules.py ..................................                   [ 97%]
+tests/test_skills.py .............................                       [ 99%]
+tests/test_workspace_layout.py ............                              [100%]
+
+=================================== FAILURES ===================================
+_______________________ test_this_repo_docs_are_migrated _______________________
+
+    def test_this_repo_docs_are_migrated() -> None:
+        findings = run_checks(ROOT)
+        bad = [f for f in findings if f.level in ("error", "warning")]
+>       assert bad == []
+E       AssertionError: assert [Finding(chec...el='warning')] == []
+E         
+E         Left contains one more item: Finding(check='summary', file='.okf/summary.md', line=None, message='summary is behind: concepts changed: decisions/00...-server-and-rules-kmctl-patches-the-rest; update it, or run kmctl summary ack when it is still right', level='warning')
+E         Use -v to get more diff
+
+packages/kmctl/tests/test_docs_frontmatter.py:257: AssertionError
+=========================== short test summary info ============================
+FAILED packages/kmctl/tests/test_docs_frontmatter.py::test_this_repo_docs_are_migrated
+=========== 1 failed, 1708 passed, 19 deselected in 99.58s (0:01:39) ===========

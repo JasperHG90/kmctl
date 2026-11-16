@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "ADRs 0001, 0011, 0012, 0014 and 0020 each have a dated correction that names packages/kmctl/apm/apm.yml and links ADR 0045; ADR 0012's also names packages/kmaudit/apm/apm.yml and every path in release-tag.yml's paths filter.",
+      "fails_when": "any of the five lacks such a correction, ADR 0012's misses kmaudit's apm.yml or a path release-tag.yml watches, or the link to 0045 is missing",
+      "command": "uv run pytest tests/scripts/test_release_docs.py -q -k since_adr_0045"
+    },
+    {
+      "id": "r2",
+      "behavior": "The decisions index notes for ADR 0012 and ADR 0014 name no path that ADR 0045 removed (a bare apm/apm.yml or the apm/ folder), and every earlier release-docs test, including kmctl check over the bundle, passes.",
+      "fails_when": "either index note still names apm/apm.yml or 'in apm/' outside packages/, or any test in test_release_docs.py fails",
+      "command": "uv run pytest tests/scripts/test_release_docs.py -q"
+    }
+  ]
+}
