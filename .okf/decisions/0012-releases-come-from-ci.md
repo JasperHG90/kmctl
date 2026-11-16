@@ -197,3 +197,16 @@ other path outside `packages/`, as before. `release.py set --package kmaudit`
 pins the tracing install line in the moved page, and `release.py set` pins
 kmctl's CLI install line in `packages/kmctl/README.md`, since the root
 `README.md` is now a short map with no install line.
+
+## Correction, 2026-11-16
+
+The 2026-10-20 correction says each `Merge pull request #N` becomes one What
+changed bullet with its title. PR #53 carried the whole `agent-audit`
+integration branch, with 21 ticket merges, into v0.13.0 and kmaudit-v0.1.0,
+and the drafts gave it one line, so both releases' notes were rewritten by
+hand. `scripts/release_notes.py` now reads a pull request's own first-parent
+line, the commits it brought in that `main` did not have, before listing it.
+When that line holds ticket merges, each becomes its own bullet, the plain
+commits on it go under Other changes, and the pull request gets no bullet of
+its own. A pull request with no ticket merges keeps its one title bullet,
+and the package filter still applies to each commit.

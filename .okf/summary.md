@@ -7,9 +7,8 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-11-15T18:55:12Z
+  at: 2026-11-16T06:51:16Z
   against:
-    - architecture/overview
     - decisions/0012-releases-come-from-ci
 ---
 

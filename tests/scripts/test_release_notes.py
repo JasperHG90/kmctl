@@ -456,3 +456,125 @@ def test_a_bookkeeping_only_commit_is_in_neither_package_s_notes(
     assert "Bundle and kmaudit" not in kmctl
     assert "Rule and docs" in kmctl
     assert "Rule and docs" not in kmaudit
+
+
+def _integration_pull_request(
+    repo: Path, number: int, tickets: dict[str, list[str]], plain: str
+) -> None:
+    """Merge an integration branch into main as GitHub does: ticket merges, a plain commit and loop noise on it.
+
+    ``tickets`` maps each slug to the paths its one commit changes; the
+    branch also takes a sync of main and a ``loop:`` commit, as an
+    integration branch does.
+    """
+    branch = f"integration-{number}"
+    _git(repo, "switch", "-q", "-c", branch, "main")
+    for slug, paths in tickets.items():
+        _git(repo, "switch", "-q", "-c", f"loop/{slug}", branch)
+        _change(repo, f"Inside {slug}", *paths)
+        _git(repo, "switch", "-q", branch)
+        _git(
+            repo,
+            "merge",
+            "-q",
+            "--no-ff",
+            "-m",
+            f"Merge loop/{slug}: {slug} lands.",
+            f"loop/{slug}",
+        )
+        _change(repo, f"loop: land {slug}", ".loop/state.json")
+    _change(repo, plain, "scripts/plain.py")
+    _git(repo, "switch", "-q", "main")
+    _change(repo, "Main moves on", "README.md")
+    _git(repo, "switch", "-q", branch)
+    _git(
+        repo,
+        "merge",
+        "-q",
+        "--no-ff",
+        "-m",
+        "Merge remote-tracking branch 'origin/main'",
+        "main",
+    )
+    _git(repo, "switch", "-q", "main")
+    subject = f"Merge pull request #{number} from JasperHG90/{branch}"
+    _git(
+        repo,
+        "merge",
+        "-q",
+        "--no-ff",
+        "-m",
+        f"{subject}\n\nThe whole integration branch",
+        branch,
+    )
+
+
+def test_a_pull_request_of_tickets_lists_each_ticket_not_the_pull_request(
+    split: Path, tmp_path: Path
+) -> None:
+    """A pull request that brought ticket merges in drafts one bullet per ticket, in merge order, and none for itself."""
+    _integration_pull_request(
+        split,
+        53,
+        {"alpha": ["packages/kmctl/a.py"], "beta": ["docs/b.md"]},
+        "Hand fix on the branch",
+    )
+
+    notes = _draft(split, tmp_path, "kmctl", "v0.3.0")
+
+    changes = _section(notes, "What changed")
+    assert "The whole integration branch" not in notes
+    assert "#53" not in notes
+    assert changes.count("(`alpha`)") == 1
+    assert changes.count("(`beta`)") == 1
+    assert changes.index("(`alpha`)") < changes.index("(`beta`)")
+
+
+def test_a_pull_request_of_tickets_puts_its_plain_commits_under_other_changes(
+    split: Path, tmp_path: Path
+) -> None:
+    """Plain commits on the pull request's branch go under Other changes; its loop: commits and syncs stay out."""
+    _integration_pull_request(
+        split, 53, {"alpha": ["packages/kmctl/a.py"]}, "Hand fix on the branch"
+    )
+
+    notes = _draft(split, tmp_path, "kmctl", "v0.3.0")
+
+    other = _section(notes, "Other changes")
+    assert "- Hand fix on the branch" in other
+    assert "- Main moves on" in other
+    assert other.count("Main moves on") == 1
+    assert "loop: land alpha" not in notes
+    assert "Merge remote-tracking branch" not in notes
+
+
+def test_a_pull_request_of_tickets_keeps_the_package_filter(
+    split: Path, tmp_path: Path
+) -> None:
+    """kmaudit's notes list only the tickets inside the pull request that touch packages/kmaudit/."""
+    _integration_pull_request(
+        split,
+        53,
+        {"alpha": ["packages/kmctl/a.py"], "gamma": ["packages/kmaudit/g.py"]},
+        "Hand fix on the branch",
+    )
+
+    notes = _draft(split, tmp_path, "kmaudit", "kmaudit-v0.1.1")
+
+    changes = _section(notes, "What changed")
+    assert "(`gamma`)" in changes
+    assert "(`alpha`)" not in changes
+    assert "Hand fix on the branch" not in notes
+
+
+def test_a_pull_request_without_tickets_keeps_its_title_bullet(repo: Path) -> None:
+    """A pull request whose branch holds no ticket merges is one bullet with its title, not its commits."""
+    _pull_request(repo, "main", 7, "Add a gizmo")
+    _git(repo, "tag", "-a", "v0.3.0", "-m", "kmctl 0.3.0")
+
+    res = _notes(repo, "v0.3.0")
+
+    assert res.returncode == 0, res.stderr
+    changes = _section(res.stdout, "What changed")
+    assert "- Add a gizmo (#7)" in changes
+    assert _section(res.stdout, "Other changes").count("Add a gizmo") == 0
