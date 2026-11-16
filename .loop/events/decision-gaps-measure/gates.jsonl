@@ -1,0 +1,1 @@
+{"at": "2026-11-16T13:55:06+00:00", "command": "uv run pytest", "exit": 1, "fingerprint": "fa01151137239ba6a4a00c8cfe9446ea35e1432a26b5194048c95a87f822a47d", "kind": "red", "name": "tests", "note": null, "output": ".loop/events/decision-gaps-measure/gate-output/81bb4a769fb0c198aec30f2416db99c4e4fefff16df8dd9e6b32e593e46624f8.txt", "schema_version": "1.0"}
