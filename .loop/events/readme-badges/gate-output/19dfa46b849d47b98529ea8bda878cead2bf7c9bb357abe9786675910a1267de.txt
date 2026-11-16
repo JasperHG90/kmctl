@@ -1,0 +1,13 @@
+warning: `VIRTUAL_ENV=/home/vscode/workspace/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+unformatted: File would be reformatted
+   --> tests/test_readmes.py:132:22
+    |
+131 |     assert re.search(r"\bbeta\b", reference.split("\n## ", 1)[0])
+    -     assert re.search(r"\bbeta\b", re.sub(r"!\[[^\]]*\]\([^)]*\)", "", _root_entry("kmaudit")))
+132 +     assert re.search(
+133 +         r"\bbeta\b", re.sub(r"!\[[^\]]*\]\([^)]*\)", "", _root_entry("kmaudit"))
+134 +     )
+135 |
+    |
+
+1 file would be reformatted, 195 files already formatted

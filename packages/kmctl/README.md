@@ -4,6 +4,12 @@
 
 # kmctl
 
+![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen)
+[![CI](https://github.com/JasperHG90/kmctl/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/JasperHG90/kmctl/actions/workflows/ci.yml?query=branch%3Amain)
+[![kmctl release](https://img.shields.io/github/v/release/JasperHG90/kmctl?filter=v*&sort=semver&label=release)](https://github.com/JasperHG90/kmctl/releases/latest)
+[![License: MIT](https://img.shields.io/github/license/JasperHG90/kmctl)](LICENSE)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue)](pyproject.toml)
+
 kmctl keeps a repository's knowledge current: `docs/` for people who use the
 project and an `.okf/` knowledge bundle for people and agents working on it.
 At the start of every Claude Code session its plugin gives the agent a

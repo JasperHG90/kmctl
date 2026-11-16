@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.0",
+  "slug": "readme-badges",
+  "plan_hash": "61aed9e2962839decdbf59b2b375d04e0bc8350625d32c1357cfdfdf2dc34c79",
+  "problems": [
+    {
+      "id": "P1",
+      "text": "No README shows a package's lifecycle, CI state or latest release."
+    },
+    {
+      "id": "P2",
+      "text": "Nothing tells a user that kmaudit is beta and may change."
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "A reader sees each package's state and latest release at a glance."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "O1",
+      "change": "Each README opens with lifecycle, CI, release, licence and Python badges",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "README.md",
+        "packages/kmctl/README.md",
+        "packages/kmaudit/README.md",
+        "tests/test_readmes.py"
+      ],
+      "checked_by": "a test that each README carries the lifecycle, CI, release, licence and Python badges, that the CI badge points at ci.yml on main, and that each release badge filters to its own package's tag family",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O2",
+      "change": "kmaudit is marked beta in its README, command reference and package metadata",
+      "kind": "support",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P2",
+      "fixes_index": 1,
+      "needs": [
+        "O1"
+      ],
+      "needs_index": [
+        0
+      ],
+      "touches": [
+        "packages/kmaudit/README.md",
+        "docs/reference/kmaudit-commands.md",
+        "packages/kmaudit/pyproject.toml",
+        "packages/kmctl/pyproject.toml",
+        "README.md",
+        "tests/test_readmes.py"
+      ],
+      "checked_by": "a test that kmaudit's README and command reference say beta, that its lifecycle badge says beta and kmctl's stable, that the root README's kmaudit entry says beta, and that the two pyprojects carry the matching Development Status classifiers",
+      "seen_by": "operator"
+    }
+  ]
+}
