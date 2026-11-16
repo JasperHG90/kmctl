@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "slug": "decision-gaps-measure",
+  "n": 1,
+  "command": "python3 /tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/gaps/scripts/leak_check.py . /tmp/claude-1000/-home-vscode-workspace/ea1edca4-2d55-48a1-b186-f81e60a3d11d/scratchpad/gaps/results/units.jsonl",
+  "scripts": [],
+  "where": "worktree",
+  "head": "63a91c558502f28ccbebac5f189bdf1e82754c04",
+  "fingerprint": "ddc1a0bce281bc5844c8d23ce91d12734ade72435bdd216645adfc0b627af519",
+  "started_at": "2026-11-16T11:47:12+00:00",
+  "finished_at": "2026-11-16T11:47:12+00:00",
+  "duration_seconds": 0.025,
+  "timeout_seconds": 1800.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "moved_from": null
+}
