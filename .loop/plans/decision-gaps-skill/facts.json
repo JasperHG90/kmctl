@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "decision-gaps-skill",
-  "plan_hash": "1bac83d7836ffd258a1cfdec2d313c35fc97b4a0186e83b566cd48ffe855c857",
+  "plan_hash": "137fbfaf426472579a4f7cc0b2979beb9e8912f9e3ac43f7dd2bc1cd98a071cb",
   "problems": [
     {
       "id": "P1",
@@ -29,15 +29,15 @@
         "new:packages/kmctl/apm/.apm/skills/decision-gaps/SKILL.md",
         "new:packages/kmctl/apm/.apm/skills/decision-gaps/evals/evals.json",
         "new:packages/kmctl/apm/.apm/skills/decision-gaps/evals/results.md",
-        "packages/kmctl/src/kmctl/__init__.py",
         "packages/kmctl/tests/test_apm_package.py",
         "packages/kmctl/tests/test_briefing.py",
         "new:packages/kmctl/tests/test_decision_gaps_skill.py",
         "new:docs/how-to/find-unrecorded-decisions.md",
         "docs/how-to/README.md",
-        "docs/reference/commands.md"
+        "docs/how-to/install-kmctl-with-apm.md",
+        "docs/how-to/install-the-plugin-and-the-ci-action.md"
       ],
-      "checked_by": "tests that the skill folder ships in the package and the wheel, its front matter is valid, its body runs kmctl decision candidates and says it writes nothing, the briefing lists it, and the verb's help names it; the skill-creator evals kept in evals/ with their results; kmctl check",
+      "checked_by": "tests that the skill folder ships in the package and the wheel, its front matter is valid, its body runs kmctl decision candidates and says it writes nothing, the briefing lists it, the install pages count eight skills; the skill-creator evals kept in evals/ with their results; kmctl check",
       "seen_by": "operator"
     }
   ]
