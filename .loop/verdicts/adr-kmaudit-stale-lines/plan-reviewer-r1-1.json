@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "The plan leaves out the decisions index entry for ADR 0012, which repeats the same stale claim P1 is about: `.okf/decisions/index.md` line 28 ends `(amended: apm/apm.yml is the one version source)`. That path is gone, and kmaudit has its own version source. A reader reaches the index before the ADR, so fixing only the ADR leaves the wrong claim in place and G1 unmet. O1's `touches` should add `.okf/decisions/index.md`, and also `tests/scripts/test_release_docs.py`, where the new test that `checked by` describes will live. The prose and outcome should say the index note changes, for example to name both packages' apm.yml files and ADR 0045.",
+      "anchor": ".okf/decisions/index.md:28",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "23769548b1a2f69aa724c715f1b93346c90fc018c03101aa25512d5aa916fde3"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-16T06:45:39+00:00"
+}
