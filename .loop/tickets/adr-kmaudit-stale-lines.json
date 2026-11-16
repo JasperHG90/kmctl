@@ -1,10 +1,10 @@
 {
   "schema_version": "1.0",
   "slug": "adr-kmaudit-stale-lines",
-  "stage": "ready",
-  "attempts": 0,
+  "stage": "done",
+  "attempts": 1,
   "plan_rounds": 3,
-  "review_rounds": 0,
+  "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
@@ -13,13 +13,15 @@
   "split": "j-20261116T065838+0000-1f20d571",
   "split_plan_hash": "a5b811bbd0c3da349907f4b0320b50696d3fa359da4f610b0289771f8d52f9fb",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "5a83ad7ffaca998bb007b85b993418c97bd83698",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
-  "worktree": null,
-  "branch": null,
-  "stamps": [],
+  "worktree": "/home/vscode/workspace.worktrees/adr-kmaudit-stale-lines",
+  "branch": "loop/adr-kmaudit-stale-lines",
+  "stamps": [
+    "61724f2e037b96ca8b3163f0e2a474cfce334a56dc8691d947f81c1958e723a9"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/implementer",
     "hash": "d7dbe3e0ab27f5f3254535308590e2b1a06f5e7608ad44e2228cc1e16cd71fa4",
@@ -82,16 +84,16 @@
   "waivers": [],
   "overrides": [],
   "round": {
-    "kind": "plan",
-    "n": 3,
-    "binds": "a5b811bbd0c3da349907f4b0320b50696d3fa359da4f610b0289771f8d52f9fb",
-    "started_at": "2026-11-16T06:58:41+00:00",
+    "kind": "review",
+    "n": 1,
+    "binds": "61724f2e037b96ca8b3163f0e2a474cfce334a56dc8691d947f81c1958e723a9",
+    "started_at": "2026-11-16T07:04:12+00:00",
     "passes": [
-      "plan-reviewer"
+      "reviewer"
     ],
-    "tree": null,
-    "plan_hash": null,
-    "eval_hash": null,
+    "tree": "51ab57ba602b73e6d6752f038f31ad0baa39d50c",
+    "plan_hash": "a5b811bbd0c3da349907f4b0320b50696d3fa359da4f610b0289771f8d52f9fb",
+    "eval_hash": "d7dbe3e0ab27f5f3254535308590e2b1a06f5e7608ad44e2228cc1e16cd71fa4",
     "scope": "full",
     "sent_back": [],
     "since": null,
@@ -119,8 +121,26 @@
       "to": "ready",
       "at": "2026-11-16T06:59:47+00:00",
       "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-16T06:59:51+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-16T07:04:10+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-16T07:20:03+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-16T06:59:47+00:00"
+  "at": "2026-11-16T07:20:03+00:00"
 }

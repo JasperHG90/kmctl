@@ -9,3 +9,9 @@
 {"at": "2026-11-16T06:58:41+00:00", "binds": "a5b811bbd0c3da349907f4b0320b50696d3fa359da4f610b0289771f8d52f9fb", "kind": "round-start", "n": 3, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
 {"at": "2026-11-16T06:59:44+00:00", "dispatched_at": "2026-11-16T06:58:41+00:00", "kind": "round-close", "n": 3, "outcome": "pass", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-16T06:59:27+00:00"}}
 {"at": "2026-11-16T06:59:47+00:00", "by": "advance", "from": "planning", "kind": "transition", "schema_version": "1.0", "to": "ready"}
+{"at": "2026-11-16T06:59:51+00:00", "by": "advance", "from": "ready", "kind": "transition", "schema_version": "1.0", "to": "building"}
+{"at": "2026-11-16T07:03:58+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "building"}
+{"at": "2026-11-16T07:04:10+00:00", "by": "advance", "from": "building", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
+{"at": "2026-11-16T07:04:12+00:00", "binds": "61724f2e037b96ca8b3163f0e2a474cfce334a56dc8691d947f81c1958e723a9", "kind": "round-start", "n": 1, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "51ab57ba602b73e6d6752f038f31ad0baa39d50c"}
+{"at": "2026-11-16T07:20:00+00:00", "dispatched_at": "2026-11-16T07:04:12+00:00", "kind": "round-close", "n": 1, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-11-16T07:09:41+00:00"}}
+{"at": "2026-11-16T07:20:03+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "5a83ad7ffaca998bb007b85b993418c97bd83698"}
