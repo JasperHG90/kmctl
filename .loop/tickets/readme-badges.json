@@ -19,7 +19,9 @@
   "archived": false,
   "worktree": "/home/vscode/workspace.worktrees/readme-badges",
   "branch": "loop/readme-badges",
-  "stamps": [],
+  "stamps": [
+    "7f2d37272dac46170eaa86e1c3434519e9d546471fe02bd24dd57ddab7d01512"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/implementer",
     "hash": "24ef7d1a3118f45936b18b1ece187be0eeaec22b682f4041fd32b5921a8ba17e",
@@ -94,5 +96,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-16T09:09:30+00:00"
+  "at": "2026-11-16T09:15:09+00:00"
 }

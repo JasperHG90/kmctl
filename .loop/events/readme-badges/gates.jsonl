@@ -1,0 +1,1 @@
+{"at": "2026-11-16T09:15:09+00:00", "command": "uv run ruff format --check", "exit": 1, "fingerprint": "7f2d37272dac46170eaa86e1c3434519e9d546471fe02bd24dd57ddab7d01512", "kind": "red", "name": "format", "note": null, "output": ".loop/events/readme-badges/gate-output/19dfa46b849d47b98529ea8bda878cead2bf7c9bb357abe9786675910a1267de.txt", "schema_version": "1.0"}
