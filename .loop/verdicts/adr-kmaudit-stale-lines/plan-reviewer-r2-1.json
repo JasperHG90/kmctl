@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "The plan missed .okf/decisions/index.md's note on ADR 0012 and left the test file out of touches.",
+      "anchor": ".okf/decisions/index.md:28",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "ADR 0020's Decision still says kmctl's package is three APM packages in apm/ (apm/, apm/claude/, apm/antigravity/), and ADR 0011's last rule-path correction puts the rules in apm/claude/.apm/instructions/ and apm/antigravity/.apm/instructions/. Neither has a correction pointing at ADR 0045, and packages/kmctl/apm now holds those sub-packages. G1 (\"the decisions describe where each package's APM package lives today\") and P1 claim more than O1 covers, so after this plan ships the decisions still give apm/ as the package's current home.",
+      "anchor": ".okf/decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md:61",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "a658e9801b6ca60a2efdc1a957c82d8e85ca269a5606800358aadf507073f9d5"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-16T06:57:28+00:00"
+}
