@@ -21,7 +21,8 @@
   "branch": "loop/decision-gaps-skill",
   "stamps": [
     "1dcf0db1fb7e7f72aba3ad263adbf2f6a29b9103860d77eddd6f40d768d3016a",
-    "a65aefefc9904cf358c58727b63e48f1cb19b012c594517fa5d39523034357b7"
+    "a65aefefc9904cf358c58727b63e48f1cb19b012c594517fa5d39523034357b7",
+    "78a2c2433c34c9feebd3ca33aafd5e4b34553166aa8da4b6d62625723ae3929d"
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/implementer",
@@ -151,5 +152,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-16T18:09:27+00:00"
+  "at": "2026-11-16T18:15:10+00:00"
 }
