@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "Rerunning the prototype's units and signals scripts over the fixed range reproduces the committed units and filter results, and the README's filter table (recall of hidden positives and share of units flagged, per threshold) equals what score.py prints from them.",
+      "fails_when": "the units or filter results differ from the committed ones, or a number in the README's filter table differs from score.py's output",
+      "command": "uv run pytest tests/test_decision_gaps_prototype.py -q -m 'not llm'"
+    },
+    {
+      "id": "r2",
+      "behavior": "The README's judge numbers (recall on hidden positives, missing-decision rate on the negative sample, precision of those claims from the committed labels, and cost and time per unit) equal what score.py prints from the committed judge results and labels, and every judged unit in the sample has a result and every judge claim on a negative a label.",
+      "fails_when": "a judged unit lacks a result, a claim lacks a label, or a judge number in the README differs from score.py's output",
+      "command": "uv run pytest tests/test_decision_gaps_prototype.py -q -k judge -m 'not llm'"
+    },
+    {
+      "id": "r3",
+      "behavior": "The prototype folder is a valid concept: its README has the prototype front matter, the prototypes index lists it, and kmctl check and strict OKF validation pass.",
+      "fails_when": "kmctl check or the frontmatter tests report a finding",
+      "command": "uv run pytest packages/kmctl/tests/test_docs_frontmatter.py -q"
+    }
+  ]
+}
