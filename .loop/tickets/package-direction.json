@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "package-direction",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 2,
@@ -29,7 +29,7 @@
   "split": "j-20261116T113527+0000-07af5f0c",
   "split_plan_hash": "a5db76a7e0420c8c22e0fafa32c032350f27fef4b8eb8756ef1efa97cbb0f1f8",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "4ab0d34cd3fd310e0db823d8753050cd9cd73e67",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -144,8 +144,14 @@
       "to": "verifying",
       "at": "2026-11-16T12:03:46+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-16T13:39:52+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-16T13:39:44+00:00"
+  "at": "2026-11-16T13:39:52+00:00"
 }
