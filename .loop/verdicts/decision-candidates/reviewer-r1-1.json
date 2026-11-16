@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The default start reads decision records from the working tree under --path, not from HEAD at the repository's top level. An uncommitted newest record, or running from a subdirectory, makes default_since return None and the verb silently lists the whole history.",
+      "anchor": "packages/kmctl/src/kmctl/candidates.py:168",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "The words signal misses a phrase that a wrapped commit body splits across lines (instead\\nof, rather\\nthan, no\\nlonger, switch\\nto). The prototype folded whitespace before matching, so the verb scores some changes lower than the measured filter did.",
+      "anchor": "packages/kmctl/src/kmctl/candidates.py:294",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "99d56318c21603d27ceb6fa08b8ba6a942ba6d50b0cbea0b57a3c680abb738d1",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-16T16:23:19+00:00"
+}
