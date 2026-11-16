@@ -6,20 +6,20 @@ tags:
 - eval
 generated:
   by: process:loopctl/2.3.1.dev65+g93b143856
-  at: '2026-11-16T16:13:50+00:00'
+  at: '2026-11-16T16:17:09+00:00'
 slug: decision-gaps-skill
 signoff:
   signer: delegated:jasperginn@gmail.com/implementer
-  hash: 87b58522cb895b12779fcfecddb1e77a020c978f2f799b91ff00cda1d0f80b30
-  at: '2026-11-16T16:13:50+00:00'
+  hash: 3f6e399bc22a05294c7f074128dd757dfbd151d074a13236805eef093f20c91b
+  at: '2026-11-16T16:17:09+00:00'
 verified: null
 ---
 
 Rows: rows.json; the fields each row takes: loopctl schema eval-rows.
 
-- r1: kmctl's package ships packages/kmctl/apm/.apm/skills/decision-gaps/SKILL.md with valid front matter (name decision-gaps and a description saying when to use it); its body runs kmctl decision candidates --json, judges every change it lists, reports missing decisions with the choice, the rejected option and the change, and says it writes nothing and leaves records to the user and kmctl new decision; the wheel carries it; the briefing lists it; the verb's help names the skill.
-  Fails when: the skill folder or front matter is missing or invalid, the body lacks one of those instructions, the wheel or the briefing leaves it out, or the verb's help does not name it
-- r2: The skill was made with the skill-creator skill: evals/evals.json holds its test prompts (at least one asking to find unrecorded decisions, one naming a starting point, and one asking to write a decision record that should not trigger it) with expectations, and evals/results.md records each run's outcome, including that no run wrote to .okf/.
-  Fails when: evals.json is missing, malformed or lacks one of those prompt kinds or their expectations, or results.md lacks a result for a prompt or does not say whether .okf/ stayed unchanged
+- r1: kmctl's package ships packages/kmctl/apm/.apm/skills/decision-gaps/SKILL.md with valid front matter (name decision-gaps and a description saying when to use it); its body runs kmctl decision candidates --json, judges every change it lists, reports missing decisions with the choice, the rejected option and the change, and says it writes nothing and leaves records to the user and kmctl new decision; the wheel carries it; the briefing lists it; it judges in batches and asks to narrow a long range; it lists record-only changes apart; the two install pages count eight skills and name it.
+  Fails when: the skill folder or front matter is missing or invalid, the body lacks one of those instructions, the wheel or the briefing leaves it out, or an install page still counts seven skills
+- r2: The skill was made with the skill-creator skill: evals/evals.json holds its test prompts (one asking to find unrecorded decisions, one naming a starting point, one asking to write a decision record that should not trigger it, and one known-answer range of this repository scored against .okf/prototypes/decision-gaps/results/labels.json) with expectations, and evals/results.md records each run's outcome, the known-answer run's gaps found and false alarms raised against the labels, and that no run wrote to .okf/.
+  Fails when: evals.json is missing, malformed or lacks one of those prompt kinds or their expectations, results.md lacks a result for a prompt, the known-answer result lacks its counts against the labels, or results.md does not say whether .okf/ stayed unchanged
 - r3: docs/how-to/ has a page on finding unrecorded decisions that runs the skill and says the user decides; the how-to index lists it; kmctl check and the docs frontmatter tests pass.
   Fails when: the page or its index entry is missing, it implies the skill writes records, or kmctl check reports a finding
