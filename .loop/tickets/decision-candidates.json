@@ -1,41 +1,14 @@
 {
   "schema_version": "1.0",
   "slug": "decision-candidates",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 2,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": {
-    "round": 1,
-    "fingerprint": "8d14eb4b95a85f6d0fef4b4eb676455dd447ef50779f6430609c7322aae86f3e",
-    "tree": "1d3eadb1b4eec353dbea4ce871caa369fe04fa61",
-    "decisions": [
-      {
-        "finding": "reviewer:f1",
-        "outcome": "sent-back",
-        "by": "blocking",
-        "judgement": null,
-        "paths": [
-          "packages/kmctl/src/kmctl/candidates.py",
-          "packages/kmctl/tests/test_candidates.py"
-        ]
-      },
-      {
-        "finding": "reviewer:f2",
-        "outcome": "sent-back",
-        "by": "fallback",
-        "judgement": "j-20261116T162852+0000-38d7f67c",
-        "paths": [
-          "packages/kmctl/src/kmctl/candidates.py",
-          "packages/kmctl/tests/test_candidates.py"
-        ]
-      }
-    ],
-    "at": "2026-11-16T16:28:52+00:00"
-  },
+  "fix": null,
   "ask": "j-20261116T160153+0000-e46521b0",
   "split": "j-20261116T160229+0000-ad6f36ee",
   "split_plan_hash": "4a2e41aeb8d0c4679774cae91d98e39b49a6df53836456ca80b9b4352c1af91d",
@@ -101,8 +74,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "4a2e41aeb8d0c4679774cae91d98e39b49a6df53836456ca80b9b4352c1af91d",
   "intent": {
@@ -146,8 +119,14 @@
       "to": "verifying",
       "at": "2026-11-16T16:28:52+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-16T16:35:00+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-16T16:28:54+00:00"
+  "at": "2026-11-16T16:35:00+00:00"
 }
