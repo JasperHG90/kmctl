@@ -1,11 +1,11 @@
 {
   "schema_version": "1.0",
   "slug": "adr-kmaudit-stale-lines",
-  "plan_hash": "a658e9801b6ca60a2efdc1a957c82d8e85ca269a5606800358aadf507073f9d5",
+  "plan_hash": "9ed7e7326353a85507e5a0a83126b5fffd168d446f1538a79fb90391a1af6911",
   "problems": [
     {
       "id": "P1",
-      "text": "ADRs 0001, 0012 and 0014 and the decisions index give apm/apm.yml and packages/kmaudit/VERSION, which no longer exist, as the latest version sources and package path."
+      "text": "ADRs 0001, 0011, 0012, 0014 and 0020 and the decisions index give apm/apm.yml and packages/kmaudit/VERSION, which no longer exist, as the latest version sources and package path."
     }
   ],
   "goals": [
@@ -17,7 +17,7 @@
   "outcomes": [
     {
       "id": "O1",
-      "change": "ADRs 0001, 0012 and 0014 and the index record the package paths since ADR 0045",
+      "change": "ADRs 0001, 0011, 0012, 0014 and 0020 and the index record the package paths since ADR 0045",
       "kind": "behaviour",
       "goal": "G1",
       "goal_index": 0,
@@ -27,12 +27,14 @@
       "needs_index": [],
       "touches": [
         ".okf/decisions/0001-standalone-cli-installs-its-plugin.md",
+        ".okf/decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code.md",
+        ".okf/decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md",
         ".okf/decisions/0012-releases-come-from-ci.md",
         ".okf/decisions/0014-apm-is-the-only-install-route.md",
         ".okf/decisions/index.md",
         "tests/scripts/test_release_docs.py"
       ],
-      "checked_by": "tests that each of the three ADRs has a correction naming packages/kmctl/apm/apm.yml and linking ADR 0045, that ADR 0012's names both apm.yml files and every path in release-tag.yml's paths filter, and that the index notes for 0012 and 0014 name no old path; strict OKF validation",
+      "checked_by": "tests that each of the five ADRs has a correction naming packages/kmctl/apm/apm.yml and linking ADR 0045, that ADR 0012's names both apm.yml files and every path in release-tag.yml's paths filter, and that the index notes for 0012 and 0014 name no old path; strict OKF validation",
       "seen_by": "operator"
     }
   ]
