@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "adr-kmaudit-stale-lines",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 3,
   "review_rounds": 1,
@@ -13,7 +13,7 @@
   "split": "j-20261116T065838+0000-1f20d571",
   "split_plan_hash": "a5b811bbd0c3da349907f4b0320b50696d3fa359da4f610b0289771f8d52f9fb",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "5a83ad7ffaca998bb007b85b993418c97bd83698",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -133,8 +133,14 @@
       "to": "verifying",
       "at": "2026-11-16T07:04:10+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-16T07:20:03+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-16T07:20:00+00:00"
+  "at": "2026-11-16T07:20:03+00:00"
 }
