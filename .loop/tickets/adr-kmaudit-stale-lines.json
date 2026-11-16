@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "slug": "adr-kmaudit-stale-lines",
-  "stage": "ready",
-  "attempts": 0,
+  "stage": "building",
+  "attempts": 1,
   "plan_rounds": 3,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
@@ -17,8 +17,8 @@
   "closed_outside": false,
   "dropped": false,
   "archived": false,
-  "worktree": null,
-  "branch": null,
+  "worktree": "/home/vscode/workspace.worktrees/adr-kmaudit-stale-lines",
+  "branch": "loop/adr-kmaudit-stale-lines",
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/implementer",
@@ -119,8 +119,14 @@
       "to": "ready",
       "at": "2026-11-16T06:59:47+00:00",
       "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-16T06:59:51+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-16T06:59:47+00:00"
+  "at": "2026-11-16T06:59:51+00:00"
 }
