@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "One-session judging of every change was untested against the prototype's per-change judging, there was no plan for long ranges, and no known-answer eval.",
+      "anchor": ".loop/plans/decision-gaps-skill/README.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r2"
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "The two install how-to pages counted seven skills and were out of scope.",
+      "anchor": "docs/how-to/install-kmctl-with-apm.md:141",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "137fbfaf426472579a4f7cc0b2979beb9e8912f9e3ac43f7dd2bc1cd98a071cb"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-16T16:18:16+00:00"
+}
