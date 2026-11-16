@@ -22,16 +22,16 @@
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/implementer",
-    "hash": "25b6bc6fdfd420e27e85473db4eac1975eca1b34dc574760dbd204f3cbe861d7",
-    "at": "2026-11-16T06:56:08+00:00"
+    "hash": "d7dbe3e0ab27f5f3254535308590e2b1a06f5e7608ad44e2228cc1e16cd71fa4",
+    "at": "2026-11-16T06:58:31+00:00"
   },
   "delegation": null,
   "budget_base": null,
   "signed_rows": [
     {
       "id": "r1",
-      "behavior": "ADRs 0001, 0012 and 0014 each have a dated correction that names packages/kmctl/apm/apm.yml and links ADR 0045; ADR 0012's also names packages/kmaudit/apm/apm.yml and every path in release-tag.yml's paths filter.",
-      "fails_when": "any of the three lacks such a correction, ADR 0012's misses kmaudit's apm.yml or a path release-tag.yml watches, or the link to 0045 is missing",
+      "behavior": "ADRs 0001, 0011, 0012, 0014 and 0020 each have a dated correction that names packages/kmctl/apm/apm.yml and links ADR 0045; ADR 0012's also names packages/kmaudit/apm/apm.yml and every path in release-tag.yml's paths filter.",
+      "fails_when": "any of the five lacks such a correction, ADR 0012's misses kmaudit's apm.yml or a path release-tag.yml watches, or the link to 0045 is missing",
       "command": "uv run pytest tests/scripts/test_release_docs.py -q -k since_adr_0045",
       "judgment": false
     },
@@ -61,6 +61,21 @@
         }
       },
       "at": "2026-11-16T06:56:08+00:00"
+    },
+    {
+      "signer": "delegated:jasperginn@gmail.com/implementer",
+      "reason": "plan review r2: ADRs 0011 and 0020 added",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r1": [
+            "behavior",
+            "fails_when"
+          ]
+        }
+      },
+      "at": "2026-11-16T06:58:31+00:00"
     }
   ],
   "accepted_risks": [],
@@ -101,5 +116,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-16T06:58:26+00:00"
+  "at": "2026-11-16T06:58:31+00:00"
 }
