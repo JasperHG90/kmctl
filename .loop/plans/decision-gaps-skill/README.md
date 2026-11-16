@@ -29,8 +29,8 @@ found, and it's up to the user to make that into decision records or not."
 `new:packages/kmctl/apm/.apm/skills/decision-gaps/SKILL.md` is made with
 the skill-creator skill (`anthropic-skills:skill-creator`), as ADR 0007
 requires and the operator asked: drafted, run on realistic prompts, and its
-description tuned for triggering. Its test prompts and results stay beside
-it in `new:packages/kmctl/apm/.apm/skills/decision-gaps/evals/evals.json`
+description tuned for triggering. Its test cases (the skill-creator's case folders) and results stay beside
+it in `new:packages/kmctl/apm/.apm/skills/decision-gaps/evals/known-range-finds-labelled-gaps/case.yaml`
 and `new:packages/kmctl/apm/.apm/skills/decision-gaps/evals/results.md`, as
 the audit skill keeps its own.
 
@@ -92,7 +92,7 @@ one, and the package tests and the briefing test list it.
 - goal: G1
 - fixes: P1
 - needs: none
-- touches: `new:packages/kmctl/apm/.apm/skills/decision-gaps/SKILL.md`, `new:packages/kmctl/apm/.apm/skills/decision-gaps/evals/evals.json`, `new:packages/kmctl/apm/.apm/skills/decision-gaps/evals/results.md`, `packages/kmctl/tests/test_apm_package.py`, `packages/kmctl/tests/test_briefing.py`, `new:packages/kmctl/tests/test_decision_gaps_skill.py`, `new:docs/how-to/find-unrecorded-decisions.md`, `docs/how-to/README.md`, `docs/how-to/install-kmctl-with-apm.md`, `docs/how-to/install-the-plugin-and-the-ci-action.md`
+- touches: `new:packages/kmctl/apm/.apm/skills/decision-gaps/SKILL.md`, `new:packages/kmctl/apm/.apm/skills/decision-gaps/evals/known-range-finds-labelled-gaps/case.yaml`, `new:packages/kmctl/apm/.apm/skills/decision-gaps/evals/results.md`, `packages/kmctl/tests/test_apm_package.py`, `packages/kmctl/tests/test_briefing.py`, `new:packages/kmctl/tests/test_decision_gaps_skill.py`, `new:docs/how-to/find-unrecorded-decisions.md`, `docs/how-to/README.md`, `docs/how-to/install-kmctl-with-apm.md`, `docs/how-to/install-the-plugin-and-the-ci-action.md`
 - checked by: tests that the skill folder ships in the package and the wheel, its front matter is valid, its body runs kmctl decision candidates and says it writes nothing, the briefing lists it, the install pages count eight skills; the skill-creator evals kept in evals/ with their results; kmctl check
 - seen by: operator
 
