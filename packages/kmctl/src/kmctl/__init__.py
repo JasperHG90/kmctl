@@ -16,6 +16,7 @@ from kmctl.briefing import (
     hook_workspace,
     render,
 )
+from kmctl.candidates import candidates as list_candidates
 from kmctl.checks import run_checks
 from kmctl.concepts import ConceptError, Kind, new_concept
 from kmctl.docs import DocType, new_doc
@@ -872,8 +873,9 @@ def summary_ack(
 
 decision_app = typer.Typer(
     help=(
-        "Change decision records in .okf/decisions/. Verbs: supersede. "
-        "Needs a bundle from kmctl init and both records from kmctl new decision."
+        "Work with decision records in .okf/decisions/. Verbs: supersede, "
+        "candidates. supersede needs both records from kmctl new decision; "
+        "candidates reads git history and runs with or without records."
     ),
     no_args_is_help=True,
 )
@@ -930,6 +932,78 @@ def decision_supersede(
         return
     typer.echo(f"superseded {result.old} with {result.new}")
     typer.echo(next_step("kmctl check"))
+
+
+@decision_app.command(
+    "candidates",
+    epilog=(
+        "Examples:\n\n"
+        "  kmctl decision candidates\n\n"
+        "  kmctl decision candidates --since v0.13.0 --json\n\n"
+        "Lists one change per ticket merge, pull request or plain commit, "
+        "highest score first. It follows sync merges into what they brought "
+        "and lists a pull request that carried ticket merges as those tickets. "
+        "It leaves out loop state (loop: ...), release commits and their pull "
+        "requests, merges of main into a branch and placeholder commits. "
+        "recorded names the decisions a change added or amended. It calls no "
+        "model and writes nothing; the decision-gaps skill judges the list and "
+        "reports which changes made a decision no record covers."
+    ),
+)
+def decision_candidates(
+    since: Annotated[
+        str | None,
+        typer.Option(
+            "--since",
+            metavar="v0.13.0",
+            help=(
+                "List the changes after this commit, tag or branch. Default: "
+                "after the commit that added the newest committed decision record, or "
+                "the whole history when there is none."
+            ),
+        ),
+    ] = None,
+    path: Annotated[
+        Path,
+        typer.Option(
+            "--path",
+            metavar="../other-repo",
+            exists=True,
+            file_okay=False,
+            help="The git repository to read: an existing folder. Default: the current directory.",
+        ),
+    ] = Path("."),
+    as_json: Annotated[
+        bool,
+        typer.Option(
+            "--json",
+            help=(
+                "Print a JSON list, one object per change (sha, parent, kind, "
+                "subject, message, slug, plan, files, recorded, signals, score), "
+                "for the decision-gaps skill and scripts."
+            ),
+        ),
+    ] = False,
+) -> None:
+    """List the changes since the newest decision record that may hold an unrecorded decision."""
+    try:
+        found = list_candidates(path.resolve(), since)
+    except ConceptError as error:
+        typer.echo(f"kmctl decision candidates: refused: {error}", err=True)
+        raise typer.Exit(1) from error
+    if as_json:
+        typer.echo(json.dumps([asdict(c) for c in found]))
+        return
+    if not found:
+        typer.echo("no changes since the newest decision record")
+        return
+    for c in found:
+        mark = f"recorded {','.join(c.recorded)}" if c.recorded else "-"
+        subject = c.subject if len(c.subject) <= 48 else c.subject[:47] + "…"
+        typer.echo(f"{c.score} {c.sha[:8]} {c.kind:6} {mark:14} {subject}")
+    typer.echo(
+        f"{len(found)} changes; --json gives each change's files, plan and signals"
+    )
 
 
 @app.command(
