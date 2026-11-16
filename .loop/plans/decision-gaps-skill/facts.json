@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "decision-gaps-skill",
-  "plan_hash": "60448b1ca75a5841b7ec7e2d0a79624afdf42f3e4fa8c9e38ff69b80cb20c41a",
+  "plan_hash": "1bac83d7836ffd258a1cfdec2d313c35fc97b4a0186e83b566cd48ffe855c857",
   "problems": [
     {
       "id": "P1",
@@ -37,7 +37,7 @@
         "docs/how-to/README.md",
         "docs/reference/commands.md"
       ],
-      "checked_by": "tests that the skill folder ships in the package and the wheel, its front matter is valid, its body runs kmctl decision candidates and says it writes nothing, the briefing lists it, and the verb's output names it; the skill-creator evals kept in evals/ with their results; kmctl check",
+      "checked_by": "tests that the skill folder ships in the package and the wheel, its front matter is valid, its body runs kmctl decision candidates and says it writes nothing, the briefing lists it, and the verb's help names it; the skill-creator evals kept in evals/ with their results; kmctl check",
       "seen_by": "operator"
     }
   ]
