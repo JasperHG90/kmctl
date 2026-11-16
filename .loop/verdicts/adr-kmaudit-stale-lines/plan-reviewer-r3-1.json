@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "The plan missed .okf/decisions/index.md's note on ADR 0012 and left the test file out of touches.",
+      "anchor": ".okf/decisions/index.md:28",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "ADR 0020's Decision and ADR 0011's last rule-path correction gave apm/ (with apm/claude/ and apm/antigravity/) as kmctl's package home with no ADR 0045 correction. The plan now adds dated corrections to both, lists both files in touches, and row r1 checks all five ADRs.",
+      "anchor": ".okf/decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest.md:61",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "a5b811bbd0c3da349907f4b0320b50696d3fa359da4f610b0289771f8d52f9fb"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-16T06:59:27+00:00"
+}
