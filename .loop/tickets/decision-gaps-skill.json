@@ -1,14 +1,31 @@
 {
   "schema_version": "1.0",
   "slug": "decision-gaps-skill",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 2,
+    "fingerprint": "5f2f3f32a19f63fbd8b7f8d2027b28af1419ea74b70fed9b901118ce958e0b03",
+    "tree": "c9b02c3e94cb4296ced2ee3f942a84c97e0a504e",
+    "decisions": [
+      {
+        "finding": "reviewer:f3",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": "j-20261116T182837+0000-d7f7ec17",
+        "paths": [
+          "packages/kmctl/apm/.apm/skills/decision-gaps/SKILL.md",
+          "packages/kmctl/apm/.apm/skills/decision-gaps/evals/results.md"
+        ]
+      }
+    ],
+    "at": "2026-11-16T18:28:37+00:00"
+  },
   "ask": "j-20261116T160153+0000-e46521b0",
   "split": "j-20261116T161654+0000-d89bac99",
   "split_plan_hash": "137fbfaf426472579a4f7cc0b2979beb9e8912f9e3ac43f7dd2bc1cd98a071cb",
@@ -162,8 +179,14 @@
       "to": "fixing",
       "at": "2026-11-16T18:22:13+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-16T18:28:37+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-16T18:28:20+00:00"
+  "at": "2026-11-16T18:28:37+00:00"
 }
