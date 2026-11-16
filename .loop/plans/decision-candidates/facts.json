@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0",
+  "slug": "decision-candidates",
+  "plan_hash": "4a2e41aeb8d0c4679774cae91d98e39b49a6df53836456ca80b9b4352c1af91d",
+  "problems": [
+    {
+      "id": "P1",
+      "text": "kmctl cannot list the changes since the last decision record in a form an agent can judge."
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "An agent can review a repository's history for unrecorded decisions from one kmctl command's output."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "O1",
+      "change": "kmctl decision candidates lists the changes since the newest decision with what a judge needs",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "new:packages/kmctl/src/kmctl/candidates.py",
+        "packages/kmctl/src/kmctl/__init__.py",
+        "new:packages/kmctl/tests/test_candidates.py",
+        "docs/reference/commands.md",
+        "new:.okf/decisions/0047-unrecorded-decisions-are-listed-by-kmctl-and-judged-by-a-skill-that-only-reports.md",
+        ".okf/decisions/index.md",
+        ".okf/log.md",
+        ".okf/summary.md"
+      ],
+      "checked_by": "tests on temporary git repositories for the split (ticket merges, a pull request carrying tickets, a pull request without, a sync, plain commits, skipped noise), the default and explicit --since, the recorded field for added and amended records, the plan path, score ordering, the JSON shape, the refusals, and that nothing is written; the help tests; kmctl check",
+      "seen_by": "calling code"
+    }
+  ]
+}

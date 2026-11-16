@@ -1,0 +1,162 @@
+{
+  "schema_version": "1.0",
+  "slug": "decision-candidates",
+  "stage": "done",
+  "attempts": 1,
+  "plan_rounds": 1,
+  "review_rounds": 3,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": {
+    "round": 2,
+    "fingerprint": "81c3d86256be444aa91fcf9c0d321472a78f3d64ea18e280a691928695cda872",
+    "tree": "797c9fa92650b9cb89fec7f8f7cd14f1baea594c",
+    "decisions": [
+      {
+        "finding": "reviewer:f3",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": "j-20261116T164003+0000-81bbaba0",
+        "paths": [
+          "docs/reference/commands.md",
+          "packages/kmctl/src/kmctl/__init__.py"
+        ]
+      }
+    ],
+    "at": "2026-11-16T16:40:03+00:00"
+  },
+  "ask": "j-20261116T160153+0000-e46521b0",
+  "split": "j-20261116T160229+0000-ad6f36ee",
+  "split_plan_hash": "4a2e41aeb8d0c4679774cae91d98e39b49a6df53836456ca80b9b4352c1af91d",
+  "split_hold": false,
+  "commit_sha": "c9439c3dbb7c3f24f1265fc5353da62cc1765b2a",
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": "/home/vscode/workspace.worktrees/decision-candidates",
+  "branch": "loop/decision-candidates",
+  "stamps": [
+    "99d56318c21603d27ceb6fa08b8ba6a942ba6d50b0cbea0b57a3c680abb738d1",
+    "8d14eb4b95a85f6d0fef4b4eb676455dd447ef50779f6430609c7322aae86f3e",
+    "81c3d86256be444aa91fcf9c0d321472a78f3d64ea18e280a691928695cda872"
+  ],
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/implementer",
+    "hash": "4cdf536195b8a70af1ee7fef322c160bb55e81c75bca8e414b0b688a1d07a353",
+    "at": "2026-11-16T16:02:47+00:00"
+  },
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "In a temporary git repository, kmctl decision candidates lists one change per ticket merge, per pull request without ticket merges, per ticket inside a pull request that carried tickets and per plain commit, reads through a sync merge, leaves out loop state, release and placeholder commits, and starts by default after the commit that added the newest decision record (or at the root when there is none) or at --since.",
+      "fails_when": "a change is missing, listed twice or wrongly split, a skipped commit is listed, or the default or --since start is wrong",
+      "command": "uv run pytest packages/kmctl/tests/test_candidates.py -q -k split",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "Each listed change carries its sha, first parent, kind, subject, message, ticket slug and plan path when the plan exists, changed files, the decision numbers it added or amended, its signals and score; changes come highest score first; --json prints that list as JSON and the default prints a table; nothing in the repository changes.",
+      "fails_when": "a field is missing or wrong, recorded misses an added or amended record, ordering is not by score, the JSON does not parse or lacks a field, or a file or ref changes",
+      "command": "uv run pytest packages/kmctl/tests/test_candidates.py -q -k fields",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "Outside a git repository, or with a --since that names no commit, it exits 1 with one stderr line naming the refusal and the fix; its help names what it produces, gives every input an example and fits 80 columns; docs/reference/commands.md documents it; decision 0047 exists and validates; kmctl check passes.",
+      "fails_when": "a refusal exits 0 or lacks the fix, the help tests fail, the reference lacks the verb, or kmctl check or the frontmatter tests report a finding",
+      "command": "uv run pytest packages/kmctl/tests/test_candidates.py packages/kmctl/tests/test_help.py packages/kmctl/tests/test_docs_frontmatter.py -q -k 'refus or help or migrated or reference or decision_0047'",
+      "judgment": false
+    }
+  ],
+  "resigns": [],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [],
+  "round": {
+    "kind": "review",
+    "n": 3,
+    "binds": "81c3d86256be444aa91fcf9c0d321472a78f3d64ea18e280a691928695cda872",
+    "started_at": "2026-11-16T16:40:06+00:00",
+    "passes": [
+      "reviewer"
+    ],
+    "tree": "797c9fa92650b9cb89fec7f8f7cd14f1baea594c",
+    "plan_hash": "4a2e41aeb8d0c4679774cae91d98e39b49a6df53836456ca80b9b4352c1af91d",
+    "eval_hash": "4cdf536195b8a70af1ee7fef322c160bb55e81c75bca8e414b0b688a1d07a353",
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": true,
+    "outcome": "pass"
+  },
+  "plan_hash": "4a2e41aeb8d0c4679774cae91d98e39b49a6df53836456ca80b9b4352c1af91d",
+  "intent": {
+    "epic": null,
+    "depends_on": [],
+    "priority": null
+  },
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-11-16T16:02:04+00:00",
+      "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-11-16T16:04:58+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-16T16:05:02+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-16T16:13:30+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-16T16:23:37+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-16T16:28:52+00:00",
+      "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-16T16:35:00+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-16T16:40:03+00:00",
+      "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-16T16:45:35+00:00",
+      "by": "done"
+    }
+  ],
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-16T16:45:35+00:00"
+}

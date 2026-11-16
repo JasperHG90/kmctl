@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "candidates() read the working tree and the current directory instead of HEAD and the top level",
+      "anchor": "packages/kmctl/src/kmctl/candidates.py",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "the words signal missed phrases split across line breaks",
+      "anchor": "packages/kmctl/src/kmctl/candidates.py",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "the reference's exit-code line omitted the no-commits refusal",
+      "anchor": "docs/reference/commands.md:534",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "81c3d86256be444aa91fcf9c0d321472a78f3d64ea18e280a691928695cda872",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-16T16:45:17+00:00"
+}

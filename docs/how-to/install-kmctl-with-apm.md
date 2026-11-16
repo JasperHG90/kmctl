@@ -138,9 +138,9 @@ must be on the PATH OpenCode starts with.
 
 ## Check it worked
 
-APM writes kmctl's seven skills to `.claude/skills/` (`architecture-review`,
-`audit`, `continue`, `decision-log-review`, `handoff`, `practices-review`,
-`write-docs`) next to okf's (`okf`, `validate`, `backfill`, `visualize`),
+APM writes kmctl's eight skills to `.claude/skills/` (`architecture-review`,
+`audit`, `continue`, `decision-gaps`, `decision-log-review`, `handoff`,
+`practices-review`, `write-docs`) next to okf's (`okf`, `validate`, `backfill`, `visualize`),
 the agent to `.claude/agents/kmctl-auditor.md`, and the rules to
 `.claude/rules/`. In the repository, run:
 

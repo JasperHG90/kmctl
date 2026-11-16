@@ -1,0 +1,198 @@
+{
+  "schema_version": "1.0",
+  "slug": "decision-gaps-skill",
+  "stage": "done",
+  "attempts": 1,
+  "plan_rounds": 2,
+  "review_rounds": 3,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": {
+    "round": 2,
+    "fingerprint": "5f2f3f32a19f63fbd8b7f8d2027b28af1419ea74b70fed9b901118ce958e0b03",
+    "tree": "c9b02c3e94cb4296ced2ee3f942a84c97e0a504e",
+    "decisions": [
+      {
+        "finding": "reviewer:f3",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": "j-20261116T182837+0000-d7f7ec17",
+        "paths": [
+          "packages/kmctl/apm/.apm/skills/decision-gaps/SKILL.md",
+          "packages/kmctl/apm/.apm/skills/decision-gaps/evals/results.md"
+        ]
+      }
+    ],
+    "at": "2026-11-16T18:28:37+00:00"
+  },
+  "ask": "j-20261116T160153+0000-e46521b0",
+  "split": "j-20261116T161654+0000-d89bac99",
+  "split_plan_hash": "137fbfaf426472579a4f7cc0b2979beb9e8912f9e3ac43f7dd2bc1cd98a071cb",
+  "split_hold": false,
+  "commit_sha": "2faf9690c68e40488830a785a9a325b44d0cb630",
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": "/home/vscode/workspace.worktrees/decision-gaps-skill",
+  "branch": "loop/decision-gaps-skill",
+  "stamps": [
+    "1dcf0db1fb7e7f72aba3ad263adbf2f6a29b9103860d77eddd6f40d768d3016a",
+    "a65aefefc9904cf358c58727b63e48f1cb19b012c594517fa5d39523034357b7",
+    "78a2c2433c34c9feebd3ca33aafd5e4b34553166aa8da4b6d62625723ae3929d",
+    "5f2f3f32a19f63fbd8b7f8d2027b28af1419ea74b70fed9b901118ce958e0b03"
+  ],
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/implementer",
+    "hash": "5d8f345f85bcaea310d593f5ba00d1fee5c0ad06012c7cdc0f58cf260170deef",
+    "at": "2026-11-16T16:50:20+00:00"
+  },
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "kmctl's package ships packages/kmctl/apm/.apm/skills/decision-gaps/SKILL.md with valid front matter (name decision-gaps and a description saying when to use it); its body runs kmctl decision candidates --json, judges every change it lists, reports missing decisions with the choice, the rejected option and the change, and says it writes nothing and leaves records to the user and kmctl new decision; the wheel carries it; the briefing lists it; it judges in batches and asks to narrow a long range; it lists record-only changes apart; the two install pages count eight skills and name it.",
+      "fails_when": "the skill folder or front matter is missing or invalid, the body lacks one of those instructions, the wheel or the briefing leaves it out, or an install page still counts seven skills",
+      "command": "uv run pytest packages/kmctl/tests/test_decision_gaps_skill.py packages/kmctl/tests/test_apm_package.py packages/kmctl/tests/test_briefing.py -q",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "The skill was made with the skill-creator skill, its tests kept as the skill-creator's case folders under evals/ (prompt.md, case.yaml, graders/): one asking to find unrecorded decisions in a named range of this repository that holds labelled gaps and false alarms from .okf/prototypes/decision-gaps/results/labels.json, one asking with no range, and one asking to write a decision record, which must not run kmctl decision candidates; evals/results.md records each run's outcome, the known-answer run's labelled gaps found and false alarms raised, and that no run of the skill wrote to .okf/.",
+      "fails_when": "a case folder is missing or malformed, one of those three cases is absent, results.md lacks a case's result or the known-answer counts against the labels, or results.md does not say whether .okf/ stayed unchanged",
+      "command": "uv run pytest packages/kmctl/tests/test_decision_gaps_skill.py -q -k evals",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "docs/how-to/ has a page on finding unrecorded decisions that runs the skill and says the user decides; the how-to index lists it; kmctl check and the docs frontmatter tests pass.",
+      "fails_when": "the page or its index entry is missing, it implies the skill writes records, or kmctl check reports a finding",
+      "command": "uv run pytest packages/kmctl/tests/test_decision_gaps_skill.py packages/kmctl/tests/test_docs_frontmatter.py -q -k 'how_to or migrated'",
+      "judgment": false
+    }
+  ],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/implementer",
+      "reason": "plan review r1: batch judging, record-only apart, known-answer eval, install pages",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r1": [
+            "behavior",
+            "fails_when"
+          ],
+          "r2": [
+            "behavior",
+            "fails_when"
+          ]
+        }
+      },
+      "at": "2026-11-16T16:17:09+00:00"
+    },
+    {
+      "signer": "delegated:jasperginn@gmail.com/implementer",
+      "reason": "tests kept in the skill-creator case-folder format, which replaced evals.json",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r2": [
+            "behavior",
+            "fails_when"
+          ]
+        }
+      },
+      "at": "2026-11-16T16:50:20+00:00"
+    }
+  ],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [],
+  "round": {
+    "kind": "review",
+    "n": 3,
+    "binds": "5f2f3f32a19f63fbd8b7f8d2027b28af1419ea74b70fed9b901118ce958e0b03",
+    "started_at": "2026-11-16T18:28:38+00:00",
+    "passes": [
+      "reviewer"
+    ],
+    "tree": "c9b02c3e94cb4296ced2ee3f942a84c97e0a504e",
+    "plan_hash": "137fbfaf426472579a4f7cc0b2979beb9e8912f9e3ac43f7dd2bc1cd98a071cb",
+    "eval_hash": "5d8f345f85bcaea310d593f5ba00d1fee5c0ad06012c7cdc0f58cf260170deef",
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": true,
+    "outcome": "pass"
+  },
+  "plan_hash": "137fbfaf426472579a4f7cc0b2979beb9e8912f9e3ac43f7dd2bc1cd98a071cb",
+  "intent": {
+    "epic": null,
+    "depends_on": [],
+    "priority": null
+  },
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-11-16T16:02:05+00:00",
+      "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-11-16T16:18:31+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-16T16:50:22+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-16T17:58:39+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-16T18:09:27+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-16T18:15:23+00:00",
+      "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-16T18:22:13+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-16T18:28:37+00:00",
+      "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-16T18:34:53+00:00",
+      "by": "done"
+    }
+  ],
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-16T18:34:53+00:00"
+}

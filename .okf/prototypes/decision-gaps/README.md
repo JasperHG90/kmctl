@@ -128,7 +128,7 @@ positives they resemble.
 
 ## Conclusion
 
-All four bars are met, so `kmctl decision gaps` and its skill are worth
+All four bars are met, so `kmctl decision candidates` and its skill are worth
 building. Precision clears its bar at the point estimate; its interval runs
 from 36% to 78% and two flipped labels would put it under, so a person reviews every claim, as the skill's
 report-first design already requires. The recall is a floor for the real

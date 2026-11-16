@@ -7,9 +7,9 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-11-16T13:49:27Z
+  at: 2026-11-16T17:14:06Z
   against:
-    - prototypes/decision-gaps
+    - architecture/overview
 ---
 
 # Summary: kmctl

@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "the briefing showed a cut-off first sentence of the description",
+      "anchor": "packages/kmctl/apm/.apm/skills/decision-gaps/SKILL.md:3",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "judging.md did not order record-only ahead of covered",
+      "anchor": "packages/kmctl/apm/.apm/skills/decision-gaps/references/judging.md",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "results.md said the tuned description stays though f1 changed it",
+      "anchor": "packages/kmctl/apm/.apm/skills/decision-gaps/evals/results.md:84",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "5f2f3f32a19f63fbd8b7f8d2027b28af1419ea74b70fed9b901118ce958e0b03",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-16T18:34:29+00:00"
+}

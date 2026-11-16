@@ -319,6 +319,11 @@ the block. Then ask in plain words:
   folder's generated `README.md`.
 - `/audit` reports knowledge that has drifted from the code. It changes
   nothing; you decide what to fix.
+- "Which decisions since v0.13.0 never got a record?" The `decision-gaps`
+  skill judges each change `kmctl decision candidates` lists and reports the
+  ones that made a decision no record covers. It writes nothing; you decide
+  which become records
+  ([Find unrecorded decisions](../../docs/how-to/find-unrecorded-decisions.md)).
 - `/handoff` at the end of a session saves where the work stands; `/continue`
   at the start of the next picks it up.
 
@@ -332,6 +337,7 @@ kmctl new doc how-to 'Back up the database' --description 'Copy the SQLite file 
 kmctl check                      # indexes agree with their folders, links resolve
 kmctl check --fix                # also rewrite the generated docs/ folder indexes
 kmctl review due                 # what is unverified or stale
+kmctl decision candidates        # changes since the newest decision, for the decision-gaps skill
 kmctl verify manifesto --by human:you  # you read it and it holds: drop it from review due
 ```
 
@@ -399,6 +405,7 @@ The [docs index](../../docs/README.md) links each folder's index. The pages:
 - Tutorial: [Audit your repository with the agent](../../docs/tutorials/audit-your-repository-with-the-agent.md)
 - How-to: [Install the plugin and the CI action](../../docs/how-to/install-the-plugin-and-the-ci-action.md)
 - How-to: [Install kmctl with APM](../../docs/how-to/install-kmctl-with-apm.md)
+- How-to: [Find unrecorded decisions](../../docs/how-to/find-unrecorded-decisions.md)
 - Reference: [Commands](../../docs/reference/commands.md)
 - Explanation: [Why one hook and report-only audits](../../docs/explanation/why-one-hook-and-report-only-audits.md)
 - Explanation: [Where kmctl fits in knowledge management](../../docs/explanation/where-kmctl-fits-in-knowledge-management.md)

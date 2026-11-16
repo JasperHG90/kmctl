@@ -1,0 +1,1 @@
+{"ask":"Build kmctl decision candidates (lists the changes since the last decision record that may hold a decision, no model, writes nothing) and a decision-gaps skill that judges them and reports to the user, who decides what becomes a record"}

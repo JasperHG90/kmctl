@@ -1,0 +1,121 @@
+warning: `VIRTUAL_ENV=/home/vscode/workspace/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+============================= test session starts ==============================
+platform linux -- Python 3.12.16, pytest-9.1.1, pluggy-1.6.0
+rootdir: /home/vscode/workspace.worktrees/decision-gaps-skill
+configfile: pyproject.toml
+plugins: respx-0.23.1, platformdirs-4.13.4, langsmith-0.14.17, anyio-4.15.1
+collected 1773 items / 1753 deselected / 20 selected
+
+packages/kmaudit/tests/test_apm_package.py .                             [  5%]
+packages/kmaudit/tests/test_independent.py .                             [ 10%]
+packages/kmctl/tests/test_antigravity.py s.                              [ 20%]
+packages/kmctl/tests/test_apm_package.py .                               [ 25%]
+packages/kmctl/tests/test_docs_frontmatter.py .                          [ 30%]
+packages/kmctl/tests/test_doctor.py ..                                   [ 40%]
+packages/kmctl/tests/test_opencode.py .s                                 [ 50%]
+packages/kmctl/tests/test_pin.py ..                                      [ 60%]
+packages/kmctl/tests/test_plugin_patch.py F                              [ 65%]
+packages/kmctl/tests/test_starter.py F.                                  [ 75%]
+tests/scripts/test_check_wheel.py ...                                    [ 90%]
+tests/scripts/test_smoke_wheel.py .                                      [ 95%]
+tests/test_decision_gaps_prototype.py .                                  [100%]
+
+=================================== FAILURES ===================================
+_________ test_patch_after_a_real_apm_install_then_undo_and_uninstall __________
+
+consumer = PosixPath('/tmp/pytest-of-vscode/pytest-1295/test_patch_after_a_real_apm_in0/consumer')
+served = 'http://127.0.0.1:60919/o/kmctl.git'
+tmp_path = PosixPath('/tmp/pytest-of-vscode/pytest-1295/test_patch_after_a_real_apm_in0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0xffffaad8b860>
+
+    @pytest.mark.integration
+    def test_patch_after_a_real_apm_install_then_undo_and_uninstall(
+        consumer: Path, served: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        fakes = FakeTools(tmp_path / "fakes", tools=("claude", "agy"))
+        monkeypatch.setenv("PATH", f"{fakes.bin}:{os.environ['PATH']}")
+        home = Path(os.environ["HOME"])
+        trust = home / ".gemini" / "antigravity-cli" / "settings.json"
+        trust.parent.mkdir(parents=True)
+        trust.write_text(json.dumps({"trustedWorkspaces": [str(consumer.resolve())]}))
+        entry = {
+            "git": served,
+            "path": plugin.PACKAGE_PATH,
+            "ref": plugin.package_ref(),
+            "allow_insecure": True,
+        }
+        (consumer / "apm.yml").write_text(
+            yaml.safe_dump(
+                {
+                    "name": "consumer",
+                    "version": "0.1.0",
+                    "dependencies": {"apm": [entry]},
+                    "targets": ["claude", "antigravity"],
+                }
+            )
+        )
+        apm = ["uvx", "--from", plugin.APM_CLI, "apm"]
+        install = subprocess.run(
+            [*apm, "install", "--allow-insecure"],
+            cwd=consumer,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+>       assert install.returncode == 0, install.stderr + install.stdout
+E       AssertionError: Downloading cpython-3.15.2-linux-aarch64-gnu (download) (30.3MiB)
+E         error: Request failed after 3 retries in 1628.4s
+E           cause: Failed to download `https://github.com/astral-sh/python-build-standalone/releases/download/20261026/cpython-3.15.2%2B20261026-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz`
+E           cause: error sending request for url (https://github.com/astral-sh/python-build-standalone/releases/download/20261026/cpython-3.15.2%2B20261026-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz)
+E           cause: client error (Connect)
+E           cause: operation timed out
+E         
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['uvx', '--from', 'apm-cli==0.33.0', 'apm', 'install', '--allow-insecure'], returncode=2, stdout...ch64-unknown-linux-gnu-install_only_stripped.tar.gz)\n  cause: client error (Connect)\n  cause: operation timed out\n').returncode
+
+/home/vscode/workspace.worktrees/decision-gaps-skill/packages/kmctl/tests/test_plugin_patch.py:467: AssertionError
+____________________ test_bootstrap_installs_this_checkout _____________________
+
+consumer = PosixPath('/tmp/pytest-of-vscode/pytest-1295/test_bootstrap_installs_this_c0/consumer')
+tmp_path = PosixPath('/tmp/pytest-of-vscode/pytest-1295/test_bootstrap_installs_this_c0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0xffffaad9bf20>
+
+    @pytest.mark.integration
+    def test_bootstrap_installs_this_checkout(
+        consumer: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """just bootstrap in a generated project installs this tree's kmctl and package, and its checks pass."""
+>       commit = _bootstrap(
+            consumer, tmp_path, monkeypatch, "[claude, antigravity, opencode]"
+        )
+
+/home/vscode/workspace.worktrees/decision-gaps-skill/packages/kmctl/tests/test_starter.py:484: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/vscode/workspace.worktrees/decision-gaps-skill/packages/kmctl/tests/test_starter.py:475: in _bootstrap
+    _run(["just", "bootstrap"], consumer)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+cmd = ['just', 'bootstrap']
+cwd = PosixPath('/tmp/pytest-of-vscode/pytest-1295/test_bootstrap_installs_this_c0/consumer')
+
+    def _run(cmd: list[str], cwd: Path) -> subprocess.CompletedProcess[str]:
+        """Run ``cmd`` in ``cwd``, failing the test with its output when it fails."""
+        res = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, check=False)
+>       assert res.returncode == 0, f"{cmd}\n{res.stdout}\n{res.stderr}"
+E       AssertionError: ['just', 'bootstrap']
+E         
+E         error: Request failed after 3 retries in 87.6s
+E           cause: Failed to download `https://github.com/astral-sh/python-build-standalone/releases/download/20261026/cpython-3.15.2%2B20261026-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz`
+E           cause: error sending request for url (https://github.com/astral-sh/python-build-standalone/releases/download/20261026/cpython-3.15.2%2B20261026-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz)
+E           cause: client error (Connect)
+E           cause: operation timed out
+E         error: recipe `kmctl` failed with exit code 2
+E         
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['just', 'bootstrap'], returncode=2, stdout='', stderr='error: Request failed after 3 retries in...r.gz)\n  cause: client error (Connect)\n  cause: operation timed out\nerror: recipe `kmctl` failed with exit code 2\n').returncode
+
+/home/vscode/workspace.worktrees/decision-gaps-skill/packages/kmctl/tests/test_starter.py:432: AssertionError
+=========================== short test summary info ============================
+FAILED packages/kmctl/tests/test_plugin_patch.py::test_patch_after_a_real_apm_install_then_undo_and_uninstall
+FAILED packages/kmctl/tests/test_starter.py::test_bootstrap_installs_this_checkout
+===== 2 failed, 16 passed, 2 skipped, 1753 deselected in 574.81s (0:09:34) =====

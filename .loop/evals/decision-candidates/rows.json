@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "In a temporary git repository, kmctl decision candidates lists one change per ticket merge, per pull request without ticket merges, per ticket inside a pull request that carried tickets and per plain commit, reads through a sync merge, leaves out loop state, release and placeholder commits, and starts by default after the commit that added the newest decision record (or at the root when there is none) or at --since.",
+      "fails_when": "a change is missing, listed twice or wrongly split, a skipped commit is listed, or the default or --since start is wrong",
+      "command": "uv run pytest packages/kmctl/tests/test_candidates.py -q -k split"
+    },
+    {
+      "id": "r2",
+      "behavior": "Each listed change carries its sha, first parent, kind, subject, message, ticket slug and plan path when the plan exists, changed files, the decision numbers it added or amended, its signals and score; changes come highest score first; --json prints that list as JSON and the default prints a table; nothing in the repository changes.",
+      "fails_when": "a field is missing or wrong, recorded misses an added or amended record, ordering is not by score, the JSON does not parse or lacks a field, or a file or ref changes",
+      "command": "uv run pytest packages/kmctl/tests/test_candidates.py -q -k fields"
+    },
+    {
+      "id": "r3",
+      "behavior": "Outside a git repository, or with a --since that names no commit, it exits 1 with one stderr line naming the refusal and the fix; its help names what it produces, gives every input an example and fits 80 columns; docs/reference/commands.md documents it; decision 0047 exists and validates; kmctl check passes.",
+      "fails_when": "a refusal exits 0 or lacks the fix, the help tests fail, the reference lacks the verb, or kmctl check or the frontmatter tests report a finding",
+      "command": "uv run pytest packages/kmctl/tests/test_candidates.py packages/kmctl/tests/test_help.py packages/kmctl/tests/test_docs_frontmatter.py -q -k 'refus or help or migrated or reference or decision_0047'"
+    }
+  ]
+}

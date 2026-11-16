@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "kmctl's package ships packages/kmctl/apm/.apm/skills/decision-gaps/SKILL.md with valid front matter (name decision-gaps and a description saying when to use it); its body runs kmctl decision candidates --json, judges every change it lists, reports missing decisions with the choice, the rejected option and the change, and says it writes nothing and leaves records to the user and kmctl new decision; the wheel carries it; the briefing lists it; it judges in batches and asks to narrow a long range; it lists record-only changes apart; the two install pages count eight skills and name it.",
+      "fails_when": "the skill folder or front matter is missing or invalid, the body lacks one of those instructions, the wheel or the briefing leaves it out, or an install page still counts seven skills",
+      "command": "uv run pytest packages/kmctl/tests/test_decision_gaps_skill.py packages/kmctl/tests/test_apm_package.py packages/kmctl/tests/test_briefing.py -q"
+    },
+    {
+      "id": "r2",
+      "behavior": "The skill was made with the skill-creator skill, its tests kept as the skill-creator's case folders under evals/ (prompt.md, case.yaml, graders/): one asking to find unrecorded decisions in a named range of this repository that holds labelled gaps and false alarms from .okf/prototypes/decision-gaps/results/labels.json, one asking with no range, and one asking to write a decision record, which must not run kmctl decision candidates; evals/results.md records each run's outcome, the known-answer run's labelled gaps found and false alarms raised, and that no run of the skill wrote to .okf/.",
+      "fails_when": "a case folder is missing or malformed, one of those three cases is absent, results.md lacks a case's result or the known-answer counts against the labels, or results.md does not say whether .okf/ stayed unchanged",
+      "command": "uv run pytest packages/kmctl/tests/test_decision_gaps_skill.py -q -k evals"
+    },
+    {
+      "id": "r3",
+      "behavior": "docs/how-to/ has a page on finding unrecorded decisions that runs the skill and says the user decides; the how-to index lists it; kmctl check and the docs frontmatter tests pass.",
+      "fails_when": "the page or its index entry is missing, it implies the skill writes records, or kmctl check reports a finding",
+      "command": "uv run pytest packages/kmctl/tests/test_decision_gaps_skill.py packages/kmctl/tests/test_docs_frontmatter.py -q -k 'how_to or migrated'"
+    }
+  ]
+}
