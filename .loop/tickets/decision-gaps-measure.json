@@ -1,0 +1,193 @@
+{
+  "schema_version": "1.0",
+  "slug": "decision-gaps-measure",
+  "stage": "done",
+  "attempts": 1,
+  "plan_rounds": 2,
+  "review_rounds": 3,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": {
+    "round": 2,
+    "fingerprint": "9fdb5af52747e40205ef1cca7c4b1ffebed6b3f28c92d6e46ede6581622af0e0",
+    "tree": "376f89a13a7874a604e0031f9198c10e84555b4c",
+    "decisions": [
+      {
+        "finding": "reviewer:f7",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": "j-20261116T145752+0000-53f3b0d8",
+        "paths": [
+          ".okf/prototypes/decision-gaps/README.md"
+        ]
+      }
+    ],
+    "at": "2026-11-16T14:57:52+00:00"
+  },
+  "ask": "j-20261116T113458+0000-e9031cf0",
+  "split": "j-20261116T115206+0000-7ba3ede4",
+  "split_plan_hash": "c8a94e7cb127a6c683448ff2282f5a326a2112aa37cdfcbba6725b88be04ef2e",
+  "split_hold": false,
+  "commit_sha": "dcb2499687412b37d6e280eabfb3532f94a9df60",
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": "/home/vscode/workspace.worktrees/decision-gaps-measure",
+  "branch": "loop/decision-gaps-measure",
+  "stamps": [
+    "fa01151137239ba6a4a00c8cfe9446ea35e1432a26b5194048c95a87f822a47d",
+    "52b53f080376578254041b938004ed79f7ba1d0940eca7c051ffbfeb0ce4cdf4",
+    "31ccc1c5e4ff56a2dbde43bb7fa1a38705599f0ee2231a714d6a9f235dbe5962",
+    "cdfa89cdf90d4d9c1b8d7a417065977afd549dd474b92ba29bf48936d957affb",
+    "9fdb5af52747e40205ef1cca7c4b1ffebed6b3f28c92d6e46ede6581622af0e0"
+  ],
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/implementer",
+    "hash": "2f0a521f7ce4669fa2f3d2b498c43cd157ad7020a0a517e3da8cd29421276e17",
+    "at": "2026-11-16T14:10:23+00:00"
+  },
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "Rerunning the prototype's units and signals scripts over the fixed range reproduces the committed units and filter results, and the README's filter table (recall of hidden positives and share of units flagged, per threshold) equals what score.py prints from them.",
+      "fails_when": "the units or filter results differ from the committed ones, or a number in the README's filter table differs from score.py's output",
+      "command": "uv run pytest tests/test_decision_gaps_prototype.py -q -m 'not llm'",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "The judge ran on every unit in the range from an empty folder with no tools or settings; the README's judge numbers (recall on counted positives with its 95% Wilson interval, record-only positives listed apart, the share of negatives called missing, the precision of those claims from the committed labels, cost and time per unit and for the range) and its build verdict against the bars in the plan (recall >= 70% with Wilson lower end >= 50%, precision >= 50%, range cost <= $10) equal what score.py prints from the committed judge results and labels; every unit has a judge result and every claim on a negative a label.",
+      "fails_when": "a unit lacks a judge result, a claim lacks a label, a judge number or the verdict in the README differs from score.py's output, or a record-only positive is counted in recall",
+      "command": "uv run pytest tests/test_decision_gaps_prototype.py -q -k judge -m 'not llm'",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "The prototype folder is a valid concept: its README has the prototype front matter, the prototypes index lists it, and kmctl check and strict OKF validation pass.",
+      "fails_when": "kmctl check or the frontmatter tests report a finding",
+      "command": "uv run pytest packages/kmctl/tests/test_docs_frontmatter.py -q && uv run python tests/vendor/okf/okf_validate.py .okf --strict",
+      "judgment": false
+    }
+  ],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/implementer",
+      "reason": "plan review r1: judge every unit, Wilson interval, record-only apart, bars set before the run",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r2": [
+            "behavior",
+            "fails_when"
+          ]
+        }
+      },
+      "at": "2026-11-16T11:52:25+00:00"
+    },
+    {
+      "signer": "delegated:jasperginn@gmail.com/implementer",
+      "reason": "review r1 f6: row r3 also runs strict OKF validation, as its behavior says",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r3": [
+            "command"
+          ]
+        }
+      },
+      "at": "2026-11-16T14:10:23+00:00"
+    }
+  ],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [],
+  "round": {
+    "kind": "review",
+    "n": 3,
+    "binds": "9fdb5af52747e40205ef1cca7c4b1ffebed6b3f28c92d6e46ede6581622af0e0",
+    "started_at": "2026-11-16T14:58:02+00:00",
+    "passes": [
+      "reviewer"
+    ],
+    "tree": "376f89a13a7874a604e0031f9198c10e84555b4c",
+    "plan_hash": "c8a94e7cb127a6c683448ff2282f5a326a2112aa37cdfcbba6725b88be04ef2e",
+    "eval_hash": "2f0a521f7ce4669fa2f3d2b498c43cd157ad7020a0a517e3da8cd29421276e17",
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": true,
+    "outcome": "pass"
+  },
+  "plan_hash": "c8a94e7cb127a6c683448ff2282f5a326a2112aa37cdfcbba6725b88be04ef2e",
+  "intent": {
+    "epic": null,
+    "depends_on": [],
+    "priority": null
+  },
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-11-16T11:35:11+00:00",
+      "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-11-16T11:54:26+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-16T13:47:42+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-16T14:01:09+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-16T14:09:45+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-16T14:36:01+00:00",
+      "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-16T14:52:54+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-16T14:57:52+00:00",
+      "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-16T15:05:18+00:00",
+      "by": "done"
+    }
+  ],
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-16T15:05:18+00:00"
+}

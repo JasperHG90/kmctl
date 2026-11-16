@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "ADR 0046 presents the history scan for missing decisions as an existing kmctl feature and commits to building it, but nothing of it exists yet and the next ticket (decision-gaps-measure) is a prototype whose README ends with a verdict on whether to build `kmctl decision gaps` and the skill at all.",
+      "anchor": ".okf/decisions/0046-kmctl-works-from-code-toward-knowledge-and-kmaudit-from-knowledge-toward-code.md:55",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "d229fa5a2ab35353d8a1d3925ab0de6f007617ee099fceb60a90f5d894559347",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-16T11:54:57+00:00"
+}

@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "Rerunning the prototype's units and signals scripts over the fixed range reproduces the committed units and filter results, and the README's filter table (recall of hidden positives and share of units flagged, per threshold) equals what score.py prints from them.",
+      "fails_when": "the units or filter results differ from the committed ones, or a number in the README's filter table differs from score.py's output",
+      "command": "uv run pytest tests/test_decision_gaps_prototype.py -q -m 'not llm'"
+    },
+    {
+      "id": "r2",
+      "behavior": "The judge ran on every unit in the range from an empty folder with no tools or settings; the README's judge numbers (recall on counted positives with its 95% Wilson interval, record-only positives listed apart, the share of negatives called missing, the precision of those claims from the committed labels, cost and time per unit and for the range) and its build verdict against the bars in the plan (recall >= 70% with Wilson lower end >= 50%, precision >= 50%, range cost <= $10) equal what score.py prints from the committed judge results and labels; every unit has a judge result and every claim on a negative a label.",
+      "fails_when": "a unit lacks a judge result, a claim lacks a label, a judge number or the verdict in the README differs from score.py's output, or a record-only positive is counted in recall",
+      "command": "uv run pytest tests/test_decision_gaps_prototype.py -q -k judge -m 'not llm'"
+    },
+    {
+      "id": "r3",
+      "behavior": "The prototype folder is a valid concept: its README has the prototype front matter, the prototypes index lists it, and kmctl check and strict OKF validation pass.",
+      "fails_when": "kmctl check or the frontmatter tests report a finding",
+      "command": "uv run pytest packages/kmctl/tests/test_docs_frontmatter.py -q && uv run python tests/vendor/okf/okf_validate.py .okf --strict"
+    }
+  ]
+}

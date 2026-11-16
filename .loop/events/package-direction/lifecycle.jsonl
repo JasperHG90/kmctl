@@ -1,0 +1,18 @@
+{"at": "2026-11-16T11:35:09+00:00", "kind": "register", "schema_version": "1.0", "stage": "planning"}
+{"at": "2026-11-16T11:35:43+00:00", "grant": "g8", "hash": "ddcddb7df10b05ed72245b6255667d500d88c63412e2d2f2015b88f56eec1030", "kind": "signoff", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/implementer", "step": "eval-sign"}
+{"at": "2026-11-16T11:35:45+00:00", "binds": "a5db76a7e0420c8c22e0fafa32c032350f27fef4b8eb8756ef1efa97cbb0f1f8", "kind": "round-start", "n": 1, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
+{"at": "2026-11-16T11:37:28+00:00", "dispatched_at": "2026-11-16T11:35:45+00:00", "kind": "round-close", "n": 1, "outcome": "pass", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-16T11:36:51+00:00"}}
+{"at": "2026-11-16T11:37:30+00:00", "by": "advance", "from": "planning", "kind": "transition", "schema_version": "1.0", "to": "ready"}
+{"at": "2026-11-16T11:37:34+00:00", "by": "advance", "from": "ready", "kind": "transition", "schema_version": "1.0", "to": "building"}
+{"at": "2026-11-16T11:39:25+00:00", "diff": {"added": [], "changed": {"r1": ["behavior", "fails_when"]}, "removed": []}, "grant": "g8", "hash": "3a558331194da49e40ce8a0102a3529e4fecaf11e0974dfd80370ee4a29b1fe1", "kind": "signoff", "reason": "the README links the decision once, under the Packages list, not inside each entry", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/implementer", "step": "eval-sign"}
+{"at": "2026-11-16T11:46:02+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "building"}
+{"at": "2026-11-16T11:46:20+00:00", "by": "advance", "from": "building", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
+{"at": "2026-11-16T11:46:22+00:00", "binds": "d229fa5a2ab35353d8a1d3925ab0de6f007617ee099fceb60a90f5d894559347", "kind": "round-start", "n": 1, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "37fe6f831028fcd8bb2f6ffabfd1dce81860fe4e"}
+{"at": "2026-11-16T11:55:17+00:00", "by": "review close", "from": "verifying", "kind": "transition", "schema_version": "1.0", "to": "fixing"}
+{"at": "2026-11-16T11:55:17+00:00", "dispatched_at": "2026-11-16T11:46:22+00:00", "kind": "round-close", "n": 1, "outcome": "fail", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-11-16T11:54:57+00:00"}}
+{"at": "2026-11-16T12:03:20+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "fixing"}
+{"at": "2026-11-16T12:03:46+00:00", "by": "review fixed", "from": "fixing", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
+{"at": "2026-11-16T12:03:53+00:00", "binds": "e05cff14c14c930c3f911ac69319aa7146ddee3118eacb6ada9c84865a66d643", "kind": "round-start", "n": 2, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "664ca5393ba476476ab74b2f7539c717136d770a"}
+{"at": "2026-11-16T13:39:44+00:00", "dispatched_at": "2026-11-16T12:03:53+00:00", "kind": "round-close", "n": 2, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-11-16T13:18:32+00:00"}}
+{"at": "2026-11-16T13:39:52+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "4ab0d34cd3fd310e0db823d8753050cd9cd73e67"}
+{"at": "2026-11-16T13:47:28+00:00", "branch": "loop/package-direction", "kind": "land", "schema_version": "1.0", "sha": "2b2a52d61b4efe31b6ba21071a2ddd936e8b36d8"}

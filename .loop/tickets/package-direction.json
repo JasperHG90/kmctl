@@ -1,0 +1,157 @@
+{
+  "schema_version": "1.0",
+  "slug": "package-direction",
+  "stage": "done",
+  "attempts": 1,
+  "plan_rounds": 1,
+  "review_rounds": 2,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "e05cff14c14c930c3f911ac69319aa7146ddee3118eacb6ada9c84865a66d643",
+    "tree": "664ca5393ba476476ab74b2f7539c717136d770a",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": "j-20261116T120346+0000-027ba037",
+        "paths": [
+          ".okf/decisions/0046-kmctl-works-from-code-toward-knowledge-and-kmaudit-from-knowledge-toward-code.md"
+        ]
+      }
+    ],
+    "at": "2026-11-16T12:03:46+00:00"
+  },
+  "ask": "j-20261116T113449+0000-7d2d0f6d",
+  "split": "j-20261116T113527+0000-07af5f0c",
+  "split_plan_hash": "a5db76a7e0420c8c22e0fafa32c032350f27fef4b8eb8756ef1efa97cbb0f1f8",
+  "split_hold": false,
+  "commit_sha": "4ab0d34cd3fd310e0db823d8753050cd9cd73e67",
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": "/home/vscode/workspace.worktrees/package-direction",
+  "branch": "loop/package-direction",
+  "stamps": [
+    "d229fa5a2ab35353d8a1d3925ab0de6f007617ee099fceb60a90f5d894559347",
+    "e05cff14c14c930c3f911ac69319aa7146ddee3118eacb6ada9c84865a66d643"
+  ],
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/implementer",
+    "hash": "3a558331194da49e40ce8a0102a3529e4fecaf11e0974dfd80370ee4a29b1fe1",
+    "at": "2026-11-16T11:39:25+00:00"
+  },
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "Decision 0046 exists, its front matter matches the decision schema, its sections are the decision skeleton, it says kmctl works from code and decisions toward docs/ and .okf/ and kmaudit from docs/ and .okf/ toward code, and it links ADR 0043; the root README's kmctl and kmaudit entries each name their direction and the README links decision 0046; CLAUDE.md's routing table links decision 0046.",
+      "fails_when": "the decision is missing or off-schema, either direction is missing from it, the ADR 0043 link is missing, a README entry lacks its direction, the README does not link the decision, or CLAUDE.md does not link the decision",
+      "command": "uv run pytest tests/test_readmes.py -q -k direction",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "Every README test and the bundle checks pass with the new decision: kmctl check over the repository reports nothing.",
+      "fails_when": "any test in test_readmes.py fails or kmctl check reports a finding",
+      "command": "uv run pytest tests/test_readmes.py packages/kmctl/tests/test_docs_frontmatter.py -q",
+      "judgment": false
+    }
+  ],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/implementer",
+      "reason": "the README links the decision once, under the Packages list, not inside each entry",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r1": [
+            "behavior",
+            "fails_when"
+          ]
+        }
+      },
+      "at": "2026-11-16T11:39:25+00:00"
+    }
+  ],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [],
+  "round": {
+    "kind": "review",
+    "n": 2,
+    "binds": "e05cff14c14c930c3f911ac69319aa7146ddee3118eacb6ada9c84865a66d643",
+    "started_at": "2026-11-16T12:03:53+00:00",
+    "passes": [
+      "reviewer"
+    ],
+    "tree": "664ca5393ba476476ab74b2f7539c717136d770a",
+    "plan_hash": "a5db76a7e0420c8c22e0fafa32c032350f27fef4b8eb8756ef1efa97cbb0f1f8",
+    "eval_hash": "3a558331194da49e40ce8a0102a3529e4fecaf11e0974dfd80370ee4a29b1fe1",
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": true,
+    "outcome": "pass"
+  },
+  "plan_hash": "a5db76a7e0420c8c22e0fafa32c032350f27fef4b8eb8756ef1efa97cbb0f1f8",
+  "intent": {
+    "epic": null,
+    "depends_on": [],
+    "priority": null
+  },
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-11-16T11:35:09+00:00",
+      "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-11-16T11:37:30+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-16T11:37:34+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-16T11:46:20+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-16T11:55:17+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-16T12:03:46+00:00",
+      "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-16T13:39:52+00:00",
+      "by": "done"
+    }
+  ],
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-16T13:39:52+00:00"
+}

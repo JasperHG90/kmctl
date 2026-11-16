@@ -7,13 +7,9 @@ generated:
   at: 2026-10-18
 tags: [summary]
 checked:
-  at: 2026-11-16T07:45:26Z
+  at: 2026-11-16T13:49:27Z
   against:
-    - decisions/0001-standalone-cli-installs-its-plugin
-    - decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code
-    - decisions/0012-releases-come-from-ci
-    - decisions/0014-apm-is-the-only-install-route
-    - decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest
+    - prototypes/decision-gaps
 ---
 
 # Summary: kmctl
@@ -94,6 +90,8 @@ The [decision index](decisions/index.md) lists every record.
 All four parts work, for three harnesses. I1, I3 and I4 are enforced by
 tests; I2 is `planned`. The audit is kmaudit, its own package
 ([ADR 0043](decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp.md)):
-agents write checks it reruns with no model, and people review them
+agents write checks it reruns with no model
 ([the audit pipeline](architecture/audit-pipeline.md)).
-Many concepts lack a `verified` entry. Work in flight lives in `.loop/`.
+kmctl works from code to knowledge, kmaudit back
+([ADR 0046](decisions/0046-kmctl-works-from-code-toward-knowledge-and-kmaudit-from-knowledge-toward-code.md)).
+Many concepts lack a `verified` entry.

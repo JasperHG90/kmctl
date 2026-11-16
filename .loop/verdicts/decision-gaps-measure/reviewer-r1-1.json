@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The README description, the prototypes index entry and the log entry say \"9 of its 17 claims elsewhere were real gaps\", but the judge made 32 claims on negatives; 17 is only the gap plus false-alarm subset after 15 recorded-in-unit claims were set aside.",
+      "anchor": ".okf/prototypes/decision-gaps/README.md:4",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "The README does not say how much the precision bar depends on labelling choices. It sets aside the 15 recorded-in-unit claims, a category the plan never defined (the plan says a correct claim counts as a hit, which would give 24/32, 75%). It counts the MIT licence twice (ce8b712c and its PR",
+      "anchor": ".okf/prototypes/decision-gaps/README.md:111",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "leak_check.py's usage line names scripts/leak_spike.py, which is not in the folder.",
+      "anchor": ".okf/prototypes/decision-gaps/scripts/leak_check.py:14",
+      "category": "nit",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "open",
+      "claim": "signals.py's docstring says decision records and the decision index are dropped, and judge.py's says decision records are hidden. hide.visible_files actually drops every path under .okf/ and .loop/ for every unit.",
+      "anchor": ".okf/prototypes/decision-gaps/scripts/signals.py:4",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f5",
+      "disposition": "open",
+      "claim": "The README says the 0.64 word residue comes \"mostly\" from \"summary\" and \"bundle\", but no script in the folder prints a per-word breakdown, so that claim cannot be rerun.",
+      "anchor": ".okf/prototypes/decision-gaps/README.md:43",
+      "category": "nit",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f6",
+      "disposition": "open",
+      "claim": "Row r3's command runs test_docs_frontmatter.py. That covers kmctl check over the repository (test_this_repo_docs_are_migrated), but not the strict OKF validation the row names. I ran the validator by hand and it reports the bundle conformant.",
+      "anchor": ".loop/evals/decision-gaps-measure/rows.json",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "52b53f080376578254041b938004ed79f7ba1d0940eca7c051ffbfeb0ce4cdf4",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-16T14:09:17+00:00"
+}

@@ -1,0 +1,3 @@
+positives=30 negatives=130
+bookkeeping words per word: AUC 0.64
+visible bookkeeping paths: AUC 0.50

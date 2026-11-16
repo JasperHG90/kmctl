@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "Bookkeeping paths and words leaked positives. hide.visible_files now drops every .okf/ and .loop/ path for every unit alike, and LEAK also drops sentences naming .okf/, summary.md, log.md, 'next free' and 'the number'. signals.py and judge.py both read only visible_files and strip output.",
+      "anchor": ".loop/plans/decision-gaps-measure/README.md:31",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "Spike 1 could not fail. Spike 2 checks with detectors that share nothing with strip: visible bookkeeping paths score AUC 0.50 and a separate record-keeping word list AUC 0.64, and the plan names that residue for the README.",
+      "anchor": ".loop/spikes/decision-gaps-measure/2/README.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p3",
+      "disposition": "resolved",
+      "claim": "Record-only positives now have a rule: a positive whose unit changes nothing outside .okf/ and .loop/ is reported apart, out of the recall count (only ADR 0030 in the range), and row r2 fails if one is counted in recall.",
+      "anchor": ".loop/plans/decision-gaps-measure/README.md:41",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r2"
+    },
+    {
+      "id": "p4",
+      "disposition": "resolved",
+      "claim": "The judge runs on all 161 units, not a sample, and the bars are set before the run: recall >= 70% with Wilson lower end >= 50%, precision of claims on negatives >= 50%, range cost <= $10. Row r2 checks the README's verdict against them.",
+      "anchor": ".loop/plans/decision-gaps-measure/README.md:66",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r2"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "c8a94e7cb127a6c683448ff2282f5a326a2112aa37cdfcbba6725b88be04ef2e"
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-16T11:53:57+00:00"
+}

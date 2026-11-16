@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "the headline misstated the claim count",
+      "anchor": ".okf/prototypes/decision-gaps/README.md:4",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "the README did not show precision's margin under other readings",
+      "anchor": ".okf/prototypes/decision-gaps/README.md:111",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "resolved",
+      "claim": "leak_check.py's docstring named a missing script",
+      "anchor": ".okf/prototypes/decision-gaps/scripts/leak_check.py:13",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "resolved",
+      "claim": "signals.py and judge.py docstrings described narrower hiding than the code",
+      "anchor": ".okf/prototypes/decision-gaps/scripts/signals.py:1",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f5",
+      "disposition": "resolved",
+      "claim": "the per-word leak breakdown had no script behind it",
+      "anchor": ".okf/prototypes/decision-gaps/scripts/leak_check.py",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f6",
+      "disposition": "resolved",
+      "claim": "r3 did not run strict OKF validation",
+      "anchor": ".loop/evals/decision-gaps-measure/rows.json",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f7",
+      "disposition": "open",
+      "claim": "the Conclusion still says \"to cut the eight false alarms\"; after the relabel there are seven",
+      "anchor": ".okf/prototypes/decision-gaps/README.md:149",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "cdfa89cdf90d4d9c1b8d7a417065977afd549dd474b92ba29bf48936d957affb",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-16T14:52:28+00:00"
+}
