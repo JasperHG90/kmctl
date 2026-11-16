@@ -20,7 +20,8 @@
   "worktree": "/home/vscode/workspace.worktrees/decision-gaps-measure",
   "branch": "loop/decision-gaps-measure",
   "stamps": [
-    "fa01151137239ba6a4a00c8cfe9446ea35e1432a26b5194048c95a87f822a47d"
+    "fa01151137239ba6a4a00c8cfe9446ea35e1432a26b5194048c95a87f822a47d",
+    "52b53f080376578254041b938004ed79f7ba1d0940eca7c051ffbfeb0ce4cdf4"
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/implementer",
@@ -119,5 +120,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-16T13:55:06+00:00"
+  "at": "2026-11-16T14:00:51+00:00"
 }
