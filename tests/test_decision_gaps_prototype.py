@@ -103,7 +103,7 @@ def test_judge_verdict_and_record_only_count_match_score() -> None:
     assert verdict
     if verdict[1] == "build":
         assert (
-            "All four bars are met, so `kmctl decision gaps` and its skill are worth building"
+            "All four bars are met, so `kmctl decision candidates` and its skill are worth building"
             in readme
         )
     else:

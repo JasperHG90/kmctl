@@ -37,8 +37,9 @@ package in this repository. Its commands are in
 | `kmctl new prototype` | Create a prototype in `.okf/`, the same way. |
 | `kmctl new handoff` | Create a handoff in `.okf/`, the same way. |
 | `kmctl new doc` | Create a `docs/` page in its Diataxis folder with a skeleton and its index entry. |
-| `kmctl decision` | Change decision records in `.okf/decisions/`. Verbs: `supersede`. |
+| `kmctl decision` | Work with decision records in `.okf/decisions/`. Verbs: `supersede`, `candidates`. |
 | `kmctl decision supersede` | Mark one decision superseded by another and link the two records both ways. |
+| `kmctl decision candidates` | List the changes since the newest decision record that may hold an unrecorded decision. |
 | `kmctl mv` | Rename a concept in `.okf/` and rewrite the links to it in `.okf/` and `docs/`. |
 | `kmctl plugin` | Finish installing kmctl's APM package for an agent harness. APM (Agent Package Manager) installs the package from `apm.yml`: the skills, audit agent, knowledge rules, session hooks and okf's MCP server. Verb: `patch`. `kmctl doctor` checks the install. |
 | `kmctl plugin patch` | Add what APM cannot install yet for kmctl's package; run it after `apm install`. |
@@ -497,6 +498,40 @@ Correction section. Write the new record first with `kmctl new decision`.
 | `--json` | Print one JSON object (`old`, `new`) with both concept ids. | off |
 
 Exit code: 1 when kmctl refuses, with the reason on stderr.
+
+### `kmctl decision candidates`
+
+`kmctl decision candidates [--since REF]`
+
+List the changes since the newest decision record that may hold an
+unrecorded decision, for the decision-gaps skill to judge (ADR 0047). It
+calls no model and writes nothing.
+
+It walks `HEAD`'s first-parent line and lists one change per ticket merge
+(`Merge loop/SLUG: ...`), pull request or plain commit. It follows a sync
+merge (`Merge remote-tracking branch ...`) into the commits it brought in,
+and lists a pull request whose branch holds ticket merges as those tickets.
+It leaves out loop state commits (`loop: ...`), release commits and their
+pull requests, merges of main into a branch, and placeholder commits.
+
+Each change carries its sha, first parent, kind (`ticket`, `pull` or
+`commit`), subject, message, ticket slug and plan when the ticket has one
+under `.loop/plans/` or `.loop/archive/`, changed files, `recorded` (the
+decision numbers it added or amended), and eight signals that often go with
+a choice (a dependency line, a new module, deleted files, a workflow, a
+config or schema file, a skill, agent, hook or rule, words such as "instead
+of" or "replace", and changes across four or more top-level folders, all
+read outside `.okf/` and `.loop/`). Changes come highest score first; the
+score is how many signals a change shows.
+
+| Argument or option | Meaning | Default |
+|---|---|---|
+| `--since REF` | List the changes after this commit, tag or branch. | after the commit that added the newest committed decision record, or the whole history when there is none |
+| `--path DIR` | The git repository to read: an existing folder. | `.` |
+| `--json` | Print a JSON list, one object per change with the fields above. | off |
+
+Exit code: 1 when kmctl refuses (not a git repository, a repository with
+no commits, or a `--since` that names no commit), with the reason on stderr.
 
 ### `kmctl mv`
 
