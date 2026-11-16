@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "release-notes-pr-tickets",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 1,
@@ -13,7 +13,7 @@
   "split": "j-20261116T064315+0000-f222f428",
   "split_plan_hash": "bc8115df7aac4f42943528c81913a41c6cc5cff5cdd0fbf50b2d2aca692f3fa1",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "691d9168bff420e87e5c2abec5d9364b4d3aed42",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -100,8 +100,14 @@
       "to": "verifying",
       "at": "2026-11-16T06:55:14+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-16T07:04:28+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-16T07:04:08+00:00"
+  "at": "2026-11-16T07:04:28+00:00"
 }

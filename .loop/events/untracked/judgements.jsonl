@@ -262,3 +262,4 @@
 {"at": "2026-11-16T06:42:53+00:00", "evidence": "the operator said so", "judgement": "j-20261116T064253+0000-e7cb4882", "kind": "judgement-label", "label": "loop", "schema_version": "1.0", "source": "relayed"}
 {"at": "2026-11-16T06:42:58+00:00", "judgement": "j-20261116T064251+0000-b8d510ed", "kind": "judgement-link", "schema_version": "1.0", "ticket": "release-notes-pr-tickets"}
 {"at": "2026-11-16T06:43:00+00:00", "judgement": "j-20261116T064253+0000-e7cb4882", "kind": "judgement-link", "schema_version": "1.0", "ticket": "adr-kmaudit-stale-lines"}
+{"at": "2026-11-16T07:04:28+00:00", "evidence": "1 review round(s), 0 block(s), 161 changed line(s)", "judgement": "j-20261116T064251+0000-b8d510ed", "kind": "judgement-label", "label": "loop", "schema_version": "1.0", "source": "outcome"}
