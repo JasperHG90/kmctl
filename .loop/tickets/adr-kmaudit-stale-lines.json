@@ -3,7 +3,7 @@
   "slug": "adr-kmaudit-stale-lines",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -40,8 +40,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "ca5d41a1a3b63df6506b25ff1dc009428f02e88c01fe6bf5d7cfe1491ebfb9bc",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "23769548b1a2f69aa724c715f1b93346c90fc018c03101aa25512d5aa916fde3",
+    "started_at": "2026-11-16T06:44:36+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "23769548b1a2f69aa724c715f1b93346c90fc018c03101aa25512d5aa916fde3",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -56,5 +75,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-16T06:44:34+00:00"
+  "at": "2026-11-16T06:44:36+00:00"
 }
