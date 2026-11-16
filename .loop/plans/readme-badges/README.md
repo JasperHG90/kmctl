@@ -69,10 +69,10 @@ and wheel metadata say beta.
 - seen by: operator
 
 ### O2: kmaudit is marked beta in its README, command reference and package metadata
-- kind: behaviour
+- kind: support
 - goal: G1
 - fixes: P2
-- needs: none
+- needs: O1
 - touches: `packages/kmaudit/README.md`, `docs/reference/kmaudit-commands.md`, `packages/kmaudit/pyproject.toml`, `packages/kmctl/pyproject.toml`, `README.md`, `tests/test_readmes.py`
 - checked by: a test that kmaudit's README and command reference say beta, that its lifecycle badge says beta and kmctl's stable, that the root README's kmaudit entry says beta, and that the two pyprojects carry the matching Development Status classifiers
 - seen by: operator
