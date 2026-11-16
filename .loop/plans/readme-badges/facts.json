@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "readme-badges",
-  "plan_hash": "b3fbd0a2643038b968130256c148caf45fbede3787bc47dc21a49b42833a44f0",
+  "plan_hash": "61aed9e2962839decdbf59b2b375d04e0bc8350625d32c1357cfdfdf2dc34c79",
   "problems": [
     {
       "id": "P1",
@@ -41,13 +41,17 @@
     {
       "id": "O2",
       "change": "kmaudit is marked beta in its README, command reference and package metadata",
-      "kind": "behaviour",
+      "kind": "support",
       "goal": "G1",
       "goal_index": 0,
       "fixes": "P2",
       "fixes_index": 1,
-      "needs": [],
-      "needs_index": [],
+      "needs": [
+        "O1"
+      ],
+      "needs_index": [
+        0
+      ],
       "touches": [
         "packages/kmaudit/README.md",
         "docs/reference/kmaudit-commands.md",
