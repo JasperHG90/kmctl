@@ -17,17 +17,19 @@ together and install apart.
 - **[kmctl](packages/kmctl/README.md)**
   ![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen)
   [![kmctl release](https://img.shields.io/github/v/release/JasperHG90/kmctl?filter=v*&sort=semver&label=release)](https://github.com/JasperHG90/kmctl/releases/latest)
-  keeps `docs/` and an `.okf/`
+  starts from the code and the decisions and keeps `docs/` and an `.okf/`
   knowledge bundle current through your coding agent, with a CLI, an APM
   package of skills and rules, and a GitHub Action.
 - **[kmaudit](packages/kmaudit/README.md)**
   ![Lifecycle: beta](https://img.shields.io/badge/lifecycle-beta-orange)
   [![kmaudit release](https://img.shields.io/github/v/release/JasperHG90/kmctl?filter=kmaudit-v*&sort=semver&label=release)](https://github.com/JasperHG90/kmctl/releases?q=kmaudit-v)
-  is in beta. It checks what a folder of markdown
-  docs claims against the code: an agent lists the claims and writes a check
+  is in beta. It starts from a folder of markdown docs and checks what they
+  claim against the code: an agent lists the claims and writes a check
   for each, and kmaudit reruns the checks with no model.
 
-Each package's README says how to install and use it.
+A feature goes in the package whose direction it shares
+([ADR 0046](.okf/decisions/0046-kmctl-works-from-code-toward-knowledge-and-kmaudit-from-knowledge-toward-code.md)). Each package's README says how
+to install and use it.
 
 ## Documentation
 

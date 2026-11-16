@@ -1,5 +1,6 @@
 """The root README maps the repository to the package READMEs and docs/, and every README link resolves."""
 
+import json
 import re
 import tomllib
 from pathlib import Path
@@ -150,3 +151,51 @@ def test_package_metadata_carries_its_development_status(
     )["project"]
 
     assert status in project.get("classifiers", [])
+
+
+DIRECTION = next((ROOT / ".okf" / "decisions").glob("0046-*.md"))
+
+
+def test_direction_decision_states_both_directions() -> None:
+    """Decision 0046 matches the decision schema, says which way each package works and links ADR 0043."""
+    from jsonschema import Draft202012Validator
+
+    from kmctl.kinds import schema, skeleton
+    from kmctl.okf import front_matter
+
+    meta = json.loads(json.dumps(front_matter(DIRECTION), default=str))
+    errors = list(Draft202012Validator(schema("decision")).iter_errors(meta))
+    text = DIRECTION.read_text()
+    headings = re.findall(r"^## (.+)$", text, re.MULTILINE)
+    decision = " ".join(text.split("## Decision", 1)[1].split("## ", 1)[0].split())
+
+    assert errors == []
+    assert headings[:3] == skeleton("decision")
+    assert "**kmctl starts from the code and the decisions**" in decision
+    assert "**kmaudit starts from `docs/` and `.okf/`**" in decision
+    assert "(0043-the-audit-is-its-own-library-kmaudit-served-over-mcp.md)" in text
+
+
+def test_root_readme_names_each_direction_and_links_the_decision() -> None:
+    """The root README's kmctl entry says it starts from the code, kmaudit's that it starts from docs, and the map links decision 0046."""
+    text = (ROOT / "README.md").read_text()
+    links = {(ROOT / link).resolve() for link in _relative_links(text)}
+
+    assert "starts from the code and the decisions" in _root_entry("kmctl")
+    assert "starts from a folder of markdown docs" in _root_entry("kmaudit")
+    assert DIRECTION.resolve() in links
+
+
+def test_claude_md_routes_to_the_direction_decision() -> None:
+    """CLAUDE.md's routing table has a row naming decision 0046 for which package a feature belongs in."""
+    rows = [
+        line
+        for line in (ROOT / "CLAUDE.md").read_text().splitlines()
+        if line.startswith("|")
+    ]
+
+    assert any(
+        "Which package a feature belongs in" in row
+        and f".okf/decisions/{DIRECTION.name}" in row
+        for row in rows
+    )
