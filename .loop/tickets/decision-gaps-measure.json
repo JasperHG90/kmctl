@@ -1,14 +1,30 @@
 {
   "schema_version": "1.0",
   "slug": "decision-gaps-measure",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 2,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 2,
+    "fingerprint": "9fdb5af52747e40205ef1cca7c4b1ffebed6b3f28c92d6e46ede6581622af0e0",
+    "tree": "376f89a13a7874a604e0031f9198c10e84555b4c",
+    "decisions": [
+      {
+        "finding": "reviewer:f7",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": "j-20261116T145752+0000-53f3b0d8",
+        "paths": [
+          ".okf/prototypes/decision-gaps/README.md"
+        ]
+      }
+    ],
+    "at": "2026-11-16T14:57:52+00:00"
+  },
   "ask": "j-20261116T113458+0000-e9031cf0",
   "split": "j-20261116T115206+0000-7ba3ede4",
   "split_plan_hash": "c8a94e7cb127a6c683448ff2282f5a326a2112aa37cdfcbba6725b88be04ef2e",
@@ -158,8 +174,14 @@
       "to": "fixing",
       "at": "2026-11-16T14:52:54+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-16T14:57:52+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-16T14:57:47+00:00"
+  "at": "2026-11-16T14:57:52+00:00"
 }
