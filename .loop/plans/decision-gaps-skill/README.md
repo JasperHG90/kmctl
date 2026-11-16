@@ -36,9 +36,16 @@ the audit skill keeps its own.
 
 The skill, following `.okf/prototypes/decision-gaps/`'s conclusion:
 
-- runs `kmctl decision candidates --json` (with `--since` when the user
-  names a starting point) and judges every change it lists, not only the
-  high scorers;
+- runs `kmctl decision candidates` (with `--since` when the user names a
+  starting point) and judges every change it lists, not only the high
+  scorers;
+- keeps the judging close to how it was measured, where each change was
+  judged on its own with little context: it reads the table first, then one
+  change at a time from `--json` and git, and judges in batches of about
+  ten; where the harness has subagents (Claude Code), each batch goes to
+  one with only that batch's changes. When the list is longer than about
+  forty changes it says how many there are and asks the user to narrow the
+  range with `--since` or to go ahead;
 - for each change reads its message, its plan when it has one, its diff
   when the message is not enough, and the decision index as it stood
   before it, and answers missing, covered or not a decision; a change that
@@ -46,19 +53,27 @@ The skill, following `.okf/prototypes/decision-gaps/`'s conclusion:
 - counts features, interface details, bug fixes, refactors, docs and
   tests as not a decision, with the measurement's false alarms as examples;
 - reports the missing ones, each with the choice, the option it turned
-  down when the change shows one, and the change's sha and subject, and a
-  count of covered and not-a-decision changes;
+  down when the change shows one, and the change's sha and subject; lists
+  apart the changes that only added a record and changed nothing else,
+  since such a change points at a choice made elsewhere; and counts the
+  covered and not-a-decision changes;
 - writes nothing: no record, no draft file, no edit. It says the user turns
   a finding into a record with `kmctl new decision`, and does that only
   when the user asks, for the findings they pick.
 
 kmctl's briefing lists the skill from its folder, as it lists the others;
 `docs/how-to/` gets a page on finding unrecorded decisions, and the
-`decision candidates` verb's help epilog names the skill (it writes
-nothing, so it prints no `Next:` line).
+`decision candidates` verb's help already names the skill.
+
+The skill-creator evals include a range of this repository with known
+answers: a `--since` range holding several of the ten gaps labelled in
+`.okf/prototypes/decision-gaps/results/labels.json` and some of its false
+alarms, scored against those labels, so the skill's recall and precision
+can be compared with the prototype's. The two install pages that count and
+list kmctl's skills name the eighth.
 
 It worked when the skill-creator runs show the skill reporting the known
-gaps in a fixture repository and writing nothing, its description
+gaps on that range and writing nothing, its description
 triggering on asks to find unrecorded decisions and not on asks to write
 one, and the package tests and the briefing test list it.
 
@@ -77,8 +92,8 @@ one, and the package tests and the briefing test list it.
 - goal: G1
 - fixes: P1
 - needs: none
-- touches: `new:packages/kmctl/apm/.apm/skills/decision-gaps/SKILL.md`, `new:packages/kmctl/apm/.apm/skills/decision-gaps/evals/evals.json`, `new:packages/kmctl/apm/.apm/skills/decision-gaps/evals/results.md`, `packages/kmctl/src/kmctl/__init__.py`, `packages/kmctl/tests/test_apm_package.py`, `packages/kmctl/tests/test_briefing.py`, `new:packages/kmctl/tests/test_decision_gaps_skill.py`, `new:docs/how-to/find-unrecorded-decisions.md`, `docs/how-to/README.md`, `docs/reference/commands.md`
-- checked by: tests that the skill folder ships in the package and the wheel, its front matter is valid, its body runs kmctl decision candidates and says it writes nothing, the briefing lists it, and the verb's help names it; the skill-creator evals kept in evals/ with their results; kmctl check
+- touches: `new:packages/kmctl/apm/.apm/skills/decision-gaps/SKILL.md`, `new:packages/kmctl/apm/.apm/skills/decision-gaps/evals/evals.json`, `new:packages/kmctl/apm/.apm/skills/decision-gaps/evals/results.md`, `packages/kmctl/tests/test_apm_package.py`, `packages/kmctl/tests/test_briefing.py`, `new:packages/kmctl/tests/test_decision_gaps_skill.py`, `new:docs/how-to/find-unrecorded-decisions.md`, `docs/how-to/README.md`, `docs/how-to/install-kmctl-with-apm.md`, `docs/how-to/install-the-plugin-and-the-ci-action.md`
+- checked by: tests that the skill folder ships in the package and the wheel, its front matter is valid, its body runs kmctl decision candidates and says it writes nothing, the briefing lists it, the install pages count eight skills; the skill-creator evals kept in evals/ with their results; kmctl check
 - seen by: operator
 
 ## Could invalidate this plan
