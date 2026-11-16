@@ -21,7 +21,8 @@
   "branch": "loop/decision-candidates",
   "stamps": [
     "99d56318c21603d27ceb6fa08b8ba6a942ba6d50b0cbea0b57a3c680abb738d1",
-    "8d14eb4b95a85f6d0fef4b4eb676455dd447ef50779f6430609c7322aae86f3e"
+    "8d14eb4b95a85f6d0fef4b4eb676455dd447ef50779f6430609c7322aae86f3e",
+    "81c3d86256be444aa91fcf9c0d321472a78f3d64ea18e280a691928695cda872"
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/implementer",
@@ -128,5 +129,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-16T16:35:00+00:00"
+  "at": "2026-11-16T16:39:52+00:00"
 }
