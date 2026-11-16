@@ -6,12 +6,12 @@ tags:
 - eval
 generated:
   by: process:loopctl/2.3.1.dev65+g93b143856
-  at: '2026-11-16T11:52:25+00:00'
+  at: '2026-11-16T14:10:23+00:00'
 slug: decision-gaps-measure
 signoff:
   signer: delegated:jasperginn@gmail.com/implementer
-  hash: 7d968dac9701ae23b3992bf6b6ad1bdfa85ab68fda29b54d45adee38572de8c8
-  at: '2026-11-16T11:52:25+00:00'
+  hash: 2f0a521f7ce4669fa2f3d2b498c43cd157ad7020a0a517e3da8cd29421276e17
+  at: '2026-11-16T14:10:23+00:00'
 verified: null
 ---
 

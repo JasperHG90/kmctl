@@ -17,7 +17,7 @@
       "id": "r3",
       "behavior": "The prototype folder is a valid concept: its README has the prototype front matter, the prototypes index lists it, and kmctl check and strict OKF validation pass.",
       "fails_when": "kmctl check or the frontmatter tests report a finding",
-      "command": "uv run pytest packages/kmctl/tests/test_docs_frontmatter.py -q"
+      "command": "uv run pytest packages/kmctl/tests/test_docs_frontmatter.py -q && uv run python tests/vendor/okf/okf_validate.py .okf --strict"
     }
   ]
 }
