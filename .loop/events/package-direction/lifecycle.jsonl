@@ -8,3 +8,5 @@
 {"at": "2026-11-16T11:46:02+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "building"}
 {"at": "2026-11-16T11:46:20+00:00", "by": "advance", "from": "building", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
 {"at": "2026-11-16T11:46:22+00:00", "binds": "d229fa5a2ab35353d8a1d3925ab0de6f007617ee099fceb60a90f5d894559347", "kind": "round-start", "n": 1, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "37fe6f831028fcd8bb2f6ffabfd1dce81860fe4e"}
+{"at": "2026-11-16T11:55:17+00:00", "by": "review close", "from": "verifying", "kind": "transition", "schema_version": "1.0", "to": "fixing"}
+{"at": "2026-11-16T11:55:17+00:00", "dispatched_at": "2026-11-16T11:46:22+00:00", "kind": "round-close", "n": 1, "outcome": "fail", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-11-16T11:54:57+00:00"}}

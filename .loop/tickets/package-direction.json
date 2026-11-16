@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "package-direction",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 1,
@@ -82,8 +82,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "a5db76a7e0420c8c22e0fafa32c032350f27fef4b8eb8756ef1efa97cbb0f1f8",
   "intent": {
@@ -115,8 +115,14 @@
       "to": "verifying",
       "at": "2026-11-16T11:46:20+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-16T11:55:17+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-16T11:46:22+00:00"
+  "at": "2026-11-16T11:55:17+00:00"
 }
