@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "decision-gaps-measure",
-  "plan_hash": "66ed0258db4b89a8c02ea1c59491c79e0ce35c43588541955fc18610ac83ce73",
+  "plan_hash": "c8a94e7cb127a6c683448ff2282f5a326a2112aa37cdfcbba6725b88be04ef2e",
   "problems": [
     {
       "id": "P1",
@@ -38,7 +38,7 @@
         ".okf/summary.md",
         "new:tests/test_decision_gaps_prototype.py"
       ],
-      "checked_by": "the README states recall and narrowing per threshold, judge recall, false-alarm rate and precision, and cost per unit, each produced by a script in the folder from results in the folder; a test that rerunning the units and score scripts reproduces the README's filter numbers; kmctl check and strict OKF validation",
+      "checked_by": "the README states recall and narrowing per threshold, judge recall with its Wilson interval, false-alarm rate and precision, cost per unit and per range, record-only positives apart, and the verdict against the bars set here, each produced by a script in the folder from results in the folder; a test that rerunning the units and score scripts reproduces the README's filter numbers; kmctl check and strict OKF validation",
       "seen_by": "operator"
     }
   ]
