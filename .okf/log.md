@@ -294,3 +294,4 @@
 ## 2026-11-16
 
 - Which package a feature belongs in is now a recorded rule (ADR 0046): `decisions/0046-kmctl-works-from-code-toward-knowledge-and-kmaudit-from-knowledge-toward-code` says kmctl works from code and decisions toward `docs/` and `.okf/` and kmaudit the other way, and `summary`, the root README and `CLAUDE.md` point to it.
+- `prototypes/decision-gaps` measures, on this repository's history, a no-model filter plus an agent judge for finding merges that made a decision nobody recorded: 25 of 30 hidden decisions found, 10 of 17 claims elsewhere real gaps once 15 choices recorded as amendments are set aside, $3.19 for 161 units, so the history scan ADR 0046 places in kmctl is worth building.

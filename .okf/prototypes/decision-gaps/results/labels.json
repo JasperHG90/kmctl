@@ -1,0 +1,300 @@
+{
+  "by": "claude-opus/5.5, not the operator",
+  "positives": {
+    "ab22215142d3db725fa7fecf3dc5640394c8c51c": {
+      "adrs": [
+        "0010"
+      ],
+      "matches_hidden_decision": true
+    },
+    "83c28299c81f6131f55776990c245cd29d2474f5": {
+      "adrs": [
+        "0011"
+      ],
+      "matches_hidden_decision": true
+    },
+    "857cdb2eb06cd06f4cd3877990f67d648447280b": {
+      "adrs": [
+        "0012"
+      ],
+      "matches_hidden_decision": true
+    },
+    "5e44bcdc0a802ea045170dc829b0607f2c775657": {
+      "adrs": [
+        "0013"
+      ],
+      "matches_hidden_decision": true
+    },
+    "0738228c963014ece92a79cfdc162b9746d74e8a": {
+      "adrs": [
+        "0014"
+      ],
+      "matches_hidden_decision": true
+    },
+    "0b9c0cb3ac0d1398e03c49b208240c34eaa1924a": {
+      "adrs": [
+        "0015"
+      ],
+      "matches_hidden_decision": true
+    },
+    "1c668bcf502bb69be499e71a822a156b61f4d218": {
+      "adrs": [
+        "0016"
+      ],
+      "matches_hidden_decision": true
+    },
+    "20b8a780629f1bab8f70012c6e163e7c1492a6f0": {
+      "adrs": [
+        "0017"
+      ],
+      "matches_hidden_decision": true
+    },
+    "ff737bcd099b51e20488fb78db52d9ce66a21282": {
+      "adrs": [
+        "0018"
+      ],
+      "matches_hidden_decision": true
+    },
+    "ea9d1a6126e3aa233fb55f12f498dc1249d86255": {
+      "adrs": [
+        "0020"
+      ],
+      "matches_hidden_decision": true
+    },
+    "cdfeedafb4c8e270592646d0168662255ff029ae": {
+      "adrs": [
+        "0021"
+      ],
+      "matches_hidden_decision": true
+    },
+    "323f293309cdb6b2523c6a37c61245af2da67392": {
+      "adrs": [
+        "0022"
+      ],
+      "matches_hidden_decision": true
+    },
+    "b904fa796448e7088f79afa089a9f72bb415eea9": {
+      "adrs": [
+        "0023"
+      ],
+      "matches_hidden_decision": true
+    },
+    "5f802df9c874afdee29d04fbb5df77929d7096f0": {
+      "adrs": [
+        "0024"
+      ],
+      "matches_hidden_decision": true
+    },
+    "d38c9bf236cdcdcf8ebde1c9fceddae45065ecff": {
+      "adrs": [
+        "0025"
+      ],
+      "matches_hidden_decision": true
+    },
+    "006ac85000f4ea1870a9974f8de31dc1993047fc": {
+      "adrs": [
+        "0026"
+      ],
+      "matches_hidden_decision": true
+    },
+    "e697cb2cda9639e1bd71deea2bc78b1163f61938": {
+      "adrs": [
+        "0027"
+      ],
+      "matches_hidden_decision": true
+    },
+    "b86ff86c23f68424838d4b7b15af814558416634": {
+      "adrs": [
+        "0028"
+      ],
+      "matches_hidden_decision": true
+    },
+    "30a78c56741eb8e3e08ede8dfee6f6a098e7459c": {
+      "adrs": [
+        "0029"
+      ],
+      "matches_hidden_decision": true
+    },
+    "4487cc8eba6ca34b6001dd9a587c1bbdf10ca76c": {
+      "adrs": [
+        "0030"
+      ],
+      "matches_hidden_decision": true
+    },
+    "1ac33a57273b514ab64985123d6db432ce8f0d5d": {
+      "adrs": [
+        "0032"
+      ],
+      "matches_hidden_decision": true
+    },
+    "76d22599bf2403aa1bb06c8e351533698d15dddc": {
+      "adrs": [
+        "0035"
+      ],
+      "matches_hidden_decision": true
+    },
+    "b537c3b7801872bf626296fff7a0a867fc97bb4b": {
+      "adrs": [
+        "0036",
+        "0037",
+        "0038",
+        "0039",
+        "0040",
+        "0041"
+      ],
+      "matches_hidden_decision": true
+    },
+    "56587c0d34a4a588d0830254f2138624250fbf8c": {
+      "adrs": [
+        "0043"
+      ],
+      "matches_hidden_decision": true
+    },
+    "002f85b41098c12890edeca9284e419615375a19": {
+      "adrs": [
+        "0044"
+      ],
+      "matches_hidden_decision": true
+    },
+    "41a113b359be174f2652d51f581ea630c7198cab": {
+      "adrs": [
+        "0045"
+      ],
+      "matches_hidden_decision": true
+    }
+  },
+  "claims": {
+    "3b1acae3c3e049477d52f6751c47a870cbbaced9": {
+      "label": "gap",
+      "note": "Vendoring a pinned okf validator for tests instead of depending on okf-skills is a dependency choice with a rejected option; first labelled a false alarm, relabelled after review."
+    },
+    "dfb4d0092c25658038af39d1987dc877af278a39": {
+      "label": "gap",
+      "note": "The one index format kmctl check enforces (first link is the entry, no concept counts) is a contract with a rejected option; no record at the time, ADR 0022 later covers docs indexes only."
+    },
+    "8f70b4b83766e17680eeb072f493bc04abbbaef0": {
+      "label": "false_alarm",
+      "note": "Shipping the plugin in the wheel and installing from a local marketplace is ADR 0001's decision, in the index the judge saw."
+    },
+    "f6de9213adaaa9eb066e6acd70d482aabc09934a": {
+      "label": "gap",
+      "note": "Keeping the GitHub token out of the model's step is a security design with a rejected option (unsetting it only for claude); no record at the time."
+    },
+    "8e1f5038392845612ca0abe0f81706f9698ebd3f": {
+      "label": "false_alarm",
+      "note": "An integration test tier is the testing rule's practice, not a project decision."
+    },
+    "f83d4ed6c258b0f316a4d8b9ce082c0596ea07a9": {
+      "label": "gap",
+      "note": "One kinds table that both the writers and kmctl schema read is an architecture choice; no decision records it."
+    },
+    "82fbd1e13d74ce87611f5bb358e15857cd5db48f": {
+      "label": "gap",
+      "note": "Switching the repository's own rule tooling from aim to APM is a tooling choice with an alternative; no record of the switch."
+    },
+    "d021b40351790028f3463a461db64d8203d82e7f": {
+      "label": "recorded_in_unit",
+      "note": "The unit amends ADR 0002, 0011 with this choice; the judge could not see it because .okf/ is hidden."
+    },
+    "c1a06c23e51dce51fee5baf14b424426b15cf2fd": {
+      "label": "recorded_in_unit",
+      "note": "The unit amends ADR 0011 with this choice; the judge could not see it because .okf/ is hidden."
+    },
+    "bb2a4b6ab0e8a1b1199f942e9750ffc950f68927": {
+      "label": "false_alarm",
+      "note": "A new kmctl doctor verb is a feature, not a choice among alternatives that needs a record."
+    },
+    "fb8d391773512a4ca65e40f95d789499a62548df": {
+      "label": "false_alarm",
+      "note": "Prompting at a terminal and refusing otherwise follows the interface-audience rule; an interface detail."
+    },
+    "26f697c594cff3714bc04ee8371008b0a31476b9": {
+      "label": "recorded_in_unit",
+      "note": "The unit amends ADR 0012, 0017 with this choice; the judge could not see it because .okf/ is hidden."
+    },
+    "811bd4781bf03fbfa9d4e7f58d8769b8ffe34ec9": {
+      "label": "false_alarm",
+      "note": "A pre-commit hook that runs the existing sync script enforces ADR 0020's generated copies; a process detail."
+    },
+    "ae4590d035fe61a2501a53dbf76b592b9e70c62d": {
+      "label": "recorded_in_unit",
+      "note": "The unit amends ADR 0017 with this choice; the judge could not see it because .okf/ is hidden."
+    },
+    "b49e8332bf22f7121a7c4ccc03e37e489f4da4fb": {
+      "label": "gap",
+      "note": "Running CI through the operator's shared toiminnot actions pinned by SHA is a dependency choice; no record."
+    },
+    "1e33636ce85feb864fdf1f6f6d39eec29cce54fe": {
+      "label": "recorded_in_unit",
+      "note": "The unit amends ADR 0017 with this choice; the judge could not see it because .okf/ is hidden."
+    },
+    "cbd067da1f153e1325f785e07ee62183bd12737f": {
+      "label": "false_alarm",
+      "note": "An optional starter question for the reviewer agent is a feature option."
+    },
+    "14b6616fb555e2398107788647cadfc2d923903a": {
+      "label": "recorded_in_unit",
+      "note": "The unit amends ADR 0017 with this choice; the judge could not see it because .okf/ is hidden."
+    },
+    "eafb19be12f509849adf46ba94e465af939d807d": {
+      "label": "recorded_in_unit",
+      "note": "The unit amends ADR 0012 with this choice; the judge could not see it because .okf/ is hidden."
+    },
+    "ce8b712cbf974689ecad4d949b1c6624a8832626": {
+      "label": "gap",
+      "note": "The project's licence is a choice no decision records; no decision names MIT."
+    },
+    "09af291c72db6688313232f060fba01406400f28": {
+      "label": "gap",
+      "note": "Pinning every action to a commit SHA is a supply-chain policy; unrecorded at the time, ADR 0012's 2026-11-11 correction notes it later."
+    },
+    "642d7236aa10dae9d5ed857562de9c10160a9151": {
+      "label": "false_alarm",
+      "note": "A warn outcome for kmctl doctor is an interface detail."
+    },
+    "3d88e355490258d31f8208cec2730cb99c73a9c7": {
+      "label": "recorded_in_unit",
+      "note": "The unit amends ADR 0014, 0018, 0019, 0020 with this choice; the judge could not see it because .okf/ is hidden."
+    },
+    "da6a34c5c6442bd17437865068fe7d1d1c201f00": {
+      "label": "gap",
+      "note": "The same MIT licence choice, merged as pull request #30; counted as its own correct claim."
+    },
+    "05881e5e23d66de7ac236bbd74cee7a45ffc7a61": {
+      "label": "recorded_in_unit",
+      "note": "The unit amends ADR 0027 with this choice; the judge could not see it because .okf/ is hidden."
+    },
+    "581e4d73a0ae21f53736718ba0fd0c65f36790f3": {
+      "label": "recorded_in_unit",
+      "note": "The unit amends ADR 0043 with this choice; the judge could not see it because .okf/ is hidden."
+    },
+    "c92c6e0d021fa97bb8f21de8c8c20e74c154af2a": {
+      "label": "gap",
+      "note": "Keeping main's required tests check through a collector job instead of changing the ruleset is a process choice with a rejected option; unrecorded."
+    },
+    "2f0e7326ed6ed6104a4ede61ee480767694c3159": {
+      "label": "recorded_in_unit",
+      "note": "The unit amends ADR 0012 with this choice; the judge could not see it because .okf/ is hidden."
+    },
+    "16a731dfb8d6b1088b5123c3101bf033606f0188": {
+      "label": "recorded_in_unit",
+      "note": "The unit amends ADR 0035 with this choice; the judge could not see it because .okf/ is hidden."
+    },
+    "74a336b1ef0ab7899adead5040d370ca83f33460": {
+      "label": "recorded_in_unit",
+      "note": "The unit amends ADR 0037, 0040, 0043 with this choice; the judge could not see it because .okf/ is hidden."
+    },
+    "aabf49ae343a1f9313ddcb618872af86f5da4939": {
+      "label": "recorded_in_unit",
+      "note": "The unit amends ADR 0040, 0043 with this choice; the judge could not see it because .okf/ is hidden."
+    },
+    "a4c175d9bdea75737fd049afe089408904f59b69": {
+      "label": "recorded_in_unit",
+      "note": "The unit amends ADR 0012 with this choice; the judge could not see it because .okf/ is hidden."
+    }
+  },
+  "same_change": [
+    "ce8b712cbf974689ecad4d949b1c6624a8832626",
+    "da6a34c5c6442bd17437865068fe7d1d1c201f00"
+  ]
+}

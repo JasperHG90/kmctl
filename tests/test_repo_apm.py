@@ -114,7 +114,12 @@ def test_no_aim_guidelines_text_unchanged() -> None:
 
 
 def test_no_aim_named_in_tracked_files() -> None:
-    """No tracked file outside .loop/ names aim as the manager of its files."""
+    """No tracked file outside .loop/ names aim as the manager of its files.
+
+    A prototype's raw results under ``.okf/prototypes/*/results/`` are left
+    out: they record the repository's history, which names the files aim
+    managed before the switch to APM.
+    """
     listed = subprocess.run(
         ["git", "ls-files"], cwd=ROOT, capture_output=True, text=True, check=True
     ).stdout.split()
@@ -126,7 +131,12 @@ def test_no_aim_named_in_tracked_files() -> None:
     found = []
     for name in listed:
         path = ROOT / name
-        if name.startswith(".loop/") or name == this or not path.is_file():
+        if (
+            name.startswith(".loop/")
+            or re.match(r"\.okf/prototypes/[^/]+/results/", name)
+            or name == this
+            or not path.is_file()
+        ):
             continue
         try:
             text = path.read_text()
