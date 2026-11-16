@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "release-notes-pr-tickets",
-  "stage": "planning",
+  "stage": "ready",
   "attempts": 0,
   "plan_rounds": 1,
   "review_rounds": 0,
@@ -79,8 +79,14 @@
       "to": "planning",
       "at": "2026-11-16T06:42:58+00:00",
       "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-11-16T06:45:37+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-16T06:45:35+00:00"
+  "at": "2026-11-16T06:45:37+00:00"
 }
