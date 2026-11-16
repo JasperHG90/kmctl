@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "results.md says the session briefing lists each skill with when to use it, which is how it explains away the weak triggering result. The briefing shows only the description's first sentence, cut at 12 words: 'decision-gaps: Find the changes in a repository's git history that made a decision...'. The 'Use this whenever...' part never reaches the briefing, and the line is cut mid-sentence.",
+      "anchor": "packages/kmctl/apm/.apm/skills/decision-gaps/evals/results.md:84",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "judging.md defines covered first as '`recorded` is not empty', but a record-only change always has a non-empty recorded, so the two answers overlap and the text never says which one wins. The runs answered record-only for 4487cc8e, but a batch judge reading the rules in order can answer covered, and then the change drops out of the report's 'Records with no change of their own' list.",
+      "anchor": "packages/kmctl/apm/.apm/skills/decision-gaps/references/judging.md:28",
+      "category": "design",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "a65aefefc9904cf358c58727b63e48f1cb19b012c594517fa5d39523034357b7",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.3.1.dev65+g93b143856",
+  "at": "2026-11-16T18:08:48+00:00"
+}
