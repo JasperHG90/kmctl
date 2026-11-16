@@ -20,7 +20,8 @@
   "worktree": "/home/vscode/workspace.worktrees/package-direction",
   "branch": "loop/package-direction",
   "stamps": [
-    "d229fa5a2ab35353d8a1d3925ab0de6f007617ee099fceb60a90f5d894559347"
+    "d229fa5a2ab35353d8a1d3925ab0de6f007617ee099fceb60a90f5d894559347",
+    "e05cff14c14c930c3f911ac69319aa7146ddee3118eacb6ada9c84865a66d643"
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/implementer",
@@ -124,5 +125,5 @@
     }
   ],
   "by": "process:loopctl/2.3.1.dev65+g93b143856",
-  "at": "2026-11-16T11:55:17+00:00"
+  "at": "2026-11-16T12:03:20+00:00"
 }
