@@ -1,5 +1,14 @@
 # kmaudit
 
+![Lifecycle: beta](https://img.shields.io/badge/lifecycle-beta-orange)
+[![CI](https://github.com/JasperHG90/kmctl/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/JasperHG90/kmctl/actions/workflows/ci.yml?query=branch%3Amain)
+[![kmaudit release](https://img.shields.io/github/v/release/JasperHG90/kmctl?filter=kmaudit-v*&sort=semver&label=release)](https://github.com/JasperHG90/kmctl/releases?q=kmaudit-v)
+[![License: MIT](https://img.shields.io/github/license/JasperHG90/kmctl)](LICENSE)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue)](pyproject.toml)
+
+kmaudit is in beta: its MCP tools, the format of its stores and its CLI
+may change between minor releases, and the release notes say when they do.
+
 kmaudit audits what a folder of markdown docs claims about the repository
 it sits in. A coding agent reads each section, lists the claims it makes,
 and writes a check for each claim: steps kmaudit reruns with no model

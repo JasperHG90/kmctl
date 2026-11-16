@@ -7,6 +7,9 @@ sources:
 
 # kmaudit commands
 
+kmaudit is in beta: its MCP tools, the format of its stores and its CLI
+may change between minor releases, and the release notes say when they do.
+
 kmaudit has two ways in. Agents drive the audit through the tools of its
 MCP server, [`kmaudit mcp`](#kmaudit-mcp): they extract claims, write and
 test checks, rerun them and ask the decision model. People review the
