@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "ADR 0012's last section is a dated correction that names packages/kmctl/apm/apm.yml and packages/kmaudit/apm/apm.yml as the two version sources, names every path in release-tag.yml's paths filter, and links ADR 0045; the earlier release-docs tests and kmctl check still pass.",
+      "fails_when": "the last section does not name both apm.yml files, misses a path release-tag.yml watches, does not link 0045, or any test in test_release_docs.py fails",
+      "command": "uv run pytest tests/scripts/test_release_docs.py -q"
+    }
+  ]
+}
