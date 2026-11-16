@@ -1,0 +1,18 @@
+[
+ {"query": "we've merged like 40 PRs since the 1.2 release and I'm pretty sure half of them changed how things work without anyone writing an ADR. can you go through the history and tell me which ones should have had a decision record?", "should_trigger": true},
+ {"query": "Our .okf/decisions folder stops at ADR 0031 but we've been shipping for two months since. Which architectural choices did we make in that time that never got recorded?", "should_trigger": true},
+ {"query": "audit our git log since tag v0.9.0 for decisions we forgot to document", "should_trigger": true},
+ {"query": "is our decision log behind the code? I want a list of changes that picked one option over another and have no ADR, I'll decide which to write up", "should_trigger": true},
+ {"query": "before the architecture review on friday I need to know what we decided in the last sprint that isn't written down anywhere. look at the merges on main since monday", "should_trigger": true},
+ {"query": "scan the PRs merged this quarter and flag any that switched a dependency, changed CI, or changed a public interface without a decision record", "should_trigger": true},
+ {"query": "new teammate asked why we pin all our github actions to SHAs and nobody could point to a record. are there more choices like that hiding in our history?", "should_trigger": true},
+ {"query": "check which of our recent commits made decisions we never recorded, don't write anything, just report", "should_trigger": true},
+ {"query": "Write an ADR for switching our queue from Redis to SQS. We did it because of the managed retries and dead-letter queues.", "should_trigger": false},
+ {"query": "ADR 0012 is out of date since we moved the APM package into packages/kmctl/apm; add a correction to it saying where the version lives now", "should_trigger": false},
+ {"query": "mark decision 0016 superseded by 0020 and link them both ways", "should_trigger": false},
+ {"query": "does ADR 0043 still match what the code does? the kmaudit CLI was slimmed down last week", "should_trigger": false},
+ {"query": "generate release notes for v0.14.0 from the merges since v0.13.0", "should_trigger": false},
+ {"query": "what does kmctl decision candidates print with --json? I want to pipe it into a script", "should_trigger": false},
+ {"query": "summarise what changed in the repo this week for the standup, one line per merged PR", "should_trigger": false},
+ {"query": "audit the .okf bundle for drift: architecture pages that no longer match the code and decisions that a later decision overtook", "should_trigger": false}
+]

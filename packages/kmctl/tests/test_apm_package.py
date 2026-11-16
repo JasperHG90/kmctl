@@ -71,6 +71,7 @@ SKILL_NAMES = (
     "architecture-review",
     "audit",
     "continue",
+    "decision-gaps",
     "decision-log-review",
     "handoff",
     "practices-review",

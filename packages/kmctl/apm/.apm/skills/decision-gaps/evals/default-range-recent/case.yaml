@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: default-range-recent
+expected_outcome: |
+  The agent runs kmctl decision candidates with no --since, judges the few recent changes, treats the changes that added ADR 0046 and ADR 0047 as covered, reports the counts, and writes nothing.
