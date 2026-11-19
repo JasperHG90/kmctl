@@ -451,6 +451,74 @@ def test_decision_check_title_and_heading_number_must_be_the_files(
     ]
 
 
+def test_decision_check_two_records_with_one_number_fail(tmp_path: Path) -> None:
+    """Two branches that both added a decision took the same number, and git merged them."""
+    _good_repo(tmp_path)
+    _write(
+        tmp_path,
+        ".okf/decisions/index.md",
+        "# Decisions\n\n"
+        "- [ADR 0001: First](0001-first.md): the first.\n"
+        "- [ADR 0001: Other](0001-other.md): the other.\n"
+        "- [ADR 0002: Second](0002-second.md): the second.\n",
+    )
+    for slug, title in (("0001-first", "First"), ("0001-other", "Other")):
+        _write(
+            tmp_path,
+            f".okf/decisions/{slug}.md",
+            _decision(f"ADR 0001: {title}", f"ADR 0001: {title}"),
+        )
+    _write(
+        tmp_path,
+        ".okf/decisions/0002-second.md",
+        _decision("ADR 0002: Second", "ADR 0002: Second"),
+    )
+
+    result = _check(tmp_path)
+
+    assert result.exit_code == 1
+    assert _decision_findings(tmp_path) == [
+        (
+            "decision",
+            ".okf/decisions/0001-first.md",
+            None,
+            (
+                "number 0001 is also the number of 0001-other.md; give one of them "
+                "the next free number, 0003, with kmctl mv"
+            ),
+        ),
+        (
+            "decision",
+            ".okf/decisions/0001-other.md",
+            None,
+            (
+                "number 0001 is also the number of 0001-first.md; give one of them "
+                "the next free number, 0003, with kmctl mv"
+            ),
+        ),
+    ]
+
+
+def test_decision_check_one_record_per_number_passes(tmp_path: Path) -> None:
+    _good_repo(tmp_path)
+    _write(
+        tmp_path,
+        ".okf/decisions/index.md",
+        "# Decisions\n\n"
+        "- [ADR 0001: First](0001-first.md): the first.\n"
+        "- [ADR 0002: Second](0002-second.md): the second.\n",
+    )
+    for number, title in (("0001", "First"), ("0002", "Second")):
+        _write(
+            tmp_path,
+            f".okf/decisions/{number}-{title.lower()}.md",
+            _decision(f"ADR {number}: {title}", f"ADR {number}: {title}"),
+        )
+
+    assert _check(tmp_path).exit_code == 0
+    assert _decision_findings(tmp_path) == []
+
+
 def test_decision_check_entry_is_told_the_corrected_title(tmp_path: Path) -> None:
     _good_repo(tmp_path)
     _write(

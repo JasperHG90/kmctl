@@ -434,10 +434,13 @@ def check_okf(root: Path) -> list[Finding]:
 
 
 def _check_decisions(root: Path, section: Path) -> list[Finding]:
-    """Findings for decision records whose ADR number is not their file's, and index entries that misname them.
+    """Findings for decision records whose ADR number is not their file's or is another record's, and index entries that misname them.
 
     A record's ``title`` or ``#`` heading that starts with ``ADR NNNN`` must
-    carry the number its file name starts with. The section index's entry
+    carry the number its file name starts with. No two records may start
+    with the same number: two branches that both ran ``kmctl new decision``
+    take the same one, and git merges them without a conflict because the
+    file names differ. The section index's entry
     for a record must read the record's title, or just ``ADR NNNN``; a title
     that starts with the wrong ``ADR NNNN`` counts, and is suggested, with
     the file's number in its place. A record
@@ -445,11 +448,13 @@ def _check_decisions(root: Path, section: Path) -> list[Finding]:
     """
     findings = []
     records: dict[Path, tuple[str, str | None]] = {}
+    numbered: dict[str, list[Path]] = {}
     for record in sorted(section.glob("*.md")):
         match = _RECORD.fullmatch(record.name)
         if not match:
             continue
         number = match.group(1)
+        numbered.setdefault(number, []).append(record)
         try:
             text = _read(record)
             meta, body = split_front_matter(text)
@@ -481,6 +486,19 @@ def _check_decisions(root: Path, section: Path) -> list[Finding]:
                         f"{number}; make it ADR {number}",
                     )
                 )
+    free = max((int(number) for number in numbered), default=0) + 1
+    for number, same in numbered.items():
+        for record in same if len(same) > 1 else []:
+            others = ", ".join(r.name for r in same if r != record)
+            findings.append(
+                Finding(
+                    "decision",
+                    _rel(root, record),
+                    None,
+                    f"number {number} is also the number of {others}; give one "
+                    f"of them the next free number, {free:04d}, with kmctl mv",
+                )
+            )
     index = section / "index.md"
     try:
         entries = _entries(index)
