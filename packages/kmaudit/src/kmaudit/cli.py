@@ -31,7 +31,9 @@ app = typer.Typer(
         "checks. claims list and checks list read a store; namespaces lists the "
         "audited folders, each with its own store under .kmaudit/, which ignores "
         "itself in git; briefing prints each one's state for a session-start hook. "
-        "kmaudit calls no model except the judge tool and the page's Second opinion. "
+        "kmaudit is driven from a coding agent harness, whose model does the reading "
+        "and writing; kmaudit asks a model of its own only for the judge tool and the "
+        "page's Second opinion. "
         "Needs a git repository."
     ),
     no_args_is_help=True,

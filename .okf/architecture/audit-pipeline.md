@@ -20,8 +20,9 @@ sources:
 kmaudit, a package of its own in `packages/kmaudit/`
 ([ADR 0043](../decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp.md)),
 checks what a folder of markdown docs says against the code: `.okf/`,
-`docs/` or any other, each folder a namespace with its own store. It calls no model
-except the optional `judge` tool: two Haiku subagents, driven by two
+`docs/` or any other, each folder a namespace with its own store. It runs
+inside a coding agent's harness and uses that harness's model, not one of
+its own (the optional `judge` tool aside): two Haiku subagents, driven by two
 skills in kmaudit's own APM package (`packages/kmaudit/apm/`), do the
 reading and writing through the kmaudit MCP tools, and kmaudit hands out
 the work, validates and measures what comes back, stores it and

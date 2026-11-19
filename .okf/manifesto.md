@@ -60,16 +60,20 @@ ADR 0027), `manifesto.md` (the root concept), `decisions/`, `architecture/`, `pr
   `kmctl-check` pre-commit hook runs the check, ADR 0022), and list live
   and expired handoffs. kmctl holds no audit: that is kmaudit's (ADR 0043).
 - **kmaudit, a package of its own** in `packages/kmaudit/` of this
-  repository, which installs and runs without kmctl (ADR 0043). Agents
-  drive it through the tools of its stdio MCP server, `kmaudit mcp`; its
+  repository, which installs and runs without kmctl (ADR 0043). It is
+  built to run inside a coding agent's harness: the agent's own model does
+  the reading and writing, through the tools of kmaudit's stdio MCP
+  server, `kmaudit mcp`, and kmaudit does the rest in plain code. Its
   CLI keeps only that, `kmaudit ui`, `kmaudit namespaces`, `kmaudit
   briefing` and the `kmaudit claims list` and `kmaudit checks list` reads.
   The `claims_todo` and `claims_submit` tools hand a coding agent a
   folder's sections, validate its verdicts against one schema and keep the
-  claims in a git-ignored store per audited folder under `.kmaudit/`;
-  kmaudit calls no model for them (ADR 0036). `checks_todo`, `checks_try`,
-  `checks_submit` and `checks_run` turn those claims into checks, steps
-  kmaudit reruns with no model when the files they read change;
+  claims in a git-ignored store per audited folder under `.kmaudit/`; the
+  agent's model reads, and kmaudit only hands out and checks the work
+  (ADR 0036). With `checks_todo`, `checks_try` and `checks_submit` the
+  agent turns those claims into checks: steps that kmaudit, through
+  `checks_run`, reruns as plain code, with no model, when the files they
+  read change;
   `checks_submit` refuses a weak check, one that notices no change to the
   code it matched (ADR 0038). The `judge` tool is the one model call
   kmaudit makes: off by default, it asks a decision model set in a

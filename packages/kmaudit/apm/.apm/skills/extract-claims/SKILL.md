@@ -5,7 +5,8 @@ description: Extract the claims a folder of markdown docs (an .okf/ bundle, docs
 
 # /extract-claims: claims into the store, summaries only
 
-kmaudit calls no model here. Whoever reads a section gives its verdicts and
+Your model does the reading here; kmaudit has no model of its own.
+Whoever reads a section gives its verdicts and
 stores them with the kmaudit MCP tool `claims_submit`, which validates them
 and keeps them in the folder's own store under `.kmaudit/`. Where the
 `kmaudit-claims-extractor` agent exists (Claude Code), it does that reading

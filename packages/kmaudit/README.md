@@ -10,14 +10,16 @@ kmaudit is in beta: its MCP tools, the format of its stores and its CLI
 may change between minor releases, and the release notes say when they do.
 
 kmaudit audits what a folder of markdown docs claims about the repository
-it sits in. A coding agent reads each section, lists the claims it makes,
-and writes a check for each claim: steps kmaudit reruns with no model
-whenever the files the check reads change. People review the claims and
-checks on a local page.
+it sits in. It is built to be driven from a coding agent harness, such as
+Claude Code: the agent you already work with, and its model, read each
+section, list the claims it makes and write a check for each claim, through
+kmaudit's MCP tools. A check is a list of steps that kmaudit reruns as plain
+code, with no model, whenever the files the check reads change. People
+review the claims and checks, and rerun stale checks, on a local page.
 
-kmaudit calls no model itself, except the optional `judge` tool. The agent
-you already work with does the reading and writing through kmaudit's MCP
-tools; you review the result, and rerun stale checks, on its local page.
+So kmaudit needs no model key of its own: it uses the model of the harness
+that calls it. The one exception is the optional `judge` tool, which asks a
+model you set up for kmaudit.
 
 kmaudit lives in the kmctl repository as a package of its own. It does not
 need kmctl, though the two work well together: kmctl keeps an `.okf/`

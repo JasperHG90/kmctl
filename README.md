@@ -24,8 +24,9 @@ together and install apart.
   ![Lifecycle: beta](https://img.shields.io/badge/lifecycle-beta-orange)
   [![kmaudit release](https://img.shields.io/github/v/release/JasperHG90/kmctl?filter=kmaudit-v*&sort=semver&label=release)](https://github.com/JasperHG90/kmctl/releases?q=kmaudit-v)
   is in beta. It starts from a folder of markdown docs and checks what they
-  claim against the code: an agent lists the claims and writes a check
-  for each, and kmaudit reruns the checks with no model.
+  claim against the code. It runs inside your coding agent's harness: the
+  agent's model lists the claims and writes a check for each, and kmaudit
+  reruns the checks as plain code, with no model.
 
 A feature goes in the package whose direction it shares
 ([ADR 0046](.okf/decisions/0046-kmctl-works-from-code-toward-knowledge-and-kmaudit-from-knowledge-toward-code.md)). Each package's README says how

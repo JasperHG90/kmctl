@@ -5,7 +5,8 @@ description: Write checks for the claims kmaudit stored, through kmaudit's MCP t
 
 # /write-checks: checks into the store, summaries only
 
-kmaudit calls no model here. Whoever writes a check tests it with the
+Your model does the writing here; kmaudit has no model of its own.
+Whoever writes a check tests it with the
 kmaudit MCP tool `checks_try` and stores it with `checks_submit`, which runs
 it, refuses a weak one and keeps the rest in the folder's own store under
 `.kmaudit/`. Where the `kmaudit-check-writer` agent exists (Claude Code), it
