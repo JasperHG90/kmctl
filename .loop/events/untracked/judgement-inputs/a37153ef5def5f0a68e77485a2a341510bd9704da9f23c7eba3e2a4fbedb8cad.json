@@ -1,0 +1,1 @@
+{"ask":"I find the documentation on kmaudit to be confusing: 'kmaudit calls no model for them (ADR 0036)... steps kmaudit reruns with no model when the files they read change'. Kmaudit DOES call a model. It just uses models in a harness. it is intended to be called from a coding agent harness"}
