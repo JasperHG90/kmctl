@@ -16,89 +16,108 @@ sources:
 
 ## Context
 
-`kmctl summary ack` wrote `checked: {at, against}` into the front matter of
-`.okf/summary.md` (ADR 0027). That is an edit to the summary, so the
-commit-order rule cleared it with no special case, and no rule reads
-`checked` itself.
+Before this decision, `kmctl summary ack` wrote a `checked` block into the
+front matter of `.okf/summary.md` (ADR 0027):
 
-Every ack rewrites the same block. Two branches that both touch a concept
-both ack, so they change the same lines, and the second one to merge
-conflicts. On 2026-11-19 a user reported this from a repository where about
-ten people open pull requests against one bundle: each time `main` moved,
-every open pull request had to merge `main` and resolve the block again.
+```yaml
+checked:
+  at: 2026-11-19T08:12:43Z
+  against:
+    - decisions/0002-use-a-queue
+```
 
-Measured there by replaying merges
-([Bookkeeping merge conflicts](../prototypes/bookkeeping-merge-conflicts/README.md)):
+The block has one job: it changes the file. kmctl decides whether the summary
+is behind by looking at which commit last changed the summary, so any change
+to the file clears it. No rule reads what the block says.
 
-- A branch merged `main` into itself 66 times. 14 of those merges conflicted
-  in `.okf/summary.md`. With the `checked` block merged by a script, 3 still
-  conflicted, each because two branches rewrote one sentence of the text.
-- 28 of the 45 pairs of open pull requests conflicted in `.okf/summary.md`,
-  and 26 of the 28 only in the `checked` block.
+Every ack rewrites the same lines. When two branches both ack, git cannot
+merge those lines, and the branch that merges second gets a conflict. Where
+several people have pull requests open, this happens each time `main` moves:
+every open pull request has to merge `main` and resolve the block again. A
+user reported it on 2026-11-19, from a repository where about ten people work
+on one bundle.
 
-GitHub does not read a repository's `.gitattributes` when it merges, so a
-merge driver for the block would help a local merge and leave the pull
-request marked as conflicting.
+We measured it in that repository by replaying its merges ([Bookkeeping merge
+conflicts](../prototypes/bookkeeping-merge-conflicts/README.md)):
+
+- Of 45 pairs of open pull requests, 28 conflicted in `.okf/summary.md`. 26 of
+  those 28 conflicted only in the `checked` block.
+- A branch merged `main` into itself 66 times, and 14 of those merges
+  conflicted in the summary. With the `checked` block merged by a script, 3
+  were left. In those 3, two branches had rewritten the same sentence of the
+  summary's text.
+
+A git merge driver could merge the block in a local merge. It would not help
+on the pull request page, because GitHub does not read a repository's
+`.gitattributes` when it merges.
 
 ## Decision
 
-- **One ack, one file.** `kmctl summary ack` writes
-  `.okf/.acks/TIME-DIGEST.yaml`, which holds `at` (the UTC time to the
-  second) and `against` (the ids of the concepts that had changed and are
-  still in the bundle). `TIME` is `at` without punctuation, and `DIGEST` is
-  the first eight characters of the SHA-256 of `HEAD` and those ids. Two
-  branches have a different `HEAD`, so they write different files and
-  change no common bytes.
-- **An ack file counts as the summary.** The summary is behind when a
-  concept changed in a commit after the last commit that changed the summary
-  or an ack file, or is changed in the working tree while neither is. The
-  rest of the rule in ADR 0027 holds.
-- **An ack replaces the ack files before it.** It removes the ack files that
-  were there, so the folder holds one file after a linear history and one
-  per merged branch after a merge, until the next ack.
-- **`checked` is no longer written.** The first ack removes a `checked`
-  block from the summary's front matter. The field stays in the summary's
-  schema and in invariant I4, so a bundle that still has it validates.
-  `kmctl check` still warns about an id in it that is not in the bundle, and
-  `kmctl mv` still rewrites it.
-- **The folder's name starts with a dot.** `kmctl check` and the OKF
-  validator read sections and concepts, and skip a folder whose name starts
-  with a dot.
-- `kmctl summary ack --json` gains `file`, the ack file's path, null when
-  nothing was written.
+`kmctl summary ack` writes one new file per ack and leaves the summary alone.
+
+- **The file.** Its path is `.okf/.acks/TIME-DIGEST.yaml`, for example
+  `.okf/.acks/20261119T081243Z-b7375c5d.yaml`. It holds what the block held:
+  `at`, the UTC time to the second, and `against`, the ids of the concepts
+  that had changed.
+- **Every branch gets its own file name.** `TIME` is `at` without punctuation.
+  `DIGEST` is the first eight characters of a SHA-256 hash of the `HEAD`
+  commit and the ids. Two branches have a different `HEAD`, so they write two
+  different files, and git merges two new files without a conflict.
+- **An ack file clears the summary, as an edit to the summary does.** The
+  summary is behind when a concept changed in a commit after the last commit
+  that changed the summary or an ack file. An ack file that is not committed
+  yet counts like an edit to the summary that is not committed yet. Nothing
+  else in the rule of ADR 0027 changes.
+- **Each ack deletes the ack files it finds.** On a branch without merges the
+  folder then holds one file. After a merge it holds one file per merged
+  branch, until the next ack.
+- **kmctl stops writing `checked`.** The first ack with this change deletes
+  the `checked` block from the summary. The summary's schema and invariant I4
+  still allow the field, so a bundle that still has the block validates. For
+  such a block, `kmctl check` still warns about an id that is not in the
+  bundle, and `kmctl mv` still rewrites the ids.
+- **The bundle checks do not see the folder.** `kmctl check` and the OKF
+  validator skip a folder whose name starts with a dot, so neither treats
+  `.acks` as a section of the bundle.
+- **`--json` gains `file`.** `kmctl summary ack --json` also prints the path
+  of the ack file, or null when it wrote nothing.
 
 Rejected:
 
-- **A merge driver for the `checked` block.** Git does not read a driver's
-  command from the repository, so every clone would have to register it, and
-  GitHub ignores it.
+- **A git merge driver for the `checked` block.** Git does not read a driver's
+  command from the repository, so every clone would have to register it by
+  hand. GitHub would ignore it.
 - **A trailer in the commit message.** `kmctl check` and the pre-commit hook
-  run before the commit exists, so they could not see it, and a squash merge
-  can drop a trailer.
-- **One ack file with a fixed name.** Two branches would both change that
-  file, which is the conflict this decision removes.
-- **A random name.** A digest of `HEAD` and the ids is as unlikely to clash,
-  and the same ack on the same commit writes the same file.
-- **Keeping every ack file.** Nothing reads an old ack, and a busy bundle
-  is acked several times a day, so the folder would only grow.
-- **Asking for an ack less often.** The summary would be listed as behind
-  most of the time, and a list that is always there is not read.
+  run before the commit exists, so they could not see the trailer. A squash
+  merge can also drop it.
+- **One ack file with a fixed name.** Both branches would change the same file
+  and conflict as before.
+- **A random file name.** A digest is as unlikely to repeat. A digest is also
+  the same for the same commit and the same ids, which a test can rely on.
+- **Keeping every ack file.** Nothing reads an old ack. A busy bundle is acked
+  several times a day, so the folder would only grow.
+- **Asking for an ack less often.** The summary would be listed as behind most
+  of the time, and people stop reading a warning that is always there.
 
 ## Consequences
 
-- Two branches that both ack merge without a conflict in the summary. The
-  merge commit differs from both parents under `.okf/.acks/`, so it counts
-  as the last change, and the summary is current after the merge. Each side
-  vouched for its own concepts.
-- A concept that changed on a branch after that branch's ack is not listed
-  after such a merge, because the merge commit is newer. A merge whose
-  conflict in `checked` was resolved by hand had the same gap.
-- The first ack after the upgrade deletes the `checked` block. A branch that
-  an older kmctl acked rewrites that block, so the two conflict once, when
-  the second is merged.
-- `kmctl mv` does not rewrite the ids in an ack file. No rule reads them,
-  and the next ack removes the file.
-- The summary conflicts that remain are two edits to the same text, which a
-  person has to settle.
-- `.okf/log.md` and the index files still conflict, for the same reason:
-  every change adds a line at their end. They are not part of this decision.
+- **Two branches that both ack merge without a conflict.** After the merge the
+  folder holds both ack files, and kmctl reports the summary as current. Each
+  branch checked the summary against its own changes.
+- **One case goes unnoticed.** Branch A acks and then edits a decision without
+  a second ack. Branch B acks too. After both are merged, kmctl reports the
+  summary as current, although nobody read it against A's last edit. The merge
+  commit joins the two ack files, so kmctl takes it as the newest ack, and A's
+  edit is older than the merge commit. kmctl missed the same case before this
+  decision, whenever a person resolved the conflict in `checked` by hand.
+- **The upgrade causes one last conflict.** A branch that an older kmctl acked
+  rewrites the `checked` block, and the first ack by the new kmctl deletes it.
+  Git reports a conflict in the summary when the second of the two is merged,
+  once.
+- **`kmctl mv` leaves ack files alone.** After a rename, an ack file can still
+  name the old id. No rule reads those ids, and the next ack deletes the file.
+- **Two edits to the same text still conflict.** When two branches rewrite the
+  same sentence of the summary, a person has to choose.
+- **The log and the indexes still conflict.** Every change adds a line at the
+  end of `.okf/log.md` and at the end of an index. This decision does not
+  cover them.

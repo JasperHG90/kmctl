@@ -147,11 +147,12 @@ of this decision holds.
 
 ## Amendment, 2026-11-19
 
-`kmctl summary ack` no longer writes `checked` into the summary's front
-matter. It writes one file per ack under `.okf/.acks/`, and a commit that
-changes an ack file counts as a commit that changes the summary
-([ADR 0048](0048-kmctl-summary-ack-writes-one-file-per-ack-so-branches-merge-without-a-conflict.md)).
-Every ack rewrote the same block, so two branches that both acked always
-conflicted there. The first ack with this change removes the block. `checked`
-stays an extension field this decision names, so an older bundle validates.
-The rest of this decision holds.
+`kmctl summary ack` no longer writes the `checked` block. It writes one new
+file per ack under `.okf/.acks/`, and that file clears the summary as an edit
+to the summary does ([ADR
+0048](0048-kmctl-summary-ack-writes-one-file-per-ack-so-branches-merge-without-a-conflict.md)).
+
+The reason: every ack rewrote the same lines, so two branches that both acked
+always conflicted. The first ack with this change deletes the block. `checked`
+stays a field this decision allows, so a bundle that still has the block
+validates. The rest of this decision holds.

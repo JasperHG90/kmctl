@@ -411,20 +411,29 @@ against:
   - decisions/0002-use-a-queue
 ```
 
-`at` is the UTC time to the second. `against` holds the ids
-`kmctl review due` listed, less any concept no longer in the bundle (a
-deleted one); `against: []` when every one was deleted. The file's name is
-the time and a digest of `HEAD` and those ids, so two branches that both ack
-write different files and merge without a conflict (ADR 0048).
+`at` is the UTC time to the second. `against` holds the ids that `kmctl review
+due` listed. A concept that is no longer in the bundle, such as a deleted one,
+is left out, and the list is `against: []` when every one was deleted.
 
-It also removes the ack files that were there, which the new one replaces,
-and a `checked` block in the summary's front matter, which kmctl wrote
-before ADR 0048. It changes no other line and no other file. A commit that
-changes an ack file counts as a commit that changes the summary, so the
-summary leaves the list; commit the ack file with the concepts. It is an
-agent's word that the summary holds, not a person's review, which is
-`kmctl verify` (ADR 0023, ADR 0027). When the summary is current it writes
-nothing and prints `nothing to ack`.
+Each ack file has its own name: the time, and a digest of `HEAD` and the ids.
+Two branches that both ack therefore write two different files, and git merges
+them without a conflict (ADR 0048).
+
+The command also deletes two things:
+
+- the ack files that were there, which the new one replaces;
+- a `checked` block in the summary's front matter, which kmctl wrote before
+  ADR 0048.
+
+It changes no other line and no other file. Commit the ack file with the
+concepts. A commit that changes an ack file counts like a commit that changes
+the summary, so the summary leaves the `kmctl review due` list.
+
+An ack is an agent's word that the summary holds. It is not a person's review,
+which is `kmctl verify` (ADR 0023, ADR 0027). When the summary is current, the
+command writes nothing and prints `nothing to ack`.
+
+
 
 | Option | Meaning | Default |
 |---|---|---|
