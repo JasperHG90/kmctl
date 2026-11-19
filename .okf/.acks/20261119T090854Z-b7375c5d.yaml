@@ -1,0 +1,7 @@
+# kmctl summary ack: .okf/summary.md was read against these concepts and still holds.
+at: 2026-11-19T09:08:54Z
+against:
+  - architecture/overview
+  - decisions/0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step
+  - decisions/0048-kmctl-summary-ack-writes-one-file-per-ack-so-branches-merge-without-a-conflict
+  - prototypes/bookkeeping-merge-conflicts

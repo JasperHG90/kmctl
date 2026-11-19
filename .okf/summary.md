@@ -6,10 +6,6 @@ generated:
   by: claude-opus/5.5
   at: 2026-10-18
 tags: [summary]
-checked:
-  at: 2026-11-16T17:14:06Z
-  against:
-    - architecture/overview
 ---
 
 # Summary: kmctl

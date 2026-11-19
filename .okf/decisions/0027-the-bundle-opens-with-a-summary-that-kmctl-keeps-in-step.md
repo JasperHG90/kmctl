@@ -144,3 +144,14 @@ merge, and the error drew the same answer the stale `checked.against` id
 did in the correction above: drift in a record is a warning. `--strict` is
 off by default, so a repository that wants the hard limit opts in. The rest
 of this decision holds.
+
+## Amendment, 2026-11-19
+
+`kmctl summary ack` no longer writes `checked` into the summary's front
+matter. It writes one file per ack under `.okf/.acks/`, and a commit that
+changes an ack file counts as a commit that changes the summary
+([ADR 0048](0048-kmctl-summary-ack-writes-one-file-per-ack-so-branches-merge-without-a-conflict.md)).
+Every ack rewrote the same block, so two branches that both acked always
+conflicted there. The first ack with this change removes the block. `checked`
+stays an extension field this decision names, so an older bundle validates.
+The rest of this decision holds.

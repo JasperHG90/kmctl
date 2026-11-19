@@ -1,29 +1,29 @@
-"""The bundle summary, ``.okf/summary.md``: when it is behind its concepts, and ``ack`` (ADR 0027).
+"""The bundle summary, ``.okf/summary.md``: when it is behind its concepts, and ``ack`` (ADR 0027, ADR 0048).
 
 The summary is the bundle's first page: what the knowledge says as a whole,
 citing its concepts. It is behind when a concept changed in a commit after
-the last commit that changed the summary, or is changed (or new and
-untracked) in the working tree while the summary is not. Commit order, not
-dates, decides, so a concept committed together with the summary is
-covered. The concepts are the manifesto, decisions, practices, proposals,
-prototype READMEs and architecture pages; indexes, ``log.md``, handoffs and
-the summary itself never count. Without git history (no repository, or a
-shallow clone) the rule cannot be checked, the way ``review_due`` skips its
-history reason.
+the last commit that changed the summary or an ack file, or is changed (or
+new and untracked) in the working tree while neither the summary nor an ack
+file is. Commit order, not dates, decides, so a concept committed together
+with the summary is covered. The concepts are the manifesto, decisions,
+practices, proposals, prototype READMEs and architecture pages; indexes,
+``log.md``, handoffs and the summary itself never count. Without git history
+(no repository, or a shallow clone) the rule cannot be checked, the way
+``review_due`` skips its history reason.
 
 ``ack`` is how an agent says the summary is still right after a change: it
-writes ``checked`` into the summary's front matter, which is an edit to the
-summary, so the same rule clears it. It claims no person's review; that is
-``kmctl verify`` (ADR 0023).
+writes one ack file under ``.okf/.acks/``, with a name no other ack has, so
+two branches that both ack never change the same bytes and merge without a
+conflict (ADR 0048). It claims no person's review; that is ``kmctl verify``
+(ADR 0023).
 """
 
+import hashlib
 import re
 import subprocess
 from dataclasses import dataclass
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from pathlib import Path
-
-import yaml
 
 from kmctl.concepts import _STAMP, ConceptError
 from kmctl.okf import BadFrontMatter, field, front_matter
@@ -32,6 +32,9 @@ from kmctl.verify import _block
 #: The summary's path from the repository root, and its concept id.
 SUMMARY = ".okf/summary.md"
 SUMMARY_ID = "summary"
+#: The folder of ack files, from the repository root. Its name starts with a dot,
+#: so the bundle checks, which read sections, leave it alone.
+ACKS = ".okf/.acks"
 #: The most words the summary's body may hold, outside its front matter.
 WORD_LIMIT = 500
 
@@ -44,23 +47,27 @@ _CONCEPT = re.compile(
 
 @dataclass(frozen=True)
 class Acked:
-    """What ``ack`` wrote: the summary's path, the time, and the concepts it was checked against.
+    """What ``ack`` wrote: the summary's path, the time, the concepts it was checked against, and the ack file.
 
     Attributes
     ----------
     path : str
         The summary's path from the repository root.
     at : str | None
-        The UTC time written as ``checked.at``, to the second, or None when
-        nothing was written because the summary was not behind.
+        The UTC time written as ``at``, to the second, or None when nothing
+        was written because the summary was not behind.
     against : list[str]
-        The concept ids written as ``checked.against``: the ones that had
-        changed since the summary and are still in the bundle.
+        The concept ids written as ``against``: the ones that had changed
+        since the summary and are still in the bundle.
+    file : str | None
+        The ack file's path from the repository root, or None when nothing
+        was written.
     """
 
     path: str
     at: str | None
     against: list[str]
+    file: str | None = None
 
 
 def _git(root: Path, *args: str) -> str | None:
@@ -130,9 +137,11 @@ def changed_concepts(root: Path) -> list[str] | None:
         root, "status", "--porcelain", "-z", "--untracked-files=all", "--", ".okf"
     )
     working = _status_paths(status or "")
-    if prefix + SUMMARY in working:
-        return []  # an uncommitted edit to the summary covers everything so far
-    base = (_git(root, "log", "-1", "--format=%H", "--", SUMMARY) or "").strip()
+    acks = prefix + ACKS + "/"
+    if prefix + SUMMARY in working or any(p.startswith(acks) for p in working):
+        # an uncommitted edit to the summary, or an ack, covers everything so far
+        return []
+    base = (_git(root, "log", "-1", "--format=%H", "--", SUMMARY, ACKS) or "").strip()
     if base:
         listed = _git(root, "diff", "--name-only", "-z", f"{base}..HEAD", "--", ".okf")
     else:
@@ -157,41 +166,39 @@ def body_words(text: str) -> int:
     return len(text.split())
 
 
-def _with_checked(head: list[str], at: str, against: list[str]) -> list[str]:
-    """``head`` (the front matter lines) with ``checked`` set to ``at`` and ``against``, replacing any old one."""
-    block = ["checked:", f"  at: {at}", "  against:" if against else "  against: []"]
-    block += [f"    - {cid}" for cid in against]
+def _without_checked(head: list[str]) -> list[str]:
+    """``head`` (the front matter lines) without a ``checked`` block, which kmctl wrote before ADR 0048."""
     for i, line in enumerate(head):
         if line.startswith("checked:"):
-            return [*head[:i], *block, *head[_block(head, i) :]]
-    return [*head, *block]
+            return [*head[:i], *head[_block(head, i) :]]
+    return head
 
 
 def ack(root: Path, now: datetime | None = None) -> Acked:
     """Record that the summary still holds after the concepts that changed since it.
 
-    It writes ``checked.at`` (the UTC time, to the second) and
-    ``checked.against`` (the ids
-    ``changed_concepts`` lists, less those no longer in the bundle, such as a
-    deleted concept) into the summary's front matter, replacing an older
-    ``checked``, and changes no other line and no other file. When the
-    summary is not behind, it writes nothing.
+    It writes one ack file under ``.okf/.acks/`` that holds ``at`` (the UTC
+    time, to the second) and ``against`` (the ids ``changed_concepts`` lists,
+    less those no longer in the bundle, such as a deleted concept). The
+    file's name is the time and a digest of ``HEAD`` and those ids, so two
+    branches write different files. It removes the ack files that were there,
+    which this one replaces, and a ``checked`` block in the summary's front
+    matter, which kmctl wrote before ADR 0048. It changes no other line and
+    no other file. When the summary is not behind, it writes nothing.
 
     Parameters
     ----------
     root : Path
         The repository root, holding .okf/summary.md.
     now : datetime | None
-        The time written, in UTC; now when omitted. When that would leave the
-        file as it is (a second ack in the same second, against the same
-        ids), it is a second later, so the summary always changes.
+        The time written, in UTC; now when omitted.
 
     Returns
     -------
     Acked
-        The summary's path, the time written (None when nothing was) and the
-        concept ids it was checked against, which may be none when every
-        changed concept was deleted.
+        The summary's path, the time written and the ack file's path (both
+        None when nothing was written) and the concept ids it was checked
+        against, which may be none when every changed concept was deleted.
 
     Raises
     ------
@@ -222,22 +229,25 @@ def ack(root: Path, now: datetime | None = None) -> Acked:
     if not changed:
         return Acked(path=SUMMARY, at=None, against=[])
     changed = [cid for cid in changed if in_bundle(root, cid)]
+    at = now.strftime(_STAMP)
+    head_commit = (_git(root, "rev-parse", "HEAD") or "").strip()
+    digest = hashlib.sha256("\n".join([head_commit, *changed]).encode()).hexdigest()
+    folder = root / ACKS
+    folder.mkdir(exist_ok=True)
+    for old in folder.glob("*.yaml"):
+        old.unlink()
+    file = f"{ACKS}/{now.strftime('%Y%m%dT%H%M%SZ')}-{digest[:8]}.yaml"
+    lines = [
+        "# kmctl summary ack: .okf/summary.md was read against these concepts and still holds.",
+        f"at: {at}",
+        "against:" if changed else "against: []",
+        *[f"  - {cid}" for cid in changed],
+    ]
+    (root / file).write_text("\n".join(lines) + "\n", encoding="utf-8")
     text = path.read_text(encoding="utf-8")
     end = text.find("\n---", 4)
-    at = now.strftime(_STAMP)
-    head = _with_checked(text[4:end].split("\n"), at, changed)
-    if "---\n" + "\n".join(head) + text[end:] == text:
-        # An ack in the same second as the last one, against the same ids:
-        # step a second on, so the summary always changes and the rule clears it.
-        at = (now + timedelta(seconds=1)).strftime(_STAMP)
-        head = _with_checked(text[4:end].split("\n"), at, changed)
-    try:
-        yaml.safe_load("\n".join(head))
-    except yaml.YAMLError as error:
-        raise ConceptError(
-            f"{SUMMARY}'s front matter would not parse with checked added; "
-            "rewrite its checked field as a block mapping"
-        ) from error
-    new = "---\n" + "\n".join(head) + text[end:]
-    path.write_text(new, encoding="utf-8")
-    return Acked(path=SUMMARY, at=at, against=changed)
+    head = text[4:end].split("\n")
+    if _without_checked(head) != head:
+        new = "---\n" + "\n".join(_without_checked(head)) + text[end:]
+        path.write_text(new, encoding="utf-8")
+    return Acked(path=SUMMARY, at=at, against=changed, file=file)
