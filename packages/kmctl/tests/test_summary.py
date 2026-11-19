@@ -421,6 +421,50 @@ def test_ack_on_two_branches_merges_without_a_conflict(tmp_path: Path) -> None:
     assert _summary_reasons(root) is None
 
 
+def test_ack_on_one_branch_does_not_cover_an_edit_on_another(tmp_path: Path) -> None:
+    """Branch a acks, then edits a decision; branch b acks. b's ack never saw that edit."""
+    root = _init(tmp_path)
+    (first,) = (root / ".okf/decisions").glob("0001-*.md")
+    rel = first.relative_to(root).as_posix()
+    _git(root, "switch", "-q", "-c", "a", "main")
+    _append(root, ".okf/manifesto.md", "An edit.\n")
+    _commit(root)
+    assert ack(root).file
+    _commit(root, "ack")
+    _append(root, rel, "An edit after the ack.\n")
+    _commit(root)
+    _git(root, "switch", "-q", "-c", "b", "main")
+    _append(root, ".okf/manifesto.md", "Another edit.\n")
+    _commit(root)
+    assert ack(root).file
+    _commit(root, "ack")
+    _git(root, "switch", "-q", "main")
+
+    _git(root, "merge", "-q", "--no-ff", "--no-edit", "a")
+    _git(root, "merge", "-q", "--no-ff", "--no-edit", "-X", "ours", "b")
+
+    assert _summary_reasons(root) == [f"concepts changed: decisions/{first.stem}"]
+
+
+def test_ack_after_merging_the_edit_covers_it(tmp_path: Path) -> None:
+    """Branch b merges a, with the edit, before it acks, so b's ack saw the edit."""
+    root = _init(tmp_path)
+    (first,) = (root / ".okf/decisions").glob("0001-*.md")
+    _git(root, "switch", "-q", "-c", "a", "main")
+    _append(root, first.relative_to(root).as_posix(), "An edit.\n")
+    _commit(root)
+    _git(root, "switch", "-q", "-c", "b", "main")
+    _git(root, "merge", "-q", "--no-ff", "--no-edit", "a")
+    assert ack(root).file
+    _commit(root, "ack")
+    _git(root, "switch", "-q", "main")
+
+    _git(root, "merge", "-q", "--no-ff", "--no-edit", "a")
+    _git(root, "merge", "-q", "--no-ff", "--no-edit", "b")
+
+    assert _summary_reasons(root) is None
+
+
 def test_ack_removes_the_ack_files_that_were_there(tmp_path: Path) -> None:
     root = _init(tmp_path)
     _new(root, "decision", "Use a queue")

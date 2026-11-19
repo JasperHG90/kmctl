@@ -155,4 +155,10 @@ to the summary does ([ADR
 The reason: every ack rewrote the same lines, so two branches that both acked
 always conflicted. The first ack with this change deletes the block. `checked`
 stays a field this decision allows, so a bundle that still has the block
-validates. The rest of this decision holds.
+validates.
+
+The freshness rule now reads history, not commit order. A concept change
+counts when no commit that edited the summary or added an ack file has that
+change in its history. Merge commits do not count as an edit to the summary.
+After two branches merge, an edit that one branch made after its own ack is
+still reported. The rest of this decision holds.

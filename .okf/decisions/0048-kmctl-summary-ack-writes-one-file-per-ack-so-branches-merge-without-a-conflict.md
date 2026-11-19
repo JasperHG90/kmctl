@@ -63,11 +63,17 @@ on the pull request page, because GitHub does not read a repository's
   `DIGEST` is the first eight characters of a SHA-256 hash of the `HEAD`
   commit and the ids. Two branches have a different `HEAD`, so they write two
   different files, and git merges two new files without a conflict.
-- **An ack file clears the summary, as an edit to the summary does.** The
-  summary is behind when a concept changed in a commit after the last commit
-  that changed the summary or an ack file. An ack file that is not committed
-  yet counts like an edit to the summary that is not committed yet. Nothing
-  else in the rule of ADR 0027 changes.
+- **An ack file clears the summary, as an edit to the summary does.** A
+  commit that edits the summary or adds an ack file is a reading of the
+  summary. A merge commit is not one. The summary is behind when a concept
+  changed in a commit that no reading has in its history. An ack file that is
+  not committed yet counts like an edit to the summary that is not committed
+  yet.
+- **History decides, not the newest commit.** ADR 0027 compared each concept
+  change with the last commit that changed the summary. After a merge, that
+  last commit can be on a branch that never saw the concept change. Asking
+  which readings have the change in their history gives the right answer on
+  one branch and after any merge.
 - **Each ack deletes the ack files it finds.** On a branch without merges the
   folder then holds one file. After a merge it holds one file per merged
   branch, until the next ack.
@@ -96,6 +102,9 @@ Rejected:
   the same for the same commit and the same ids, which a test can rely on.
 - **Keeping every ack file.** Nothing reads an old ack. A busy bundle is acked
   several times a day, so the folder would only grow.
+- **Taking the newest ack, and skipping merge commits.** That still compares
+  dates. Branch B can ack after branch A edits a decision, without having A's
+  edit. B's ack is then newer than A's edit, and kmctl would miss the edit.
 - **Asking for an ack less often.** The summary would be listed as behind most
   of the time, and people stop reading a warning that is always there.
 
@@ -104,12 +113,14 @@ Rejected:
 - **Two branches that both ack merge without a conflict.** After the merge the
   folder holds both ack files, and kmctl reports the summary as current. Each
   branch checked the summary against its own changes.
-- **One case goes unnoticed.** Branch A acks and then edits a decision without
-  a second ack. Branch B acks too. After both are merged, kmctl reports the
-  summary as current, although nobody read it against A's last edit. The merge
-  commit joins the two ack files, so kmctl takes it as the newest ack, and A's
-  edit is older than the merge commit. kmctl missed the same case before this
-  decision, whenever a person resolved the conflict in `checked` by hand.
+- **An edit after an ack is still reported after a merge.** Branch A acks and
+  then edits a decision without a second ack. Branch B acks too. After both
+  are merged, kmctl reports the summary as behind, with that decision as the
+  reason. B's ack never saw A's edit, and A's ack came before it. kmctl
+  0.14.0 and older missed this case.
+- **A merge commit never clears the summary.** A person who resolves a
+  conflict in the summary during a merge has to commit the result again, or
+  run `kmctl summary ack`, to clear it.
 - **The upgrade causes one last conflict.** A branch that an older kmctl acked
   rewrites the `checked` block, and the first ack by the new kmctl deletes it.
   Git reports a conflict in the summary when the second of the two is merged,

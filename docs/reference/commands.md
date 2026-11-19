@@ -337,9 +337,11 @@ repository root. The `README.md` indexes are left out.
 The summary, `.okf/summary.md`, is never listed as `unverified` or for
 `stale_after`. It is due, with the reason `concepts changed: ID, ...`, when
 a concept (the manifesto, a decision, practice, proposal, prototype
-`README.md` or architecture page) changed in a commit after the summary's
-last commit or the last commit of an ack file, or is changed or new in the
-working tree while neither the summary nor an ack file is. Indexes, `log.md`,
+`README.md` or architecture page) changed in a commit that no edit of the
+summary and no ack file has in its history, or is changed or new in the
+working tree while neither the summary nor an ack file is. A merge commit
+does not count as an edit of the summary, so after a merge, an edit one
+branch made after its own ack is still listed. Indexes, `log.md`,
 handoffs and the summary itself never count. Editing the summary, or
 `kmctl summary ack`, clears it. Without full git history (no
 repository, or a shallow clone) it is not checked.

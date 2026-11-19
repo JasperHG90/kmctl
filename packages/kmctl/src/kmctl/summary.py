@@ -1,11 +1,14 @@
 """The bundle summary, ``.okf/summary.md``: when it is behind its concepts, and ``ack`` (ADR 0027, ADR 0048).
 
 The summary is the bundle's first page: what the knowledge says as a whole,
-citing its concepts. It is behind when a concept changed in a commit after
-the last commit that changed the summary or an ack file, or is changed (or
-new and untracked) in the working tree while neither the summary nor an ack
-file is. Commit order, not dates, decides, so a concept committed together
-with the summary is covered. The concepts are the manifesto, decisions,
+citing its concepts. Call a commit that edits the summary or writes an ack
+file, and is not a merge, a reading of the summary. The summary is behind when
+a concept changed in a commit that no reading has in its history, or is
+changed (or new and untracked) in the working tree while neither the summary
+nor an ack file is. History, not dates, decides: a concept committed together
+with the summary is covered, and so is one committed before it. After two
+branches merge, a concept that one branch changed after its own ack is still
+reported, because the other branch's ack never saw that change. The concepts are the manifesto, decisions,
 practices, proposals, prototype READMEs and architecture pages; indexes,
 ``log.md``, handoffs and the summary itself never count. Without git history
 (no repository, or a shallow clone) the rule cannot be checked, the way
@@ -70,10 +73,14 @@ class Acked:
     file: str | None = None
 
 
-def _git(root: Path, *args: str) -> str | None:
+def _git(root: Path, *args: str, stdin: str | None = None) -> str | None:
     """The output of ``git -C root ARGS``, or None when it fails."""
     proc = subprocess.run(
-        ["git", "-C", str(root), *args], capture_output=True, text=True, check=False
+        ["git", "-C", str(root), *args],
+        input=stdin,
+        capture_output=True,
+        text=True,
+        check=False,
     )
     return proc.stdout if proc.returncode == 0 else None
 
@@ -141,12 +148,30 @@ def changed_concepts(root: Path) -> list[str] | None:
     if prefix + SUMMARY in working or any(p.startswith(acks) for p in working):
         # an uncommitted edit to the summary, or an ack, covers everything so far
         return []
-    base = (_git(root, "log", "-1", "--format=%H", "--", SUMMARY, ACKS) or "").strip()
-    if base:
-        listed = _git(root, "diff", "--name-only", "-z", f"{base}..HEAD", "--", ".okf")
+    # Every commit, not a merge, that edited the summary or wrote an ack file.
+    # A merge commit is left out: it changes these files whenever two branches
+    # both acked, without anyone reading the summary.
+    covers = (
+        _git(root, "log", "--no-merges", "--format=%H", "--", SUMMARY, ACKS) or ""
+    ).split()
+    if covers:
+        # Concepts changed in a commit that none of those commits has in its
+        # history. Revisions go on stdin, so a long history fits.
+        listed = _git(
+            root,
+            "log",
+            "--format=",
+            "--name-only",
+            "-z",
+            "--stdin",
+            "--",
+            ".okf",
+            stdin="HEAD\n" + "".join(f"^{c}\n" for c in covers),
+        )
     else:
         listed = _git(root, "ls-files", "-z", "--full-name", "--", ".okf")
-    changed = set(filter(None, (listed or "").split("\0"))) | working
+    names = {name.strip() for name in (listed or "").split("\0")}
+    changed = set(filter(None, names)) | working
     rels = {p.removeprefix(prefix) for p in changed if p.startswith(prefix)}
     return sorted({concept_id(p) for p in rels if is_concept(p)})
 
