@@ -188,7 +188,11 @@ In `docs/`:
 
 In `.okf/decisions/`, a record `NNNN-slug.md` whose `title` or `#` heading
 starts with `ADR` and a number must carry the file's number `NNNN`; another
-number is an error (check `decision`). The entry in `decisions/index.md` that
+number is an error (check `decision`). Two records whose file names start
+with the same number are an error too, reported for each of them with the
+next free number: two branches that both ran `kmctl new decision` take the
+same number, and git merges them without a conflict. Give one of the two
+the free number with `kmctl mv`. The entry in `decisions/index.md` that
 links a record must read the record's `title`, as `kmctl new decision` writes
 it, or just `ADR NNNN`; other text is an error (check `index`), as an entry
 that links a missing file is. When the title starts with the wrong number,
