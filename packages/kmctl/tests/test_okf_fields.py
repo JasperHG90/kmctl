@@ -78,8 +78,8 @@ def test_written_keys_are_allowed(tmp_path: Path) -> None:
     assert written <= set(ALLOWED_FIELDS), written - set(ALLOWED_FIELDS)
 
 
-def test_checked_keys_ack_writes_are_allowed(tmp_path: Path) -> None:
-    """kmctl summary ack writes checked, checked.at and checked.against, all allowed (ADR 0027)."""
+def test_checked_keys_an_older_ack_wrote_are_allowed(tmp_path: Path) -> None:
+    """Before ADR 0048 kmctl summary ack wrote checked, checked.at and checked.against, all still allowed (ADR 0027)."""
     env = os.environ | {
         "GIT_AUTHOR_NAME": "t",
         "GIT_AUTHOR_EMAIL": "t@example.com",
@@ -98,9 +98,17 @@ def test_checked_keys_ack_writes_are_allowed(tmp_path: Path) -> None:
     git("add", "-A")
     git("commit", "-q", "-m", "init")
     _invoke("new", "decision", "Use a queue", "--description", "One.", "--path", root)
-    _invoke("summary", "ack", "--path", root)
+    path = tmp_path / ".okf" / "summary.md"
+    block = (
+        "checked:\n  at: 2026-10-19T10:00:00Z\n  against:\n"
+        "    - decisions/0002-use-a-queue\n"
+    )
+    path.write_text(
+        path.read_text(encoding="utf-8").replace("\n---\n", f"\n{block}---\n", 1),
+        encoding="utf-8",
+    )
 
-    summary = _paths(front_matter(tmp_path / ".okf" / "summary.md"))
+    summary = _paths(front_matter(path))
     written = _written_keys(tmp_path)
 
     assert {"checked", "checked.at", "checked.against"} <= summary

@@ -824,16 +824,19 @@ app.add_typer(summary_app, name="summary")
         "  kmctl summary ack --path ../other-repo --json\n\n"
         "kmctl review due lists the summary, with reason concepts changed: ID, "
         "..., when a concept (the manifesto, a decision, practice, proposal, "
-        "prototype README or architecture page) changed in a commit after the "
-        "summary's last commit, or is changed in the working tree while the "
-        "summary is not. Editing the summary clears that. When you have read "
+        "prototype README or architecture page) changed in a commit that no "
+        "edit of the summary and no ack file has in its history, or is changed "
+        "in the working tree while the summary is not. Editing the summary "
+        "clears that. When you have read "
         "the changed concepts and the summary still holds, run this instead: it "
-        "writes checked (at: the UTC time to the second, against: those ids, less "
-        "any deleted since) into the "
-        "summary's front matter, changes no other line and no other file, and "
-        "the summary leaves the list. Commit it with the concepts. It is an "
-        "agent's word, not a person's review, which is kmctl verify (ADR 0023, "
-        "ADR 0027). When the summary is current it writes nothing.\n\n"
+        "writes one ack file under .okf/.acks/ (at: the UTC time to the second, "
+        "against: those ids, less any deleted since), removes the ack files "
+        "that were there, and the summary leaves the list. Commit it with the "
+        "concepts. Each ack file has its own name, so two branches that both "
+        "ack merge without a conflict (ADR 0048). It also removes a checked "
+        "block from the summary's front matter, which kmctl wrote before. It is "
+        "an agent's word, not a person's review, which is kmctl verify (ADR "
+        "0023, ADR 0027). When the summary is current it writes nothing.\n\n"
         "Exit 1, with the reason on stderr, when there is no .okf/summary.md, "
         "its front matter is unreadable or lacks type: summary, or there is no "
         "git history (not a repository, or a shallow clone)."
@@ -846,8 +849,8 @@ def summary_ack(
         typer.Option(
             "--json",
             help=(
-                "Print one JSON object (path, at, against), for scripts; at is "
-                "null when nothing was written."
+                "Print one JSON object (path, at, against, file), for scripts; "
+                "at and file are null when nothing was written."
             ),
         ),
     ] = False,

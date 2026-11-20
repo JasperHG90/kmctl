@@ -199,9 +199,9 @@ In `.okf/`, the body of `summary.md` (outside its front matter, counted as
 words between spaces) holds at most 500 words; over that is a `warning`
 naming the count and the limit (check `summary`). A summary behind the
 concepts that changed after it is a `warning` too (see `kmctl summary ack`).
-So is each id in the summary's `checked.against` that is not a concept in the bundle, for example after a concept is renamed or
-deleted: remove it from the list, or let the next `kmctl summary ack`
-rewrite it.
+So is each id in a `checked.against` list in the summary's front matter
+that is not a concept in the bundle. kmctl wrote that list before ADR 0048;
+the next `kmctl summary ack` removes it.
 
 In both, every markdown link must reach a file or folder that exists (check
 `link`). A relative link resolves from the page's folder. A `/` link
@@ -337,10 +337,13 @@ repository root. The `README.md` indexes are left out.
 The summary, `.okf/summary.md`, is never listed as `unverified` or for
 `stale_after`. It is due, with the reason `concepts changed: ID, ...`, when
 a concept (the manifesto, a decision, practice, proposal, prototype
-`README.md` or architecture page) changed in a commit after the summary's
-last commit, or is changed or new in the working tree while the summary is
-not. Indexes, `log.md`, handoffs and the summary itself never count. Editing
-the summary, or `kmctl summary ack`, clears it. Without full git history (no
+`README.md` or architecture page) changed in a commit that no edit of the
+summary and no ack file has in its history, or is changed or new in the
+working tree while neither the summary nor an ack file is. A merge commit
+does not count as an edit of the summary, so after a merge, an edit one
+branch made after its own ack is still listed. Indexes, `log.md`,
+handoffs and the summary itself never count. Editing the summary, or
+`kmctl summary ack`, clears it. Without full git history (no
 repository, or a shallow clone) it is not checked.
 
 | Option | Meaning | Default |
@@ -400,31 +403,44 @@ form kmctl cannot extend (the refusal says to rewrite it as a block list).
 
 Record that `.okf/summary.md` still holds after the concepts that changed
 since it, so `kmctl review due` drops it. Run it when you have read the
-changed concepts and the summary needs no edit. It writes
+changed concepts and the summary needs no edit. It writes one ack file,
+`.okf/.acks/TIME-DIGEST.yaml`:
 
 ```yaml
-checked:
-  at: 2026-10-18T20:15:04Z
-  against:
-    - decisions/0002-use-a-queue
+# kmctl summary ack: .okf/summary.md was read against these concepts and still holds.
+at: 2026-10-18T20:15:04Z
+against:
+  - decisions/0002-use-a-queue
 ```
 
-into the summary's front matter, with `at` the UTC time to the second
-(a second later when the last ack wrote the same time and ids, so the file
-always changes) and `against`
-the ids `kmctl review due` listed, less any concept no longer in the bundle
-(a deleted one), replacing an older `checked`; `against: []` when every one
-was deleted. It changes
-no other line and no other file. That is an edit to the summary, so the
-summary leaves the list; commit it with the concepts. It is an agent's word
-that the summary holds, not a person's review, which is `kmctl verify`
-(ADR 0023, ADR 0027). When the summary is current it writes nothing and
-prints `nothing to ack`.
+`at` is the UTC time to the second. `against` holds the ids that `kmctl review
+due` listed. A concept that is no longer in the bundle, such as a deleted one,
+is left out, and the list is `against: []` when every one was deleted.
+
+Each ack file has its own name: the time, and a digest of `HEAD` and the ids.
+Two branches that both ack therefore write two different files, and git merges
+them without a conflict (ADR 0048).
+
+The command also deletes two things:
+
+- the ack files that were there, which the new one replaces;
+- a `checked` block in the summary's front matter, which kmctl wrote before
+  ADR 0048.
+
+It changes no other line and no other file. Commit the ack file with the
+concepts. A commit that changes an ack file counts like a commit that changes
+the summary, so the summary leaves the `kmctl review due` list.
+
+An ack is an agent's word that the summary holds. It is not a person's review,
+which is `kmctl verify` (ADR 0023, ADR 0027). When the summary is current, the
+command writes nothing and prints `nothing to ack`.
+
+
 
 | Option | Meaning | Default |
 |---|---|---|
 | `--path DIR` | The repository to write in: an existing folder. | `.` |
-| `--json` | Print one JSON object (`path`, `at`, `against`); `at` is null when nothing was written. | off |
+| `--json` | Print one JSON object (`path`, `at`, `against`, `file`); `at` and `file` are null when nothing was written. | off |
 
 Output: `checked .okf/summary.md at TIME against ID, ...` (`against none`
 when the list is empty), then `Next: kmctl review due`.
@@ -554,8 +570,10 @@ Rename a concept in `.okf/` and rewrite the links to it in `.okf/` and
    `ADR NNNN` in its `title` and `#` heading, and in the text of each link
    to it: `[ADR 0007](0007-use-a-queue.md)` becomes
    `[ADR 0006](0006-use-a-queue.md)`.
-4. Writes the new id for the old one in the `checked.against` list of
-   `.okf/summary.md`.
+4. Writes the new id for the old one in a `checked.against` list in the
+   front matter of `.okf/summary.md`, which kmctl wrote before ADR 0048. It
+   does not rewrite ack files: no rule reads their ids, and the next
+   `kmctl summary ack` replaces them.
 5. Appends a line to `.okf/log.md` naming both ids and each concept whose
    links it rewrote. It never rewrites an earlier line, so the old id stays
    in the log's history.
