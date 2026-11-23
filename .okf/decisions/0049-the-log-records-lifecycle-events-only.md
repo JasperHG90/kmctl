@@ -1,7 +1,7 @@
 ---
 type: decision
 title: "ADR 0049: The log records lifecycle events only"
-description: "kmctl and its rules write a line to .okf/log.md only when a concept is created, renamed, superseded, deprecated, removed, accepted or verified, not when it is edited."
+description: "kmctl and its rules write a line to .okf/log.md only when a concept is created, renamed, superseded, deprecated, removed, regenerated, accepted or verified, not when it is edited."
 tags: [decision]
 generated:
   by: process:kmctl/0.15.0
@@ -48,8 +48,8 @@ verification. Routine edits are left to git history and the concept's own
 The log records lifecycle events only, as OKF says.
 
 - **A lifecycle event gets a line.** A concept created, renamed, superseded,
-  deprecated or removed, a decision accepted (`draft` to `stable`), or a
-  concept verified. The line names each concept by its id, in backticks, as
+  deprecated, removed, or regenerated after its source changed, a decision
+  accepted (`draft` to `stable`), or a concept verified. The line names each concept by its id, in backticks, as
   before.
 - **An edit gets no line.** The rule constraint is now
   `the-log-records-lifecycle-events-only`, in the rules kmctl installs for

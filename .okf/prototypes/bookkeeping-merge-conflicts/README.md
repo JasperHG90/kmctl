@@ -117,7 +117,7 @@ Log lines by merged pull request, from `scripts/log_lines.py`, run on
 | | Pull requests | Lines |
 |---|---|---|
 | Wrote to `.okf/log.md` | 52 | 397 |
-| ... a lifecycle event: a concept created, renamed, superseded, deprecated, removed, accepted or verified | 34 | 216 |
+| ... a lifecycle event: a concept created, renamed, superseded, deprecated, removed, regenerated, accepted or verified | 34 | 216 |
 
 So 18 of the 52 pull requests wrote only lines about edits.
 

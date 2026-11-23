@@ -308,3 +308,4 @@
 ## 2026-11-23
 
 - Added `decisions/0049-the-log-records-lifecycle-events-only` with `kmctl new decision`.
+- Accepted `decisions/0049-the-log-records-lifecycle-events-only` (human:roel).

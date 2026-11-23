@@ -104,7 +104,7 @@ OLD_RULES = {
     ),
     "okf-bundle": (
         [".okf/**"],
-        "38318288bbbc04db2efc369d19611c50c90d05a895bce6cc0234963830380cd1",
+        "4ba28f2ff443ea8cf06384ce6ae492ef9f1c516f8acb0fe0677b7e77a8d4011a",
     ),
 }
 

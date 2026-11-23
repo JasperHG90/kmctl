@@ -84,8 +84,9 @@ and 18 of those wrote only lines about edits. Git history already records an
 edit, and a page's `verified` front matter records a check.
 
 A change appends a line to `log.md` only for a lifecycle event: a concept
-created, renamed, superseded, deprecated or removed, a decision accepted
-(`draft` to `stable`), or a concept verified. The line names each concept by
+created, renamed, superseded, deprecated, removed, or regenerated after its
+source changed, a decision accepted (`draft` to `stable`), or a concept
+verified. The line names each concept by
 its id, in backticks. An edit to a concept gets no line. A change never
 removes or rewrites an earlier line. kmctl's own verbs write their line; a
 hand change that is a lifecycle event writes its own.

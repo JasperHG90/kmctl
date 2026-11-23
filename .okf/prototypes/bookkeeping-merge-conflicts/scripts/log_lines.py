@@ -3,7 +3,7 @@
 
 For each merge on the first-parent history of main, the script reads the lines the merge added
 to .okf/log.md and sorts each line by its first word. A line is a lifecycle event when it
-records a concept created, renamed, superseded, deprecated, removed, accepted or verified
+records a concept created, renamed, superseded, deprecated, removed, regenerated, accepted or verified
 (ADR 0049); any other line is about an edit.
 
 Run from the root of the repository to measure:
@@ -20,7 +20,7 @@ import subprocess
 from collections import Counter
 
 LIFECYCLE = re.compile(
-    r"^- (Added|Wrote|Created|Verified|Moved|Renamed|Superseded|Deprecated|Retired|Removed|Deleted)\b"
+    r"^- (Added|Wrote|Created|Verified|Moved|Renamed|Superseded|Deprecated|Retired|Removed|Deleted|Regenerated)\b"
 )
 ACCEPTED = re.compile(r"\bto (status )?`?stable`?", re.IGNORECASE)
 
