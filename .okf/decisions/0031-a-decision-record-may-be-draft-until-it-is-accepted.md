@@ -45,3 +45,11 @@ accepts it later would have to move the file between sections.
   `tests/test_apm_package.py` moved, with its comment naming this record.
 - None of this repository's 30 earlier decisions is `draft`, so no record
   changes.
+
+## Correction, 2026-11-23
+
+`kmctl check` no longer always passes a draft: with `--no-drafts` it fails
+one, and kmctl's CI action sets that flag on a pull request that is ready for
+review. `kmctl decision accept` is how a draft becomes `stable`; it writes the
+log line this record asks for. See
+[ADR 0050](0050-drafts-are-settled-before-review-and-only-a-person-accepts-one.md).

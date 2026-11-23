@@ -324,6 +324,10 @@ the block. Then ask in plain words:
   ones that made a decision no record covers. It writes nothing; you decide
   which become records
   ([Find unrecorded decisions](../../docs/how-to/find-unrecorded-decisions.md)).
+- "Which draft decisions are on this branch?" before you mark a pull request
+  ready. The agent explains each draft, and on your yes runs
+  `kmctl decision accept`; CI fails a ready pull request while a draft is left
+  ([Accept or drop draft decisions before review](../../docs/how-to/accept-or-drop-draft-decisions-before-review.md)).
 - `/handoff` at the end of a session saves where the work stands; `/continue`
   at the start of the next picks it up.
 
@@ -406,6 +410,8 @@ The [docs index](../../docs/README.md) links each folder's index. The pages:
 - How-to: [Install the plugin and the CI action](../../docs/how-to/install-the-plugin-and-the-ci-action.md)
 - How-to: [Install kmctl with APM](../../docs/how-to/install-kmctl-with-apm.md)
 - How-to: [Find unrecorded decisions](../../docs/how-to/find-unrecorded-decisions.md)
+- How-to: [Accept or drop draft decisions before review](../../docs/how-to/accept-or-drop-draft-decisions-before-review.md)
 - Reference: [Commands](../../docs/reference/commands.md)
 - Explanation: [Why one hook and report-only audits](../../docs/explanation/why-one-hook-and-report-only-audits.md)
 - Explanation: [Where kmctl fits in knowledge management](../../docs/explanation/where-kmctl-fits-in-knowledge-management.md)
+- Explanation: [Who decides a decision record](../../docs/explanation/who-decides-a-decision-record.md)

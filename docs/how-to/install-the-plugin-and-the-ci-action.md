@@ -188,6 +188,7 @@ name: knowledge
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   push:
     branches: [main]
 
@@ -215,11 +216,21 @@ installed kmctl from in step 1.
 `kmctl check` fails or `kmctl review due` crashes, never because a concept is
 due. It needs no API key.
 
+On a pull request that is ready for review, it runs `kmctl check --no-drafts`,
+so a decision record that is still a draft fails the job (ADR 0050). A draft
+pull request and a push to `main` pass with drafts. The `ready_for_review` type
+in `on.pull_request` makes GitHub run the job again when you mark a pull
+request ready; without it, the drafts are only checked on the next push. Set
+the action's `drafts` input to `fail` to fail on drafts everywhere, or to
+`pass` to never check them.
+
 Run locally on the repository from the tutorial, with two decisions, the script behind this step
 writes this summary and exits 0:
 
 ````
 ## kmctl check
+
+Draft decisions pass here (drafts: fail-when-ready).
 
 ```
 all checks passed

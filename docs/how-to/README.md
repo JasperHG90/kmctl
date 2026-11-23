@@ -1,6 +1,7 @@
 <!-- kmctl writes this index from the pages in this folder: run kmctl check --fix to update it, do not edit it by hand. -->
 # How-to guides
 
+- [Accept or drop draft decisions before review](accept-or-drop-draft-decisions-before-review.md): Have your agent list the draft decision records on your branch, say yes or no to each, and mark the pull request ready once none is left.
 - [Find unrecorded decisions](find-unrecorded-decisions.md): Ask your agent which changes in your git history made a decision with no record, read its report, and record the ones you choose.
 - [Install kmctl with APM](install-kmctl-with-apm.md): Add kmctl's APM package to apm.yml, what APM leaves to kmctl plugin patch, and moving off an older entry.
 - [Install the plugin and the CI action](install-the-plugin-and-the-ci-action.md): Add kmctl's skills, rules and session hook for Claude Code or Antigravity with APM and kmctl plugin patch, and the GitHub Action, with the opt-in audit.

@@ -9,6 +9,7 @@ from typing import Annotated, Literal
 
 import typer
 
+from kmctl.accept import accept as accept_decision
 from kmctl.briefing import (
     as_antigravity,
     as_dict,
@@ -188,6 +189,7 @@ app.command(
         "  kmctl check --fix\n\n"
         "  kmctl check --path ../other-repo --json\n\n"
         "  kmctl check --strict\n\n"
+        "  kmctl check --no-drafts\n\n"
         "Exit 0 when nothing fails, 1 when a check fails. A warning (such as "
         "docs/README.md not linking a docs/ folder, or a summary over 500 words) "
         "is printed but does not fail, unless --strict is given. "
@@ -236,13 +238,24 @@ def check(
             ),
         ),
     ] = False,
+    no_drafts: Annotated[
+        bool,
+        typer.Option(
+            "--no-drafts",
+            help=(
+                "Also fail on, and list, each decision record whose status is draft. "
+                "kmctl's CI action sets it on pull requests that are ready for "
+                "review (ADR 0050). Default: off, so drafts pass."
+            ),
+        ),
+    ] = False,
 ) -> None:
     """Check indexes agree with their folders, decision numbers, docs front matter, prototype READMEs and links."""
     if fix:
         created, updated = fix_folder_indexes(path)
         for rel in created + updated:
             typer.echo(f"fixed {rel}", err=as_json)
-    findings = run_checks(path)
+    findings = run_checks(path, no_drafts=no_drafts)
     errors = [f for f in findings if f.level == "error"]
     warnings = [f for f in findings if f.level == "warning"]
     if as_json:
@@ -876,13 +889,75 @@ def summary_ack(
 
 decision_app = typer.Typer(
     help=(
-        "Work with decision records in .okf/decisions/. Verbs: supersede, "
-        "candidates. supersede needs both records from kmctl new decision; "
+        "Work with decision records in .okf/decisions/. Verbs: accept, "
+        "supersede, candidates. accept needs a draft record from kmctl new "
+        "decision --draft; supersede needs both records from kmctl new decision; "
         "candidates reads git history and runs with or without records."
     ),
     no_args_is_help=True,
 )
 app.add_typer(decision_app, name="decision")
+
+
+@decision_app.command(
+    "accept",
+    epilog=(
+        "Examples:\n\n"
+        "  kmctl decision accept 12\n\n"
+        "  kmctl decision accept 0012 --by human:jasper --json\n\n"
+        "It sets the record's status from draft to stable, changes no other "
+        "line of the record, and adds a line to .okf/log.md that names the "
+        "person. kmctl check --no-drafts then stops listing it.\n\n"
+        "Only a person accepts a decision (ADR 0050). An agent runs this only "
+        "when the person named in --by has said yes to the record; CI never "
+        "does. To drop a draft instead, delete its file and its line in "
+        ".okf/decisions/index.md."
+    ),
+)
+def decision_accept(
+    number: Annotated[
+        str,
+        typer.Argument(
+            metavar="12",
+            help=(
+                "The number of the draft decision to accept, as in its file name "
+                "(0012-...) or without the zeros. kmctl check --no-drafts lists "
+                "the drafts."
+            ),
+        ),
+    ],
+    by: Annotated[
+        str | None,
+        typer.Option(
+            "--by",
+            metavar="human:jasper",
+            help=(
+                "The person who accepts it, as human:<id>: a name or email address. "
+                "Written to the log line. Default: human: and git's user.email; "
+                "anything not starting human: is refused."
+            ),
+        ),
+    ] = None,
+    path: Annotated[Path, _PATH_OPTION] = Path("."),
+    as_json: Annotated[
+        bool,
+        typer.Option(
+            "--json",
+            help="Print one JSON object (id, path, by), for scripts.",
+        ),
+    ] = False,
+) -> None:
+    """Accept a draft decision record: its status becomes stable."""
+    try:
+        result = accept_decision(path, number, by)
+    except ConceptError as error:
+        typer.echo(f"kmctl decision accept: refused: {error}", err=True)
+        raise typer.Exit(1) from error
+    if as_json:
+        typer.echo(json.dumps(asdict(result)))
+        return
+    typer.echo(f"accepted {result.id} by {result.by} ({result.path})")
+    typer.echo(next_step("kmctl check --no-drafts"))
 
 
 @decision_app.command(

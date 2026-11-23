@@ -37,7 +37,8 @@ package in this repository. Its commands are in
 | `kmctl new prototype` | Create a prototype in `.okf/`, the same way. |
 | `kmctl new handoff` | Create a handoff in `.okf/`, the same way. |
 | `kmctl new doc` | Create a `docs/` page in its Diataxis folder with a skeleton and its index entry. |
-| `kmctl decision` | Work with decision records in `.okf/decisions/`. Verbs: `supersede`, `candidates`. |
+| `kmctl decision` | Work with decision records in `.okf/decisions/`. Verbs: `accept`, `supersede`, `candidates`. |
+| `kmctl decision accept` | Accept a draft decision record: its status becomes stable, and the log names who accepted it. |
 | `kmctl decision supersede` | Mark one decision superseded by another and link the two records both ways. |
 | `kmctl decision candidates` | List the changes since the newest decision record that may hold an unrecorded decision. |
 | `kmctl mv` | Rename a concept in `.okf/` and rewrite the links to it in `.okf/` and `docs/`. |
@@ -207,6 +208,12 @@ So is each id in a `checked.against` list in the summary's front matter
 that is not a concept in the bundle. kmctl wrote that list before ADR 0048;
 the next `kmctl summary ack` removes it.
 
+With `--no-drafts`, each decision record whose `status` is `draft` is an
+error (check `draft`), at the line of its `status`, with the
+`kmctl decision accept` command that clears it. Without the flag, a draft
+passes. kmctl's CI action sets the flag on a pull request that is ready for
+review (ADR 0050).
+
 In both, every markdown link must reach a file or folder that exists (check
 `link`). A relative link resolves from the page's folder. A `/` link
 resolves from the repository root in `docs/`, as GitHub renders it, and from
@@ -226,6 +233,7 @@ nothing to check.
 | `--fix` | First write each generated docs folder index that is missing or out of date, printing `fixed PATH` for each (on stderr with `--json`), then check. It changes no other file: not `docs/README.md`, not a hand-written folder index, not `.okf/`. | off |
 | `--json` | Print a JSON list of findings (`check`, `file`, `line`, `message`, `level`). | off |
 | `--strict` | Fail on warnings too, such as a summary over 500 words or behind its concepts. | off |
+| `--no-drafts` | Also fail on, and list, each decision record whose `status` is `draft`. | off |
 
 Exit codes: 0 when nothing fails (warnings included, unless `--strict`), 1
 when a check fails or, with `--strict`, when there is a warning.
@@ -501,6 +509,31 @@ Each type goes in its own folder: `tutorial` in `docs/tutorials/`, `how-to` in
 `docs/explanation/`.
 
 Exit code: 1 when kmctl refuses, with the reason on stderr.
+
+### `kmctl decision accept`
+
+`kmctl decision accept NUMBER`
+
+Accept a draft decision record. Its `status` changes from `draft` to
+`stable`, no other line of the record changes, and a line in `.okf/log.md`
+names the person: ``- Accepted `decisions/0012-use-a-queue` (human:jasper).``
+`kmctl check --no-drafts` then stops listing it.
+
+Only a person accepts a decision (ADR 0050). An agent runs this only when
+the person named in `--by` has said yes to the record; CI never does. To
+drop a draft instead, delete its file and its line in
+`.okf/decisions/index.md`.
+
+| Argument or option | Meaning | Default |
+|---|---|---|
+| `NUMBER` | The number of the draft decision, for example `12` or `0012`. Required. | |
+| `--by human:ID` | The person who accepts it: a name or email address after `human:`. Anything else is refused. | `human:` and git's `user.email` |
+| `--path DIR` | The repository to write in: an existing folder. | `.` |
+| `--json` | Print one JSON object (`id`, `path`, `by`). | off |
+
+Exit code: 1 when kmctl refuses, with the reason on stderr: the record is
+missing or not a draft, `--by` is not a person, or git has no `user.email`
+and `--by` is left out.
 
 ### `kmctl decision supersede`
 

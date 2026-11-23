@@ -304,3 +304,8 @@
 - Added `decisions/0048-kmctl-summary-ack-writes-one-file-per-ack-so-branches-merge-without-a-conflict` with `kmctl new decision`.
 - `kmctl summary ack` writes one file per ack under `.okf/.acks/` and no longer the `checked` block, which made two branches that both acked conflict (ADR 0048): `decisions/0048-kmctl-summary-ack-writes-one-file-per-ack-so-branches-merge-without-a-conflict` records it, `decisions/0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step` gains an amendment, `architecture/overview` names the ack file, and `prototypes/bookkeeping-merge-conflicts` holds the measurement: 28 of 45 pairs of open pull requests conflicted in the summary, 26 of them only in that block.
 - The summary is behind when a concept changed in a commit that no edit of the summary and no ack file has in its history, not after the newest one, so an edit one branch made after its own ack is still reported after a merge: `decisions/0048-kmctl-summary-ack-writes-one-file-per-ack-so-branches-merge-without-a-conflict`, `decisions/0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step`.
+
+## 2026-11-23
+
+- Added `decisions/0050-drafts-are-settled-before-review-and-only-a-person-accepts-one` with `kmctl new decision`.
+- Corrected `decisions/0031-a-decision-record-may-be-draft-until-it-is-accepted`: `kmctl check --no-drafts` fails a draft and `kmctl decision accept` makes one stable (ADR 0050).
