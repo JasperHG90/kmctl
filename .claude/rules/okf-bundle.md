@@ -66,22 +66,26 @@ who checked the content adds a `verified` entry with `by: human:<id>`.
 
 ## Writing back
 
-Touching a concept means updating its body, then appending a dated bullet to
-`log.md` that says why. `log.md` is append-only.
+Touching a concept means updating its body. `log.md` records lifecycle
+events only, and it is append-only.
 
 When you add or change a concept, update `.okf/summary.md` in the same
 change, or run `kmctl summary ack` when it still holds. `kmctl review due`
 lists the summary until you do.
 
-<constraint name="every-touched-concept-is-logged">
-WHY: in the repository this setup came from, 43 of 53 commits that changed a
-concept left at least one changed concept out of the log, so the log read as
-complete and was not.
+<constraint name="the-log-records-lifecycle-events-only">
+WHY: every line appended to the end of `log.md` lands in the same place, so
+two open pull requests that both append one conflict there on GitHub. In a
+repository that used kmctl, 52 of 81 merged pull requests wrote to the log,
+and 18 of those wrote only lines about edits. Git history already records an
+edit, and a page's `verified` front matter records a check.
 
-Each concept a change touches is named by its id, in backticks, in a line
-that change appends to `log.md` (a file inside a prototype folder may be
-named by the folder). A change never removes or rewrites an earlier line.
-kmctl's own verbs write their log line; a hand edit writes its own.
+A change appends a line to `log.md` only for a lifecycle event: a concept
+created, renamed, superseded, deprecated or removed, a decision accepted
+(`draft` to `stable`), or a concept verified. The line names each concept by
+its id, in backticks. An edit to a concept gets no line. A change never
+removes or rewrites an earlier line. kmctl's own verbs write their line; a
+hand change that is a lifecycle event writes its own.
 </constraint>
 
 ## Decisions

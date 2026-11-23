@@ -59,7 +59,7 @@ def test_existing_key_updates_in_place(tmp_path: Path) -> None:
     assert after["stale_after"] >= before["stale_after"]
     assert index.count(f"({page.name})") == 1
     assert "Nearly done." in index
-    assert len((root / ".okf/log.md").read_text().splitlines()) == len(log_before) + 1
+    assert (root / ".okf/log.md").read_text().splitlines() == log_before
 
 
 def test_unknown_key_creates_handoff(tmp_path: Path) -> None:
@@ -95,17 +95,6 @@ def test_key_only_on_handoffs(tmp_path: Path) -> None:
     assert result.exit_code != 0
 
 
-def test_repeated_update_logs_once(tmp_path: Path) -> None:
-    root = _repo(tmp_path)
-    _handoff(root, "Parser work", "Halfway.")
-    _handoff(root, "Parser work", "Nearly done.")
-    log_after_first_update = (root / ".okf/log.md").read_text()
-
-    _handoff(root, "Parser work", "Nearly done, take two.")
-
-    assert (root / ".okf/log.md").read_text() == log_after_first_update
-
-
 def test_empty_key_is_refused(tmp_path: Path) -> None:
     root = _repo(tmp_path)
 
@@ -127,7 +116,7 @@ def test_empty_key_is_refused(tmp_path: Path) -> None:
     assert not (root / ".okf/handoffs").exists()
 
 
-def test_update_on_a_later_day_logs_again(tmp_path: Path) -> None:
+def test_updates_on_later_days_write_no_log_line(tmp_path: Path) -> None:
     from datetime import UTC, datetime
 
     from kmctl.concepts import new_concept
@@ -136,16 +125,14 @@ def test_update_on_a_later_day_logs_again(tmp_path: Path) -> None:
     day1 = datetime(2026, 10, 15, 9, tzinfo=UTC)
     day2 = datetime(2026, 10, 16, 9, tzinfo=UTC)
     new_concept(root, "handoff", "Work", "Start.", now=day1, key=KEY)
+    after_create = (root / ".okf/log.md").read_text()
     new_concept(root, "handoff", "Work", "More.", now=day1, key=KEY)
     new_concept(root, "handoff", "Work", "Even more.", now=day2, key=KEY)
 
     log = (root / ".okf/log.md").read_text()
 
-    assert "## 2026-10-16" in log
-    assert log.rstrip().endswith(
-        "- Updated `handoffs/work` with `kmctl new handoff --key`."
-    )
-    assert log.count("Updated `handoffs/work`") == 2
+    assert log == after_create
+    assert log.count("`handoffs/work`") == 1
 
 
 def test_update_checks_the_title(tmp_path: Path) -> None:
