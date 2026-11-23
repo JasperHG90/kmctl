@@ -6,7 +6,7 @@ tags: [decision, audit]
 generated:
   by: claude-opus/5.5
   at: 2026-11-12T07:00:00Z
-status: draft
+status: stable
 sources:
   - resource: "packages/kmaudit/src/kmaudit/feedback.py"
   - resource: "packages/kmaudit/src/kmaudit/ui.py"

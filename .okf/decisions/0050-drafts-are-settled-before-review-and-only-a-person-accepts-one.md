@@ -6,7 +6,7 @@ tags: [decision]
 generated:
   by: process:kmctl/0.15.0
   at: 2026-11-23T09:58:36Z
-status: draft
+status: stable
 sources:
   - resource: "packages/kmctl/src/kmctl/accept.py"
   - resource: "packages/kmctl/src/kmctl/checks.py"

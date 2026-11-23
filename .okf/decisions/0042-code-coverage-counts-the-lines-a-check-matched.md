@@ -6,7 +6,7 @@ tags: [decision, audit]
 generated:
   by: claude-opus/5.5
   at: 2026-11-12T12:30:00Z
-status: draft
+status: stable
 sources:
   - resource: "packages/kmaudit/src/kmaudit/coverage.py"
   - resource: "packages/kmaudit/src/kmaudit/steps.py"
