@@ -46,12 +46,17 @@ Each merge runs three times:
 `scripts/decision_numbers.py` counts the pull requests that add a decision
 record, and how many of them were open at the same time as another one.
 
+`scripts/log_lines.py` reads the lines each merged pull request added to
+`.okf/log.md`, and counts the pull requests that would still write to the log
+if it held lifecycle events only.
+
 Run them from the root of the repository to measure, after
-`git fetch origin`. Both need the GitHub CLI:
+`git fetch origin`. The first two need the GitHub CLI:
 
 ```sh
 python3 PATH/TO/kmctl/.okf/prototypes/bookkeeping-merge-conflicts/scripts/measure.py
 python3 PATH/TO/kmctl/.okf/prototypes/bookkeeping-merge-conflicts/scripts/decision_numbers.py
+python3 PATH/TO/kmctl/.okf/prototypes/bookkeeping-merge-conflicts/scripts/log_lines.py
 ```
 
 ## Results
@@ -105,6 +110,21 @@ Decision numbers:
 | Merged or open | 86 |
 | ... that add a decision record | 20 |
 | ... and were open at the same time as another one that adds a decision record | 17 |
+
+Log lines by merged pull request, from `scripts/log_lines.py`, run on
+2026-11-23 over 81 merges on `main`:
+
+| | Pull requests | Lines |
+|---|---|---|
+| Wrote to `.okf/log.md` | 52 | 397 |
+| ... a lifecycle event: a concept created, renamed, superseded, deprecated, removed, regenerated, accepted or verified | 34 | 216 |
+
+So 18 of the 52 pull requests wrote only lines about edits.
+
+All 18 pairs of open pull requests that conflicted in an index conflicted in
+`.okf/decisions/index.md`, and 2 of them in `.okf/proposals/index.md` too.
+Decision records are numbered, so two new records are always the last two
+entries of the index, whatever order kmctl writes the entries in.
 
 Four open pull requests had all added a record numbered 0030. With two such
 records in one checkout, `kmctl check` and the strict OKF validation both

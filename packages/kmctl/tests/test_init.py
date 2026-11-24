@@ -1,6 +1,7 @@
 import json
 import re
 import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -28,8 +29,12 @@ DECISION = ".okf/decisions/0001-keep-project-knowledge-in-an-okf-bundle.md"
 FILES = (
     *BASE_FILES,
     "CLAUDE.md",
+    ".gitattributes",
     ".okf/decisions/index.md",
     DECISION,
+)
+UNION = (
+    ".okf/log.md merge=union\n.okf/index.md merge=union\n.okf/*/index.md merge=union\n"
 )
 START, END = "<!-- kmctl:start -->", "<!-- kmctl:end -->"
 
@@ -121,7 +126,9 @@ def test_init_json_output(tmp_path: Path) -> None:
     assert sorted(first["created"]) == sorted(FILES)
     assert first["skipped"] == first["updated"] == []
     assert second["created"] == second["updated"] == []
-    assert sorted(second["skipped"]) == sorted([*BASE_FILES, "CLAUDE.md"])
+    assert sorted(second["skipped"]) == sorted(
+        [*BASE_FILES, "CLAUDE.md", ".gitattributes"]
+    )
 
 
 def test_init_refuses_missing_path(tmp_path: Path) -> None:
@@ -762,6 +769,7 @@ def test_init_twice_with_existing_agent_files_changes_nothing(tmp_path: Path) ->
     assert result.exit_code == 0, result.output
     assert _snapshot(tmp_path) == before
     assert sorted(p.name for p in tmp_path.iterdir()) == [
+        ".gitattributes",
         ".okf",
         "AGENTS.md",
         "CLAUDE.md",
@@ -939,3 +947,101 @@ def test_init_over_a_non_utf8_apm_file_still_writes_the_rules_folder_block(
     assert result.exit_code == 0, result.output
     block = _block((tmp_path / "CLAUDE.md").read_text())
     assert all(f"`{folder}`" in block for folder in RULES_FOLDERS.values()), block
+
+
+def test_init_writes_a_union_merge_for_the_log_and_indexes(tmp_path: Path) -> None:
+    result = _init(tmp_path)
+
+    text = (tmp_path / ".gitattributes").read_text()
+    assert result.exit_code == 0, result.output
+    assert text.startswith("# OKF bookkeeping:")
+    assert text.endswith(UNION)
+    assert "created .gitattributes" in result.stdout
+
+
+def _git(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [
+            "git",
+            "-C",
+            str(root),
+            "-c",
+            "user.email=a@example.com",
+            "-c",
+            "user.name=A",
+            *args,
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+def test_two_branches_that_add_log_lines_merge_without_a_conflict(
+    tmp_path: Path,
+) -> None:
+    """The point of the lines: a local merge keeps both branches' log lines (ADR 0051)."""
+    _git(tmp_path, "init", "-q", "-b", "main")
+    _init(tmp_path)
+    _git(tmp_path, "add", "-A")
+    _git(tmp_path, "commit", "-qm", "init")
+    log = tmp_path / ".okf/log.md"
+    for branch in ("a", "b"):
+        _git(tmp_path, "checkout", "-qb", branch, "main")
+        log.write_text(log.read_text() + f"- Added `practices/{branch}`.\n")
+        _git(tmp_path, "commit", "-qam", branch)
+
+    merged = _git(tmp_path, "merge", "-q", "--no-edit", "a")
+
+    assert merged.returncode == 0, merged.stdout + merged.stderr
+    assert log.read_text().endswith("- Added `practices/b`.\n- Added `practices/a`.\n")
+
+
+def test_init_appends_the_lines_to_a_kept_gitattributes(tmp_path: Path) -> None:
+    (tmp_path / ".gitattributes").write_text("*.png binary")
+
+    result = _init(tmp_path, "--json")
+
+    text = (tmp_path / ".gitattributes").read_text()
+    assert text.startswith("*.png binary\n\n# OKF bookkeeping:")
+    assert text.endswith(UNION)
+    assert ".gitattributes" in json.loads(result.stdout)["updated"]
+
+
+def test_init_says_why_it_updated_gitattributes(tmp_path: Path) -> None:
+    (tmp_path / ".gitattributes").write_text("*.png binary\n")
+
+    out = _init(tmp_path).stdout
+
+    assert "updated .gitattributes (union merge for the OKF log and indexes)" in out
+
+
+def test_init_keeps_a_merge_driver_the_user_chose(tmp_path: Path) -> None:
+    mine = ".okf/log.md merge=mine\n.okf/index.md -merge\n"
+    (tmp_path / ".gitattributes").write_text(mine)
+
+    _init(tmp_path)
+
+    assert (
+        tmp_path / ".gitattributes"
+    ).read_text() == mine + "\n.okf/*/index.md merge=union\n"
+
+
+def test_init_keeps_crlf_line_endings_in_gitattributes(tmp_path: Path) -> None:
+    (tmp_path / ".gitattributes").write_bytes(b"*.png binary\r\n")
+
+    _init(tmp_path)
+
+    raw = (tmp_path / ".gitattributes").read_bytes()
+    assert raw.startswith(b"*.png binary\r\n\r\n# OKF bookkeeping:")
+    assert b"\n" not in raw.replace(b"\r\n", b"")
+
+
+def test_init_leaves_a_gitattributes_that_is_not_utf8_alone(tmp_path: Path) -> None:
+    (tmp_path / ".gitattributes").write_bytes(b"\xff\xfe")
+
+    result = _init(tmp_path)
+
+    assert (tmp_path / ".gitattributes").read_bytes() == b"\xff\xfe"
+    assert ".gitattributes is not a UTF-8 file" in result.stderr
+    assert ".okf/log.md merge=union" in result.stderr
