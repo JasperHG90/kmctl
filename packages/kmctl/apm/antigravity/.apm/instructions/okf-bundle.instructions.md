@@ -99,10 +99,26 @@ acts on it. The record carries Context, Decision (with the rejected
 alternative) and Consequences. `status` is `draft`, `stable` or
 `deprecated`. A `draft` record holds a choice written down but not yet
 accepted; a proposal in `proposals/` weighs options before there is a
-choice. Once the choice is accepted, the record's `status` becomes `stable`
-and a line in `log.md` says so. Beyond that, a record is never rewritten: a
-correction is an appended `## Correction, YYYY-MM-DD` section, and a
-reversal is written in both records (`kmctl decision supersede` does this).
+choice. `kmctl decision accept` makes a draft `stable` and logs who accepted
+it. Beyond that, a record is never rewritten: a correction is an appended
+`## Correction, YYYY-MM-DD` section, and a reversal is written in both
+records (`kmctl decision supersede` does this).
+
+<constraint name="drafts-are-settled-before-review">
+WHY: in a repository that used kmctl, 29 of the 44 decision records that
+merged pull requests added were still drafts when they merged, so nobody had
+said yes to them.
+
+Write a decision you record for a person as a draft
+(`kmctl new decision --draft`). Before the pull request is marked ready for
+review, list its open drafts with `kmctl check --no-drafts` and explain each
+one to its author in a sentence or two. The author says accept, change or
+drop. On an explicit yes, run
+`kmctl decision accept <number> --by human:<their id>`; to drop one, delete
+its file and its line in `.okf/decisions/index.md`. Never accept a draft the
+author did not say yes to. kmctl's CI action fails a pull request that is
+ready for review while a draft is left.
+</constraint>
 
 <constraint name="okf-changes-are-validated">
 WHY: a malformed concept still renders and still reads as knowledge.

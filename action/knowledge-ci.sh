@@ -15,12 +15,40 @@ if [ "$(git rev-parse --is-shallow-repository 2>/dev/null)" = "true" ]; then
   fi
 fi
 
+# KMCTL_DRAFTS (the drafts input): fail-when-ready fails on a draft decision
+# only on a pull request that is ready for review, read from the event GitHub
+# wrote to $GITHUB_EVENT_PATH; fail always fails on one; pass never does (ADR 0050).
+drafts="${KMCTL_DRAFTS:-fail-when-ready}"
+check_args=()
+case "$drafts" in
+  fail) check_args=(--no-drafts) ;;
+  pass) ;;
+  fail-when-ready)
+    case "${GITHUB_EVENT_NAME:-}" in
+      pull_request | pull_request_target)
+        ready=$(python3 -c 'import json, sys; print(str(not json.load(open(sys.argv[1]))["pull_request"].get("draft", False)).lower())' "${GITHUB_EVENT_PATH:-}" 2>/dev/null)
+        [ "$ready" = "true" ] && check_args=(--no-drafts)
+        ;;
+    esac
+    ;;
+  *)
+    echo "kmctl action: drafts must be fail-when-ready, fail or pass, not '$drafts'." >&2
+    exit 1
+    ;;
+esac
+
 {
   echo "## kmctl check"
   echo
+  if [ "${#check_args[@]}" -eq 0 ]; then
+    echo "Draft decisions pass here (drafts: $drafts)."
+  else
+    echo "Draft decisions fail (drafts: $drafts)."
+  fi
+  echo
   echo '```'
 } >> "$summary"
-kmctl check >> "$summary" 2>&1
+kmctl check ${check_args[@]+"${check_args[@]}"} >> "$summary" 2>&1
 check_status=$?
 echo '```' >> "$summary"
 if [ "$check_status" -ne 0 ]; then

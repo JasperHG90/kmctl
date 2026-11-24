@@ -309,6 +309,10 @@
 
 - Added `decisions/0049-the-log-records-lifecycle-events-only` with `kmctl new decision`.
 - Accepted `decisions/0049-the-log-records-lifecycle-events-only` (human:roel).
+- Added `decisions/0050-drafts-are-settled-before-review-and-only-a-person-accepts-one` with `kmctl new decision`.
+- Accepted `decisions/0050-drafts-are-settled-before-review-and-only-a-person-accepts-one` (human:roel).
+- Accepted `decisions/0041-people-review-claims-and-checks-on-a-local-page-and-their-feedback-goes-back-to-the-agents` (human:roel).
+- Accepted `decisions/0042-code-coverage-counts-the-lines-a-check-matched` (human:roel).
 
 ## 2026-11-24
 
