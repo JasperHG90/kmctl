@@ -321,3 +321,4 @@
 - Added `decisions/0052-the-starter-keeps-an-anchor-comment-below-each-kmctl-ref-so-updates-merge-a-project-s-additions` with `kmctl new decision`.
 - Added `decisions/0052-accepting-a-draft-does-not-make-a-verified-record-due` with `kmctl new decision`.
 - Accepted `decisions/0052-accepting-a-draft-does-not-make-a-verified-record-due` (human:roel).
+- Moved `decisions/0052-the-starter-keeps-an-anchor-comment-below-each-kmctl-ref-so-updates-merge-a-project-s-additions` to `decisions/0053-the-starter-keeps-an-anchor-comment-below-each-kmctl-ref-so-updates-merge-a-project-s-additions` with `kmctl mv`, rewriting links to it in `decisions/index`.

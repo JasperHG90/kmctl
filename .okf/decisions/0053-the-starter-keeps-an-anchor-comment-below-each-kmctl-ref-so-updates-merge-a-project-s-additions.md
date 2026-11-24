@@ -1,6 +1,6 @@
 ---
 type: decision
-title: "ADR 0052: The starter keeps an anchor comment below each kmctl ref so updates merge a project's additions"
+title: "ADR 0053: The starter keeps an anchor comment below each kmctl ref so updates merge a project's additions"
 description: "The starter's ci.yml and apm.yml put a comment line after the kmctl pin so copier update merges a project's own additions cleanly, and just upgrade stops when a conflict remains."
 tags: [decision]
 generated:
@@ -13,7 +13,7 @@ sources:
   - resource: "starter/justfile.jinja"
 ---
 
-# ADR 0052: The starter keeps an anchor comment below each kmctl ref so updates merge a project's additions
+# ADR 0053: The starter keeps an anchor comment below each kmctl ref so updates merge a project's additions
 
 ## Context
 
