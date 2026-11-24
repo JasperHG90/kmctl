@@ -57,7 +57,7 @@ repository's files, and with okf-skills from GitHub.
 ### 1. Install the kmctl CLI
 
 ```
-uv tool install git+https://github.com/JasperHG90/kmctl@v0.16.0#subdirectory=packages/kmctl
+uv tool install git+https://github.com/JasperHG90/kmctl@v0.16.1#subdirectory=packages/kmctl
 ```
 
 Releases after v0.12.2 build kmctl from the repository's `packages/kmctl`
