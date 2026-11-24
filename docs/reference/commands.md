@@ -100,14 +100,22 @@ Set a repository up. It writes:
   `.md` file other than `index.md`, in it or in a folder inside it. Any other
   record counts, whatever its title, so a repository that records the same
   choice in its own words, or moves its decision log into `.okf/decisions/`,
-  gets no copy. In a fresh bundle it is `0001`.
+  gets no copy. In a fresh bundle it is `0001`;
+- a union merge for the bookkeeping files in `.gitattributes`:
+  `.okf/log.md merge=union`, `.okf/index.md merge=union` and
+  `.okf/*/index.md merge=union`, under a comment saying what they do. Every
+  pull request that adds a concept appends to these files, so two branches
+  change the same place; with the lines, `git merge` keeps both sides'
+  lines instead of stopping. GitHub does not read `.gitattributes`, so a
+  pull request page can still report a conflict that a local merge settles
+  (ADR 0051).
 
 It writes no rules: the four knowledge rules (`okf-bundle`, `docs-layout`,
 `diagrams-stay-current` and `manifesto-invariants`) come with kmctl's skills
 in kmctl's APM package, which `apm install` installs, and init never reads
 or writes `.claude/rules/`.
 
-A file that already exists is kept, so it is safe to run again, with four
+A file that already exists is kept, so it is safe to run again, with five
 exceptions. The kmctl block is added to an existing `CLAUDE.md` or
 `AGENTS.md`, or replaced when it is already there, and no other text in the
 file changes. Writing the first decision into a kept bundle adds its entry to
@@ -118,7 +126,10 @@ the page's one entry to the kept `.okf/index.md`, where a fresh index has it
 a line to the kept `log.md`, unless they are there already; nothing else in
 either file changes, so `kmctl check` passes after it. A docs folder index kmctl
 generated is rewritten when it is out of date; a hand-written one is kept. A
-second run changes nothing.
+kept `.gitattributes` gets, after its own text, only the union lines for the
+patterns it gives no `merge` attribute, so a merge driver you chose stays,
+and its line endings are kept; one that is not UTF-8 is left alone with a
+warning that lists the lines to add. A second run changes nothing.
 
 A file counts as missing only when there is no directory entry for it, so a
 dangling symlink counts as there. A `CLAUDE.md` or `AGENTS.md` symlink that is
@@ -131,7 +142,8 @@ again. A symlink inside the repository is written through once.
 
 Output lists each file as `created`, `updated` (its kmctl block, the first
 decision's index entry and log line, a new page's root index entry and log
-line, or a generated docs folder index) or `kept`, then a `linked PAGE from
+line, a generated docs folder index, or the union merge lines in
+`.gitattributes`) or `kept`, then a `linked PAGE from
 .okf/index.md, with a line in .okf/log.md` line for each new page it added
 to a kept index, and ends with the next steps:
 install kmctl's package with APM for the skills and the knowledge rules

@@ -87,7 +87,9 @@ _INIT_EPILOG = (
     "when AGENTS.md exists (Claude Code then reads AGENTS.md and its block "
     "once) and the block otherwise; and the first decision, Keep project "
     "knowledge in an OKF bundle, when .okf/decisions/ holds no decision record "
-    "(no .md file but index.md, in it or a folder inside it). It writes no "
+    "(no .md file but index.md, in it or a folder inside it); and a union merge "
+    "for .okf/log.md and the .okf/ indexes in .gitattributes, so a local merge "
+    "keeps the lines both branches added. It writes no "
     "rules: the knowledge rules come with kmctl's skills in its APM package, "
     "which apm install installs (then kmctl plugin patch).\n\n"
     "A CLAUDE.md with an @AGENTS.md line, beside an AGENTS.md, gets no block. "
@@ -101,7 +103,9 @@ _INIT_EPILOG = (
     "and no other text in the file changes. Writing the first decision into a "
     "kept bundle adds its index entry and log line, and writing a manifesto or "
     "summary into one adds its entry to the kept .okf/index.md and a line to "
-    ".okf/log.md, so kmctl check passes after it."
+    ".okf/log.md, so kmctl check passes after it. A kept .gitattributes gets "
+    "only the union merge lines it lacks; a pattern it already gives a merge "
+    "driver keeps that driver."
 )
 
 
@@ -144,6 +148,8 @@ def init(
             why = "kmctl block"
         elif rel.startswith("docs/"):
             why = "generated index"
+        elif rel == ".gitattributes":
+            why = "union merge for the OKF log and indexes"
         elif rel in (".okf/index.md", ".okf/log.md") and result.linked:
             names = " and ".join(Path(p).stem for p in result.linked)
             why = f"entry for the new {names}"

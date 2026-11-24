@@ -289,7 +289,8 @@ def new_concept(
     key : str | None
         Handoffs only: the session key (``handoff_key``, ADR 0009). When a
         handoff with this key exists, it is updated in place: same file and
-        index entry, new title, description, body skeleton and dates.
+        index entry, new title, description, body skeleton and dates, and no
+        line in the log (ADR 0049).
     stale_after : str | None
         When kmctl review due lists the concept as due (expired, for a
         handoff): a duration or a date, read by ``stale_after_time``. A
@@ -360,14 +361,7 @@ def new_concept(
             section / "index.md", rel, f"- [{link_text(title)}]({rel}): {description}"
         )
         cid = existing.relative_to(okf).with_suffix("").as_posix()
-        line = f"- Updated `{cid}` with `kmctl new handoff --key`."
-        log = okf / "log.md"
-        lines = log.read_text(encoding="utf-8").rstrip("\n").splitlines()
-        headings = [h for h in lines if h.startswith("## ")]
-        today = f"## {now.date().isoformat()}"
-        # A repeat update on the same day adds no second identical line; a later day logs again.
-        if not (lines and lines[-1] == line and headings and headings[-1] == today):
-            append_log(log, line, now)
+        # An update is an edit, not a lifecycle event, so it writes no log line (ADR 0049).
         return NewConcept(
             id=cid,
             path=existing.relative_to(root).as_posix(),

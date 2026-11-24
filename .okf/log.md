@@ -307,8 +307,14 @@
 
 ## 2026-11-23
 
+- Added `decisions/0049-the-log-records-lifecycle-events-only` with `kmctl new decision`.
+- Accepted `decisions/0049-the-log-records-lifecycle-events-only` (human:roel).
 - Added `decisions/0050-drafts-are-settled-before-review-and-only-a-person-accepts-one` with `kmctl new decision`.
-- Corrected `decisions/0031-a-decision-record-may-be-draft-until-it-is-accepted`: `kmctl check --no-drafts` fails a draft and `kmctl decision accept` makes one stable (ADR 0050).
 - Accepted `decisions/0050-drafts-are-settled-before-review-and-only-a-person-accepts-one` (human:roel).
 - Accepted `decisions/0041-people-review-claims-and-checks-on-a-local-page-and-their-feedback-goes-back-to-the-agents` (human:roel).
 - Accepted `decisions/0042-code-coverage-counts-the-lines-a-check-matched` (human:roel).
+
+## 2026-11-24
+
+- Added `decisions/0051-kmctl-init-sets-a-union-merge-for-the-log-and-the-indexes` with `kmctl new decision`.
+- Accepted `decisions/0051-kmctl-init-sets-a-union-merge-for-the-log-and-the-indexes` (human:roel).

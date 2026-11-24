@@ -1,0 +1,6 @@
+# OKF bookkeeping: a merge keeps the lines both branches added to the log
+# and the indexes. GitHub ignores this setting, so it can still report a
+# conflict there; git merge origin/main settles it locally.
+.okf/log.md merge=union
+.okf/index.md merge=union
+.okf/*/index.md merge=union
