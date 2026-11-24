@@ -309,3 +309,8 @@
 
 - Added `decisions/0049-the-log-records-lifecycle-events-only` with `kmctl new decision`.
 - Accepted `decisions/0049-the-log-records-lifecycle-events-only` (human:roel).
+
+## 2026-11-24
+
+- Added `decisions/0051-kmctl-init-sets-a-union-merge-for-the-log-and-the-indexes` with `kmctl new decision`.
+- Accepted `decisions/0051-kmctl-init-sets-a-union-merge-for-the-log-and-the-indexes` (human:roel).

@@ -1,5 +1,0 @@
-# kmctl summary ack: .okf/summary.md was read against these concepts and still holds.
-at: 2026-11-23T12:12:07Z
-against:
-  - decisions/0049-the-log-records-lifecycle-events-only
-  - prototypes/bookkeeping-merge-conflicts

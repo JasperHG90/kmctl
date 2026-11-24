@@ -342,7 +342,9 @@ kmctl verify manifesto --by human:you  # you read it and it holds: drop it from 
 ```
 
 `kmctl init` keeps files that already exist, except the kmctl block, which it
-replaces with this release's; `kmctl update` is the same command. The
+replaces with this release's, and `.gitattributes`, to which it adds only the
+union merge lines for the `.okf/` log and indexes that it lacks;
+`kmctl update` is the same command. The
 knowledge rules come with kmctl's APM package. Every command takes `--help`,
 and most take `--json` for scripts and agents. The
 [tutorial](../../docs/tutorials/get-started-with-kmctl.md) walks through this in one
