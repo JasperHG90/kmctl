@@ -1,5 +1,6 @@
 """The GitHub Action's script, run locally against fixture repositories (ADR 0005)."""
 
+import json
 import os
 import subprocess
 import sys
@@ -398,3 +399,117 @@ def test_action_audit_refuses_other_events() -> None:
         proc = _run_check(check, event)
         assert proc.returncode != 0, event
         assert f"refused for event '{event}'" in proc.stderr
+
+
+def _draft_repo(path: Path) -> Path:
+    """A committed repository from kmctl init with one draft decision, 0002."""
+    from typer.testing import CliRunner
+
+    from kmctl import app
+
+    path.mkdir(parents=True)
+    _git(path, "init", "-q", "-b", "main")
+    runner = CliRunner()
+    assert runner.invoke(app, ["init", "--path", str(path)]).exit_code == 0
+    made = runner.invoke(
+        app,
+        [
+            "new",
+            "decision",
+            "Use a queue",
+            "--description",
+            "Use a queue.",
+            "--draft",
+            "--path",
+            str(path),
+        ],
+    )
+    assert made.exit_code == 0, made.output
+    _git(path, "add", "-A")
+    _git(path, "commit", "-q", "-m", "c")
+    return path
+
+
+def _run_drafts(
+    tmp_path: Path, drafts: str | None, event: str | None, pr_draft: bool | None
+) -> tuple[subprocess.CompletedProcess[str], str]:
+    """Run the script on a repository with a draft decision, as GitHub would for ``event``."""
+    repo = _draft_repo(tmp_path / "r")
+    summary = tmp_path / "summary.md"
+    summary.write_text("")
+    env = {
+        k: v
+        for k, v in os.environ.items()
+        if k not in ("GITHUB_EVENT_NAME", "GITHUB_EVENT_PATH", "KMCTL_DRAFTS")
+    } | {
+        "PATH": f"{_kmctl_bin(tmp_path)}:{os.environ['PATH']}",
+        "GITHUB_STEP_SUMMARY": str(summary),
+    }
+    if drafts is not None:
+        env["KMCTL_DRAFTS"] = drafts
+    if event is not None:
+        payload = tmp_path / "event.json"
+        payload.write_text(
+            json.dumps({"pull_request": {"draft": pr_draft}})
+            if pr_draft is not None
+            else "{}"
+        )
+        env |= {"GITHUB_EVENT_NAME": event, "GITHUB_EVENT_PATH": str(payload)}
+    proc = subprocess.run(
+        ["bash", str(SCRIPT)],
+        cwd=repo,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return proc, summary.read_text()
+
+
+def test_drafts_fail_on_a_pull_request_ready_for_review(tmp_path: Path) -> None:
+    proc, summary = _run_drafts(tmp_path, None, "pull_request", pr_draft=False)
+
+    assert proc.returncode != 0
+    assert "error  draft  .okf/decisions/0002-use-a-queue.md" in summary
+    assert "Draft decisions fail (drafts: fail-when-ready)." in summary
+
+
+def test_drafts_pass_on_a_draft_pull_request(tmp_path: Path) -> None:
+    proc, summary = _run_drafts(tmp_path, None, "pull_request", pr_draft=True)
+
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert "Draft decisions pass here (drafts: fail-when-ready)." in summary
+
+
+def test_drafts_pass_on_a_push(tmp_path: Path) -> None:
+    proc, summary = _run_drafts(tmp_path, None, "push", pr_draft=None)
+
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert "draft  .okf/decisions" not in summary
+
+
+def test_drafts_fail_always_and_pass_never(tmp_path: Path) -> None:
+    failing, _ = _run_drafts(tmp_path / "a", "fail", "push", pr_draft=None)
+    passing, _ = _run_drafts(tmp_path / "b", "pass", "pull_request", pr_draft=False)
+
+    assert failing.returncode != 0
+    assert passing.returncode == 0, passing.stdout + passing.stderr
+
+
+def test_drafts_refuses_an_unknown_value(tmp_path: Path) -> None:
+    proc, _ = _run_drafts(tmp_path, "sometimes", None, pr_draft=None)
+
+    assert proc.returncode == 1
+    assert (
+        "drafts must be fail-when-ready, fail or pass, not 'sometimes'" in proc.stderr
+    )
+
+
+def test_action_passes_the_drafts_input_to_the_script() -> None:
+    action = yaml.safe_load((ROOT / "action.yml").read_text())
+
+    assert action["inputs"]["drafts"]["default"] == "fail-when-ready"
+    [step] = [
+        s for s in action["runs"]["steps"] if "knowledge-ci.sh" in str(s.get("run", ""))
+    ]
+    assert step["env"]["KMCTL_DRAFTS"] == "${{ inputs.drafts }}"

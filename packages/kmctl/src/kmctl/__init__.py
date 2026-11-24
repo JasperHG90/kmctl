@@ -9,6 +9,7 @@ from typing import Annotated, Literal
 
 import typer
 
+from kmctl.accept import accept as accept_decision
 from kmctl.briefing import (
     as_antigravity,
     as_dict,
@@ -86,7 +87,9 @@ _INIT_EPILOG = (
     "when AGENTS.md exists (Claude Code then reads AGENTS.md and its block "
     "once) and the block otherwise; and the first decision, Keep project "
     "knowledge in an OKF bundle, when .okf/decisions/ holds no decision record "
-    "(no .md file but index.md, in it or a folder inside it). It writes no "
+    "(no .md file but index.md, in it or a folder inside it); and a union merge "
+    "for .okf/log.md and the .okf/ indexes in .gitattributes, so a local merge "
+    "keeps the lines both branches added. It writes no "
     "rules: the knowledge rules come with kmctl's skills in its APM package, "
     "which apm install installs (then kmctl plugin patch).\n\n"
     "A CLAUDE.md with an @AGENTS.md line, beside an AGENTS.md, gets no block. "
@@ -100,7 +103,9 @@ _INIT_EPILOG = (
     "and no other text in the file changes. Writing the first decision into a "
     "kept bundle adds its index entry and log line, and writing a manifesto or "
     "summary into one adds its entry to the kept .okf/index.md and a line to "
-    ".okf/log.md, so kmctl check passes after it."
+    ".okf/log.md, so kmctl check passes after it. A kept .gitattributes gets "
+    "only the union merge lines it lacks; a pattern it already gives a merge "
+    "driver keeps that driver."
 )
 
 
@@ -143,6 +148,8 @@ def init(
             why = "kmctl block"
         elif rel.startswith("docs/"):
             why = "generated index"
+        elif rel == ".gitattributes":
+            why = "union merge for the OKF log and indexes"
         elif rel in (".okf/index.md", ".okf/log.md") and result.linked:
             names = " and ".join(Path(p).stem for p in result.linked)
             why = f"entry for the new {names}"
@@ -188,6 +195,7 @@ app.command(
         "  kmctl check --fix\n\n"
         "  kmctl check --path ../other-repo --json\n\n"
         "  kmctl check --strict\n\n"
+        "  kmctl check --no-drafts\n\n"
         "Exit 0 when nothing fails, 1 when a check fails. A warning (such as "
         "docs/README.md not linking a docs/ folder, or a summary over 500 words) "
         "is printed but does not fail, unless --strict is given. "
@@ -236,13 +244,24 @@ def check(
             ),
         ),
     ] = False,
+    no_drafts: Annotated[
+        bool,
+        typer.Option(
+            "--no-drafts",
+            help=(
+                "Also fail on, and list, each decision record whose status is draft. "
+                "kmctl's CI action sets it on pull requests that are ready for "
+                "review (ADR 0050). Default: off, so drafts pass."
+            ),
+        ),
+    ] = False,
 ) -> None:
     """Check indexes agree with their folders, decision numbers, docs front matter, prototype READMEs and links."""
     if fix:
         created, updated = fix_folder_indexes(path)
         for rel in created + updated:
             typer.echo(f"fixed {rel}", err=as_json)
-    findings = run_checks(path)
+    findings = run_checks(path, no_drafts=no_drafts)
     errors = [f for f in findings if f.level == "error"]
     warnings = [f for f in findings if f.level == "warning"]
     if as_json:
@@ -824,16 +843,19 @@ app.add_typer(summary_app, name="summary")
         "  kmctl summary ack --path ../other-repo --json\n\n"
         "kmctl review due lists the summary, with reason concepts changed: ID, "
         "..., when a concept (the manifesto, a decision, practice, proposal, "
-        "prototype README or architecture page) changed in a commit after the "
-        "summary's last commit, or is changed in the working tree while the "
-        "summary is not. Editing the summary clears that. When you have read "
+        "prototype README or architecture page) changed in a commit that no "
+        "edit of the summary and no ack file has in its history, or is changed "
+        "in the working tree while the summary is not. Editing the summary "
+        "clears that. When you have read "
         "the changed concepts and the summary still holds, run this instead: it "
-        "writes checked (at: the UTC time to the second, against: those ids, less "
-        "any deleted since) into the "
-        "summary's front matter, changes no other line and no other file, and "
-        "the summary leaves the list. Commit it with the concepts. It is an "
-        "agent's word, not a person's review, which is kmctl verify (ADR 0023, "
-        "ADR 0027). When the summary is current it writes nothing.\n\n"
+        "writes one ack file under .okf/.acks/ (at: the UTC time to the second, "
+        "against: those ids, less any deleted since), removes the ack files "
+        "that were there, and the summary leaves the list. Commit it with the "
+        "concepts. Each ack file has its own name, so two branches that both "
+        "ack merge without a conflict (ADR 0048). It also removes a checked "
+        "block from the summary's front matter, which kmctl wrote before. It is "
+        "an agent's word, not a person's review, which is kmctl verify (ADR "
+        "0023, ADR 0027). When the summary is current it writes nothing.\n\n"
         "Exit 1, with the reason on stderr, when there is no .okf/summary.md, "
         "its front matter is unreadable or lacks type: summary, or there is no "
         "git history (not a repository, or a shallow clone)."
@@ -846,8 +868,8 @@ def summary_ack(
         typer.Option(
             "--json",
             help=(
-                "Print one JSON object (path, at, against), for scripts; at is "
-                "null when nothing was written."
+                "Print one JSON object (path, at, against, file), for scripts; "
+                "at and file are null when nothing was written."
             ),
         ),
     ] = False,
@@ -873,13 +895,75 @@ def summary_ack(
 
 decision_app = typer.Typer(
     help=(
-        "Work with decision records in .okf/decisions/. Verbs: supersede, "
-        "candidates. supersede needs both records from kmctl new decision; "
+        "Work with decision records in .okf/decisions/. Verbs: accept, "
+        "supersede, candidates. accept needs a draft record from kmctl new "
+        "decision --draft; supersede needs both records from kmctl new decision; "
         "candidates reads git history and runs with or without records."
     ),
     no_args_is_help=True,
 )
 app.add_typer(decision_app, name="decision")
+
+
+@decision_app.command(
+    "accept",
+    epilog=(
+        "Examples:\n\n"
+        "  kmctl decision accept 12\n\n"
+        "  kmctl decision accept 0012 --by human:jasper --json\n\n"
+        "It sets the record's status from draft to stable, changes no other "
+        "line of the record, and adds a line to .okf/log.md that names the "
+        "person. kmctl check --no-drafts then stops listing it.\n\n"
+        "Only a person accepts a decision (ADR 0050). An agent runs this only "
+        "when the person named in --by has said yes to the record; CI never "
+        "does. To drop a draft instead, delete its file and its line in "
+        ".okf/decisions/index.md."
+    ),
+)
+def decision_accept(
+    number: Annotated[
+        str,
+        typer.Argument(
+            metavar="12",
+            help=(
+                "The number of the draft decision to accept, as in its file name "
+                "(0012-...) or without the zeros. kmctl check --no-drafts lists "
+                "the drafts."
+            ),
+        ),
+    ],
+    by: Annotated[
+        str | None,
+        typer.Option(
+            "--by",
+            metavar="human:jasper",
+            help=(
+                "The person who accepts it, as human:<id>: a name or email address. "
+                "Written to the log line. Default: human: and git's user.email; "
+                "anything not starting human: is refused."
+            ),
+        ),
+    ] = None,
+    path: Annotated[Path, _PATH_OPTION] = Path("."),
+    as_json: Annotated[
+        bool,
+        typer.Option(
+            "--json",
+            help="Print one JSON object (id, path, by), for scripts.",
+        ),
+    ] = False,
+) -> None:
+    """Accept a draft decision record: its status becomes stable."""
+    try:
+        result = accept_decision(path, number, by)
+    except ConceptError as error:
+        typer.echo(f"kmctl decision accept: refused: {error}", err=True)
+        raise typer.Exit(1) from error
+    if as_json:
+        typer.echo(json.dumps(asdict(result)))
+        return
+    typer.echo(f"accepted {result.id} by {result.by} ({result.path})")
+    typer.echo(next_step("kmctl check --no-drafts"))
 
 
 @decision_app.command(

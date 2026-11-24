@@ -37,7 +37,8 @@ package in this repository. Its commands are in
 | `kmctl new prototype` | Create a prototype in `.okf/`, the same way. |
 | `kmctl new handoff` | Create a handoff in `.okf/`, the same way. |
 | `kmctl new doc` | Create a `docs/` page in its Diataxis folder with a skeleton and its index entry. |
-| `kmctl decision` | Work with decision records in `.okf/decisions/`. Verbs: `supersede`, `candidates`. |
+| `kmctl decision` | Work with decision records in `.okf/decisions/`. Verbs: `accept`, `supersede`, `candidates`. |
+| `kmctl decision accept` | Accept a draft decision record: its status becomes stable, and the log names who accepted it. |
 | `kmctl decision supersede` | Mark one decision superseded by another and link the two records both ways. |
 | `kmctl decision candidates` | List the changes since the newest decision record that may hold an unrecorded decision. |
 | `kmctl mv` | Rename a concept in `.okf/` and rewrite the links to it in `.okf/` and `docs/`. |
@@ -99,14 +100,22 @@ Set a repository up. It writes:
   `.md` file other than `index.md`, in it or in a folder inside it. Any other
   record counts, whatever its title, so a repository that records the same
   choice in its own words, or moves its decision log into `.okf/decisions/`,
-  gets no copy. In a fresh bundle it is `0001`.
+  gets no copy. In a fresh bundle it is `0001`;
+- a union merge for the bookkeeping files in `.gitattributes`:
+  `.okf/log.md merge=union`, `.okf/index.md merge=union` and
+  `.okf/*/index.md merge=union`, under a comment saying what they do. Every
+  pull request that adds a concept appends to these files, so two branches
+  change the same place; with the lines, `git merge` keeps both sides'
+  lines instead of stopping. GitHub does not read `.gitattributes`, so a
+  pull request page can still report a conflict that a local merge settles
+  (ADR 0051).
 
 It writes no rules: the four knowledge rules (`okf-bundle`, `docs-layout`,
 `diagrams-stay-current` and `manifesto-invariants`) come with kmctl's skills
 in kmctl's APM package, which `apm install` installs, and init never reads
 or writes `.claude/rules/`.
 
-A file that already exists is kept, so it is safe to run again, with four
+A file that already exists is kept, so it is safe to run again, with five
 exceptions. The kmctl block is added to an existing `CLAUDE.md` or
 `AGENTS.md`, or replaced when it is already there, and no other text in the
 file changes. Writing the first decision into a kept bundle adds its entry to
@@ -117,7 +126,10 @@ the page's one entry to the kept `.okf/index.md`, where a fresh index has it
 a line to the kept `log.md`, unless they are there already; nothing else in
 either file changes, so `kmctl check` passes after it. A docs folder index kmctl
 generated is rewritten when it is out of date; a hand-written one is kept. A
-second run changes nothing.
+kept `.gitattributes` gets, after its own text, only the union lines for the
+patterns it gives no `merge` attribute, so a merge driver you chose stays,
+and its line endings are kept; one that is not UTF-8 is left alone with a
+warning that lists the lines to add. A second run changes nothing.
 
 A file counts as missing only when there is no directory entry for it, so a
 dangling symlink counts as there. A `CLAUDE.md` or `AGENTS.md` symlink that is
@@ -130,7 +142,8 @@ again. A symlink inside the repository is written through once.
 
 Output lists each file as `created`, `updated` (its kmctl block, the first
 decision's index entry and log line, a new page's root index entry and log
-line, or a generated docs folder index) or `kept`, then a `linked PAGE from
+line, a generated docs folder index, or the union merge lines in
+`.gitattributes`) or `kept`, then a `linked PAGE from
 .okf/index.md, with a line in .okf/log.md` line for each new page it added
 to a kept index, and ends with the next steps:
 install kmctl's package with APM for the skills and the knowledge rules
@@ -188,7 +201,11 @@ In `docs/`:
 
 In `.okf/decisions/`, a record `NNNN-slug.md` whose `title` or `#` heading
 starts with `ADR` and a number must carry the file's number `NNNN`; another
-number is an error (check `decision`). The entry in `decisions/index.md` that
+number is an error (check `decision`). Two records whose file names start
+with the same number are an error too, reported for each of them with the
+next free number: two branches that both ran `kmctl new decision` take the
+same number, and git merges them without a conflict. Give one of the two
+the free number with `kmctl mv`. The entry in `decisions/index.md` that
 links a record must read the record's `title`, as `kmctl new decision` writes
 it, or just `ADR NNNN`; other text is an error (check `index`), as an entry
 that links a missing file is. When the title starts with the wrong number,
@@ -199,9 +216,15 @@ In `.okf/`, the body of `summary.md` (outside its front matter, counted as
 words between spaces) holds at most 500 words; over that is a `warning`
 naming the count and the limit (check `summary`). A summary behind the
 concepts that changed after it is a `warning` too (see `kmctl summary ack`).
-So is each id in the summary's `checked.against` that is not a concept in the bundle, for example after a concept is renamed or
-deleted: remove it from the list, or let the next `kmctl summary ack`
-rewrite it.
+So is each id in a `checked.against` list in the summary's front matter
+that is not a concept in the bundle. kmctl wrote that list before ADR 0048;
+the next `kmctl summary ack` removes it.
+
+With `--no-drafts`, each decision record whose `status` is `draft` is an
+error (check `draft`), at the line of its `status`, with the
+`kmctl decision accept` command that clears it. Without the flag, a draft
+passes. kmctl's CI action sets the flag on a pull request that is ready for
+review (ADR 0050).
 
 In both, every markdown link must reach a file or folder that exists (check
 `link`). A relative link resolves from the page's folder. A `/` link
@@ -222,6 +245,7 @@ nothing to check.
 | `--fix` | First write each generated docs folder index that is missing or out of date, printing `fixed PATH` for each (on stderr with `--json`), then check. It changes no other file: not `docs/README.md`, not a hand-written folder index, not `.okf/`. | off |
 | `--json` | Print a JSON list of findings (`check`, `file`, `line`, `message`, `level`). | off |
 | `--strict` | Fail on warnings too, such as a summary over 500 words or behind its concepts. | off |
+| `--no-drafts` | Also fail on, and list, each decision record whose `status` is `draft`. | off |
 
 Exit codes: 0 when nothing fails (warnings included, unless `--strict`), 1
 when a check fails or, with `--strict`, when there is a warning.
@@ -337,10 +361,13 @@ repository root. The `README.md` indexes are left out.
 The summary, `.okf/summary.md`, is never listed as `unverified` or for
 `stale_after`. It is due, with the reason `concepts changed: ID, ...`, when
 a concept (the manifesto, a decision, practice, proposal, prototype
-`README.md` or architecture page) changed in a commit after the summary's
-last commit, or is changed or new in the working tree while the summary is
-not. Indexes, `log.md`, handoffs and the summary itself never count. Editing
-the summary, or `kmctl summary ack`, clears it. Without full git history (no
+`README.md` or architecture page) changed in a commit that no edit of the
+summary and no ack file has in its history, or is changed or new in the
+working tree while neither the summary nor an ack file is. A merge commit
+does not count as an edit of the summary, so after a merge, an edit one
+branch made after its own ack is still listed. Indexes, `log.md`,
+handoffs and the summary itself never count. Editing the summary, or
+`kmctl summary ack`, clears it. Without full git history (no
 repository, or a shallow clone) it is not checked.
 
 | Option | Meaning | Default |
@@ -400,31 +427,44 @@ form kmctl cannot extend (the refusal says to rewrite it as a block list).
 
 Record that `.okf/summary.md` still holds after the concepts that changed
 since it, so `kmctl review due` drops it. Run it when you have read the
-changed concepts and the summary needs no edit. It writes
+changed concepts and the summary needs no edit. It writes one ack file,
+`.okf/.acks/TIME-DIGEST.yaml`:
 
 ```yaml
-checked:
-  at: 2026-10-18T20:15:04Z
-  against:
-    - decisions/0002-use-a-queue
+# kmctl summary ack: .okf/summary.md was read against these concepts and still holds.
+at: 2026-10-18T20:15:04Z
+against:
+  - decisions/0002-use-a-queue
 ```
 
-into the summary's front matter, with `at` the UTC time to the second
-(a second later when the last ack wrote the same time and ids, so the file
-always changes) and `against`
-the ids `kmctl review due` listed, less any concept no longer in the bundle
-(a deleted one), replacing an older `checked`; `against: []` when every one
-was deleted. It changes
-no other line and no other file. That is an edit to the summary, so the
-summary leaves the list; commit it with the concepts. It is an agent's word
-that the summary holds, not a person's review, which is `kmctl verify`
-(ADR 0023, ADR 0027). When the summary is current it writes nothing and
-prints `nothing to ack`.
+`at` is the UTC time to the second. `against` holds the ids that `kmctl review
+due` listed. A concept that is no longer in the bundle, such as a deleted one,
+is left out, and the list is `against: []` when every one was deleted.
+
+Each ack file has its own name: the time, and a digest of `HEAD` and the ids.
+Two branches that both ack therefore write two different files, and git merges
+them without a conflict (ADR 0048).
+
+The command also deletes two things:
+
+- the ack files that were there, which the new one replaces;
+- a `checked` block in the summary's front matter, which kmctl wrote before
+  ADR 0048.
+
+It changes no other line and no other file. Commit the ack file with the
+concepts. A commit that changes an ack file counts like a commit that changes
+the summary, so the summary leaves the `kmctl review due` list.
+
+An ack is an agent's word that the summary holds. It is not a person's review,
+which is `kmctl verify` (ADR 0023, ADR 0027). When the summary is current, the
+command writes nothing and prints `nothing to ack`.
+
+
 
 | Option | Meaning | Default |
 |---|---|---|
 | `--path DIR` | The repository to write in: an existing folder. | `.` |
-| `--json` | Print one JSON object (`path`, `at`, `against`); `at` is null when nothing was written. | off |
+| `--json` | Print one JSON object (`path`, `at`, `against`, `file`); `at` and `file` are null when nothing was written. | off |
 
 Output: `checked .okf/summary.md at TIME against ID, ...` (`against none`
 when the list is empty), then `Next: kmctl review due`.
@@ -481,6 +521,31 @@ Each type goes in its own folder: `tutorial` in `docs/tutorials/`, `how-to` in
 `docs/explanation/`.
 
 Exit code: 1 when kmctl refuses, with the reason on stderr.
+
+### `kmctl decision accept`
+
+`kmctl decision accept NUMBER`
+
+Accept a draft decision record. Its `status` changes from `draft` to
+`stable`, no other line of the record changes, and a line in `.okf/log.md`
+names the person: ``- Accepted `decisions/0012-use-a-queue` (human:jasper).``
+`kmctl check --no-drafts` then stops listing it.
+
+Only a person accepts a decision (ADR 0050). An agent runs this only when
+the person named in `--by` has said yes to the record; CI never does. To
+drop a draft instead, delete its file and its line in
+`.okf/decisions/index.md`.
+
+| Argument or option | Meaning | Default |
+|---|---|---|
+| `NUMBER` | The number of the draft decision, for example `12` or `0012`. Required. | |
+| `--by human:ID` | The person who accepts it: a name or email address after `human:`. Anything else is refused. | `human:` and git's `user.email` |
+| `--path DIR` | The repository to write in: an existing folder. | `.` |
+| `--json` | Print one JSON object (`id`, `path`, `by`). | off |
+
+Exit code: 1 when kmctl refuses, with the reason on stderr: the record is
+missing or not a draft, `--by` is not a person, or git has no `user.email`
+and `--by` is left out.
 
 ### `kmctl decision supersede`
 
@@ -554,8 +619,10 @@ Rename a concept in `.okf/` and rewrite the links to it in `.okf/` and
    `ADR NNNN` in its `title` and `#` heading, and in the text of each link
    to it: `[ADR 0007](0007-use-a-queue.md)` becomes
    `[ADR 0006](0006-use-a-queue.md)`.
-4. Writes the new id for the old one in the `checked.against` list of
-   `.okf/summary.md`.
+4. Writes the new id for the old one in a `checked.against` list in the
+   front matter of `.okf/summary.md`, which kmctl wrote before ADR 0048. It
+   does not rewrite ack files: no rule reads their ids, and the next
+   `kmctl summary ack` replaces them.
 5. Appends a line to `.okf/log.md` naming both ids and each concept whose
    links it rewrote. It never rewrites an earlier line, so the old id stays
    in the log's history.

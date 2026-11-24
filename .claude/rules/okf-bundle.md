@@ -66,22 +66,27 @@ who checked the content adds a `verified` entry with `by: human:<id>`.
 
 ## Writing back
 
-Touching a concept means updating its body, then appending a dated bullet to
-`log.md` that says why. `log.md` is append-only.
+Touching a concept means updating its body. `log.md` records lifecycle
+events only, and it is append-only.
 
 When you add or change a concept, update `.okf/summary.md` in the same
 change, or run `kmctl summary ack` when it still holds. `kmctl review due`
 lists the summary until you do.
 
-<constraint name="every-touched-concept-is-logged">
-WHY: in the repository this setup came from, 43 of 53 commits that changed a
-concept left at least one changed concept out of the log, so the log read as
-complete and was not.
+<constraint name="the-log-records-lifecycle-events-only">
+WHY: every line appended to the end of `log.md` lands in the same place, so
+two open pull requests that both append one conflict there on GitHub. In a
+repository that used kmctl, 52 of 81 merged pull requests wrote to the log,
+and 18 of those wrote only lines about edits. Git history already records an
+edit, and a page's `verified` front matter records a check.
 
-Each concept a change touches is named by its id, in backticks, in a line
-that change appends to `log.md` (a file inside a prototype folder may be
-named by the folder). A change never removes or rewrites an earlier line.
-kmctl's own verbs write their log line; a hand edit writes its own.
+A change appends a line to `log.md` only for a lifecycle event: a concept
+created, renamed, superseded, deprecated, removed, or regenerated after its
+source changed, a decision accepted (`draft` to `stable`), or a concept
+verified. The line names each concept by
+its id, in backticks. An edit to a concept gets no line. A change never
+removes or rewrites an earlier line. kmctl's own verbs write their line; a
+hand change that is a lifecycle event writes its own.
 </constraint>
 
 ## Decisions
@@ -91,10 +96,26 @@ acts on it. The record carries Context, Decision (with the rejected
 alternative) and Consequences. `status` is `draft`, `stable` or
 `deprecated`. A `draft` record holds a choice written down but not yet
 accepted; a proposal in `proposals/` weighs options before there is a
-choice. Once the choice is accepted, the record's `status` becomes `stable`
-and a line in `log.md` says so. Beyond that, a record is never rewritten: a
-correction is an appended `## Correction, YYYY-MM-DD` section, and a
-reversal is written in both records (`kmctl decision supersede` does this).
+choice. `kmctl decision accept` makes a draft `stable` and logs who accepted
+it. Beyond that, a record is never rewritten: a correction is an appended
+`## Correction, YYYY-MM-DD` section, and a reversal is written in both
+records (`kmctl decision supersede` does this).
+
+<constraint name="drafts-are-settled-before-review">
+WHY: in a repository that used kmctl, 29 of the 44 decision records that
+merged pull requests added were still drafts when they merged, so nobody had
+said yes to them.
+
+Write a decision you record for a person as a draft
+(`kmctl new decision --draft`). Before the pull request is marked ready for
+review, list its open drafts with `kmctl check --no-drafts` and explain each
+one to its author in a sentence or two. The author says accept, change or
+drop. On an explicit yes, run
+`kmctl decision accept <number> --by human:<their id>`; to drop one, delete
+its file and its line in `.okf/decisions/index.md`. Never accept a draft the
+author did not say yes to. kmctl's CI action fails a pull request that is
+ready for review while a draft is left.
+</constraint>
 
 <constraint name="okf-changes-are-validated">
 WHY: a malformed concept still renders and still reads as knowledge.

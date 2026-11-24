@@ -8,6 +8,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
+import yaml
 from conftest import okf_validate
 from test_action import _kmctl_bin
 from test_action import _run as _run_action
@@ -21,6 +22,8 @@ from kmctl.summary import ack
 
 ROOT = Path(__file__).resolve().parents[3]
 SUMMARY = ".okf/summary.md"
+#: Where ack writes its files (ADR 0048).
+ACKS = ".okf/.acks"
 #: How ack writes checked.at: a UTC timestamp to the second.
 STAMP = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z")
 #: The summary's sections, by what a reader needs rather than by concept folder.
@@ -111,6 +114,25 @@ def _set_body(root: Path, body: str) -> None:
 
 def _ack(root: Path, *args: str) -> Result:
     return _invoke("summary", "ack", "--path", str(root), *args)
+
+
+def _ack_files(root: Path) -> list[Path]:
+    return sorted((root / ACKS).glob("*.yaml"))
+
+
+def _ack_file(root: Path) -> dict:
+    """What the one ack file in ``root`` holds."""
+    (file,) = _ack_files(root)
+    return yaml.safe_load(file.read_text(encoding="utf-8"))
+
+
+def _write_checked(root: Path, against: list[str]) -> None:
+    """Give the summary the ``checked`` block kmctl wrote before ADR 0048."""
+    path = root / SUMMARY
+    block = "checked:\n  at: 2026-10-19T10:00:00Z\n  against:\n"
+    block += "".join(f"    - {cid}\n" for cid in against)
+    text = path.read_text(encoding="utf-8")
+    path.write_text(text.replace("\n---\n", f"\n{block}---\n", 1), encoding="utf-8")
 
 
 # r1: the kind and init ---------------------------------------------------------
@@ -336,47 +358,167 @@ def test_clears_on_an_uncommitted_edit(tmp_path: Path) -> None:
     assert _summary_reasons(root) is None
 
 
-def test_clears_on_ack_and_writes_only_checked(tmp_path: Path) -> None:
+def test_clears_on_ack_and_writes_only_an_ack_file(tmp_path: Path) -> None:
     root = _init(tmp_path)
     cid = _new(root, "decision", "Use a queue")
     _commit(root)
-    path = root / SUMMARY
     before = {
         p: p.read_bytes()
         for p in root.rglob("*")
         if p.is_file() and ".git" not in p.parts
     }
-    old = path.read_text(encoding="utf-8")
 
     result = _ack(root, "--json")
 
     assert result.exit_code == 0, result.output
     data = json.loads(result.stdout)
     at = data["at"]
-    assert data == {"path": SUMMARY, "at": at, "against": [cid]}
+    (file,) = _ack_files(root)
+    assert data == {
+        "path": SUMMARY,
+        "at": at,
+        "against": [cid],
+        "file": file.relative_to(root).as_posix(),
+    }
     assert STAMP.fullmatch(at), at
     assert at.startswith(datetime.now(UTC).date().isoformat())
-    new = path.read_text(encoding="utf-8")
-    assert new == old.replace(
-        "\n---\n",
-        f"\nchecked:\n  at: {at}\n  against:\n    - {cid}\n---\n",
-        1,
-    )
+    assert file.read_text(encoding="utf-8").splitlines()[1:] == [
+        f"at: {at}",
+        "against:",
+        f"  - {cid}",
+    ]
     after = {
         p: p.read_bytes()
         for p in root.rglob("*")
         if p.is_file() and ".git" not in p.parts
     }
-    assert {p for p in after if after[p] != before.get(p)} == {path}
+    assert {p for p in after if after[p] != before.get(p)} == {file}
     assert _summary_reasons(root) is None
     _commit(root, "ack")
     assert _summary_reasons(root) is None
 
 
+def test_ack_on_two_branches_merges_without_a_conflict(tmp_path: Path) -> None:
+    """Two branches that both ack change no common bytes (ADR 0048)."""
+    root = _init(tmp_path)
+    (first,) = (root / ".okf/decisions").glob("0001-*.md")
+    when = datetime(2026, 11, 19, 8, 0, 0, tzinfo=UTC)
+    for branch, rel in (
+        ("a", first.relative_to(root).as_posix()),
+        ("b", ".okf/manifesto.md"),
+    ):
+        _git(root, "switch", "-q", "-c", branch, "main")
+        _append(root, rel, "An edit.\n")
+        _commit(root)
+        assert ack(root, now=when).file
+        _commit(root, "ack")
+    _git(root, "switch", "-q", "main")
+
+    _git(root, "merge", "-q", "--no-ff", "--no-edit", "a")
+    _git(root, "merge", "-q", "--no-ff", "--no-edit", "b")
+
+    assert len(_ack_files(root)) == 2
+    assert _summary_reasons(root) is None
+
+
+def test_ack_on_one_branch_does_not_cover_an_edit_on_another(tmp_path: Path) -> None:
+    """Branch a acks, then edits a decision; branch b acks. b's ack never saw that edit."""
+    root = _init(tmp_path)
+    (first,) = (root / ".okf/decisions").glob("0001-*.md")
+    rel = first.relative_to(root).as_posix()
+    _git(root, "switch", "-q", "-c", "a", "main")
+    _append(root, ".okf/manifesto.md", "An edit.\n")
+    _commit(root)
+    assert ack(root).file
+    _commit(root, "ack")
+    _append(root, rel, "An edit after the ack.\n")
+    _commit(root)
+    _git(root, "switch", "-q", "-c", "b", "main")
+    _append(root, ".okf/manifesto.md", "Another edit.\n")
+    _commit(root)
+    assert ack(root).file
+    _commit(root, "ack")
+    _git(root, "switch", "-q", "main")
+
+    _git(root, "merge", "-q", "--no-ff", "--no-edit", "a")
+    _git(root, "merge", "-q", "--no-ff", "--no-edit", "-X", "ours", "b")
+
+    assert _summary_reasons(root) == [f"concepts changed: decisions/{first.stem}"]
+
+
+def test_ack_after_merging_the_edit_covers_it(tmp_path: Path) -> None:
+    """Branch b merges a, with the edit, before it acks, so b's ack saw the edit."""
+    root = _init(tmp_path)
+    (first,) = (root / ".okf/decisions").glob("0001-*.md")
+    _git(root, "switch", "-q", "-c", "a", "main")
+    _append(root, first.relative_to(root).as_posix(), "An edit.\n")
+    _commit(root)
+    _git(root, "switch", "-q", "-c", "b", "main")
+    _git(root, "merge", "-q", "--no-ff", "--no-edit", "a")
+    assert ack(root).file
+    _commit(root, "ack")
+    _git(root, "switch", "-q", "main")
+
+    _git(root, "merge", "-q", "--no-ff", "--no-edit", "a")
+    _git(root, "merge", "-q", "--no-ff", "--no-edit", "b")
+
+    assert _summary_reasons(root) is None
+
+
+def test_ack_removes_the_ack_files_that_were_there(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    _new(root, "decision", "Use a queue")
+    _commit(root)
+    assert _ack(root).exit_code == 0
+    (first,) = _ack_files(root)
+    _commit(root, "ack")
+    second = _new(root, "practice", "Measure first")
+    _commit(root)
+
+    assert _ack(root).exit_code == 0
+
+    assert not first.exists()
+    assert _ack_file(root)["against"] == [second]
+    _commit(root, "ack again")
+    assert _summary_reasons(root) is None
+
+
+def test_ack_removes_a_checked_block_an_older_kmctl_wrote(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    (first,) = (root / ".okf/decisions").glob("0001-*.md")
+    _write_checked(root, [first.relative_to(root / ".okf").with_suffix("").as_posix()])
+    _commit(root, "an ack by an older kmctl")
+    old = (root / SUMMARY).read_text(encoding="utf-8")
+    cid = _new(root, "decision", "Use a queue")
+    _commit(root)
+
+    assert _ack(root).exit_code == 0
+
+    new = (root / SUMMARY).read_text(encoding="utf-8")
+    assert "checked:" in old and "checked:" not in new
+    assert new == re.sub(r"checked:\n(  .*\n)+", "", old)
+    assert _ack_file(root)["against"] == [cid]
+    assert _summary_reasons(root) is None
+
+
+def test_ack_files_pass_check_and_strict_validation(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    _new(root, "decision", "Use a queue")
+    _commit(root)
+    assert _ack(root).exit_code == 0
+    _commit(root, "ack")
+
+    check = _invoke("check", "--path", str(root), "--strict")
+    validation = okf_validate(root / ".okf")
+
+    assert check.exit_code == 0, check.output
+    assert validation.returncode == 0, validation.stdout
+
+
 def test_clears_ack_again_after_the_same_concept_changes_again(
     tmp_path: Path,
 ) -> None:
-    """A second ack on the same day, against the same ids, still changes the summary."""
+    """A second ack on the same day, against the same ids, still writes a new ack file."""
     root = _init(tmp_path)
     (first,) = (root / ".okf/decisions").glob("0001-*.md")
     rel = first.relative_to(root).as_posix()
@@ -386,12 +528,12 @@ def test_clears_ack_again_after_the_same_concept_changes_again(
     _commit(root, "ack")
     _append(root, rel, "Another edit.\n")
     _commit(root)
-    before = (root / SUMMARY).read_bytes()
+    before = _ack_files(root)
 
     result = _ack(root)
 
     assert result.exit_code == 0, result.output
-    assert (root / SUMMARY).read_bytes() != before
+    assert _ack_files(root) != before
     assert _summary_reasons(root) is None
     check = _invoke("check", "--path", str(root), "--json")
     assert [f for f in json.loads(check.stdout) if f["check"] == "summary"] == []
@@ -399,7 +541,7 @@ def test_clears_ack_again_after_the_same_concept_changes_again(
     assert _summary_reasons(root) is None
 
 
-def test_clears_ack_in_the_same_second_still_changes_the_summary(
+def test_clears_ack_in_the_same_second_writes_another_file(
     tmp_path: Path,
 ) -> None:
     root = _init(tmp_path)
@@ -408,31 +550,17 @@ def test_clears_ack_in_the_same_second_still_changes_the_summary(
     when = datetime(2026, 10, 18, 20, 0, 0, tzinfo=UTC)
     _append(root, rel, "An edit.\n")
     _commit(root)
-    assert ack(root, now=when).at == "2026-10-18T20:00:00Z"
+    one = ack(root, now=when)
+    assert one.at == "2026-10-18T20:00:00Z"
     _commit(root, "ack")
     _append(root, rel, "Another edit.\n")
     _commit(root)
 
     again = ack(root, now=when)
 
-    assert again.at == "2026-10-18T20:00:01Z"
+    assert again.at == "2026-10-18T20:00:00Z"
+    assert again.file != one.file
     assert _summary_reasons(root) is None
-
-
-def test_clears_ack_replaces_an_older_checked(tmp_path: Path) -> None:
-    root = _init(tmp_path)
-    _new(root, "decision", "Use a queue")
-    _commit(root)
-    assert _ack(root).exit_code == 0
-    _commit(root, "ack")
-    second = _new(root, "practice", "Measure first")
-    _commit(root)
-
-    assert _ack(root).exit_code == 0
-
-    meta = front_matter(root / SUMMARY)
-    assert field(meta, "checked.against") == [second]
-    assert (root / SUMMARY).read_text(encoding="utf-8").count("checked:") == 1
 
 
 def test_clears_ack_writes_nothing_when_current(tmp_path: Path) -> None:
@@ -510,17 +638,15 @@ def test_clears_ci_action_reports_a_stale_summary_without_failing(
 
 
 def test_checked_fields_read_through_okf_field(tmp_path: Path) -> None:
+    """A ``checked`` block an older kmctl wrote still reads as OKF fields."""
     root = _init(tmp_path)
-    cid = _new(root, "decision", "Use a queue")
-    _commit(root)
-    assert _ack(root).exit_code == 0
+    _write_checked(root, ["decisions/0002-use-a-queue"])
 
     meta = front_matter(root / SUMMARY)
 
     at = field(meta, "checked.at")
     assert isinstance(at, datetime) and at.tzinfo is not None
-    assert at.date() == datetime.now(UTC).date()
-    assert field(meta, "checked.against") == [cid]
+    assert field(meta, "checked.against") == ["decisions/0002-use-a-queue"]
     assert set(field(meta, "checked")) == {"at", "against"}
 
 
@@ -530,17 +656,8 @@ def test_check_warns_on_checked_against_a_concept_that_does_not_exist(
     """The reproduction in kmctl#34: an id added by hand under checked.against."""
     root = _init(tmp_path)
     cid = _new(root, "decision", "Use a queue")
-    _commit(root)
-    assert _ack(root).exit_code == 0
-    path = root / SUMMARY
-    text = path.read_text(encoding="utf-8")
-    path.write_text(
-        text.replace(
-            f"    - {cid}\n", f"    - {cid}\n    - decisions/0099-does-not-exist\n"
-        ),
-        encoding="utf-8",
-    )
-    _commit(root, "ack")
+    _write_checked(root, [cid, "decisions/0099-does-not-exist"])
+    _commit(root, "an ack by an older kmctl")
 
     result = _invoke("check", "--path", str(root), "--json")
     text = _invoke("check", "--path", str(root)).stdout
@@ -576,7 +693,7 @@ def test_ack_leaves_out_a_concept_that_was_deleted(tmp_path: Path) -> None:
 
     assert result.exit_code == 0, result.output
     assert json.loads(result.stdout)["against"] == [kept]
-    assert field(front_matter(root / SUMMARY), "checked.against") == [kept]
+    assert _ack_file(root)["against"] == [kept]
     check = _invoke("check", "--path", str(root), "--json")
     assert [f for f in json.loads(check.stdout) if f["check"] == "summary"] == []
 
@@ -606,7 +723,7 @@ def test_ack_after_only_a_deletion_writes_an_empty_list(tmp_path: Path) -> None:
     assert re.fullmatch(
         rf"checked {SUMMARY} at {STAMP.pattern} against none", first_line
     )
-    assert front_matter(root / SUMMARY)["checked"]["against"] == []
+    assert _ack_file(root)["against"] == []
     assert _summary_reasons(root) is None
 
 

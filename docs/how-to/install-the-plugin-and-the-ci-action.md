@@ -46,7 +46,7 @@ How the commands below were run:
 ### 1. Install kmctl
 
 ```
-uv tool install git+https://github.com/JasperHG90/kmctl@v0.14.0#subdirectory=packages/kmctl
+uv tool install git+https://github.com/JasperHG90/kmctl@v0.16.0#subdirectory=packages/kmctl
 ```
 
 The kmctl repository is private for now, so this needs a GitHub account
@@ -188,6 +188,7 @@ name: knowledge
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   push:
     branches: [main]
 
@@ -201,7 +202,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: JasperHG90/kmctl@v0.14.0
+      - uses: JasperHG90/kmctl@v0.16.0
 ```
 
 While the kmctl repository is private, GitHub runs this action only in
@@ -215,11 +216,21 @@ installed kmctl from in step 1.
 `kmctl check` fails or `kmctl review due` crashes, never because a concept is
 due. It needs no API key.
 
+On a pull request that is ready for review, it runs `kmctl check --no-drafts`,
+so a decision record that is still a draft fails the job (ADR 0050). A draft
+pull request and a push to `main` pass with drafts. The `ready_for_review` type
+in `on.pull_request` makes GitHub run the job again when you mark a pull
+request ready; without it, the drafts are only checked on the next push. Set
+the action's `drafts` input to `fail` to fail on drafts everywhere, or to
+`pass` to never check them.
+
 Run locally on the repository from the tutorial, with two decisions, the script behind this step
 writes this summary and exits 0:
 
 ````
 ## kmctl check
+
+Draft decisions pass here (drafts: fail-when-ready).
 
 ```
 all checks passed
@@ -361,7 +372,7 @@ Publish mode takes three more:
            with:
              fetch-depth: 0
              persist-credentials: false
-         - uses: JasperHG90/kmctl@v0.14.0
+         - uses: JasperHG90/kmctl@v0.16.0
            timeout-minutes: 40
            env:
              AUDIT_API_KEY: ${{ secrets.AUDIT_API_KEY }}
@@ -384,7 +395,7 @@ Publish mode takes three more:
          - uses: actions/checkout@v4
            with:
              persist-credentials: false
-         - uses: JasperHG90/kmctl@v0.14.0
+         - uses: JasperHG90/kmctl@v0.16.0
            with:
              mode: publish
    ```

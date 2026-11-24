@@ -1,10 +1,11 @@
 """Set a repository up with docs/, an OKF bundle and an agent-file block.
 
-It never touches a file that exists, with four exceptions: the kmctl block
+It never touches a file that exists, with five exceptions: the kmctl block
 in CLAUDE.md and AGENTS.md, the first decision's index entry and log line
 (ADR 0011), the root index entry and log line of a manifesto or summary it
-writes into a kept bundle (ADR 0027), and a docs/ folder index kmctl
-generated (ADR 0022). The knowledge rules come with kmctl's APM package, which
+writes into a kept bundle (ADR 0027), a docs/ folder index kmctl
+generated (ADR 0022), and the union merge lines it adds to .gitattributes
+(ADR 0051). The knowledge rules come with kmctl's APM package, which
 APM installs (ADR 0014, ADR 0020).
 """
 
@@ -35,6 +36,17 @@ RULES_FOLDERS = {
     "antigravity": "`.agents/rules/` (Antigravity)",
     "opencode": "`.opencode/rules/` (OpenCode)",
 }
+#: The bookkeeping files that every pull request adding a concept appends to,
+#: at the same place. A union merge keeps the lines of both sides, so a local
+#: merge never stops on them (ADR 0051).
+UNION_PATTERNS = (".okf/log.md", ".okf/index.md", ".okf/*/index.md")
+GITATTRIBUTES = ".gitattributes"
+UNION_COMMENT = (
+    "# OKF bookkeeping: a merge keeps the lines both branches added to the log\n"
+    "# and the indexes. GitHub ignores this setting, so it can still report a\n"
+    "# conflict there; git merge origin/main settles it locally.\n"
+)
+
 #: Where ``block`` names the rules folders in ``BLOCK``.
 RULES_MARK = "{rules}"
 
@@ -132,16 +144,18 @@ class ScaffoldResult:
     """What ``scaffold`` wrote, what it left alone, and what the user must finish by hand.
 
     Paths are relative to the root. ``scaffold`` never edits a kept file, with
-    four exceptions, all listed in ``updated``: it adds or replaces the kmctl
+    five exceptions, all listed in ``updated``: it adds or replaces the kmctl
     block in CLAUDE.md and AGENTS.md, when it writes the first decision into a
     kept bundle with no decision record it adds its index entry and log line,
     when it writes a manifesto or summary into a kept bundle it adds its root
-    index entry and log line (the page is then listed in ``linked``), and it
-    rewrites a docs/ folder index kmctl generated. A new CLAUDE.md
+    index entry and log line (the page is then listed in ``linked``), it
+    rewrites a docs/ folder index kmctl generated, and it adds the union merge
+    lines a kept .gitattributes lacks. A new CLAUDE.md
     beside an AGENTS.md holds only ``@AGENTS.md`` and is listed in
     ``created``. A warning names a kept index or log that is not UTF-8, so
-    ``scaffold`` could not add a new page to it, and a CLAUDE.md or AGENTS.md symlink left alone
-    because it is dangling or points outside the repository.
+    ``scaffold`` could not add a new page to it, a CLAUDE.md or AGENTS.md symlink left alone
+    because it is dangling or points outside the repository, and a
+    .gitattributes that is not a UTF-8 file.
     """
 
     created: list[str] = dataclass_field(default_factory=list)
@@ -211,6 +225,57 @@ def _text(path: Path) -> str | None:
         return path.read_text(encoding="utf-8")
     except UnicodeDecodeError:
         return None
+
+
+def _has_merge(text: str, pattern: str) -> bool:
+    """Whether a line of ``text`` sets, unsets or drives ``pattern``'s ``merge`` attribute."""
+    return any(
+        words[0] == pattern
+        and any(w.lstrip("-!").split("=")[0] == "merge" for w in words[1:])
+        for words in (line.split() for line in text.splitlines())
+        if words
+    )
+
+
+def _write_gitattributes(root: Path, result: ScaffoldResult) -> None:
+    """Give the OKF log and indexes a union merge in .gitattributes (ADR 0051).
+
+    A missing .gitattributes is written with a comment and the three lines. A
+    kept one gets, after its own text, only the lines for the patterns it
+    gives no ``merge`` attribute, so a driver the user chose stays; its line
+    endings are kept. One that is not a UTF-8 file is left alone with a
+    warning.
+    """
+    path = root / GITATTRIBUTES
+    lines = [f"{p} merge=union\n" for p in UNION_PATTERNS]
+    if not path.exists() and not path.is_symlink():
+        path.write_text(UNION_COMMENT + "".join(lines), encoding="utf-8")
+        result.created.append(GITATTRIBUTES)
+        return
+    try:
+        raw = path.read_bytes().decode("utf-8")
+    except (OSError, UnicodeDecodeError):
+        result.warnings.append(
+            f"kmctl did not give the OKF log and indexes a union merge because "
+            f"{GITATTRIBUTES} is not a UTF-8 file; add these lines to it by hand: "
+            + "; ".join(line.strip() for line in lines)
+        )
+        return
+    text = raw.replace("\r\n", "\n")
+    missing = [
+        line
+        for p, line in zip(UNION_PATTERNS, lines, strict=True)
+        if not _has_merge(text, p)
+    ]
+    if not missing:
+        result.skipped.append(GITATTRIBUTES)
+        return
+    added = (UNION_COMMENT if len(missing) == len(lines) else "") + "".join(missing)
+    if text.strip():
+        text = text.rstrip("\n") + "\n\n"
+    newline = "\r\n" if "\r\n" in raw else "\n"
+    path.write_bytes((text + added).replace("\n", newline).encode("utf-8"))
+    result.updated.append(GITATTRIBUTES)
 
 
 def block(harnesses: list[str]) -> str:
@@ -466,12 +531,14 @@ def scaffold(root: Path, now: datetime | None = None) -> ScaffoldResult:
     It writes docs/README.md and .okf/index.md, log.md, manifesto.md and
     summary.md; the kmctl block in each CLAUDE.md and AGENTS.md; a new CLAUDE.md when there is
     none, holding only ``@AGENTS.md`` beside an AGENTS.md and the block
-    otherwise; and the decision "Keep project knowledge in an OKF bundle" when
-    .okf/decisions/ holds no decision record. It writes no rules: those come
+    otherwise; the decision "Keep project knowledge in an OKF bundle" when
+    .okf/decisions/ holds no decision record; and a union merge for the OKF
+    log and indexes in .gitattributes. It writes no rules: those come
     with kmctl's APM package. A file that exists is kept, except for the kmctl block, the
-    first decision's index entry and log line, and the root index entry and
+    first decision's index entry and log line, the root index entry and
     log line of a manifesto or summary it writes into a kept bundle, so
-    ``kmctl check`` passes after it. Each docs/ Diataxis folder's
+    ``kmctl check`` passes after it, and the union merge lines a kept
+    .gitattributes lacks. Each docs/ Diataxis folder's
     README.md index is written when missing, or rewritten when kmctl
     generated it and it is out of date. A CLAUDE.md that imports
     ``@AGENTS.md`` gets no block. The block names the rules folder of each
@@ -493,7 +560,7 @@ def scaffold(root: Path, now: datetime | None = None) -> ScaffoldResult:
         The files created, the files that already existed and were kept, the
         kept files it changed (an agent file's kmctl block, the first
         decision's index entry and log line, a new page's root index entry
-        and log line, or a generated docs/ folder index), the new pages it
+        and log line, a generated docs/ folder index, or .gitattributes), the new pages it
         linked from a kept root index, and a warning for each kept file
         kmctl could not finish.
     """
@@ -513,4 +580,5 @@ def scaffold(root: Path, now: datetime | None = None) -> ScaffoldResult:
     result.updated += updated
     _write_block(root, result)
     _write_first_decision(root, now, result)
+    _write_gitattributes(root, result)
     return result

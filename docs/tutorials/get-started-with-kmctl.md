@@ -20,7 +20,7 @@ release this page ships with, and the output shown is what it printed.
 - kmctl installed:
 
   ```
-  uv tool install git+https://github.com/JasperHG90/kmctl@v0.14.0#subdirectory=packages/kmctl
+  uv tool install git+https://github.com/JasperHG90/kmctl@v0.16.0#subdirectory=packages/kmctl
   ```
 
   The kmctl repository is private for now, so this needs a GitHub account
@@ -61,6 +61,7 @@ created .okf/summary.md
 created CLAUDE.md
 created .okf/decisions/index.md
 created .okf/decisions/0001-keep-project-knowledge-in-an-okf-bundle.md
+created .gitattributes
 Next: install kmctl's package with APM for the skills and the knowledge rules (the kmctl README's install section: an apm.yml entry, apm install, kmctl plugin patch), then fill the purpose and invariants in .okf/manifesto.md (its values are the operator's to write), then add a diagram page to .okf/architecture/ once there is code, then record each choice as you make it with kmctl new decision
 ```
 
@@ -79,6 +80,9 @@ what the agent should do as it works. The rules for writing knowledge come
 with kmctl's skills in its APM package, the first step the `Next:` line
 names; this tutorial does not need them. Decision 0001 records the first choice: keep the
 project's knowledge in `.okf/`.
+
+`.gitattributes` tells git to keep the lines of both branches when two of
+them add to `log.md` or an index, so a merge does not stop on those files.
 
 ### 3. Check it
 

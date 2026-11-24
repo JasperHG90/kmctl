@@ -11,6 +11,16 @@ inputs:
     description: The repository folder to check, relative to the workspace.
     required: false
     default: "."
+  drafts:
+    description: >-
+      How mode checks treats decision records whose status is draft (ADR 0050).
+      fail-when-ready (the default) runs kmctl check --no-drafts on a pull
+      request that is ready for review, so a draft fails there and passes on a
+      draft pull request or a push. Add ready_for_review to the workflow's
+      pull_request types, so marking a pull request ready runs the check again.
+      fail always fails on a draft; pass never does.
+    required: false
+    default: fail-when-ready
   mode:
     description: >-
       checks (the default) runs kmctl check and kmctl review due. audit runs
@@ -148,6 +158,7 @@ runs:
       working-directory: ${{ inputs.path }}
       env:
         KMCTL_PINNED: "1"
+        KMCTL_DRAFTS: ${{ inputs.drafts }}
       run: bash "${{ github.action_path }}/action/knowledge-ci.sh"
     # The API key reaches a model that runs shell commands, so code from a pull
     # request or fork must never run here (ADR 0005).

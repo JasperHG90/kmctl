@@ -227,7 +227,8 @@ KINDS: dict[str, DocumentKind] = {
             "words, which kmctl check warns about (fails with --strict), and holds no counts or due "
             "lists. kmctl review due lists it, with the concepts that changed, "
             "when a concept changed after the summary's last commit; editing it "
-            "or kmctl summary ack, which writes checked, clears that. It is "
+            "or kmctl summary ack, which writes an ack file under .okf/.acks/, "
+            "clears that. It is "
             "never verified and has no stale_after."
         ),
         fields=(*_WRITTEN, "checked"),
@@ -408,6 +409,8 @@ _FIELD_SCHEMAS: dict[str, dict[str, Any]] = {
             },
         },
         "description": (
+            "Written by kmctl summary ack before ADR 0048, which now writes an "
+            "ack file under .okf/.acks/ and removes this field. "
             "An agent's word, from kmctl summary ack, that the summary still "
             "holds after the concepts that changed; not a person's review."
         ),

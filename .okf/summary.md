@@ -6,10 +6,6 @@ generated:
   by: claude-opus/5.5
   at: 2026-10-18
 tags: [summary]
-checked:
-  at: 2026-11-16T17:14:06Z
-  against:
-    - architecture/overview
 ---
 
 # Summary: kmctl
@@ -68,11 +64,12 @@ Handoffs in `.okf/handoffs/` carry unfinished work into the next session
   [ADR 0009](decisions/0009-handoff-key-extension-field.md),
   [ADR 0027](decisions/0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step.md)).
 - **Judging is not trusting.** Audits report and never write; only a person
-  verifies, and an agent's `kmctl summary ack` is no review. The CI
+  verifies or accepts; an agent's `kmctl summary ack` is no review. The CI
   audit takes any provider and never runs beside a GitHub token
   ([ADR 0005](decisions/0005-audits-report-only.md),
   [ADR 0017](decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script.md),
-  [ADR 0023](decisions/0023-kmctl-verify-records-a-person-s-check.md)).
+  [ADR 0023](decisions/0023-kmctl-verify-records-a-person-s-check.md),
+  [ADR 0050](decisions/0050-drafts-are-settled-before-review-and-only-a-person-accepts-one.md)).
 - **One version, one owner per file.** The package matches the CLI's
   version. APM owns what it installs; kmctl patches only its gaps, each
   until APM closes it

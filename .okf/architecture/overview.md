@@ -141,7 +141,7 @@ flowchart LR
     app --> scaffold & checks & briefing & reviewDue & handoffs & concepts & docs & supersede & candidatesPy & mvPy & verifyPy & summaryPy & pluginPy & doctorPy & kinds
     reviewDue & checks & briefing -- "changed_concepts" --> summaryPy
     summaryPy -. "git log, diff, status" .-> repo
-    summaryPy -- "write: checked in .okf/summary.md" --> repo
+    summaryPy -- "write: an ack file in .okf/.acks/" --> repo
     doctorPy -- "hook and MCP entries,<br/>lock reader" --> pluginPy
     doctorPy -- "plugin_problems" --> antigravityPy
     doctorPy -- "agent_problems, rule_problems,<br/>hook_problems, mcp_present" --> opencodePy

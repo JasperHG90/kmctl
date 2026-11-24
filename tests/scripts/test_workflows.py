@@ -556,7 +556,15 @@ def _bash(
     return subprocess.run(
         ["bash", "-e", "-c", script],
         cwd=cwd,
-        env={"PATH": "/usr/bin:/bin", "HOME": str(cwd), **env},
+        # PYTHONDONTWRITEBYTECODE: macOS's /usr/bin/python3 caches bytecode under
+        # $HOME/Library, which is the repository here, and a step that checks
+        # for a clean tree would then see an untracked Library/.
+        env={
+            "PATH": "/usr/bin:/bin",
+            "HOME": str(cwd),
+            "PYTHONDONTWRITEBYTECODE": "1",
+            **env,
+        },
         capture_output=True,
         text=True,
         check=False,

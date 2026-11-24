@@ -297,3 +297,24 @@
 - `prototypes/decision-gaps` measures, on this repository's history, a no-model filter plus an agent judge for finding merges that made a decision nobody recorded: 25 of 30 hidden decisions found, 10 of 17 claims elsewhere real gaps once 15 choices recorded as amendments are set aside, $3.19 for 161 units, so the history scan ADR 0046 places in kmctl is worth building.
 - `kmctl decision candidates` lists, with no model, the changes since the newest decision record for a judge: `decisions/0047-unrecorded-decisions-are-listed-by-kmctl-and-judged-by-a-skill-that-only-reports` records the split between that verb, a report-only decision-gaps skill and the user, and `prototypes/decision-gaps` names the verb.
 - kmctl's package gains the `decision-gaps` skill, which judges what `kmctl decision candidates` lists and reports unrecorded decisions without writing (ADR 0047): `architecture/overview` names the skill and `candidates.py`.
+
+## 2026-11-19
+
+- Added `prototypes/bookkeeping-merge-conflicts` with `kmctl new prototype`.
+- Added `decisions/0048-kmctl-summary-ack-writes-one-file-per-ack-so-branches-merge-without-a-conflict` with `kmctl new decision`.
+- `kmctl summary ack` writes one file per ack under `.okf/.acks/` and no longer the `checked` block, which made two branches that both acked conflict (ADR 0048): `decisions/0048-kmctl-summary-ack-writes-one-file-per-ack-so-branches-merge-without-a-conflict` records it, `decisions/0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step` gains an amendment, `architecture/overview` names the ack file, and `prototypes/bookkeeping-merge-conflicts` holds the measurement: 28 of 45 pairs of open pull requests conflicted in the summary, 26 of them only in that block.
+- The summary is behind when a concept changed in a commit that no edit of the summary and no ack file has in its history, not after the newest one, so an edit one branch made after its own ack is still reported after a merge: `decisions/0048-kmctl-summary-ack-writes-one-file-per-ack-so-branches-merge-without-a-conflict`, `decisions/0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step`.
+
+## 2026-11-23
+
+- Added `decisions/0049-the-log-records-lifecycle-events-only` with `kmctl new decision`.
+- Accepted `decisions/0049-the-log-records-lifecycle-events-only` (human:roel).
+- Added `decisions/0050-drafts-are-settled-before-review-and-only-a-person-accepts-one` with `kmctl new decision`.
+- Accepted `decisions/0050-drafts-are-settled-before-review-and-only-a-person-accepts-one` (human:roel).
+- Accepted `decisions/0041-people-review-claims-and-checks-on-a-local-page-and-their-feedback-goes-back-to-the-agents` (human:roel).
+- Accepted `decisions/0042-code-coverage-counts-the-lines-a-check-matched` (human:roel).
+
+## 2026-11-24
+
+- Added `decisions/0051-kmctl-init-sets-a-union-merge-for-the-log-and-the-indexes` with `kmctl new decision`.
+- Accepted `decisions/0051-kmctl-init-sets-a-union-merge-for-the-log-and-the-indexes` (human:roel).

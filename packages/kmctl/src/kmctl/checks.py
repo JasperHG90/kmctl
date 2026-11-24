@@ -36,6 +36,8 @@ The index format, which every kmctl verb that writes an index follows:
   ``WORD_LIMIT`` words (check name ``summary``); a longer one is a warning.
   So is a summary behind the concepts that changed after it, and an id in
   its ``checked.against`` that is not a concept in the bundle.
+- With ``--no-drafts`` (``run_checks(no_drafts=True)``), a decision record
+  whose ``status`` is draft fails (check name ``draft``).
 - No concept counts are written or checked.
 """
 
@@ -53,6 +55,7 @@ from kmctl.docs_index import (
     folder_pages,
     is_generated,
 )
+from kmctl.kinds import DRAFT
 from kmctl.okf import (
     BadFrontMatter,
     as_datetime,
@@ -434,10 +437,13 @@ def check_okf(root: Path) -> list[Finding]:
 
 
 def _check_decisions(root: Path, section: Path) -> list[Finding]:
-    """Findings for decision records whose ADR number is not their file's, and index entries that misname them.
+    """Findings for decision records whose ADR number is not their file's or is another record's, and index entries that misname them.
 
     A record's ``title`` or ``#`` heading that starts with ``ADR NNNN`` must
-    carry the number its file name starts with. The section index's entry
+    carry the number its file name starts with. No two records may start
+    with the same number: two branches that both ran ``kmctl new decision``
+    take the same one, and git merges them without a conflict because the
+    file names differ. The section index's entry
     for a record must read the record's title, or just ``ADR NNNN``; a title
     that starts with the wrong ``ADR NNNN`` counts, and is suggested, with
     the file's number in its place. A record
@@ -445,11 +451,13 @@ def _check_decisions(root: Path, section: Path) -> list[Finding]:
     """
     findings = []
     records: dict[Path, tuple[str, str | None]] = {}
+    numbered: dict[str, list[Path]] = {}
     for record in sorted(section.glob("*.md")):
         match = _RECORD.fullmatch(record.name)
         if not match:
             continue
         number = match.group(1)
+        numbered.setdefault(number, []).append(record)
         try:
             text = _read(record)
             meta, body = split_front_matter(text)
@@ -481,6 +489,19 @@ def _check_decisions(root: Path, section: Path) -> list[Finding]:
                         f"{number}; make it ADR {number}",
                     )
                 )
+    free = max((int(number) for number in numbered), default=0) + 1
+    for number, same in numbered.items():
+        for record in same if len(same) > 1 else []:
+            others = ", ".join(r.name for r in same if r != record)
+            findings.append(
+                Finding(
+                    "decision",
+                    _rel(root, record),
+                    None,
+                    f"number {number} is also the number of {others}; give one "
+                    f"of them the next free number, {free:04d}, with kmctl mv",
+                )
+            )
     index = section / "index.md"
     try:
         entries = _entries(index)
@@ -661,13 +682,57 @@ def check_summary(root: Path) -> list[Finding]:
     return findings
 
 
-def run_checks(root: Path) -> list[Finding]:
+def check_drafts(root: Path) -> list[Finding]:
+    """One error for each decision record whose ``status`` is draft.
+
+    A draft is a choice written down but not yet accepted (ADR 0031). Before
+    a pull request is reviewed, its author accepts each draft with
+    ``kmctl decision accept`` or deletes it (ADR 0050). A record whose front
+    matter does not parse is the okf validator's to report.
+    """
+    section = root / ".okf" / "decisions"
+    findings = []
+    for record in sorted(section.glob("*.md")) if section.is_dir() else []:
+        match = _RECORD.fullmatch(record.name)
+        if not match:
+            continue
+        try:
+            text = _read(record)
+            meta, _ = split_front_matter(text)
+        except (_Unreadable, BadFrontMatter):
+            continue
+        if field(meta, "status") != DRAFT:
+            continue
+        line = next(
+            (
+                i
+                for i, row in enumerate(text.splitlines(), 1)
+                if row.startswith("status:")
+            ),
+            None,
+        )
+        findings.append(
+            Finding(
+                DRAFT,
+                record.relative_to(root).as_posix(),
+                line,
+                "decision is still a draft; accept it with kmctl decision accept "
+                f"{int(match.group(1))} once its author says yes, or delete it and "
+                "its index entry",
+            )
+        )
+    return findings
+
+
+def run_checks(root: Path, no_drafts: bool = False) -> list[Finding]:
     """Run every knowledge check on the repository at ``root``.
 
     Parameters
     ----------
     root : Path
         The repository root, holding docs/ and .okf/.
+    no_drafts : bool
+        Also fail on each decision record that is still a draft.
 
     Returns
     -------
@@ -680,4 +745,5 @@ def run_checks(root: Path) -> list[Finding]:
         + check_prototypes(root)
         + check_summary(root)
         + check_links(root)
+        + (check_drafts(root) if no_drafts else [])
     )

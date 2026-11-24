@@ -87,7 +87,9 @@ KMAUDIT_AGENTS = ("kmctl-claims-extractor.md", "kmctl-check-writer.md")
 #: 0031, a decision record may be draft until it is accepted;
 #: diagrams-stay-current, docs-layout and okf-bundle: ADR 0011's last
 #: 2026-10-19 correction, rules named by name, not a .claude/ path;
-#: okf-bundle: ADR 0034, rename a concept with kmctl mv).
+#: okf-bundle: ADR 0034, rename a concept with kmctl mv; okf-bundle: ADR 0049,
+#: the log records lifecycle events only; okf-bundle: ADR 0050, drafts are
+#: settled before review).
 OLD_RULES = {
     "diagrams-stay-current": (
         [".okf/**", "src/**", "lib/**", "app/**", "pkg/**", "cmd/**"],
@@ -103,7 +105,7 @@ OLD_RULES = {
     ),
     "okf-bundle": (
         [".okf/**"],
-        "df73e31a274b657ecf4e5818c83633d7869cc93438a596b23f659765b5906b61",
+        "9085d020ecee6a4ce5056f839cf46fd24a9e5c54a2c2a6d364e8d389a3ea8388",
     ),
 }
 

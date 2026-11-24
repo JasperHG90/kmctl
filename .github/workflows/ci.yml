@@ -1,7 +1,10 @@
 name: CI
 
 on:
+  # ready_for_review: marking a pull request ready reruns the knowledge job,
+  # which then fails on a draft decision (ADR 0050).
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   push:
     branches: [main]
 
