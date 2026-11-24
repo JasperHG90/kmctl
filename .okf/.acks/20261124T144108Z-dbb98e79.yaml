@@ -1,0 +1,4 @@
+# kmctl summary ack: .okf/summary.md was read against these concepts and still holds.
+at: 2026-11-24T14:41:08Z
+against:
+  - decisions/0052-the-starter-keeps-an-anchor-comment-below-each-kmctl-ref-so-updates-merge-a-project-s-additions

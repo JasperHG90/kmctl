@@ -318,3 +318,4 @@
 
 - Added `decisions/0051-kmctl-init-sets-a-union-merge-for-the-log-and-the-indexes` with `kmctl new decision`.
 - Accepted `decisions/0051-kmctl-init-sets-a-union-merge-for-the-log-and-the-indexes` (human:roel).
+- Added `decisions/0052-the-starter-keeps-an-anchor-comment-below-each-kmctl-ref-so-updates-merge-a-project-s-additions` with `kmctl new decision`.

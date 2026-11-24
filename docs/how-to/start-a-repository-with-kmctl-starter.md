@@ -63,6 +63,17 @@ kmctl_ref=vX.Y.Z`, which brings in the newest template and rewrites
 `apm.yml`, the justfile, CI and `.copier-answers.yml` for that pin, then
 `just kmctl install`. Commit the changes, `apm.lock.yaml` among them.
 
+Add your own CI steps and jobs, APM dependencies and `mcp:` servers below
+the comment that follows each pin in `ci.yml` and `apm.yml`. copier merges
+the new pin into your file, and git calls content added directly below the
+pin's line a conflict. When copier does leave a conflict, `just upgrade`
+names the files and stops before the install: keep your changes and the new
+ref, with your content below the comment, `git add` the files, then run
+`just kmctl install`. A project made from a template without that comment
+conflicts once, on the upgrade that brings it in; `just kmctl`,
+`just install` and `just install-frozen` refuse to run while git holds
+unmerged files, so that upgrade stops too.
+
 The template always follows the newest kmctl release, while `kmctl_ref`
 picks the CLI and package. A new kmctl release is a new template version
 even when the template did not change; `uvx copier update` then changes
