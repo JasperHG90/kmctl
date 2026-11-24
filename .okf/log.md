@@ -318,3 +318,5 @@
 
 - Added `decisions/0051-kmctl-init-sets-a-union-merge-for-the-log-and-the-indexes` with `kmctl new decision`.
 - Accepted `decisions/0051-kmctl-init-sets-a-union-merge-for-the-log-and-the-indexes` (human:roel).
+- Added `decisions/0052-accepting-a-draft-does-not-make-a-verified-record-due` with `kmctl new decision`.
+- Accepted `decisions/0052-accepting-a-draft-does-not-make-a-verified-record-due` (human:roel).
