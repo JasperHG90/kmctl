@@ -1,4 +1,0 @@
-# kmctl summary ack: .okf/summary.md was read against these concepts and still holds.
-at: 2026-11-24T08:44:03Z
-against:
-  - decisions/0051-kmctl-init-sets-a-union-merge-for-the-log-and-the-indexes
