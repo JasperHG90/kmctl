@@ -92,3 +92,4 @@
 {"at": "2026-11-16T07:41:06+00:00", "branch": "loop/adr-kmaudit-stale-lines", "kind": "commit", "schema_version": "1.0", "sha": "a4d1e861e3a8f4169a8d169f3a4cf4e707b389e5", "subject": "Merge branch 'main' into loop/adr-kmaudit-stale-lines"}
 {"at": "2026-11-16T07:50:09+00:00", "branch": "loop/adr-kmaudit-stale-lines", "kind": "commit", "schema_version": "1.0", "sha": "85ef946b767a6e26645b6de1126a60eea74de468", "subject": "Merge branch 'main' into loop/adr-kmaudit-stale-lines"}
 {"at": "2026-11-16T18:40:55+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "c471f806fce9f0b020f6ef8b0ec05c91d047e461", "subject": "Plan for decision-gaps-skill cites the case folders it built"}
+{"at": "2026-11-24T14:31:16+00:00", "branch": "main", "kind": "commit", "schema_version": "1.0", "sha": "882854d151073b4062d576bd3a27dbc15fed3133", "subject": "chore: merging main"}
