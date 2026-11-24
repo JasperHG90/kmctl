@@ -1,12 +1,12 @@
 ---
 type: decision
 title: "ADR 0052: Accepting a draft does not make a verified record due"
-description: "kmctl review due does not count a status that went from draft to stable as an edit after verification."
+description: "kmctl review due does not count a decision record's status going from draft to stable as an edit after verification."
 tags: [decision]
 generated:
   by: process:kmctl/0.16.0
   at: 2026-11-24T17:06:53Z
-status: draft
+status: stable
 sources:
   - resource: "packages/kmctl/src/kmctl/review_due.py"
 ---
@@ -29,9 +29,12 @@ them had been verified and came back as due.
 
 ## Decision
 
-`kmctl review due` does not count a `status` that went from `draft` to
-`stable` as an edit. Any other change to `status`, such as `stable` to
-`deprecated`, still counts, and so does any other edit made with the accept.
+In a decision record, `kmctl review due` does not count a `status` that went
+from `draft` to `stable` as an edit. Any other change to `status`, such as
+`stable` to `deprecated`, still counts, and so does any other edit made with
+the accept. In any other concept, a change to `status` still counts:
+`kmctl decision accept` writes only decision records, and a person who
+changes a practice's `status` by hand may have changed what it claims.
 
 We rejected three other ways:
 
@@ -49,7 +52,8 @@ We rejected three other ways:
 
 - A verified draft stays verified when it is accepted. A draft that was
   never verified is still listed as `unverified`.
-- `kmctl review due` reads `status` from both versions of the record to make
-  this one exception; it reads no other field by name.
+- To make this one exception, `kmctl review due` reads `type` and `status`
+  from both versions of the record, through `field` as every other read
+  does.
 - The command reference says so under `kmctl review due` and
   `kmctl decision accept`.

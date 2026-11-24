@@ -345,9 +345,9 @@ when it has no `verified` entry (`unverified`), when a commit after its
 verification commit changed one of its `sources` (`source changed: SOURCE`),
 or when such a commit changed the concept itself in its body or any front
 matter field other than `verified` and `stale_after`
-(`edited after verification`). A `status` that went from `draft` to `stable`
-is not an edit, so `kmctl decision accept` does not make a verified record
-due (ADR 0052). The verification commit is the oldest commit
+(`edited after verification`). In a decision record, a `status` that went
+from `draft` to `stable` is not an edit, so `kmctl decision accept` does not
+make a verified record due (ADR 0052). The verification commit is the oldest commit
 whose front matter holds the file's newest `verified` entry, so commit order
 decides, not dates, and a verification made on a branch survives a squash or
 rebase merge (ADR 0032). While that entry is not committed, nothing counts as
