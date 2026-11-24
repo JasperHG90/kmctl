@@ -345,7 +345,9 @@ when it has no `verified` entry (`unverified`), when a commit after its
 verification commit changed one of its `sources` (`source changed: SOURCE`),
 or when such a commit changed the concept itself in its body or any front
 matter field other than `verified` and `stale_after`
-(`edited after verification`). The verification commit is the oldest commit
+(`edited after verification`). In a decision record, a `status` that went
+from `draft` to `stable` is not an edit, so `kmctl decision accept` does not
+make a verified record due (ADR 0052). The verification commit is the oldest commit
 whose front matter holds the file's newest `verified` entry, so commit order
 decides, not dates, and a verification made on a branch survives a squash or
 rebase merge (ADR 0032). While that entry is not committed, nothing counts as
@@ -529,7 +531,9 @@ Exit code: 1 when kmctl refuses, with the reason on stderr.
 Accept a draft decision record. Its `status` changes from `draft` to
 `stable`, no other line of the record changes, and a line in `.okf/log.md`
 names the person: ``- Accepted `decisions/0012-use-a-queue` (human:jasper).``
-`kmctl check --no-drafts` then stops listing it.
+`kmctl check --no-drafts` then stops listing it. A record verified before
+it was accepted stays verified: `kmctl review due` does not count the new
+`status` as an edit (ADR 0052).
 
 Only a person accepts a decision (ADR 0050). An agent runs this only when
 the person named in `--by` has said yes to the record; CI never does. To

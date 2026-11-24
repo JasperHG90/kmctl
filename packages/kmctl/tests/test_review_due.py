@@ -9,6 +9,7 @@ import yaml
 from typer.testing import CliRunner, Result
 
 from kmctl import app
+from kmctl.accept import accept
 from kmctl.okf import as_datetime
 from kmctl.review_due import verification_commits
 from kmctl.verify import verify
@@ -432,6 +433,68 @@ def test_edited_after_verification_with_source_change(tmp_path: Path) -> None:
     assert _reasons(tmp_path) == {
         CONCEPT[0]: ["source changed: src/app.py", "edited after verification"]
     }
+
+
+DECISION = ("decisions/0001-use-app", ".okf/decisions/0001-use-app.md")
+
+
+def _decision(root: Path, status: str, kind: str = "decision") -> None:
+    """Write the record DECISION with ``status``, unverified, as ``kmctl new decision`` would."""
+    _write(
+        root,
+        DECISION[1],
+        f'---\ntype: {kind}\ntitle: "ADR 0001: Use app"\ndescription: "We use app."\n'
+        f"tags: [decision]\nstatus: {status}\n---\n\n# ADR 0001: Use app\n",
+    )
+
+
+def _verified_draft(root: Path, kind: str = "decision") -> None:
+    """A repository with a draft record of type ``kind``, verified in a commit of its own."""
+    _repo(root)
+    _decision(root, "draft", kind)
+    _commit(root)
+    _verify(root, DECISION[0], VERIFIED)
+    _commit(root, date=VERIFIED)
+
+
+def test_accepting_a_verified_draft_is_not_an_edit(tmp_path: Path) -> None:
+    _verified_draft(tmp_path)
+    accept(tmp_path, "1", by="human:j", now=datetime.fromisoformat(NEW))
+    _commit(tmp_path, date=NEW)
+
+    assert "stable" in (tmp_path / DECISION[1]).read_text()
+    assert _reasons(tmp_path) == {}
+
+
+def test_accepting_and_editing_a_draft_is_an_edit(tmp_path: Path) -> None:
+    _verified_draft(tmp_path)
+    accept(tmp_path, "1", by="human:j", now=datetime.fromisoformat(NEW))
+    _edit(tmp_path, DECISION[1], "body")
+    _commit(tmp_path, date=NEW)
+
+    assert _reasons(tmp_path) == {DECISION[0]: ["edited after verification"]}
+
+
+def test_a_stable_decision_made_a_draft_again_is_an_edit(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    _decision(tmp_path, "stable")
+    _commit(tmp_path)
+    _verify(tmp_path, DECISION[0], VERIFIED)
+    _commit(tmp_path, date=VERIFIED)
+    path = tmp_path / DECISION[1]
+    path.write_text(path.read_text().replace("status: stable", "status: draft"))
+    _commit(tmp_path, date=NEW)
+
+    assert _reasons(tmp_path) == {DECISION[0]: ["edited after verification"]}
+
+
+def test_a_draft_made_stable_outside_a_decision_is_an_edit(tmp_path: Path) -> None:
+    _verified_draft(tmp_path, kind="practice")
+    path = tmp_path / DECISION[1]
+    path.write_text(path.read_text().replace("status: draft", "status: stable"))
+    _commit(tmp_path, date=NEW)
+
+    assert _reasons(tmp_path) == {DECISION[0]: ["edited after verification"]}
 
 
 @pytest.mark.parametrize("stale_after", [None, "2999-01-01"])

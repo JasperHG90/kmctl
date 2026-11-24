@@ -4,7 +4,9 @@ A concept is due when its ``stale_after`` has passed, when it has no
 ``verified`` entry, when a tracked file in its ``sources`` changed in a
 commit after its verification commit (``source changed``), or when the
 concept itself did, outside ``verified`` and ``stale_after``, the fields
-``kmctl verify`` writes (``edited after verification``). Commit order, not
+``kmctl verify`` writes (``edited after verification``). In a decision
+record, a ``status`` that went from draft to stable is not an edit:
+``kmctl decision accept`` changes only that line (ADR 0052). Commit order, not
 dates, decides (ADR 0032): the verification commit is the oldest commit in
 the file's history whose front matter holds its newest ``verified[].at``, so
 a squash or rebase merge carries it along. While that entry is not
@@ -27,6 +29,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
+from kmctl.kinds import DRAFT, STABLE
 from kmctl.okf import (
     BadFrontMatter,
     as_datetime,
@@ -189,6 +192,28 @@ def _outside_verify(text: str | None) -> tuple[object, str] | None:
     return without(parsed[0], VERIFY_FIELDS), parsed[1]
 
 
+def _edited(verified: str | None, head: str | None) -> bool:
+    """True when ``head`` differs from ``verified`` outside the fields kmctl verify writes.
+
+    In a decision record, a ``status`` that went from draft to stable is
+    left out too: ``kmctl decision accept`` changes only that line, and
+    accepting a draft adds nothing to check in it (ADR 0052).
+    """
+    old, new = _outside_verify(verified), _outside_verify(head)
+    if old is None or new is None:
+        return old != new
+    if (
+        isinstance(old[0], dict)
+        and isinstance(new[0], dict)
+        and field(old[0], "type") == field(new[0], "type") == "decision"
+        and field(old[0], "status") == DRAFT
+        and field(new[0], "status") == STABLE
+    ):
+        old = without(old[0], {"status"}), old[1]
+        new = without(new[0], {"status"}), new[1]
+    return old != new
+
+
 def _show(root: Path, specs: list[str]) -> list[str | None]:
     """The text of each ``REV:./PATH`` in ``specs`` from one ``git cat-file --batch``; None when missing."""
     if not specs:
@@ -286,7 +311,8 @@ def _check_history(root: Path, checks: list[_Check]) -> None:
     without ``verified``, its own last commit. A source is changed when it
     differs between the baseline and HEAD. A verified file is edited when it
     differs between its verification commit and HEAD outside the fields
-    kmctl verify writes. A file with no baseline gets neither reason.
+    kmctl verify writes and, in a decision record, a draft-to-stable
+    ``status``. A file with no baseline gets neither reason.
     """
     commits = verification_commits(
         root, {c.rel: c.newest for c in checks if c.newest is not None}
@@ -303,7 +329,7 @@ def _check_history(root: Path, checks: list[_Check]) -> None:
     edited = {
         c.rel
         for c, verified, head in zip(edits, texts[::2], texts[1::2], strict=True)
-        if _outside_verify(verified) != _outside_verify(head)
+        if _edited(verified, head)
     }
     for c in checks:
         if c.newest is not None:
