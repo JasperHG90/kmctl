@@ -333,6 +333,207 @@ def test_just_kmctl_installs_only_when_missing_or_older(
     assert lines[-1] == " --version", lines
 
 
+# Upgrades ---------------------------------------------------------------------
+
+# A release older than the template's default, after v0.12.2 so the APM path
+# stays packages/kmctl/apm and only the pins differ between the two renders.
+OLD_REF = "v0.13.0"
+# What a project adds below the template's anchor in each file.
+OWN_STEP = "      - name: Our own step\n        run: echo ours\n"
+OWN_JOB = "\n  ours:\n    runs-on: ubuntu-latest\n    steps:\n      - run: echo ours\n"
+OWN_DEP = "    - git: https://github.com/octocat/skills.git\n      ref: main\n"
+OWN_MCP = "  mcp:\n    - name: ours\n      registry: false\n      transport: stdio\n      command: ours\n"
+
+
+def _git_commit_all(repo: Path) -> None:
+    """Make ``repo`` a git repository holding every file in it, committed."""
+    for cmd in (
+        ["init", "-q"],
+        ["add", "-A"],
+        ["-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "init"],
+    ):
+        subprocess.run(["git", *cmd], cwd=repo, check=True, capture_output=True)
+
+
+def _add_own_content(out: Path) -> None:
+    """Add a project's own step, job, APM dependency and MCP server below the template's anchors."""
+    ci = out / ".github" / "workflows" / "ci.yml"
+    ci.write_text(ci.read_text() + OWN_STEP + OWN_JOB)
+    apm = out / "apm.yml"
+    head, sep, tail = apm.read_text().partition("targets:\n")
+    apm.write_text(head + OWN_DEP + OWN_MCP + sep + tail)
+
+
+def _unmerged(repo: Path) -> list[str]:
+    """The paths git holds as unmerged in ``repo``."""
+    return subprocess.run(
+        ["git", "diff", "--name-only", "--diff-filter=U"],
+        cwd=repo,
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.split()
+
+
+@pytest.mark.parametrize("review", ["true", "false"])
+def test_upgrade_keeps_content_added_below_the_pins(
+    template: Path, tmp_path: Path, review: str
+) -> None:
+    """copier update to another kmctl_ref moves both pins and keeps a project's own steps, jobs and dependencies, without a conflict."""
+    out = tmp_path / "demo"
+    res = _copier(template, out, f"kmctl_ref={OLD_REF}", f"adversarial_review={review}")
+    assert res.returncode == 0, res.stderr
+    _add_own_content(out)
+    _git_commit_all(out)
+
+    res = subprocess.run(
+        [sys.executable, "-m", "copier", "update", "--defaults", "--vcs-ref", "HEAD"]
+        + ["--data", f"kmctl_ref={TAG}"],
+        cwd=out,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert res.returncode == 0, res.stdout + res.stderr
+    assert _unmerged(out) == []
+    ci = (out / ".github" / "workflows" / "ci.yml").read_text()
+    apm = (out / "apm.yml").read_text()
+    for text in (ci, apm):
+        assert "<<<<<<<" not in text and ">>>>>>>" not in text
+        assert OLD_REF not in text
+    assert f"JasperHG90/kmctl@{TAG}" in ci
+    assert ci.endswith(OWN_STEP + OWN_JOB)
+    assert f"ref: {TAG}" in apm
+    assert OWN_DEP + OWN_MCP + "targets:" in apm
+    assert yaml.safe_load(ci)["jobs"]["ours"]
+    assert yaml.safe_load(apm)["dependencies"]["mcp"][0]["name"] == "ours"
+
+
+# Stand-ins for uvx (which runs the real copier), uv and kmctl: each logs its
+# call, so a test sees whether an upgrade went on to install anything.
+FAKE_UVX = """#!/bin/sh
+echo "uvx $*" >> "$FAKE_LOG"
+[ "$1" = copier ] || exit 0
+shift
+exec "{python}" -m copier "$@"
+"""
+FAKE_LOGGER = """#!/bin/sh
+echo "{name} $*" >> "$FAKE_LOG"
+"""
+# The lines of this change's anchors and guard, which a template from before
+# it did not have.
+# Each anchor: its comment lines, from "Add your own" to "would conflict."
+ANCHORS = re.compile(
+    r"^ *# Add your own.*\n(?: *#.*\n)*? *#.*would conflict\.\n", re.MULTILINE
+)
+
+
+def _upgrade(
+    out: Path, tmp_path: Path
+) -> tuple[subprocess.CompletedProcess[str], list[str]]:
+    """Run ``just upgrade TAG`` in ``out`` with the stand-ins on PATH; return the run and the programs it called."""
+    bin_dir = tmp_path / "fakebin"
+    bin_dir.mkdir()
+    (bin_dir / "uvx").write_text(FAKE_UVX.format(python=sys.executable))
+    for name in ("uv", "kmctl"):
+        (bin_dir / name).write_text(FAKE_LOGGER.format(name=name))
+    for prog in bin_dir.iterdir():
+        prog.chmod(0o755)
+    log = tmp_path / "log"
+    log.touch()
+    assert JUST
+    env = {
+        **os.environ,
+        "PATH": f"{bin_dir}:{os.environ['PATH']}",
+        "FAKE_LOG": str(log),
+    }
+    res = subprocess.run(
+        [JUST, "upgrade", TAG],
+        cwd=out,
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    calls = [" ".join(line.split()[:2]) for line in log.read_text().splitlines()]
+    return res, calls
+
+
+def _assert_stopped(res: subprocess.CompletedProcess[str], calls: list[str]) -> None:
+    """The upgrade ran copier, named the conflicts, said how to finish, and installed nothing."""
+    assert res.returncode != 0, res.stdout + res.stderr
+    assert "git holds the unmerged files above" in res.stderr
+    assert "just kmctl install" in res.stderr
+    assert calls == ["uvx copier"], calls
+
+
+def test_just_upgrade_stops_when_copier_leaves_a_conflict(
+    template: Path, tmp_path: Path
+) -> None:
+    """When copier update leaves an unmerged file, just upgrade names it, says how to finish, exits nonzero and does not reinstall."""
+    out = tmp_path / "demo"
+    assert _copier(template, out, f"kmctl_ref={OLD_REF}").returncode == 0
+    ci = out / ".github" / "workflows" / "ci.yml"
+    # A hand edit to the pin's own line is a real conflict with the new pin.
+    ci.write_text(ci.read_text().replace(f"@{OLD_REF}", f"@{OLD_REF} # ours"))
+    _git_commit_all(out)
+
+    res, calls = _upgrade(out, tmp_path)
+
+    assert _unmerged(out) == [".github/workflows/ci.yml"]
+    assert ".github/workflows/ci.yml" in res.stderr
+    _assert_stopped(res, calls)
+
+
+def test_just_upgrade_from_a_template_without_anchors_stops_on_its_conflicts(
+    template: Path, tmp_path: Path
+) -> None:
+    """A project made before the anchors, with content below each pin, conflicts once on the upgrade that brings them in; its old justfile has no guard, and the new one still stops the install."""
+    old = tmp_path / "old-template"
+    subprocess.run(
+        ["git", "clone", "-q", str(template), str(old)], check=True, capture_output=True
+    )
+    for rel in ("starter/apm.yml.jinja", "starter/.github/workflows/ci.yml.jinja"):
+        path = old / rel
+        text, count = ANCHORS.subn("", path.read_text())
+        assert count == 1, rel
+        path.write_text(text)
+    justfile = old / "starter" / "justfile.jinja"
+    text = re.sub(
+        r"(?m)^# Refuse while git.*\n(?:#.*\n)*_merged:\n.*\n\n",
+        "",
+        justfile.read_text(),
+    )
+    text = text.replace(": _merged\n", ":\n")
+    assert "_merged" not in text
+    justfile.write_text(text)
+    for cmd in (
+        ["-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qam", "old"],
+        ["tag", "v0.0.1"],
+    ):
+        subprocess.run(["git", *cmd], cwd=old, check=True, capture_output=True)
+    out = tmp_path / "demo"
+    res = subprocess.run(
+        [sys.executable, "-m", "copier", "copy", "--defaults", "--vcs-ref", "v0.0.1"]
+        + ["--data", "project_name=demo", "--data", "codeowners=@octocat"]
+        + ["--data", f"kmctl_ref={OLD_REF}", "--data", "adversarial_review=false"]
+        + ["git+" + old.as_uri(), str(out)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert res.returncode == 0, res.stderr
+    assert "# Add your own" not in (out / "apm.yml").read_text()
+    _add_own_content(out)
+    _git_commit_all(out)
+
+    res, calls = _upgrade(out, tmp_path)
+
+    assert _unmerged(out) == [".github/workflows/ci.yml", "apm.yml"]
+    _assert_stopped(res, calls)
+
+
 # The adversarial reviewer -------------------------------------------------------
 
 

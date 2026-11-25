@@ -16,9 +16,16 @@ default:
 # Set up a fresh clone: the kmctl CLI, the APM dependencies, the knowledge folders.
 bootstrap: kmctl install init
 
+# Refuse while git holds unmerged files, such as the conflicts a copier update leaves.
+# kmctl, install and install-frozen depend on it. The `just kmctl install` that upgrade
+# runs reads the rewritten justfile, so it stops here even when an old justfile, which
+# has no such check, started the upgrade.
+_merged:
+    @conflicts=$(git diff --name-only --diff-filter=U 2>/dev/null); if [ -n "$conflicts" ]; then printf '%s\n' "$conflicts" "git holds the unmerged files above, such as the conflicts a copier update leaves: keep your changes and the new kmctl ref, with your own content below the comment that follows each pin, git add the files, then run just kmctl install" >&2; exit 1; fi
+
 # Install the kmctl CLI on your PATH unless one as new as the pin is there, then fetch the pin.
 # The kmctl on PATH runs each project's pinned release, so one install serves every project.
-kmctl:
+kmctl: _merged
     #!/usr/bin/env bash
     set -euo pipefail
     have=$(KMCTL_PINNED=1 kmctl --version 2>/dev/null | awk '{print $2}') || have=""
@@ -28,12 +35,12 @@ kmctl:
     kmctl --version
 
 # Install the APM dependencies in apm.yml for its targets, then what APM cannot install yet.
-install:
+install: _merged
     {{apm}} install
     {{kmctl}} plugin patch
 
 # Install exactly what apm.lock.yaml records (for a clean clone or CI).
-install-frozen:
+install-frozen: _merged
     {{apm}} install --frozen
     {{kmctl}} plugin patch
 
