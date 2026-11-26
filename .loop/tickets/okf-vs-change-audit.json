@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "okf-vs-change-audit",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 3,
   "review_rounds": 1,
@@ -288,8 +288,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "de47cd0332c496d29af054ae467c31365a7e770e94f6a640ace45f984aacf313",
   "intent": {
@@ -333,8 +333,14 @@
       "to": "verifying",
       "at": "2026-11-26T21:29:56+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-26T21:37:12+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-26T21:29:57+00:00"
+  "at": "2026-11-26T21:37:12+00:00"
 }
