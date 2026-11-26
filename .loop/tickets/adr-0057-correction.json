@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "adr-0057-correction",
-  "stage": "building",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 0,
@@ -195,8 +195,14 @@
       "to": "building",
       "at": "2026-11-26T16:50:19+00:00",
       "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-26T17:04:21+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-26T17:04:15+00:00"
+  "at": "2026-11-26T17:04:21+00:00"
 }
