@@ -3,7 +3,7 @@
   "slug": "adr-0057-correction",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 1,
+  "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -150,9 +150,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 1,
-    "binds": "370273568a0ddd63de9defa7152a67d0a79a88dabf8dc9d990cffd2534cf055f",
-    "started_at": "2026-11-26T16:44:36+00:00",
+    "n": 2,
+    "binds": "c72cf5ac80ab4eb7cbd3c7850b3ee9dbfa8a949c1bd57ce7bbb4c39307126463",
+    "started_at": "2026-11-26T16:48:56+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -165,10 +165,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "370273568a0ddd63de9defa7152a67d0a79a88dabf8dc9d990cffd2534cf055f",
+  "plan_hash": "c72cf5ac80ab4eb7cbd3c7850b3ee9dbfa8a949c1bd57ce7bbb4c39307126463",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -183,5 +183,5 @@
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-26T16:48:54+00:00"
+  "at": "2026-11-26T16:48:56+00:00"
 }
