@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.1",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "Round 1: P4 and P6 were one problem; now split into P4/O4 and P6/O6.",
+      "anchor": null,
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "Round 1: the workflow download step needed continue-on-error; O6 and r25 carry it.",
+      "anchor": null,
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "de47cd0332c496d29af054ae467c31365a7e770e94f6a640ace45f984aacf313"
+  },
+  "by": "process:loopctl/2.4.0",
+  "at": "2026-11-26T16:48:38+00:00",
+  "checklist": null
+}
