@@ -1,6 +1,0 @@
-# kmctl summary ack: .okf/summary.md was read against these concepts and still holds.
-at: 2026-11-26T08:26:15Z
-against:
-  - decisions/0054-a-verify-does-not-put-the-summary-behind
-  - decisions/0055-one-verify-for-the-pages-a-branch-made-due
-  - decisions/0056-the-ci-action-fails-a-pull-request-whose-summary-is-behind

@@ -1,0 +1,4 @@
+# kmctl summary ack: .okf/summary.md was read against these concepts and still holds.
+at: 2026-11-26T15:24:02Z
+against:
+  - decisions/0034-kmctl-mv-renames-a-concept-and-rewrites-the-links-to-it

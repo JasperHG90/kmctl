@@ -353,13 +353,12 @@ def test_freshness_an_edit_then_a_verify_is_a_change(tmp_path: Path) -> None:
     assert _summary_reasons(root) == [f"concepts changed: {cid}"]
 
 
-def test_freshness_accepting_a_draft_is_a_change(tmp_path: Path) -> None:
-    """A summary can say a decision is a draft, so an accept still counts."""
-    root = _init(tmp_path)
+def _new_draft(root: Path, title: str = "Use a queue") -> str:
+    """Add a draft decision with kmctl new --draft; returns its id."""
     result = _invoke(
         "new",
         "decision",
-        "Use a queue",
+        title,
         "--draft",
         "--description",
         "One.",
@@ -367,23 +366,98 @@ def test_freshness_accepting_a_draft_is_a_change(tmp_path: Path) -> None:
         str(root),
         "--json",
     )
-    cid = json.loads(result.stdout)["id"]
-    _commit(root)
-    ack(root)
-    _commit(root, "ack")
-    accepted = _invoke(
-        "decision",
-        "accept",
-        cid.split("/")[1][:4],
-        "--by",
-        "human:j",
-        "--path",
-        str(root),
+    assert result.exit_code == 0, result.output
+    return json.loads(result.stdout)["id"]
+
+
+def _accept(root: Path, cid: str) -> None:
+    number = cid.split("/")[1][:4]
+    result = _invoke(
+        "decision", "accept", number, "--by", "human:j", "--path", str(root)
     )
-    assert accepted.exit_code == 0, accepted.output
-    _commit(root, "accept")
+    assert result.exit_code == 0, result.output
+
+
+def test_freshness_adding_a_draft_is_no_change(tmp_path: Path) -> None:
+    """ADR 0058: nobody has accepted a draft's choice yet."""
+    root = _init(tmp_path)
+    _new_draft(root)
+
+    assert _summary_reasons(root) is None  # in the working tree
+    _commit(root, "draft")
+    assert _summary_reasons(root) is None  # and once committed
+
+
+def test_freshness_editing_a_draft_is_no_change(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    cid = _new_draft(root)
+    _commit(root, "draft")
+    _append(root, f".okf/{cid}.md", "An edit.\n")
+
+    assert _summary_reasons(root) is None
+    _commit(root, "edit")
+    assert _summary_reasons(root) is None
+
+
+def test_freshness_deleting_a_draft_is_no_change(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    cid = _new_draft(root)
+    _commit(root, "draft")
+    (root / f".okf/{cid}.md").unlink()
+
+    assert _summary_reasons(root) is None
+    _commit(root, "drop")
+    assert _summary_reasons(root) is None
+
+
+def test_freshness_accepting_a_draft_is_a_change(tmp_path: Path) -> None:
+    """The summary is read once the choice is settled (ADR 0058)."""
+    root = _init(tmp_path)
+    cid = _new_draft(root)
+    _commit(root, "draft")
+    _accept(root, cid)
 
     assert _summary_reasons(root) == [f"concepts changed: {cid}"]
+    _commit(root, "accept")
+    assert _summary_reasons(root) == [f"concepts changed: {cid}"]
+
+
+def test_freshness_adding_and_accepting_a_draft_in_one_commit_is_a_change(
+    tmp_path: Path,
+) -> None:
+    root = _init(tmp_path)
+    cid = _new_draft(root)
+    _accept(root, cid)
+    _commit(root, "draft and accept")
+
+    assert _summary_reasons(root) == [f"concepts changed: {cid}"]
+
+
+def test_freshness_a_stable_decision_made_a_draft_again_is_a_change(
+    tmp_path: Path,
+) -> None:
+    root = _init(tmp_path)
+    cid = _acked_decision(root)
+    path = root / f".okf/{cid}.md"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace("status: stable", "status: draft", 1),
+        encoding="utf-8",
+    )
+    assert field(front_matter(path), "status") == "draft"
+    _commit(root, "back to draft")
+
+    assert _summary_reasons(root) == [f"concepts changed: {cid}"]
+
+
+def test_freshness_a_draft_with_another_concept_names_only_the_other(
+    tmp_path: Path,
+) -> None:
+    root = _init(tmp_path)
+    _new_draft(root)
+    other = _new(root, "practice", "Measure first")
+    _commit(root, "draft and practice")
+
+    assert _summary_reasons(root) == [f"concepts changed: {other}"]
 
 
 def test_freshness_never_for_log_index_or_handoff(tmp_path: Path) -> None:

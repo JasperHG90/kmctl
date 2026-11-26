@@ -11,7 +11,9 @@ branches merge, a concept that one branch changed after its own ack is still
 reported, because the other branch's ack never saw that change. A change
 that touches only the fields ``kmctl verify`` writes, ``verified`` and
 ``stale_after``, is no change here: a person's check adds nothing the
-summary says (ADR 0054). The concepts are the manifesto, decisions,
+summary says (ADR 0054). Nor is a change to a decision that is a draft
+before and after it, such as adding, editing or deleting a draft: nobody has
+accepted that choice yet, and accepting it does count (ADR 0058). The concepts are the manifesto, decisions,
 practices, proposals, prototype READMEs and architecture pages; indexes,
 ``log.md``, handoffs and the summary itself never count. Without git history
 (no repository, or a shallow clone) the rule cannot be checked, the way
@@ -33,7 +35,8 @@ from pathlib import Path
 
 from kmctl.concepts import _STAMP, ConceptError
 from kmctl.history import show
-from kmctl.okf import BadFrontMatter, field, front_matter
+from kmctl.kinds import DRAFT
+from kmctl.okf import BadFrontMatter, field, front_matter, split_front_matter
 from kmctl.verify import _block, outside_verify
 
 #: The summary's path from the repository root, and its concept id.
@@ -177,12 +180,12 @@ def changed_concepts(root: Path) -> list[str] | None:
             stdin="HEAD\n" + "".join(f"^{c}\n" for c in covers),
         )
         changes = [(c, p) for c, p in _commit_paths(listed or "") if concept(p)]
-        committed = {p for _, p in changes} - _verify_only(root, prefix, changes)
+        committed = {p for _, p in changes} - _no_change(root, prefix, changes)
     else:
         listed = _git(root, "ls-files", "-z", "--full-name", "--", ".okf")
         committed = {p for p in (listed or "").split("\0") if concept(p)}
     edited = [(None, p) for p in working if concept(p)]
-    changed = committed | ({p for _, p in edited} - _verify_only(root, prefix, edited))
+    changed = committed | ({p for _, p in edited} - _no_change(root, prefix, edited))
     return sorted({concept_id(p.removeprefix(prefix)) for p in changed})
 
 
@@ -198,15 +201,17 @@ def _commit_paths(listed: str) -> list[tuple[str, str]]:
     return pairs
 
 
-def _verify_only(
+def _no_change(
     root: Path, prefix: str, changes: list[tuple[str | None, str]]
 ) -> set[str]:
-    """The paths whose every change in ``changes`` touched only the fields kmctl verify writes (ADR 0054).
+    """The paths whose every change in ``changes`` is no change for the summary.
 
     A change is a commit and a path from the repository's top folder, or
     None and a path for its state in the working tree. A commit is compared
-    with its parent, the working tree with ``HEAD``. A file that is new or
-    deleted, or a root commit, is a change.
+    with its parent, the working tree with ``HEAD``. A change is none when it
+    touched only the fields kmctl verify writes (ADR 0054), or when the file
+    is a draft decision, or missing, on both sides of it (ADR 0058). Any
+    other new or deleted file, or root commit, is a change.
     """
     specs = [
         spec
@@ -221,12 +226,23 @@ def _verify_only(
         before = next(texts)
         after = next(texts) if commit else _working(root / path.removeprefix(prefix))
         same = before is not None and after is not None
-        only[path] = (
-            only.get(path, True)
-            and same
-            and (outside_verify(before) == outside_verify(after))
+        verify_only = same and outside_verify(before) == outside_verify(after)
+        draft = (before is not None or after is not None) and (
+            _draft(before) and _draft(after)
         )
-    return {path for path, verify_only in only.items() if verify_only}
+        only[path] = only.get(path, True) and (verify_only or draft)
+    return {path for path, none in only.items() if none}
+
+
+def _draft(text: str | None) -> bool:
+    """True when ``text`` is missing, or is a decision record whose status is draft."""
+    if text is None:
+        return True
+    try:
+        meta = split_front_matter(text)[0]
+    except BadFrontMatter:
+        return False
+    return field(meta, "type") == "decision" and field(meta, "status") == DRAFT
 
 
 def _working(path: Path) -> str | None:
