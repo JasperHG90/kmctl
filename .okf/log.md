@@ -332,3 +332,4 @@
 - Accepted `decisions/0055-one-verify-for-the-pages-a-branch-made-due` (human:roel).
 - Accepted `decisions/0056-the-ci-action-fails-a-pull-request-whose-summary-is-behind` (human:roel).
 - Added `decisions/0058-a-draft-decision-does-not-put-the-summary-behind` with `kmctl new decision`.
+- Accepted `decisions/0058-a-draft-decision-does-not-put-the-summary-behind` (human:roel).

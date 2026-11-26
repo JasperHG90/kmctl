@@ -6,7 +6,7 @@ tags: [decision]
 generated:
   by: process:kmctl/0.17.1
   at: 2026-11-26T13:28:40Z
-status: draft
+status: stable
 sources:
   - resource: "packages/kmctl/src/kmctl/summary.py"
 ---
