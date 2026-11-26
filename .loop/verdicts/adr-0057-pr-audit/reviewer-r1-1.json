@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.1",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "The figure 86 counts (pull request, decision) pairs, 20 distinct decisions, but the prototype README says 'The matcher found 86 decisions' and the ADR's Rejected item says '0 of the 86 decisions whose sources changed'; both also say review due --base 'found 0' though it listed 11 of them (as unverified, not for a source change). The Context's own wording ('86 times ... listed none of the 86 for that reason') is right; the other two should match it.",
+      "anchor": ".okf/prototypes/pr-audit-scope/README.md:45",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "The instructions rule says the base-branch checkout 'keeps a pull request from loosening the audit that checks it', then says the pull request's own workflow file runs. The same pull request can edit that workflow to check out its own prompt, so the checkout does not prevent a loosening; it means a loosening has to show up as a workflow change, which review and branch protection catch. Say that, so the honesty claim is not overstated the way the key claim was.",
+      "anchor": ".okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md:65",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "936a53433f0795659e28c93ff28644d77ed337340522b8697c891b8c135b5a04",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.4.0",
+  "at": "2026-11-26T13:16:05+00:00",
+  "checklist": null
+}

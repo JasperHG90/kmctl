@@ -1,0 +1,285 @@
+{
+  "schema_version": "1.0",
+  "slug": "okf-vs-change-audit",
+  "stage": "ready",
+  "attempts": 0,
+  "plan_rounds": 2,
+  "review_rounds": 0,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": null,
+  "ask": null,
+  "split": "j-20261126T133706+0000-ed849e13",
+  "split_plan_hash": "3fc9e7784f99670d63d40f87ee6efdd4a6ef4c55c196eeb40fec3a6bb29625fa",
+  "split_hold": false,
+  "commit_sha": null,
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": null,
+  "branch": null,
+  "stamps": [],
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/create-eval",
+    "hash": "b88972c6c8197c2bdd80b9e0247dbc09842a25bddfcc31e7807299aa8398d73f",
+    "at": "2026-11-26T13:37:20+00:00"
+  },
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "okf-vs-change matches a stable decision whose file source the change touched",
+      "fails_when": "the decision is missing from the matched list",
+      "command": "uv run pytest -q tests/test_agent.py::test_okf_vs_change_matches_file_source",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "okf-vs-change matches a folder source as a prefix of a changed file",
+      "fails_when": "a decision whose folder source holds a changed file is missing",
+      "command": "uv run pytest -q tests/test_agent.py::test_okf_vs_change_matches_folder_source_as_prefix",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "okf-vs-change leaves out draft decisions and URL sources",
+      "fails_when": "a draft decision or a URL source appears in the matched list",
+      "command": "uv run pytest -q tests/test_agent.py::test_okf_vs_change_skips_drafts_and_url_sources",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "the matched decisions appear in the task the agent gets",
+      "fails_when": "the user message does not list the matched decisions",
+      "command": "uv run pytest -q tests/test_agent.py::test_okf_vs_change_puts_matched_decisions_in_task",
+      "judgment": false
+    },
+    {
+      "id": "r5",
+      "behavior": "--audit okf-vs-change without --base exits 2 with a message naming --base",
+      "fails_when": "it exits other than 2 or the message does not name --base",
+      "command": "uv run pytest -q tests/test_agent.py::test_okf_vs_change_without_base_exits_2",
+      "judgment": false
+    },
+    {
+      "id": "r6",
+      "behavior": "okf-vs-change is in AUDITS and in run --help",
+      "fails_when": "AUDITS or --help lacks okf-vs-change",
+      "command": "uv run pytest -q tests/test_agent.py::test_okf_vs_change_is_a_shipped_audit",
+      "judgment": false
+    },
+    {
+      "id": "r7",
+      "behavior": "with --instructions-root DIR, a tracked relative --prompt-file, --system-prompt-file, --context and --skills resolve under DIR",
+      "fails_when": "any of them resolves against the current folder",
+      "command": "uv run pytest -q tests/test_agent.py::test_instructions_root_resolves_tracked_paths",
+      "judgment": false
+    },
+    {
+      "id": "r8",
+      "behavior": "with --instructions-root DIR, a --context folder git does not track stays in the working tree",
+      "fails_when": "the untracked folder is looked up under DIR or dropped",
+      "command": "uv run pytest -q tests/test_agent.py::test_instructions_root_keeps_untracked_context_in_worktree",
+      "judgment": false
+    },
+    {
+      "id": "r9",
+      "behavior": "without --instructions-root, every path resolves as before",
+      "fails_when": "a path resolves differently without the flag",
+      "command": "uv run pytest -q tests/test_agent.py::test_without_instructions_root_paths_resolve_as_before",
+      "judgment": false
+    },
+    {
+      "id": "r10",
+      "behavior": "the action's event check lets workflow_dispatch, schedule and a same-repository pull_request run",
+      "fails_when": "any of them is refused",
+      "command": "uv run pytest -q packages/kmctl/tests/test_action.py::test_event_check_allows_same_repo_pull_request",
+      "judgment": false
+    },
+    {
+      "id": "r11",
+      "behavior": "a fork pull_request, or one Dependabot opened, gets a notice, exit 0, and a step output that skips the agent step",
+      "fails_when": "the step exits nonzero, prints no notice, or sets no output that keeps the agent step from running",
+      "command": "uv run pytest -q packages/kmctl/tests/test_action.py::test_event_check_skips_fork_pull_request",
+      "judgment": false
+    },
+    {
+      "id": "r12",
+      "behavior": "pull_request_target, push and other events stay refused",
+      "fails_when": "any of them is let through",
+      "command": "uv run pytest -q packages/kmctl/tests/test_action.py::test_event_check_refuses_other_events",
+      "judgment": false
+    },
+    {
+      "id": "r13",
+      "behavior": "the agent step passes --instructions-root and --base only on a pull_request event",
+      "fails_when": "they are passed on another event or missing on a pull request",
+      "command": "uv run pytest -q packages/kmctl/tests/test_action.py::test_agent_step_passes_base_only_on_pull_request",
+      "judgment": false
+    },
+    {
+      "id": "r14",
+      "behavior": "publish --pr N creates one marked comment, and a second run edits that comment and posts no other",
+      "fails_when": "the second run posts a new comment or edits none",
+      "command": "uv run pytest -q tests/test_agent.py::test_publish_pr_creates_then_replaces_comment",
+      "judgment": false
+    },
+    {
+      "id": "r15",
+      "behavior": "publish with no report posts nothing and exits 0, in issue and pull request mode",
+      "fails_when": "it exits nonzero or calls gh",
+      "command": "uv run pytest -q tests/test_agent.py::test_publish_without_report_posts_nothing",
+      "judgment": false
+    },
+    {
+      "id": "r16",
+      "behavior": "the action's publish step passes --pr on a pull_request event",
+      "fails_when": "--pr is missing on a pull request or passed on another event",
+      "command": "uv run pytest -q packages/kmctl/tests/test_action.py::test_publish_step_passes_pr_on_pull_request",
+      "judgment": false
+    },
+    {
+      "id": "r17",
+      "behavior": "ADR 0005 and ADR 0017 each have a dated Correction linking ADR 0057",
+      "fails_when": "either record lacks a Correction section that links 0057",
+      "command": "for f in .okf/decisions/0005-audits-report-only.md .okf/decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script.md; do awk '/^## Correction, 2026-/{c=1} c' \"$f\" | grep -q '0057-the-audit-runs-on-a-pull-request' || exit 1; done",
+      "judgment": false
+    },
+    {
+      "id": "r18",
+      "behavior": "ADR 0057 stays a draft, says fetched context folders stay in the working tree, and no longer says nothing is built before acceptance",
+      "fails_when": "status is not draft, the fetched-context sentence is missing, or the old last Consequence remains",
+      "command": "grep -q '^status: draft' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' && grep -qi 'fetched' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' && ! grep -q 'Nothing is built until this record is accepted' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'",
+      "judgment": false
+    },
+    {
+      "id": "r19",
+      "behavior": "the knowledge-audit workflow no longer says the audit never runs on a pull request",
+      "fails_when": "the comment still says it never runs on a pull request",
+      "command": "! grep -qi 'never on a pull request' .github/workflows/knowledge-audit.yml",
+      "judgment": false
+    },
+    {
+      "id": "r20",
+      "behavior": "the how-to page shows a pull request workflow with the same-repository condition",
+      "fails_when": "the page has no head.repo.full_name condition",
+      "command": "grep -q 'head.repo.full_name' docs/how-to/install-the-plugin-and-the-ci-action.md",
+      "judgment": false
+    },
+    {
+      "id": "r21",
+      "behavior": "the okf-vs-change prompt keeps the audit report-only and asks for a reason for each decision the agent adds beyond the matched list",
+      "fails_when": "a reviewer finds the prompt lets the agent edit files or add decisions without a reason",
+      "command": null,
+      "judgment": true
+    },
+    {
+      "id": "r22",
+      "behavior": "the repo's pre-commit hooks pass on every file",
+      "fails_when": "prek run --all-files exits nonzero",
+      "command": "prek run --all-files",
+      "judgment": false
+    },
+    {
+      "id": "r23",
+      "behavior": "the ticket's branch carries PR 71's head, so the push is a fast-forward",
+      "fails_when": "origin/adr/audit-pull-requests is neither an ancestor of HEAD nor the merge in progress",
+      "command": "git merge-base --is-ancestor origin/adr/audit-pull-requests HEAD || [ \"$(git rev-parse -q --verify MERGE_HEAD)\" = \"$(git rev-parse origin/adr/audit-pull-requests)\" ]",
+      "judgment": false
+    },
+    {
+      "id": "r24",
+      "behavior": "the action's publish mode does not fail on a missing report artifact",
+      "fails_when": "a missing artifact fails the publish step",
+      "command": "uv run pytest -q packages/kmctl/tests/test_action.py::test_publish_step_tolerates_missing_artifact",
+      "judgment": false
+    },
+    {
+      "id": "r25",
+      "behavior": "the knowledge-audit workflow's report download does not fail publish on a missing artifact",
+      "fails_when": "the download-artifact step in the publish job lacks continue-on-error: true",
+      "command": "awk '/^  publish:/{p=1} p' .github/workflows/knowledge-audit.yml | grep -A4 'actions/download-artifact' | grep -q 'continue-on-error: true'",
+      "judgment": false
+    },
+    {
+      "id": "r26",
+      "behavior": "with --instructions-root DIR, an instruction path the pull request tracks but DIR does not have exits 2",
+      "fails_when": "it falls back to the working tree or exits other than 2",
+      "command": "uv run pytest -q tests/test_agent.py::test_instructions_root_refuses_path_missing_from_base",
+      "judgment": false
+    }
+  ],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/create-eval",
+      "reason": "plan round 1: O4 split into O4 (publish --pr) and O6 (no report exits 0, now including the knowledge-audit workflow's download step); O2 refuses a tracked instruction path missing from the base; O3 also skips Dependabot pull requests through a step output",
+      "diff": {
+        "added": [
+          "r24",
+          "r25",
+          "r26"
+        ],
+        "removed": [],
+        "changed": {
+          "r11": [
+            "behavior",
+            "fails_when"
+          ],
+          "r16": [
+            "behavior",
+            "fails_when",
+            "command"
+          ]
+        }
+      },
+      "at": "2026-11-26T13:37:20+00:00"
+    }
+  ],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [],
+  "round": {
+    "kind": "plan",
+    "n": 2,
+    "binds": "3fc9e7784f99670d63d40f87ee6efdd4a6ef4c55c196eeb40fec3a6bb29625fa",
+    "started_at": "2026-11-26T13:37:22+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": true,
+    "outcome": "pass"
+  },
+  "plan_hash": "3fc9e7784f99670d63d40f87ee6efdd4a6ef4c55c196eeb40fec3a6bb29625fa",
+  "intent": {
+    "epic": null,
+    "depends_on": [],
+    "priority": null
+  },
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-11-26T13:13:05+00:00",
+      "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-11-26T13:38:34+00:00",
+      "by": "advance"
+    }
+  ],
+  "by": "process:loopctl/2.4.0",
+  "at": "2026-11-26T13:38:34+00:00"
+}

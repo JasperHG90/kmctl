@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.1",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "P4 folds two separate causes into one problem, and O4 folds two separate behaviours into one outcome. \"publish posts only to an issue\" is fixed by `publish --pr N`, which only matters once O3 lets a pull_request run. \"publish fails when there is no report\" is a change to issue mode today (the operator's 2026-11-26 choice, \"in every mode\") that ships alone and needs nothing. plan.split reads these facts, so as written it cannot tell the two apart. Split P4 into two problems and O4 into two behaviour outcomes (the PR comment, and no-report-exits-0), each with its own fixes and touches.",
+      "anchor": ".loop/plans/okf-vs-change-audit/README.md:100",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "open",
+      "claim": "O5 changes the comment in `.github/workflows/knowledge-audit.yml` that says a missing report fails publish, but nothing changes the behaviour behind it. That workflow calls `actions/download-artifact` itself (it does not go through action.yml's publish mode), and that step fails when the artifact is missing, before `agent.py publish` runs. O4's missing-report handling covers agent.py and action.yml only. After the build, the comment would say something the workflow does not do. Either the workflow's download step also tolerates a missing artifact (then O4, or the split no-report outcome from p1, touches the workflow and an eval row checks it), or the comment stays as it is.",
+      "anchor": ".github/workflows/knowledge-audit.yml:77",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "952de4d29b3dd2a6a40e511e57e32cc668848873b2ee9137aa60e29b1e1fc908"
+  },
+  "by": "process:loopctl/2.4.0",
+  "at": "2026-11-26T13:36:11+00:00",
+  "checklist": null
+}

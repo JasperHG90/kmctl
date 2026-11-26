@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "id": "g9",
+  "granted_by": "human:jasperginn@gmail.com",
+  "at": "2026-11-26T12:45:45+00:00",
+  "until": "2026-11-27T12:45:45+00:00",
+  "steps": [
+    "eval-sign",
+    "plan-keep-whole",
+    "ticket-promote",
+    "ticket-drop",
+    "ticket-done-outside",
+    "ticket-override",
+    "state-resume",
+    "drive-install",
+    "drive-uninstall",
+    "judgements-label"
+  ],
+  "epic": null,
+  "tickets": [],
+  "revoked": null
+}

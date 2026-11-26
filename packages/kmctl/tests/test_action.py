@@ -165,6 +165,69 @@ def test_script_fails_when_review_due_crashes(tmp_path: Path) -> None:
     assert "kmctl review due failed" in summary
 
 
+RUN_ENV = {
+    "GITHUB_SERVER_URL": "https://github.com",
+    "GITHUB_REPOSITORY": "acme/widgets",
+    "GITHUB_RUN_ID": "42",
+    "GITHUB_RUN_ATTEMPT": "2",
+}
+RUN_URL = "https://github.com/acme/widgets/actions/runs/42/attempts/2"
+
+
+def _error_lines(out: str) -> list[str]:
+    return [line for line in out.splitlines() if line.startswith("::error")]
+
+
+def test_script_prints_error_line_when_check_fails(tmp_path: Path) -> None:
+    proc, _ = _run(
+        _repo(tmp_path / "r", broken=True), _kmctl_bin(tmp_path), tmp_path, RUN_ENV
+    )
+
+    assert proc.returncode != 0
+    lines = _error_lines(proc.stdout)
+    assert len(lines) == 1, proc.stdout
+    assert "kmctl check failed" in lines[0]
+    assert "summary page" in lines[0]
+    assert RUN_URL in lines[0]
+
+
+def test_script_prints_error_line_when_review_due_crashes(tmp_path: Path) -> None:
+    proc, _ = _run(
+        _repo(tmp_path / "r"),
+        _kmctl_bin(tmp_path, crash_review_due=True),
+        tmp_path,
+        RUN_ENV,
+    )
+
+    assert proc.returncode != 0
+    lines = _error_lines(proc.stdout)
+    assert len(lines) == 1, proc.stdout
+    assert "kmctl review due failed" in lines[0]
+    assert RUN_URL in lines[0]
+
+
+def test_script_prints_no_error_line_when_passing(tmp_path: Path) -> None:
+    proc, _ = _run(_repo(tmp_path / "r"), _kmctl_bin(tmp_path), tmp_path, RUN_ENV)
+
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert _error_lines(proc.stdout) == []
+
+
+def test_script_prints_error_line_without_run_url(tmp_path: Path) -> None:
+    env = {k: "" for k in RUN_ENV}
+    proc, _ = _run(
+        _repo(tmp_path / "r", broken=True), _kmctl_bin(tmp_path), tmp_path, env
+    )
+
+    assert proc.returncode != 0
+    lines = _error_lines(proc.stdout)
+    assert len(lines) == 1, proc.stdout
+    assert "kmctl check failed" in lines[0]
+    assert "summary page" in lines[0]
+    assert "http" not in lines[0]
+    assert "/actions/runs/" not in lines[0]
+
+
 def test_action_and_workflow_wiring() -> None:
     action = yaml.safe_load((ROOT / "action.yml").read_text())
     workflows = list((ROOT / ".github" / "workflows").glob("*.yml"))

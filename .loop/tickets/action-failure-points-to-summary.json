@@ -1,0 +1,126 @@
+{
+  "schema_version": "1.0",
+  "slug": "action-failure-points-to-summary",
+  "stage": "done",
+  "attempts": 1,
+  "plan_rounds": 1,
+  "review_rounds": 1,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": null,
+  "ask": "j-20261126T130956+0000-f40f9e99",
+  "split": "j-20261126T131030+0000-8d159217",
+  "split_plan_hash": "7188985e3558e6cbf1ac0e67230fe3edc9528c5fabc0a238756faf5f624fa6e6",
+  "split_hold": false,
+  "commit_sha": "d99df7aabb39087df50848a2535715b26f4d9b8f",
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": "/home/vscode/workspace.worktrees/action-failure-points-to-summary",
+  "branch": "loop/action-failure-points-to-summary",
+  "stamps": [
+    "5460d3dfb456d203eafb288097212ce1689f4d2addc5e8d9fd7503846953e989"
+  ],
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/agent",
+    "hash": "6b10f3dbc2b4d8dd7ba717063cd909b55f67a024e116afeecf2b21e8da6ebfd7",
+    "at": "2026-11-26T13:10:52+00:00"
+  },
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "When kmctl check fails, action/knowledge-ci.sh prints a GitHub ::error line to stdout that names kmctl check, says the reasons are on the run's summary page, and gives the link GITHUB_SERVER_URL/GITHUB_REPOSITORY/actions/runs/GITHUB_RUN_ID/attempts/GITHUB_RUN_ATTEMPT; the script still exits nonzero.",
+      "fails_when": "a run with a broken bundle and the GITHUB_* run variables set prints no ::error line, the line does not name kmctl check, or the link is missing or wrong, or the script exits 0",
+      "command": "uv run pytest -q packages/kmctl/tests/test_action.py -k 'error_line_when_check_fails'",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "When kmctl review due crashes, the script prints the same kind of ::error line naming kmctl review due, with the same link.",
+      "fails_when": "a run whose kmctl review due crashes prints no ::error line naming kmctl review due, or the link is missing",
+      "command": "uv run pytest -q packages/kmctl/tests/test_action.py -k 'error_line_when_review_due_crashes'",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "A passing run prints no ::error line, and outside GitHub (no GITHUB_SERVER_URL, GITHUB_REPOSITORY or GITHUB_RUN_ID) a failing run still prints the ::error line, pointing at the summary without a broken link.",
+      "fails_when": "a passing run prints ::error, or a failing run without the run variables prints a link with empty parts or no ::error line",
+      "command": "uv run pytest -q packages/kmctl/tests/test_action.py -k 'no_error_line_when_passing or error_line_without_run_url'",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "The how-to that installs the Action says a failed check names the failed command in the log and links the summary page.",
+      "fails_when": "docs/how-to/install-the-plugin-and-the-ci-action.md does not mention the summary link in the log",
+      "command": "grep -qi 'link to the run' docs/how-to/install-the-plugin-and-the-ci-action.md",
+      "judgment": false
+    }
+  ],
+  "resigns": [],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [],
+  "round": {
+    "kind": "review",
+    "n": 1,
+    "binds": "5460d3dfb456d203eafb288097212ce1689f4d2addc5e8d9fd7503846953e989",
+    "started_at": "2026-11-26T13:18:49+00:00",
+    "passes": [
+      "reviewer"
+    ],
+    "tree": "aee47f345f80368f18147161f9383028dc413d3f",
+    "plan_hash": "7188985e3558e6cbf1ac0e67230fe3edc9528c5fabc0a238756faf5f624fa6e6",
+    "eval_hash": "6b10f3dbc2b4d8dd7ba717063cd909b55f67a024e116afeecf2b21e8da6ebfd7",
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": true,
+    "outcome": "pass"
+  },
+  "plan_hash": "7188985e3558e6cbf1ac0e67230fe3edc9528c5fabc0a238756faf5f624fa6e6",
+  "intent": {
+    "epic": null,
+    "depends_on": [],
+    "priority": null
+  },
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-11-26T13:10:06+00:00",
+      "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-11-26T13:11:49+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-26T13:11:58+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-26T13:18:47+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-26T13:24:31+00:00",
+      "by": "done"
+    }
+  ],
+  "by": "process:loopctl/2.4.0",
+  "at": "2026-11-26T13:24:31+00:00"
+}

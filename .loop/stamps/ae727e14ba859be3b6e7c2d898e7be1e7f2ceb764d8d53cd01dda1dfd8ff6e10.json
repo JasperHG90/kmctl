@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.1",
+  "fingerprint": "ae727e14ba859be3b6e7c2d898e7be1e7f2ceb764d8d53cd01dda1dfd8ff6e10",
+  "slug": null,
+  "results": [
+    {
+      "name": "lint",
+      "kind": "gate",
+      "command": "uv run ruff check",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null,
+      "observe": false
+    },
+    {
+      "name": "format",
+      "kind": "gate",
+      "command": "uv run ruff format --check",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null,
+      "observe": false
+    },
+    {
+      "name": "tests",
+      "kind": "gate",
+      "command": "uv run pytest",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null,
+      "observe": false
+    },
+    {
+      "name": "integration",
+      "kind": "gate",
+      "command": "uv run pytest -m integration",
+      "exit": 0,
+      "passed": true,
+      "tests_passed": null,
+      "note": null,
+      "input_fingerprint": null,
+      "cached": false,
+      "cached_from": null,
+      "observe": false
+    }
+  ],
+  "green": true,
+  "at": "2026-11-26T13:29:06+00:00",
+  "commit": null,
+  "by": "process:loopctl/2.4.0"
+}

@@ -1,0 +1,260 @@
+{
+  "schema_version": "1.0",
+  "slug": "adr-0057-pr-audit",
+  "stage": "done",
+  "attempts": 1,
+  "plan_rounds": 1,
+  "review_rounds": 2,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "893d4bcc14d26e801f1a180e06dff284d2fa870e6a81708d258608bfa1311c05",
+    "tree": "dbf983ae65772075fecef8566a0ffc4893d1de22",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": null,
+        "paths": [
+          ".okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md",
+          ".okf/prototypes/pr-audit-scope/README.md"
+        ]
+      },
+      {
+        "finding": "reviewer:f2",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": null,
+        "paths": [
+          ".okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md"
+        ]
+      }
+    ],
+    "at": "2026-11-26T13:32:42+00:00"
+  },
+  "ask": null,
+  "split": "j-20261126T125402+0000-1dc2f482",
+  "split_plan_hash": "18014deaa4fcf033cf83ccdf4c2b499572ac84122dc3f0a0a23d758c36b3eb4d",
+  "split_hold": false,
+  "commit_sha": "579169c04c4ccb40ae7065ef6b537587944d7f33",
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": "/home/vscode/workspace.worktrees/adr-0057-pr-audit",
+  "branch": "loop/adr-0057-pr-audit",
+  "stamps": [
+    "936a53433f0795659e28c93ff28644d77ed337340522b8697c891b8c135b5a04",
+    "893d4bcc14d26e801f1a180e06dff284d2fa870e6a81708d258608bfa1311c05"
+  ],
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/implement-ticket",
+    "hash": "3ff30f81a9c303f78c78dbc7309c62c864570622b1898d32ae37e474944a6fec",
+    "at": "2026-11-26T13:03:20+00:00"
+  },
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "The Context links ADR 0055",
+      "fails_when": "the record has no link to 0055-one-verify-for-the-pages-a-branch-made-due",
+      "command": "grep -q '0055-one-verify-for-the-pages-a-branch-made-due' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "The Context says kmctl review due --base compares sources only for verified decisions, with the measured 0 of 86 over 15 pull requests",
+      "fails_when": "the record does not name review due --base, or does not give the 86 figure",
+      "command": "grep -q 'review due --base' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' && grep -q '86' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "The scoping rule still matches a decision's sources against the changed files, a folder source as a prefix",
+      "fails_when": "the scoping rule drops its own sources matcher or says nothing of folder sources",
+      "command": "grep -q 'sources' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' && grep -qi 'folder' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "The record says what the audit adds over ADR 0055: whether a decision still holds, not only which pages a change touched",
+      "fails_when": "a reviewer finds no sentence that tells the audit's judgment apart from 0055's list",
+      "command": null,
+      "judgment": true
+    },
+    {
+      "id": "r5",
+      "behavior": "A fork pull request is skipped with a notice and exit 0, so it gets no red check",
+      "fails_when": "the fork rule still says the action refuses the fork pull request, or never says it exits 0",
+      "command": "! grep -qi 'refuses it' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' && grep -Eqi 'exits? 0' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'",
+      "judgment": false
+    },
+    {
+      "id": "r6",
+      "behavior": "The instructions rule says the base-branch checkout keeps a pull request from loosening the audit that checks it, and does not guard the key, since the pull request's own workflow file runs",
+      "fails_when": "a reviewer finds the base-branch checkout still presented as protecting the API key, or no mention that a pull_request run uses the pull request's workflow file",
+      "command": null,
+      "judgment": true
+    },
+    {
+      "id": "r7",
+      "behavior": "The new shipped audit has one name, used the same way throughout and next to the three in AUDITS",
+      "fails_when": "the record calls it 'fourth' in one place and 'new' in another, or never names it",
+      "command": "! grep -q 'fourth shipped audit' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'",
+      "judgment": false
+    },
+    {
+      "id": "r7b",
+      "behavior": "Reviewer confirms the audit's name is used consistently and fits AUDITS in action/agent.py",
+      "fails_when": "a reviewer finds the audit unnamed or named two ways",
+      "command": null,
+      "judgment": true
+    },
+    {
+      "id": "r8",
+      "behavior": "The record says the merge-base comparison relies on the audit's existing fetch-depth: 0 requirement",
+      "fails_when": "the record does not mention fetch-depth: 0",
+      "command": "grep -q 'fetch-depth: 0' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'",
+      "judgment": false
+    },
+    {
+      "id": "r9",
+      "behavior": "The record places the feature under ADR 0046's split between kmctl and kmaudit",
+      "fails_when": "the record has no link to ADR 0046",
+      "command": "grep -q '0046-kmctl-works-from-code-toward-knowledge' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'",
+      "judgment": false
+    },
+    {
+      "id": "r10",
+      "behavior": "The record stays a draft for the operator to accept",
+      "fails_when": "the front matter status is not draft",
+      "command": "grep -q '^status: draft' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'",
+      "judgment": false
+    },
+    {
+      "id": "r11",
+      "behavior": "The repo's pre-commit hooks pass on every file, including strict OKF validation of .okf/",
+      "fails_when": "prek run --all-files exits nonzero",
+      "command": "prek run --all-files",
+      "judgment": false
+    },
+    {
+      "id": "r12",
+      "behavior": "The ticket's branch carries PR 71's head, so pushing it to adr/audit-pull-requests is a fast-forward",
+      "fails_when": "origin/adr/audit-pull-requests is neither an ancestor of HEAD nor the merge in progress (MERGE_HEAD)",
+      "command": "git merge-base --is-ancestor origin/adr/audit-pull-requests HEAD || [ \"$(git rev-parse -q --verify MERGE_HEAD)\" = \"$(git rev-parse origin/adr/audit-pull-requests)\" ]",
+      "judgment": false
+    }
+  ],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/implement-ticket",
+      "reason": "r2's figure moves from 82 to 86: the prototype measures pull request merges #60 to #75 instead of the spike's first-parent merges, which included two non-PR merges",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r2": [
+            "behavior",
+            "fails_when",
+            "command"
+          ]
+        }
+      },
+      "at": "2026-11-26T13:02:14+00:00"
+    },
+    {
+      "signer": "delegated:jasperginn@gmail.com/implement-ticket",
+      "reason": "r12 also accepts PR 71's head as the merge in progress: the stamp runs before the one merge commit exists, when HEAD is still main",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r12": [
+            "fails_when",
+            "command"
+          ]
+        }
+      },
+      "at": "2026-11-26T13:03:20+00:00"
+    }
+  ],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [],
+  "round": {
+    "kind": "review",
+    "n": 2,
+    "binds": "893d4bcc14d26e801f1a180e06dff284d2fa870e6a81708d258608bfa1311c05",
+    "started_at": "2026-11-26T13:32:47+00:00",
+    "passes": [
+      "reviewer"
+    ],
+    "tree": "dbf983ae65772075fecef8566a0ffc4893d1de22",
+    "plan_hash": "cb66f144a1bb5172f5717141aabfebbbca3b72d92631c605d539d39d55b1ded9",
+    "eval_hash": "3ff30f81a9c303f78c78dbc7309c62c864570622b1898d32ae37e474944a6fec",
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": true,
+    "outcome": "pass"
+  },
+  "plan_hash": "18014deaa4fcf033cf83ccdf4c2b499572ac84122dc3f0a0a23d758c36b3eb4d",
+  "intent": {
+    "epic": null,
+    "depends_on": [],
+    "priority": null
+  },
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-11-26T12:49:55+00:00",
+      "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-11-26T12:56:19+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-26T13:00:32+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-26T13:09:07+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-26T13:26:55+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-26T13:32:42+00:00",
+      "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-26T13:39:13+00:00",
+      "by": "done"
+    }
+  ],
+  "by": "process:loopctl/2.4.0",
+  "at": "2026-11-26T13:39:13+00:00"
+}
