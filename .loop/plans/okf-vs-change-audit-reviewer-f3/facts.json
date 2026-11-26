@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0",
+  "slug": "okf-vs-change-audit-reviewer-f3",
+  "plan_hash": "44e569d46fe3c4f79c615c3d5aa55ccfbafdcf0a97448ec118672d771508ad03",
+  "problems": [
+    {
+      "id": "P1",
+      "text": "`publish_comment` treats a person's comment that quotes the marker as its own, so publish fails on every later push."
+    },
+    {
+      "id": "P2",
+      "text": "The how-to's pull request part says the publish job keeps a `!cancelled()` condition that the workflow it copies does not have."
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "Publish keeps one comment per pull request whatever people write beside it, and the how-to says what to copy."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "O1",
+      "change": "Publish replaces only a marked comment a bot wrote",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "action/agent.py",
+        "tests/test_agent.py"
+      ],
+      "checked_by": "a test with a fake `gh` where a person's comment quotes the marker: publish leaves it alone, posts its own comment, and replaces that one on the next run",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O2",
+      "change": "The how-to's pull request part says to add `!cancelled()` to publish, not that it is kept",
+      "kind": "support",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P2",
+      "fixes_index": 1,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "docs/how-to/install-the-plugin-and-the-ci-action.md"
+      ],
+      "checked_by": "an eval row that the sentence no longer says \"keeps `!cancelled()` too\"",
+      "seen_by": "operator"
+    }
+  ]
+}
