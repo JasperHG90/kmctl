@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "okf-vs-change-audit-reviewer-f3",
-  "stage": "planning",
+  "stage": "ready",
   "attempts": 0,
   "plan_rounds": 2,
   "review_rounds": 0,
@@ -108,8 +108,14 @@
       "to": "planning",
       "at": "2026-11-26T22:17:14+00:00",
       "by": "promote"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-11-26T22:20:13+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-26T22:20:12+00:00"
+  "at": "2026-11-26T22:20:13+00:00"
 }
