@@ -1,0 +1,143 @@
+{
+  "schema_version": "1.0",
+  "slug": "okf-vs-change-audit",
+  "plan_hash": "f65a528f7cc73419b25138eba7f21b2a71098b9eb289fe86cfce1e8b415e8539",
+  "problems": [
+    {
+      "id": "P1",
+      "text": "No shipped audit checks only the decisions a change touches: `AUDITS` in `action/agent.py` holds three bundle-wide audits, and over pull requests #60 to #75 every one changed a source of 3 to 14 stable decisions that nothing checked before merge."
+    },
+    {
+      "id": "P2",
+      "text": "The \"Check the event\" step in `action.yml` refuses `pull_request` with exit 1, so no repository can run the audit on a pull request, and nothing tells a fork pull request apart to skip it."
+    },
+    {
+      "id": "P3",
+      "text": "`--prompt-file`, `--system-prompt-file`, `--context` and `--skills` resolve against the working tree, which on a pull request is the pull request's own code, so a pull request could loosen the audit that checks it."
+    },
+    {
+      "id": "P4",
+      "text": "`publish` posts only to an issue, and fails when there is no report (the artifact download fails, and an unreadable report exits 2)."
+    },
+    {
+      "id": "P5",
+      "text": "ADR 0005, ADR 0017, `.github/workflows/knowledge-audit.yml` and two `docs/` pages say the audit runs only by hand or on a schedule, and ADR 0057 says nothing is built before it is accepted."
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "The author of a same-repository pull request sees, in one comment replaced on each push, which stable decisions their change may have outdated, before it merges."
+    },
+    {
+      "id": "G2",
+      "text": "The records and user docs describe the action as built."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "O1",
+      "change": "`run --audit okf-vs-change --base REF` checks the stable decisions whose sources the change touched",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "action/agent.py",
+        "new:action/prompts/okf-vs-change.md",
+        "tests/test_agent.py"
+      ],
+      "checked_by": "tests in `tests/test_agent.py` over a git fixture: a file source, a folder source as a prefix, a draft decision and a URL source left out, the matched list in the user message, `okf-vs-change` in `--help` and `AUDITS`, and `--audit okf-vs-change` without `--base` exiting 2",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O2",
+      "change": "`run --instructions-root DIR` reads the task, system prompt, context and skills from DIR",
+      "kind": "support",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P3",
+      "fixes_index": 2,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "action/agent.py",
+        "tests/test_agent.py"
+      ],
+      "checked_by": "tests in `tests/test_agent.py` where a relative `--prompt-file`, `--system-prompt-file`, `--context` and `--skills` resolve under DIR and not the current folder, and the defaults are unchanged without the flag",
+      "seen_by": "calling code"
+    },
+    {
+      "id": "O3",
+      "change": "The action runs the audit on a same-repository pull request with base-branch instructions and skips a fork with exit 0",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P2",
+      "fixes_index": 1,
+      "needs": [
+        "O1",
+        "O2"
+      ],
+      "needs_index": [
+        0,
+        1
+      ],
+      "touches": [
+        "action.yml",
+        "packages/kmctl/tests/test_action.py"
+      ],
+      "checked_by": "tests in `packages/kmctl/tests/test_action.py` that run the event step for `workflow_dispatch`, `schedule` and a same-repo `pull_request` (runs), a fork `pull_request` (exit 0 with a notice, agent step skipped), and `pull_request_target` and `push` (refused), and that the agent step passes `--instructions-root` and `--base` only on a pull request",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O4",
+      "change": "`publish --pr N` posts or replaces one pull request comment, and publish with no report posts nothing and exits 0",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P4",
+      "fixes_index": 3,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "action/agent.py",
+        "action.yml",
+        "tests/test_agent.py",
+        "packages/kmctl/tests/test_action.py"
+      ],
+      "checked_by": "tests in `tests/test_agent.py` with a fake `gh` that see a first run create the marked comment, a second run edit that comment and post no other, and a missing report exit 0 with no `gh` call; a test in `packages/kmctl/tests/test_action.py` that the publish step passes `--pr` on a `pull_request` event and tolerates a missing artifact",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O5",
+      "change": "ADR 0005, ADR 0017, ADR 0057, the audit workflow's comments and the docs describe the built action",
+      "kind": "support",
+      "goal": "G2",
+      "goal_index": 1,
+      "fixes": "P5",
+      "fixes_index": 4,
+      "needs": [
+        "O3",
+        "O4"
+      ],
+      "needs_index": [
+        2,
+        3
+      ],
+      "touches": [
+        ".okf/decisions/0005-audits-report-only.md",
+        ".okf/decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script.md",
+        "new:.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md",
+        ".github/workflows/knowledge-audit.yml",
+        "docs/how-to/install-the-plugin-and-the-ci-action.md",
+        "docs/explanation/why-one-hook-and-report-only-audits.md"
+      ],
+      "checked_by": "`prek run --all-files` green, and eval rows that grep each ADR for a dated Correction linking ADR 0057, ADR 0057 for `status: draft` and the new last Consequence, the workflow for no \"never on a pull request\" comment, and the how-to page for a pull request workflow example with the same-repository condition on both jobs",
+      "seen_by": "operator"
+    }
+  ]
+}
