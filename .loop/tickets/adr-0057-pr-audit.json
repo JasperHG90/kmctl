@@ -21,9 +21,9 @@
   "branch": "loop/adr-0057-pr-audit",
   "stamps": [],
   "signoff": {
-    "signer": "delegated:jasperginn@gmail.com/create-eval",
-    "hash": "861e461ed6b7ea52299cc90702107cac679f36eb8ada3efe3aacf4db03ddf3ef",
-    "at": "2026-11-26T12:54:44+00:00"
+    "signer": "delegated:jasperginn@gmail.com/implement-ticket",
+    "hash": "7d982070eb81aa82eaf0b3784c1c00790022dbf3424bb1301268a31e31ecc4dc",
+    "at": "2026-11-26T13:02:14+00:00"
   },
   "delegation": null,
   "budget_base": null,
@@ -37,9 +37,9 @@
     },
     {
       "id": "r2",
-      "behavior": "The Context says kmctl review due --base compares sources only for verified decisions, with the measured 0 of 82 over 15 pull requests",
-      "fails_when": "the record does not name review due --base, or does not give the 82 figure",
-      "command": "grep -q 'review due --base' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' && grep -q '82' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'",
+      "behavior": "The Context says kmctl review due --base compares sources only for verified decisions, with the measured 0 of 86 over 15 pull requests",
+      "fails_when": "the record does not name review due --base, or does not give the 86 figure",
+      "command": "grep -q 'review due --base' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' && grep -q '86' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'",
       "judgment": false
     },
     {
@@ -120,7 +120,24 @@
       "judgment": false
     }
   ],
-  "resigns": [],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/implement-ticket",
+      "reason": "r2's figure moves from 82 to 86: the prototype measures pull request merges #60 to #75 instead of the spike's first-parent merges, which included two non-PR merges",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r2": [
+            "behavior",
+            "fails_when",
+            "command"
+          ]
+        }
+      },
+      "at": "2026-11-26T13:02:14+00:00"
+    }
+  ],
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
@@ -171,5 +188,5 @@
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-26T13:00:32+00:00"
+  "at": "2026-11-26T13:02:14+00:00"
 }

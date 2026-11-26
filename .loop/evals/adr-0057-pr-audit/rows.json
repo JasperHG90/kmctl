@@ -9,9 +9,9 @@
     },
     {
       "id": "r2",
-      "behavior": "The Context says kmctl review due --base compares sources only for verified decisions, with the measured 0 of 82 over 15 pull requests",
-      "fails_when": "the record does not name review due --base, or does not give the 82 figure",
-      "command": "grep -q 'review due --base' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' && grep -q '82' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'"
+      "behavior": "The Context says kmctl review due --base compares sources only for verified decisions, with the measured 0 of 86 over 15 pull requests",
+      "fails_when": "the record does not name review due --base, or does not give the 86 figure",
+      "command": "grep -q 'review due --base' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' && grep -q '86' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'"
     },
     {
       "id": "r3",

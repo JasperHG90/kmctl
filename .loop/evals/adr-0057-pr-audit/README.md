@@ -6,12 +6,12 @@ tags:
 - eval
 generated:
   by: process:loopctl/2.4.0
-  at: '2026-11-26T12:54:44+00:00'
+  at: '2026-11-26T13:02:14+00:00'
 slug: adr-0057-pr-audit
 signoff:
-  signer: delegated:jasperginn@gmail.com/create-eval
-  hash: 861e461ed6b7ea52299cc90702107cac679f36eb8ada3efe3aacf4db03ddf3ef
-  at: '2026-11-26T12:54:44+00:00'
+  signer: delegated:jasperginn@gmail.com/implement-ticket
+  hash: 7d982070eb81aa82eaf0b3784c1c00790022dbf3424bb1301268a31e31ecc4dc
+  at: '2026-11-26T13:02:14+00:00'
 verified: null
 ---
 
@@ -19,8 +19,8 @@ Rows: rows.json; the fields each row takes: loopctl schema eval-rows.
 
 - r1: The Context links ADR 0055
   Fails when: the record has no link to 0055-one-verify-for-the-pages-a-branch-made-due
-- r2: The Context says kmctl review due --base compares sources only for verified decisions, with the measured 0 of 82 over 15 pull requests
-  Fails when: the record does not name review due --base, or does not give the 82 figure
+- r2: The Context says kmctl review due --base compares sources only for verified decisions, with the measured 0 of 86 over 15 pull requests
+  Fails when: the record does not name review due --base, or does not give the 86 figure
 - r3: The scoping rule still matches a decision's sources against the changed files, a folder source as a prefix
   Fails when: the scoping rule drops its own sources matcher or says nothing of folder sources
 - r4 (judgment): The record says what the audit adds over ADR 0055: whether a decision still holds, not only which pages a change touched
