@@ -1,0 +1,33 @@
+== fresh: refs
+refs/remotes/origin/main
+refs/remotes/origin/pr
+refs/remotes/pull/1/merge
+PASS fresh: HEAD is the merge commit
+PASS fresh: (a) origin/main exists
+PASS fresh: knowledge-ci fallback fetch not needed
+PASS fresh: (a) worktree add --detach origin/main, no remote
+   base tree files: base.txt shared.txt 
+   diff origin/main...HEAD: .okf/pr2.md pr1.txt shared.txt 
+PASS fresh: (b) three-dot diff lists exactly the PR's files
+== main-moved: refs
+refs/remotes/origin/main
+refs/remotes/origin/pr
+refs/remotes/pull/1/merge
+PASS main-moved: HEAD is the merge commit
+PASS main-moved: (a) origin/main exists
+PASS main-moved: knowledge-ci fallback fetch not needed
+PASS main-moved: (a) worktree add --detach origin/main, no remote
+   base tree files: base.txt main_only.txt shared.txt 
+   diff origin/main...HEAD: .okf/pr2.md pr1.txt shared.txt 
+PASS main-moved: (b) three-dot diff lists exactly the PR's files
+== main-moved-after-merge-ref: refs
+refs/remotes/origin/main
+refs/remotes/origin/pr
+refs/remotes/pull/1/merge
+PASS main-moved-after-merge-ref: HEAD is the merge commit
+PASS main-moved-after-merge-ref: (a) origin/main exists
+PASS main-moved-after-merge-ref: knowledge-ci fallback fetch not needed
+PASS main-moved-after-merge-ref: (a) worktree add --detach origin/main, no remote
+   base tree files: base.txt late_main.txt main_only.txt shared.txt 
+   diff origin/main...HEAD: .okf/pr2.md pr1.txt shared.txt 
+PASS main-moved-after-merge-ref: (b) three-dot diff lists exactly the PR's files
