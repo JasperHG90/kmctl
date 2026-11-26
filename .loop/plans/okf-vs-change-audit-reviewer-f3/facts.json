@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "okf-vs-change-audit-reviewer-f3",
-  "plan_hash": "44e569d46fe3c4f79c615c3d5aa55ccfbafdcf0a97448ec118672d771508ad03",
+  "plan_hash": "487233a28fca3201d40d1b3d30eb45bcc57cdf03abc0f298c436f90603faa458",
   "problems": [
     {
       "id": "P1",
@@ -21,7 +21,7 @@
   "outcomes": [
     {
       "id": "O1",
-      "change": "Publish replaces only a marked comment a bot wrote",
+      "change": "Publish replaces only a comment that starts with its marker",
       "kind": "behaviour",
       "goal": "G1",
       "goal_index": 0,
@@ -33,7 +33,7 @@
         "action/agent.py",
         "tests/test_agent.py"
       ],
-      "checked_by": "a test with a fake `gh` where a person's comment quotes the marker: publish leaves it alone, posts its own comment, and replaces that one on the next run",
+      "checked_by": "a test with a fake `gh` where a person's comment quotes the marker: publish leaves it alone, posts its own comment, and replaces that one on the next run; the existing replace test still passes",
       "seen_by": "operator"
     },
     {
