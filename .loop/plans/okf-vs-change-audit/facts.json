@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "okf-vs-change-audit",
-  "plan_hash": "952de4d29b3dd2a6a40e511e57e32cc668848873b2ee9137aa60e29b1e1fc908",
+  "plan_hash": "3fc9e7784f99670d63d40f87ee6efdd4a6ef4c55c196eeb40fec3a6bb29625fa",
   "problems": [
     {
       "id": "P1",
@@ -17,7 +17,11 @@
     },
     {
       "id": "P4",
-      "text": "`publish` posts only to an issue, and fails when there is no report (the artifact download fails, and an unreadable report exits 2)."
+      "text": "`publish` posts only to an issue, so a pull request run has nowhere to report."
+    },
+    {
+      "id": "P6",
+      "text": "publish fails when there is no report: `agent.py publish` exits 2 on an unreadable report, and the artifact download in `action.yml` and in `.github/workflows/knowledge-audit.yml` fails on a missing artifact first."
     },
     {
       "id": "P5",
@@ -67,12 +71,12 @@
         "action/agent.py",
         "tests/test_agent.py"
       ],
-      "checked_by": "tests in `tests/test_agent.py` where a relative `--prompt-file`, `--system-prompt-file`, `--context` and `--skills` that git tracks resolve under DIR and not the current folder, an untracked `--context` folder stays in the working tree, and the defaults are unchanged without the flag",
+      "checked_by": "tests in `tests/test_agent.py` where a relative `--prompt-file`, `--system-prompt-file`, `--context` and `--skills` that git tracks resolve under DIR and not the current folder, an untracked `--context` folder stays in the working tree, a tracked path missing under DIR exits 2, and the defaults are unchanged without the flag",
       "seen_by": "calling code"
     },
     {
       "id": "O3",
-      "change": "The action runs the audit on a same-repository pull request with base-branch instructions and skips a fork with exit 0",
+      "change": "The action runs the audit on a same-repository pull request with base-branch instructions and skips a fork or Dependabot pull request with exit 0",
       "kind": "behaviour",
       "goal": "G1",
       "goal_index": 0,
@@ -90,26 +94,50 @@
         "action.yml",
         "packages/kmctl/tests/test_action.py"
       ],
-      "checked_by": "tests in `packages/kmctl/tests/test_action.py` that run the event step for `workflow_dispatch`, `schedule` and a same-repo `pull_request` (runs), a fork `pull_request` (exit 0 with a notice, agent step skipped), and `pull_request_target` and `push` (refused), and that the agent step passes `--instructions-root` and `--base` only on a pull request",
+      "checked_by": "tests in `packages/kmctl/tests/test_action.py` that run the event step for `workflow_dispatch`, `schedule` and a same-repo `pull_request` (runs), a fork or Dependabot `pull_request` (exit 0 with a notice, and the step output that skips the agent step), and `pull_request_target` and `push` (refused), and that the agent step passes `--instructions-root` (a checkout under `$RUNNER_TEMP`) and `--base` only on a pull request",
       "seen_by": "operator"
     },
     {
       "id": "O4",
-      "change": "`publish --pr N` posts or replaces one pull request comment, and publish with no report posts nothing and exits 0",
+      "change": "`publish --pr N` posts or replaces one pull request comment",
       "kind": "behaviour",
       "goal": "G1",
       "goal_index": 0,
       "fixes": "P4",
       "fixes_index": 3,
-      "needs": [],
-      "needs_index": [],
+      "needs": [
+        "O3"
+      ],
+      "needs_index": [
+        2
+      ],
       "touches": [
         "action/agent.py",
         "action.yml",
         "tests/test_agent.py",
         "packages/kmctl/tests/test_action.py"
       ],
-      "checked_by": "tests in `tests/test_agent.py` with a fake `gh` that see a first run create the marked comment, a second run edit that comment and post no other, and a missing report exit 0 with no `gh` call; a test in `packages/kmctl/tests/test_action.py` that the publish step passes `--pr` on a `pull_request` event and tolerates a missing artifact",
+      "checked_by": "tests in `tests/test_agent.py` with a fake `gh` that see a first run create the marked comment and a second run edit that comment and post no other; a test in `packages/kmctl/tests/test_action.py` that the publish step passes `--pr` on a `pull_request` event",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O6",
+      "change": "Publish with no report posts nothing and exits 0, in every mode",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P6",
+      "fixes_index": 4,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "action/agent.py",
+        "action.yml",
+        ".github/workflows/knowledge-audit.yml",
+        "tests/test_agent.py",
+        "packages/kmctl/tests/test_action.py"
+      ],
+      "checked_by": "a test in `tests/test_agent.py` that a missing report exits 0 with no `gh` call in issue and pull request mode; a test in `packages/kmctl/tests/test_action.py` that the publish step does not fail on a missing artifact; an eval row that the workflow's download step has `continue-on-error: true`",
       "seen_by": "operator"
     },
     {
@@ -119,14 +147,16 @@
       "goal": "G2",
       "goal_index": 1,
       "fixes": "P5",
-      "fixes_index": 4,
+      "fixes_index": 5,
       "needs": [
         "O3",
-        "O4"
+        "O4",
+        "O6"
       ],
       "needs_index": [
         2,
-        3
+        3,
+        4
       ],
       "touches": [
         ".okf/decisions/0005-audits-report-only.md",
