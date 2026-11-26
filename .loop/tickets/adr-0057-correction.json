@@ -19,7 +19,9 @@
   "archived": false,
   "worktree": "/home/vscode/workspace.worktrees/adr-0057-correction",
   "branch": "loop/adr-0057-correction",
-  "stamps": [],
+  "stamps": [
+    "7b4c6eca3f7e6cbe8126c4cad46e9b49d2e7e7b6ac53eadf13836b9b5d345150"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/create-eval",
     "hash": "0371de8c24dae57ba218d391acdf26802bba868c8ad4750b1e17017b0fd47c6a",
@@ -195,5 +197,5 @@
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-26T16:50:19+00:00"
+  "at": "2026-11-26T16:56:17+00:00"
 }
