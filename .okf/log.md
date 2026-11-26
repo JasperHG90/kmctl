@@ -335,3 +335,4 @@
 - Accepted `decisions/0056-the-ci-action-fails-a-pull-request-whose-summary-is-behind` (human:roel).
 - Added `decisions/0058-a-draft-decision-does-not-put-the-summary-behind` with `kmctl new decision`.
 - Accepted `decisions/0058-a-draft-decision-does-not-put-the-summary-behind` (human:roel).
+- Added `decisions/0059-an-unverified-concept-is-compared-with-its-own-last-commit` with `kmctl new decision`.
