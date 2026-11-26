@@ -1,3 +1,4 @@
 {"at": "2026-11-26T13:10:06+00:00", "kind": "register", "schema_version": "1.0", "stage": "planning"}
 {"at": "2026-11-26T13:10:52+00:00", "grant": "g10", "hash": "6b10f3dbc2b4d8dd7ba717063cd909b55f67a024e116afeecf2b21e8da6ebfd7", "kind": "signoff", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/agent", "step": "eval-sign"}
 {"at": "2026-11-26T13:10:54+00:00", "binds": "7188985e3558e6cbf1ac0e67230fe3edc9528c5fabc0a238756faf5f624fa6e6", "kind": "round-start", "n": 1, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
+{"at": "2026-11-26T13:11:44+00:00", "dispatched_at": "2026-11-26T13:10:54+00:00", "kind": "round-close", "n": 1, "outcome": "pass", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-26T13:11:29+00:00"}}
