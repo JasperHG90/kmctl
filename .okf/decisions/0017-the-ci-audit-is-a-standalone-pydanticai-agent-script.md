@@ -193,3 +193,27 @@ download time on each release run.
 
 Found by the first `kmctl audit checks` run over the whole bundle
 ([ADR 0038](0038-checks-are-step-data-that-kmctl-reruns-and-only-checks-that-notice-a-change-are-stored.md)).
+
+## Correction, 2026-11-26
+
+[ADR 0057](0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md) changes four things here, and the rest stands: one standalone
+script, no GitHub token in the agent's job, and a separate publish job that
+shares only the validated `Report` artifact.
+
+- A fourth shipped audit, `okf-vs-change`, checks the stable decisions
+  whose `sources` cover a file a change touched. `run --audit okf-vs-change
+  --base REF` lists them in the task from `git diff REF...HEAD` and needs
+  nothing beyond git and PyYAML (`action/agent.py`,
+  `action/prompts/okf-vs-change.md`).
+- `run --no-shell` leaves `run_shell` out of the agent's tools and out of
+  the system prompt, and `run --instructions-root DIR` reads the prompt
+  file, system prompt file, context and skills that git tracks from another
+  checkout. `action.yml` passes both, and `--base`, on a pull request, with
+  a checkout of the base branch under `$RUNNER_TEMP`.
+- `publish --pr N` posts one comment on the pull request, marked with the
+  title, and replaces it on the next run, instead of an issue.
+- `publish` with no `report.json` posts nothing and exits 0, so a skipped
+  or failed audit never also fails publish; the download step in
+  `action.yml` and in `.github/workflows/knowledge-audit.yml` no longer
+  fails on a missing artifact. The 2026-11-11 correction's "updated or
+  closed from the report that run has" holds when that run has a report.

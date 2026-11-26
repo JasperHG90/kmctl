@@ -363,9 +363,11 @@ install kmctl from the action's own checkout.
   or `kmctl review due` crashes, never because a concept is due.
 - **audit** (opt-in) runs `action/agent.py` with `uv run --script`: one
   standalone PydanticAI script that does not import kmctl (ADR 0017). Its
-  task is one of three shipped audits, picked by the `audit` input
-  (`--audit`: `okf-vs-code`, the default, `docs-vs-code` or `okf-vs-docs`,
-  prompts in `action/prompts/`), or the `prompt` or `prompt_file` input. Its
+  task is one of four shipped audits, picked by the `audit` input
+  (`--audit`: `okf-vs-code`, the default, `docs-vs-code`, `okf-vs-docs` or
+  `okf-vs-change`, prompts in `action/prompts/`), or the `prompt` or
+  `prompt_file` input. `okf-vs-change` checks the stable decisions whose
+  `sources` cover a file changed since `--base` (ADR 0057). Its
   system prompt,
   replaceable with `system_prompt_file`, lists the folders it can read and
   each skill's name and description; it reads a SKILL.md when the skill fits.
@@ -379,14 +381,22 @@ install kmctl from the action's own checkout.
   job summary. It never commits or pushes (I2), and it refuses to start
   when a GitHub token is reachable (`GH_TOKEN` or `GITHUB_TOKEN` set, or
   checkout's credentials in git config). setup-uv's cache is off, so
-  nothing the agent wrote outlives its job but the artifact.
+  nothing the agent wrote outlives its job but the artifact. It runs on
+  `workflow_dispatch`, `schedule` or a `pull_request` from the same
+  repository; a fork's or Dependabot's pull request is skipped with a
+  notice. On a pull request it runs with `--no-shell`, so without
+  `run_shell`, and with `--instructions-root` set to a checkout of the base
+  branch under `$RUNNER_TEMP`, so the prompt file, system prompt file,
+  context and skills that git tracks come from the base branch (ADR 0057).
 - **publish** runs in a separate job on a fresh runner, the only one with
-  `GH_TOKEN` and `issues: write`. It downloads the artifact and runs
-  `action/agent.py publish`: when a finding is at or above `min_severity`
-  (default high), it creates the one issue titled `issue_title`, or replaces
-  its body and adds a comment, @-mentioning the owners of the last `*` rule
-  in CODEOWNERS or the `mention` input; below the threshold it closes an
-  open issue with a comment.
+  `GH_TOKEN` and `issues: write` (or `pull-requests: write`). It downloads
+  the artifact and runs `action/agent.py publish`: when a finding is at or
+  above `min_severity` (default high), it creates the one issue titled
+  `issue_title`, or replaces its body and adds a comment, @-mentioning the
+  owners of the last `*` rule in CODEOWNERS or the `mention` input; below
+  the threshold it closes an open issue with a comment. On a pull request
+  it passes `--pr`, and posts one comment marked with the title, replaced
+  on each push. With no artifact it posts nothing and passes.
 
 ## Releases
 
