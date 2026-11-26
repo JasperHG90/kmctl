@@ -20,10 +20,106 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/create-eval",
+    "hash": "861e461ed6b7ea52299cc90702107cac679f36eb8ada3efe3aacf4db03ddf3ef",
+    "at": "2026-11-26T12:54:44+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "The Context links ADR 0055",
+      "fails_when": "the record has no link to 0055-one-verify-for-the-pages-a-branch-made-due",
+      "command": "grep -q '0055-one-verify-for-the-pages-a-branch-made-due' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "The Context says kmctl review due --base compares sources only for verified decisions, with the measured 0 of 82 over 15 pull requests",
+      "fails_when": "the record does not name review due --base, or does not give the 82 figure",
+      "command": "grep -q 'review due --base' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' && grep -q '82' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "The scoping rule still matches a decision's sources against the changed files, a folder source as a prefix",
+      "fails_when": "the scoping rule drops its own sources matcher or says nothing of folder sources",
+      "command": "grep -q 'sources' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' && grep -qi 'folder' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "The record says what the audit adds over ADR 0055: whether a decision still holds, not only which pages a change touched",
+      "fails_when": "a reviewer finds no sentence that tells the audit's judgment apart from 0055's list",
+      "command": null,
+      "judgment": true
+    },
+    {
+      "id": "r5",
+      "behavior": "A fork pull request is skipped with a notice and exit 0, so it gets no red check",
+      "fails_when": "the fork rule still says the action refuses the fork pull request, or never says it exits 0",
+      "command": "! grep -qi 'refuses it' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' && grep -Eqi 'exits? 0' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'",
+      "judgment": false
+    },
+    {
+      "id": "r6",
+      "behavior": "The instructions rule says the base-branch checkout keeps a pull request from loosening the audit that checks it, and does not guard the key, since the pull request's own workflow file runs",
+      "fails_when": "a reviewer finds the base-branch checkout still presented as protecting the API key, or no mention that a pull_request run uses the pull request's workflow file",
+      "command": null,
+      "judgment": true
+    },
+    {
+      "id": "r7",
+      "behavior": "The new shipped audit has one name, used the same way throughout and next to the three in AUDITS",
+      "fails_when": "the record calls it 'fourth' in one place and 'new' in another, or never names it",
+      "command": "! grep -q 'fourth shipped audit' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'",
+      "judgment": false
+    },
+    {
+      "id": "r7b",
+      "behavior": "Reviewer confirms the audit's name is used consistently and fits AUDITS in action/agent.py",
+      "fails_when": "a reviewer finds the audit unnamed or named two ways",
+      "command": null,
+      "judgment": true
+    },
+    {
+      "id": "r8",
+      "behavior": "The record says the merge-base comparison relies on the audit's existing fetch-depth: 0 requirement",
+      "fails_when": "the record does not mention fetch-depth: 0",
+      "command": "grep -q 'fetch-depth: 0' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'",
+      "judgment": false
+    },
+    {
+      "id": "r9",
+      "behavior": "The record places the feature under ADR 0046's split between kmctl and kmaudit",
+      "fails_when": "the record has no link to ADR 0046",
+      "command": "grep -q '0046-kmctl-works-from-code-toward-knowledge' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'",
+      "judgment": false
+    },
+    {
+      "id": "r10",
+      "behavior": "The record stays a draft for the operator to accept",
+      "fails_when": "the front matter status is not draft",
+      "command": "grep -q '^status: draft' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'",
+      "judgment": false
+    },
+    {
+      "id": "r11",
+      "behavior": "The repo's pre-commit hooks pass on every file, including strict OKF validation of .okf/",
+      "fails_when": "prek run --all-files exits nonzero",
+      "command": "prek run --all-files",
+      "judgment": false
+    },
+    {
+      "id": "r12",
+      "behavior": "The ticket's branch carries PR 71's head, so pushing it to adr/audit-pull-requests is a fast-forward",
+      "fails_when": "origin/adr/audit-pull-requests is not an ancestor of HEAD",
+      "command": "git merge-base --is-ancestor origin/adr/audit-pull-requests HEAD",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -44,5 +140,5 @@
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-26T12:54:02+00:00"
+  "at": "2026-11-26T12:54:44+00:00"
 }

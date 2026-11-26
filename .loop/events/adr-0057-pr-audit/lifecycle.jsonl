@@ -1,3 +1,4 @@
 {"at": "2026-11-26T12:49:55+00:00", "kind": "register", "schema_version": "1.0", "stage": "planning"}
 {"at": "2026-11-26T12:53:02+00:00", "kind": "spike-note", "n": 1, "replaced": false, "schema_version": "1.0"}
 {"at": "2026-11-26T12:53:26+00:00", "kind": "spike-note", "n": 2, "replaced": false, "schema_version": "1.0"}
+{"at": "2026-11-26T12:54:44+00:00", "grant": "g10", "hash": "861e461ed6b7ea52299cc90702107cac679f36eb8ada3efe3aacf4db03ddf3ef", "kind": "signoff", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/create-eval", "step": "eval-sign"}
