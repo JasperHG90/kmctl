@@ -328,6 +328,8 @@
 - Added `decisions/0054-a-verify-does-not-put-the-summary-behind` with `kmctl new decision`.
 - Added `decisions/0055-one-verify-for-the-pages-a-branch-made-due` with `kmctl new decision`.
 - Added `decisions/0056-the-ci-action-fails-a-pull-request-whose-summary-is-behind` with `kmctl new decision`.
+- Added `decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated` with `kmctl new decision`.
+- Accepted `decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated` (human:jasper).
 - Accepted `decisions/0054-a-verify-does-not-put-the-summary-behind` (human:roel).
 - Accepted `decisions/0055-one-verify-for-the-pages-a-branch-made-due` (human:roel).
 - Accepted `decisions/0056-the-ci-action-fails-a-pull-request-whose-summary-is-behind` (human:roel).

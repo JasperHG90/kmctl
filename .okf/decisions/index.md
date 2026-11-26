@@ -70,3 +70,5 @@
 - [ADR 0054: A verify does not put the summary behind](0054-a-verify-does-not-put-the-summary-behind.md): The summary's freshness check ignores a change that touches only the fields kmctl verify writes.
 - [ADR 0055: One verify for the pages a branch made due](0055-one-verify-for-the-pages-a-branch-made-due.md): kmctl review due --base lists what a branch made due, and kmctl verify takes several ids and writes nothing if one is refused.
 - [ADR 0056: The CI action fails a pull request whose summary is behind](0056-the-ci-action-fails-a-pull-request-whose-summary-is-behind.md): kmctl's CI action runs kmctl check --summary-current by default, so a summary behind its concepts fails the job; summary: pass only warns.
+- - [ADR 0057: The audit runs on a pull request and comments on the decisions it may have outdated](0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md): On a pull request from the same repository, the audit checks the decisions the change may have outdated and posts one comment; it never fails the check.
+
