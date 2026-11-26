@@ -14,3 +14,4 @@
 {"at": "2026-11-26T16:49:07+00:00", "dispatched_at": "2026-11-26T16:47:19+00:00", "kind": "round-close", "n": 3, "outcome": "pass", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-26T16:48:38+00:00"}}
 {"at": "2026-11-26T21:12:44+00:00", "by": "human:jasperginn@gmail.com", "edge": "blocked->ready", "kind": "override", "reason": "plan revised before the block; passed plan round 3", "schema_version": "1.0"}
 {"at": "2026-11-26T21:12:44+00:00", "kind": "unblock", "schema_version": "1.0"}
+{"at": "2026-11-26T21:13:02+00:00", "by": "advance", "from": "ready", "kind": "transition", "schema_version": "1.0", "to": "building"}
