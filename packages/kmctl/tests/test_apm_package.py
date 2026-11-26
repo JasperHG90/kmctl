@@ -89,7 +89,8 @@ KMAUDIT_AGENTS = ("kmctl-claims-extractor.md", "kmctl-check-writer.md")
 #: 2026-10-19 correction, rules named by name, not a .claude/ path;
 #: okf-bundle: ADR 0034, rename a concept with kmctl mv; okf-bundle: ADR 0049,
 #: the log records lifecycle events only; okf-bundle: ADR 0050, drafts are
-#: settled before review).
+#: settled before review; okf-bundle: ADR 0055 and ADR 0056, one verify for
+#: the pages a branch made due, and CI fails on a summary behind).
 OLD_RULES = {
     "diagrams-stay-current": (
         [".okf/**", "src/**", "lib/**", "app/**", "pkg/**", "cmd/**"],
@@ -105,7 +106,7 @@ OLD_RULES = {
     ),
     "okf-bundle": (
         [".okf/**"],
-        "9085d020ecee6a4ce5056f839cf46fd24a9e5c54a2c2a6d364e8d389a3ea8388",
+        "21e9e52a1a0212336291c75ce440e416478c8d462d31dec5f52d59142b80dc06",
     ),
 }
 

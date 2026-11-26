@@ -306,6 +306,86 @@ def test_freshness_working_tree_changes_count(tmp_path: Path) -> None:
     ]
 
 
+def _acked_decision(root: Path) -> str:
+    """A decision committed with an ack, so the summary is current; returns its id."""
+    cid = _new(root, "decision", "Use a queue")
+    _commit(root)
+    ack(root)
+    _commit(root, "ack")
+    assert _summary_reasons(root) is None
+    return cid
+
+
+def _verify(root: Path, cid: str) -> None:
+    result = _invoke("verify", cid, "--by", "human:j", "--path", str(root))
+    assert result.exit_code == 0, result.output
+
+
+def test_freshness_a_verify_is_no_change(tmp_path: Path) -> None:
+    """ADR 0054: a person's check adds nothing the summary says."""
+    root = _init(tmp_path)
+    cid = _acked_decision(root)
+    _verify(root, cid)
+
+    assert _summary_reasons(root) is None  # in the working tree
+    _commit(root, "verify")
+    assert _summary_reasons(root) is None  # and once committed
+
+
+def test_freshness_a_verify_with_an_edit_is_a_change(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    cid = _acked_decision(root)
+    _verify(root, cid)
+    _append(root, f".okf/{cid}.md", "An edit.\n")
+    _commit(root, "verify and edit")
+
+    assert _summary_reasons(root) == [f"concepts changed: {cid}"]
+
+
+def test_freshness_an_edit_then_a_verify_is_a_change(tmp_path: Path) -> None:
+    root = _init(tmp_path)
+    cid = _acked_decision(root)
+    _append(root, f".okf/{cid}.md", "An edit.\n")
+    _commit(root, "edit")
+    _verify(root, cid)
+    _commit(root, "verify")
+
+    assert _summary_reasons(root) == [f"concepts changed: {cid}"]
+
+
+def test_freshness_accepting_a_draft_is_a_change(tmp_path: Path) -> None:
+    """A summary can say a decision is a draft, so an accept still counts."""
+    root = _init(tmp_path)
+    result = _invoke(
+        "new",
+        "decision",
+        "Use a queue",
+        "--draft",
+        "--description",
+        "One.",
+        "--path",
+        str(root),
+        "--json",
+    )
+    cid = json.loads(result.stdout)["id"]
+    _commit(root)
+    ack(root)
+    _commit(root, "ack")
+    accepted = _invoke(
+        "decision",
+        "accept",
+        cid.split("/")[1][:4],
+        "--by",
+        "human:j",
+        "--path",
+        str(root),
+    )
+    assert accepted.exit_code == 0, accepted.output
+    _commit(root, "accept")
+
+    assert _summary_reasons(root) == [f"concepts changed: {cid}"]
+
+
 def test_freshness_never_for_log_index_or_handoff(tmp_path: Path) -> None:
     root = _init(tmp_path)
     _new(root, "handoff", "Where it stopped")
@@ -617,21 +697,57 @@ def test_clears_check_reports_a_stale_summary_without_failing(tmp_path: Path) ->
     assert "all checks passed, 1 warning" in text
 
 
-def test_clears_ci_action_reports_a_stale_summary_without_failing(
-    tmp_path: Path,
+@pytest.mark.parametrize("mode", ["", "fail", "pass"], ids=["default", "fail", "pass"])
+def test_ci_action_fails_on_a_stale_summary_unless_summary_pass(
+    tmp_path: Path, mode: str
 ) -> None:
+    """ADR 0056: the action fails on a summary behind its concepts, unless summary: pass."""
     root = tmp_path / "repo"
     root.mkdir()
     _init(root)
     cid = _new(root, "decision", "Use a queue")
     _commit(root)
 
-    proc, report = _run_action(root, _kmctl_bin(tmp_path), tmp_path)
+    extra = {"KMCTL_SUMMARY": mode} if mode else {}
+    proc, report = _run_action(root, _kmctl_bin(tmp_path), tmp_path, extra)
+
+    assert proc.returncode == (0 if mode == "pass" else 1), proc.stdout + proc.stderr
+    check, due = report.split("## kmctl review due", 1)
+    level = "warning" if mode == "pass" else "error"
+    assert re.search(rf"{level}\s+summary\s+.*summary is behind", check)
+    assert cid in check and "kmctl summary ack" in check
+    assert re.search(rf"due\s+summary\s+\(concepts changed: {re.escape(cid)}\)", due)
+    ack(root)
+    _commit(root, "ack")
+    proc, _ = _run_action(root, _kmctl_bin(tmp_path), tmp_path, extra)
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+
+
+def test_ci_action_lists_what_the_pull_request_made_due(tmp_path: Path) -> None:
+    """ADR 0055: on a pull request the job summary first lists the pages it made due."""
+    root = tmp_path / "repo"
+    root.mkdir()
+    _init(root)
+    old = _new(root, "decision", "Use a queue")
+    _commit(root)
+    ack(root)
+    _commit(root, "ack")
+    _git(root, "remote", "add", "origin", str(root))
+    _git(root, "switch", "-q", "-c", "feature")
+    new = _new(root, "decision", "Use a cache")
+    ack(root)
+    _commit(root, "branch decision")
+
+    proc, report = _run_action(
+        root, _kmctl_bin(tmp_path), tmp_path, {"GITHUB_BASE_REF": "main"}
+    )
 
     assert proc.returncode == 0, proc.stdout + proc.stderr
-    check, due = report.split("## kmctl review due", 1)
-    assert "summary is behind" in check and cid in check
-    assert re.search(rf"due\s+summary\s+\(concepts changed: {re.escape(cid)}\)", due)
+    assert "## Pages this pull request made due" in report
+    section = report.split("## Pages this pull request made due", 1)[1].split(
+        "## kmctl review due", 1
+    )[0]
+    assert new in section and old not in section
 
 
 # r5: checked is a named extension field ----------------------------------------
@@ -857,3 +973,52 @@ def test_summary_has_no_nudge_verb() -> None:
     assert "ack" in help_text
     assert "nudge" not in help_text
     assert _invoke("summary", "nudge").exit_code != 0
+
+
+def test_base_keeps_the_summary_only_for_the_branch_concepts(tmp_path: Path) -> None:
+    """ADR 0055: with --base, the summary is listed when the branch changed a concept it names."""
+    root = _init(tmp_path)
+    main_cid = _new(root, "decision", "Use a queue")
+    _commit(root, "main's decision, not acked")
+    _git(root, "switch", "-q", "-c", "feature")
+    _append(root, "notes.txt", "unrelated\n")
+    _commit(root, "no concept")
+
+    def listed() -> dict[str, list[str]]:
+        result = _invoke(
+            "review", "due", "--path", str(root), "--base", "main", "--json"
+        )
+        assert result.exit_code == 0, result.output
+        return {d["id"]: d["reasons"] for d in json.loads(result.stdout)["due"]}
+
+    assert "summary" not in listed()
+    branch_cid = _new(root, "decision", "Use a cache")
+    _commit(root, "branch decision")
+    assert listed()["summary"] == [
+        f"concepts changed: {', '.join(sorted([main_cid, branch_cid]))}"
+    ]
+
+
+def test_ci_action_lists_the_pages_without_fetching(tmp_path: Path) -> None:
+    """A private repository checked out with persist-credentials: false cannot fetch, but has origin/BASE."""
+    root = tmp_path / "repo"
+    root.mkdir()
+    _init(root)
+    _new(root, "decision", "Use a queue")
+    _commit(root)
+    ack(root)
+    _commit(root, "ack")
+    _git(root, "remote", "add", "origin", str(tmp_path / "unreachable"))
+    _git(root, "update-ref", "refs/remotes/origin/main", "main")
+    _git(root, "switch", "-q", "-c", "feature")
+    new = _new(root, "decision", "Use a cache")
+    ack(root)
+    _commit(root, "branch decision")
+
+    proc, report = _run_action(
+        root, _kmctl_bin(tmp_path), tmp_path, {"GITHUB_BASE_REF": "main"}
+    )
+
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    section = report.split("## Pages this pull request made due", 1)[1]
+    assert new in section.split("## kmctl review due", 1)[0]
