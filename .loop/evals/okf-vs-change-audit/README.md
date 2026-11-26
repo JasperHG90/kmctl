@@ -6,12 +6,12 @@ tags:
 - eval
 generated:
   by: process:loopctl/2.4.0
-  at: '2026-11-26T13:37:20+00:00'
+  at: '2026-11-26T16:45:32+00:00'
 slug: okf-vs-change-audit
 signoff:
   signer: delegated:jasperginn@gmail.com/create-eval
-  hash: b88972c6c8197c2bdd80b9e0247dbc09842a25bddfcc31e7807299aa8398d73f
-  at: '2026-11-26T13:37:20+00:00'
+  hash: 05aeb9c4d8c31052a02fb0ba9389600909dd76d91a10ca34829b6cc3289e20cb
+  at: '2026-11-26T16:45:32+00:00'
 verified: null
 ---
 
@@ -51,21 +51,21 @@ Rows: rows.json; the fields each row takes: loopctl schema eval-rows.
   Fails when: --pr is missing on a pull request or passed on another event
 - r17: ADR 0005 and ADR 0017 each have a dated Correction linking ADR 0057
   Fails when: either record lacks a Correction section that links 0057
-- r18: ADR 0057 stays a draft, says fetched context folders stay in the working tree, and no longer says nothing is built before acceptance
-  Fails when: status is not draft, the fetched-context sentence is missing, or the old last Consequence remains
 - r19: the knowledge-audit workflow no longer says the audit never runs on a pull request
   Fails when: the comment still says it never runs on a pull request
 - r20: the how-to page shows a pull request workflow with the same-repository condition
   Fails when: the page has no head.repo.full_name condition
-- r21 (judgment): the okf-vs-change prompt keeps the audit report-only and asks for a reason for each decision the agent adds beyond the matched list
-  Fails when: a reviewer finds the prompt lets the agent edit files or add decisions without a reason
+- r21 (judgment): the okf-vs-change prompt keeps the audit report-only, needs only the read, search and list tools, and asks for a reason for each decision the agent adds beyond the matched list
+  Fails when: a reviewer finds the prompt lets the agent edit files, relies on run_shell or a skill's scripts, or lets it add decisions without a reason
 - r22: the repo's pre-commit hooks pass on every file
   Fails when: prek run --all-files exits nonzero
-- r23: the ticket's branch carries PR 71's head, so the push is a fast-forward
-  Fails when: origin/adr/audit-pull-requests is neither an ancestor of HEAD nor the merge in progress
 - r24: the action's publish mode does not fail on a missing report artifact
   Fails when: a missing artifact fails the publish step
 - r25: the knowledge-audit workflow's report download does not fail publish on a missing artifact
   Fails when: the download-artifact step in the publish job lacks continue-on-error: true
 - r26: with --instructions-root DIR, an instruction path the pull request tracks but DIR does not have exits 2
   Fails when: it falls back to the working tree or exits other than 2
+- r27: with --no-shell the agent's tools leave out run_shell and the system prompt does not offer it; without the flag nothing changes
+  Fails when: run_shell is among the tools or named in the system prompt under --no-shell, or missing without it
+- r28: the action's agent step passes --no-shell only on a pull_request event
+  Fails when: --no-shell is missing on a pull request or passed on another event
