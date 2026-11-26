@@ -31,7 +31,7 @@ replace "none" with that ticket's slug and the finding, in one line (ADR 0001). 
 
 When `kmctl check` or `kmctl review due` fails in the GitHub Action,
 `action/knowledge-ci.sh` writes the reasons only to the job summary, so the
-job log says just "Process completed with exit code 1" (dlx run 45802219402).
+job log says just "Process completed with exit code 1".
 The script will print an `::error` line to the log that names the failed
 command and says the reasons are on the run's summary page, with a link built
 from `GITHUB_SERVER_URL`, `GITHUB_REPOSITORY`, `GITHUB_RUN_ID` and

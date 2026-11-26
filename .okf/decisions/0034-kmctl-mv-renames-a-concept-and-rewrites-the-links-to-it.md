@@ -24,7 +24,7 @@ every link to the concept in `.okf/` and `docs/`, a decision's `ADR NNNN`
 in its `title` and `#` heading, the summary's `checked.against`
 ([ADR 0027](0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step.md)),
 and paths outside the bundle such as `AGENTS.md` and skills. Renumbering
-the decision log of dlx-internal/dlx took a script that rewrote about 25
+the decision log of one repository took a script that rewrote about 25
 files and a second one to check them, and it still shipped three wrong
 titles. `kmctl check` leaves links inside `.okf/` to the okf validator,
 which only warns on a missing target.
@@ -55,7 +55,7 @@ Rejected:
   renumber is a rename whose new name has another number.
 - Leave renames to `git mv` and `kmctl check`. `kmctl check` does not
   check links inside `.okf/`, so a missed link passes, and nothing checks
-  a title against its file name: that is how the dlx renumbering shipped
+  a title against its file name: that is how that renumbering shipped
   wrong titles.
 - Rewrite every mention, in prose and outside the bundle. Prose such as
   "unlike ADR 0007" or a path in a script may mean the old record or may
