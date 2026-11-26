@@ -15,9 +15,9 @@
     },
     {
       "id": "r3",
-      "behavior": "the prototype holds its script and results",
-      "fails_when": "scope.py, results.txt or ref.txt is missing",
-      "command": "test -f .okf/prototypes/pr-audit-scope/scope.py && test -f .okf/prototypes/pr-audit-scope/results.txt && test -f .okf/prototypes/pr-audit-scope/ref.txt"
+      "behavior": "the prototype holds its script, results and measured commit, and is in the prototypes index",
+      "fails_when": "scope.py, results.txt or ref.txt is missing, or the index does not list pr-audit-scope",
+      "command": "test -f .okf/prototypes/pr-audit-scope/scope.py && test -f .okf/prototypes/pr-audit-scope/results.txt && test -f .okf/prototypes/pr-audit-scope/ref.txt && grep -q 'pr-audit-scope' .okf/prototypes/index.md"
     },
     {
       "id": "r4",
@@ -27,7 +27,7 @@
     },
     {
       "id": "r5",
-      "behavior": "the Correction says a fork pull request is skipped with exit 0 on both jobs and publish with no report exits 0",
+      "behavior": "the Correction says a fork pull request is skipped with exit 0 on both jobs",
       "fails_when": "the Correction does not say exit 0 or does not name both jobs",
       "command": "awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -Eqi 'exits? 0' && awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -qi 'both'"
     },
@@ -60,6 +60,24 @@
       "behavior": "the repo's pre-commit hooks pass on every file",
       "fails_when": "prek run --all-files exits nonzero",
       "command": "prek run --all-files"
+    },
+    {
+      "id": "r11",
+      "behavior": "the Correction says publish with no report posts nothing and exits 0",
+      "fails_when": "the Correction does not cover the no-report case",
+      "command": "awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -qi 'no report'"
+    },
+    {
+      "id": "r12",
+      "behavior": "the Correction says run_shell stays left out on a pull request and does not say a shell command can read the key",
+      "fails_when": "the Correction never names run_shell, or says a shell command can read the key",
+      "command": "awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -q 'run_shell' && ! awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -qi 'shell command can read'"
+    },
+    {
+      "id": "r13",
+      "behavior": "nothing in the Correction reads as reversing the no-shell rule",
+      "fails_when": "a reviewer finds a sentence that weakens or contradicts the accepted no-shell rule",
+      "judgment": true
     }
   ]
 }
