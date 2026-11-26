@@ -1,17 +1,17 @@
 ---
 type: eval
 title: 'Eval: okf-vs-change-audit'
-description: 'Definition of done for okf-vs-change-audit: 23 row(s).'
+description: 'Definition of done for okf-vs-change-audit: 26 row(s).'
 tags:
 - eval
 generated:
   by: process:loopctl/2.4.0
-  at: '2026-11-26T13:33:57+00:00'
+  at: '2026-11-26T13:37:20+00:00'
 slug: okf-vs-change-audit
 signoff:
   signer: delegated:jasperginn@gmail.com/create-eval
-  hash: 4e0af0988799532b82183c66c179e2ba6e7eae70587d63b5b8113318e5ccb572
-  at: '2026-11-26T13:33:57+00:00'
+  hash: b88972c6c8197c2bdd80b9e0247dbc09842a25bddfcc31e7807299aa8398d73f
+  at: '2026-11-26T13:37:20+00:00'
 verified: null
 ---
 
@@ -37,8 +37,8 @@ Rows: rows.json; the fields each row takes: loopctl schema eval-rows.
   Fails when: a path resolves differently without the flag
 - r10: the action's event check lets workflow_dispatch, schedule and a same-repository pull_request run
   Fails when: any of them is refused
-- r11: a fork pull_request gets a notice, exit 0, and no agent run
-  Fails when: the step exits nonzero, prints no notice, or the agent step runs
+- r11: a fork pull_request, or one Dependabot opened, gets a notice, exit 0, and a step output that skips the agent step
+  Fails when: the step exits nonzero, prints no notice, or sets no output that keeps the agent step from running
 - r12: pull_request_target, push and other events stay refused
   Fails when: any of them is let through
 - r13: the agent step passes --instructions-root and --base only on a pull_request event
@@ -47,8 +47,8 @@ Rows: rows.json; the fields each row takes: loopctl schema eval-rows.
   Fails when: the second run posts a new comment or edits none
 - r15: publish with no report posts nothing and exits 0, in issue and pull request mode
   Fails when: it exits nonzero or calls gh
-- r16: the action's publish step passes --pr on a pull_request event and does not fail on a missing artifact
-  Fails when: --pr is missing on a pull request, or a missing artifact fails the step
+- r16: the action's publish step passes --pr on a pull_request event
+  Fails when: --pr is missing on a pull request or passed on another event
 - r17: ADR 0005 and ADR 0017 each have a dated Correction linking ADR 0057
   Fails when: either record lacks a Correction section that links 0057
 - r18: ADR 0057 stays a draft, says fetched context folders stay in the working tree, and no longer says nothing is built before acceptance
@@ -63,3 +63,9 @@ Rows: rows.json; the fields each row takes: loopctl schema eval-rows.
   Fails when: prek run --all-files exits nonzero
 - r23: the ticket's branch carries PR 71's head, so the push is a fast-forward
   Fails when: origin/adr/audit-pull-requests is neither an ancestor of HEAD nor the merge in progress
+- r24: the action's publish mode does not fail on a missing report artifact
+  Fails when: a missing artifact fails the publish step
+- r25: the knowledge-audit workflow's report download does not fail publish on a missing artifact
+  Fails when: the download-artifact step in the publish job lacks continue-on-error: true
+- r26: with --instructions-root DIR, an instruction path the pull request tracks but DIR does not have exits 2
+  Fails when: it falls back to the working tree or exits other than 2

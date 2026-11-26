@@ -63,8 +63,8 @@
     },
     {
       "id": "r11",
-      "behavior": "a fork pull_request gets a notice, exit 0, and no agent run",
-      "fails_when": "the step exits nonzero, prints no notice, or the agent step runs",
+      "behavior": "a fork pull_request, or one Dependabot opened, gets a notice, exit 0, and a step output that skips the agent step",
+      "fails_when": "the step exits nonzero, prints no notice, or sets no output that keeps the agent step from running",
       "command": "uv run pytest -q packages/kmctl/tests/test_action.py::test_event_check_skips_fork_pull_request"
     },
     {
@@ -93,9 +93,9 @@
     },
     {
       "id": "r16",
-      "behavior": "the action's publish step passes --pr on a pull_request event and does not fail on a missing artifact",
-      "fails_when": "--pr is missing on a pull request, or a missing artifact fails the step",
-      "command": "uv run pytest -q packages/kmctl/tests/test_action.py::test_publish_step_passes_pr_and_tolerates_missing_artifact"
+      "behavior": "the action's publish step passes --pr on a pull_request event",
+      "fails_when": "--pr is missing on a pull request or passed on another event",
+      "command": "uv run pytest -q packages/kmctl/tests/test_action.py::test_publish_step_passes_pr_on_pull_request"
     },
     {
       "id": "r17",
@@ -138,6 +138,24 @@
       "behavior": "the ticket's branch carries PR 71's head, so the push is a fast-forward",
       "fails_when": "origin/adr/audit-pull-requests is neither an ancestor of HEAD nor the merge in progress",
       "command": "git merge-base --is-ancestor origin/adr/audit-pull-requests HEAD || [ \"$(git rev-parse -q --verify MERGE_HEAD)\" = \"$(git rev-parse origin/adr/audit-pull-requests)\" ]"
+    },
+    {
+      "id": "r24",
+      "behavior": "the action's publish mode does not fail on a missing report artifact",
+      "fails_when": "a missing artifact fails the publish step",
+      "command": "uv run pytest -q packages/kmctl/tests/test_action.py::test_publish_step_tolerates_missing_artifact"
+    },
+    {
+      "id": "r25",
+      "behavior": "the knowledge-audit workflow's report download does not fail publish on a missing artifact",
+      "fails_when": "the download-artifact step in the publish job lacks continue-on-error: true",
+      "command": "awk '/^  publish:/{p=1} p' .github/workflows/knowledge-audit.yml | grep -A4 'actions/download-artifact' | grep -q 'continue-on-error: true'"
+    },
+    {
+      "id": "r26",
+      "behavior": "with --instructions-root DIR, an instruction path the pull request tracks but DIR does not have exits 2",
+      "fails_when": "it falls back to the working tree or exits other than 2",
+      "command": "uv run pytest -q tests/test_agent.py::test_instructions_root_refuses_path_missing_from_base"
     }
   ]
 }
