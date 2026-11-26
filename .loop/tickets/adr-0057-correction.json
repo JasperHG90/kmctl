@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "adr-0057-correction",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
@@ -168,8 +168,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "c72cf5ac80ab4eb7cbd3c7850b3ee9dbfa8a949c1bd57ce7bbb4c39307126463",
   "intent": {
@@ -201,8 +201,14 @@
       "to": "verifying",
       "at": "2026-11-26T17:04:21+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-26T17:14:19+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-26T17:04:23+00:00"
+  "at": "2026-11-26T17:14:20+00:00"
 }
