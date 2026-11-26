@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "slug": "action-failure-points-to-summary",
-  "stage": "ready",
-  "attempts": 0,
+  "stage": "building",
+  "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
@@ -17,8 +17,8 @@
   "closed_outside": false,
   "dropped": false,
   "archived": false,
-  "worktree": null,
-  "branch": null,
+  "worktree": "/home/vscode/workspace.worktrees/action-failure-points-to-summary",
+  "branch": "loop/action-failure-points-to-summary",
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/agent",
@@ -99,8 +99,14 @@
       "to": "ready",
       "at": "2026-11-26T13:11:49+00:00",
       "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-26T13:11:58+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-26T13:11:49+00:00"
+  "at": "2026-11-26T13:11:58+00:00"
 }
