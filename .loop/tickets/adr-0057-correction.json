@@ -1,14 +1,30 @@
 {
   "schema_version": "1.0",
   "slug": "adr-0057-correction",
-  "stage": "fixing",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 1,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "35fdc14f54d3f4c7e33c9b1301bfed54e122df9250e32e1ac459a9c7052fcc4f",
+    "tree": "58ec780f0451afdca8e9c34b24fc03b2ccf1f85e",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": null,
+        "paths": [
+          ".okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md"
+        ]
+      }
+    ],
+    "at": "2026-11-26T17:22:47+00:00"
+  },
   "ask": null,
   "split": "j-20261126T164843+0000-4c6cea8a",
   "split_plan_hash": "c72cf5ac80ab4eb7cbd3c7850b3ee9dbfa8a949c1bd57ce7bbb4c39307126463",
@@ -223,8 +239,14 @@
       "to": "fixing",
       "at": "2026-11-26T17:14:19+00:00",
       "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-26T17:22:47+00:00",
+      "by": "review fixed"
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-26T17:22:37+00:00"
+  "at": "2026-11-26T17:22:47+00:00"
 }
