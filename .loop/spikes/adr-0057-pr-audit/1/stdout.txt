@@ -1,0 +1,113 @@
+lict reasons=['unverified']
+   LISTED, but not for its sources: decisions/0049-the-log-records-lifecycle-events-only reasons=['unverified']
+   LISTED, but not for its sources: decisions/0050-drafts-are-settled-before-review-and-only-a-person-accepts-one reasons=['unverified']
+   LISTED, but not for its sources: decisions/0051-kmctl-init-sets-a-union-merge-for-the-log-and-the-indexes reasons=['unverified']
+
+== 57a241dc Merge pull request #61 from JasperHG90/release/v0.14.0  (11 files changed)
+   review due --base decisions: []
+   matcher decisions:           ['decisions/0014-apm-is-the-only-install-route', 'decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest', 'decisions/0025-the-starter-template-lives-in-kmctl-and-shares-its-release-tags', 'decisions/0045-each-package-keeps-its-apm-package-and-version', 'decisions/0046-kmctl-works-from-code-toward-knowledge-and-kmaudit-from-knowledge-toward-code']
+   MISS decisions/0014-apm-is-the-only-install-route [file source: packages/kmctl/apm] -> no verified entry (sources never compared; 'unverified' kept only when the record itself changed)
+   MISS decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest [file source: packages/kmctl/apm/apm.yml, packages/kmctl/apm/claude/apm.yml, packages/kmctl/apm/antigravity/apm.yml] -> no verified entry (sources never compared; 'unverified' kept only when the record itself changed)
+   MISS decisions/0025-the-starter-template-lives-in-kmctl-and-shares-its-release-tags [file source: copier.yml] -> no verified entry (sources never compared; 'unverified' kept only when the record itself changed)
+   MISS decisions/0045-each-package-keeps-its-apm-package-and-version [file source: packages/kmctl/apm/apm.yml] -> no verified entry (sources never compared; 'unverified' kept only when the record itself changed)
+   MISS decisions/0046-kmctl-works-from-code-toward-knowledge-and-kmaudit-from-knowledge-toward-code [folder source: packages/kmctl/] -> no verified entry (sources never compared; 'unverified' kept only when the record itself changed)
+
+== 0a89074b Merge pull request #60 from JasperHG90/loop/decision-candidates-skill  (127 files changed)
+   review due --base decisions: ['decisions/0047-unrecorded-decisions-are-listed-by-kmctl-and-judged-by-a-skill-that-only-reports']
+   matcher decisions:           ['decisions/0014-apm-is-the-only-install-route', 'decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest', 'decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins', 'decisions/0046-kmctl-works-from-code-toward-knowledge-and-kmaudit-from-knowledge-toward-code', 'decisions/0047-unrecorded-decisions-are-listed-by-kmctl-and-judged-by-a-skill-that-only-reports']
+   MISS decisions/0014-apm-is-the-only-install-route [file source: packages/kmctl/apm] -> no verified entry (sources never compared; 'unverified' kept only when the record itself changed)
+   MISS decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest [file source: packages/kmctl/src/kmctl/__init__.py] -> no verified entry (sources never compared; 'unverified' kept only when the record itself changed)
+   MISS decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins [file source: packages/kmctl/src/kmctl/__init__.py] -> no verified entry (sources never compared; 'unverified' kept only when the record itself changed)
+   MISS decisions/0046-kmctl-works-from-code-toward-knowledge-and-kmaudit-from-knowledge-toward-code [folder source: packages/kmctl/] -> no verified entry (sources never compared; 'unverified' kept only when the record itself changed)
+   LISTED, but not for its sources: decisions/0047-unrecorded-decisions-are-listed-by-kmctl-and-judged-by-a-skill-that-only-reports reasons=['unverified']
+
+== fd05434a Merge pull request #59 from JasperHG90/loop/decision-gaps  (113 files changed)
+   review due --base decisions: ['decisions/0046-kmctl-works-from-code-toward-knowledge-and-kmaudit-from-knowledge-toward-code']
+   matcher decisions:           ['decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest']
+   MISS decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest [file source: README.md] -> no verified entry (sources never compared; 'unverified' kept only when the record itself changed)
+
+== ee87e883 Merge pull request #58 from JasperHG90/loop/readme-badges  (37 files changed)
+   review due --base decisions: []
+   matcher decisions:           ['decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest', 'decisions/0044-kmctl-and-kmaudit-are-both-workspace-packages']
+   MISS decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest [file source: README.md] -> no verified entry (sources never compared; 'unverified' kept only when the record itself changed)
+   MISS decisions/0044-kmctl-and-kmaudit-are-both-workspace-packages [file source: packages/kmctl/pyproject.toml] -> no verified entry (sources never compared; 'unverified' kept only when the record itself changed)
+
+== 6f50edd3 Merge pull request #57 from JasperHG90/loop/fixes-2026-11-16  (81 files changed)
+   review due --base decisions: ['decisions/0001-standalone-cli-installs-its-plugin', 'decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code', 'decisions/0012-releases-come-from-ci', 'decisions/0014-apm-is-the-only-install-route', 'decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest']
+   matcher decisions:           []
+
+== 4ea26137 Merge pull request #56 from JasperHG90/fix/loop-state-on-main  (1 files changed)
+   review due --base decisions: []
+   matcher decisions:           []
+
+== 583f3634 Merge pull request #55 from JasperHG90/release/kmaudit-v0.1.0  (7 files changed)
+   review due --base decisions: []
+   matcher decisions:           ['decisions/0045-each-package-keeps-its-apm-package-and-version']
+   MISS decisions/0045-each-package-keeps-its-apm-package-and-version [file source: packages/kmaudit/apm/apm.yml] -> no verified entry (sources never compared; 'unverified' kept only when the record itself changed)
+
+== 4999045a Merge pull request #54 from JasperHG90/release/v0.13.0  (12 files changed)
+   review due --base decisions: []
+   matcher decisions:           ['decisions/0014-apm-is-the-only-install-route', 'decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest', 'decisions/0025-the-starter-template-lives-in-kmctl-and-shares-its-release-tags', 'decisions/0045-each-package-keeps-its-apm-package-and-version']
+   MISS decisions/0014-apm-is-the-only-install-route [file source: packages/kmctl/apm] -> no verified entry (sources never compared; 'unverified' kept only when the record itself changed)
+   MISS decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest [file source: packages/kmctl/apm/apm.yml, packages/kmctl/apm/claude/apm.yml, packages/kmctl/apm/antigravity/apm.yml] -> no verified entry (sources never compared; 'unverified' kept only when the record itself changed)
+   MISS decisions/0025-the-starter-template-lives-in-kmctl-and-shares-its-release-tags [file source: copier.yml] -> no verified entry (sources never compared; 'unverified' kept only when the record itself changed)
+   MISS decisions/0045-each-package-keeps-its-apm-package-and-version [file source: packages/kmctl/apm/apm.yml] -> no verified entry (sources never compared; 'unverified' kept only when the record itself changed)
+
+== ec504758 Merge pull request #53 from JasperHG90/agent-audit  (1412 files changed)
+   review due --base decisions: ['decisions/0001-standalone-cli-installs-its-plugin', 'decisions/0009-handoff-key-extension-field', 'decisions/0012-releases-come-from-ci', 'decisions/0014-apm-is-the-only-install-route', 'decisions/0015-antigravity-gets-skills-and-rules-from-apm-and-a-kmctl-plugin-folder', 'decisions/0016-antigravity-rules-come-from-the-kmctl-plugin-folder', 'decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script', 'decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity', 'decisions/0019-kmctl-plugin-remove-uninstalls-the-package-and-reinstalls-the-harnesses-kept', 'decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest', 'decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest', 'decisions/0022-docs-pages-carry-optional-okf-front-matter-and-generated-folder-indexes', 'decisions/0024-opencode-gets-the-package-from-apm-and-its-agents-rules-and-briefing-from-kmctl-plugin-patch', 'decisions/0025-the-starter-template-lives-in-kmctl-and-shares-its-release-tags', 'decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins', 'decisions/0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step', 'decisions/0028-two-hooks-the-session-briefing-and-the-summary-nudge', 'decisions/0033-kmctl-check-fails-on-a-missing-link-target-inside-the-bundle', 'decisions/0034-kmctl-mv-renames-a-concept-and-rewrites-the-links-to-it', 'decisions/0035-kmctl-s-repository-answers-and-triages-with-hermes', 'decisions/0036-claims-are-extracted-by-the-agent-through-kmctl-audit-claims', 'decisions/0037-the-claims-and-checks-agents-get-a-plain-shell-and-i2-narrows', 'decisions/0038-checks-are-step-data-that-kmctl-reruns-and-only-checks-that-notice-a-change-are-stored', 'decisions/0039-kmctl-audit-judge-asks-an-optional-decision-model-off-by-default', 'decisions/0040-the-audit-pipeline-holds-its-agents-by-a-hook-and-keeps-answers-through-rewording', 'decisions/0041-people-review-claims-and-checks-on-a-local-page-and-their-feedback-goes-back-to-the-agents', 'decisions/0042-code-coverage-counts-the-lines-a-check-matched', 'decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp', 'decisions/0044-kmctl-and-kmaudit-are-both-workspace-packages', 'decisions/0045-each-package-keeps-its-apm-package-and-version']
+   matcher decisions:           ['decisions/0014-apm-is-the-only-install-route', 'decisions/0015-antigravity-gets-skills-and-rules-from-apm-and-a-kmctl-plugin-folder', 'decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity', 'decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest', 'decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest', 'decisions/0022-docs-pages-carry-optional-okf-front-matter-and-generated-folder-indexes', 'decisions/0024-opencode-gets-the-package-from-apm-and-its-agents-rules-and-briefing-from-kmctl-plugin-patch', 'decisions/0025-the-starter-template-lives-in-kmctl-and-shares-its-release-tags', 'decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins', 'decisions/0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step', 'decisions/0033-kmctl-check-fails-on-a-missing-link-target-inside-the-bundle', 'decisions/0034-kmctl-mv-renames-a-concept-and-rewrites-the-links-to-it', 'decisions/0035-kmctl-s-repository-answers-and-triages-with-hermes', 'decisions/0036-claims-are-extracted-by-the-agent-through-kmctl-audit-claims', 'decisions/0037-the-claims-and-checks-agents-get-a-plain-shell-and-i2-narrows', 'decisions/0038-checks-are-step-data-that-kmctl-reruns-and-only-checks-that-notice-a-change-are-stored', 'decisions/0039-kmctl-audit-judge-asks-an-optional-decision-model-off-by-default', 'decisions/0040-the-audit-pipeline-holds-its-agents-by-a-hook-and-keeps-answers-through-rewording', 'decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp', 'decisions/0044-kmctl-and-kmaudit-are-both-workspace-packages', 'decisions/0045-each-package-keeps-its-apm-package-and-version']
+   LISTED, but not for its sources: decisions/0014-apm-is-the-only-install-route reasons=['unverified']
+   LISTED, but not for its sources: decisions/0015-antigravity-gets-skills-and-rules-from-apm-and-a-kmctl-plugin-folder reasons=['unverified']
+   LISTED, but not for its sources: decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity reasons=['unverified']
+   LISTED, but not for its sources: decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest reasons=['unverified']
+   LISTED, but not for its sources: decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest reasons=['unverified']
+   LISTED, but not for its sources: decisions/0022-docs-pages-carry-optional-okf-front-matter-and-generated-folder-indexes reasons=['unverified']
+   LISTED, but not for its sources: decisions/0024-opencode-gets-the-package-from-apm-and-its-agents-rules-and-briefing-from-kmctl-plugin-patch reasons=['unverified']
+   LISTED, but not for its sources: decisions/0025-the-starter-template-lives-in-kmctl-and-shares-its-release-tags reasons=['unverified']
+   LISTED, but not for its sources: decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins reasons=['unverified']
+   LISTED, but not for its sources: decisions/0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step reasons=['unverified']
+   LISTED, but not for its sources: decisions/0033-kmctl-check-fails-on-a-missing-link-target-inside-the-bundle reasons=['unverified']
+   LISTED, but not for its sources: decisions/0034-kmctl-mv-renames-a-concept-and-rewrites-the-links-to-it reasons=['unverified']
+   LISTED, but not for its sources: decisions/0035-kmctl-s-repository-answers-and-triages-with-hermes reasons=['unverified']
+   LISTED, but not for its sources: decisions/0036-claims-are-extracted-by-the-agent-through-kmctl-audit-claims reasons=['unverified']
+   LISTED, but not for its sources: decisions/0037-the-claims-and-checks-agents-get-a-plain-shell-and-i2-narrows reasons=['unverified']
+   LISTED, but not for its sources: decisions/0038-checks-are-step-data-that-kmctl-reruns-and-only-checks-that-notice-a-change-are-stored reasons=['unverified']
+   LISTED, but not for its sources: decisions/0039-kmctl-audit-judge-asks-an-optional-decision-model-off-by-default reasons=['unverified']
+   LISTED, but not for its sources: decisions/0040-the-audit-pipeline-holds-its-agents-by-a-hook-and-keeps-answers-through-rewording reasons=['unverified']
+   LISTED, but not for its sources: decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp reasons=['unverified']
+   LISTED, but not for its sources: decisions/0044-kmctl-and-kmaudit-are-both-workspace-packages reasons=['unverified']
+   LISTED, but not for its sources: decisions/0045-each-package-keeps-its-apm-package-and-version reasons=['unverified']
+
+== 23027a8f Merge pull request #52 from JasperHG90/release/v0.12.2  (10 files changed)
+   review due --base decisions: []
+   matcher decisions:           ['decisions/0014-apm-is-the-only-install-route', 'decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest', 'decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest', 'decisions/0025-the-starter-template-lives-in-kmctl-and-shares-its-release-tags']
+   MISS decisions/0014-apm-is-the-only-install-route [file source: apm] -> no verified entry (sources never compared; 'unverified' kept only when the record itself changed)
+   MISS decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest [file source: apm/apm.yml, apm/claude/apm.yml, apm/antigravity/apm.yml] -> no verified entry (sources never compared; 'unverified' kept only when the record itself changed)
+   MISS decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest [file source: README.md] -> no verified entry (sources never compared; 'unverified' kept only when the record itself changed)
+   MISS decisions/0025-the-starter-template-lives-in-kmctl-and-shares-its-release-tags [file source: copier.yml] -> no verified entry (sources never compared; 'unverified' kept only when the record itself changed)
+
+== 05881e5e Merge pull request #51 from JasperHG90/check-strict-mode  (112 files changed)
+   review due --base decisions: ['decisions/0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step']
+   matcher decisions:           ['decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest', 'decisions/0022-docs-pages-carry-optional-okf-front-matter-and-generated-folder-indexes', 'decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins', 'decisions/0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step', 'decisions/0033-kmctl-check-fails-on-a-missing-link-target-inside-the-bundle']
+   MISS decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest [file source: src/kmctl/__init__.py] -> no verified entry (sources never compared; 'unverified' kept only when the record itself changed)
+   MISS decisions/0022-docs-pages-carry-optional-okf-front-matter-and-generated-folder-indexes [file source: src/kmctl/checks.py] -> no verified entry (sources never compared; 'unverified' kept only when the record itself changed)
+   MISS decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins [file source: src/kmctl/__init__.py] -> no verified entry (sources never compared; 'unverified' kept only when the record itself changed)
+   LISTED, but not for its sources: decisions/0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step reasons=['unverified']
+   MISS decisions/0033-kmctl-check-fails-on-a-missing-link-target-inside-the-bundle [file source: src/kmctl/checks.py] -> no verified entry (sources never compared; 'unverified' kept only when the record itself changed)
+
+== 50a0f515 Merge loop/hermes-workflows-reviewer-f2: Deferred hardening from herme  (2 files changed)
+   review due --base decisions: []
+   matcher decisions:           ['decisions/0035-kmctl-s-repository-answers-and-triages-with-hermes']
+   MISS decisions/0035-kmctl-s-repository-answers-and-triages-with-hermes [file source: .github/workflows/hermes-issue-triage.yaml] -> no verified entry (sources never compared; 'unverified' kept only when the record itself changed)
+
+== 76d22599 Merge loop/hermes-workflows: kmctl's own repository answers /hermes co  (15 files changed)
+   review due --base decisions: ['decisions/0035-kmctl-s-repository-answers-and-triages-with-hermes']
+   matcher decisions:           ['decisions/0035-kmctl-s-repository-answers-and-triages-with-hermes']
+   LISTED, but not for its sources: decisions/0035-kmctl-s-repository-answers-and-triages-with-hermes reasons=['unverified']
+
+== totals
+PRs: 15; matcher hits: 82; listed by review due --base: 34; missed: 48; listed with a 'source changed' reason: 0
+  file | no verified entry (sources never compared; 'unverified' kept only when the record itself changed): 44 hits, ['decisions/0014-apm-is-the-only-install-route', 'decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest', 'decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest', 'decisions/0022-docs-pages-carry-optional-okf-front-matter-and-generated-folder-indexes', 'decisions/0025-the-starter-template-lives-in-kmctl-and-shares-its-release-tags', 'decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins', 'decisions/0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step', 'decisions/0033-kmctl-check-fails-on-a-missing-link-target-inside-the-bundle', 'decisions/0035-kmctl-s-repository-answers-and-triages-with-hermes', 'decisions/0044-kmctl-and-kmaudit-are-both-workspace-packages', 'decisions/0045-each-package-keeps-its-apm-package-and-version', 'decisions/0048-kmctl-summary-ack-writes-one-file-per-ack-so-branches-merge-without-a-conflict', 'decisions/0049-the-log-records-lifecycle-events-only', 'decisions/0050-drafts-are-settled-before-review-and-only-a-person-accepts-one']
+  folder | no verified entry (sources never compared; 'unverified' kept only when the record itself changed): 4 hits, ['decisions/0046-kmctl-works-from-code-toward-knowledge-and-kmaudit-from-knowledge-toward-code']
+folder-source decision ever listed by --base for a source change: False
+decision with no verified entry ever listed by --base for a source change: False

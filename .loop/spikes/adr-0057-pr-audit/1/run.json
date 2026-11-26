@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "adr-0057-pr-audit",
+  "n": 1,
+  "command": "/home/vscode/workspace/.venv/bin/python /tmp/claude-1000/-home-vscode-workspace/55c11e59-8512-407e-a916-04be246551c4/scratchpad/spike-r2/pr_scope.py 15",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-workspace/55c11e59-8512-407e-a916-04be246551c4/scratchpad/spike-r2/pr_scope.py",
+      "copy": "files/pr_scope.py"
+    }
+  ],
+  "where": "worktree",
+  "head": "c060e02ba690379baba3aeaa3ab2dbbb2b442cc7",
+  "fingerprint": "23ade3648ab8ca521b6832505a28369756918ab24099321c8dcf03296b757db1",
+  "started_at": "2026-11-26T12:52:31+00:00",
+  "finished_at": "2026-11-26T12:52:42+00:00",
+  "duration_seconds": 10.954,
+  "timeout_seconds": 600.0,
+  "exit": 1,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": true,
+  "by": "process:loopctl/2.4.0",
+  "moved_from": null
+}
