@@ -12,3 +12,5 @@
 {"at": "2026-11-26T16:47:13+00:00", "code": "plan-invalidated", "from": "ready", "kind": "block", "message": "PR 71 merged ADR 0057 accepted with a no-run_shell rule; the plan now lands on main, depends on adr-0057-correction, and adds O7 (--no-shell). Re-reviewing the plan.", "notified": false, "schema_version": "1.0"}
 {"at": "2026-11-26T16:47:19+00:00", "binds": "de47cd0332c496d29af054ae467c31365a7e770e94f6a640ace45f984aacf313", "kind": "round-start", "n": 3, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
 {"at": "2026-11-26T16:49:07+00:00", "dispatched_at": "2026-11-26T16:47:19+00:00", "kind": "round-close", "n": 3, "outcome": "pass", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-26T16:48:38+00:00"}}
+{"at": "2026-11-26T21:12:44+00:00", "by": "human:jasperginn@gmail.com", "edge": "blocked->ready", "kind": "override", "reason": "plan revised before the block; passed plan round 3", "schema_version": "1.0"}
+{"at": "2026-11-26T21:12:44+00:00", "kind": "unblock", "schema_version": "1.0"}
