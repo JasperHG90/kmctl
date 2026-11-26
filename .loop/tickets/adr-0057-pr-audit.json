@@ -20,7 +20,8 @@
   "worktree": "/home/vscode/workspace.worktrees/adr-0057-pr-audit",
   "branch": "loop/adr-0057-pr-audit",
   "stamps": [
-    "936a53433f0795659e28c93ff28644d77ed337340522b8697c891b8c135b5a04"
+    "936a53433f0795659e28c93ff28644d77ed337340522b8697c891b8c135b5a04",
+    "893d4bcc14d26e801f1a180e06dff284d2fa870e6a81708d258608bfa1311c05"
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/implement-ticket",
@@ -217,5 +218,5 @@
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-26T13:26:55+00:00"
+  "at": "2026-11-26T13:32:34+00:00"
 }
