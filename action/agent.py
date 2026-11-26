@@ -10,21 +10,27 @@
 """A small agent for CI: give it a task, a model, folders to read and skills to use.
 
 Run it with ``uv run action/agent.py run --help``. It needs nothing from kmctl.
-It ships three audits, one prompt file each in ``action/prompts``, that
+It ships four audits, one prompt file each in ``action/prompts``, that
 ``--audit`` picks: ``docs/`` against the code, ``.okf/`` against the code (the
-default) and ``docs/`` against ``.okf/``. ``--prompt`` gives it any other task,
-and kmctl's skills in ``packages/kmctl/apm/.apm/skills`` are there for it to use.
+default), ``docs/`` against ``.okf/``, and the decisions a change touched
+against that change (``okf-vs-change``, with ``--base``). ``--prompt`` gives it
+any other task, and kmctl's skills in ``packages/kmctl/apm/.apm/skills`` are
+there for it to use.
 
 The agent reads the repository, every ``--context`` folder and every
 ``--skills`` folder, and can run shell commands so it can use the scripts
 skills ship. Commands get a clean environment without the API key or a GitHub
 token, but run as the same user, so a command could still read the key from
-``/proc`` (ADR 0017). It returns a typed report, which ``run`` writes to
-``--out`` as ``report.json``, ``report.md`` and ``transcript.json``.
+``/proc`` (ADR 0017). ``--no-shell`` leaves the shell out, as a pull request
+run does (ADR 0057). ``--instructions-root`` reads the task, system prompt,
+context and skills from another checkout, such as the base branch's. It
+returns a typed report, which ``run`` writes to ``--out`` as ``report.json``,
+``report.md`` and ``transcript.json``.
 
-``publish`` posts that report to one GitHub issue with ``gh``. Run it in a
-job of its own, which gets the report as an artifact and nothing else from
-the agent's job, so nothing the agent changed runs with the token.
+``publish`` posts that report to one GitHub issue, or with ``--pr`` to one
+pull request comment, with ``gh``. Run it in a job of its own, which gets the
+report as an artifact and nothing else from the agent's job, so nothing the
+agent changed runs with the token.
 """
 
 from __future__ import annotations
@@ -62,7 +68,11 @@ PACKAGE = HERE.parent / "packages" / "kmctl" / "apm" / ".apm"
 DEFAULT_SKILLS = PACKAGE / "skills"
 #: The shipped audits, one prompt file each.
 PROMPTS = HERE / "prompts"
-AUDITS = ("docs-vs-code", "okf-vs-code", "okf-vs-docs")
+AUDITS = ("docs-vs-code", "okf-vs-code", "okf-vs-docs", "okf-vs-change")
+#: The audit that checks only the decisions a change touched; it needs --base.
+CHANGE_AUDIT = "okf-vs-change"
+#: Marks publish's pull request comment, so the next run finds and replaces it.
+COMMENT_MARK = "<!-- kmctl-audit: {title} -->"
 DEFAULT_AUDIT = "okf-vs-code"
 
 READ_BYTES = 100_000
@@ -91,9 +101,7 @@ these folders, and nowhere else:
 {roots}
 
 Paths you pass to the file tools are relative to the repository, or absolute
-inside one of the folders above. You can also run shell commands with
-run_shell, in the repository folder; use it to run the scripts a skill ships
-and commands a skill tells you to run.
+inside one of the folders above. {shell}
 
 Report only: never change, commit or push a file. Someone reads your report
 and decides what to do.
@@ -236,8 +244,8 @@ def _number(raw: object, default: int, low: int, high: int) -> int:
     return max(low, min(high, value))
 
 
-def make_tools(ws: Workspace) -> list:
-    """Return the agent's tools, bound to ``ws``."""
+def make_tools(ws: Workspace, shell: bool = True) -> list:
+    """Return the agent's tools, bound to ``ws``; ``shell=False`` leaves out run_shell."""
 
     def guarded(fn):
         @functools.wraps(fn)
@@ -408,7 +416,8 @@ def make_tools(ws: Workspace) -> list:
             )
         return f"exit {proc.returncode}\n{out}"
 
-    return [read_file, search_files, list_files, run_shell]
+    tools = [read_file, search_files, list_files]
+    return [*tools, run_shell] if shell else tools
 
 
 def find_skills(folders: list[Path]) -> list[tuple[str, str, Path]]:
@@ -443,14 +452,161 @@ def find_skills(folders: list[Path]) -> list[tuple[str, str, Path]]:
     return found
 
 
-def system_prompt(ws: Workspace, skills: list[tuple[str, str, Path]]) -> str:
-    """Return the shipped system prompt, filled in for ``ws`` and ``skills``."""
+SHELL_LINE = (
+    "You can also run shell commands with\nrun_shell, in the repository folder; "
+    "use it to run the scripts a skill ships\nand commands a skill tells you to run."
+)
+NO_SHELL_LINE = (
+    "This run has no shell, so you\ncannot run the scripts a skill ships or a "
+    "command a skill names; use the\nread, search and list tools alone."
+)
+
+
+def system_prompt(
+    ws: Workspace, skills: list[tuple[str, str, Path]], shell: bool = True
+) -> str:
+    """Return the shipped system prompt, filled in for ``ws``, ``skills`` and ``shell``."""
     listed = "\n".join(f"- {name}: {desc}\n  ({path})" for name, desc, path in skills)
     return SYSTEM_PROMPT.format(
         repo=ws.repo,
         roots="\n".join(f"- {r}" for r in ws.roots),
         skills=listed or "(none)",
+        shell=SHELL_LINE if shell else NO_SHELL_LINE,
     )
+
+
+def git_lines(cwd: Path, *args: str) -> list[str]:
+    """Run git in ``cwd`` and return its output lines.
+
+    Raises
+    ------
+    UsageError
+        If git exits nonzero.
+    """
+    proc = subprocess.run(
+        ["git", *args], cwd=cwd, capture_output=True, text=True, check=False
+    )
+    if proc.returncode != 0:
+        raise UsageError(f"git {' '.join(args)} failed: {proc.stderr.strip()}")
+    return proc.stdout.splitlines()
+
+
+def source_matches(source: str, changed: list[str]) -> list[str]:
+    """Return the changed files ``source`` covers: a file by its path, a folder as a prefix."""
+    s = source.lstrip("/")
+    if s.endswith("/"):
+        return [p for p in changed if p.startswith(s)]
+    return [p for p in changed if p == s or p.startswith(s + "/")]
+
+
+def changed_decisions(repo: Path, base: str) -> list[tuple[str, list[str]]]:
+    """Return ``(decision path, changed files)`` for each stable decision a change touched.
+
+    The change is ``git diff BASE...HEAD`` in ``repo``, with paths relative to
+    ``repo``, where the decisions' ``sources`` are written relative to. URL
+    sources are skipped.
+
+    Raises
+    ------
+    UsageError
+        If git cannot compare ``base`` with ``HEAD``.
+    """
+    changed = git_lines(repo, "diff", "--name-only", "--relative", f"{base}...HEAD")
+    found = []
+    for path in sorted((repo / ".okf" / "decisions").glob("*.md")):
+        text = path.read_text()
+        match = re.match(r"---\n(.*?)\n---", text, re.DOTALL)
+        try:
+            meta = yaml.safe_load(match.group(1)) if match else None
+        except yaml.YAMLError:
+            meta = None
+        if not isinstance(meta, dict) or meta.get("status") != "stable":
+            continue
+        files: list[str] = []
+        for entry in meta.get("sources") or []:
+            resource = (
+                str((entry or {}).get("resource", ""))
+                if isinstance(entry, dict)
+                else ""
+            )
+            if resource and "://" not in resource:
+                files += [
+                    f for f in source_matches(resource, changed) if f not in files
+                ]
+        if files:
+            found.append((path.relative_to(repo).as_posix(), files))
+    return found
+
+
+def change_scope(repo: Path, base: str) -> str:
+    """Return the task's list of the decisions the change since ``base`` touched."""
+    found = changed_decisions(repo, base)
+    lines = [f"\n## Decisions in scope\n\nThe change compared with {base}:\n"]
+    if not found:
+        lines.append("No stable decision names a changed file in its sources.")
+    for path, files in found:
+        lines.append(f"- {path}: " + ", ".join(files))
+    return "\n".join(lines) + "\n"
+
+
+def tracked(raw: Path) -> bool:
+    """Say whether git tracks ``raw`` (a file, or anything under a folder) in the current checkout.
+
+    It asks git about the path as written, without following a symlink, so
+    a tracked symlink counts as tracked wherever it points.
+    """
+    proc = subprocess.run(
+        ["git", "ls-files", "--", str(raw)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return proc.returncode == 0 and bool(proc.stdout.strip())
+
+
+def _inside(path: Path, folder: Path) -> bool:
+    return path == folder or path.is_relative_to(folder)
+
+
+def instruction_path(raw: str, root: Path | None, repo: Path, flag: str) -> Path:
+    """Resolve an instruction path, from the base checkout ``root`` when it has it.
+
+    Without ``root`` the path resolves against the current folder, as before.
+    With it, a relative path the base checkout has comes from there, whatever
+    the pull request made of it: changed, deleted, or swapped for a symlink.
+    A path the pull request tracks that the base lacks is refused. Any other
+    path is one an earlier step fetched: it stays in the working tree, if no
+    part of it is a symlink and it is inside ``repo``. An absolute path is kept.
+
+    Raises
+    ------
+    UsageError
+        If the pull request tracks the path but ``root`` does not have it, or
+        a fetched path goes through a symlink or leads outside ``repo``.
+    """
+    path = Path(raw)
+    if root is None or path.is_absolute():
+        return path.resolve()
+    based = (root / path).resolve()
+    if _inside(based, root) and based.exists():
+        return based
+    if tracked(path):
+        raise UsageError(
+            f"{flag} {raw}: the pull request tracks it, but the base checkout "
+            f"{root} does not have it, so it cannot be an instruction for this run."
+        )
+    local = path.resolve()
+    if local != Path(os.path.abspath(path)):
+        raise UsageError(
+            f"{flag} {raw}: the base checkout does not have it, and it goes "
+            "through a symlink, so it cannot be an instruction for this run."
+        )
+    if not _inside(local, repo):
+        raise UsageError(
+            f"{flag} {raw}: git does not track it and it leads outside the "
+            f"repository {repo}, to {local}."
+        )
+    return local
 
 
 def audit_prompt(name: str) -> str:
@@ -648,6 +804,7 @@ async def run_agent(
     timeout: float,
     max_requests: int,
     tracer=None,
+    shell: bool = True,
 ):
     """Run the agent once and return PydanticAI's result.
 
@@ -659,7 +816,7 @@ async def run_agent(
         model,
         output_type=Report,
         instructions=instructions,
-        tools=make_tools(ws),
+        tools=make_tools(ws, shell),
         retries={"output": OUTPUT_RETRIES},
         capabilities=(
             [Instrumentation(settings=InstrumentationSettings(tracer_provider=tracer))]
@@ -699,8 +856,13 @@ def parse_duration(text: str) -> int:
 def run(args: argparse.Namespace, model: Model | str | None = None) -> int:
     """Run the ``run`` command; ``model`` overrides ``--model`` (for tests)."""
     repo = Path(args.repo).resolve()
-    contexts = [Path(c).resolve() for c in args.context]
-    skill_dirs = [Path(s).resolve() for s in (args.skills or [DEFAULT_SKILLS])]
+    root = Path(args.instructions_root).resolve() if args.instructions_root else None
+    contexts = [instruction_path(c, root, repo, "--context") for c in args.context]
+    skill_dirs = (
+        [instruction_path(s, root, repo, "--skills") for s in args.skills]
+        if args.skills
+        else [DEFAULT_SKILLS]
+    )
     for folder in contexts:
         if not folder.is_dir():
             raise UsageError(f"--context {folder}: no such folder.")
@@ -715,21 +877,33 @@ def run(args: argparse.Namespace, model: Model | str | None = None) -> int:
     ]
     if len(given) > 1:
         raise UsageError(f"give one of {', '.join(given)}, not more.")
+    if args.audit == CHANGE_AUDIT and not args.base:
+        raise UsageError(
+            f"--audit {CHANGE_AUDIT} needs --base, the branch the change is "
+            "compared with, such as origin/main."
+        )
     refuse_tokens(repo)
     timeout = parse_duration(args.timeout)
     ws = Workspace(repo, [repo, *contexts, *skill_dirs], args.shell_timeout)
     skills = find_skills(skill_dirs)
+    shell = not args.no_shell
     instructions = (
-        Path(args.system_prompt_file).read_text()
+        instruction_path(
+            args.system_prompt_file, root, repo, "--system-prompt-file"
+        ).read_text()
         if args.system_prompt_file
-        else system_prompt(ws, skills)
+        else system_prompt(ws, skills, shell)
     )
     if args.prompt is not None:
         prompt = args.prompt
     elif args.prompt_file is not None:
-        prompt = Path(args.prompt_file).read_text()
+        prompt = instruction_path(
+            args.prompt_file, root, repo, "--prompt-file"
+        ).read_text()
     else:
         prompt = audit_prompt(args.audit or DEFAULT_AUDIT)
+        if args.audit == CHANGE_AUDIT:
+            prompt += change_scope(repo, args.base)
     if model is None:
         model = build_model(args.model, args.base_url, args.api_key_env)
 
@@ -737,7 +911,14 @@ def run(args: argparse.Namespace, model: Model | str | None = None) -> int:
     try:
         result = asyncio.run(
             run_agent(
-                model, instructions, prompt, ws, timeout, args.max_requests, tracer
+                model,
+                instructions,
+                prompt,
+                ws,
+                timeout,
+                args.max_requests,
+                tracer,
+                shell,
             )
         )
     except TimeoutError:
@@ -829,8 +1010,81 @@ def run_link() -> str:
     return f"{server}/{repo}/actions/runs/{run_id}"
 
 
+def publish_comment(args: argparse.Namespace, report: Report, over: list) -> int:
+    """Post the report as one comment on pull request ``args.pr``, replacing the last one.
+
+    With nothing at or above the threshold and no earlier comment, it posts
+    nothing.
+    """
+    mark = COMMENT_MARK.format(title=args.title)
+    link = run_link()
+    try:
+        comments = json.loads(
+            gh(
+                "api",
+                f"repos/{{owner}}/{{repo}}/issues/{args.pr}/comments",
+                "--paginate",
+                "--slurp",
+            )
+            or "[]"
+        )
+        flat = [
+            c for page in comments for c in (page if isinstance(page, list) else [page])
+        ]
+        earlier = next((c for c in flat if mark in str(c.get("body", ""))), None)
+        if not over and earlier is None:
+            print(
+                f"agent: nothing at or above {args.min_severity}; no comment was written.",
+                file=sys.stderr,
+            )
+            return 0
+        body = f"{mark}\n## {args.title}\n\n"
+        if over:
+            body += render(report)
+        else:
+            body += f"The latest run found nothing at or above {args.min_severity}.\n"
+        if link:
+            body += f"\nRun and its report artifact: {link}\n"
+        with tempfile.NamedTemporaryFile("w", suffix=".md", delete=False) as handle:
+            handle.write(body)
+        try:
+            if earlier is not None:
+                gh(
+                    "api",
+                    "-X",
+                    "PATCH",
+                    f"repos/{{owner}}/{{repo}}/issues/comments/{earlier['id']}",
+                    "-F",
+                    f"body=@{handle.name}",
+                )
+                print(
+                    f"agent: replaced the audit comment on pull request #{args.pr}.",
+                    file=sys.stderr,
+                )
+            else:
+                gh("pr", "comment", str(args.pr), "--body-file", handle.name)
+                print(f"agent: commented on pull request #{args.pr}.", file=sys.stderr)
+        finally:
+            os.unlink(handle.name)
+    except GhFailed as err:
+        print(f"agent: {err}", file=sys.stderr)
+        return 1
+    return 0
+
+
 def publish(args: argparse.Namespace) -> int:
-    """Run the ``publish`` command: post the report to one issue, or close it."""
+    """Run the ``publish`` command: post the report to one issue or pull request comment.
+
+    A missing report, from an audit that was skipped or failed, posts nothing
+    and exits 0.
+    """
+    if not Path(args.report).exists():
+        print(
+            f"agent: no report at {args.report}, so nothing to post; the audit "
+            "was skipped or failed, and its own job shows why.",
+            file=sys.stderr,
+        )
+        return 0
     try:
         report = Report.model_validate_json(Path(args.report).read_text())
     except (OSError, ValueError) as err:
@@ -838,6 +1092,8 @@ def publish(args: argparse.Namespace) -> int:
     repo = Path(args.repo)
     floor = SEVERITIES.index(args.min_severity)
     over = [f for f in report.findings if SEVERITIES.index(f.severity) >= floor]
+    if args.pr is not None:
+        return publish_comment(args, report, over)
     owners = (
         [m if m.startswith("@") else f"@{m}" for m in args.mention]
         if args.mention
@@ -931,7 +1187,7 @@ def parser() -> argparse.ArgumentParser:
         prog="agent.py",
         description=(
             "A small agent for CI. `run` gives it a task and writes its report; "
-            "`publish` posts that report to a GitHub issue. "
+            "`publish` posts that report to a GitHub issue or pull request comment. "
             "Exit codes: 0 the report was written, 1 the run failed, 2 a bad option."
         ),
     )
@@ -979,9 +1235,43 @@ def parser() -> argparse.ArgumentParser:
         choices=AUDITS,
         help=(
             "A shipped audit to run: docs-vs-code (docs/ against the code), "
-            "okf-vs-code (.okf/ against the code) or okf-vs-docs (docs/ against "
-            f".okf/). Its prompt is in {PROMPTS}. Default: {DEFAULT_AUDIT}, when "
-            "neither --prompt nor --prompt-file is given."
+            "okf-vs-code (.okf/ against the code), okf-vs-docs (docs/ against "
+            ".okf/) or okf-vs-change (the stable decisions whose sources a change "
+            "touched, against that change; needs --base). Its prompt is in "
+            f"{PROMPTS}. Default: {DEFAULT_AUDIT}, when neither --prompt nor "
+            "--prompt-file is given."
+        ),
+    )
+    r.add_argument(
+        "--base",
+        default=None,
+        metavar="REF",
+        help=(
+            "With --audit okf-vs-change, the branch the change is compared with, "
+            "from the commit where the two split, such as origin/main. Other "
+            "tasks ignore it. Default: none."
+        ),
+    )
+    r.add_argument(
+        "--instructions-root",
+        default=None,
+        metavar="DIR",
+        help=(
+            "Another checkout, such as the base branch's on a pull request, to "
+            "read --prompt-file, --system-prompt-file, --context and --skills "
+            "from. A relative path git tracks resolves under DIR, and exits 2 "
+            "when DIR lacks it; a path git does not track, such as a folder an "
+            "earlier step fetched, stays in the working tree. Default: none, so "
+            "every path resolves against the current folder."
+        ),
+    )
+    r.add_argument(
+        "--no-shell",
+        action="store_true",
+        help=(
+            "Leave run_shell out: the agent gets only its read, search and list "
+            "tools, and cannot run a skill's scripts. A pull request run uses it "
+            "(ADR 0057). Default: off, so the shell is there."
         ),
     )
     r.add_argument(
@@ -1048,14 +1338,16 @@ def parser() -> argparse.ArgumentParser:
     )
     p = sub.add_parser(
         "publish",
-        help="Post a report to one GitHub issue.",
+        help="Post a report to one GitHub issue or pull request comment.",
         description=(
             "Post report.json to the open issue titled --title with gh, when a "
             "finding is at or above --min-severity: create it, or replace its "
             "body and add a comment that mentions the owners. Below the "
-            "threshold, close that issue with a comment. Needs gh and GH_TOKEN; "
-            "run it in a job of its own, not the agent's. Exit codes: 0 done, "
-            "1 gh failed, 2 a bad option or report."
+            "threshold, close that issue with a comment. With --pr, post one "
+            "comment on that pull request instead and replace it on the next "
+            "run. With no report.json, post nothing and exit 0. Needs gh and "
+            "GH_TOKEN; run it in a job of its own, not the agent's. Exit codes: "
+            "0 done, 1 gh failed, 2 a bad option or an unreadable report."
         ),
     )
     p.add_argument("report", help="The report.json that run wrote.")
@@ -1084,6 +1376,17 @@ def parser() -> argparse.ArgumentParser:
         "--repo",
         default=".",
         help="The repository whose CODEOWNERS names the owners. Default: the current folder.",
+    )
+    p.add_argument(
+        "--pr",
+        type=int,
+        default=None,
+        metavar="N",
+        help=(
+            "Post to pull request N as one comment, marked with --title, and "
+            "replace that comment on the next run, instead of an issue. Needs "
+            "pull-requests: write. Default: none, so an issue."
+        ),
     )
     return top
 

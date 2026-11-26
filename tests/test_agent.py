@@ -4,6 +4,7 @@ import importlib.util
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -902,7 +903,7 @@ def test_publish_fails_when_gh_fails(
     assert "gh" in capsys.readouterr().err
 
 
-@pytest.mark.parametrize("content", [None, "not json", '{"summary": "x"}'])
+@pytest.mark.parametrize("content", ["not json", '{"summary": "x"}'])
 def test_publish_fails_on_bad_report(
     repo: Path,
     tmp_path: Path,
@@ -912,8 +913,7 @@ def test_publish_fails_on_bad_report(
 ) -> None:
     calls = _gh(tmp_path, monkeypatch)
     report = tmp_path / "report.json"
-    if content is not None:
-        report.write_text(content)
+    report.write_text(content)
 
     assert _publish(repo, report) == 2
     assert "report" in capsys.readouterr().err
@@ -1069,3 +1069,528 @@ def test_traces_safe_flushed_on_timeout(
     assert _main(repo, tmp_path, FunctionModel(stall), "--timeout", "1") == 1
 
     assert any(name.startswith("invoke_agent") for name in collector.spans)
+
+
+# okf-vs-change ------------------------------------------------------------
+
+
+def _git(cwd: Path, *args: str) -> str:
+    return subprocess.run(
+        ["git", "-c", "user.name=t", "-c", "user.email=t@t", *args],
+        cwd=cwd,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+
+
+def _decision(
+    repo: Path, slug: str, sources: list[str], status: str = "stable"
+) -> None:
+    folder = repo / ".okf" / "decisions"
+    folder.mkdir(parents=True, exist_ok=True)
+    listed = "\n".join(f'  - resource: "{s}"' for s in sources)
+    (folder / f"{slug}.md").write_text(
+        f"---\ntype: decision\ntitle: {slug}\nstatus: {status}\n"
+        f"sources:\n{listed}\n---\n\n# {slug}\n"
+    )
+
+
+@pytest.fixture
+def changed(repo: Path) -> Path:
+    """A repository whose HEAD changed src/app.py and pkg/lib/util.py since the base commit."""
+    for rel in ("src/app.py", "src/other.py", "pkg/lib/util.py"):
+        (repo / rel).parent.mkdir(parents=True, exist_ok=True)
+        (repo / rel).write_text("x = 1\n")
+    _decision(repo, "0001-file-source", ["src/app.py"])
+    _decision(repo, "0002-folder-source", ["pkg/lib/"])
+    _decision(repo, "0003-untouched", ["src/other.py"])
+    _decision(repo, "0004-draft", ["src/app.py"], status="draft")
+    _decision(repo, "0005-url-source", ["https://example.com/src/app.py"])
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "base")
+    _git(repo, "branch", "base")
+    (repo / "src/app.py").write_text("x = 2\n")
+    (repo / "pkg/lib/util.py").write_text("x = 2\n")
+    _git(repo, "commit", "-q", "-am", "change")
+    return repo
+
+
+def _change_prompt(repo: Path, tmp_path: Path) -> str:
+    rec = Recorder()
+    code = _main(
+        repo,
+        tmp_path,
+        FunctionModel(rec),
+        "--audit",
+        "okf-vs-change",
+        "--base",
+        "base",
+    )
+    assert code == 0
+    assert rec.prompt is not None
+    return rec.prompt
+
+
+def test_okf_vs_change_matches_file_source(changed: Path, tmp_path: Path) -> None:
+    prompt = _change_prompt(changed, tmp_path)
+
+    assert "decisions/0001-file-source" in prompt
+    assert "src/app.py" in prompt
+    assert "decisions/0003-untouched" not in prompt
+
+
+def test_okf_vs_change_matches_folder_source_as_prefix(
+    changed: Path, tmp_path: Path
+) -> None:
+    prompt = _change_prompt(changed, tmp_path)
+
+    assert "decisions/0002-folder-source" in prompt
+    assert "pkg/lib/util.py" in prompt
+
+
+def test_okf_vs_change_skips_drafts_and_url_sources(
+    changed: Path, tmp_path: Path
+) -> None:
+    prompt = _change_prompt(changed, tmp_path)
+
+    assert "0004-draft" not in prompt
+    assert "0005-url-source" not in prompt
+
+
+def test_okf_vs_change_puts_matched_decisions_in_task(
+    changed: Path, tmp_path: Path
+) -> None:
+    prompt = _change_prompt(changed, tmp_path)
+    shipped = (agent.PROMPTS / "okf-vs-change.md").read_text()
+
+    assert prompt.startswith(shipped)
+    scope = prompt[len(shipped) :]
+    assert ".okf/decisions/0001-file-source.md" in scope
+    assert ".okf/decisions/0002-folder-source.md" in scope
+
+
+def test_okf_vs_change_without_base_exits_2(
+    changed: Path, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    code = _main(
+        changed, tmp_path, FunctionModel(Recorder()), "--audit", "okf-vs-change"
+    )
+
+    assert code == 2
+    assert "--base" in capsys.readouterr().err
+
+
+def test_okf_vs_change_is_a_shipped_audit(
+    capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("COLUMNS", "500")
+    with pytest.raises(SystemExit):
+        agent.main(["run", "--help"])
+
+    assert "okf-vs-change" in agent.AUDITS
+    assert (agent.PROMPTS / "okf-vs-change.md").read_text().strip()
+    help_text = " ".join(capsys.readouterr().out.split())
+    assert "okf-vs-change" in help_text and "--base" in help_text
+
+
+# --instructions-root ------------------------------------------------------
+
+
+@pytest.fixture
+def instructed(repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    """A repository with tracked instructions, and a base checkout holding other text."""
+    for root, word in ((repo, "head"), (tmp_path / "base", "base")):
+        (root / "ci").mkdir(parents=True)
+        (root / "ci" / "task.md").write_text(f"{word} task")
+        (root / "ci" / "system.md").write_text(f"{word} system")
+        (root / "ci" / "ctx").mkdir()
+        (root / "ci" / "ctx" / "note.md").write_text(word)
+        _skill(root / "ci" / "skills", f"{word}-skill")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "instructions")
+    monkeypatch.chdir(repo)
+    return repo, tmp_path / "base"
+
+
+def test_instructions_root_resolves_tracked_paths(
+    instructed: tuple[Path, Path], tmp_path: Path
+) -> None:
+    repo, base = instructed
+    rec = Recorder(calls=[("read_file", {"path": str(base / "ci/ctx/note.md")})])
+
+    code = _main(
+        repo,
+        tmp_path,
+        FunctionModel(rec),
+        "--instructions-root",
+        str(base),
+        "--prompt-file",
+        "ci/task.md",
+        "--context",
+        "ci/ctx",
+        "--skills",
+        "ci/skills",
+    )
+
+    assert code == 0
+    assert rec.prompt == "base task"
+    assert "base" in rec.returns[0] and "head" not in rec.returns[0]
+    assert rec.instructions is not None
+    assert "base-skill" in rec.instructions and "head-skill" not in rec.instructions
+    rec2 = Recorder()
+    assert (
+        _main(
+            repo,
+            tmp_path,
+            FunctionModel(rec2),
+            "--instructions-root",
+            str(base),
+            "--system-prompt-file",
+            "ci/system.md",
+            "--skills",
+            "ci/skills",
+        )
+        == 0
+    )
+    assert rec2.instructions == "base system"
+
+
+def test_instructions_root_keeps_untracked_context_in_worktree(
+    instructed: tuple[Path, Path], tmp_path: Path
+) -> None:
+    repo, base = instructed
+    fetched = repo / "fetched"
+    fetched.mkdir()
+    (fetched / "doc.md").write_text("fetched doc")
+    rec = Recorder(calls=[("read_file", {"path": str(fetched / "doc.md")})])
+
+    code = _main(
+        repo,
+        tmp_path,
+        FunctionModel(rec),
+        "--instructions-root",
+        str(base),
+        "--context",
+        "fetched",
+        "--skills",
+        "ci/skills",
+    )
+
+    assert code == 0
+    assert "fetched doc" in rec.returns[0]
+
+
+def test_instructions_root_refuses_path_missing_from_base(
+    instructed: tuple[Path, Path], tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    repo, base = instructed
+    (repo / "ci" / "new.md").write_text("slipped in")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "new prompt")
+
+    code = _main(
+        repo,
+        tmp_path,
+        FunctionModel(Recorder()),
+        "--instructions-root",
+        str(base),
+        "--prompt-file",
+        "ci/new.md",
+        "--skills",
+        "ci/skills",
+    )
+
+    assert code == 2
+    err = capsys.readouterr().err
+    assert "ci/new.md" in err and "base" in err
+
+
+def test_without_instructions_root_paths_resolve_as_before(
+    instructed: tuple[Path, Path], tmp_path: Path
+) -> None:
+    repo, _ = instructed
+    rec = Recorder()
+
+    code = _main(
+        repo,
+        tmp_path,
+        FunctionModel(rec),
+        "--prompt-file",
+        "ci/task.md",
+        "--system-prompt-file",
+        "ci/system.md",
+        "--context",
+        "ci/ctx",
+        "--skills",
+        "ci/skills",
+    )
+
+    assert code == 0
+    assert rec.prompt == "head task"
+    assert rec.instructions == "head system"
+    rec2 = Recorder()
+    assert _main(repo, tmp_path, FunctionModel(rec2), "--skills", "ci/skills") == 0
+    assert rec2.instructions is not None and "head-skill" in rec2.instructions
+
+
+# --no-shell ---------------------------------------------------------------
+
+
+def test_no_shell_leaves_out_run_shell(repo: Path, tmp_path: Path) -> None:
+    seen: dict[str, list[str]] = {}
+
+    def body(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
+        key = "with" if "with" not in seen else "without"
+        seen[key] = [t.name for t in info.function_tools]
+        seen[key + "-prompt"] = [str(messages[0].instructions)]  # type: ignore[union-attr]
+        return ModelResponse(
+            parts=[
+                ToolCallPart(
+                    info.output_tools[0].name,
+                    {"summary": "ok", "checked": [], "findings": []},
+                )
+            ]
+        )
+
+    assert _main(repo, tmp_path, FunctionModel(body)) == 0
+    assert _main(repo, tmp_path, FunctionModel(body), "--no-shell") == 0
+
+    assert "run_shell" in seen["with"]
+    assert "run_shell" not in seen["without"]
+    assert {"read_file", "search_files", "list_files"} <= set(seen["without"])
+    assert "run_shell" in seen["with-prompt"][0]
+    assert "run_shell" not in seen["without-prompt"][0]
+    assert "cannot run the scripts a skill ships" in " ".join(
+        seen["without-prompt"][0].split()
+    )
+
+
+# publish to a pull request ------------------------------------------------
+
+
+def _pr_gh(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    """Put a gh on PATH that keeps a pull request's comments in comments.json."""
+    bin_dir = tmp_path / "pr-gh-bin"
+    bin_dir.mkdir()
+    calls = tmp_path / "pr-calls.jsonl"
+    store = tmp_path / "comments.json"
+    store.write_text("[]")
+    (bin_dir / "gh").write_text(
+        f"#!{sys.executable}\n"
+        "import json, sys\n"
+        "args = sys.argv[1:]\n"
+        f"store = {str(store)!r}\n"
+        "comments = json.load(open(store))\n"
+        f"open({str(calls)!r}, 'a').write(json.dumps(args) + '\\n')\n"
+        "def body_of(flag, prefix=''):\n"
+        "    value = args[args.index(flag) + 1]\n"
+        "    return open(value[len(prefix):]).read()\n"
+        "if args[:2] == ['pr', 'comment']:\n"
+        "    comments.append({'id': len(comments) + 1, 'body': body_of('--body-file')})\n"
+        "elif args[0] == 'api' and '-X' in args and args[args.index('-X') + 1] == 'PATCH':\n"
+        "    cid = int(next(a for a in args if '/issues/comments/' in a).rsplit('/', 1)[1])\n"
+        "    for c in comments:\n"
+        "        if c['id'] == cid:\n"
+        "            c['body'] = body_of('-F', 'body=@')\n"
+        "elif args[0] == 'api':\n"
+        "    print(json.dumps(comments))\n"
+        "json.dump(comments, open(store, 'w'))\n"
+    )
+    (bin_dir / "gh").chmod(0o755)
+    monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
+    return store
+
+
+def test_publish_pr_creates_then_replaces_comment(
+    repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    store = _pr_gh(tmp_path, monkeypatch)
+    first = _report_file(tmp_path, ["high"])
+
+    assert _publish(repo, first, "--pr", "12") == 0
+    comments = json.loads(store.read_text())
+    assert len(comments) == 1 and "concept/0" in comments[0]["body"]
+
+    second = tmp_path / "second.json"
+    report = json.loads(first.read_text())
+    report["findings"][0]["title"] = "concept/changed"
+    second.write_text(json.dumps(report))
+    assert _publish(repo, second, "--pr", "12") == 0
+    comments = json.loads(store.read_text())
+    assert len(comments) == 1
+    assert "concept/changed" in comments[0]["body"]
+    assert "concept/0" not in comments[0]["body"]
+
+
+@pytest.mark.parametrize("pr", [[], ["--pr", "12"]])
+def test_publish_without_report_posts_nothing(
+    repo: Path,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    pr: list[str],
+) -> None:
+    calls = _gh(tmp_path, monkeypatch)
+
+    assert _publish(repo, tmp_path / "missing" / "report.json", *pr) == 0
+    assert _calls(calls) == []
+    assert "no report" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("flag", ["--prompt-file", "--context"])
+def test_instructions_root_follows_a_tracked_symlink_into_the_base(
+    instructed: tuple[Path, Path], tmp_path: Path, flag: str
+) -> None:
+    """A pull request that turns an instruction path into a symlink out of the repository gets the base's file."""
+    repo, base = instructed
+    secret = tmp_path / "secret"
+    secret.mkdir()
+    (secret / "key.txt").write_text("SECRET-KEY")
+    if flag == "--prompt-file":
+        target = "ci/task.md"
+        (repo / target).unlink()
+        (repo / target).symlink_to(secret / "key.txt")
+    else:
+        target = "ci/ctx"
+        shutil.rmtree(repo / target)
+        (repo / target).symlink_to(secret)
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "symlink out")
+    rec = Recorder()
+
+    code = _main(
+        repo,
+        tmp_path,
+        FunctionModel(rec),
+        "--instructions-root",
+        str(base),
+        flag,
+        target,
+        "--skills",
+        "ci/skills",
+        *(["--prompt", "x"] if flag == "--context" else []),
+    )
+
+    assert code == 0
+    assert "SECRET-KEY" not in str(rec.prompt)
+    if flag == "--prompt-file":
+        assert rec.prompt == "base task"
+    else:
+        assert rec.instructions is not None
+        assert str(secret) not in rec.instructions
+        assert str(base / "ci" / "ctx") in rec.instructions
+
+
+def test_instructions_root_refuses_untracked_path_outside_the_repo(
+    instructed: tuple[Path, Path], tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    repo, base = instructed
+    (tmp_path / "outside").mkdir()
+
+    code = _main(
+        repo,
+        tmp_path,
+        FunctionModel(Recorder()),
+        "--instructions-root",
+        str(base),
+        "--context",
+        "../outside",
+        "--skills",
+        "ci/skills",
+    )
+
+    assert code == 2
+    assert "outside" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("flag", ["--prompt-file", "--context"])
+def test_instructions_root_ignores_a_symlinked_parent_folder(
+    instructed: tuple[Path, Path], tmp_path: Path, flag: str
+) -> None:
+    """A pull request that swaps a parent folder for a symlink inside the repository still gets the base's copy."""
+    repo, base = instructed
+    evil = repo / "evil"
+    (evil / "ctx").mkdir(parents=True)
+    (evil / "task.md").write_text("EVIL PROMPT")
+    (evil / "ctx" / "note.md").write_text("EVIL NOTE")
+    _skill(evil / "skills", "head-skill")
+    shutil.rmtree(repo / "ci")
+    (repo / "ci").symlink_to("evil")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "swap the folder")
+    target = "ci/task.md" if flag == "--prompt-file" else "ci/ctx"
+    rec = Recorder()
+
+    code = _main(
+        repo,
+        tmp_path,
+        FunctionModel(rec),
+        "--instructions-root",
+        str(base),
+        flag,
+        target,
+        "--skills",
+        "ci/skills",
+        *(["--prompt", "x"] if flag == "--context" else []),
+    )
+
+    assert code == 0
+    assert "EVIL" not in str(rec.prompt)
+    assert rec.instructions is not None
+    assert str(evil) not in rec.instructions
+    assert "base-skill" in rec.instructions
+    if flag == "--prompt-file":
+        assert rec.prompt == "base task"
+
+
+def test_instructions_root_refuses_a_new_path_through_a_symlink(
+    instructed: tuple[Path, Path], tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """A path the base lacks, reached through a symlinked folder in the repository, is refused."""
+    repo, base = instructed
+    (repo / "evil").mkdir()
+    (repo / "evil" / "new.md").write_text("EVIL PROMPT")
+    (repo / "linked").symlink_to("evil")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "new path through a link")
+
+    code = _main(
+        repo,
+        tmp_path,
+        FunctionModel(Recorder()),
+        "--instructions-root",
+        str(base),
+        "--prompt-file",
+        "linked/new.md",
+        "--skills",
+        "ci/skills",
+    )
+
+    assert code == 2
+    assert "linked/new.md" in capsys.readouterr().err
+
+
+def test_instructions_root_uses_the_base_for_a_deleted_file(
+    instructed: tuple[Path, Path], tmp_path: Path
+) -> None:
+    repo, base = instructed
+    (repo / "ci" / "task.md").unlink()
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "delete the prompt")
+    rec = Recorder()
+
+    code = _main(
+        repo,
+        tmp_path,
+        FunctionModel(rec),
+        "--instructions-root",
+        str(base),
+        "--prompt-file",
+        "ci/task.md",
+        "--skills",
+        "ci/skills",
+    )
+
+    assert code == 0
+    assert rec.prompt == "base task"

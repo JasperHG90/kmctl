@@ -5,7 +5,8 @@ description: >-
   Concepts that are due for review are reported, never failed. With
   mode: audit, run the agent in action/agent.py instead, against any model
   provider, and keep its report as an artifact; with mode: publish, in a
-  later job, post that report to one GitHub issue.
+  later job, post that report to one GitHub issue, or on a pull request to
+  one comment.
 inputs:
   path:
     description: The repository folder to check, relative to the workspace.
@@ -36,15 +37,23 @@ inputs:
       (audit), or on the task prompt or prompt_file gives it. It can read the
       repository, the context and skills folders, and run shell commands, and
       it uploads its report as the report_name artifact. It
-      needs model, runs only on workflow_dispatch or schedule, and refuses to
-      start when it could read a GitHub token: check out with
-      persist-credentials: false and fetch-depth: 0, and set no GH_TOKEN or
-      GITHUB_TOKEN for the job. Also set timeout-minutes on the step, since a
+      needs model, runs on workflow_dispatch, schedule or a pull_request from
+      the same repository (ADR 0057), and refuses to start when it could read
+      a GitHub token: check out with persist-credentials: false and
+      fetch-depth: 0, and set no GH_TOKEN or GITHUB_TOKEN for the job. A pull
+      request from a fork or from Dependabot gets a notice and no audit, and
+      the step still passes. On a pull request the agent runs without a
+      shell, reads prompt_file, system_prompt_file, context and skills that
+      git tracks from a checkout of the base branch, and gets --base for the
+      okf-vs-change audit. Also set timeout-minutes on the step, since a
       composite action cannot set it on its own steps. publish runs in a
-      separate job (needs: the audit job, issues: write, a checkout for
-      CODEOWNERS): it downloads report_name and posts it with
-      action/agent.py publish. The agent's job and this one share nothing but
-      the artifact, so nothing the agent changed runs with the token.
+      separate job (needs: the audit job, issues: write, or pull-requests:
+      write on a pull request, and a checkout for CODEOWNERS): it downloads
+      report_name and posts it with action/agent.py publish, to one issue,
+      or on a pull request to one comment it replaces on each push. With no
+      report it posts nothing and passes. The agent's job and this one share
+      nothing but the artifact, so nothing the agent changed runs with the
+      token.
     required: false
     default: checks
   model:
@@ -74,9 +83,11 @@ inputs:
   audit:
     description: >-
       Audit mode: a shipped audit to run. docs-vs-code checks docs/ against
-      the code, okf-vs-code checks .okf/ against the code, and okf-vs-docs
-      checks docs/ against .okf/. Empty: okf-vs-code, unless prompt or
-      prompt_file gives a task of your own.
+      the code, okf-vs-code checks .okf/ against the code, okf-vs-docs
+      checks docs/ against .okf/, and okf-vs-change checks the stable
+      decisions whose sources a pull request changed (it runs only on a pull
+      request, where the base branch is known). Empty: okf-vs-code, unless
+      prompt or prompt_file gives a task of your own.
     required: false
     default: ""
   prompt:
@@ -87,7 +98,8 @@ inputs:
   prompt_file:
     description: >-
       Audit mode: a file holding the agent's task, relative to path, instead of
-      audit.
+      audit. On a pull request a file git tracks comes from the base branch,
+      so a pull request that adds one fails its own audit until it merges.
     required: false
     default: ""
   system_prompt_file:
@@ -100,7 +112,9 @@ inputs:
   context:
     description: >-
       Audit mode: folders the agent can read besides the repository, one per
-      line, relative to path; for example docs an earlier step fetched.
+      line, relative to path; for example docs an earlier step fetched. On a
+      pull request a folder git tracks comes from the base branch, and one it
+      does not track, such as a fetched folder, stays in the workspace.
     required: false
     default: ""
   skills:
@@ -169,19 +183,40 @@ runs:
         KMCTL_DRAFTS: ${{ inputs.drafts }}
         KMCTL_SUMMARY: ${{ inputs.summary }}
       run: bash "${{ github.action_path }}/action/knowledge-ci.sh"
-    # The API key reaches a model that runs shell commands, so code from a pull
-    # request or fork must never run here (ADR 0005).
+    # The API key reaches the model, so a fork's or Dependabot's pull request,
+    # which gets no secrets, is skipped and every other event but a same-repo
+    # pull request is refused (ADR 0005, ADR 0057). A skip passes: the later
+    # steps check the run output, since exit 0 alone does not skip them.
     - name: Check the event
+      id: event
       if: inputs.mode == 'audit'
       shell: bash
+      env:
+        HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+        BASE_REPO: ${{ github.repository }}
+        ACTOR: ${{ github.actor }}
       run: |
         case "$GITHUB_EVENT_NAME" in
-          workflow_dispatch | schedule) ;;
-          *) echo "kmctl audit: refused for event '$GITHUB_EVENT_NAME'; audit mode runs only on workflow_dispatch or schedule." >&2; exit 1 ;;
+          workflow_dispatch | schedule) echo "run=true" >> "$GITHUB_OUTPUT" ;;
+          pull_request)
+            if [ "$HEAD_REPO" != "$BASE_REPO" ]; then
+              echo "::notice::kmctl audit: skipped; a pull request from a fork gets no secrets, so no audit."
+              echo "run=false" >> "$GITHUB_OUTPUT"
+            elif [ "$ACTOR" = "dependabot[bot]" ]; then
+              echo "::notice::kmctl audit: skipped; a Dependabot pull request gets no secrets, so no audit."
+              echo "run=false" >> "$GITHUB_OUTPUT"
+            else
+              echo "run=true" >> "$GITHUB_OUTPUT"
+            fi ;;
+          *) echo "kmctl audit: refused for event '$GITHUB_EVENT_NAME'; audit mode runs on workflow_dispatch, schedule or a pull_request from the same repository." >&2; exit 1 ;;
         esac
-    # No GitHub token in this step: the agent runs shell commands.
+    # --no-config: uv would otherwise read a uv.toml or pyproject.toml from the
+    # checkout, which a pull request controls, and could install other code.
+    # No GitHub token in this step: the agent can run shell commands, except
+    # on a pull request, where it runs without a shell and reads its
+    # instructions from a checkout of the base branch outside the repository.
     - name: Run the agent
-      if: inputs.mode == 'audit'
+      if: inputs.mode == 'audit' && steps.event.outputs.run == 'true'
       shell: bash
       working-directory: ${{ inputs.path }}
       env:
@@ -206,7 +241,13 @@ runs:
         [ -n "$SYSTEM_PROMPT_FILE" ] && args+=(--system-prompt-file "$SYSTEM_PROMPT_FILE")
         while IFS= read -r dir; do [ -n "$dir" ] && args+=(--context "$dir"); done <<< "$CONTEXT"
         while IFS= read -r dir; do [ -n "$dir" ] && args+=(--skills "$dir"); done <<< "$SKILLS"
-        uv run --script "${{ github.action_path }}/action/agent.py" "${args[@]}"
+        if [ "$GITHUB_EVENT_NAME" = pull_request ]; then
+          base="origin/$GITHUB_BASE_REF"
+          checkout="$(mktemp -d "$RUNNER_TEMP/kmctl-base.XXXXXX")"
+          git worktree add --detach --quiet "$checkout" "$base"
+          args+=(--instructions-root "$checkout/$(git rev-parse --show-prefix)" --base "$base" --no-shell)
+        fi
+        uv run --no-config --script "${{ github.action_path }}/action/agent.py" "${args[@]}"
     - name: Keep the report
       if: always() && inputs.mode == 'audit'
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -214,9 +255,11 @@ runs:
         name: ${{ inputs.report_name }}
         path: ${{ runner.temp }}/agent-report
         if-no-files-found: ignore
-    # A separate job: a fresh runner that gets only the artifact.
+    # A separate job: a fresh runner that gets only the artifact. A skipped or
+    # failed audit leaves no artifact; publish then posts nothing and passes.
     - name: Download the report
       if: inputs.mode == 'publish'
+      continue-on-error: true
       uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
       with:
         name: ${{ inputs.report_name }}
@@ -231,7 +274,9 @@ runs:
         MIN_SEVERITY: ${{ inputs.min_severity }}
         MENTION: ${{ inputs.mention }}
         ISSUE_TITLE: ${{ inputs.issue_title }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
       run: |
         args=(publish "$RUNNER_TEMP/agent-report/report.json" --min-severity "$MIN_SEVERITY" --title "$ISSUE_TITLE")
         while IFS= read -r who; do [ -n "$who" ] && args+=(--mention "$who"); done <<< "$MENTION"
-        uv run --script "${{ github.action_path }}/action/agent.py" "${args[@]}"
+        [ "$GITHUB_EVENT_NAME" = pull_request ] && args+=(--pr "$PR_NUMBER")
+        uv run --no-config --script "${{ github.action_path }}/action/agent.py" "${args[@]}"

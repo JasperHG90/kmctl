@@ -1,7 +1,8 @@
 name: knowledge audit
 
-# The agent sends the repository to a model with the API key, so it runs only
-# by hand or on a schedule, never on a pull request (ADR 0005).
+# The agent sends the repository to a model with the API key. This repository
+# runs it by hand or on a schedule; the action can also run it on a pull
+# request from the same repository, without a shell (ADR 0057).
 on:
   workflow_dispatch:
   schedule:
@@ -72,7 +73,7 @@ jobs:
   # or updates that audit's issue when a finding is high, mentioning the
   # CODEOWNERS owners, and closes it when none is. It runs unless the run
   # was cancelled, so one failed audit does not hold back the others; a
-  # missing report fails that audit's publish.
+  # missing report posts nothing, and the failed audit job shows why.
   publish:
     needs: audit
     if: ${{ !cancelled() }}
@@ -98,7 +99,9 @@ jobs:
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: false
+      # A failed audit leaves no artifact; publish then posts nothing.
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        continue-on-error: true
         with:
           name: agent-report-${{ matrix.audit }}
           path: ${{ runner.temp }}/agent-report
