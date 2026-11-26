@@ -43,21 +43,30 @@ code are reviewed together.
   `--context` folder git does not track (one an earlier step fetched) stays
   in the working tree, so fetched context keeps working on a pull request;
   the operator chose this on 2026-11-26, and ADR 0057's instructions rule
-  gets a sentence saying so. Shipped prompts and the default skills already come from
+  gets a sentence saying so. The same rule holds for all four flags: a path
+  git does not track stays in the working tree, and a path the pull request
+  tracks that the base branch does not have exits 2, so a pull request cannot
+  slip in a new instruction file. The action makes the base checkout under
+  `$RUNNER_TEMP`, outside the repository, so the agent sees no second copy. Shipped prompts and the default skills already come from
   the action's own checkout, which the workflow pins.
 - `action.yml`'s "Check the event" step lets a `pull_request` run when the
-  head repository is the base repository; a fork pull request gets a notice,
-  exit 0, and no agent run. `pull_request_target` and every other event stay
+  head repository is the base repository; a fork pull request, or one
+  Dependabot opened (it gets no secrets either), gets a notice, exit 0, and
+  no agent run: the event step sets an output that the later audit steps
+  check, since exit 0 alone does not skip them in a composite action. `pull_request_target` and every other event stay
   refused. On a pull request the audit step makes a checkout of
   `origin/$GITHUB_BASE_REF` from the `fetch-depth: 0` history (no token
   needed) and passes it as `--instructions-root`, with `--base` set to that
   ref.
 - `publish --pr N` posts one comment on the pull request, marked so the next
   push finds and replaces it, instead of the issue; `action.yml`'s publish
-  step passes it on a `pull_request` event. With no report, publish posts
-  nothing and exits 0, in issue mode too: the operator chose this on
-  2026-11-26, and ADR 0057's amendment of ADR 0017 already says it without
-  a condition. A finding never fails a check.
+  step passes it on a `pull_request` event.
+- With no report, publish posts nothing and exits 0, in issue mode too: the
+  operator chose this on 2026-11-26, and ADR 0057's amendment of ADR 0017
+  already says it without a condition. That covers `agent.py publish`, the
+  action's artifact download in publish mode, and the download step in
+  `.github/workflows/knowledge-audit.yml`, which fails on a missing artifact
+  before `agent.py publish` runs and so gets `continue-on-error: true`. A finding never fails a check.
 - ADR 0005 (`.okf/decisions/0005-audits-report-only.md`) and ADR 0017 each get
   a `## Correction` section pointing to ADR 0057; the comments in
   `.github/workflows/knowledge-audit.yml` that say the audit never runs on a
@@ -97,7 +106,8 @@ and a fork pull request, and replace one PR comment through a fake `gh`.
 - P1: No shipped audit checks only the decisions a change touches: `AUDITS` in `action/agent.py` holds three bundle-wide audits, and over pull requests #60 to #75 every one changed a source of 3 to 14 stable decisions that nothing checked before merge.
 - P2: The "Check the event" step in `action.yml` refuses `pull_request` with exit 1, so no repository can run the audit on a pull request, and nothing tells a fork pull request apart to skip it.
 - P3: `--prompt-file`, `--system-prompt-file`, `--context` and `--skills` resolve against the working tree, which on a pull request is the pull request's own code, so a pull request could loosen the audit that checks it.
-- P4: `publish` posts only to an issue, and fails when there is no report (the artifact download fails, and an unreadable report exits 2).
+- P4: `publish` posts only to an issue, so a pull request run has nowhere to report.
+- P6: publish fails when there is no report: `agent.py publish` exits 2 on an unreadable report, and the artifact download in `action.yml` and in `.github/workflows/knowledge-audit.yml` fails on a missing artifact first.
 - P5: ADR 0005, ADR 0017, `.github/workflows/knowledge-audit.yml` and two `docs/` pages say the audit runs only by hand or on a schedule, and ADR 0057 says nothing is built before it is accepted.
 
 ## Goals
@@ -122,32 +132,41 @@ and a fork pull request, and replace one PR comment through a fake `gh`.
 - fixes: P3
 - needs: none
 - touches: `action/agent.py`, `tests/test_agent.py`
-- checked by: tests in `tests/test_agent.py` where a relative `--prompt-file`, `--system-prompt-file`, `--context` and `--skills` that git tracks resolve under DIR and not the current folder, an untracked `--context` folder stays in the working tree, and the defaults are unchanged without the flag
+- checked by: tests in `tests/test_agent.py` where a relative `--prompt-file`, `--system-prompt-file`, `--context` and `--skills` that git tracks resolve under DIR and not the current folder, an untracked `--context` folder stays in the working tree, a tracked path missing under DIR exits 2, and the defaults are unchanged without the flag
 - seen by: calling code
 
-### O3: The action runs the audit on a same-repository pull request with base-branch instructions and skips a fork with exit 0
+### O3: The action runs the audit on a same-repository pull request with base-branch instructions and skips a fork or Dependabot pull request with exit 0
 - kind: behaviour
 - goal: G1
 - fixes: P2
 - needs: O1, O2
 - touches: `action.yml`, `packages/kmctl/tests/test_action.py`
-- checked by: tests in `packages/kmctl/tests/test_action.py` that run the event step for `workflow_dispatch`, `schedule` and a same-repo `pull_request` (runs), a fork `pull_request` (exit 0 with a notice, agent step skipped), and `pull_request_target` and `push` (refused), and that the agent step passes `--instructions-root` and `--base` only on a pull request
+- checked by: tests in `packages/kmctl/tests/test_action.py` that run the event step for `workflow_dispatch`, `schedule` and a same-repo `pull_request` (runs), a fork or Dependabot `pull_request` (exit 0 with a notice, and the step output that skips the agent step), and `pull_request_target` and `push` (refused), and that the agent step passes `--instructions-root` (a checkout under `$RUNNER_TEMP`) and `--base` only on a pull request
 - seen by: operator
 
-### O4: `publish --pr N` posts or replaces one pull request comment, and publish with no report posts nothing and exits 0
+### O4: `publish --pr N` posts or replaces one pull request comment
 - kind: behaviour
 - goal: G1
 - fixes: P4
-- needs: none
+- needs: O3
 - touches: `action/agent.py`, `action.yml`, `tests/test_agent.py`, `packages/kmctl/tests/test_action.py`
-- checked by: tests in `tests/test_agent.py` with a fake `gh` that see a first run create the marked comment, a second run edit that comment and post no other, and a missing report exit 0 with no `gh` call; a test in `packages/kmctl/tests/test_action.py` that the publish step passes `--pr` on a `pull_request` event and tolerates a missing artifact
+- checked by: tests in `tests/test_agent.py` with a fake `gh` that see a first run create the marked comment and a second run edit that comment and post no other; a test in `packages/kmctl/tests/test_action.py` that the publish step passes `--pr` on a `pull_request` event
+- seen by: operator
+
+### O6: Publish with no report posts nothing and exits 0, in every mode
+- kind: behaviour
+- goal: G1
+- fixes: P6
+- needs: none
+- touches: `action/agent.py`, `action.yml`, `.github/workflows/knowledge-audit.yml`, `tests/test_agent.py`, `packages/kmctl/tests/test_action.py`
+- checked by: a test in `tests/test_agent.py` that a missing report exits 0 with no `gh` call in issue and pull request mode; a test in `packages/kmctl/tests/test_action.py` that the publish step does not fail on a missing artifact; an eval row that the workflow's download step has `continue-on-error: true`
 - seen by: operator
 
 ### O5: ADR 0005, ADR 0017, ADR 0057, the audit workflow's comments and the docs describe the built action
 - kind: support
 - goal: G2
 - fixes: P5
-- needs: O3, O4
+- needs: O3, O4, O6
 - touches: `.okf/decisions/0005-audits-report-only.md`, `.okf/decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script.md`, `new:.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md`, `.github/workflows/knowledge-audit.yml`, `docs/how-to/install-the-plugin-and-the-ci-action.md`, `docs/explanation/why-one-hook-and-report-only-audits.md`
 - checked by: `prek run --all-files` green, and eval rows that grep each ADR for a dated Correction linking ADR 0057, ADR 0057 for `status: draft`, the fetched-context sentence and the new last Consequence, the workflow for no "never on a pull request" comment, and the how-to page for a pull request workflow example with the same-repository condition on both jobs
 - seen by: operator
