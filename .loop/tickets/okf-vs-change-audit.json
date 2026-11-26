@@ -3,7 +3,7 @@
   "slug": "okf-vs-change-audit",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -194,8 +194,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "b313c8569989e85dbf87cb4af3f3a1d058dfc932713758420cc74dc1f0a3c898",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "952de4d29b3dd2a6a40e511e57e32cc668848873b2ee9137aa60e29b1e1fc908",
+    "started_at": "2026-11-26T13:34:04+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "952de4d29b3dd2a6a40e511e57e32cc668848873b2ee9137aa60e29b1e1fc908",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -210,5 +229,5 @@
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-26T13:33:57+00:00"
+  "at": "2026-11-26T13:34:04+00:00"
 }
