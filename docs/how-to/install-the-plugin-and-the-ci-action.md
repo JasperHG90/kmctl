@@ -464,8 +464,8 @@ on:
 ```
 
 Give both jobs the same-repository condition, since a fork's or
-Dependabot's pull request gets no secrets; the publish job keeps
-`!cancelled()` too:
+Dependabot's pull request gets no secrets. Add `!cancelled()` to the
+publish job's condition too, so it runs when the audit fails:
 
 ```yaml
   audit:

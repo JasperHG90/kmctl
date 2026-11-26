@@ -1594,3 +1594,21 @@ def test_instructions_root_uses_the_base_for_a_deleted_file(
 
     assert code == 0
     assert rec.prompt == "base task"
+
+
+def test_publish_pr_ignores_a_person_quoting_the_marker(
+    repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    store = _pr_gh(tmp_path, monkeypatch)
+    mark = agent.COMMENT_MARK.format(title="Knowledge audit")
+    quoted = f"> {mark}\n> ## Knowledge audit\n\nIs this finding right?"
+    store.write_text(json.dumps([{"id": 1, "body": quoted}]))
+    report = _report_file(tmp_path, ["high"])
+
+    assert _publish(repo, report, "--pr", "12") == 0
+    assert _publish(repo, report, "--pr", "12") == 0
+
+    comments = json.loads(store.read_text())
+    assert comments[0] == {"id": 1, "body": quoted}
+    assert len(comments) == 2
+    assert comments[1]["body"].startswith(mark)
