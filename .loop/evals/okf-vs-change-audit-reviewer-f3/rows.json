@@ -17,7 +17,7 @@
       "id": "r3",
       "behavior": "the how-to no longer says the publish job keeps !cancelled() too",
       "fails_when": "the sentence still says it keeps it",
-      "command": "! grep -q 'keeps\\s*$\\|keeps `!cancelled()` too' docs/how-to/install-the-plugin-and-the-ci-action.md && ! tr '\\n' ' ' < docs/how-to/install-the-plugin-and-the-ci-action.md | grep -q 'keeps `!cancelled()` too'"
+      "command": "! tr '\\n' ' ' < docs/how-to/install-the-plugin-and-the-ci-action.md | tr -s ' ' | grep -q 'keeps `!cancelled()` too'"
     },
     {
       "id": "r4",
