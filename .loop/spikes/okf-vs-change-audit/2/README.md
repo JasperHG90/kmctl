@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.4.0
-  at: '2026-11-26T13:16:25+00:00'
+  at: '2026-11-26T13:16:35+00:00'
 slug: okf-vs-change-audit
 n: 2
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike okf-vs-change-audit/2
@@ -24,7 +24,10 @@ The command exited 0:
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note okf-vs-change-audit 2`.
+The script copied actions/checkout v7.0.1's fetch-depth 0 steps for a pull request, read from its source at 3d3c42e (`getRefSpecForAllHistory`, `getCheckoutInfo`, `fetch`): `fetch --no-tags --prune` with `+refs/heads/*:refs/remotes/origin/*`, `+refs/tags/*:refs/tags/*` and `+$GITHUB_SHA:refs/remotes/pull/1/merge`, then `checkout --force refs/remotes/pull/1/merge`. It ran against a local bare repo standing in for GitHub. All 18 checks passed in 3 scenarios: no base movement, main moved before the merge ref was made, and main moved again after it.
+(a) `origin/main` is always there. `git worktree add --detach DIR origin/main` works with the remote URL deliberately broken, so it needs no token and no network. knowledge-ci.sh's `rev-parse` check passes, so its fallback fetch never runs.
+(b) `git diff --name-only origin/main...HEAD` listed exactly the PR's 3 files every time, never main's own changes. This settles risk 3.
+Limits: this was a local stand-in, not a run on GitHub, and the token-free fetch that checkout itself makes was not tested. When main moves after the merge ref is made, the base tree is the newer main tip, not `HEAD^1`. The file list is still right.
 
 ## Files
 
