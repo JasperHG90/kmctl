@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "slug": "adr-0057-pr-audit",
-  "stage": "ready",
-  "attempts": 0,
+  "stage": "building",
+  "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
@@ -17,8 +17,8 @@
   "closed_outside": false,
   "dropped": false,
   "archived": false,
-  "worktree": null,
-  "branch": null,
+  "worktree": "/home/vscode/workspace.worktrees/adr-0057-pr-audit",
+  "branch": "loop/adr-0057-pr-audit",
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/create-eval",
@@ -162,8 +162,14 @@
       "to": "ready",
       "at": "2026-11-26T12:56:19+00:00",
       "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-26T13:00:32+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-26T12:56:19+00:00"
+  "at": "2026-11-26T13:00:32+00:00"
 }
