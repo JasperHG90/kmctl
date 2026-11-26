@@ -21,7 +21,8 @@
   "branch": "loop/adr-0057-correction",
   "stamps": [
     "7b4c6eca3f7e6cbe8126c4cad46e9b49d2e7e7b6ac53eadf13836b9b5d345150",
-    "40d9a026fc096357c81bee502dbfa4495b3de1b126a0bf8ce2dad8261b69727d"
+    "40d9a026fc096357c81bee502dbfa4495b3de1b126a0bf8ce2dad8261b69727d",
+    "35fdc14f54d3f4c7e33c9b1301bfed54e122df9250e32e1ac459a9c7052fcc4f"
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/implement-ticket",
@@ -225,5 +226,5 @@
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-26T17:14:21+00:00"
+  "at": "2026-11-26T17:22:37+00:00"
 }
