@@ -1,0 +1,122 @@
+{
+  "schema_version": "1.0",
+  "slug": "adr-0057-pr-audit",
+  "plan_hash": "62900e80b280d7ba6ad675e453e2665b7969a478df2a82f9b17b437537963042",
+  "problems": [
+    {
+      "id": "P1",
+      "text": "The Context and the scoping rule predate ADR 0055: Context argues from the full `kmctl review due` list, scoping adds a second `sources` matcher instead of reusing `kmctl review due --base`, and the record never says what the audit adds on top of 0055 (whether a page still holds, not only which pages a change touched)."
+    },
+    {
+      "id": "P2",
+      "text": "The fork rule says the action refuses a fork pull request, which the \"Check the event\" step in `action.yml` does with `exit 1`, so a fork gets a red check while the record says a finding never fails the check and forks get the free checks only."
+    },
+    {
+      "id": "P3",
+      "text": "The Decision presents the base-branch checkout of prompt, system prompt, skills and context as a guard, but a same-repository author can edit the workflow on a `pull_request` event; what the checkout protects is the audit's honesty (a pull request cannot loosen the instructions that check it), not the key."
+    },
+    {
+      "id": "P4",
+      "text": "Smaller gaps: the new shipped audit is called \"new\" in one place and \"fourth\" in another and is never named next to `AUDITS` in `action/agent.py`; the record does not say the merge-base comparison relies on the audit's existing `fetch-depth: 0` requirement; and it says nothing about where the feature sits under ADR 0046's split between kmctl and kmaudit."
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "The operator can accept ADR 0057 on an argument that matches main and on rules that agree with each other and with `action.yml`."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "O1",
+      "change": "Context and scoping build on ADR 0055",
+      "kind": "support",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "new:.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md"
+      ],
+      "checked_by": "eval rows that grep the record for a link to ADR 0055, for `review due --base` in the scoping rule, for no second `sources` matcher, and for a sentence on what the audit adds over 0055",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O2",
+      "change": "A fork pull request is skipped with a notice and exit 0",
+      "kind": "support",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P2",
+      "fixes_index": 1,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "new:.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md"
+      ],
+      "checked_by": "an eval row that greps the fork rule for a skip that exits 0 and for no \"refuses\" wording",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O3",
+      "change": "The record says the base-branch checkout protects the audit's honesty, not the key",
+      "kind": "support",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P3",
+      "fixes_index": 2,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "new:.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md"
+      ],
+      "checked_by": "an eval row that greps the instructions rule for the honesty reason and for the note that the pull request's own workflow file runs",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O4",
+      "change": "The audit is named, the history need is stated, and the package placement is settled",
+      "kind": "support",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P4",
+      "fixes_index": 3,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "new:.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md"
+      ],
+      "checked_by": "eval rows that grep for the audit's name used the same way throughout, for `fetch-depth: 0`, and for a link to ADR 0046",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O5",
+      "change": "PR 71 carries the revised ADR and it passes the repo's hooks",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [
+        "O1",
+        "O2",
+        "O3",
+        "O4"
+      ],
+      "needs_index": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "touches": [
+        "new:.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md",
+        ".okf/log.md"
+      ],
+      "checked_by": "`prek run --all-files` green in the worktree, and `git log origin/adr/audit-pull-requests` showing the ticket's commit after the push",
+      "seen_by": "operator"
+    }
+  ]
+}
