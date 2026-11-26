@@ -1,0 +1,51 @@
+unformatted: File would be reformatted
+    --> action/agent.py:527:24
+     |
+526  |         for entry in meta.get("sources") or []:
+     -             resource = str((entry or {}).get("resource", "")) if isinstance(entry, dict) else ""
+527  +             resource = (
+528  +                 str((entry or {}).get("resource", ""))
+529  +                 if isinstance(entry, dict)
+530  +                 else ""
+531  +             )
+532  |             if resource and "://" not in resource:
+     -                 files += [f for f in source_matches(resource, changed) if f not in files]
+533  +                 files += [
+534  +                     f for f in source_matches(resource, changed) if f not in files
+535  +                 ]
+536  |         if files:
+--------------------------------------------------------------------------------
+1008 |         )
+     -         flat = [c for page in comments for c in (page if isinstance(page, list) else [page])]
+1009 +         flat = [
+1010 +             c for page in comments for c in (page if isinstance(page, list) else [page])
+1011 +         ]
+1012 |         earlier = next((c for c in flat if mark in str(c.get("body", ""))), None)
+--------------------------------------------------------------------------------
+1043 |                 gh("pr", "comment", str(args.pr), "--body-file", handle.name)
+     -                 print(
+     -                     f"agent: commented on pull request #{args.pr}.", file=sys.stderr
+     -                 )
+1044 +                 print(f"agent: commented on pull request #{args.pr}.", file=sys.stderr)
+1045 |         finally:
+     |
+
+unformatted: File would be reformatted
+    --> tests/test_agent.py:1086:15
+     |
+1085 |
+     - def _decision(repo: Path, slug: str, sources: list[str], status: str = "stable") -> None:
+1086 + def _decision(
+1087 +     repo: Path, slug: str, sources: list[str], status: str = "stable"
+1088 + ) -> None:
+1089 |     folder = repo / ".okf" / "decisions"
+--------------------------------------------------------------------------------
+1174 | ) -> None:
+     -     code = _main(changed, tmp_path, FunctionModel(Recorder()), "--audit", "okf-vs-change")
+1175 +     code = _main(
+1176 +         changed, tmp_path, FunctionModel(Recorder()), "--audit", "okf-vs-change"
+1177 +     )
+1178 |
+     |
+
+2 files would be reformatted, 231 files already formatted
