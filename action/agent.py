@@ -1031,7 +1031,10 @@ def publish_comment(args: argparse.Namespace, report: Report, over: list) -> int
         flat = [
             c for page in comments for c in (page if isinstance(page, list) else [page])
         ]
-        earlier = next((c for c in flat if mark in str(c.get("body", ""))), None)
+        # Only a body that starts with the mark is ours; a quote of it starts with "> ".
+        earlier = next(
+            (c for c in flat if str(c.get("body", "")).startswith(mark)), None
+        )
         if not over and earlier is None:
             print(
                 f"agent: nothing at or above {args.min_severity}; no comment was written.",
