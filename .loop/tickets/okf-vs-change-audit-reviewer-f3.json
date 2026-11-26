@@ -3,7 +3,7 @@
   "slug": "okf-vs-change-audit-reviewer-f3",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 1,
+  "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -78,9 +78,9 @@
   "overrides": [],
   "round": {
     "kind": "plan",
-    "n": 1,
-    "binds": "44e569d46fe3c4f79c615c3d5aa55ccfbafdcf0a97448ec118672d771508ad03",
-    "started_at": "2026-11-26T22:17:27+00:00",
+    "n": 2,
+    "binds": "487233a28fca3201d40d1b3d30eb45bcc57cdf03abc0f298c436f90603faa458",
+    "started_at": "2026-11-26T22:19:22+00:00",
     "passes": [
       "plan-reviewer"
     ],
@@ -93,10 +93,10 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": true,
-    "outcome": "fail"
+    "closed": false,
+    "outcome": null
   },
-  "plan_hash": "44e569d46fe3c4f79c615c3d5aa55ccfbafdcf0a97448ec118672d771508ad03",
+  "plan_hash": "487233a28fca3201d40d1b3d30eb45bcc57cdf03abc0f298c436f90603faa458",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -111,5 +111,5 @@
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-26T22:19:19+00:00"
+  "at": "2026-11-26T22:19:22+00:00"
 }

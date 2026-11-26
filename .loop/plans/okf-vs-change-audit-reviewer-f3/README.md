@@ -25,9 +25,13 @@ Relayed from: okf-vs-change-audit, reviewer finding f3 in review round 1
 whose body holds the audit's marker, from any author. A person who quotes
 the marker, say to discuss a finding, makes every later publish PATCH that
 person's comment, which `GITHUB_TOKEN` cannot edit, so publish exits 1 on
-every push. Match only a comment a bot wrote (`user.type == "Bot"`), which
-covers `github-actions[bot]` and a GitHub App token alike; a person's
-comment is never a bot's.
+every push. Match only a comment whose body starts with the marker, which
+is how `publish_comment` writes its own (`f"{mark}\n## ..."`). A quote
+nests the marker under `> `, so it never matches. This keeps working with
+any token that posts the comment: `GITHUB_TOKEN` (`github-actions[bot]`), a
+GitHub App, or a person's or machine user's own token, whose comments are
+type `User`; matching on `user.type == "Bot"` would break `--pr` for the
+last two, which the `publish` help promises only need `gh` and `GH_TOKEN`.
 
 The same ticket fixes one sentence in
 `docs/how-to/install-the-plugin-and-the-ci-action.md`: its pull request part
@@ -50,13 +54,13 @@ okf-vs-change-audit showed from the code.
 
 ## Outcomes
 
-### O1: Publish replaces only a marked comment a bot wrote
+### O1: Publish replaces only a comment that starts with its marker
 - kind: behaviour
 - goal: G1
 - fixes: P1
 - needs: none
 - touches: `action/agent.py`, `tests/test_agent.py`
-- checked by: a test with a fake `gh` where a person's comment quotes the marker: publish leaves it alone, posts its own comment, and replaces that one on the next run
+- checked by: a test with a fake `gh` where a person's comment quotes the marker: publish leaves it alone, posts its own comment, and replaces that one on the next run; the existing replace test still passes
 - seen by: operator
 
 ### O2: The how-to's pull request part says to add `!cancelled()` to publish, not that it is kept
