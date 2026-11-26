@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "okf-vs-change-audit",
-  "plan_hash": "f65a528f7cc73419b25138eba7f21b2a71098b9eb289fe86cfce1e8b415e8539",
+  "plan_hash": "952de4d29b3dd2a6a40e511e57e32cc668848873b2ee9137aa60e29b1e1fc908",
   "problems": [
     {
       "id": "P1",
@@ -67,7 +67,7 @@
         "action/agent.py",
         "tests/test_agent.py"
       ],
-      "checked_by": "tests in `tests/test_agent.py` where a relative `--prompt-file`, `--system-prompt-file`, `--context` and `--skills` resolve under DIR and not the current folder, and the defaults are unchanged without the flag",
+      "checked_by": "tests in `tests/test_agent.py` where a relative `--prompt-file`, `--system-prompt-file`, `--context` and `--skills` that git tracks resolve under DIR and not the current folder, an untracked `--context` folder stays in the working tree, and the defaults are unchanged without the flag",
       "seen_by": "calling code"
     },
     {
@@ -136,7 +136,7 @@
         "docs/how-to/install-the-plugin-and-the-ci-action.md",
         "docs/explanation/why-one-hook-and-report-only-audits.md"
       ],
-      "checked_by": "`prek run --all-files` green, and eval rows that grep each ADR for a dated Correction linking ADR 0057, ADR 0057 for `status: draft` and the new last Consequence, the workflow for no \"never on a pull request\" comment, and the how-to page for a pull request workflow example with the same-repository condition on both jobs",
+      "checked_by": "`prek run --all-files` green, and eval rows that grep each ADR for a dated Correction linking ADR 0057, ADR 0057 for `status: draft`, the fetched-context sentence and the new last Consequence, the workflow for no \"never on a pull request\" comment, and the how-to page for a pull request workflow example with the same-repository condition on both jobs",
       "seen_by": "operator"
     }
   ]
