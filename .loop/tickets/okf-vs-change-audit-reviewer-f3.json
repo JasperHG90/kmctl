@@ -1,8 +1,8 @@
 {
   "schema_version": "1.0",
   "slug": "okf-vs-change-audit-reviewer-f3",
-  "stage": "ready",
-  "attempts": 0,
+  "stage": "building",
+  "attempts": 1,
   "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
@@ -17,8 +17,8 @@
   "closed_outside": false,
   "dropped": false,
   "archived": false,
-  "worktree": null,
-  "branch": null,
+  "worktree": "/home/vscode/workspace.worktrees/okf-vs-change-audit-reviewer-f3",
+  "branch": "loop/okf-vs-change-audit-reviewer-f3",
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/create-eval",
@@ -114,8 +114,14 @@
       "to": "ready",
       "at": "2026-11-26T22:20:13+00:00",
       "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-26T22:20:15+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-26T22:20:13+00:00"
+  "at": "2026-11-26T22:20:15+00:00"
 }
