@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "okf-vs-change-audit",
+  "n": 1,
+  "command": "python3 -I /tmp/claude-1000/-home-vscode-workspace/55c11e59-8512-407e-a916-04be246551c4/scratchpad/spike-cvc-r2/check_pr_comment_perms.py",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-workspace/55c11e59-8512-407e-a916-04be246551c4/scratchpad/spike-cvc-r2/check_pr_comment_perms.py",
+      "copy": "files/check_pr_comment_perms.py"
+    }
+  ],
+  "where": "worktree",
+  "head": "1551ce7647654a2ffb9fa6bbe7913ec364e3bd77",
+  "fingerprint": "23ade3648ab8ca521b6832505a28369756918ab24099321c8dcf03296b757db1",
+  "started_at": "2026-11-26T13:15:57+00:00",
+  "finished_at": "2026-11-26T13:15:58+00:00",
+  "duration_seconds": 0.077,
+  "timeout_seconds": 60.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.4.0",
+  "moved_from": null
+}

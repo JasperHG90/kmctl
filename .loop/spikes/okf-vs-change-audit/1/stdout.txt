@@ -1,0 +1,4 @@
+Pull requests section: GET /repos/{owner}/{repo}/issues/{issue_number}/comments: | `GET /repos/{owner}/{repo}/issues/{issue_number}/comments` | read | UAT, IAT | ✓ |
+Pull requests section: POST /repos/{owner}/{repo}/issues/{issue_number}/comments: | `POST /repos/{owner}/{repo}/issues/{issue_number}/comments` | write | UAT, IAT | ✓ |
+Pull requests section: PATCH /repos/{owner}/{repo}/issues/comments/{comment_id}: | `PATCH /repos/{owner}/{repo}/issues/comments/{comment_id}` | write | UAT, IAT | ✓ |
+pull-requests: write is enough
