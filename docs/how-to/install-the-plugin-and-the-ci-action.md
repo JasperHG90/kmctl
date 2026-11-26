@@ -227,8 +227,9 @@ the action's `drafts` input to `fail` to fail on drafts everywhere, or to
 It also runs `kmctl check --summary-current`, so the job fails when
 `.okf/summary.md` is behind the concepts that changed after it (ADR 0056).
 Update the summary, or run `kmctl summary ack` when it still holds, and push.
-A `kmctl verify` alone does not put the summary behind. Set the action's
-`summary` input to `pass` to only warn.
+A `kmctl verify` alone does not put the summary behind, and neither does a
+draft decision you add, edit or delete. Accepting the draft does (ADR 0058).
+Set the action's `summary` input to `pass` to only warn.
 
 On a pull request, the job summary first lists the pages that pull request
 made due, from `kmctl review due --base origin/BASE` (ADR 0055). Those are

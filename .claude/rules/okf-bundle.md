@@ -72,7 +72,8 @@ events only, and it is append-only.
 When you add or change a concept, update `.okf/summary.md` in the same
 change, or run `kmctl summary ack` when it still holds. `kmctl review due`
 lists the summary until you do, and kmctl's CI action fails the pull request.
-A `kmctl verify` alone does not put the summary behind.
+A `kmctl verify` alone does not put the summary behind, and neither does
+a draft decision you add, edit or delete. Accepting the draft does.
 
 <constraint name="the-log-records-lifecycle-events-only">
 WHY: every line appended to the end of `log.md` lands in the same place, so
