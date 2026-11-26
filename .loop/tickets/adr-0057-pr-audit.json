@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "adr-0057-pr-audit",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 2,
@@ -39,7 +39,7 @@
   "split": "j-20261126T125402+0000-1dc2f482",
   "split_plan_hash": "18014deaa4fcf033cf83ccdf4c2b499572ac84122dc3f0a0a23d758c36b3eb4d",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "579169c04c4ccb40ae7065ef6b537587944d7f33",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -247,8 +247,14 @@
       "to": "verifying",
       "at": "2026-11-26T13:32:42+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-26T13:39:13+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-26T13:38:59+00:00"
+  "at": "2026-11-26T13:39:13+00:00"
 }
