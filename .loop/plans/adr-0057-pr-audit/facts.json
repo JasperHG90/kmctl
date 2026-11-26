@@ -1,11 +1,11 @@
 {
   "schema_version": "1.0",
   "slug": "adr-0057-pr-audit",
-  "plan_hash": "62900e80b280d7ba6ad675e453e2665b7969a478df2a82f9b17b437537963042",
+  "plan_hash": "49904a4d3151383a75731699ed2319e2425b50b8c1a879b8493788ef7e50d915",
   "problems": [
     {
       "id": "P1",
-      "text": "The Context and the scoping rule predate ADR 0055: Context argues from the full `kmctl review due` list, scoping adds a second `sources` matcher instead of reusing `kmctl review due --base`, and the record never says what the audit adds on top of 0055 (whether a page still holds, not only which pages a change touched)."
+      "text": "The Context predates ADR 0055: it argues from the full `kmctl review due` list and never says why `kmctl review due --base` does not already do the scoping. That command compares `sources` only for a page with a `verified` entry; none of the 49 stable decisions has one, so over the last 15 merged pull requests it listed 0 of 82 decisions whose sources the pull request changed (spike:adr-0057-pr-audit/1). The record keeps its own `sources` matcher, but must say why, and what the audit adds on top of 0055 (whether a decision still holds, not only which pages a change touched)."
     },
     {
       "id": "P2",
@@ -29,7 +29,7 @@
   "outcomes": [
     {
       "id": "O1",
-      "change": "Context and scoping build on ADR 0055",
+      "change": "The Context says why ADR 0055's `--base` list does not scope the audit",
       "kind": "support",
       "goal": "G1",
       "goal_index": 0,
@@ -40,7 +40,7 @@
       "touches": [
         "new:.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md"
       ],
-      "checked_by": "eval rows that grep the record for a link to ADR 0055, for `review due --base` in the scoping rule, for no second `sources` matcher, and for a sentence on what the audit adds over 0055",
+      "checked_by": "eval rows that grep the record for a link to ADR 0055, for the reason `review due --base` misses unverified decisions with the measured 0 of 82, for the scoping rule still matching `sources` (files, and folders as prefixes), and for a sentence on what the audit adds over 0055",
       "seen_by": "operator"
     },
     {
