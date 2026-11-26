@@ -6,7 +6,7 @@ tags: [decision]
 generated:
   by: process:kmctl/0.16.1
   at: 2026-11-26T08:12:01Z
-status: draft
+status: stable
 sources:
   - resource: "action.yml"
   - resource: "action/agent.py"
@@ -51,6 +51,10 @@ rules:
   branch, not from the pull request. The agent reads the pull request's
   files only as the code it checks. The agent script comes from the
   action, which the workflow pins by commit.
+- **No shell on a pull request.** The agent gets only its tools that read,
+  search and list files. It does not get `run_shell`. A shell command can
+  read the API key from the agent's own process, so text in a pull request
+  that steers the agent could otherwise make it print the key.
 - **Scoped to the change.** A new shipped audit checks the decisions whose
   `sources` match a file the pull request changed, compared with the base
   branch from the commit where the two split. The agent may add other
@@ -85,8 +89,9 @@ rules:
   posts one issue.
 - Changes: publish mode can post one pull request comment instead of an
   issue. On a pull request, the audit job's prompt, system prompt, skills
-  and context folders resolve against a checkout of the base branch. A
-  fourth shipped audit checks the decisions a change touches.
+  and context folders resolve against a checkout of the base branch, and
+  the agent runs without `run_shell`. A fourth shipped audit checks the
+  decisions a change touches.
 - Stays: one standalone script, no GitHub token in the agent's job, a
   separate publish job that shares only the artifact, and a validated
   `Report`.
@@ -114,11 +119,16 @@ Rejected:
   and the publish, and a secret that holds the model's API key. Use a key
   scoped to the audit, with a spending limit.
 - Prompt injection is the remaining risk. The agent reads the pull
-  request's files, and a shell command can read the API key from the
-  script's own process ([ADR 0017](0017-the-ci-audit-is-a-standalone-pydanticai-agent-script.md)).
-  Same-repository only means the author of that text already has write
-  access to the repository, and could change the workflow anyway. Branch
-  protection and review guard against that, not this record.
+  request's files, and text in them can steer what the agent writes in its
+  report. Without `run_shell`, the agent cannot read the API key from its
+  own process ([ADR 0017](0017-the-ci-audit-is-a-standalone-pydanticai-agent-script.md)),
+  so the report cannot contain the key. Same-repository only means the
+  author of that text already has write access to the repository, and
+  could change the workflow anyway. Branch protection and review guard
+  against that, not this record.
+- On a pull request, the audit cannot run the scripts a skill ships. The
+  audit that checks the decisions a change touches must work with the
+  read, search and list tools alone.
 - Each push costs one model run. Scoping to the changed files keeps it
   small, and a repository can run it only on `ready_for_review` and later
   pushes.

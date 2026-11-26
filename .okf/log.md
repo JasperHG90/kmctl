@@ -326,3 +326,4 @@
 ## 2026-11-26
 
 - Added `decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated` with `kmctl new decision`.
+- Accepted `decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated` (human:jasper).
