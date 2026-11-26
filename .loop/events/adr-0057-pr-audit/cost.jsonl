@@ -1,0 +1,2 @@
+{"at": "2026-11-26T12:52:42+00:00", "command": "/home/vscode/workspace/.venv/bin/python /tmp/claude-1000/-home-vscode-workspace/55c11e59-8512-407e-a916-04be246551c4/scratchpad/spike-r2/pr_scope.py 15", "exit": 1, "kind": "spike", "n": 1, "schema_version": "1.0"}
+{"at": "2026-11-26T12:53:08+00:00", "command": "/tmp/claude-1000/-home-vscode-workspace/55c11e59-8512-407e-a916-04be246551c4/scratchpad/spike-r1/carry_pr71.sh", "exit": 0, "kind": "spike", "n": 2, "schema_version": "1.0"}

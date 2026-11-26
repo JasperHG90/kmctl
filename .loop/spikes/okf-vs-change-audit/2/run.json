@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "okf-vs-change-audit",
+  "n": 2,
+  "command": "/tmp/claude-1000/-home-vscode-workspace/55c11e59-8512-407e-a916-04be246551c4/scratchpad/spike-cvc-r3/checkout_pr.sh",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-workspace/55c11e59-8512-407e-a916-04be246551c4/scratchpad/spike-cvc-r3/checkout_pr.sh",
+      "copy": "files/checkout_pr.sh"
+    }
+  ],
+  "where": "worktree",
+  "head": "d244a76d7f5fd0b882cdf21997ae1d04f79fe008",
+  "fingerprint": "23ade3648ab8ca521b6832505a28369756918ab24099321c8dcf03296b757db1",
+  "started_at": "2026-11-26T13:16:24+00:00",
+  "finished_at": "2026-11-26T13:16:25+00:00",
+  "duration_seconds": 0.192,
+  "timeout_seconds": 60.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.4.0",
+  "moved_from": null
+}

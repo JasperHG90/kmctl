@@ -1,0 +1,14 @@
+main=add0cbe2905affc6f7d80afd29e4a160800d4b73 pr71=c9985ad5012533a9b360999276b1e4dd211489f7
+main..pr71: 2  pr71..main: 13
+INFO pr71 does not contain main: a merge is needed, not a fast-forward
+OK   main and pr71 merge with no conflict
+OK   a merge commit on loop/SLUG contains pr71 head, so pushing it is a fast-forward
+OK   pr71 changes no .loop/ path since merge-base
+OK   hooks allow creating loop/adr-0057-pr-audit from main
+Automatic merge went well; stopped before committing as requested
+OK   backstop hooks allow git merge --no-commit of pr71 into loop/SLUG (MERGE_HEAD set)
+commit-time _merge_refusal: None
+OK   commit gate would not refuse the merge for loop state
+OK   advance building cuts loop/SLUG from integration_branch (main), or reuses an existing loop/SLUG
+OK   plain done finds the Loop-Ticket commit on loop/SLUG or main; it need not be on main
+OK   done never calls land and checks no ancestry against main

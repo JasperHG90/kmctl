@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.1",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "86 counts pull-request/decision hits over 20 decisions, and --base listed 11 of them as unverified; the prototype README and the ADR's Rejected item called them 86 decisions and said --base found 0.",
+      "anchor": ".okf/prototypes/pr-audit-scope/README.md:45",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "the ADR said the base-branch checkout keeps a pull request from loosening the audit, though the same pull request can edit the workflow.",
+      "anchor": ".okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md:68",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "893d4bcc14d26e801f1a180e06dff284d2fa870e6a81708d258608bfa1311c05",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.4.0",
+  "at": "2026-11-26T13:38:44+00:00",
+  "checklist": null
+}
