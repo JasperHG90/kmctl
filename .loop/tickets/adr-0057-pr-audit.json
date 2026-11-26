@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "adr-0057-pr-audit",
-  "stage": "building",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 0,
@@ -202,8 +202,14 @@
       "to": "building",
       "at": "2026-11-26T13:00:32+00:00",
       "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-26T13:09:07+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-26T13:09:00+00:00"
+  "at": "2026-11-26T13:09:07+00:00"
 }
