@@ -72,9 +72,15 @@ if [ "$check_status" -ne 0 ]; then
 fi
 
 # On a pull request, first the pages this pull request made due: the ones to
-# read before review (ADR 0055). GITHUB_BASE_REF names the base branch.
-if [ -n "${GITHUB_BASE_REF:-}" ] &&
-  git fetch --quiet origin "+refs/heads/$GITHUB_BASE_REF:refs/remotes/origin/$GITHUB_BASE_REF" 2>/dev/null; then
+# read before review (ADR 0055). GITHUB_BASE_REF names the base branch. A
+# checkout with fetch-depth: 0 already has origin/BASE; fetch it only when it
+# is missing, since a fetch fails in a private repository checked out with
+# persist-credentials: false.
+base_ref="origin/${GITHUB_BASE_REF:-}"
+if [ -n "${GITHUB_BASE_REF:-}" ] && {
+  git rev-parse --verify --quiet "$base_ref^{commit}" >/dev/null ||
+    git fetch --quiet origin "+refs/heads/$GITHUB_BASE_REF:refs/remotes/$base_ref" 2>/dev/null
+}; then
   {
     echo
     echo "## Pages this pull request made due"
@@ -83,8 +89,8 @@ if [ -n "${GITHUB_BASE_REF:-}" ] &&
     echo
     echo '```'
   } >> "$summary"
-  if ! kmctl review due --base "origin/$GITHUB_BASE_REF" >> "$summary" 2>&1; then
-    echo "kmctl review due --base origin/$GITHUB_BASE_REF failed; run it locally to see why." >> "$summary"
+  if ! kmctl review due --base "$base_ref" >> "$summary" 2>&1; then
+    echo "kmctl review due --base $base_ref failed; run it locally to see why." >> "$summary"
   fi
   echo '```' >> "$summary"
 fi

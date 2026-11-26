@@ -997,3 +997,28 @@ def test_base_keeps_the_summary_only_for_the_branch_concepts(tmp_path: Path) -> 
     assert listed()["summary"] == [
         f"concepts changed: {', '.join(sorted([main_cid, branch_cid]))}"
     ]
+
+
+def test_ci_action_lists_the_pages_without_fetching(tmp_path: Path) -> None:
+    """A private repository checked out with persist-credentials: false cannot fetch, but has origin/BASE."""
+    root = tmp_path / "repo"
+    root.mkdir()
+    _init(root)
+    _new(root, "decision", "Use a queue")
+    _commit(root)
+    ack(root)
+    _commit(root, "ack")
+    _git(root, "remote", "add", "origin", str(tmp_path / "unreachable"))
+    _git(root, "update-ref", "refs/remotes/origin/main", "main")
+    _git(root, "switch", "-q", "-c", "feature")
+    new = _new(root, "decision", "Use a cache")
+    ack(root)
+    _commit(root, "branch decision")
+
+    proc, report = _run_action(
+        root, _kmctl_bin(tmp_path), tmp_path, {"GITHUB_BASE_REF": "main"}
+    )
+
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    section = report.split("## Pages this pull request made due", 1)[1]
+    assert new in section.split("## kmctl review due", 1)[0]
