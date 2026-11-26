@@ -67,7 +67,7 @@ old kmctl-starter repository.
 ### 1. Install the kmctl CLI
 
 ```
-uv tool install git+https://github.com/JasperHG90/kmctl@v0.17.0#subdirectory=packages/kmctl
+uv tool install git+https://github.com/JasperHG90/kmctl@v0.17.1#subdirectory=packages/kmctl
 ```
 
 One install serves every repository: when a repository's `apm.lock.yaml`
