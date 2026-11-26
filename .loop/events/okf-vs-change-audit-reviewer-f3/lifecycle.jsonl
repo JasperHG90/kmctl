@@ -1,2 +1,3 @@
 {"at": "2026-11-26T21:37:12+00:00", "by": "review close", "kind": "register", "schema_version": "1.0", "stage": "stub"}
 {"at": "2026-11-26T22:17:14+00:00", "by": "promote", "from": "stub", "grant": "g10", "kind": "transition", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/create-ticket", "step": "ticket-promote", "to": "planning"}
+{"at": "2026-11-26T22:17:25+00:00", "grant": "g10", "hash": "218b99fc92efb6ede3426123ea012d4ac466e23fdd730001a2ee8eb95ba681d5", "kind": "signoff", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/create-eval", "step": "eval-sign"}

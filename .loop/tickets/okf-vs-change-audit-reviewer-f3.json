@@ -20,10 +20,43 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/create-eval",
+    "hash": "218b99fc92efb6ede3426123ea012d4ac466e23fdd730001a2ee8eb95ba681d5",
+    "at": "2026-11-26T22:17:25+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "publish --pr leaves a person's comment that quotes the marker alone, posts its own, and replaces its own on the next run",
+      "fails_when": "publish edits the person's comment, or posts a second comment of its own on the next run",
+      "command": "uv run pytest -q tests/test_agent.py::test_publish_pr_ignores_a_person_quoting_the_marker",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "publish --pr still creates then replaces its own comment",
+      "fails_when": "the existing comment-replacement test fails",
+      "command": "uv run pytest -q tests/test_agent.py::test_publish_pr_creates_then_replaces_comment",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "the how-to no longer says the publish job keeps !cancelled() too",
+      "fails_when": "the sentence still says it keeps it",
+      "command": "! grep -q 'keeps\\s*$\\|keeps `!cancelled()` too' docs/how-to/install-the-plugin-and-the-ci-action.md && ! tr '\\n' ' ' < docs/how-to/install-the-plugin-and-the-ci-action.md | grep -q 'keeps `!cancelled()` too'",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "the repo's pre-commit hooks pass on every file",
+      "fails_when": "prek run --all-files exits nonzero",
+      "command": "prek run --all-files",
+      "judgment": false
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -44,5 +77,5 @@
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-26T22:17:16+00:00"
+  "at": "2026-11-26T22:17:25+00:00"
 }
