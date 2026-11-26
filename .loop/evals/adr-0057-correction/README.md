@@ -6,12 +6,12 @@ tags:
 - eval
 generated:
   by: process:loopctl/2.4.0
-  at: '2026-11-26T16:48:54+00:00'
+  at: '2026-11-26T17:14:21+00:00'
 slug: adr-0057-correction
 signoff:
-  signer: delegated:jasperginn@gmail.com/create-eval
-  hash: 0371de8c24dae57ba218d391acdf26802bba868c8ad4750b1e17017b0fd47c6a
-  at: '2026-11-26T16:48:54+00:00'
+  signer: delegated:jasperginn@gmail.com/implement-ticket
+  hash: 0145c8eb7ca4319cad98ee0fa2c10ec55ac621a001382b14a40ad33698907736
+  at: '2026-11-26T17:14:21+00:00'
 verified: null
 ---
 
@@ -34,7 +34,7 @@ Rows: rows.json; the fields each row takes: loopctl schema eval-rows.
 - r8: the Correction names okf-vs-change, cites fetch-depth: 0 and links ADR 0046
   Fails when: any of the three is missing
 - r9: the accepted text above the Correction is unchanged and the record stays stable
-  Fails when: the diff against main removes or changes an existing line, or status is not stable
+  Fails when: the accepted text on main is not a byte-for-byte prefix of the file, or status is not stable
 - r10: the repo's pre-commit hooks pass on every file
   Fails when: prek run --all-files exits nonzero
 - r11: the Correction says publish with no report posts nothing and exits 0

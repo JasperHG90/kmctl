@@ -52,8 +52,8 @@
     {
       "id": "r9",
       "behavior": "the accepted text above the Correction is unchanged and the record stays stable",
-      "fails_when": "the diff against main removes or changes an existing line, or status is not stable",
-      "command": "! git diff main -- '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -q '^-[^-]' && grep -q '^status: stable' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'"
+      "fails_when": "the accepted text on main is not a byte-for-byte prefix of the file, or status is not stable",
+      "command": "git show main:'.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' > /tmp/adr57-main.$$ && head -c \"$(wc -c < /tmp/adr57-main.$$)\" '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | cmp -s - /tmp/adr57-main.$$ && grep -q '^status: stable' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'; rc=$?; rm -f /tmp/adr57-main.$$; exit $rc"
     },
     {
       "id": "r10",

@@ -24,9 +24,9 @@
     "40d9a026fc096357c81bee502dbfa4495b3de1b126a0bf8ce2dad8261b69727d"
   ],
   "signoff": {
-    "signer": "delegated:jasperginn@gmail.com/create-eval",
-    "hash": "0371de8c24dae57ba218d391acdf26802bba868c8ad4750b1e17017b0fd47c6a",
-    "at": "2026-11-26T16:48:54+00:00"
+    "signer": "delegated:jasperginn@gmail.com/implement-ticket",
+    "hash": "0145c8eb7ca4319cad98ee0fa2c10ec55ac621a001382b14a40ad33698907736",
+    "at": "2026-11-26T17:14:21+00:00"
   },
   "delegation": null,
   "budget_base": null,
@@ -90,8 +90,8 @@
     {
       "id": "r9",
       "behavior": "the accepted text above the Correction is unchanged and the record stays stable",
-      "fails_when": "the diff against main removes or changes an existing line, or status is not stable",
-      "command": "! git diff main -- '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -q '^-[^-]' && grep -q '^status: stable' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'",
+      "fails_when": "the accepted text on main is not a byte-for-byte prefix of the file, or status is not stable",
+      "command": "git show main:'.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' > /tmp/adr57-main.$$ && head -c \"$(wc -c < /tmp/adr57-main.$$)\" '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | cmp -s - /tmp/adr57-main.$$ && grep -q '^status: stable' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'; rc=$?; rm -f /tmp/adr57-main.$$; exit $rc",
       "judgment": false
     },
     {
@@ -146,6 +146,21 @@
         }
       },
       "at": "2026-11-26T16:48:54+00:00"
+    },
+    {
+      "signer": "delegated:jasperginn@gmail.com/implement-ticket",
+      "reason": "review round 1 note: r9's grep missed a deleted bullet line; it now checks main's accepted text is a byte-for-byte prefix of the file",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r9": [
+            "fails_when",
+            "command"
+          ]
+        }
+      },
+      "at": "2026-11-26T17:14:21+00:00"
     }
   ],
   "accepted_risks": [],
@@ -210,5 +225,5 @@
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-26T17:14:20+00:00"
+  "at": "2026-11-26T17:14:21+00:00"
 }
