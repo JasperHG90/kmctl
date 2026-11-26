@@ -37,13 +37,29 @@ case "$drafts" in
     ;;
 esac
 
+# KMCTL_SUMMARY (the summary input): fail fails when .okf/summary.md is behind
+# the concepts that changed after it; pass only warns (ADR 0056).
+summary_mode="${KMCTL_SUMMARY:-fail}"
+case "$summary_mode" in
+  fail) check_args+=(--summary-current) ;;
+  pass) ;;
+  *)
+    echo "kmctl action: summary must be fail or pass, not '$summary_mode'." >&2
+    exit 1
+    ;;
+esac
+
 {
   echo "## kmctl check"
   echo
-  if [ "${#check_args[@]}" -eq 0 ]; then
-    echo "Draft decisions pass here (drafts: $drafts)."
+  case " ${check_args[*]-} " in
+    *" --no-drafts "*) echo "Draft decisions fail (drafts: $drafts)." ;;
+    *) echo "Draft decisions pass here (drafts: $drafts)." ;;
+  esac
+  if [ "$summary_mode" = "fail" ]; then
+    echo "A summary behind its concepts fails (summary: fail); run kmctl summary ack when it is still right."
   else
-    echo "Draft decisions fail (drafts: $drafts)."
+    echo "A summary behind its concepts only warns (summary: pass)."
   fi
   echo
   echo '```'
@@ -53,6 +69,24 @@ check_status=$?
 echo '```' >> "$summary"
 if [ "$check_status" -ne 0 ]; then
   status=$check_status
+fi
+
+# On a pull request, first the pages this pull request made due: the ones to
+# read before review (ADR 0055). GITHUB_BASE_REF names the base branch.
+if [ -n "${GITHUB_BASE_REF:-}" ] &&
+  git fetch --quiet origin "+refs/heads/$GITHUB_BASE_REF:refs/remotes/origin/$GITHUB_BASE_REF" 2>/dev/null; then
+  {
+    echo
+    echo "## Pages this pull request made due"
+    echo
+    echo "Read each one; a person who checked them runs kmctl verify ID ID ... --by human:<id>."
+    echo
+    echo '```'
+  } >> "$summary"
+  if ! kmctl review due --base "origin/$GITHUB_BASE_REF" >> "$summary" 2>&1; then
+    echo "kmctl review due --base origin/$GITHUB_BASE_REF failed; run it locally to see why." >> "$summary"
+  fi
+  echo '```' >> "$summary"
 fi
 
 {

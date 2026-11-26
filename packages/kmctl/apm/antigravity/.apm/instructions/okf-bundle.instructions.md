@@ -62,10 +62,12 @@ who checked the content adds a `verified` entry with `by: human:<id>`.
 
 A concept with no `verified` entry stays in `kmctl review due`, however often
 an audit finds it holds. To clear one, the person reads it and confirms it is
-still right. When they ask you to record that, run
-`kmctl verify <id> --by human:<their id>` (ask for their id if you do not know
-it); add `--stale-after 6m` when it is listed as `stale_after passed`. Never
-run it on an audit verdict alone, or for a concept they did not confirm.
+still right. Before review, `kmctl review due --base origin/main` lists the
+pages the branch made due. When the person asks you to record their check,
+run one `kmctl verify <id> <id> ... --by human:<their id>` for every page they
+confirmed (ask for their id if you do not know it); add `--stale-after 6m`
+when a page is listed as `stale_after passed`. Never run it on an audit
+verdict alone, or for a concept they did not confirm.
 
 ## Writing back
 
@@ -74,7 +76,8 @@ events only, and it is append-only.
 
 When you add or change a concept, update `.okf/summary.md` in the same
 change, or run `kmctl summary ack` when it still holds. `kmctl review due`
-lists the summary until you do.
+lists the summary until you do, and kmctl's CI action fails the pull request.
+A `kmctl verify` alone does not put the summary behind.
 
 <constraint name="the-log-records-lifecycle-events-only">
 WHY: every line appended to the end of `log.md` lands in the same place, so

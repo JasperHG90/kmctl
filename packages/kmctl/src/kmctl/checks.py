@@ -38,6 +38,8 @@ The index format, which every kmctl verb that writes an index follows:
   its ``checked.against`` that is not a concept in the bundle.
 - With ``--no-drafts`` (``run_checks(no_drafts=True)``), a decision record
   whose ``status`` is draft fails (check name ``draft``).
+- With ``--summary-current`` (``run_checks(summary_current=True)``), a
+  summary behind its concepts fails instead of warning (ADR 0056).
 - No concept counts are written or checked.
 """
 
@@ -622,12 +624,13 @@ def check_links(root: Path) -> list[Finding]:
     return findings
 
 
-def check_summary(root: Path) -> list[Finding]:
+def check_summary(root: Path, current: bool = False) -> list[Finding]:
     """Check the bundle summary: its body fits ``WORD_LIMIT``, whether it is behind, and its ``checked``.
 
     A body over the limit is a warning: a summary a few words long is a
     reason to cut, not to fail CI. A summary behind its concepts is a
-    warning too: it is a report, as in kmctl review due (ADR 0027). Each
+    warning too: it is a report, as in kmctl review due (ADR 0027). With
+    ``current``, as kmctl's CI action runs it, it is an error (ADR 0056). Each
     id in ``checked.against`` that is not a concept in the bundle is a
     warning too: ``checked`` records the ack and decides nothing, so a stale
     id is drift, like a summary behind its concepts.
@@ -660,7 +663,7 @@ def check_summary(root: Path) -> list[Finding]:
                 None,
                 f"summary is behind: {summary_reason(changed)}; update it, or run "
                 "kmctl summary ack when it is still right",
-                "warning",
+                "error" if current else "warning",
             )
         )
     try:
@@ -724,7 +727,9 @@ def check_drafts(root: Path) -> list[Finding]:
     return findings
 
 
-def run_checks(root: Path, no_drafts: bool = False) -> list[Finding]:
+def run_checks(
+    root: Path, no_drafts: bool = False, summary_current: bool = False
+) -> list[Finding]:
     """Run every knowledge check on the repository at ``root``.
 
     Parameters
@@ -733,6 +738,8 @@ def run_checks(root: Path, no_drafts: bool = False) -> list[Finding]:
         The repository root, holding docs/ and .okf/.
     no_drafts : bool
         Also fail on each decision record that is still a draft.
+    summary_current : bool
+        Fail, not warn, when the summary is behind its concepts.
 
     Returns
     -------
@@ -743,7 +750,7 @@ def run_checks(root: Path, no_drafts: bool = False) -> list[Finding]:
         check_docs(root)
         + check_okf(root)
         + check_prototypes(root)
-        + check_summary(root)
+        + check_summary(root, current=summary_current)
         + check_links(root)
         + (check_drafts(root) if no_drafts else [])
     )

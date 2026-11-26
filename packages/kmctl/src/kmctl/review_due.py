@@ -21,6 +21,12 @@ history rules as a concept. A page without ``verified`` is not due for that
 alone, and its sources are compared with the page's own last commit. Its id is its path without ``.md``, such as
 ``docs/how-to/install``, so it cannot clash with a concept id. README.md
 files in docs/ are indexes and are left out.
+
+With a base (``kmctl review due --base origin/main``) the list keeps only
+what the branch made due, by the files it changed since it split from the
+base (``git diff BASE...HEAD``): a source changed reason for a source the
+branch changed, another reason for a page the branch added or edited, and the
+summary when the branch changed a concept it names (ADR 0055).
 """
 
 import dataclasses
@@ -29,6 +35,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
+from kmctl.history import show
 from kmctl.kinds import DRAFT, STABLE
 from kmctl.okf import (
     BadFrontMatter,
@@ -40,12 +47,11 @@ from kmctl.okf import (
     split_front_matter,
     without,
 )
-from kmctl.summary import SUMMARY_ID, changed_concepts
+from kmctl.summary import SUMMARY_ID, changed_concepts, concept_id, is_concept
 from kmctl.summary import reason as summary_reason
+from kmctl.verify import outside_verify
 
 RESERVED = {"index.md", "log.md"}
-#: The front matter fields ``kmctl verify`` writes, which an edit after verification ignores.
-VERIFY_FIELDS = {"verified", "stale_after"}
 
 
 @dataclass(frozen=True)
@@ -182,16 +188,6 @@ def _verified_at(text: str) -> list[datetime | None]:
     return [as_datetime(d) for d in field(parsed[0], "verified[].at")] if parsed else []
 
 
-def _outside_verify(text: str | None) -> tuple[object, str] | None:
-    """``text`` without the fields kmctl verify writes, to compare two versions by."""
-    if text is None:
-        return None
-    parsed = _parsed(text)
-    if parsed is None:
-        return None, text
-    return without(parsed[0], VERIFY_FIELDS), parsed[1]
-
-
 def _edited(verified: str | None, head: str | None) -> bool:
     """True when ``head`` differs from ``verified`` outside the fields kmctl verify writes.
 
@@ -199,7 +195,7 @@ def _edited(verified: str | None, head: str | None) -> bool:
     left out too: ``kmctl decision accept`` changes only that line, and
     accepting a draft adds nothing to check in it (ADR 0052).
     """
-    old, new = _outside_verify(verified), _outside_verify(head)
+    old, new = outside_verify(verified), outside_verify(head)
     if old is None or new is None:
         return old != new
     if (
@@ -212,32 +208,6 @@ def _edited(verified: str | None, head: str | None) -> bool:
         old = without(old[0], {"status"}), old[1]
         new = without(new[0], {"status"}), new[1]
     return old != new
-
-
-def _show(root: Path, specs: list[str]) -> list[str | None]:
-    """The text of each ``REV:./PATH`` in ``specs`` from one ``git cat-file --batch``; None when missing."""
-    if not specs:
-        return []
-    proc = subprocess.run(
-        ["git", "-C", str(root), "cat-file", "--batch"],
-        input="".join(spec + "\n" for spec in specs).encode(),
-        capture_output=True,
-        check=False,
-    )
-    data, out, i = proc.stdout, [], 0
-    for _ in specs:
-        nl = data.find(b"\n", i)
-        header = data[i:nl]
-        i = nl + 1
-        # "SPEC missing" (or "SPEC ambiguous") echoes the spec, which may hold
-        # spaces, so it is told apart by its end, not by counting fields.
-        if nl == -1 or header.endswith((b" missing", b" ambiguous")):
-            out.append(None)
-            continue
-        size = int(header.split()[2])
-        out.append(data[i : i + size].decode("utf-8", errors="replace"))
-        i += size + 1
-    return out
 
 
 def _history(root: Path, rels: list[str]) -> dict[str, list[str]]:
@@ -285,7 +255,7 @@ def verification_commits(root: Path, newest: dict[str, datetime]) -> dict[str, s
     """
     history = _history(root, list(newest)) if newest else {}
     specs = [(rel, commit) for rel, commits in history.items() for commit in commits]
-    texts = _show(root, [f"{commit}:./{rel}" for rel, commit in specs])
+    texts = show(root, [f"{commit}:./{rel}" for rel, commit in specs])
     found = {}
     # The log is newest first, so the last commit that holds the entry is the oldest.
     for (rel, commit), text in zip(specs, texts, strict=True):
@@ -304,7 +274,16 @@ def _changed(root: Path, base: str, source: str) -> bool:
     return proc.returncode == 1
 
 
-def _check_history(root: Path, checks: list[_Check]) -> None:
+def _touches(source: str, changed: set[str] | None) -> bool:
+    """True when ``changed`` is None, or holds ``source`` or a file under it."""
+    if changed is None:
+        return True
+    return any(p == source or p.startswith(source.rstrip("/") + "/") for p in changed)
+
+
+def _check_history(
+    root: Path, checks: list[_Check], changed: set[str] | None = None
+) -> None:
     """Add ``source changed`` and ``edited after verification`` reasons, by commit order.
 
     The baseline is the file's verification commit or, for a docs page
@@ -318,7 +297,7 @@ def _check_history(root: Path, checks: list[_Check]) -> None:
         root, {c.rel: c.newest for c in checks if c.newest is not None}
     )
     edits = [c for c in checks if c.rel in commits]
-    texts = _show(
+    texts = show(
         root,
         [
             spec
@@ -339,9 +318,9 @@ def _check_history(root: Path, checks: list[_Check]) -> None:
         if base is None:
             continue
         for resource, source in c.sources:
-            if _changed(root, base, source):
+            if _touches(source, changed) and _changed(root, base, source):
                 c.reasons.append(f"source changed: {resource}")
-        if c.rel in edited:
+        if c.rel in edited and _touches(c.rel, changed):
             c.reasons.append("edited after verification")
 
 
@@ -391,7 +370,42 @@ def _docs_due(
     return entries
 
 
-def review_due(root: Path, now: datetime | None = None) -> ReviewDue:
+def branch_changes(root: Path, base: str) -> set[str]:
+    """The files the branch at ``HEAD`` changed since it split from ``base``, from ``root``.
+
+    Raises
+    ------
+    ValueError
+        When git cannot compare the two: ``base`` names no commit, or the
+        clone is shallow and lacks the commit where they split.
+    """
+    proc = subprocess.run(
+        [
+            "git",
+            "-C",
+            str(root),
+            "diff",
+            "--name-only",
+            "-z",
+            "--relative",
+            f"{base}...HEAD",
+            "--",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise ValueError(
+            f"git cannot compare HEAD with {base!r}: {proc.stderr.strip() or 'no output'}; "
+            "give a branch or commit that HEAD shares history with, and fetch full history"
+        )
+    return set(filter(None, proc.stdout.split("\0")))
+
+
+def review_due(
+    root: Path, now: datetime | None = None, base: str | None = None
+) -> ReviewDue:
     """List what in ``root``'s .okf/ bundle and docs/ pages is due for review.
 
     Parameters
@@ -400,13 +414,22 @@ def review_due(root: Path, now: datetime | None = None) -> ReviewDue:
         The repository root, holding .okf/.
     now : datetime | None
         The time to compare stale_after with; the current UTC time when omitted.
+    base : str | None
+        A branch or commit; when given, only what the branch made due since
+        it split from ``base`` is kept, by the rules in the module docstring.
 
     Returns
     -------
     ReviewDue
         Due concepts with their reasons, notices, expired handoffs, and why
         the history check was skipped, if it was.
+
+    Raises
+    ------
+    ValueError
+        When ``base`` is given and git cannot compare it with ``HEAD``.
     """
+    branch = branch_changes(root, base) if base is not None else None
     result = ReviewDue()
     okf = root / ".okf"
     docs = root / "docs"
@@ -462,6 +485,29 @@ def review_due(root: Path, now: datetime | None = None) -> ReviewDue:
             sources.append((resource, source))
         if verified_at is not None:
             checks.append(_Check(rel, verified_at, sources, entry.reasons))
-    _check_history(root, checks)
+    _check_history(root, checks, branch)
+    if branch is not None:
+        _keep_branch(entries, result, branch)
     result.due = [d for d in entries if d.reasons]
     return result
+
+
+def _keep_branch(entries: list[Due], result: ReviewDue, changed: set[str]) -> None:
+    """Keep the reasons, notices and expired handoffs that the files in ``changed`` caused.
+
+    Source changed and edited after verification were kept by
+    ``_check_history`` already. Any other reason is kept for a page in
+    ``changed``, and the summary's when ``changed`` holds a concept it names.
+    """
+    concepts = {concept_id(p) for p in changed if is_concept(p)}
+    for entry in entries:
+        if entry.id == SUMMARY_ID:
+            names = entry.reasons[0].removeprefix("concepts changed: ").split(", ")
+            if not concepts.intersection(names):
+                entry.reasons.clear()
+        elif entry.path not in changed:
+            entry.reasons[:] = [
+                r for r in entry.reasons if r.startswith("source changed: ")
+            ]
+    result.notices = [n for n in result.notices if n.path in changed]
+    result.expired_handoffs = [h for h in result.expired_handoffs if h.path in changed]

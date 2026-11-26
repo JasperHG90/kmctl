@@ -21,6 +21,14 @@ inputs:
       fail always fails on a draft; pass never does.
     required: false
     default: fail-when-ready
+  summary:
+    description: >-
+      How mode checks treats a .okf/summary.md behind the concepts that
+      changed after it (ADR 0056). fail (the default) fails the check, and the
+      message says to update the summary or run kmctl summary ack; pass only
+      warns.
+    required: false
+    default: fail
   mode:
     description: >-
       checks (the default) runs kmctl check and kmctl review due. audit runs
@@ -159,6 +167,7 @@ runs:
       env:
         KMCTL_PINNED: "1"
         KMCTL_DRAFTS: ${{ inputs.drafts }}
+        KMCTL_SUMMARY: ${{ inputs.summary }}
       run: bash "${{ github.action_path }}/action/knowledge-ci.sh"
     # The API key reaches a model that runs shell commands, so code from a pull
     # request or fork must never run here (ADR 0005).
