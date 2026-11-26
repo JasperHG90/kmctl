@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "slug": "adr-0057-pr-audit",
+  "n": 2,
+  "command": "/tmp/claude-1000/-home-vscode-workspace/55c11e59-8512-407e-a916-04be246551c4/scratchpad/spike-r1/carry_pr71.sh",
+  "scripts": [
+    {
+      "source": "/tmp/claude-1000/-home-vscode-workspace/55c11e59-8512-407e-a916-04be246551c4/scratchpad/spike-r1/carry_pr71.sh",
+      "copy": "files/carry_pr71.sh"
+    }
+  ],
+  "where": "worktree",
+  "head": "a4f1de811953062f1de05552247ff9ef9a747f82",
+  "fingerprint": "23ade3648ab8ca521b6832505a28369756918ab24099321c8dcf03296b757db1",
+  "started_at": "2026-11-26T12:53:04+00:00",
+  "finished_at": "2026-11-26T12:53:08+00:00",
+  "duration_seconds": 3.801,
+  "timeout_seconds": 120.0,
+  "exit": 0,
+  "timed_out": false,
+  "stdout": "stdout.txt",
+  "stderr": "stderr.txt",
+  "truncated": false,
+  "by": "process:loopctl/2.4.0",
+  "moved_from": null
+}
