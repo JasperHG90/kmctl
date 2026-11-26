@@ -1,13 +1,19 @@
 {
   "schema_version": "1.0",
   "slug": "okf-vs-change-audit",
-  "stage": "ready",
+  "stage": "blocked",
   "attempts": 0,
   "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
-  "blocker": null,
+  "blocker": {
+    "code": "plan-invalidated",
+    "message": "PR 71 merged ADR 0057 accepted with a no-run_shell rule; the plan now lands on main, depends on adr-0057-correction, and adds O7 (--no-shell). Re-reviewing the plan.",
+    "plan_hash": "de47cd0332c496d29af054ae467c31365a7e770e94f6a640ace45f984aacf313",
+    "at": "2026-11-26T16:47:13+00:00",
+    "resign_eval": false
+  },
   "fix": null,
   "ask": null,
   "split": "j-20261126T133706+0000-ed849e13",
@@ -299,8 +305,14 @@
       "to": "ready",
       "at": "2026-11-26T13:38:34+00:00",
       "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "blocked",
+      "at": "2026-11-26T16:47:13+00:00",
+      "by": "block"
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-26T16:45:32+00:00"
+  "at": "2026-11-26T16:47:13+00:00"
 }
