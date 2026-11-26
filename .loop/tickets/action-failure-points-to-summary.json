@@ -3,7 +3,7 @@
   "slug": "action-failure-points-to-summary",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -61,8 +61,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "9629cf47b76895f9f4ae4b7355c7194d73152b4065a468997933c5d93795a9b5",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "7188985e3558e6cbf1ac0e67230fe3edc9528c5fabc0a238756faf5f624fa6e6",
+    "started_at": "2026-11-26T13:10:54+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "7188985e3558e6cbf1ac0e67230fe3edc9528c5fabc0a238756faf5f624fa6e6",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -77,5 +96,5 @@
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-26T13:10:52+00:00"
+  "at": "2026-11-26T13:10:54+00:00"
 }
