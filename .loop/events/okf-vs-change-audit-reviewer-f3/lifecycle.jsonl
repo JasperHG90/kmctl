@@ -13,3 +13,4 @@
 {"at": "2026-11-26T22:24:48+00:00", "binds": "493bc4e62036e8c7aa411a4751865f4cb36693a2169728bef599af336a4c843c", "kind": "round-start", "n": 1, "passes": ["reviewer"], "round_kind": "review", "schema_version": "1.0", "tree": "bef812e4b54d3f9c98f175d4998897fde0e511bf"}
 {"at": "2026-11-26T22:32:06+00:00", "dispatched_at": "2026-11-26T22:24:48+00:00", "kind": "round-close", "n": 1, "outcome": "pass", "round_kind": "review", "schema_version": "1.0", "verdicts_at": {"reviewer": "2026-11-26T22:31:48+00:00"}}
 {"at": "2026-11-26T22:32:13+00:00", "kind": "done", "notified": false, "schema_version": "1.0", "sha": "7c83e0fa9891b45abda8236dd1175d76911fb210"}
+{"at": "2026-11-26T22:36:20+00:00", "branch": "loop/okf-vs-change-audit-reviewer-f3", "kind": "land", "schema_version": "1.0", "sha": "20bf269246006ffe27af5244d89d22ed7ab53f82"}
