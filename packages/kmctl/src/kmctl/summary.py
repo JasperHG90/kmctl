@@ -8,7 +8,10 @@ changed (or new and untracked) in the working tree while neither the summary
 nor an ack file is. History, not dates, decides: a concept committed together
 with the summary is covered, and so is one committed before it. After two
 branches merge, a concept that one branch changed after its own ack is still
-reported, because the other branch's ack never saw that change. The concepts are the manifesto, decisions,
+reported, because the other branch's ack never saw that change. A change
+that touches only the fields ``kmctl verify`` writes, ``verified`` and
+``stale_after``, is no change here: a person's check adds nothing the
+summary says (ADR 0054). The concepts are the manifesto, decisions,
 practices, proposals, prototype READMEs and architecture pages; indexes,
 ``log.md``, handoffs and the summary itself never count. Without git history
 (no repository, or a shallow clone) the rule cannot be checked, the way
@@ -29,8 +32,9 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from kmctl.concepts import _STAMP, ConceptError
+from kmctl.history import show
 from kmctl.okf import BadFrontMatter, field, front_matter
-from kmctl.verify import _block
+from kmctl.verify import _block, outside_verify
 
 #: The summary's path from the repository root, and its concept id.
 SUMMARY = ".okf/summary.md"
@@ -154,13 +158,17 @@ def changed_concepts(root: Path) -> list[str] | None:
     covers = (
         _git(root, "log", "--no-merges", "--format=%H", "--", SUMMARY, ACKS) or ""
     ).split()
+
+    def concept(path: str) -> bool:
+        return path.startswith(prefix) and is_concept(path.removeprefix(prefix))
+
     if covers:
         # Concepts changed in a commit that none of those commits has in its
         # history. Revisions go on stdin, so a long history fits.
         listed = _git(
             root,
             "log",
-            "--format=",
+            "--format=@%H",
             "--name-only",
             "-z",
             "--stdin",
@@ -168,12 +176,65 @@ def changed_concepts(root: Path) -> list[str] | None:
             ".okf",
             stdin="HEAD\n" + "".join(f"^{c}\n" for c in covers),
         )
+        changes = [(c, p) for c, p in _commit_paths(listed or "") if concept(p)]
+        committed = {p for _, p in changes} - _verify_only(root, prefix, changes)
     else:
         listed = _git(root, "ls-files", "-z", "--full-name", "--", ".okf")
-    names = {name.strip() for name in (listed or "").split("\0")}
-    changed = set(filter(None, names)) | working
-    rels = {p.removeprefix(prefix) for p in changed if p.startswith(prefix)}
-    return sorted({concept_id(p) for p in rels if is_concept(p)})
+        committed = {p for p in (listed or "").split("\0") if concept(p)}
+    edited = [(None, p) for p in working if concept(p)]
+    changed = committed | ({p for _, p in edited} - _verify_only(root, prefix, edited))
+    return sorted({concept_id(p.removeprefix(prefix)) for p in changed})
+
+
+def _commit_paths(listed: str) -> list[tuple[str, str]]:
+    """Each commit and path in ``git log --format=@%H --name-only -z`` output."""
+    pairs, commit = [], ""
+    for item in listed.split("\0"):
+        item = item.strip("\n")
+        if item.startswith("@"):
+            commit = item[1:]
+        elif item and commit:
+            pairs.append((commit, item))
+    return pairs
+
+
+def _verify_only(
+    root: Path, prefix: str, changes: list[tuple[str | None, str]]
+) -> set[str]:
+    """The paths whose every change in ``changes`` touched only the fields kmctl verify writes (ADR 0054).
+
+    A change is a commit and a path from the repository's top folder, or
+    None and a path for its state in the working tree. A commit is compared
+    with its parent, the working tree with ``HEAD``. A file that is new or
+    deleted, or a root commit, is a change.
+    """
+    specs = [
+        spec
+        for commit, path in changes
+        for spec in (
+            (f"{commit}^:{path}", f"{commit}:{path}") if commit else (f"HEAD:{path}",)
+        )
+    ]
+    texts = iter(show(root, specs))
+    only: dict[str, bool] = {}
+    for commit, path in changes:
+        before = next(texts)
+        after = next(texts) if commit else _working(root / path.removeprefix(prefix))
+        same = before is not None and after is not None
+        only[path] = (
+            only.get(path, True)
+            and same
+            and (outside_verify(before) == outside_verify(after))
+        )
+    return {path for path, verify_only in only.items() if verify_only}
+
+
+def _working(path: Path) -> str | None:
+    """The text of ``path`` in the working tree, or None when it is missing or not UTF-8."""
+    try:
+        return path.read_bytes().decode("utf-8")
+    except (OSError, UnicodeDecodeError):
+        return None
 
 
 def reason(changed: list[str]) -> str:

@@ -37,7 +37,7 @@ from kmctl.scaffold import AGENT_FILES, scaffold
 from kmctl.summary import SUMMARY_ID
 from kmctl.summary import ack as ack_summary
 from kmctl.supersede import supersede
-from kmctl.verify import verify as verify_concept
+from kmctl.verify import verify_all
 
 app = typer.Typer(
     help="kmctl: keep a repository's docs/ and .okf/ knowledge current.",
@@ -196,6 +196,7 @@ app.command(
         "  kmctl check --path ../other-repo --json\n\n"
         "  kmctl check --strict\n\n"
         "  kmctl check --no-drafts\n\n"
+        "  kmctl check --summary-current\n\n"
         "Exit 0 when nothing fails, 1 when a check fails. A warning (such as "
         "docs/README.md not linking a docs/ folder, or a summary over 500 words) "
         "is printed but does not fail, unless --strict is given. "
@@ -255,13 +256,24 @@ def check(
             ),
         ),
     ] = False,
+    summary_current: Annotated[
+        bool,
+        typer.Option(
+            "--summary-current",
+            help=(
+                "Fail when .okf/summary.md is behind the concepts that changed "
+                "after it; the fix is to update it or run kmctl summary ack. "
+                "kmctl's CI action sets it (ADR 0056). Default: off, so it warns."
+            ),
+        ),
+    ] = False,
 ) -> None:
     """Check indexes agree with their folders, decision numbers, docs front matter, prototype READMEs and links."""
     if fix:
         created, updated = fix_folder_indexes(path)
         for rel in created + updated:
             typer.echo(f"fixed {rel}", err=as_json)
-    findings = run_checks(path, no_drafts=no_drafts)
+    findings = run_checks(path, no_drafts=no_drafts, summary_current=summary_current)
     errors = [f for f in findings if f.level == "error"]
     warnings = [f for f in findings if f.level == "warning"]
     if as_json:
@@ -337,7 +349,14 @@ app.add_typer(review_app, name="review")
         "Examples:\n\n"
         "  kmctl review due\n\n"
         "  kmctl review due --path ../other-repo --json\n\n"
-        "Always exits 0: being due is a report, not a failure. A source that "
+        "  kmctl review due --base origin/main\n\n"
+        "With --base, it lists only what this branch made due since it split "
+        "from BASE: a source the branch changed, a page it added or edited, and "
+        "the summary when the branch changed a concept it names (ADR 0055). "
+        "Those are the pages to check before review; verify the ones a person "
+        "checked with one kmctl verify ID ID ... --by human:<id>.\n\n"
+        "Always exits 0 (2 when --base names nothing git can compare HEAD "
+        "with): being due is a report, not a failure. A source that "
         "resolves to no tracked file or folder is listed as a notice, not a reason.\n\n"
         "Commit order decides, not dates (ADR 0032): a source changed or edited "
         "after verification counts when a commit after the one that holds the "
@@ -365,6 +384,17 @@ def due(
             help="The repository to read: an existing folder. Default: the current directory.",
         ),
     ] = Path("."),
+    base: Annotated[
+        str | None,
+        typer.Option(
+            "--base",
+            metavar="origin/main",
+            help=(
+                "List only what this branch made due since it split from this "
+                "branch or commit. Default: everything that is due."
+            ),
+        ),
+    ] = None,
     as_json: Annotated[
         bool,
         typer.Option(
@@ -374,7 +404,11 @@ def due(
     ] = False,
 ) -> None:
     """List the concepts in .okf/ and the pages in docs/ that are due for review, with the reason for each."""
-    result = review_due(path)
+    try:
+        result = review_due(path, base=base)
+    except ValueError as error:
+        typer.echo(f"kmctl review due: {error}", err=True)
+        raise typer.Exit(2) from error
     if as_json:
         typer.echo(json.dumps(asdict(result)))
         return
@@ -391,7 +425,11 @@ def due(
             else f"notice  {n.id}  {n.message}"
         )
     if not (result.due or result.expired_handoffs):
-        typer.echo("nothing is due for review")
+        typer.echo(
+            f"nothing this branch changed since {base} is due for review"
+            if base
+            else "nothing is due for review"
+        )
     if result.due:
         steps = []
         if any(d.id == SUMMARY_ID for d in result.due):
@@ -400,8 +438,8 @@ def due(
             )
         if any(d.id != SUMMARY_ID for d in result.due):
             steps.append(
-                "once a person has read one and confirms it, "
-                "kmctl verify ID --by human:<their id> (add --stale-after 6m "
+                "once a person has read them and confirms them, "
+                "kmctl verify ID ID ... --by human:<their id> (add --stale-after 6m "
                 "for stale_after passed)"
             )
         typer.echo(next_step(*steps))
@@ -433,7 +471,12 @@ _PATH_OPTION = typer.Option(
         "--by human:jasper\n\n"
         "  kmctl verify manifesto --by human:jasper --stale-after 6m --json\n\n"
         "  kmctl verify docs/how-to/install --by human:jasper\n\n"
-        "It appends {by, at} to the file's verified list, with at the current "
+        "  kmctl verify manifesto decisions/0001-x docs/how-to/install --by human:jasper\n\n"
+        "Give several ids to verify each page the person checked in one step, "
+        "such as those kmctl review due --base origin/main lists. Every id is "
+        "checked before any file is written, so one refused id writes nothing "
+        "(ADR 0055).\n\n"
+        "It appends {by, at} to each file's verified list, with at the current "
         "UTC time, changes no other line, and logs a concept in .okf/log.md. The "
         "id then stays off kmctl review due until its stale_after passes, or a "
         "commit after the one holding the entry changes one of its sources or "
@@ -446,14 +489,14 @@ _PATH_OPTION = typer.Option(
     ),
 )
 def verify(
-    concept: Annotated[
-        str,
+    concepts: Annotated[
+        list[str],
         typer.Argument(
-            metavar="decisions/0001-x",
+            metavar="decisions/0001-x...",
             help=(
-                "The id to mark checked, as kmctl review due prints it: a concept "
+                "The ids to mark checked, as kmctl review due prints them: a concept "
                 "under .okf/ without .md (decisions/0001-x, manifesto) or a docs "
-                "page (docs/how-to/install)."
+                "page (docs/how-to/install). One or more."
             ),
         ),
     ],
@@ -486,22 +529,29 @@ def verify(
         bool,
         typer.Option(
             "--json",
-            help="Print one JSON object (id, path, by, at, stale_after), for scripts.",
+            help=(
+                "Print one JSON object (id, path, by, at, stale_after) per id, "
+                "one per line, for scripts."
+            ),
         ),
     ] = False,
 ) -> None:
-    """Record that a person checked a concept or docs page, so kmctl review due drops it."""
+    """Record that a person checked concepts or docs pages, so kmctl review due drops them."""
     try:
-        result = verify_concept(path, concept, by, stale_after)
+        results = verify_all(path, concepts, by, stale_after)
     except ConceptError as error:
         typer.echo(f"kmctl verify: refused: {error}", err=True)
         raise typer.Exit(1) from error
     if as_json:
-        typer.echo(json.dumps(asdict(result)))
+        for result in results:
+            typer.echo(json.dumps(asdict(result)))
         return
-    typer.echo(f"verified {result.id} by {result.by} at {result.at} ({result.path})")
-    if result.stale_after:
-        typer.echo(f"stale_after is now {result.stale_after}")
+    for result in results:
+        typer.echo(
+            f"verified {result.id} by {result.by} at {result.at} ({result.path})"
+        )
+        if result.stale_after:
+            typer.echo(f"stale_after is now {result.stale_after}")
     typer.echo(next_step("kmctl review due"))
 
 
