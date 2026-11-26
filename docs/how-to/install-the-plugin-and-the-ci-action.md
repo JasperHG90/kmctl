@@ -216,6 +216,11 @@ installed kmctl from in step 1.
 `kmctl check` fails or `kmctl review due` crashes, never because a concept is
 due. It needs no API key.
 
+The reasons for a failure are in the job summary, not the job log. When the
+job fails, the log ends with an error that names the command that failed and
+gives a link to the run's summary page, for example
+`kmctl check failed; the reasons are on the run's summary page: https://github.com/OWNER/REPO/actions/runs/ID/attempts/1`.
+
 On a pull request that is ready for review, it runs `kmctl check --no-drafts`,
 so a decision record that is still a draft fails the job (ADR 0050). A draft
 pull request and a push to `main` pass with drafts. The `ready_for_review` type
