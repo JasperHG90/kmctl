@@ -3,7 +3,7 @@
   "slug": "adr-0057-pr-audit",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -124,8 +124,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "aa063075f4997b2e6b4c3f0f0822c2d5e197a52b7f0c01aadf5efe0b942cf68e",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "18014deaa4fcf033cf83ccdf4c2b499572ac84122dc3f0a0a23d758c36b3eb4d",
+    "started_at": "2026-11-26T12:54:55+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "18014deaa4fcf033cf83ccdf4c2b499572ac84122dc3f0a0a23d758c36b3eb4d",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -140,5 +159,5 @@
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-26T12:54:44+00:00"
+  "at": "2026-11-26T12:54:55+00:00"
 }
