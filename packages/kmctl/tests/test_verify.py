@@ -436,7 +436,7 @@ def test_verify_output(tmp_path: Path) -> None:
 )
 def test_the_package_names_kmctl_verify(rel: str) -> None:
     text = " ".join((ROOT / rel).read_text().split())
-    assert "kmctl verify <id> --by human:" in text
+    assert "kmctl verify <id> <id> ... --by human:" in text
     assert "--stale-after" in text
 
 
@@ -467,3 +467,83 @@ def test_verify_keeps_crlf_line_endings(tmp_path: Path) -> None:
     assert after.endswith(b"---\r\n\r\n# X\r\n\r\nBody.\r\n")
     assert after.startswith(b'---\r\ntype: note\r\ntitle: "X"\r\nverified:\r\n')
     assert "decisions/0001-x" not in _due_ids(root)
+
+
+# ADR 0055: one verify for every page a person checked ----------------------
+
+
+def test_verify_several_ids_in_one_step(tmp_path: Path) -> None:
+    root = _repo(tmp_path)
+    _concept(root, "decisions/0001-x.md", "")
+    _concept(root, "manifesto.md", "")
+    _write(
+        root, "docs/how-to/run.md", "---\ndescription: How to run it.\n---\n\n# Run\n"
+    )
+    _commit(root)
+
+    result = _invoke(
+        "verify",
+        "decisions/0001-x",
+        "manifesto",
+        "docs/how-to/run",
+        "--by",
+        "human:jasper",
+        "--path",
+        str(root),
+        "--json",
+    )
+
+    assert result.exit_code == 0, result.output
+    lines = [json.loads(line) for line in result.stdout.splitlines()]
+    assert [d["id"] for d in lines] == [
+        "decisions/0001-x",
+        "manifesto",
+        "docs/how-to/run",
+    ]
+    assert len({d["at"] for d in lines}) == 1
+    assert not {"decisions/0001-x", "manifesto"} & _due_ids(root)
+    log = (root / ".okf/log.md").read_text().splitlines()
+    assert sum("Verified `" in line for line in log) == 2  # docs pages are not logged
+
+
+def test_verify_writes_nothing_when_one_id_is_refused(tmp_path: Path) -> None:
+    root = _repo(tmp_path)
+    _concept(root, "decisions/0001-x.md", "")
+    _concept(root, "decisions/0002-y.md", "stale_after: 2020-01-01T00:00:00Z\n")
+    _commit(root)
+    before = _files(root)
+
+    result = _invoke(
+        "verify",
+        "decisions/0001-x",
+        "decisions/0002-y",
+        "decisions/0003-none",
+        "--by",
+        "human:jasper",
+        "--path",
+        str(root),
+    )
+
+    assert result.exit_code == 1
+    assert "refused" in result.output
+    assert _files(root) == before
+
+
+def test_verify_an_id_given_twice_is_verified_once(tmp_path: Path) -> None:
+    root = _repo(tmp_path)
+    path = _concept(root, "decisions/0001-x.md", "")
+    _commit(root)
+
+    result = _invoke(
+        "verify",
+        "decisions/0001-x",
+        "decisions/0001-x",
+        "--by",
+        "human:jasper",
+        "--path",
+        str(root),
+    )
+
+    assert result.exit_code == 0, result.output
+    assert len(front_matter(path)["verified"]) == 1
+    assert result.stdout.count("verified decisions/0001-x") == 1

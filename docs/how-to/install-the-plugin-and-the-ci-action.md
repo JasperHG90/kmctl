@@ -224,6 +224,17 @@ request ready; without it, the drafts are only checked on the next push. Set
 the action's `drafts` input to `fail` to fail on drafts everywhere, or to
 `pass` to never check them.
 
+It also runs `kmctl check --summary-current`, so the job fails when
+`.okf/summary.md` is behind the concepts that changed after it (ADR 0056).
+Update the summary, or run `kmctl summary ack` when it still holds, and push.
+A `kmctl verify` alone does not put the summary behind. Set the action's
+`summary` input to `pass` to only warn.
+
+On a pull request, the job summary first lists the pages that pull request
+made due, from `kmctl review due --base origin/BASE` (ADR 0055). Those are
+the pages to read before review. A person who checked them records it with
+one `kmctl verify ID ID ... --by human:<id>`.
+
 Run locally on the repository from the tutorial, with two decisions, the script behind this step
 writes this summary and exits 0:
 
@@ -231,6 +242,7 @@ writes this summary and exits 0:
 ## kmctl check
 
 Draft decisions pass here (drafts: fail-when-ready).
+A summary behind its concepts fails (summary: fail); run kmctl summary ack when it is still right.
 
 ```
 all checks passed
