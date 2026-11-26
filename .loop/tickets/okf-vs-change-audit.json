@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "okf-vs-change-audit",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 2,
   "plan_rounds": 3,
   "review_rounds": 3,
@@ -49,7 +49,7 @@
   "split": "j-20261126T164718+0000-4c66ac82",
   "split_plan_hash": "de47cd0332c496d29af054ae467c31365a7e770e94f6a640ace45f984aacf313",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "dd6b5184aaaf87c64944dff39877fa0fc81c8f57",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -408,8 +408,14 @@
       "to": "verifying",
       "at": "2026-11-26T22:02:50+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-26T22:12:47+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-26T22:12:32+00:00"
+  "at": "2026-11-26T22:12:47+00:00"
 }
