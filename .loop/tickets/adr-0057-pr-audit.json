@@ -22,8 +22,8 @@
   "stamps": [],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/implement-ticket",
-    "hash": "7d982070eb81aa82eaf0b3784c1c00790022dbf3424bb1301268a31e31ecc4dc",
-    "at": "2026-11-26T13:02:14+00:00"
+    "hash": "3ff30f81a9c303f78c78dbc7309c62c864570622b1898d32ae37e474944a6fec",
+    "at": "2026-11-26T13:03:20+00:00"
   },
   "delegation": null,
   "budget_base": null,
@@ -115,8 +115,8 @@
     {
       "id": "r12",
       "behavior": "The ticket's branch carries PR 71's head, so pushing it to adr/audit-pull-requests is a fast-forward",
-      "fails_when": "origin/adr/audit-pull-requests is not an ancestor of HEAD",
-      "command": "git merge-base --is-ancestor origin/adr/audit-pull-requests HEAD",
+      "fails_when": "origin/adr/audit-pull-requests is neither an ancestor of HEAD nor the merge in progress (MERGE_HEAD)",
+      "command": "git merge-base --is-ancestor origin/adr/audit-pull-requests HEAD || [ \"$(git rev-parse -q --verify MERGE_HEAD)\" = \"$(git rev-parse origin/adr/audit-pull-requests)\" ]",
       "judgment": false
     }
   ],
@@ -136,6 +136,21 @@
         }
       },
       "at": "2026-11-26T13:02:14+00:00"
+    },
+    {
+      "signer": "delegated:jasperginn@gmail.com/implement-ticket",
+      "reason": "r12 also accepts PR 71's head as the merge in progress: the stamp runs before the one merge commit exists, when HEAD is still main",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r12": [
+            "fails_when",
+            "command"
+          ]
+        }
+      },
+      "at": "2026-11-26T13:03:20+00:00"
     }
   ],
   "accepted_risks": [],
@@ -188,5 +203,5 @@
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-26T13:02:14+00:00"
+  "at": "2026-11-26T13:03:20+00:00"
 }

@@ -6,12 +6,12 @@ tags:
 - eval
 generated:
   by: process:loopctl/2.4.0
-  at: '2026-11-26T13:02:14+00:00'
+  at: '2026-11-26T13:03:20+00:00'
 slug: adr-0057-pr-audit
 signoff:
   signer: delegated:jasperginn@gmail.com/implement-ticket
-  hash: 7d982070eb81aa82eaf0b3784c1c00790022dbf3424bb1301268a31e31ecc4dc
-  at: '2026-11-26T13:02:14+00:00'
+  hash: 3ff30f81a9c303f78c78dbc7309c62c864570622b1898d32ae37e474944a6fec
+  at: '2026-11-26T13:03:20+00:00'
 verified: null
 ---
 
@@ -42,4 +42,4 @@ Rows: rows.json; the fields each row takes: loopctl schema eval-rows.
 - r11: The repo's pre-commit hooks pass on every file, including strict OKF validation of .okf/
   Fails when: prek run --all-files exits nonzero
 - r12: The ticket's branch carries PR 71's head, so pushing it to adr/audit-pull-requests is a fast-forward
-  Fails when: origin/adr/audit-pull-requests is not an ancestor of HEAD
+  Fails when: origin/adr/audit-pull-requests is neither an ancestor of HEAD nor the merge in progress (MERGE_HEAD)

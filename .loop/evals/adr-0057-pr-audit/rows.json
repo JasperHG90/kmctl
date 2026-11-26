@@ -76,8 +76,8 @@
     {
       "id": "r12",
       "behavior": "The ticket's branch carries PR 71's head, so pushing it to adr/audit-pull-requests is a fast-forward",
-      "fails_when": "origin/adr/audit-pull-requests is not an ancestor of HEAD",
-      "command": "git merge-base --is-ancestor origin/adr/audit-pull-requests HEAD"
+      "fails_when": "origin/adr/audit-pull-requests is neither an ancestor of HEAD nor the merge in progress (MERGE_HEAD)",
+      "command": "git merge-base --is-ancestor origin/adr/audit-pull-requests HEAD || [ \"$(git rev-parse -q --verify MERGE_HEAD)\" = \"$(git rev-parse origin/adr/audit-pull-requests)\" ]"
     }
   ]
 }
