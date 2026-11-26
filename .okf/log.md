@@ -318,3 +318,16 @@
 
 - Added `decisions/0051-kmctl-init-sets-a-union-merge-for-the-log-and-the-indexes` with `kmctl new decision`.
 - Accepted `decisions/0051-kmctl-init-sets-a-union-merge-for-the-log-and-the-indexes` (human:roel).
+- Added `decisions/0052-the-starter-keeps-an-anchor-comment-below-each-kmctl-ref-so-updates-merge-a-project-s-additions` with `kmctl new decision`.
+- Added `decisions/0052-accepting-a-draft-does-not-make-a-verified-record-due` with `kmctl new decision`.
+- Accepted `decisions/0052-accepting-a-draft-does-not-make-a-verified-record-due` (human:roel).
+- Moved `decisions/0052-the-starter-keeps-an-anchor-comment-below-each-kmctl-ref-so-updates-merge-a-project-s-additions` to `decisions/0053-the-starter-keeps-an-anchor-comment-below-each-kmctl-ref-so-updates-merge-a-project-s-additions` with `kmctl mv`, rewriting links to it in `decisions/index`.
+
+## 2026-11-26
+
+- Added `decisions/0054-a-verify-does-not-put-the-summary-behind` with `kmctl new decision`.
+- Added `decisions/0055-one-verify-for-the-pages-a-branch-made-due` with `kmctl new decision`.
+- Added `decisions/0056-the-ci-action-fails-a-pull-request-whose-summary-is-behind` with `kmctl new decision`.
+- Accepted `decisions/0054-a-verify-does-not-put-the-summary-behind` (human:roel).
+- Accepted `decisions/0055-one-verify-for-the-pages-a-branch-made-due` (human:roel).
+- Accepted `decisions/0056-the-ci-action-fails-a-pull-request-whose-summary-is-behind` (human:roel).

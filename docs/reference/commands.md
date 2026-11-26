@@ -215,7 +215,9 @@ wrong entry is told that corrected title.
 In `.okf/`, the body of `summary.md` (outside its front matter, counted as
 words between spaces) holds at most 500 words; over that is a `warning`
 naming the count and the limit (check `summary`). A summary behind the
-concepts that changed after it is a `warning` too (see `kmctl summary ack`).
+concepts that changed after it is a `warning` too (see `kmctl summary ack`),
+or an `error` with `--summary-current`, which kmctl's CI action sets by
+default (ADR 0056).
 So is each id in a `checked.against` list in the summary's front matter
 that is not a concept in the bundle. kmctl wrote that list before ADR 0048;
 the next `kmctl summary ack` removes it.
@@ -246,6 +248,7 @@ nothing to check.
 | `--json` | Print a JSON list of findings (`check`, `file`, `line`, `message`, `level`). | off |
 | `--strict` | Fail on warnings too, such as a summary over 500 words or behind its concepts. | off |
 | `--no-drafts` | Also fail on, and list, each decision record whose `status` is `draft`. | off |
+| `--summary-current` | Fail when `.okf/summary.md` is behind the concepts that changed after it. The message says to update it or run `kmctl summary ack`. | off |
 
 Exit codes: 0 when nothing fails (warnings included, unless `--strict`), 1
 when a check fails or, with `--strict`, when there is a warning.
@@ -345,7 +348,9 @@ when it has no `verified` entry (`unverified`), when a commit after its
 verification commit changed one of its `sources` (`source changed: SOURCE`),
 or when such a commit changed the concept itself in its body or any front
 matter field other than `verified` and `stale_after`
-(`edited after verification`). The verification commit is the oldest commit
+(`edited after verification`). In a decision record, a `status` that went
+from `draft` to `stable` is not an edit, so `kmctl decision accept` does not
+make a verified record due (ADR 0052). The verification commit is the oldest commit
 whose front matter holds the file's newest `verified` entry, so commit order
 decides, not dates, and a verification made on a branch survives a squash or
 rebase merge (ADR 0032). While that entry is not committed, nothing counts as
@@ -366,27 +371,41 @@ summary and no ack file has in its history, or is changed or new in the
 working tree while neither the summary nor an ack file is. A merge commit
 does not count as an edit of the summary, so after a merge, an edit one
 branch made after its own ack is still listed. Indexes, `log.md`,
-handoffs and the summary itself never count. Editing the summary, or
-`kmctl summary ack`, clears it. Without full git history (no
+handoffs and the summary itself never count, and neither does a change
+that touches only `verified` and `stale_after`, the fields `kmctl verify`
+writes (ADR 0054). Editing the summary, or `kmctl summary ack`, clears it. Without full git history (no
 repository, or a shallow clone) it is not checked.
+
+With `--base REF`, it lists only what the branch made due since it split
+from `REF` (the files `git diff REF...HEAD` names). It keeps a
+`source changed` reason for a source the branch changed, any other reason for
+a page the branch added or edited, and the summary when the branch changed a
+concept the summary's reason names (ADR 0055). Those are the pages to read
+before review. kmctl's CI action shows this list on a pull request.
 
 | Option | Meaning | Default |
 |---|---|---|
 | `--path DIR` | The repository to read: an existing folder. | `.` |
+| `--base REF` | List only what this branch made due since it split from `REF`, a branch or commit such as `origin/main`. | everything due |
 | `--json` | Print one JSON object (`due`, `notices`, `expired_handoffs`, `history_skipped`). | off |
 
 When anything is due, the text output ends with a `Next:` line naming
-`kmctl verify`, which clears an id once a person has checked it, and, when
+`kmctl verify`, which clears ids once a person has checked them, and, when
 the summary is due, updating it or `kmctl summary ack`.
 
-Exit code: always 0. Being due is a report, not a failure.
+Exit code: 0, because being due is a report, not a failure. 2 when git
+cannot compare `HEAD` with `--base`: the ref names no commit, or the clone is
+shallow.
 
 ### `kmctl verify`
 
-`kmctl verify ID --by human:<id>`
+`kmctl verify ID [ID ...] --by human:<id>`
 
-Record that a person checked a concept or docs page, so `kmctl review due`
-drops it. It appends `{by, at}` to the file's `verified` list, with `at` the
+Record that a person checked one or more concepts or docs pages, so
+`kmctl review due` drops them. Give every page the person checked in one
+command, such as the ones `kmctl review due --base origin/main` lists. Every
+id is checked before any file is written, so when one is refused, nothing is
+written; an id given twice is verified once (ADR 0055). For each id, it appends `{by, at}` to the file's `verified` list, with `at` the
 current UTC time (`2026-10-17T21:30:00Z`), and changes no other line. A
 `verified` field written as one mapping or a flow list is extended in its
 place. A concept also gets a line in `.okf/log.md`. The id then stays off
@@ -404,14 +423,15 @@ A `verified` entry does not clear `stale_after passed`: when the file's
 
 | Argument or option | Meaning | Default |
 |---|---|---|
-| `ID` | The id as `kmctl review due` prints it: a concept under `.okf/` without `.md` (`decisions/0001-x`, `manifesto`) or a docs page (`docs/how-to/install`). Required. | |
+| `ID` | The id as `kmctl review due` prints it: a concept under `.okf/` without `.md` (`decisions/0001-x`, `manifesto`) or a docs page (`docs/how-to/install`). One or more; required. | |
 | `--by human:<id>` | The person who read it and confirms it: `human:` and a name or email address. Required. | |
-| `--stale-after WHEN` | A new `stale_after`, in the forms `kmctl new --stale-after` takes. Required when the file's `stale_after` has passed. | none |
+| `--stale-after WHEN` | A new `stale_after` for each file, in the forms `kmctl new --stale-after` takes. Required when a file's `stale_after` has passed. | none |
 | `--path DIR` | The repository to write in: an existing folder. | `.` |
-| `--json` | Print one JSON object (`id`, `path`, `by`, `at`, `stale_after`). | off |
+| `--json` | Print one JSON object (`id`, `path`, `by`, `at`, `stale_after`) per id, one per line. | off |
 
-Output: `verified ID by BY at AT (PATH)`, then `stale_after is now WHEN`
-when `--stale-after` was given, then `Next: kmctl review due`.
+Output: for each id, `verified ID by BY at AT (PATH)`, then
+`stale_after is now WHEN` when `--stale-after` was given; then
+`Next: kmctl review due`.
 
 A comment at the end of the `verified:` line, such as `verified: []  # none`,
 stays on that line.
@@ -529,7 +549,9 @@ Exit code: 1 when kmctl refuses, with the reason on stderr.
 Accept a draft decision record. Its `status` changes from `draft` to
 `stable`, no other line of the record changes, and a line in `.okf/log.md`
 names the person: ``- Accepted `decisions/0012-use-a-queue` (human:jasper).``
-`kmctl check --no-drafts` then stops listing it.
+`kmctl check --no-drafts` then stops listing it. A record verified before
+it was accepted stays verified: `kmctl review due` does not count the new
+`status` as an edit (ADR 0052).
 
 Only a person accepts a decision (ADR 0050). An agent runs this only when
 the person named in `--by` has said yes to the record; CI never does. To

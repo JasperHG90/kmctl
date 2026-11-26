@@ -65,14 +65,18 @@ def _repo(path: Path, *, broken: bool = False, due: bool = False) -> Path:
 
 
 def _run(
-    repo: Path, bin_dir: Path, tmp_path: Path
+    repo: Path, bin_dir: Path, tmp_path: Path, extra: dict[str, str] | None = None
 ) -> tuple[subprocess.CompletedProcess[str], str]:
     summary = tmp_path / "summary.md"
     summary.write_text("")
-    env = os.environ | {
-        "PATH": f"{bin_dir}:{os.environ['PATH']}",
-        "GITHUB_STEP_SUMMARY": str(summary),
-    }
+    env = (
+        os.environ
+        | {
+            "PATH": f"{bin_dir}:{os.environ['PATH']}",
+            "GITHUB_STEP_SUMMARY": str(summary),
+        }
+        | (extra or {})
+    )
     proc = subprocess.run(
         ["bash", str(SCRIPT)],
         cwd=repo,

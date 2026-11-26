@@ -15,14 +15,39 @@ from pathlib import Path
 import yaml
 
 from kmctl.concepts import _STAMP, ConceptError, append_log, stale_after_time
-from kmctl.okf import BadFrontMatter, field, front_matter, has_passed
+from kmctl.okf import (
+    BadFrontMatter,
+    field,
+    front_matter,
+    has_passed,
+    split_front_matter,
+    without,
+)
 
+#: The front matter fields ``kmctl verify`` writes. A change to these alone is
+#: no edit for kmctl review due (ADR 0032) and no change for the summary (ADR 0054).
+VERIFY_FIELDS = {"verified", "stale_after"}
 #: A person's id as ``verified[].by`` holds it: ``human:`` and a name or address.
 _PERSON = re.compile(r"human:[A-Za-z0-9._@+-]+")
 #: A front matter line that starts a top-level key.
 _KEY = re.compile(r"[^\s#-][^:]*:")
 #: A trailing YAML comment and the space before it.
 _COMMENT = re.compile(r"(?:^|\s+)#.*$")
+
+
+def outside_verify(text: str | None) -> tuple[object, str] | None:
+    """``text`` without the fields kmctl verify writes, to compare two versions of a file by.
+
+    None for a missing file. A file whose front matter does not parse is
+    compared whole.
+    """
+    if text is None:
+        return None
+    try:
+        parsed = split_front_matter(text)
+    except BadFrontMatter:
+        return None, text
+    return without(parsed[0], VERIFY_FIELDS), parsed[1]
 
 
 @dataclass(frozen=True)
@@ -122,45 +147,19 @@ def _with_stale_after(head: list[str], when: str) -> list[str]:
     return [*head, f"stale_after: {when}"]
 
 
-def verify(
-    root: Path,
-    cid: str,
-    by: str,
-    stale_after: str | None = None,
-    now: datetime | None = None,
-) -> Verified:
-    """Append a person's ``verified`` entry to the concept or docs page ``cid``.
+@dataclass(frozen=True)
+class _Pending:
+    """A verification checked and ready to write: the file, its new bytes, and what it records."""
 
-    Parameters
-    ----------
-    root : Path
-        The repository root.
-    cid : str
-        The id as kmctl review due prints it: a concept id under .okf/
-        (``decisions/0001-x``, ``manifesto``) or a docs page id
-        (``docs/how-to/run``).
-    by : str
-        The person who checked it, as ``human:<id>``.
-    stale_after : str | None
-        A new ``stale_after``, in the forms ``kmctl new --stale-after`` takes;
-        required when the file's ``stale_after`` has passed.
-    now : datetime | None
-        The time written as ``at``; now when omitted.
+    path: Path
+    data: bytes
+    result: Verified
 
-    Returns
-    -------
-    Verified
-        The id, the repository-relative path, the entry and any new
-        ``stale_after``.
 
-    Raises
-    ------
-    ConceptError
-        When ``by`` is not a person, the id names no file, names a handoff,
-        the front matter is unreadable or missing, or ``stale_after`` has
-        passed and no new one is given. Nothing is written.
-    """
-    now = (now or datetime.now(UTC)).astimezone(UTC)
+def _prepare(
+    root: Path, cid: str, by: str, stale_after: str | None, now: datetime
+) -> _Pending:
+    """The bytes ``verify_all`` writes for ``cid``, checked by its rules; nothing is written."""
     if not _PERSON.fullmatch(by):
         raise ConceptError(
             f"--by {by!r} is not a person; only a person verifies, so give it as "
@@ -214,7 +213,72 @@ def verify(
             f"{rel}'s verified field did not take the entry; "
             "rewrite it as a block list (verified:, then '  - by: human:<id>')"
         )
-    path.write_bytes(new.replace("\n", newline).encode("utf-8"))
-    if not cid.startswith("docs/"):
-        append_log(root / ".okf" / "log.md", f"- Verified `{cid}` ({by}).", now)
-    return Verified(id=cid, path=rel, by=by, at=at, stale_after=when)
+    return _Pending(
+        path,
+        new.replace("\n", newline).encode("utf-8"),
+        Verified(id=cid, path=rel, by=by, at=at, stale_after=when),
+    )
+
+
+def verify_all(
+    root: Path,
+    cids: list[str],
+    by: str,
+    stale_after: str | None = None,
+    now: datetime | None = None,
+) -> list[Verified]:
+    """Append a person's ``verified`` entry to each concept or docs page in ``cids`` (ADR 0055).
+
+    Every id is checked before any file is written, so one refused id leaves
+    every file as it was. An id given twice is verified once.
+
+    Parameters
+    ----------
+    root : Path
+        The repository root.
+    cids : list[str]
+        The ids as kmctl review due prints them: a concept id under .okf/
+        (``decisions/0001-x``, ``manifesto``) or a docs page id
+        (``docs/how-to/run``).
+    by : str
+        The person who checked them, as ``human:<id>``.
+    stale_after : str | None
+        A new ``stale_after`` for each file, in the forms ``kmctl new
+        --stale-after`` takes; required for a file whose ``stale_after`` has
+        passed.
+    now : datetime | None
+        The time written as ``at``; now when omitted.
+
+    Returns
+    -------
+    list[Verified]
+        For each id, in the order given: the id, the repository-relative
+        path, the entry and any new ``stale_after``.
+
+    Raises
+    ------
+    ConceptError
+        When ``by`` is not a person, an id names no file or names a handoff,
+        a front matter is unreadable or missing, or a ``stale_after`` has
+        passed and no new one is given. Nothing is written.
+    """
+    now = (now or datetime.now(UTC)).astimezone(UTC)
+    pending = [_prepare(root, cid, by, stale_after, now) for cid in dict.fromkeys(cids)]
+    for p in pending:
+        p.path.write_bytes(p.data)
+        if not p.result.id.startswith("docs/"):
+            append_log(
+                root / ".okf" / "log.md", f"- Verified `{p.result.id}` ({by}).", now
+            )
+    return [p.result for p in pending]
+
+
+def verify(
+    root: Path,
+    cid: str,
+    by: str,
+    stale_after: str | None = None,
+    now: datetime | None = None,
+) -> Verified:
+    """Append a person's ``verified`` entry to the concept or docs page ``cid``; ``verify_all`` for one id."""
+    return verify_all(root, [cid], by, stale_after, now)[0]
