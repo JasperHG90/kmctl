@@ -137,3 +137,61 @@ Rejected:
   points here, and the comment in `.github/workflows/knowledge-audit.yml`
   that says the audit never runs on a pull request changes.
 - Nothing is built until this record is accepted.
+
+## Correction, 2026-11-26
+
+This record was accepted before its review was answered. This section
+answers it. The text above stands, apart from what this section changes,
+and the no-shell rule stays in force.
+
+**Why the audit keeps its own matcher.**
+[ADR 0055](0055-one-verify-for-the-pages-a-branch-made-due.md) added
+`kmctl review due --base REF`, which lists what a branch made due, and
+kmctl's CI action shows that list on every pull request. It does not find
+the decisions a change may have outdated. It compares a page's `sources`
+with the diff only when the page has a `verified` entry, and no decision in
+this repository has one. Over pull requests #60 to #75, 86 times a pull
+request changed a file that a stable decision names in `sources` (20
+distinct decisions), and `review due --base` listed none of the 86 for that
+reason ([prototype](../prototypes/pr-audit-scope/README.md)). Even for a
+verified decision, `--base` says only that a source changed. Whether the
+decision still holds after the change takes reading it against the new
+code, which is what the audit does. So the audit matches `sources` itself:
+a file source by its path, and a folder source, such as `packages/kmctl/`,
+as a prefix.
+
+**The audit's name and history.** The shipped audit that checks the
+decisions a change touches is `okf-vs-change`, next to the three in
+`AUDITS` in `action/agent.py`. Its merge base needs the branch's history,
+which audit mode has already, since it asks for a checkout with
+`fetch-depth: 0`.
+
+**A fork is skipped, not refused.** The action does not refuse a fork pull
+request with a failed check. The workflow puts the same-repository condition
+on both the audit job and the publish job, so GitHub skips both and shows
+them as skipped. As a backstop, the action's event check skips a fork pull
+request with a notice and exits 0 before the agent starts. When there is
+no report, publish posts nothing and exits 0, whether it would have posted
+an issue or a pull request comment, so a skipped or failed audit never also
+fails publish.
+
+**What the base checkout protects.** On a `pull_request` event GitHub runs
+the workflow file from the pull request itself, so a same-repository author
+can change that workflow, and with it what the audit loads. The base-branch
+checkout does not stop that. It makes loosening the audit a visible change:
+a pull request cannot quietly edit the prompt to skip a decision or soften
+a finding, it has to change the workflow, which review and branch protection
+see. The key stays out of reach of text in the pull request because the
+agent runs without `run_shell`, as the rule above decides, not because of
+the checkout. A `--context` folder that git does not track, one an earlier
+step fetched, is not in the base checkout, so it stays in the working tree;
+an instruction path git tracks comes from the base checkout.
+
+**Where it belongs.**
+[ADR 0046](0046-kmctl-works-from-code-toward-knowledge-and-kmaudit-from-knowledge-toward-code.md)
+puts a feature in the package whose direction it shares. `okf-vs-change`
+starts from each decision's `sources` and checks the decision against the
+changed code, so it works from knowledge toward code, kmaudit's direction.
+The shipped audits live in the action today (`action/agent.py` and
+`action/prompts/`), outside both packages, and `okf-vs-change` joins them
+there. If the shipped audits move into kmaudit, it moves with them.
