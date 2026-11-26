@@ -7,6 +7,7 @@ set -u
 
 summary="${GITHUB_STEP_SUMMARY:-/dev/stdout}"
 status=0
+failed=()
 
 # review due reads git history, and actions/checkout fetches one commit by default.
 if [ "$(git rev-parse --is-shallow-repository 2>/dev/null)" = "true" ]; then
@@ -69,6 +70,7 @@ check_status=$?
 echo '```' >> "$summary"
 if [ "$check_status" -ne 0 ]; then
   status=$check_status
+  failed+=("kmctl check")
 fi
 
 # On a pull request, first the pages this pull request made due: the ones to
@@ -106,8 +108,23 @@ if ! kmctl review due >> "$summary" 2>&1; then
   echo >> "$summary"
   echo "kmctl review due failed; run it locally to see why." >> "$summary"
   [ "$status" -eq 0 ] && status=1
+  failed+=("kmctl review due")
 else
   echo '```' >> "$summary"
+fi
+
+# The reasons went to the job summary, which the job log does not show: say so
+# in the log, with a link to the run whose summary page holds them.
+if [ "${#failed[@]}" -gt 0 ] && [ "$summary" != /dev/stdout ]; then
+  what="${failed[0]}"
+  [ "${#failed[@]}" -gt 1 ] && what="$what and ${failed[1]}"
+  where="the run's summary page"
+  if [ -n "${GITHUB_SERVER_URL:-}" ] && [ -n "${GITHUB_REPOSITORY:-}" ] && [ -n "${GITHUB_RUN_ID:-}" ]; then
+    url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+    [ -n "${GITHUB_RUN_ATTEMPT:-}" ] && url="$url/attempts/$GITHUB_RUN_ATTEMPT"
+    where="$where: $url"
+  fi
+  echo "::error title=kmctl::$what failed; the reasons are on $where"
 fi
 
 exit "$status"
