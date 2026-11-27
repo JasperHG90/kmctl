@@ -1,4 +1,4 @@
 # kmctl summary ack: .okf/summary.md was read against these concepts and still holds.
-at: 2026-11-27T20:36:41Z
+at: 2026-11-27T20:53:18Z
 against:
-  - decisions/0061-the-reread-runs-on-demand-on-a-ready-pull-request
+  - decisions/0045-each-package-keeps-its-apm-package-and-version

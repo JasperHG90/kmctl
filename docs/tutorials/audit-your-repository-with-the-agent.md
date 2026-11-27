@@ -165,7 +165,7 @@ sed -n 179,181p packages/kmctl/src/kmctl/candidates.py
 ```
 
 ```
-29:   With no starting point, it looks at the changes since the newest
+32:   With no starting point, it looks at the changes since the newest
     added = _git(
         root, "log", "--follow", "--diff-filter=A", "--format=%H", "--", records[0]
     ).split()
@@ -185,9 +185,9 @@ git branch -D try-the-audit
 ## What you learned
 
 - The agent rereads only the pages whose `sources` name a file your branch
-  changed: decisions (drafts included), architecture pages, practices and
-  docs pages. A deprecated or superseded decision, handoffs, the log and
-  `index.md` pages stay out.
+  changed: every markdown page under `.okf/` and `docs/`, whatever its kind
+  or status, drafts included. Handoffs, the log, `index.md` pages and
+  deprecated or superseded decisions stay out.
 - With nothing in scope it writes an empty report and calls no model.
 - Every finding names the claim, the lines that contradict it and a fix, and
   you can check each citation with the file and the line number.
