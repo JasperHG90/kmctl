@@ -718,7 +718,6 @@ def test_pr_audit_runs_on_dispatch(template: Path, tmp_path: Path) -> None:
         for name in ("pr", "base", "head")
     }
     assert jobs["publish"]["needs"] == ["previous", "audit"]
-    assert wf[True]["workflow_dispatch"]["inputs"]["pr"]["type"] == "number"
     run = _kmctl_step(jobs["audit"]["steps"])
     assert run["with"]["base"] == "${{ needs.previous.outputs.base }}"
     assert run["with"]["head"] == "${{ needs.previous.outputs.head }}"

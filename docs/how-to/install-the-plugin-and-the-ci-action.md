@@ -387,7 +387,6 @@ Publish mode takes two more:
          pr:
            description: The pull request to audit; run on its branch.
            required: true
-           type: number
 
    # A composite action cannot set token permissions; the calling workflow does.
    permissions:

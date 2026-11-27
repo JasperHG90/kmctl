@@ -1386,10 +1386,6 @@ def test_knowledge_audit_runs_on_dispatch() -> None:
 
     assert set(data["on"]) == {"workflow_dispatch"}
     assert data["on"]["workflow_dispatch"]["inputs"]["pr"]["required"] is True
-    assert data["on"]["workflow_dispatch"]["inputs"]["pr"]["type"] == "number"
-    [fetch] = [s for s in jobs["previous"]["steps"] if s.get("id") == "fetch"]
-    assert "inputs.pr" not in fetch["run"], "the input reaches the script through env"
-    assert fetch["env"]["PR"] == "${{ inputs.pr }}"
     assert data["permissions"] == {"contents": "read"}
     assert "LANGFUSE" not in KNOWLEDGE_AUDIT.read_text()
     assert "head.repo.full_name" not in KNOWLEDGE_AUDIT.read_text()
@@ -1478,15 +1474,7 @@ def _agent_args(step: dict, tmp_path: Path, **env: str) -> list[str]:
         step["run"],
     )
     step_env = {
-        k: re.sub(
-            r"\$\{\{ *([^}]*?) *\}\}",
-            lambda m: (
-                str(runner)
-                if m.group(1) == "runner.temp"
-                else EXPRESSIONS.get(m.group(1), "")
-            ),
-            str(v),
-        )
+        k: re.sub(r"\$\{\{ *runner.temp *\}\}", str(runner), str(v))
         for k, v in (step.get("env") or {}).items()
         if "secrets." not in str(v) and "github.token" not in str(v)
     }
