@@ -10,6 +10,7 @@ from pathlib import Path
 
 import pytest
 import yaml
+from conftest import plain
 from typer.testing import CliRunner, Result
 
 from kmctl import app
@@ -677,7 +678,7 @@ def test_verify_help_names_the_folder_and_path_forms() -> None:
     result = _invoke("verify", "--help")
 
     assert result.exit_code == 0
-    text = " ".join(result.stdout.split())
+    text = " ".join(plain(result.stdout).split())
     assert "a folder" in text
     assert ".okf/decisions/0001-x.md" in text
     assert "kmctl verify decisions --by human:jasper" in text
