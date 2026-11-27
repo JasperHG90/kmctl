@@ -748,6 +748,30 @@ def test_publish_pr_creates_then_replaces_comment(
     assert "concept/0" not in comments[0]["body"]
 
 
+def test_publish_default_threshold_posts_low_findings(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """With no --min-severity, a report of only low findings is posted, every finding listed."""
+    store = _pr_gh(tmp_path, monkeypatch)
+
+    assert _publish(_report_file(tmp_path, ["low", "low"])) == 0
+
+    (comment,) = json.loads(store.read_text())
+    assert "concept/0" in comment["body"] and "concept/1" in comment["body"]
+
+
+def test_system_prompt_rates_a_contradicted_claim_high() -> None:
+    """The rubric rates a claim the code contradicts high, and keeps medium for probably wrong."""
+    rubric = " ".join(agent.SYSTEM_PROMPT.split())
+
+    assert "high for a claim the code contradicts" in rubric
+    assert (
+        "medium for a claim that is probably wrong, or that you could not check"
+        in rubric
+    )
+    assert "something wrong that someone must fix" not in rubric
+
+
 def test_publish_below_threshold_posts_nothing_new(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -755,7 +779,7 @@ def test_publish_below_threshold_posts_nothing_new(
 ) -> None:
     store = _pr_gh(tmp_path, monkeypatch)
 
-    assert _publish(_report_file(tmp_path, ["medium"])) == 0
+    assert _publish(_report_file(tmp_path, ["medium"]), "--min-severity", "high") == 0
     assert json.loads(store.read_text()) == []
     assert "no comment was written" in capsys.readouterr().err
 
@@ -766,7 +790,7 @@ def test_publish_below_threshold_replaces_an_earlier_comment(
     store = _pr_gh(tmp_path, monkeypatch)
     assert _publish(_report_file(tmp_path, ["high"])) == 0
 
-    assert _publish(_report_file(tmp_path, ["low"])) == 0
+    assert _publish(_report_file(tmp_path, ["low"]), "--min-severity", "high") == 0
 
     (comment,) = json.loads(store.read_text())
     assert "found nothing at or above high" in comment["body"]

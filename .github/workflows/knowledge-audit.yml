@@ -60,7 +60,7 @@ jobs:
 
   # A fresh runner that shares only the artifact with the agent's job, so
   # nothing the agent changed runs with the token. It posts one comment on
-  # the pull request when a finding is high, and replaces it on each push. It
+  # the pull request when there is a finding, and replaces it on each push. It
   # runs unless the run was cancelled; a missing report posts nothing, and
   # the failed audit job shows why.
   publish:
@@ -92,5 +92,4 @@ jobs:
           uv run --no-config --script action/agent.py publish
           ${{ runner.temp }}/agent-report/report.json
           --pr ${{ github.event.pull_request.number }}
-          --min-severity high
           --title "Knowledge audit"

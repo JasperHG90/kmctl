@@ -97,3 +97,16 @@ Rejected:
 - This repository's `knowledge-audit.yml` runs the reread on its own pull
   requests.
 - ADR 0005, ADR 0017 and ADR 0057 each get a Correction that points here.
+
+## Correction, 2026-11-27
+
+The publish job posts the comment only when a finding is at or above the
+action's `min_severity` input, or when an earlier comment exists, which it
+then replaces with one saying the latest run found nothing at that level.
+The first live run, on pull request #83, found three real mistakes and
+posted none, because `min_severity` defaulted to `high` and the agent's
+rubric rated a claim the code contradicts as medium or low. `min_severity`
+now defaults to `low`, so the comment lists every finding but notes, and
+the system prompt rates a claim the code contradicts as high. Over the 4
+live pull request runs so far, a comment at `low` would have held 1 to 6
+findings.

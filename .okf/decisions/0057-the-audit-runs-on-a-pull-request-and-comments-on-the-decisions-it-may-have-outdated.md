@@ -210,3 +210,15 @@ With nothing in scope it calls no model. The repository supplies no prompt,
 context or skills any more, since the one prompt ships with the action, so
 the base-branch checkout is gone. The same-repository rule, no shell, one
 comment replaced on each push, report only and the author's answer stand.
+
+## Correction, 2026-11-27, the shipped audits
+
+The 2026-11-26 Correction's "The audit's name and history" and "Where it
+belongs" describe a shipped audit that no longer exists.
+[ADR 0060](0060-the-ci-agent-only-rereads-the-pages-a-pull-request-changed.md)
+removed `okf-vs-change`, the `AUDITS` list in `action/agent.py`, the other
+three shipped audits and `action/prompts/`. The action's one audit is the
+pull request reread, whose task ships in `action/prompt.md`. The reasoning
+under "Where it belongs" still holds for it: it starts from each page's
+`sources` and checks the page against the changed code, kmaudit's direction,
+and it lives in the action, outside both packages.

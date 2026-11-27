@@ -326,8 +326,8 @@ by search goes back to the agent, and after five retries the run fails with
 no report. It writes its report to the job summary and keeps it as an
 `agent-report` artifact (`report.json`, `report.md` and the full
 `transcript.json`). A second job, with `mode: publish`, posts it as one
-comment on the pull request when a finding is high (or the severity you
-choose), and replaces that comment on each push. A finding never fails the
+comment on the pull request when there is a finding at `low` or above (or
+the severity you choose), and replaces that comment on each push. A finding never fails the
 check.
 
 To try the agent on your machine first and learn to read its report, follow
@@ -356,7 +356,7 @@ Publish mode takes two more:
 
 | Input | What it is |
 |---|---|
-| `min_severity` | the lowest severity (`info`, `low`, `medium` or `high`) that posts or updates the comment; default `high` |
+| `min_severity` | the lowest severity (`info`, `low`, `medium` or `high`) that posts or updates the comment; default `low` |
 | `title` | the comment's heading, which also marks it so the next run replaces it; default `Knowledge audit` |
 
 1. Add a repository secret named `AUDIT_API_KEY` with your provider's API
@@ -634,7 +634,7 @@ ref to the new tag, as in step 6.
 For the action, open a pull request: the `knowledge` job runs and its summary
 shows the `kmctl check` and `kmctl review due` reports. For the audit, open a
 pull request that changes a file a page names in its `sources`: the
-"knowledge audit" workflow runs and, when a finding is high, comments on the
+"knowledge audit" workflow runs and, when it has a finding, comments on the
 pull request.
 
 All options of these commands are in [Commands](../reference/commands.md).

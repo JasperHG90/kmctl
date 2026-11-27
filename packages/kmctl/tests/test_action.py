@@ -380,7 +380,7 @@ def test_action_publish_mode_posts_from_the_artifact() -> None:
     for name in ("min_severity", "title"):
         assert action["inputs"][name]["description"], name
         assert f"${{{{ inputs.{name} }}}}" in post["env"].values(), name
-    assert action["inputs"]["min_severity"]["default"] == "high"
+    assert action["inputs"]["min_severity"]["default"] == "low"
     for step in (fetch, post):
         assert "inputs.mode == 'publish'" in step["if"], step
     assert fetch["with"] == {

@@ -93,7 +93,7 @@ agent: wrote report.json, report.md and transcript.json to ../report0
 
 In CI, a push like this costs nothing.
 
-### 4. Change a line three pages name
+### 4. Change a line three pages cover
 
 `kmctl decision candidates` lists the changes since the newest decision
 record. Make it start from the oldest one instead, and commit:
@@ -104,11 +104,13 @@ rm packages/kmctl/src/kmctl/candidates.py.bak
 git commit -am "Start decision candidates at the oldest record"
 ```
 
-The agent compares commits, so it sees only what you commit. Three pages
+The agent compares commits, so it sees only what you commit. Two pages
 name `packages/kmctl/src/kmctl/candidates.py` in their `sources`: the how-to
-`docs/how-to/find-unrecorded-decisions.md`, ADR 0047
-(`.okf/decisions/0047-unrecorded-decisions-are-listed-by-kmctl-and-judged-by-a-skill-that-only-reports.md`)
-and ADR 0046, which says which package the file belongs in. The how-to and
+`docs/how-to/find-unrecorded-decisions.md` and ADR 0047
+(`.okf/decisions/0047-unrecorded-decisions-are-listed-by-kmctl-and-judged-by-a-skill-that-only-reports.md`).
+A third, ADR 0046, which says which package the file belongs in, names the
+folder `packages/kmctl/`; the agent matches a folder source as a prefix, so
+it is in scope too. The how-to and
 ADR 0047 say the list starts at the newest record, so both are now wrong.
 ADR 0046 still holds.
 
@@ -200,9 +202,11 @@ git branch -D try-the-audit
 | `checked` | One entry per page compared: `subject`, `against` (what it was compared with) and `evidence` (`path:line` strings). |
 | `findings` | One entry per mismatch: `title`, `severity`, `path` (the file it is about), `summary`, `claim` (`path:line`), `contradicted_by` (`path:line` strings) and `fix`. |
 
-A finding's `severity` is `high` for something wrong that someone must fix,
-`medium` for something probably wrong or that the agent could not check,
-`low` for something minor, and `info` for a note that needs no fix.
+A finding's `severity` is `high` for a claim the code contradicts,
+`medium` for a claim probably wrong or that the agent could not check,
+`low` for a slip in wording that misleads little, and `info` for a note
+that needs no fix. The comment on a pull request lists every finding at
+`low` or above.
 
 To run the agent on your pull requests and post its report as a comment,
 follow step 5 of

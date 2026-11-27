@@ -84,9 +84,10 @@ inputs:
     description: >-
       Publish mode: the lowest severity (info, low, medium or high) that posts
       or updates the comment; below it, an earlier comment says the latest run
-      found nothing, and with none no comment is written.
+      found nothing, and with none no comment is written. Default low, so
+      the comment lists every finding but notes.
     required: false
-    default: high
+    default: low
   title:
     description: >-
       Publish mode: the comment's heading, which also marks it so the next run

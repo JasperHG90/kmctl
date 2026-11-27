@@ -384,7 +384,7 @@ kmctl, from the action's own checkout.
 - **publish** runs in a separate job on a fresh runner, the only one with
   `GH_TOKEN` and `pull-requests: write`. It downloads the artifact and runs
   `action/agent.py publish REPORT --pr N`: when a finding is at or above
-  `min_severity` (default high), it posts one comment on the pull request
+  `min_severity` (default low), it posts one comment on the pull request
   marked with `title`, or replaces the earlier one; below the threshold it
   replaces an earlier comment with one that says the latest run found
   nothing, and with none it posts nothing. With no artifact it posts

@@ -1447,4 +1447,5 @@ def test_knowledge_audit_commands_parse_with_the_agent() -> None:
     assert agent["env"] == {"AUDIT_API_KEY": "${{ secrets.AUDIT_API_KEY }}"}
     parsed = parser.parse_args(_agent_args(post["run"]))
     assert parsed.command == "publish" and parsed.pr == 12
+    assert parsed.min_severity == "low", "the comment lists every finding but notes"
     assert post["env"]["GH_TOKEN"] == "${{ github.token }}"
