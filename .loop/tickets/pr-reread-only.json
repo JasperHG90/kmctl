@@ -1,13 +1,19 @@
 {
   "schema_version": "1.0",
   "slug": "pr-reread-only",
-  "stage": "planning",
+  "stage": "blocked",
   "attempts": 0,
   "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
-  "blocker": null,
+  "blocker": {
+    "code": "finding-open-two-rounds",
+    "message": "finding plan-reviewer:p1 stayed open across two rounds",
+    "plan_hash": "075b8aed179a637c4e557229bc5e5abe2070866e11d83286d5257cdd3e406dd5",
+    "at": "2026-11-27T10:37:03+00:00",
+    "resign_eval": false
+  },
   "fix": null,
   "ask": null,
   "split": "j-20261127T103541+0000-914a07d8",
@@ -45,8 +51,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "blocked"
   },
   "plan_hash": "075b8aed179a637c4e557229bc5e5abe2070866e11d83286d5257cdd3e406dd5",
   "intent": {
@@ -60,8 +66,14 @@
       "to": "planning",
       "at": "2026-11-27T10:30:11+00:00",
       "by": "promote"
+    },
+    {
+      "from": "planning",
+      "to": "blocked",
+      "at": "2026-11-27T10:37:03+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-27T10:35:52+00:00"
+  "at": "2026-11-27T10:37:03+00:00"
 }
