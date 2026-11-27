@@ -380,8 +380,23 @@ Publish mode takes two more:
      contents: read
 
    jobs:
-     # A fork's pull request gets no secrets, so both jobs skip it.
+     # Reads the audit comment and hands the report of the run it links to
+     # the audit job. A fork's pull request gets no secrets, so every job
+     # skips it.
+     previous:
+       if: github.event.pull_request.head.repo.full_name == github.repository
+       runs-on: ubuntu-latest
+       permissions:
+         contents: read
+         pull-requests: read
+         actions: read
+       steps:
+         - uses: JasperHG90/kmctl@v0.18.0
+           with:
+             mode: previous
+
      audit:
+       needs: previous
        if: github.event.pull_request.head.repo.full_name == github.repository
        runs-on: ubuntu-latest
        steps:
@@ -433,6 +448,16 @@ the audit itself, with a notice, and publish finds no report, posts nothing
 and passes. A Dependabot pull request gets no secrets either, and the action
 skips it the same way. `!cancelled()` lets publish run after a failed audit,
 where it finds no report and posts nothing.
+
+**Each run starts from the last.** The `mode: previous` job, which needs
+`pull-requests: read` and `actions: read`, finds the audit comment, follows
+its run link and downloads that run's report; the audit job gets it as an
+artifact of the same run, so it still holds no token. The agent answers each
+earlier finding: still open, keeping its title, or fixed. It raises a new
+finding only on a page that changed since the last report, or whose sources
+did, and the run sends back any other. The comment then opens with what is
+fixed, still open and new. The first run on a pull request, or one after a
+rebase or force push that removed the last report's commit, starts fresh.
 
 The comment is short: a count, one bullet per finding at or above
 `min_severity` (title, where, and one sentence), the pages that still hold,

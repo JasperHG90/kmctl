@@ -135,3 +135,18 @@ Three statements above are narrower than the code:
 The comment is now short: a count, one bullet per finding at or above
 `min_severity`, the pages that still hold, and the fixes and evidence folded
 away. It says how many findings below `min_severity` it left out.
+
+## Correction, 2026-11-27, the previous report
+
+Each run now starts from its previous report. Rereading every page from
+scratch let each run notice different things: over the 6 runs on pull
+request #83, 5 findings landed on pages the run before had passed. A
+`previous` job, with `pull-requests: read` and `actions: read`, follows the
+audit comment's run link and hands that run's report to the audit job as an
+artifact, so the audit job still holds no token. The agent answers each
+earlier finding by id, still open or fixed, and the run sends back a report
+that leaves one unanswered or raises a new finding on a page unchanged since
+the previous report's commit, with its sources. The report records the pull
+request's head commit, since the merge commit a `pull_request` checkout
+builds is not fetched again. The comment opens with what is fixed, still
+open and new.

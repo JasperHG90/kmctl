@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import importlib.util
+import json
+import os
 import re
-import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -1413,39 +1414,114 @@ def _agent_module() -> Any:
     return module
 
 
-def _agent_args(run: str) -> list[str]:
-    """The arguments after agent.py in a workflow step, with expressions filled in."""
-    filled = re.sub(
-        r"\$\{\{ *([^}]*?) *\}\}",
-        lambda m: {
-            "github.base_ref": "main",
-            "github.event.pull_request.number": "12",
-        }.get(m.group(1), "/tmp/x"),
-        run,
+#: The values a pull request run would give the expressions the workflow uses.
+EXPRESSIONS = {
+    "github.base_ref": "main",
+    "github.event.pull_request.number": "12",
+    "github.event.pull_request.head.sha": "abc123",
+}
+
+
+def _agent_args(step: dict, tmp_path: Path, **env: str) -> list[str]:
+    """Run a workflow step in bash with a stub uv; return the arguments after agent.py."""
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir(parents=True)
+    calls = tmp_path / "uv-args.json"
+    (bin_dir / "uv").write_text(
+        f"#!{sys.executable}\nimport json, sys\n"
+        f"json.dump(sys.argv[1:], open({str(calls)!r}, 'w'))\n"
     )
-    words = shlex.split(filled)
+    (bin_dir / "uv").chmod(0o755)
+    runner = tmp_path / "runner"
+    script = re.sub(
+        r"\$\{\{ *([^}]*?) *\}\}",
+        lambda m: (
+            EXPRESSIONS.get(m.group(1), str(runner))
+            if m.group(1) != "runner.temp"
+            else str(runner)
+        ),
+        step["run"],
+    )
+    step_env = {
+        k: re.sub(r"\$\{\{ *runner.temp *\}\}", str(runner), str(v))
+        for k, v in (step.get("env") or {}).items()
+        if "secrets." not in str(v) and "github.token" not in str(v)
+    }
+    subprocess.run(
+        ["bash", "--noprofile", "--norc", "-eo", "pipefail", "-c", script],
+        cwd=tmp_path,
+        env={
+            **os.environ,
+            **step_env,
+            "PATH": f"{bin_dir}:{os.environ['PATH']}",
+            **env,
+        },
+        check=True,
+    )
+    words = json.loads(calls.read_text())
     return words[words.index("action/agent.py") + 1 :]
 
 
-def test_knowledge_audit_commands_parse_with_the_agent() -> None:
-    """The agent and publish commands parse with the real script; the checkout keeps no token."""
+def test_knowledge_audit_commands_parse_with_the_agent(tmp_path: Path) -> None:
+    """The previous, agent and publish commands parse with the real script; the checkout keeps no token."""
     parser = _agent_module().parser()
     audit = _steps(KNOWLEDGE_AUDIT, "audit")
     publish = _steps(KNOWLEDGE_AUDIT, "publish")
+    previous = _steps(KNOWLEDGE_AUDIT, "previous")
     [checkout] = [
         s for s in audit if str(s.get("uses", "")).startswith("actions/checkout")
     ]
-    [agent] = [s for s in audit if "agent.py run" in str(s.get("run", ""))]
+    [agent] = [s for s in audit if "agent.py" in str(s.get("run", ""))]
     [post] = [s for s in publish if "agent.py publish" in str(s.get("run", ""))]
+    [fetch] = [s for s in previous if "agent.py previous" in str(s.get("run", ""))]
 
     assert checkout["with"]["persist-credentials"] is False
     assert checkout["with"]["fetch-depth"] == 0
-    for step in (agent, post):
+    for step in (agent, post, fetch):
         assert "uv run --no-config --script action/agent.py" in step["run"]
-    parsed = parser.parse_args(_agent_args(agent["run"]))
+    parsed = parser.parse_args(_agent_args(agent, tmp_path / "run"))
     assert parsed.command == "run" and parsed.base == "origin/main"
-    assert agent["env"] == {"AUDIT_API_KEY": "${{ secrets.AUDIT_API_KEY }}"}
-    parsed = parser.parse_args(_agent_args(post["run"]))
+    assert parsed.head == "abc123" and parsed.previous is None
+    assert agent["env"]["AUDIT_API_KEY"] == "${{ secrets.AUDIT_API_KEY }}"
+    report = tmp_path / "with" / "runner" / "previous-report" / "report.json"
+    report.parent.mkdir(parents=True)
+    report.write_text("{}")
+    parsed = parser.parse_args(_agent_args(agent, tmp_path / "with"))
+    assert parsed.previous == str(report)
+    parsed = parser.parse_args(_agent_args(post, tmp_path / "publish"))
     assert parsed.command == "publish" and parsed.pr == 12
     assert parsed.min_severity == "low", "the comment lists every finding but notes"
     assert post["env"]["GH_TOKEN"] == "${{ github.token }}"
+    parsed = parser.parse_args(_agent_args(fetch, tmp_path / "previous"))
+    assert parsed.command == "previous" and parsed.pr == 12
+
+
+def test_knowledge_audit_fetches_the_previous_report() -> None:
+    """A previous job with read access hands the report on; the audit job needs it and holds no token."""
+    data = _load(KNOWLEDGE_AUDIT)
+    previous, audit = data["jobs"]["previous"], data["jobs"]["audit"]
+
+    assert previous["permissions"] == {
+        "contents": "read",
+        "pull-requests": "read",
+        "actions": "read",
+    }
+    assert SAME_REPO in previous["if"]
+    [hand] = [
+        s
+        for s in previous["steps"]
+        if str(s.get("uses", "")).startswith("actions/upload-artifact")
+    ]
+    assert hand["with"]["name"] == "previous-report"
+    assert audit["needs"] == "previous"
+    assert "permissions" not in audit
+    [download] = [
+        s
+        for s in audit["steps"]
+        if str(s.get("uses", "")).startswith("actions/download-artifact")
+    ]
+    assert download["with"]["name"] == "previous-report"
+    assert download["continue-on-error"] is True
+    for step in audit["steps"]:
+        text = yaml.safe_dump(step)
+        assert "GH_TOKEN" not in text and "github.token" not in text, step

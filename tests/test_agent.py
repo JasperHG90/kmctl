@@ -29,6 +29,19 @@ sys.modules["ci_agent"] = agent
 _spec.loader.exec_module(agent)
 
 #: Cites only README.md, which Recorder reads before it hands the report in.
+#: The fields of a report the run sets, not the model.
+RUN_FIELDS = ("fixed", "commit", "previous_commit", "fixed_titles")
+
+
+def _model_part(report: dict) -> dict:
+    """``report`` without the fields the run sets, and without each finding's ``earlier``."""
+    out = {k: v for k, v in report.items() if k not in RUN_FIELDS}
+    out["findings"] = [
+        {k: v for k, v in f.items() if k != "earlier"} for f in out["findings"]
+    ]
+    return out
+
+
 REPORT = {
     "summary": "One page drifted.",
     "checked": [
@@ -194,7 +207,7 @@ def test_run_writes_report_files_and_summary(
 
     out = tmp_path / "out"
     report = agent.Report.model_validate_json((out / "report.json").read_text())
-    assert report.model_dump() == REPORT
+    assert _model_part(report.model_dump()) == REPORT
     markdown = (out / "report.md").read_text()
     for finding in REPORT["findings"]:
         assert finding["title"] in markdown
@@ -283,7 +296,7 @@ def test_evidence_unread_lines_are_sent_back(repo: Path, tmp_path: Path) -> None
     assert "big.md:0: lines count from 1" in retry
     assert "big.md:4" not in retry
     report = json.loads((tmp_path / "out" / "report.json").read_text())
-    assert report == REPORT
+    assert _model_part(report) == REPORT
 
 
 def test_evidence_search_hits_count_as_seen(repo: Path, tmp_path: Path) -> None:
@@ -602,6 +615,8 @@ def test_run_takes_only_the_pr_options() -> None:
         "--base-url",
         "--api-key-env",
         "--base",
+        "--head",
+        "--previous",
         "--repo",
         "--out",
         "--timeout",
@@ -1081,3 +1096,288 @@ def test_publish_fails_on_bad_report(
     assert _publish(report) == 2
     assert "report" in capsys.readouterr().err
     assert _calls(calls) == []
+
+
+# state: the previous report -------------------------------------------------
+
+
+def _finding(title: str, page: str, earlier: str | None = None) -> dict:
+    """A finding on ``page``'s line 1, contradicted by README.md:1, which runs read."""
+    return {
+        "title": title,
+        "severity": "medium",
+        "path": page,
+        "summary": f"{title} is wrong.",
+        "claim": f"{page}:1",
+        "contradicted_by": ["README.md:1"],
+        "fix": "Fix it.",
+        "earlier": earlier,
+    }
+
+
+@pytest.fixture
+def stateful(repo: Path) -> tuple[Path, str]:
+    """A repo with two docs pages; the last commit touched only run-it.md's source."""
+    _page(repo, "docs/how-to/other.md", ["src/other.py"], status=None)
+    (repo / "src" / "other.py").write_text("y = 1\n")
+    _git(repo, "branch", "-D", "base")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "base")
+    _git(repo, "branch", "base")
+    (repo / "src" / "other.py").write_text("y = 2\n")
+    _git(repo, "commit", "-qam", "touch other")
+    previous_head = _git(repo, "rev-parse", "HEAD").strip()
+    (repo / "src" / "app.py").write_text("x = 3\n")
+    _git(repo, "commit", "-qam", "touch app")
+    return repo, previous_head
+
+
+#: The fake model reads both docs pages first, so findings may cite their line 1.
+READ_PAGES = [
+    ("read_file", {"path": "docs/how-to/run-it.md"}),
+    ("read_file", {"path": "docs/how-to/other.md"}),
+]
+
+
+def _previous_file(tmp_path: Path, commit: str, findings: list[dict]) -> Path:
+    """Write a previous report.json made at ``commit`` and return its path."""
+    path = tmp_path / "previous.json"
+    path.write_text(
+        json.dumps(
+            {
+                "summary": "Before.",
+                "checked": [],
+                "findings": findings,
+                "commit": commit,
+            }
+        )
+    )
+    return path
+
+
+def _report(findings: list[dict], fixed: list[str]) -> dict:
+    """A model report citing README.md, with ``findings`` and ``fixed`` ids."""
+    return {
+        "summary": "After.",
+        "checked": [
+            {"subject": "README.md", "against": "x", "evidence": ["README.md:1"]}
+        ],
+        "findings": findings,
+        "fixed": fixed,
+    }
+
+
+def test_previous_report_goes_into_the_prompt(
+    stateful: tuple[Path, str], tmp_path: Path
+) -> None:
+    repo, prev = stateful
+    previous = _previous_file(
+        tmp_path, prev, [_finding("old one", "docs/how-to/run-it.md")]
+    )
+    rec = Recorder(READ_PAGES, reports=[_report([], ["e1"])])
+
+    assert _main(repo, tmp_path, FunctionModel(rec), "--previous", str(previous)) == 0
+
+    assert rec.prompt is not None
+    assert "## Earlier findings" in rec.prompt
+    assert f"at commit {prev}" in rec.prompt
+    assert "- e1 [medium] old one (docs/how-to/run-it.md:1)" in rec.prompt
+    assert "Pages changed since that commit: docs/how-to/run-it.md" in rec.prompt
+
+
+def test_validator_requires_every_earlier_finding_answered(
+    stateful: tuple[Path, str], tmp_path: Path
+) -> None:
+    repo, prev = stateful
+    previous = _previous_file(
+        tmp_path,
+        prev,
+        [
+            _finding("a", "docs/how-to/run-it.md"),
+            _finding("b", "docs/how-to/run-it.md"),
+        ],
+    )
+    rec = Recorder(
+        READ_PAGES,
+        reports=[
+            _report([], ["e1"]),
+            _report([_finding("b", "docs/how-to/run-it.md", earlier="e2")], ["e1"]),
+        ],
+    )
+
+    assert _main(repo, tmp_path, FunctionModel(rec), "--previous", str(previous)) == 0
+
+    (retry,) = rec.retries
+    assert "e2 (b): neither kept as a finding's earlier nor listed in fixed" in retry
+    report = json.loads((tmp_path / "out" / "report.json").read_text())
+    assert report["fixed"] == ["e1"] and report["fixed_titles"] == ["a"]
+
+
+def test_validator_drops_new_findings_on_unchanged_pages(
+    stateful: tuple[Path, str], tmp_path: Path
+) -> None:
+    repo, prev = stateful
+    previous = _previous_file(tmp_path, prev, [])
+    rec = Recorder(
+        READ_PAGES,
+        reports=[
+            _report(
+                [
+                    _finding("on unchanged", "docs/how-to/other.md"),
+                    _finding("on changed", "docs/how-to/run-it.md"),
+                ],
+                [],
+            ),
+            _report([_finding("on changed", "docs/how-to/run-it.md")], []),
+        ],
+    )
+
+    assert _main(repo, tmp_path, FunctionModel(rec), "--previous", str(previous)) == 0
+
+    (retry,) = rec.retries
+    assert "on unchanged: a new finding on docs/how-to/other.md" in retry
+    assert "on changed" not in retry
+    report = json.loads((tmp_path / "out" / "report.json").read_text())
+    assert [f["title"] for f in report["findings"]] == ["on changed"]
+
+
+@pytest.mark.parametrize("commit", ["", "0" * 40])
+def test_previous_commit_missing_from_history_is_ignored(
+    repo: Path,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+    commit: str,
+) -> None:
+    previous = _previous_file(
+        tmp_path, commit, [_finding("x", "docs/how-to/run-it.md")]
+    )
+    rec = Recorder()
+
+    assert _main(repo, tmp_path, FunctionModel(rec), "--previous", str(previous)) == 0
+
+    assert rec.prompt is not None and "Earlier findings" not in rec.prompt
+    assert "ignored the previous report" in capsys.readouterr().err
+    report = json.loads((tmp_path / "out" / "report.json").read_text())
+    assert "ignored the previous report" in report["summary"]
+    assert report["previous_commit"] == ""
+
+
+def test_report_records_commit_and_renders_the_delta(
+    stateful: tuple[Path, str], tmp_path: Path
+) -> None:
+    repo, prev = stateful
+    head = _git(repo, "rev-parse", "HEAD").strip()
+    previous = _previous_file(
+        tmp_path,
+        prev,
+        [
+            _finding("gone", "docs/how-to/run-it.md"),
+            _finding("stays", "docs/how-to/run-it.md"),
+        ],
+    )
+    rec = Recorder(
+        READ_PAGES,
+        reports=[
+            _report(
+                [
+                    _finding("stays", "docs/how-to/run-it.md", earlier="e2"),
+                    _finding("fresh", "docs/how-to/run-it.md"),
+                ],
+                ["e1"],
+            )
+        ],
+    )
+
+    assert (
+        _main(
+            repo,
+            tmp_path,
+            FunctionModel(rec),
+            "--previous",
+            str(previous),
+            "--head",
+            head,
+        )
+        == 0
+    )
+
+    report = json.loads((tmp_path / "out" / "report.json").read_text())
+    assert report["commit"] == head != prev
+    assert report["previous_commit"] == prev and report["fixed"] == ["e1"]
+    markdown = (tmp_path / "out" / "report.md").read_text()
+    assert "Since the last run: 1 fixed · 1 still open · 1 new" in markdown
+    assert "Fixed: gone." in markdown
+    assert "**stays** (still open)" in markdown
+    assert "**fresh** (" in markdown
+
+
+def test_run_without_previous_renders_as_before(repo: Path, tmp_path: Path) -> None:
+    head = _git(repo, "rev-parse", "HEAD").strip()
+
+    assert _main(repo, tmp_path, FunctionModel(Recorder())) == 0
+
+    report = json.loads((tmp_path / "out" / "report.json").read_text())
+    assert report["commit"] == head and report["previous_commit"] == ""
+    assert "Since the last run" not in (tmp_path / "out" / "report.md").read_text()
+
+    base = _git(repo, "rev-parse", "base").strip()
+    assert _main(repo, tmp_path, FunctionModel(Recorder()), "--head", base) == 0
+    report = json.loads((tmp_path / "out" / "report.json").read_text())
+    assert report["commit"] == base != head
+
+
+def _prev_gh(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, comments: list) -> Path:
+    """Put a gh on PATH that lists ``comments`` and fakes ``run download``."""
+    bin_dir = tmp_path / "prev-gh-bin"
+    bin_dir.mkdir()
+    calls = tmp_path / "prev-calls.jsonl"
+    (bin_dir / "gh").write_text(
+        f"#!{sys.executable}\n"
+        "import json, os, sys\n"
+        "args = sys.argv[1:]\n"
+        f"open({str(calls)!r}, 'a').write(json.dumps(args) + '\\n')\n"
+        "if args[0] == 'api':\n"
+        f"    print(json.dumps([{json.dumps(comments)}]))\n"
+        "elif args[:2] == ['run', 'download']:\n"
+        "    out = args[args.index('-D') + 1]\n"
+        "    os.makedirs(out, exist_ok=True)\n"
+        "    open(os.path.join(out, 'report.json'), 'w').write(json.dumps({'run': args[2]}))\n"
+    )
+    (bin_dir / "gh").chmod(0o755)
+    monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
+    return calls
+
+
+def test_previous_downloads_the_linked_report(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    mark = agent.COMMENT_MARK.format(title="Knowledge audit")
+    body = f"{mark}\n## Knowledge audit\n\nRun and its report artifact: https://github.com/o/r/actions/runs/4242\n"
+    calls = _prev_gh(tmp_path, monkeypatch, [{"id": 1, "body": body}])
+    out = tmp_path / "prev"
+
+    assert agent.main(["previous", "--pr", "12", "--out", str(out)]) == 0
+
+    assert json.loads((out / "report.json").read_text()) == {"run": "4242"}
+    assert ["run", "download", "4242", "-n", "agent-report", "-D", str(out)] in [
+        json.loads(line) for line in calls.read_text().splitlines()
+    ]
+
+
+@pytest.mark.parametrize(
+    "comments",
+    [[], [{"id": 1, "body": "<!-- kmctl-audit: Knowledge audit -->\nno link here"}]],
+)
+def test_previous_writes_nothing_without_a_comment_or_link(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, comments: list
+) -> None:
+    calls = _prev_gh(tmp_path, monkeypatch, comments)
+    out = tmp_path / "prev"
+
+    assert agent.main(["previous", "--pr", "12", "--out", str(out)]) == 0
+
+    assert not out.exists()
+    assert not any(
+        json.loads(line)[:2] == ["run", "download"]
+        for line in calls.read_text().splitlines()
+    )

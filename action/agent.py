@@ -128,14 +128,37 @@ class Finding(BaseModel):
         description="path:line strings that contradict the claim."
     )
     fix: str = Field(description="A suggested fix.")
+    earlier: str | None = Field(
+        default=None,
+        description=(
+            "The id (e1, e2, ...) of the earlier finding this one is, when it still "
+            "stands; leave it out for a new finding."
+        ),
+    )
 
 
 class Report(BaseModel):
-    """What the agent hands back."""
+    """What the agent hands back, and what the run records about it."""
 
     summary: str
     checked: list[Checked]
     findings: list[Finding]
+    fixed: list[str] = Field(
+        default_factory=list,
+        description="The ids (e1, e2, ...) of earlier findings the change fixed.",
+    )
+    commit: str = Field(
+        default="",
+        description="Set by the run, not the model: the head commit it reread.",
+    )
+    previous_commit: str = Field(
+        default="",
+        description="Set by the run, not the model: the commit of the previous report.",
+    )
+    fixed_titles: list[str] = Field(
+        default_factory=list,
+        description="Set by the run, not the model: the titles of the fixed findings.",
+    )
 
 
 class Refused(Exception):
@@ -158,6 +181,8 @@ class Workspace:
     hits: dict[Path, set[int]] = field(default_factory=dict)
     #: The citations the last report was sent back for.
     unchecked: list[str] = field(default_factory=list)
+    #: The earlier-findings problems the last report was sent back for.
+    unanswered: list[str] = field(default_factory=list)
 
     def resolve(self, raw: object) -> Path:
         """Resolve ``raw`` against the repository, following symlinks; refuse it outside every root."""
@@ -469,6 +494,86 @@ def changed_pages(repo: Path, base: str) -> list[Page]:
     return found
 
 
+def pages_touched(repo: Path, since: str, head: str) -> set[str]:
+    """Return the pages whose file or any of whose sources changed from ``since`` to ``head``."""
+    files = git_lines(
+        repo, "diff", "--name-only", "--no-renames", "--relative", f"{since}..{head}"
+    )
+    touched = set()
+    for path in candidate_pages(repo):
+        rel = path.relative_to(repo).as_posix()
+        if rel in files:
+            touched.add(rel)
+            continue
+        for entry in front_matter(path).get("sources") or []:
+            resource = str(entry.get("resource", "")) if isinstance(entry, dict) else ""
+            if resource and "://" not in resource and source_matches(resource, files):
+                touched.add(rel)
+                break
+    return touched
+
+
+def has_commit(repo: Path, sha: str) -> bool:
+    """Say whether ``sha`` names a commit in ``repo``'s history."""
+    proc = subprocess.run(
+        ["git", "cat-file", "-e", f"{sha}^{{commit}}"],
+        cwd=repo,
+        capture_output=True,
+        check=False,
+    )
+    return bool(sha) and proc.returncode == 0
+
+
+def earlier_ids(previous: Report) -> dict[str, Finding]:
+    """Number the previous report's findings e1, e2, ... in its order."""
+    return {f"e{n}": f for n, f in enumerate(previous.findings, 1)}
+
+
+def earlier_text(previous: Report, touched: set[str]) -> str:
+    """Return the task's section on the previous report's findings and what changed since."""
+    lines = [
+        "\n## Earlier findings\n",
+        (
+            f"The previous run reread these pages at commit {previous.commit} and "
+            "reported the findings below. For each id, either keep it as a finding "
+            "whose `earlier` is that id, with its title, when it still stands, or "
+            "list the id in `fixed` when the change fixed it. Raise a new finding "
+            "(no `earlier`) only on a page that changed since that commit, or whose "
+            "sources did; a new finding on any other page is sent back.\n"
+        ),
+        "Pages changed since that commit: "
+        + (", ".join(sorted(touched)) if touched else "none")
+        + "\n",
+    ]
+    for eid, f in earlier_ids(previous).items():
+        lines.append(f"- {eid} [{f.severity}] {f.title} ({f.claim}): {f.summary}")
+    return "\n".join(lines) + "\n"
+
+
+def state_problems(report: Report, previous: Report, touched: set[str]) -> list[str]:
+    """Return why ``report`` does not answer ``previous``, or keeps a new finding on an unchanged page."""
+    ids = earlier_ids(previous)
+    carried = {f.earlier for f in report.findings if f.earlier}
+    problems = [
+        f"{eid} ({ids[eid].title}): neither kept as a finding's earlier nor listed in fixed"
+        for eid in ids
+        if eid not in carried and eid not in report.fixed
+    ]
+    problems += [
+        f"{eid}: no earlier finding has that id"
+        for eid in sorted((carried | set(report.fixed)) - set(ids))
+    ]
+    for f in report.findings:
+        page = page_path(f.claim).split(":", 1)[0]
+        if f.earlier is None and is_page(page) and page not in touched:
+            problems.append(
+                f"{f.title}: a new finding on {page}, which did not change since "
+                f"{previous.commit}, nor did its sources; drop it or give it the "
+                "earlier id it repeats"
+            )
+    return problems
+
+
 def scope_text(pages: list[Page], base: str) -> str:
     """Return the task's list of the pages in scope, compared with ``base``."""
     lines = [f"\n## Pages in scope\n\nThe change compared with {base}:\n"]
@@ -636,15 +741,19 @@ def render(report: Report, min_severity: str = "info") -> str:
         head = f"**All {len(pages)} pages hold**"
     else:
         head = "**No page in scope**"
-    lines = [
-        head + (f" · {counts}" if counts else ""),
-        "",
-        first_sentence(report.summary),
-        "",
-    ]
+    lines = [head + (f" · {counts}" if counts else ""), ""]
+    if report.previous_commit:
+        still = sum(f.earlier is not None for f in report.findings)
+        new = len(report.findings) - still
+        delta = f"{len(report.fixed_titles)} fixed · {still} still open · {new} new"
+        lines += [f"Since the last run: {delta}", ""]
+        if report.fixed_titles:
+            lines += ["Fixed: " + "; ".join(report.fixed_titles) + ".", ""]
+    lines += [first_sentence(report.summary), ""]
     for f in shown:
+        again = " (still open)" if f.earlier else ""
         lines.append(
-            f"- {MARKS[f.severity]} **{f.title}** ({short_name(f.claim)}): "
+            f"- {MARKS[f.severity]} **{f.title}**{again} ({short_name(f.claim)}): "
             f"{first_sentence(f.summary)}"
         )
     if hidden:
@@ -738,11 +847,15 @@ async def run_agent(
     ws: Workspace,
     timeout: float,
     max_requests: int,
+    previous: Report | None = None,
+    touched: set[str] | None = None,
 ):
     """Run the agent once and return PydanticAI's result.
 
     The report goes back to the agent, up to ``OUTPUT_RETRIES`` times, while
-    it cites a line the agent did not see.
+    it cites a line the agent did not see, or, given ``previous``, while it
+    leaves an earlier finding unanswered or keeps a new finding on a page not
+    in ``touched``.
     """
     agent = Agent(
         model,
@@ -761,6 +874,14 @@ async def run_agent(
                 "hit. Read or search these, or drop them, then send the report "
                 "again:\n" + "\n".join(f"- {b}" for b in bad)
             )
+        if previous is not None:
+            ws.unanswered = state_problems(report, previous, touched or set())
+            if ws.unanswered:
+                raise ModelRetry(
+                    "Answer the earlier findings and keep new findings to changed "
+                    "pages, then send the report again:\n"
+                    + "\n".join(f"- {b}" for b in ws.unanswered)
+                )
         return report
 
     return await asyncio.wait_for(
@@ -806,6 +927,10 @@ def run(args: argparse.Namespace, model: Model | str | None = None) -> int:
     refuse_tokens(repo)
     timeout = parse_duration(args.timeout)
     pages = changed_pages(repo, args.base)
+    head = args.head or git_lines(repo, "rev-parse", "HEAD")[0]
+    previous, note = load_previous(repo, args.previous)
+    if note:
+        print(f"agent: {note}", file=sys.stderr)
     if not pages:
         empty = Report(
             summary=(
@@ -814,6 +939,7 @@ def run(args: argparse.Namespace, model: Model | str | None = None) -> int:
             ),
             checked=[],
             findings=[],
+            commit=head,
         )
         write_report(Path(args.out), empty, b"[]")
         return 0
@@ -821,6 +947,10 @@ def run(args: argparse.Namespace, model: Model | str | None = None) -> int:
         model = build_model(args.model, args.base_url, args.api_key_env)
     ws = Workspace(repo, [repo])
     prompt = PROMPT.read_text() + scope_text(pages, args.base)
+    touched: set[str] = set()
+    if previous is not None:
+        touched = pages_touched(repo, previous.commit, head)
+        prompt += earlier_text(previous, touched)
     try:
         result = asyncio.run(
             run_agent(
@@ -830,6 +960,8 @@ def run(args: argparse.Namespace, model: Model | str | None = None) -> int:
                 ws,
                 timeout,
                 args.max_requests,
+                previous,
+                touched,
             )
         )
     except TimeoutError:
@@ -843,11 +975,48 @@ def run(args: argparse.Namespace, model: Model | str | None = None) -> int:
                 + "\n".join(f"- {b}" for b in ws.unchecked),
                 file=sys.stderr,
             )
+        elif ws.unanswered:
+            print(
+                f"agent: stopped; after {OUTPUT_RETRIES} retries the report still does "
+                "not answer the previous report:\n"
+                + "\n".join(f"- {b}" for b in ws.unanswered),
+                file=sys.stderr,
+            )
         else:
             print(f"agent: stopped; the model failed: {err}", file=sys.stderr)
         return 1
-    write_report(Path(args.out), result.output, result.all_messages_json())
+    report = result.output
+    report.commit = head
+    if previous is not None:
+        ids = earlier_ids(previous)
+        report.previous_commit = previous.commit
+        report.fixed_titles = [ids[e].title for e in report.fixed if e in ids]
+    if note:
+        report.summary = f"{report.summary} ({note})"
+    write_report(Path(args.out), report, result.all_messages_json())
     return 0
+
+
+def load_previous(repo: Path, raw: str | None) -> tuple[Report | None, str]:
+    """Read the previous report at ``raw``, or say why the run starts without one.
+
+    A report that records no commit, or whose commit is not in the history (a
+    rebase or force push), is ignored.
+    """
+    if not raw:
+        return None, ""
+    try:
+        previous = Report.model_validate_json(Path(raw).read_text())
+    except (OSError, ValueError) as err:
+        return None, f"ignored the previous report {raw}: {err}"
+    if not previous.commit:
+        return None, "ignored the previous report: it records no commit"
+    if not has_commit(repo, previous.commit):
+        return None, (
+            f"ignored the previous report: its commit {previous.commit} is not in "
+            "this history, after a rebase or force push"
+        )
+    return previous, ""
 
 
 class GhFailed(Exception):
@@ -884,6 +1053,67 @@ def run_link() -> str:
     return f"{server}/{repo}/actions/runs/{run_id}"
 
 
+#: The run link publish writes at the end of the comment.
+RUN_LINK = re.compile(r"/actions/runs/(\d+)")
+
+
+def find_comment(pr: int, mark: str) -> dict | None:
+    """Return pull request ``pr``'s comment whose body starts with ``mark``, or None.
+
+    Raises
+    ------
+    GhFailed
+        If gh cannot list the comments.
+    """
+    pages = json.loads(
+        gh(
+            "api",
+            f"repos/{{owner}}/{{repo}}/issues/{pr}/comments",
+            "--paginate",
+            "--slurp",
+        )
+        or "[]"
+    )
+    flat = [c for page in pages for c in (page if isinstance(page, list) else [page])]
+    # Only a body that starts with the mark is ours; a quote of it starts with "> ".
+    return next((c for c in flat if str(c.get("body", "")).startswith(mark)), None)
+
+
+def previous(args: argparse.Namespace) -> int:
+    """Run the ``previous`` command: download the report the audit comment's run link names."""
+    try:
+        comment = find_comment(args.pr, COMMENT_MARK.format(title=args.title))
+        if comment is None:
+            print(
+                f"agent: no audit comment on pull request #{args.pr}; nothing to fetch.",
+                file=sys.stderr,
+            )
+            return 0
+        match = RUN_LINK.search(str(comment.get("body", "")))
+        if match is None:
+            print(
+                "agent: the audit comment links no run; nothing to fetch.",
+                file=sys.stderr,
+            )
+            return 0
+        run_id = match.group(1)
+        try:
+            gh("run", "download", run_id, "-n", args.artifact, "-D", args.out)
+        except GhFailed as err:
+            print(
+                f"agent: could not download {args.artifact} from run {run_id}; starting without it: {err}",
+                file=sys.stderr,
+            )
+            return 0
+    except GhFailed as err:
+        print(f"agent: {err}", file=sys.stderr)
+        return 1
+    print(
+        f"agent: downloaded the report of run {run_id} to {args.out}", file=sys.stderr
+    )
+    return 0
+
+
 def publish_comment(args: argparse.Namespace, report: Report, over: list) -> int:
     """Post the report as one comment on pull request ``args.pr``, replacing the last one.
 
@@ -893,22 +1123,7 @@ def publish_comment(args: argparse.Namespace, report: Report, over: list) -> int
     mark = COMMENT_MARK.format(title=args.title)
     link = run_link()
     try:
-        comments = json.loads(
-            gh(
-                "api",
-                f"repos/{{owner}}/{{repo}}/issues/{args.pr}/comments",
-                "--paginate",
-                "--slurp",
-            )
-            or "[]"
-        )
-        flat = [
-            c for page in comments for c in (page if isinstance(page, list) else [page])
-        ]
-        # Only a body that starts with the mark is ours; a quote of it starts with "> ".
-        earlier = next(
-            (c for c in flat if str(c.get("body", "")).startswith(mark)), None
-        )
+        earlier = find_comment(args.pr, mark)
         if not over and earlier is None:
             print(
                 f"agent: nothing at or above {args.min_severity}; no comment was written.",
@@ -1036,6 +1251,27 @@ def parser() -> argparse.ArgumentParser:
         ),
     )
     r.add_argument(
+        "--head",
+        default=None,
+        metavar="SHA",
+        help=(
+            "The pull request's head commit, which the report records so the next "
+            "run can diff from it; on a pull_request checkout HEAD is a merge "
+            "commit made for that run alone. Default: HEAD."
+        ),
+    )
+    r.add_argument(
+        "--previous",
+        default=None,
+        metavar="REPORT",
+        help=(
+            "The previous run's report.json. The agent answers each of its "
+            "findings by id and raises new findings only on pages that changed "
+            "since its commit. A report with no commit, or one whose commit is not "
+            "in the history, is ignored. Default: none."
+        ),
+    )
+    r.add_argument(
         "--repo",
         default=".",
         help="The repository to work on. Default: the current folder.",
@@ -1055,6 +1291,36 @@ def parser() -> argparse.ArgumentParser:
         type=int,
         default=200,
         help="How many model requests the run may make. Default: 200.",
+    )
+    v = sub.add_parser(
+        "previous",
+        help="Download the report the pull request's audit comment links.",
+        description=(
+            "Find the audit comment on pull request --pr (marked with --title), "
+            "take the workflow run its link names, and download that run's "
+            "--artifact into --out with gh. With no comment, no link, or no "
+            "artifact left, download nothing and exit 0. Needs gh, GH_TOKEN, "
+            "pull-requests: read and actions: read; run it in a job of its own, "
+            "not the agent's. Exit codes: 0 done or nothing to fetch, 1 gh failed."
+        ),
+    )
+    v.add_argument(
+        "--pr", type=int, required=True, metavar="N", help="The pull request."
+    )
+    v.add_argument(
+        "--title",
+        default="Knowledge audit",
+        help="The audit comment's heading, which marks it. Default: Knowledge audit.",
+    )
+    v.add_argument(
+        "--artifact",
+        default="agent-report",
+        help="The artifact that holds report.json. Default: agent-report.",
+    )
+    v.add_argument(
+        "--out",
+        default="previous-report",
+        help="The folder to download into. Default: previous-report.",
     )
     p = sub.add_parser(
         "publish",
@@ -1097,6 +1363,8 @@ def main(argv: list[str] | None = None, model: Model | str | None = None) -> int
     try:
         if args.command == "publish":
             return publish(args)
+        if args.command == "previous":
+            return previous(args)
         return run(args, model)
     except UsageError as err:
         print(f"agent: {err}", file=sys.stderr)

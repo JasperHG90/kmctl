@@ -15,10 +15,44 @@ permissions:
 # repository runs action/agent.py from its own checkout; another repository
 # uses the action at a pinned release.
 jobs:
+  # Reads the audit comment, follows its run link and hands that run's report
+  # to the audit job, which answers each earlier finding and raises new ones
+  # only on pages changed since. Only this job and publish hold a token.
+  previous:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      actions: read
+    steps:
+      # Only to read the script.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          enable-cache: false
+      - name: Fetch the previous report
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: >-
+          uv run --no-config --script action/agent.py previous
+          --pr ${{ github.event.pull_request.number }}
+          --out ${{ runner.temp }}/previous-report
+      - name: Hand the previous report on
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: previous-report
+          path: ${{ runner.temp }}/previous-report
+          if-no-files-found: ignore
+
   # The agent sends the pages to a model with the API key. A fork's pull
   # request gets no secrets, so both jobs skip it. The agent has no shell and
   # this job no GitHub token, so the key and a token stay out of its reach.
   audit:
+    needs: previous
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
@@ -37,18 +71,31 @@ jobs:
       # AUDIT_API_KEY secret, or drop --base-url and name a PydanticAI provider,
       # such as --model openai:gpt-5 with OPENAI_API_KEY set. A weaker model
       # may miss drift. With no page in scope the agent calls no model.
+      # The first run on a pull request has no previous report.
+      - name: Download the previous report
+        continue-on-error: true
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: previous-report
+          path: ${{ runner.temp }}/previous-report
+      # --head: the checkout is a merge commit made for this run alone, so the
+      # report records the pull request's head, which the next run has.
       - name: Run the agent
         timeout-minutes: 40
         env:
           AUDIT_API_KEY: ${{ secrets.AUDIT_API_KEY }}
-        run: >-
-          uv run --no-config --script action/agent.py run
-          --model deepseek-v4.1-flash
-          --base-url https://ollama.com/v1
-          --api-key-env AUDIT_API_KEY
-          --base origin/${{ github.base_ref }}
-          --timeout 30m
-          --out ${{ runner.temp }}/agent-report
+          PREVIOUS: ${{ runner.temp }}/previous-report/report.json
+        run: |
+          args=(run
+            --model deepseek-v4.1-flash
+            --base-url https://ollama.com/v1
+            --api-key-env AUDIT_API_KEY
+            --base "origin/${{ github.base_ref }}"
+            --head "${{ github.event.pull_request.head.sha }}"
+            --timeout 30m
+            --out "${{ runner.temp }}/agent-report")
+          [ -f "$PREVIOUS" ] && args+=(--previous "$PREVIOUS")
+          uv run --no-config --script action/agent.py "${args[@]}"
       # The report, the findings as JSON and the full transcript.
       - name: Keep the report
         if: always()

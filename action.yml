@@ -31,7 +31,12 @@ inputs:
     default: fail
   mode:
     description: >-
-      checks (the default) runs kmctl check and kmctl review due. audit runs
+      checks (the default) runs kmctl check and kmctl review due. previous,
+      in a job of its own before the audit (pull-requests: read and actions:
+      read), downloads the report of the run the pull request's audit comment
+      links and hands it to the audit job as the previous-report artifact; the
+      audit answers each earlier finding and raises new ones only on pages
+      changed since that report. audit runs
       the agent in action/agent.py (PydanticAI) on a pull request from the
       same repository (ADR 0060): it lists every page under .okf/ and docs/
       whose sources name a file the pull request changed, has the model
@@ -90,14 +95,15 @@ inputs:
     default: low
   title:
     description: >-
-      Publish mode: the comment's heading, which also marks it so the next run
-      replaces it.
+      Publish and previous modes: the comment's heading, which also marks it
+      so the next run replaces it and previous mode finds it.
     required: false
     default: Knowledge audit
   report_name:
     description: >-
-      Audit and publish modes: the artifact's name, which audit mode uploads
-      and publish mode downloads.
+      Audit, publish and previous modes: the artifact's name, which audit mode
+      uploads, publish mode downloads, and previous mode downloads from the
+      run the comment links.
     required: false
     default: agent-report
 runs:
@@ -109,8 +115,8 @@ runs:
         MODE: ${{ inputs.mode }}
       run: |
         case "$MODE" in
-          checks | audit | publish) ;;
-          *) echo "kmctl action: mode must be checks, audit or publish, not '$MODE'." >&2; exit 1 ;;
+          checks | previous | audit | publish) ;;
+          *) echo "kmctl action: mode must be checks, previous, audit or publish, not '$MODE'." >&2; exit 1 ;;
         esac
     # No cache: a cache saved after the agent ran would carry what it wrote
     # into the publish job.
@@ -162,6 +168,19 @@ runs:
     # checkout, which a pull request controls, and could install other code.
     # The prompt ships with this action, and the agent has no shell and no
     # GitHub token in this step.
+    # The previous report, which the previous job fetched with its own token,
+    # comes as an artifact of this run, so this job still needs none. The
+    # first run on a pull request has none, and the audit starts fresh.
+    - name: Download the previous report
+      if: inputs.mode == 'audit' && steps.event.outputs.run == 'true'
+      continue-on-error: true
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+      with:
+        name: previous-report
+        path: ${{ runner.temp }}/previous-report
+    # --head: on a pull_request checkout HEAD is a merge commit made for this
+    # run alone, so the report records the pull request's head commit, which
+    # the next run's full-history checkout has.
     - name: Run the agent
       if: inputs.mode == 'audit' && steps.event.outputs.run == 'true'
       shell: bash
@@ -171,10 +190,13 @@ runs:
         BASE_URL: ${{ inputs.base_url }}
         API_KEY_ENV: ${{ inputs.api_key_env }}
         TIMEOUT: ${{ inputs.timeout }}
+        HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       run: |
-        args=(run --model "$MODEL" --base "origin/$GITHUB_BASE_REF" --out "$RUNNER_TEMP/agent-report" --timeout "$TIMEOUT")
+        args=(run --model "$MODEL" --base "origin/$GITHUB_BASE_REF" --head "$HEAD_SHA" --out "$RUNNER_TEMP/agent-report" --timeout "$TIMEOUT")
         [ -n "$BASE_URL" ] && args+=(--base-url "$BASE_URL")
         [ -n "$API_KEY_ENV" ] && args+=(--api-key-env "$API_KEY_ENV")
+        previous="$RUNNER_TEMP/previous-report/report.json"
+        [ -f "$previous" ] && args+=(--previous "$previous")
         uv run --no-config --script "${{ github.action_path }}/action/agent.py" "${args[@]}"
     - name: Keep the report
       if: always() && inputs.mode == 'audit'
@@ -182,6 +204,34 @@ runs:
       with:
         name: ${{ inputs.report_name }}
         path: ${{ runner.temp }}/agent-report
+        if-no-files-found: ignore
+    # Previous mode: a job of its own, with pull-requests: read and actions:
+    # read, finds the audit comment, follows its run link and downloads that
+    # run's report, then hands it to the audit job as previous-report. No
+    # comment, link or artifact: it uploads nothing and passes.
+    - name: Fetch the previous report
+      if: inputs.mode == 'previous'
+      shell: bash
+      working-directory: ${{ inputs.path }}
+      env:
+        GH_TOKEN: ${{ github.token }}
+        GH_REPO: ${{ github.repository }}
+        TITLE: ${{ inputs.title }}
+        REPORT_NAME: ${{ inputs.report_name }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+      run: |
+        if [ -z "$PR_NUMBER" ]; then
+          echo "kmctl previous: refused for event '$GITHUB_EVENT_NAME'; previous mode reads a pull request's audit comment." >&2
+          exit 1
+        fi
+        uv run --no-config --script "${{ github.action_path }}/action/agent.py" \
+          previous --pr "$PR_NUMBER" --title "$TITLE" --artifact "$REPORT_NAME" --out "$RUNNER_TEMP/previous-report"
+    - name: Hand the previous report on
+      if: inputs.mode == 'previous'
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: previous-report
+        path: ${{ runner.temp }}/previous-report
         if-no-files-found: ignore
     # A separate job: a fresh runner that gets only the artifact. A skipped or
     # failed audit leaves no artifact; publish then posts nothing and passes.

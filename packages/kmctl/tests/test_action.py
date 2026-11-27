@@ -310,7 +310,11 @@ def _agent_steps(steps: list[dict]) -> tuple[dict, dict]:
 
 def _publish_steps(steps: list[dict]) -> tuple[dict, dict]:
     """The artifact download and the publish step after it."""
-    fetch = _uses(steps, "actions/download-artifact")[0]
+    fetch = next(
+        s
+        for s in _uses(steps, "actions/download-artifact")
+        if "publish" in str(s.get("if", ""))
+    )
     post = next(
         s
         for s in steps
@@ -390,8 +394,9 @@ def test_action_publish_mode_posts_from_the_artifact() -> None:
     assert "${{ github.action_path }}/action/agent.py" in post["run"]
     assert '"$RUNNER_TEMP/agent-report/report.json"' in post["run"]
     assert post["env"]["GH_TOKEN"] == "${{ github.token }}"
+    fetch_previous = _previous_step(steps)
     for step in steps:
-        if step is not post:
+        if step is not post and step is not fetch_previous:
             _no_token(step)
     assert "publish" in action["inputs"]["mode"]["description"]
 
@@ -621,6 +626,101 @@ def test_step_arguments_parse_with_the_agent(tmp_path: Path) -> None:
     )
     parsed = parser.parse_args(publish_args)
     assert parsed.command == "publish" and parsed.pr == 12
+    previous_args = _script_args(
+        _run_step(
+            _previous_step(steps),
+            tmp_path / "previous",
+            "pull_request",
+            PR_NUMBER="12",
+            TITLE="Knowledge audit",
+            REPORT_NAME="agent-report",
+        )
+    )
+    assert parser.parse_args(previous_args).command == "previous"
+
+
+def _previous_step(steps: list[dict]) -> dict:
+    """The step that runs agent.py previous."""
+    return next(
+        s
+        for s in steps
+        if "agent.py" in str(s.get("run", "")) and " previous " in str(s.get("run", ""))
+    )
+
+
+def test_previous_mode_uploads_the_report(tmp_path: Path) -> None:
+    """Previous mode fetches with a token in its own step and hands the report on as an artifact."""
+    steps = _action_steps()
+    fetch = _previous_step(steps)
+    [hand] = [
+        s
+        for s in _uses(steps, "actions/upload-artifact")
+        if "previous" in str(s.get("if", ""))
+    ]
+
+    assert fetch["if"] == "inputs.mode == 'previous'"
+    assert fetch["env"]["GH_TOKEN"] == "${{ github.token }}"
+    assert hand["if"] == "inputs.mode == 'previous'"
+    assert hand["with"]["name"] == "previous-report"
+    assert hand["with"]["path"] == "${{ runner.temp }}/previous-report"
+    args = _script_args(
+        _run_step(
+            fetch,
+            tmp_path,
+            "pull_request",
+            PR_NUMBER="12",
+            TITLE="Knowledge audit",
+            REPORT_NAME="agent-report",
+        )
+    )
+    parsed = _agent_parser().parse_args(args)
+    assert parsed.command == "previous" and parsed.pr == 12
+    assert parsed.out == str(tmp_path / "runner" / "previous-report")
+
+
+def test_audit_step_passes_previous_only_when_present(tmp_path: Path) -> None:
+    """The agent step passes --previous when the artifact arrived, and --head always."""
+    steps = _action_steps()
+    agent, _ = _agent_steps(steps)
+    [download] = [
+        s
+        for s in _uses(steps, "actions/download-artifact")
+        if "audit" in str(s.get("if", ""))
+    ]
+    assert download["with"]["name"] == "previous-report"
+    assert download["continue-on-error"] is True
+    assert steps.index(download) < steps.index(agent)
+    assert agent["env"]["HEAD_SHA"] == "${{ github.event.pull_request.head.sha }}"
+
+    without = _run_step(agent, tmp_path / "none", "pull_request", HEAD_SHA="abc")
+    assert "--previous" not in without
+    assert without[without.index("--head") + 1] == "abc"
+
+    with_dir = tmp_path / "some"
+    (with_dir / "runner" / "previous-report").mkdir(parents=True)
+    (with_dir / "runner" / "previous-report" / "report.json").write_text("{}")
+    bin_dir, calls = _stub_bin(with_dir)
+    script = agent["run"].replace("${{ github.action_path }}", str(ROOT))
+    subprocess.run(
+        ["bash", "--noprofile", "--norc", "-eo", "pipefail", "-c", script],
+        cwd=with_dir,
+        env=os.environ
+        | {k: "" for k in agent["env"]}
+        | {
+            "PATH": f"{bin_dir}:{os.environ['PATH']}",
+            "GITHUB_BASE_REF": "main",
+            "RUNNER_TEMP": str(with_dir / "runner"),
+            "MODEL": "test",
+            "TIMEOUT": "30m",
+            "HEAD_SHA": "abc",
+        },
+        check=True,
+    )
+    given = json.loads(calls.read_text())
+    assert given[given.index("--previous") + 1] == str(
+        with_dir / "runner" / "previous-report" / "report.json"
+    )
+    assert _agent_parser().parse_args(_script_args(given)).previous
 
 
 def test_publish_step_tolerates_missing_artifact() -> None:

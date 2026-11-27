@@ -37,7 +37,7 @@ KMCTL = Path("packages/kmctl")
 GIT = ["git", "-c", "user.email=o@e.com", "-c", "user.name=O"]
 #: Every release after v0.12.2 builds kmctl from this folder (ADR 0044).
 SUBDIRECTORY = "#subdirectory=packages/kmctl"
-# The six lines `set` points at the release tag, as they start in the docs.
+# The seven lines `set` points at the release tag, as they start in the docs.
 INSTALL_RE = re.compile(
     r"^\s*uv tool install git\+https://github\.com/JasperHG90/kmctl(@[^\s#]+)?"
     r"(#subdirectory=packages/kmctl)?$",
@@ -146,7 +146,7 @@ def _run(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
 
 
 def _refs(root: Path) -> list[str | None]:
-    """The refs the six install lines name, in file order (None for no ref)."""
+    """The refs the install lines name, in file order (None for no ref)."""
     refs: list[str | None] = []
     for rel in DOC_FILES:
         text = (root / rel).read_text()
@@ -165,12 +165,12 @@ def test_release_py_current_prints_the_manifest_version(tmp_path: Path) -> None:
     assert res.stdout == "0.2.0a1\n"
 
 
-def test_release_py_docs_start_with_six_install_lines() -> None:
-    """The docs this repository ships hold the six lines `set` rewrites."""
-    assert len(_refs(ROOT)) == 6
+def test_release_py_docs_start_with_seven_install_lines() -> None:
+    """The docs this repository ships hold the seven lines `set` rewrites."""
+    assert len(_refs(ROOT)) == 7
 
 
-def test_release_py_set_writes_the_version_and_the_six_doc_lines(
+def test_release_py_set_writes_the_version_and_the_seven_doc_lines(
     tmp_path: Path,
 ) -> None:
     """``set`` writes the version, keeps the package apm.yml's other lines and pins each doc line.
@@ -191,7 +191,7 @@ def test_release_py_set_writes_the_version_and_the_six_doc_lines(
         (ROOT / MANIFEST).read_text().splitlines()
     )
     assert changed == {f"version: {_manifest_version(ROOT)}", "version: 9.9.9"}
-    assert _refs(root) == ["v9.9.9"] * 6
+    assert _refs(root) == ["v9.9.9"] * 7
     assert res.stdout.splitlines() == [
         f"wrote {p}" for p in (*APM_FILES, *DOC_FILES, APM_DOC, COPIER, HOOKS)
     ]
@@ -344,10 +344,10 @@ def test_release_py_set_moves_the_pins_from_an_older_tag(tmp_path: Path) -> None
 
     assert res.returncode == 0, res.stderr
     assert _manifest_version(root) == "0.3.0rc1"
-    assert _refs(root) == ["v0.3.0rc1"] * 6
+    assert _refs(root) == ["v0.3.0rc1"] * 7
 
 
-def test_release_py_set_refuses_fewer_than_six_doc_lines(tmp_path: Path) -> None:
+def test_release_py_set_refuses_fewer_than_seven_doc_lines(tmp_path: Path) -> None:
     """With an install line gone, ``set`` exits nonzero and writes nothing."""
     root = _repo(tmp_path)
     readme = root / "packages" / "kmctl" / "README.md"
@@ -357,7 +357,7 @@ def test_release_py_set_refuses_fewer_than_six_doc_lines(tmp_path: Path) -> None
     res = _run(root, "set", "0.2.0")
 
     assert res.returncode == 1
-    assert "found 5 of the 6 install lines" in res.stderr
+    assert "found 6 of the 7 install lines" in res.stderr
     assert {rel: (root / rel).read_text() for rel in before} == before
 
 

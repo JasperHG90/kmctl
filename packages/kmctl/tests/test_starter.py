@@ -662,6 +662,27 @@ def test_pr_audit_quotes_the_model_answers(
     assert run["with"]["model"] == model
 
 
+def test_pr_audit_fetches_the_previous_report(template: Path, tmp_path: Path) -> None:
+    """The rendered workflow's previous job reads the last report; the audit job needs it."""
+    out = tmp_path / "demo"
+    assert _copier(template, out, "pr_audit=true").returncode == 0
+    wf = yaml.safe_load((out / AUDIT_WF).read_text())
+    previous, audit = wf["jobs"]["previous"], wf["jobs"]["audit"]
+
+    assert previous["permissions"] == {
+        "contents": "read",
+        "pull-requests": "read",
+        "actions": "read",
+    }
+    assert previous["if"] == SAME_REPO
+    assert _kmctl_step(previous["steps"]) == {
+        "uses": f"JasperHG90/kmctl@{TAG}",
+        "with": {"mode": "previous"},
+    }
+    assert audit["needs"] == "previous"
+    assert "permissions" not in audit
+
+
 @pytest.mark.parametrize("data", [(), ("pr_audit=false",)])
 def test_pr_audit_off_writes_no_workflow(
     template: Path, tmp_path: Path, data: tuple[str, ...]
@@ -715,7 +736,7 @@ def test_upgrade_moves_the_audit_pins_and_keeps_own_steps(
     wf_path = out / AUDIT_WF
     anchor = "      # Add your own steps below this line."
     text = wf_path.read_text()
-    assert text.count(anchor) == 2
+    assert text.count(anchor) == 3
     parts = text.split("\n\n")
     marked = [i for i, part in enumerate(parts) if anchor in part]
     for i in marked:
@@ -736,9 +757,9 @@ def test_upgrade_moves_the_audit_pins_and_keeps_own_steps(
     assert _unmerged(out) == []
     text = wf_path.read_text()
     assert "<<<<<<<" not in text and OLD_REF not in text
-    assert text.count(f"JasperHG90/kmctl@{TAG}") == 2
+    assert text.count(f"JasperHG90/kmctl@{TAG}") == 3
     wf = yaml.safe_load(text)
-    for job in ("audit", "publish"):
+    for job in ("previous", "audit", "publish"):
         names = [s.get("name") for s in _audit_steps(wf, job)]
         assert names[-1] == "Our audit step", (job, names)
 

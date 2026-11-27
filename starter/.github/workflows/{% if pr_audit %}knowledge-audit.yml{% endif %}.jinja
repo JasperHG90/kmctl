@@ -14,8 +14,26 @@ permissions:
   contents: read
 
 jobs:
-  # A fork's pull request gets no secrets, so both jobs skip it.
+  # Reads the audit comment, follows its run link and hands that run's report
+  # to the audit job, which answers each earlier finding and raises new ones
+  # only on pages changed since. A fork's pull request gets no secrets, so
+  # every job skips it.
+  previous:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      actions: read
+    steps:
+      - with:
+          mode: previous
+        uses: JasperHG90/kmctl@{{ kmctl_ref }}
+      # Add your own steps below this line. just upgrade rewrites the pin
+      # above, and content added directly below it would conflict.
+
   audit:
+    needs: previous
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
