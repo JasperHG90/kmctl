@@ -112,3 +112,26 @@ when the page would lead them to act wrongly, low when it is wrong but they
 would still act correctly. Over the 4
 live pull request runs so far, a comment at `low` would have held 1 to 6
 findings.
+
+## Correction, 2026-11-27, scope and review due
+
+Three statements above are narrower than the code:
+
+- The Context says `kmctl review due --base` lists only the pages with a
+  `verified` entry. It also lists the pages the branch edited, and it
+  compares a docs page's `sources` with the diff without a `verified` entry.
+  It still cannot say whether a page holds after the change, which is the
+  reread's job, so the decision stands.
+- The Decision says the task ships pinned with the action's commit. That
+  holds for a repository that uses the action at a release. This
+  repository's own workflow runs the pull request's own `action/agent.py`
+  and `action/prompt.md`, so a pull request here can change them; review
+  sees that change, as ADR 0057's Correction says of the workflow.
+- The scope lists decisions, architecture pages, practices and docs pages.
+  The code takes every markdown page under `.okf/` and `docs/` except
+  handoffs, `.okf/log.md` and the `index.md` pages, with any status but
+  deprecated or superseded, so a draft counts wherever it came from.
+
+The comment is now short: a count, one bullet per finding at or above
+`min_severity`, the pages that still hold, and the fixes and evidence folded
+away. It says how many findings below `min_severity` it left out.

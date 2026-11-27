@@ -434,9 +434,12 @@ and passes. A Dependabot pull request gets no secrets either, and the action
 skips it the same way. `!cancelled()` lets publish run after a failed audit,
 where it finds no report and posts nothing.
 
-The comment shows the findings at or above `min_severity`. A later push
-replaces it; when a run finds nothing at that severity, the comment says
-so. A run that fails or is skipped makes no report, so it leaves the last
+The comment is short: a count, one bullet per finding at or above
+`min_severity` (title, where, and one sentence), the pages that still hold,
+and a folded block with each fix, its evidence and the `kmctl verify`
+command for the holding pages. It says how many findings below
+`min_severity` it left out. A later push replaces it; when a run finds
+nothing at that severity, the comment says so. A run that fails or is skipped makes no report, so it leaves the last
 comment as it was, which may then be out of date. To title the comment
 differently, set `title` under the publish step's `with:`.
 

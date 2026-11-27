@@ -222,3 +222,19 @@ pull request reread, whose task ships in `action/prompt.md`. The reasoning
 under "Where it belongs" still holds for it: it starts from each page's
 `sources` and checks the page against the changed code, kmaudit's direction,
 and it lives in the action, outside both packages.
+
+## Correction, 2026-11-27, verified decisions and the pinned script
+
+The 2026-11-26 Correction says no decision in this repository has a
+`verified` entry. That is no longer true: every stable decision now has a
+`verified` entry, so `kmctl review due --base` compares their `sources` with
+the diff. The audit keeps its own matcher for the reason that Correction
+also gives: `review due --base` says only that a source changed, not whether
+the page still holds.
+
+The Decision says the agent script comes from the action, which the
+workflow pins by commit. That holds for a repository that uses the action at
+a release. This repository's workflow runs the pull request's own
+`action/agent.py` and `action/prompt.md`, so a same-repository pull request
+here can change what the audit does; review and branch protection see that
+change.

@@ -1,0 +1,206 @@
+{
+  "summary": "I reread the seven pages the pull request puts in scope, plus two pages the change affects although their front matter names no changed file (docs/how-to/install-the-plugin-and-the-ci-action.md, whose step 5 documents exactly the audit/publish code this pull request rewrites and whose `min_severity` default the pull request changes, and docs/how-to/start-a-repository-with-kmctl-starter.md, which documents the `copier.yml` questions the pull request adds: `pr_audit`, `audit_model`, `audit_base_url`). That is 9 pages and about 60 claims.\n\nMost of the pages hold. ADR 0025 matches `copier.yml` and `test_starter.py`; ADR 0026 matches `action.yml` and `starter/justfile.jinja`; ADR 0056 matches `action.yml` and `action/knowledge-ci.sh`; the tutorial matches `action/agent.py` and `action/prompt.md` line for line, including the exact empty-report output, the severity counts, the retry count and the citation rules; the starter how-to matches the new questions and the generated workflow.\n\nI found six claims that do not hold: the two records' shared claim that `kmctl review due --base` only lists pages with a `verified` entry (it also lists pages the branch edited, and it compares a docs page's sources without one), the narrow list of page kinds and drafts in ADR 0060, the statement that the audit's prompt is pinned by the action's commit while this repository's workflow runs it from the pull request's checkout, ADR 0046's placement rule not covering the audit the change puts in the action, and the install how-to's statement about which findings the comment shows.\n\nThe pages that still hold, by id: `decisions/0025-the-starter-template-lives-in-kmctl-and-shares-its-release-tags`, `decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins`, `decisions/0056-the-ci-action-fails-a-pull-request-whose-summary-is-behind`, `docs/how-to/start-a-repository-with-kmctl-starter`, `docs/tutorials/audit-your-repository-with-the-agent`. Once the author has read them, `kmctl verify decisions/0025-the-starter-template-lives-in-kmctl-and-shares-its-release-tags decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins decisions/0056-the-ci-action-fails-a-pull-request-whose-summary-is-behind docs/how-to/start-a-repository-with-kmctl-starter docs/tutorials/audit-your-repository-with-the-agent --by human:<their id>` records that they still hold, which clears them from `kmctl review due`. I did not run it, and nothing here is a verification: `verified` entries only come from a person.",
+  "checked": [
+    {
+      "subject": ".okf/decisions/0025-the-starter-template-lives-in-kmctl-and-shares-its-release-tags.md",
+      "against": "copier.yml and packages/kmctl/tests/test_starter.py",
+      "evidence": [
+        "copier.yml:8",
+        "copier.yml:85",
+        "copier.yml:86",
+        "packages/kmctl/tests/test_starter.py:799-839",
+        "packages/kmctl/tests/test_starter.py:100-125",
+        ".okf/decisions/0025-the-starter-template-lives-in-kmctl-and-shares-its-release-tags.md:39-63"
+      ]
+    },
+    {
+      "subject": ".okf/decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins.md",
+      "against": "action.yml (KMCTL_PINNED, the install step) and starter/justfile.jinja",
+      "evidence": [
+        "action.yml:120-134",
+        "action.yml:178",
+        ".okf/decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins.md:64-66",
+        ".okf/decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins.md:95-105",
+        "starter/justfile.jinja:26-35",
+        "packages/kmctl/tests/conftest.py:201"
+      ]
+    },
+    {
+      "subject": ".okf/decisions/0046-kmctl-works-from-code-toward-knowledge-and-kmaudit-from-knowledge-toward-code.md",
+      "against": "packages/kmctl/README.md, packages/kmctl/tests/test_action.py, packages/kmctl/tests/test_starter.py and action/agent.py",
+      "evidence": [
+        "packages/kmctl/README.md:21-23",
+        "packages/kmctl/README.md:291-293",
+        "packages/kmctl/tests/test_action.py:246-255",
+        "packages/kmctl/tests/test_starter.py:936-960",
+        "action/agent.py:8-14",
+        ".okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md:194-200"
+      ]
+    },
+    {
+      "subject": ".okf/decisions/0056-the-ci-action-fails-a-pull-request-whose-summary-is-behind.md",
+      "against": "action.yml and action/knowledge-ci.sh",
+      "evidence": [
+        "action.yml:24-31",
+        "action.yml:130-134",
+        "action/knowledge-ci.sh:41-51",
+        "action/knowledge-ci.sh:60-64",
+        "packages/kmctl/src/kmctl/__init__.py:259-269",
+        "packages/kmctl/src/kmctl/checks.py:41-42",
+        "packages/kmctl/tests/test_action.py:736-743"
+      ]
+    },
+    {
+      "subject": ".okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md",
+      "against": "action.yml, action/agent.py and .github/workflows/knowledge-audit.yml",
+      "evidence": [
+        "action.yml:44-51",
+        "action.yml:139-160",
+        "action.yml:195-211",
+        "action/agent.py:405-419",
+        "action/agent.py:510-537",
+        "action/agent.py:769-831",
+        ".github/workflows/knowledge-audit.yml:21-59",
+        ".github/workflows/knowledge-audit.yml:66-95",
+        ".okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md:202-224"
+      ]
+    },
+    {
+      "subject": ".okf/decisions/0060-the-ci-agent-only-rereads-the-pages-a-pull-request-changed.md",
+      "against": "action/agent.py, action/prompt.md, action.yml and .github/workflows/knowledge-audit.yml",
+      "evidence": [
+        "action/agent.py:405-419",
+        "action/agent.py:422-462",
+        "action/agent.py:691-701",
+        "action/agent.py:70-101",
+        "action/prompt.md:20-44",
+        "action.yml:32-53",
+        ".github/workflows/knowledge-audit.yml:1-8",
+        ".okf/decisions/0060-the-ci-agent-only-rereads-the-pages-a-pull-request-changed.md:101-114"
+      ]
+    },
+    {
+      "subject": "docs/tutorials/audit-your-repository-with-the-agent.md",
+      "against": "action/agent.py and action/prompt.md (the command, the empty report, the retry and citation rules, the report fields, the severity rubric)",
+      "evidence": [
+        "action/agent.py:691-701",
+        "action/agent.py:540-570",
+        "action/agent.py:576-613",
+        "action/agent.py:654-662",
+        "action/agent.py:856-970",
+        "action/prompt.md:6-44",
+        "docs/tutorials/audit-your-repository-with-the-agent.md:76-94",
+        "docs/tutorials/audit-your-repository-with-the-agent.md:158-178",
+        "packages/kmctl/src/kmctl/candidates.py:168-182",
+        "docs/how-to/find-unrecorded-decisions.md:29-31"
+      ]
+    },
+    {
+      "subject": "docs/how-to/install-the-plugin-and-the-ci-action.md (added: the pull request rewrites the audit and publish modes this page's step 5 documents, and changes the `min_severity` default from `high` to `low`)",
+      "against": "action.yml and action/agent.py",
+      "evidence": [
+        "docs/how-to/install-the-plugin-and-the-ci-action.md:301-355",
+        "docs/how-to/install-the-plugin-and-the-ci-action.md:362-421",
+        "docs/how-to/install-the-plugin-and-the-ci-action.md:443-455",
+        "action.yml:83-90",
+        "action/agent.py:769-804"
+      ]
+    },
+    {
+      "subject": "docs/how-to/start-a-repository-with-kmctl-starter.md (added: the pull request adds the `pr_audit`, `audit_model` and `audit_base_url` questions and the generated knowledge-audit workflow)",
+      "against": "copier.yml and starter/.github/workflows/knowledge-audit.yml.jinja",
+      "evidence": [
+        "copier.yml:49-74",
+        "starter/.github/workflows/{% if pr_audit %}knowledge-audit.yml{% endif %}.jinja:28-47",
+        "starter/.github/workflows/{% if pr_audit %}knowledge-audit.yml{% endif %}.jinja:54-69",
+        "docs/how-to/start-a-repository-with-kmctl-starter.md:42-46",
+        "docs/how-to/start-a-repository-with-kmctl-starter.md:56",
+        "packages/kmctl/tests/test_starter.py:605-706"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "title": "review due --base does not list only verified pages",
+      "severity": "medium",
+      "path": ".okf/decisions/0060-the-ci-agent-only-rereads-the-pages-a-pull-request-changed.md",
+      "summary": "The record says `kmctl review due --base` lists a page only when it has a `verified` entry; the CLI keeps any page whose id the branch edited (as `unverified`) and compares a docs page's `sources` with or without one, so the stated reason for the audit keeping its own matcher is wrong for docs pages and for pages the branch edits. The conclusion (review due cannot say whether a page still holds) is unaffected.",
+      "claim": ".okf/decisions/0060-the-ci-agent-only-rereads-the-pages-a-pull-request-changed.md:33-34",
+      "contradicted_by": [
+        "packages/kmctl/src/kmctl/review_due.py:346",
+        "packages/kmctl/src/kmctl/review_due.py:294-299",
+        "packages/kmctl/src/kmctl/review_due.py:19-21",
+        ".okf/prototypes/pr-audit-scope/README.md:48-49",
+        ".okf/decisions/0060-the-ci-agent-only-rereads-the-pages-a-pull-request-changed.md:88-89"
+      ],
+      "fix": "Append a dated Correction to ADR 0060 (do not edit the body): `review due --base` compares a page's `sources` with the diff only when the page has a `verified` entry, and otherwise lists the page only when the branch added or edited it, so it misses the stable decisions a change touches but did not edit; the audit keeps its own match of `sources`. Then run `kmctl summary ack` if `.okf/summary.md` still holds."
+    },
+    {
+      "title": "The correction's claim that no decision is verified, and that sources are compared only for verified pages",
+      "severity": "medium",
+      "path": ".okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md",
+      "summary": "The 2026-11-26 Correction states that `review due --base` compares a page's `sources` with the diff only when the page has a `verified` entry and that no decision in this repository has one. Both are now false: docs pages with `sources` are compared without a `verified` entry, and the 2026-11-27 verify pass gave the decisions `verified` entries (this record's own front matter has one).",
+      "claim": ".okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md:155-157",
+      "contradicted_by": [
+        "packages/kmctl/src/kmctl/review_due.py:346",
+        "packages/kmctl/src/kmctl/review_due.py:19-21",
+        ".okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md:14-15",
+        ".okf/log.md:398"
+      ],
+      "fix": "Append a dated Correction to ADR 0057 saying what the measurement showed at the time and what holds now: only a `verified` page gets its `sources` compared (so the stable decisions were missed before 2026-11-27), a docs page with sources is compared against its own last commit, and the decisions carry `verified` entries since 2026-11-27. Then run `kmctl summary ack` if `.okf/summary.md` still holds. (The same sentence in ADR 0060:33-34 needs its own Correction.)"
+    },
+    {
+      "title": "The comment lists findings below min_severity too",
+      "severity": "medium",
+      "path": "docs/how-to/install-the-plugin-and-the-ci-action.md",
+      "summary": "The page says the pull request comment shows the findings at or above `min_severity`, but `min_severity` only decides whether the comment is posted or replaced: once it is, `render(report)` prints every finding, so with `min_severity: high` a low or medium finding still appears in the comment. `action.yml`'s own description says the input is the lowest severity that posts or updates the comment.",
+      "claim": "docs/how-to/install-the-plugin-and-the-ci-action.md:437",
+      "contradicted_by": [
+        "action/agent.py:801-802",
+        "action/agent.py:851-853",
+        "action.yml:83-90"
+      ],
+      "fix": "Edit the page to match the code: `min_severity` is the lowest severity that posts or updates the comment; when the comment is written it lists every finding in the report, with a count by severity, and a later run with nothing at that level replaces it with a note."
+    },
+    {
+      "title": "The audit's prompt and script are not pinned when this repository runs them",
+      "severity": "low",
+      "path": ".okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md",
+      "summary": "The record says the agent script comes from the action, pinned by commit, and that a pull request therefore cannot quietly edit the prompt. This repository's `knowledge-audit.yml` runs no action: it runs `action/agent.py` from the pull request's own checkout, and the script reads its task from `action/prompt.md` beside itself, so a pull request there can change both the prompt and the script (visibly, as a diff, but without touching the workflow).",
+      "claim": ".okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md:55-56",
+      "contradicted_by": [
+        ".github/workflows/knowledge-audit.yml:13-16",
+        ".github/workflows/knowledge-audit.yml:44-51",
+        "action/agent.py:51",
+        "action/agent.py:705",
+        ".okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md:181-187"
+      ],
+      "fix": "Append a dated Correction to ADR 0057: a consumer's workflow pins the action by tag or commit, but kmctl's own `knowledge-audit.yml` runs `action/agent.py` and `action/prompt.md` from the pull request's checkout, so there a pull request can change the prompt and the script, and only the diff plus branch protection guard it. Then run `kmctl summary ack` if `.okf/summary.md` still holds."
+    },
+    {
+      "title": "Every page kind is wider than the list, and drafts are not only the ones the pull request adds",
+      "severity": "low",
+      "path": ".okf/decisions/0060-the-ci-agent-only-rereads-the-pages-a-pull-request-changed.md",
+      "summary": "The record describes the scope as \"Decisions (stable, and drafts the pull request adds), architecture pages, practices and docs pages\". The code keeps every markdown page under `.okf/` and `docs/` except handoffs, the log and `index.md`, and skips only `deprecated` and `superseded` statuses, so an existing draft decision, a proposal or a prototype page whose `sources` match a changed file is reread too, and a draft the pull request did not add is not left out.",
+      "claim": ".okf/decisions/0060-the-ci-agent-only-rereads-the-pages-a-pull-request-changed.md:54-56",
+      "contradicted_by": [
+        "action/agent.py:405-419",
+        "action/agent.py:441-461"
+      ],
+      "fix": "Append a dated Correction to ADR 0060 listing the scope as the code has it: every page under `.okf/` and `docs/` whose `sources` match a changed file, whatever its kind and whether or not the pull request added it, minus handoffs, the log, `index.md` pages and decisions whose status is `deprecated` or `superseded`. Then run `kmctl summary ack` if `.okf/summary.md` still holds."
+    },
+    {
+      "title": "The placement rule leaves the CI audit, a knowledge-to-code feature, in the action",
+      "severity": "low",
+      "path": ".okf/decisions/0046-kmctl-works-from-code-toward-knowledge-and-kmaudit-from-knowledge-toward-code.md",
+      "summary": "The record says a feature goes in the package whose direction it shares and that a feature working from `docs/` and `.okf/` toward the code goes in kmaudit. The change ships exactly that: the CI agent starts from each page's `sources` and checks the page against the changed code, inside kmctl's action rather than kmaudit. ADR 0057's Correction records the exception; ADR 0046 itself does not, so a reader applying it would place the next such feature in kmaudit.",
+      "claim": ".okf/decisions/0046-kmctl-works-from-code-toward-knowledge-and-kmaudit-from-knowledge-toward-code.md:35",
+      "contradicted_by": [
+        "action/agent.py:8-14",
+        "packages/kmctl/README.md:291-293",
+        ".okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md:194-200"
+      ],
+      "fix": "Append a dated Correction to ADR 0046 (or add a draft decision with `kmctl new decision --draft` for the author to accept) saying that the action is outside both packages and that its pull request reread is the one knowledge-to-code feature on kmctl's side, and why it does not move to kmaudit. Then run `kmctl summary ack` if `.okf/summary.md` still holds."
+    }
+  ]
+}

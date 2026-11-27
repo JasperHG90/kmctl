@@ -104,8 +104,15 @@ the file's end, is sent back.
 class Checked(BaseModel):
     """One thing the agent compared."""
 
-    subject: str = Field(description="The page, concept or file compared.")
-    against: str = Field(description="What it was compared against, in a few words.")
+    subject: str = Field(
+        description="The page's path relative to the repository, and nothing else."
+    )
+    against: str = Field(
+        description=(
+            "What it was compared against, in a few words; for a page you added, "
+            "also why the change affects it."
+        )
+    )
     evidence: list[str] = Field(description="path:line strings you read.")
 
 
@@ -537,37 +544,121 @@ def refuse_tokens(repo: Path) -> None:
         )
 
 
-def render(report: Report) -> str:
-    """Return the report as Markdown: the summary, counts, a table of findings
-    (most severe first), then the checked list."""
+#: Where a sentence ends: after . ! or ?, before a capital, a backtick or a bracket.
+SENTENCE_END = re.compile(r"(?<=[.!?])\s+(?=[A-Z`(\[])")
+#: A severity's mark in the comment, most severe first.
+MARKS = {"high": "🔴", "medium": "🟠", "low": "🟡", "info": "⚪"}
 
-    def cell(text: object) -> str:
-        return str(text).replace("|", "\\|").replace("\n", " ")
 
-    counts = ", ".join(
-        f"{sum(f.severity == s for f in report.findings)} {s}"
-        for s in reversed(SEVERITIES)
+def first_sentence(text: str) -> str:
+    """Return the first sentence of ``text``, or all of it when it has one."""
+    return SENTENCE_END.split(text.strip(), maxsplit=1)[0]
+
+
+def page_path(subject: str) -> str:
+    """Return the path a checked entry names, without a note an older report added after it."""
+    words = subject.strip().split()
+    return words[0].strip("`") if words else ""
+
+
+def is_page(path: str) -> bool:
+    """Say whether ``path`` is a page the reread checks: markdown under .okf/ or docs/."""
+    return path.startswith((".okf/", "docs/")) and path.endswith(".md")
+
+
+def short_name(ref: str) -> str:
+    """Name a page or a ``path:line`` briefly: ``ADR 0060:18`` for a decision, else the file name."""
+    path, _, line = page_path(ref).partition(":")
+    name = path.rsplit("/", 1)[-1].removesuffix(".md")
+    number = re.match(r"(\d{4})-", name)
+    if "decisions/" in path and number:
+        name = f"ADR {number.group(1)}"
+    return f"{name}:{line}" if line else name
+
+
+def render(report: Report, min_severity: str = "info") -> str:
+    """Return the report as a short Markdown comment, its evidence folded away.
+
+    The visible part is a counts line, the summary's first sentence, one
+    bullet per finding at or above ``min_severity`` (most severe first), and
+    the pages that still hold, by short name. A ``<details>`` block holds each
+    finding's full text, fix and citations, the ``kmctl verify`` command for
+    the pages that hold, and each checked page's evidence.
+    """
+    floor = SEVERITIES.index(min_severity)
+    shown = sorted(
+        (f for f in report.findings if SEVERITIES.index(f.severity) >= floor),
+        key=lambda f: -SEVERITIES.index(f.severity),
     )
+    hidden = len(report.findings) - len(shown)
+    # A page with a finding at any severity never holds, shown or not.
+    found = {page_path(f.path) for f in report.findings}
+    flagged = {page_path(f.path) for f in shown}
+    pages = list(dict.fromkeys(page_path(c.subject) for c in report.checked))
+    holds = [p for p in pages if p not in found and is_page(p)]
+    counts = " · ".join(
+        f"{n} {s}"
+        for s in reversed(SEVERITIES)
+        if (n := sum(f.severity == s for f in shown))
+    )
+    if flagged:
+        head = f"**{len(flagged)} of {len(pages)} pages need a look**"
+    elif found:
+        head = f"**No finding at or above {min_severity}**"
+    elif pages:
+        head = f"**All {len(pages)} pages hold**"
+    else:
+        head = "**No page in scope**"
     lines = [
-        "## Agent report",
+        head + (f" · {counts}" if counts else ""),
         "",
-        report.summary,
+        first_sentence(report.summary),
         "",
-        f"{counts}.",
-        "",
-        "| Severity | Finding | Summary | Claim | Contradicted by | Fix |",
-        "|---|---|---|---|---|---|",
     ]
-    for f in sorted(report.findings, key=lambda f: -SEVERITIES.index(f.severity)):
-        against = ", ".join(f"`{cell(c)}`" for c in f.contradicted_by)
+    for f in shown:
         lines.append(
-            f"| {f.severity} | {cell(f.title)} | {cell(f.summary)} | `{cell(f.claim)}` | {against} | {cell(f.fix)} |"
+            f"- {MARKS[f.severity]} **{f.title}** ({short_name(f.claim)}): "
+            f"{first_sentence(f.summary)}"
         )
-    lines += ["", f"### Checked ({len(report.checked)})", ""]
+    if hidden:
+        lines.append(f"- {hidden} finding(s) below {min_severity} left out.")
+    if holds:
+        lines += [
+            "",
+            "Still hold: "
+            + ", ".join(short_name(p) for p in holds)
+            + ". To confirm them, see `kmctl verify` below.",
+        ]
+    if not (shown or holds or report.checked):
+        return re.sub(r"\n{3,}", "\n\n", "\n".join(lines)).strip() + "\n"
+    lines += ["", "<details><summary>Fixes and evidence</summary>", ""]
+    for f in shown:
+        against = ", ".join(f"`{c}`" for c in f.contradicted_by)
+        lines += [
+            f"**{f.title}** ({f.severity}, `{f.claim}`)",
+            "",
+            f.summary,
+            "",
+            f"Fix: {f.fix}",
+            "",
+            f"Contradicted by: {against}",
+            "",
+        ]
+    if holds:
+        lines += [
+            "Once you have read the pages that still hold:",
+            "",
+            "```",
+            "kmctl verify " + " ".join(holds) + " --by human:<you>",
+            "```",
+            "",
+        ]
+    lines += [f"Checked ({len(report.checked)}):", ""]
     for c in report.checked:
         evidence = ", ".join(f"`{e}`" for e in c.evidence)
-        lines.append(f"- `{c.subject}` against {c.against}: {evidence}")
-    return "\n".join(lines) + "\n"
+        lines.append(f"- `{page_path(c.subject)}` against {c.against}: {evidence}")
+    lines += ["", "</details>"]
+    return re.sub(r"\n{3,}", "\n\n", "\n".join(lines)).strip() + "\n"
 
 
 CITATION = re.compile(r"(.+):(\d+)(?:-(\d+))?")
@@ -799,9 +890,12 @@ def publish_comment(args: argparse.Namespace, report: Report, over: list) -> int
             return 0
         body = f"{mark}\n## {args.title}\n\n"
         if over:
-            body += render(report)
+            body += render(report, args.min_severity)
         else:
-            body += f"The latest run found nothing at or above {args.min_severity}.\n"
+            left = len(report.findings)
+            body += f"The latest run found nothing at or above {args.min_severity}" + (
+                f"; {left} finding(s) below it left out.\n" if left else ".\n"
+            )
         if link:
             body += f"\nRun and its report artifact: {link}\n"
         with tempfile.NamedTemporaryFile("w", suffix=".md", delete=False) as handle:

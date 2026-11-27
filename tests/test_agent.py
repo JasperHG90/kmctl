@@ -199,7 +199,7 @@ def test_run_writes_report_files_and_summary(
     for finding in REPORT["findings"]:
         assert finding["title"] in markdown
         assert finding["fix"] in markdown
-    assert markdown.index("high") < markdown.index("| info")
+    assert markdown.index("readme/greeting") < markdown.index("readme/style")
     assert json.loads((out / "transcript.json").read_text())
     assert summary.read_text() == markdown
 
@@ -242,8 +242,8 @@ def test_report_shape_lists_checked_after_findings(repo: Path, tmp_path: Path) -
     for finding in report["findings"]:
         assert {"claim", "contradicted_by", "fix"} <= finding.keys()
     markdown = (out / "report.md").read_text()
-    assert "`README.md` against itself: `README.md:1-2`" in markdown
-    assert markdown.index("readme/style") < markdown.index("### Checked (1)")
+    assert "- `README.md` against itself: `README.md:1-2`" in markdown
+    assert markdown.index("readme/style") < markdown.index("Checked (1):")
 
 
 def _citing(*cites: str) -> dict:
@@ -777,6 +777,172 @@ def test_system_prompt_rates_a_contradicted_claim_high() -> None:
         in rubric
     )
     assert "something wrong that someone must fix" not in rubric
+
+
+FIXTURE = ROOT / "tests" / "fixtures" / "agent-report-46024647635.json"
+
+
+def _visible(markdown: str) -> str:
+    """The part of a rendered report above its folded evidence."""
+    return markdown.split("<details>", 1)[0]
+
+
+def test_render_is_compact_on_a_live_report() -> None:
+    """The live run that posted a 14 KB comment renders to a short one, with nothing lost."""
+    report = agent.Report.model_validate_json(FIXTURE.read_text())
+
+    markdown = agent.render(report)
+    visible = _visible(markdown)
+
+    assert len(visible.encode()) < 3000
+    assert visible.startswith("**4 of 9 pages need a look** · 3 medium · 3 low\n")
+    assert "##" not in markdown
+    bullets = [line for line in visible.splitlines() if line.startswith("- ")]
+    assert len(bullets) == len(report.findings)
+    assert "(ADR 0060:33-34)" in bullets[0]
+    assert visible.count("Still hold: ") == 1
+    assert "ADR 0025" in visible.split("Still hold: ")[1]
+    folded = markdown.split("<details>", 1)[1]
+    for finding in report.findings:
+        assert f"Fix: {finding.fix}" in folded
+        assert finding.fix not in visible
+        for cite in finding.contradicted_by:
+            assert f"`{cite}`" in folded and cite not in visible
+    assert "kmctl verify .okf/decisions/0025-" in folded
+    assert "kmctl verify" not in visible.replace("see `kmctl verify` below", "")
+
+
+def test_render_names_pages_short() -> None:
+    """A decision is ADR NNNN:line, another page its file name; a checked note is dropped."""
+    assert agent.short_name(".okf/decisions/0060-x-y.md:18-20") == "ADR 0060:18-20"
+    assert agent.short_name("docs/how-to/run-it.md:3") == "run-it:3"
+    assert agent.short_name(".okf/architecture/overview.md") == "overview"
+    assert agent.page_path("docs/how-to/run-it.md (added: the change rewrites it)") == (
+        "docs/how-to/run-it.md"
+    )
+    report = agent.Report(
+        summary="One page.",
+        checked=[
+            agent.Checked(
+                subject="docs/how-to/run-it.md (added: why)",
+                against="src/app.py",
+                evidence=["docs/how-to/run-it.md:1"],
+            ),
+            agent.Checked(subject="src/app.py", against="itself", evidence=[]),
+        ],
+        findings=[],
+    )
+
+    visible = _visible(agent.render(report))
+
+    assert "Still hold: run-it." in visible
+    assert "added: why" not in visible and "app" not in visible
+
+
+def test_render_empty_and_all_hold_reports() -> None:
+    """An empty report has no holds line or verify command; an all-hold one names them all."""
+    empty = agent.render(
+        agent.Report(summary="Nothing in scope.", checked=[], findings=[])
+    )
+    assert empty == "**No page in scope**\n\nNothing in scope.\n"
+
+    held = agent.render(
+        agent.Report(
+            summary="Both hold.",
+            checked=[
+                agent.Checked(subject=p, against="src/app.py", evidence=[])
+                for p in (".okf/decisions/0001-a.md", "docs/how-to/b.md")
+            ],
+            findings=[],
+        )
+    )
+    assert held.startswith("**All 2 pages hold**\n")
+    assert "Still hold: ADR 0001, b." in held
+    assert (
+        "kmctl verify .okf/decisions/0001-a.md docs/how-to/b.md --by human:<you>"
+        in held
+    )
+    assert "\n\n\n" not in held
+
+
+def test_prompt_asks_for_short_fields() -> None:
+    """The prompt asks for one-sentence fields, a bare path, and no holds list in the summary."""
+    text = " ".join(agent.PROMPT.read_text().split())
+
+    assert "summary in one sentence, fix in one sentence" in text
+    assert "summary: one or two sentences" in text
+    assert "Do not list the pages that hold or a command" in text
+    assert "subject is the page's path and nothing else" in text
+    assert "in its checked entry's against" in text
+    assert "End the summary with the pages that still hold" not in text
+
+
+def test_tutorial_quotes_the_empty_report(repo: Path, tmp_path: Path) -> None:
+    """The tutorial's empty-report output is what the agent prints today."""
+    page = (
+        ROOT / "docs" / "tutorials" / "audit-your-repository-with-the-agent.md"
+    ).read_text()
+    empty = agent.render(
+        agent.Report(
+            summary=(
+                "No page under .okf/ or docs/ names a file this change touched "
+                "(compared with main) in its sources, so nothing was reread."
+            ),
+            checked=[],
+            findings=[],
+        )
+    )
+
+    assert f"```\n{empty}" in page
+    assert "## Agent report" not in page
+
+
+def test_publish_lists_only_findings_at_or_above_the_threshold(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Under --min-severity medium the low finding, its page and its count stay out."""
+    store = _pr_gh(tmp_path, monkeypatch)
+    report = {
+        "summary": "Two pages drifted.",
+        "checked": [
+            {"subject": ".okf/decisions/0001-a.md", "against": "x", "evidence": []},
+            {"subject": ".okf/decisions/0002-b.md", "against": "x", "evidence": []},
+            {"subject": ".okf/decisions/0003-c.md", "against": "x", "evidence": []},
+        ],
+        "findings": [
+            {
+                "title": f"t-{s}",
+                "severity": s,
+                "path": f".okf/decisions/{n}.md",
+                "summary": f"S {s}.",
+                "claim": f".okf/decisions/{n}.md:1",
+                "contradicted_by": ["src/x.py:1"],
+                "fix": f"F {s}.",
+            }
+            for s, n in (("medium", "0001-a"), ("low", "0002-b"))
+        ],
+    }
+    path = tmp_path / "r.json"
+    path.write_text(json.dumps(report))
+
+    assert _publish(path, "--min-severity", "medium") == 0
+
+    (comment,) = json.loads(store.read_text())
+    body = comment["body"]
+    assert "t-medium" in body and "t-low" not in body and "F low." not in body
+    assert "**1 of 3 pages need a look** · 1 medium\n" in body
+    assert "1 finding(s) below medium left out." in body
+    assert "Still hold: ADR 0003." in body
+    assert "ADR 0002" not in body
+
+    report["findings"] = [report["findings"][1]]
+    path.write_text(json.dumps(report))
+    assert _publish(path, "--min-severity", "medium") == 0
+    (comment,) = json.loads(store.read_text())
+    assert (
+        "found nothing at or above medium; 1 finding(s) below it left out."
+        in comment["body"]
+    )
 
 
 def test_publish_below_threshold_posts_nothing_new(

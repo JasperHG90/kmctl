@@ -77,17 +77,9 @@ The branch has no commit of its own yet, so no page is in scope. The agent
 writes an empty report without calling the model, and prints:
 
 ```
-## Agent report
+**No page in scope**
 
 No page under .okf/ or docs/ names a file this change touched (compared with main) in its sources, so nothing was reread.
-
-0 high, 0 medium, 0 low, 0 info.
-
-| Severity | Finding | Summary | Claim | Contradicted by | Fix |
-|---|---|---|---|---|---|
-
-### Checked (0)
-
 agent: wrote report.json, report.md and transcript.json to ../report0
 ```
 
@@ -134,26 +126,29 @@ agent: wrote report.json, report.md and transcript.json to ../report
 
 ### 6. Read the report
 
-Open `../report/report.md`. Under its heading it starts with a summary and
-a count by severity. The summary says how many pages and claims the agent
-checked, and ends with the pages that still hold and the
-`kmctl verify ID ... --by human:<your id>` command to record that once you
-have read them. The agent never runs that command itself.
+Open `../report/report.md`. It is what the comment on a pull request shows,
+and it is short on purpose. It starts with a count, such as
+**2 of 3 pages need a look** · 1 medium · 1 low, and one sentence from the
+agent on what the change does to the pages.
 
-Then comes one row per finding. A finding is always a mismatch: the claim
-that does not hold, the lines that contradict it, and a fix. Expect one for
-each page, citing its line about the newest record as the claim and
-`packages/kmctl/src/kmctl/candidates.py:180` as what contradicts it. The fix
-depends on the page:
+Then comes one bullet per finding, most severe first: its title, the claim
+as a short reference such as `ADR 0047:34` or the page's file name and
+line, and one sentence on what is wrong. A finding is always a mismatch: a
+line on the page that the changed code contradicts. Expect one for each of
+the two pages that say the list starts at the newest record. A line names
+the pages that still hold, such as ADR 0046.
+
+Everything else sits in the folded **Fixes and evidence** block below: each
+finding's full text, its fix, the claim's `path:line` and the lines that
+contradict it, the `kmctl verify ... --by human:<your id>` command for the
+pages that still hold, and each page the agent compared with the lines it
+read. The agent never runs `kmctl verify` itself. The fix depends on the
+page:
 
 - For the how-to, an edit to the page.
 - For ADR 0047, a stable decision, never an edit to its body: a dated
   Correction section, a new draft decision that supersedes it, or a change
   to the code. Here the right fix is to undo the code change.
-
-Last comes the checked list: each page the agent compared, what it compared
-it against and the lines it read. A page that holds goes here, not in the
-findings.
 
 ### 7. Check a finding yourself
 

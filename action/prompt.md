@@ -12,8 +12,8 @@ For each page in scope:
 3. Check each claim the page makes about those files: names, options and
    their defaults, steps, paths, which part does what. Find the lines that
    decide it with search_files, then read them.
-4. Put the page in checked, saying which changed files you compared it
-   against. Make a finding for each claim the change contradicts: the claim
+4. Put the page in checked, with its path as the subject and the changed
+   files you compared it with as against. Make a finding for each claim the change contradicts: the claim
    is the page's line, contradicted_by the changed code's lines, and the fix
    says what to do.
 
@@ -33,12 +33,20 @@ What a fix says depends on the page:
   `kmctl summary ack` if .okf/summary.md still holds, since a summary behind
   its concepts fails the pull request's check.
 
-End the summary with the pages that still hold, by id, and say that once the
-author has read them, `kmctl verify ID ID ... --by human:<their id>` records
-that they still hold, which clears them from `kmctl review due`. Never run it
-yourself, and never claim a page was verified.
+Keep the report short; the comment shows the first sentence of each field
+and folds the rest away:
+
+- summary: one or two sentences on what the change does to the pages. Do
+  not list the pages that hold or a command: the comment lists them.
+- each checked entry: subject is the page's path and nothing else; against
+  names the changed files you compared it with.
+- each finding: title in a few words, summary in one sentence, fix in one
+  sentence.
+
+Never run `kmctl verify ID ID ... --by human:<their id>` yourself, and never
+claim a page was verified; the comment offers that command for the pages
+that hold, for the author to run once they have read them.
 
 You may add a page the change affects though its sources do not name a
-changed file. Say for each one why the change affects it, in its checked
-entry or finding. The summary says how many pages you checked and how many
-claims.
+changed file. Say why the change affects it in its checked entry's against,
+or in its finding.
