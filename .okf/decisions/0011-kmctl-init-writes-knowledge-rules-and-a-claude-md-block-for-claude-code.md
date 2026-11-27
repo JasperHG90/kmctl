@@ -7,6 +7,9 @@ generated:
   by: claude-opus/5.5
   at: 2026-10-15T16:13:16Z
 status: stable
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0011: kmctl init writes knowledge rules and a CLAUDE.md block for Claude Code

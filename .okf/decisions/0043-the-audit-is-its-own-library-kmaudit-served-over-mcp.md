@@ -9,6 +9,9 @@ generated:
 status: stable
 sources:
   - resource: "packages/kmaudit/src/kmaudit/"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0043: The audit is its own library, kmaudit, served over MCP

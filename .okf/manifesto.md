@@ -7,6 +7,9 @@ generated:
   at: 2026-10-15
 tags: [manifesto, design, invariants]
 status: stable
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:46:08Z
 ---
 
 # Manifesto: kmctl

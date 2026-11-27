@@ -7,6 +7,9 @@ generated:
   at: 2026-10-15
 tags: [adr, decision]
 status: stable
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0001: A standalone kmctl CLI that installs its own plugin

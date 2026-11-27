@@ -9,6 +9,9 @@ generated:
 status: stable
 sources:
   - resource: "packages/kmctl/src/kmctl/checks.py"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0033: kmctl check fails on a missing link target inside the bundle

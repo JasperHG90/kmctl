@@ -14,6 +14,9 @@ sources:
   - resource: ".github/workflows/release.yml"
   - resource: ".github/prompts/release-notes-system.md"
   - resource: "scripts/hermes_release_notes.py"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0035: kmctl's repository answers and triages with Hermes

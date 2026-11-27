@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.1",
+  "placeholder": false,
+  "verdict": "fix",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "'publish posts nothing and exits 0, in every mode' is unclear: publish is itself one of the action's three modes (checks, audit, publish), so 'every mode' has no plain reading. It presumably means whether publish would post an issue or a pull request comment.",
+      "anchor": ".okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md:174",
+      "category": "docs",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "40d9a026fc096357c81bee502dbfa4495b3de1b126a0bf8ce2dad8261b69727d",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.4.0",
+  "at": "2026-11-26T17:13:57+00:00",
+  "checklist": null
+}

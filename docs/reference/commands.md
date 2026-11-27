@@ -407,11 +407,20 @@ shallow.
 
 `kmctl verify ID [ID ...] --by human:<id>`
 
+`kmctl verify FOLDER --by human:<id>`
+
 Record that a person checked one or more concepts or docs pages, so
 `kmctl review due` drops them. Give every page the person checked in one
 command, such as the ones `kmctl review due --base origin/main` lists. Every
 id is checked before any file is written, so when one is refused, nothing is
-written; an id given twice is verified once (ADR 0055). For each id, it appends `{by, at}` to the file's `verified` list, with `at` the
+written; a page named twice, by its id or a folder, is verified once (ADR 0055).
+A folder, such as `decisions` or `docs/how-to`, verifies every page under it
+that `kmctl review due` lists, leaving out its index and any handoff; give it
+only once the person has read every page in it (ADR 0059). A path from the
+repository root with `.md`, such as `.okf/decisions/0001-x.md`, names the same
+page as its id, so a shell glob like `.okf/decisions/005*` works; a glob that
+picks up a folder's `index.md` is refused, and the refusal names the folder
+form. For each id, it appends `{by, at}` to the file's `verified` list, with `at` the
 current UTC time (`2026-10-17T21:30:00Z`), and changes no other line. A
 `verified` field written as one mapping or a flow list is extended in its
 place. A concept also gets a line in `.okf/log.md`. The id then stays off
@@ -429,7 +438,7 @@ A `verified` entry does not clear `stale_after passed`: when the file's
 
 | Argument or option | Meaning | Default |
 |---|---|---|
-| `ID` | The id as `kmctl review due` prints it: a concept under `.okf/` without `.md` (`decisions/0001-x`, `manifesto`) or a docs page (`docs/how-to/install`). One or more; required. | |
+| `ID` | The id as `kmctl review due` prints it: a concept under `.okf/` without `.md` (`decisions/0001-x`, `manifesto`) or a docs page (`docs/how-to/install`); the same path from the repository root (`.okf/decisions/0001-x.md`); or a folder (`decisions`, `docs/how-to`) for every page in it. One or more; required. | |
 | `--by human:<id>` | The person who read it and confirms it: `human:` and a name or email address. Required. | |
 | `--stale-after WHEN` | A new `stale_after` for each file, in the forms `kmctl new --stale-after` takes. Required when a file's `stale_after` has passed. | none |
 | `--path DIR` | The repository to write in: an existing folder. | `.` |
@@ -443,8 +452,10 @@ A comment at the end of the `verified:` line, such as `verified: []  # none`,
 stays on that line.
 
 Exit code: 1 when kmctl refuses, with the reason on stderr: `--by` does not
-start with `human:`, the id names no file (or holds `..`), the id is a
-handoff (handoffs are never verified), the front matter is unreadable or
+start with `human:`, the id names no page or folder of pages (or holds `..`),
+the id names a file `kmctl review due` never lists, such as a folder's
+`index.md`, the id is a handoff or the handoffs folder (handoffs are never
+verified), the front matter is unreadable or
 missing, `stale_after` has passed and no `--stale-after` is given, the
 `--stale-after` value is not in the future, or the `verified` field is in a
 form kmctl cannot extend (the refusal says to rewrite it as a block list).

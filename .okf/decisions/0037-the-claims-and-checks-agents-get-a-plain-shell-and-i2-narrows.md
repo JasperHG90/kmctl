@@ -10,6 +10,9 @@ status: stable
 sources:
   - resource: "packages/kmaudit/apm/claude/.apm/agents/kmaudit-claims-extractor.md"
   - resource: "packages/kmaudit/apm/.apm/skills/extract-claims/SKILL.md"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0037: The claims and checks agents get a plain shell and I2 narrows

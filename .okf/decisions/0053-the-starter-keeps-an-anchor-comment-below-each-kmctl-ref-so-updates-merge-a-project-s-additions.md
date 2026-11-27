@@ -11,6 +11,9 @@ sources:
   - resource: "starter/apm.yml.jinja"
   - resource: "starter/.github/workflows/ci.yml.jinja"
   - resource: "starter/justfile.jinja"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0053: The starter keeps an anchor comment below each kmctl ref so updates merge a project's additions

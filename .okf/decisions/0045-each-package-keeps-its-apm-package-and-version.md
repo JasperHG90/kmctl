@@ -14,6 +14,9 @@ sources:
   - resource: "packages/kmctl/src/kmctl/doctor.py"
   - resource: "scripts/release.py"
   - resource: "starter/apm.yml.jinja"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0045: Each package keeps its APM package and version

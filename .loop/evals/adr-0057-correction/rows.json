@@ -1,0 +1,83 @@
+{
+  "schema_version": "1.0",
+  "rows": [
+    {
+      "id": "r1",
+      "behavior": "the Correction links ADR 0055 and names kmctl review due --base",
+      "fails_when": "the Correction lacks the 0055 link or review due --base",
+      "command": "awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -q '0055-one-verify-for-the-pages-a-branch-made-due' && awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -q 'review due --base'"
+    },
+    {
+      "id": "r2",
+      "behavior": "the Correction gives the measured 86 and links the prototype",
+      "fails_when": "the Correction lacks 86 or the pr-audit-scope link",
+      "command": "awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -q '86' && awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -q 'prototypes/pr-audit-scope/README.md'"
+    },
+    {
+      "id": "r3",
+      "behavior": "the prototype holds its script, results and measured commit, and is in the prototypes index",
+      "fails_when": "scope.py, results.txt or ref.txt is missing, or the index does not list pr-audit-scope",
+      "command": "test -f .okf/prototypes/pr-audit-scope/scope.py && test -f .okf/prototypes/pr-audit-scope/results.txt && test -f .okf/prototypes/pr-audit-scope/ref.txt && grep -q 'pr-audit-scope' .okf/prototypes/index.md"
+    },
+    {
+      "id": "r4",
+      "behavior": "the Correction says what the audit adds over ADR 0055: whether a decision still holds",
+      "fails_when": "a reviewer finds no sentence telling the audit's judgment apart from 0055's list",
+      "judgment": true
+    },
+    {
+      "id": "r5",
+      "behavior": "the Correction says a fork pull request is skipped with exit 0 on both jobs",
+      "fails_when": "the Correction does not say exit 0 or does not name both jobs",
+      "command": "awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -Eqi 'exits? 0' && awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -qi 'both'"
+    },
+    {
+      "id": "r6",
+      "behavior": "the Correction says the pull request's own workflow file runs on a pull_request event and that fetched context folders stay in the working tree",
+      "fails_when": "either point is missing",
+      "command": "awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -qi 'workflow file' && awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -qi 'fetched'"
+    },
+    {
+      "id": "r7",
+      "behavior": "the Correction does not claim the base checkout guards the API key",
+      "fails_when": "a reviewer finds the base checkout presented as guarding the key",
+      "judgment": true
+    },
+    {
+      "id": "r8",
+      "behavior": "the Correction names okf-vs-change, cites fetch-depth: 0 and links ADR 0046",
+      "fails_when": "any of the three is missing",
+      "command": "awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -q 'okf-vs-change' && awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -q 'fetch-depth: 0' && awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -q '0046-kmctl-works-from-code-toward-knowledge'"
+    },
+    {
+      "id": "r9",
+      "behavior": "the accepted text above the Correction is unchanged and the record stays stable",
+      "fails_when": "the accepted text on main is not a byte-for-byte prefix of the file, or status is not stable",
+      "command": "git show main:'.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' > /tmp/adr57-main.$$ && head -c \"$(wc -c < /tmp/adr57-main.$$)\" '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | cmp -s - /tmp/adr57-main.$$ && grep -q '^status: stable' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'; rc=$?; rm -f /tmp/adr57-main.$$; exit $rc"
+    },
+    {
+      "id": "r10",
+      "behavior": "the repo's pre-commit hooks pass on every file",
+      "fails_when": "prek run --all-files exits nonzero",
+      "command": "prek run --all-files"
+    },
+    {
+      "id": "r11",
+      "behavior": "the Correction says publish with no report posts nothing and exits 0",
+      "fails_when": "the Correction does not cover the no-report case",
+      "command": "awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -qi 'no report'"
+    },
+    {
+      "id": "r12",
+      "behavior": "the Correction says run_shell stays left out on a pull request and does not say a shell command can read the key",
+      "fails_when": "the Correction never names run_shell, or says a shell command can read the key",
+      "command": "awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -q 'run_shell' && ! awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -qi 'shell command can read'"
+    },
+    {
+      "id": "r13",
+      "behavior": "nothing in the Correction reads as reversing the no-shell rule",
+      "fails_when": "a reviewer finds a sentence that weakens or contradicts the accepted no-shell rule",
+      "judgment": true
+    }
+  ]
+}

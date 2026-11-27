@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "okf-vs-change-audit",
-  "plan_hash": "3fc9e7784f99670d63d40f87ee6efdd4a6ef4c55c196eeb40fec3a6bb29625fa",
+  "plan_hash": "de47cd0332c496d29af054ae467c31365a7e770e94f6a640ace45f984aacf313",
   "problems": [
     {
       "id": "P1",
@@ -25,7 +25,11 @@
     },
     {
       "id": "P5",
-      "text": "ADR 0005, ADR 0017, `.github/workflows/knowledge-audit.yml` and two `docs/` pages say the audit runs only by hand or on a schedule, and ADR 0057 says nothing is built before it is accepted."
+      "text": "ADR 0005, ADR 0017, `.github/workflows/knowledge-audit.yml` and two `docs/` pages say the audit runs only by hand or on a schedule."
+    },
+    {
+      "id": "P7",
+      "text": "`make_tools` in `action/agent.py` always gives the agent `run_shell`, which can read the API key from the agent's own process, and ADR 0057 decides a pull request run gets no shell."
     }
   ],
   "goals": [
@@ -141,8 +145,31 @@
       "seen_by": "operator"
     },
     {
+      "id": "O7",
+      "change": "`run --no-shell` runs the agent with only its read, search and list tools, and the action passes it on a pull request",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P7",
+      "fixes_index": 6,
+      "needs": [
+        "O3"
+      ],
+      "needs_index": [
+        2
+      ],
+      "touches": [
+        "action/agent.py",
+        "action.yml",
+        "tests/test_agent.py",
+        "packages/kmctl/tests/test_action.py"
+      ],
+      "checked_by": "a test in `tests/test_agent.py` that with `--no-shell` the agent's tools leave out `run_shell` and the system prompt does not offer it, and without the flag nothing changes; a test in `packages/kmctl/tests/test_action.py` that the agent step passes `--no-shell` only on a `pull_request` event",
+      "seen_by": "operator"
+    },
+    {
       "id": "O5",
-      "change": "ADR 0005, ADR 0017, ADR 0057, the audit workflow's comments and the docs describe the built action",
+      "change": "ADR 0005, ADR 0017, the audit workflow's comments and the docs describe the built action",
       "kind": "support",
       "goal": "G2",
       "goal_index": 1,
@@ -151,22 +178,23 @@
       "needs": [
         "O3",
         "O4",
-        "O6"
+        "O6",
+        "O7"
       ],
       "needs_index": [
         2,
         3,
-        4
+        4,
+        5
       ],
       "touches": [
         ".okf/decisions/0005-audits-report-only.md",
         ".okf/decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script.md",
-        "new:.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md",
         ".github/workflows/knowledge-audit.yml",
         "docs/how-to/install-the-plugin-and-the-ci-action.md",
         "docs/explanation/why-one-hook-and-report-only-audits.md"
       ],
-      "checked_by": "`prek run --all-files` green, and eval rows that grep each ADR for a dated Correction linking ADR 0057, ADR 0057 for `status: draft`, the fetched-context sentence and the new last Consequence, the workflow for no \"never on a pull request\" comment, and the how-to page for a pull request workflow example with the same-repository condition on both jobs",
+      "checked_by": "`prek run --all-files` green, and eval rows that grep each ADR for a dated Correction linking ADR 0057, the workflow for no \"never on a pull request\" comment, and the how-to page for a pull request workflow example with the same-repository condition on both jobs",
       "seen_by": "operator"
     }
   ]

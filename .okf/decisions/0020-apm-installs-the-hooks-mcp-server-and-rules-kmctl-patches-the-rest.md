@@ -14,6 +14,9 @@ sources:
   - resource: "packages/kmctl/src/kmctl/plugin.py"
   - resource: "packages/kmctl/src/kmctl/antigravity.py"
   - resource: "scripts/sync_antigravity_rules.py"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0020: APM installs the hooks, MCP server and rules; kmctl patches the rest

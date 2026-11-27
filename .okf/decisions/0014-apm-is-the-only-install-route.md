@@ -10,6 +10,9 @@ status: stable
 sources:
   - resource: "packages/kmctl/apm"
   - resource: "packages/kmctl/src/kmctl/plugin.py"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0014: APM is the only install route

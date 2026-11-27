@@ -9,6 +9,9 @@ generated:
 status: stable
 sources:
   - resource: "packages/kmaudit/src/kmaudit/"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0036: Claims are extracted by the agent through kmctl audit claims

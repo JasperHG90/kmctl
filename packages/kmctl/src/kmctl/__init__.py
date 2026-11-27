@@ -472,6 +472,13 @@ _PATH_OPTION = typer.Option(
         "  kmctl verify manifesto --by human:jasper --stale-after 6m --json\n\n"
         "  kmctl verify docs/how-to/install --by human:jasper\n\n"
         "  kmctl verify manifesto decisions/0001-x docs/how-to/install --by human:jasper\n\n"
+        "  kmctl verify decisions --by human:jasper\n\n"
+        "  kmctl verify .okf/decisions/005* --by human:jasper\n\n"
+        "A folder (decisions, docs/how-to) verifies every page under it that kmctl "
+        "review due lists, leaving out its index and any handoff: give it once the "
+        "person has read the whole folder. A path from the repository root with .md "
+        "works too, so a shell glob such as .okf/decisions/005* does; a glob that "
+        "picks up a folder's index.md is refused, so give the folder instead.\n\n"
         "Give several ids to verify each page the person checked in one step, "
         "such as those kmctl review due --base origin/main lists. Every id is "
         "checked before any file is written, so one refused id writes nothing "
@@ -496,7 +503,9 @@ def verify(
             help=(
                 "The ids to mark checked, as kmctl review due prints them: a concept "
                 "under .okf/ without .md (decisions/0001-x, manifesto) or a docs "
-                "page (docs/how-to/install). One or more."
+                "page (docs/how-to/install); the same path from the repository root "
+                "(.okf/decisions/0001-x.md); or a folder (decisions, docs/how-to) "
+                "for every page in it. One or more."
             ),
         ),
     ],

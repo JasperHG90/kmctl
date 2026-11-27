@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.1",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "With --instructions-root, a tracked instruction path that the pull request turns into a symlink pointing outside the repository counts as untracked and is read from the working tree, so a pull request can make --prompt-file read /proc/self/environ (the API key goes into the task, and from there into the report and the public PR comment) or make a --context folder point at /proc/self, so read_file can open the environ under --no-shell.",
+      "anchor": "action/agent.py:563",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "The agent and publish steps run `uv run --script` with the pull request's checkout as the working directory, and uv reads uv.toml or pyproject.toml [tool.uv] from there. A pull request that adds a uv.toml with its own index runs any code it likes in the step that holds the API key (or GH_TOKEN in publish), with no change to the workflow and no shell given to the agent.",
+      "anchor": "action.yml:279",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "publish_comment takes the first comment from any author whose body holds the marker. A person who quotes the marker in a comment makes every later publish PATCH a comment GITHUB_TOKEN cannot edit, so publish exits 1 on every push. Match only comments by the token's own user (github-actions[bot]).",
+      "anchor": "action/agent.py:1013",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "open",
+      "claim": "Row r7 says --skills resolves under DIR, but test_instructions_root_resolves_tracked_paths never checks where the skills came from: both trees hold the same `review` skill, so the test still passes if --skills resolves against the current folder.",
+      "anchor": "tests/test_agent.py:1222",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "0a8fa71453ff5f018dd6e3c43d0d4b543993f988fd29795806c6320bd53e7634",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.4.0",
+  "at": "2026-11-26T21:36:39+00:00",
+  "checklist": null
+}

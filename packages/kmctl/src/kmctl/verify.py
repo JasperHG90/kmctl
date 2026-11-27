@@ -23,6 +23,7 @@ from kmctl.okf import (
     split_front_matter,
     without,
 )
+from kmctl.pages import concept_files, docs_pages
 
 #: The front matter fields ``kmctl verify`` writes. A change to these alone is
 #: no edit for kmctl review due (ADR 0032) and no change for the summary (ADR 0054).
@@ -61,32 +62,97 @@ class Verified:
     stale_after: str | None
 
 
-def _target(root: Path, cid: str) -> tuple[Path, str]:
-    """The file an id from kmctl review due names, and that id in its one spelling.
+def _pages(root: Path, docs: bool) -> dict[str, Path]:
+    """Every page kmctl review due tracks under docs/ (``docs``) or .okf/, by id."""
+    if docs:
+        base = root / "docs"
+        found = docs_pages(base) if base.is_dir() else []
+        return {
+            "docs/" + p.relative_to(base).with_suffix("").as_posix(): p for p in found
+        }
+    base = root / ".okf"
+    found = concept_files(base) if base.is_dir() else []
+    return {p.relative_to(base).with_suffix("").as_posix(): p for p in found}
 
-    ``docs/...`` is under docs/, anything else under .okf/. The id must be
-    spelled as kmctl review due prints it, so ``./``, ``//``, ``..``, an
-    absolute path or a symlink out of the folder is refused rather than
-    resolved to some other file.
+
+def _folder_hint(base: Path, name: str, docs: bool, by: str) -> str:
+    """The folder form of ``kmctl verify`` for the nearest folder above ``name``, or ''."""
+    parent = Path(name).parent
+    while parent != Path(".") and not (base / parent).is_dir():
+        parent = parent.parent
+    if parent == Path("."):
+        return ""
+    folder = ("docs/" if docs else "") + parent.as_posix()
+    return f"; to verify every page in {folder}, give kmctl verify {folder} --by {by}"
+
+
+def _targets(root: Path, given: str, by: str) -> list[tuple[Path, str]]:
+    """The files an id or folder names, each with its id as kmctl review due prints it.
+
+    An id names one page: ``decisions/0001-x``, ``docs/how-to/run``, or the
+    same path from the repository root with ``.md`` (``.okf/decisions/0001-x.md``).
+    A folder (``decisions``, ``docs/how-to``) names every page under it that
+    kmctl review due tracks, without handoffs. Anything else spelled oddly
+    (``./``, ``//``, ``..``, an absolute path, a symlink out of the folder) is
+    refused rather than resolved to some other file, as is a file kmctl review
+    due never lists, such as a section's ``index.md``.
+
+    Raises
+    ------
+    ConceptError
+        When ``given`` names no page or folder of pages, names one only by
+        another spelling, or names a file kmctl review due never lists.
     """
-    cid = cid.removesuffix(".md")
-    docs = cid.startswith("docs/")
+    cid = given.rstrip("/").removesuffix(".md")
+    in_okf = cid.startswith(".okf/")
+    cid = cid.removeprefix(".okf/")
+    docs = cid.startswith("docs/") and not in_okf
     base = (root / "docs" if docs else root / ".okf").resolve()
     name = cid.removeprefix("docs/") if docs else cid
-    path = (base / f"{name}.md").resolve()
-    shown = f"{'docs' if docs else '.okf'}/{name}.md"
-    if not path.is_relative_to(base) or not path.is_file():
+    shown = f"{'docs' if docs else '.okf'}/{name}"
+    hint = _folder_hint(base, name, docs, by) if name else ""
+    file = (base / f"{name}.md").resolve()
+    folder = (base / name).resolve()
+    if name and file.is_relative_to(base) and file.is_file():
+        found = file.relative_to(base).with_suffix("").as_posix()
+        kind = "page"
+    elif name and folder.is_relative_to(base) and folder != base and folder.is_dir():
+        found = folder.relative_to(base).as_posix()
+        kind = "folder"
+    else:
         raise ConceptError(
-            f"no concept or docs page {cid!r} at {shown}; give an id as kmctl review due prints it"
+            f"no concept, docs page or folder {given!r} at {shown}(.md); give an id "
+            f"or folder as kmctl review due prints it{hint}"
         )
-    canonical = ("docs/" if docs else "") + path.relative_to(base).with_suffix(
-        ""
-    ).as_posix()
+    canonical = ("docs/" if docs else "") + found
     if canonical != cid:
         raise ConceptError(
-            f"{cid!r} is not spelled as kmctl review due prints it; give {canonical!r}"
+            f"{given!r} is not spelled as kmctl review due prints it; give {canonical!r}"
         )
-    return path, canonical
+    pages = _pages(root, docs)
+    if kind == "page":
+        if canonical not in pages:
+            raise ConceptError(
+                f"{shown}.md is not a page kmctl review due lists, so it is never "
+                f"verified{hint}"
+            )
+        return [(file, canonical)]
+    if found == "handoffs" or found.startswith("handoffs/"):
+        raise ConceptError(
+            f"{canonical} holds handoffs, and handoffs are never verified; "
+            "kmctl review due lists one only once it expires"
+        )
+    inside = [
+        (path, pid)
+        for pid, path in pages.items()
+        if pid.startswith(canonical + "/") and not pid.startswith("handoffs/")
+    ]
+    if not inside:
+        raise ConceptError(
+            f"the folder {shown} holds no page kmctl review due lists; give an id "
+            "as kmctl review due prints it"
+        )
+    return inside
 
 
 def _block(lines: list[str], start: int) -> int:
@@ -157,15 +223,9 @@ class _Pending:
 
 
 def _prepare(
-    root: Path, cid: str, by: str, stale_after: str | None, now: datetime
+    path: Path, cid: str, by: str, stale_after: str | None, now: datetime
 ) -> _Pending:
-    """The bytes ``verify_all`` writes for ``cid``, checked by its rules; nothing is written."""
-    if not _PERSON.fullmatch(by):
-        raise ConceptError(
-            f"--by {by!r} is not a person; only a person verifies, so give it as "
-            "human:<id>, such as human:jasper"
-        )
-    path, cid = _target(root, cid)
+    """The bytes ``verify_all`` writes to ``path``, the page ``cid``, checked by its rules; nothing is written."""
     if cid.startswith("handoffs/"):
         raise ConceptError(
             f"{cid} is a handoff, and handoffs are never verified; "
@@ -230,7 +290,8 @@ def verify_all(
     """Append a person's ``verified`` entry to each concept or docs page in ``cids`` (ADR 0055).
 
     Every id is checked before any file is written, so one refused id leaves
-    every file as it was. An id given twice is verified once.
+    every file as it was. A page named twice, by its id or a folder, is
+    verified once.
 
     Parameters
     ----------
@@ -239,7 +300,9 @@ def verify_all(
     cids : list[str]
         The ids as kmctl review due prints them: a concept id under .okf/
         (``decisions/0001-x``, ``manifesto``) or a docs page id
-        (``docs/how-to/run``).
+        (``docs/how-to/run``); the same path from the repository root with
+        ``.md`` (``.okf/decisions/0001-x.md``); or a folder (``decisions``,
+        ``docs/how-to``) for every page under it that kmctl review due tracks.
     by : str
         The person who checked them, as ``human:<id>``.
     stale_after : str | None
@@ -258,12 +321,24 @@ def verify_all(
     Raises
     ------
     ConceptError
-        When ``by`` is not a person, an id names no file or names a handoff,
+        When ``by`` is not a person, an id names no page or folder of pages,
+        names a file kmctl review due never lists, or names a handoff,
         a front matter is unreadable or missing, or a ``stale_after`` has
         passed and no new one is given. Nothing is written.
     """
+    if not _PERSON.fullmatch(by):
+        raise ConceptError(
+            f"--by {by!r} is not a person; only a person verifies, so give it as "
+            "human:<id>, such as human:jasper"
+        )
     now = (now or datetime.now(UTC)).astimezone(UTC)
-    pending = [_prepare(root, cid, by, stale_after, now) for cid in dict.fromkeys(cids)]
+    targets: dict[str, Path] = {}
+    for given in cids:
+        for path, cid in _targets(root, given, by):
+            targets.setdefault(cid, path)
+    pending = [
+        _prepare(path, cid, by, stale_after, now) for cid, path in targets.items()
+    ]
     for p in pending:
         p.path.write_bytes(p.data)
         if not p.result.id.startswith("docs/"):

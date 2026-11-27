@@ -48,11 +48,10 @@ from kmctl.okf import (
     split_front_matter,
     without,
 )
+from kmctl.pages import concept_files, docs_pages
 from kmctl.summary import SUMMARY_ID, changed_concepts, concept_id, is_concept
 from kmctl.summary import reason as summary_reason
 from kmctl.verify import outside_verify
-
-RESERVED = {"index.md", "log.md"}
 
 
 @dataclass(frozen=True)
@@ -114,18 +113,6 @@ def _history_skipped(root: Path) -> str | None:
     return None
 
 
-def _concepts(okf: Path) -> list[Path]:
-    found = []
-    for path in sorted(okf.rglob("*.md")):
-        parts = path.relative_to(okf).parts
-        if path.name in RESERVED or any(p.startswith(".") for p in parts):
-            continue
-        if parts[0] == "prototypes" and (len(parts) != 3 or path.name != "README.md"):
-            continue
-        found.append(path)
-    return found
-
-
 def _resolve(
     root: Path, okf: Path, concept: Path, resource: str, tracked: set[str]
 ) -> str | None:
@@ -148,15 +135,6 @@ def _last_verified(dates: list[object]) -> datetime | None:
 
 def _sources(resources: list[object]) -> list[str]:
     return [r.strip() for r in resources if isinstance(r, str) and r.strip()]
-
-
-def _docs_pages(docs: Path) -> list[Path]:
-    return sorted(
-        p
-        for p in docs.rglob("*.md")
-        if p.name != "README.md"
-        and not any(part.startswith(".") for part in p.relative_to(docs).parts)
-    )
 
 
 @dataclass
@@ -340,7 +318,7 @@ def _docs_due(
     leading ``/`` is from the repository root.
     """
     entries = []
-    for path in _docs_pages(docs):
+    for path in docs_pages(docs):
         rel = path.relative_to(root).as_posix()
         pid = path.relative_to(root).with_suffix("").as_posix()
         try:
@@ -445,7 +423,7 @@ def review_due(
     entries = (
         _docs_due(root, docs, now, tracked, result, checks) if docs.is_dir() else []
     )
-    for path in _concepts(okf) if okf.is_dir() else []:
+    for path in concept_files(okf) if okf.is_dir() else []:
         cid = path.relative_to(okf).with_suffix("").as_posix()
         rel = path.relative_to(root).as_posix()
         try:

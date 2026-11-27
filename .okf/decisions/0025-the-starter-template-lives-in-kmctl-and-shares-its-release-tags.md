@@ -11,6 +11,9 @@ sources:
   - resource: "copier.yml"
   - resource: "scripts/release.py"
   - resource: "packages/kmctl/tests/test_starter.py"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0025: The starter template lives in kmctl and shares its release tags

@@ -336,3 +336,67 @@
 - Added `decisions/0058-a-draft-decision-does-not-put-the-summary-behind` with `kmctl new decision`.
 - Accepted `decisions/0058-a-draft-decision-does-not-put-the-summary-behind` (human:roel).
 - Added `decisions/0059-an-unverified-concept-is-compared-with-its-own-last-commit` with `kmctl new decision`.
+
+## 2026-11-27
+
+- Verified `manifesto` (human:jasper).
+- Verified `decisions/0001-standalone-cli-installs-its-plugin` (human:jasper).
+- Verified `decisions/0002-briefing-and-rules-injected-by-the-cli` (human:jasper).
+- Verified `decisions/0003-claude-code-plugin-first-depends-on-okf` (human:jasper).
+- Verified `decisions/0004-sessionstart-is-the-only-hook` (human:jasper).
+- Verified `decisions/0005-audits-report-only` (human:jasper).
+- Verified `decisions/0006-staleness-from-okf-fields` (human:jasper).
+- Verified `decisions/0007-skills-are-made-with-skill-creator` (human:jasper).
+- Verified `decisions/0008-handoffs-are-okf-concepts` (human:jasper).
+- Verified `decisions/0009-handoff-key-extension-field` (human:jasper).
+- Verified `decisions/0010-the-ci-audit-runs-hermes-agent-against-any-openai-compatible-provider` (human:jasper).
+- Verified `decisions/0011-kmctl-init-writes-knowledge-rules-and-a-claude-md-block-for-claude-code` (human:jasper).
+- Verified `decisions/0012-releases-come-from-ci` (human:jasper).
+- Verified `decisions/0013-kmctl-installs-through-apm-too` (human:jasper).
+- Verified `decisions/0014-apm-is-the-only-install-route` (human:jasper).
+- Verified `decisions/0015-antigravity-gets-skills-and-rules-from-apm-and-a-kmctl-plugin-folder` (human:jasper).
+- Verified `decisions/0016-antigravity-rules-come-from-the-kmctl-plugin-folder` (human:jasper).
+- Verified `decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script` (human:jasper).
+- Verified `decisions/0018-kmctl-runs-okf-s-stop-check-for-antigravity` (human:jasper).
+- Verified `decisions/0019-kmctl-plugin-remove-uninstalls-the-package-and-reinstalls-the-harnesses-kept` (human:jasper).
+- Verified `decisions/0020-apm-installs-the-hooks-mcp-server-and-rules-kmctl-patches-the-rest` (human:jasper).
+- Verified `decisions/0021-apm-installs-kmctl-s-package-kmctl-plugin-patch-adds-the-rest` (human:jasper).
+- Verified `decisions/0022-docs-pages-carry-optional-okf-front-matter-and-generated-folder-indexes` (human:jasper).
+- Verified `decisions/0023-kmctl-verify-records-a-person-s-check` (human:jasper).
+- Verified `decisions/0024-opencode-gets-the-package-from-apm-and-its-agents-rules-and-briefing-from-kmctl-plugin-patch` (human:jasper).
+- Verified `decisions/0025-the-starter-template-lives-in-kmctl-and-shares-its-release-tags` (human:jasper).
+- Verified `decisions/0026-the-kmctl-on-path-runs-the-release-a-project-s-lock-pins` (human:jasper).
+- Verified `decisions/0027-the-bundle-opens-with-a-summary-that-kmctl-keeps-in-step` (human:jasper).
+- Verified `decisions/0028-two-hooks-the-session-briefing-and-the-summary-nudge` (human:jasper).
+- Verified `decisions/0029-the-session-briefing-is-kmctl-s-only-hook-again` (human:jasper).
+- Verified `decisions/0030-projects-commit-what-apm-deploys` (human:jasper).
+- Verified `decisions/0031-a-decision-record-may-be-draft-until-it-is-accepted` (human:jasper).
+- Verified `decisions/0032-kmctl-review-due-decides-by-commit-order` (human:jasper).
+- Verified `decisions/0033-kmctl-check-fails-on-a-missing-link-target-inside-the-bundle` (human:jasper).
+- Verified `decisions/0034-kmctl-mv-renames-a-concept-and-rewrites-the-links-to-it` (human:jasper).
+- Verified `decisions/0035-kmctl-s-repository-answers-and-triages-with-hermes` (human:jasper).
+- Verified `decisions/0036-claims-are-extracted-by-the-agent-through-kmctl-audit-claims` (human:jasper).
+- Verified `decisions/0037-the-claims-and-checks-agents-get-a-plain-shell-and-i2-narrows` (human:jasper).
+- Verified `decisions/0038-checks-are-step-data-that-kmctl-reruns-and-only-checks-that-notice-a-change-are-stored` (human:jasper).
+- Verified `decisions/0039-kmctl-audit-judge-asks-an-optional-decision-model-off-by-default` (human:jasper).
+- Verified `decisions/0040-the-audit-pipeline-holds-its-agents-by-a-hook-and-keeps-answers-through-rewording` (human:jasper).
+- Verified `decisions/0041-people-review-claims-and-checks-on-a-local-page-and-their-feedback-goes-back-to-the-agents` (human:jasper).
+- Verified `decisions/0042-code-coverage-counts-the-lines-a-check-matched` (human:jasper).
+- Verified `decisions/0043-the-audit-is-its-own-library-kmaudit-served-over-mcp` (human:jasper).
+- Verified `decisions/0044-kmctl-and-kmaudit-are-both-workspace-packages` (human:jasper).
+- Verified `decisions/0045-each-package-keeps-its-apm-package-and-version` (human:jasper).
+- Verified `decisions/0046-kmctl-works-from-code-toward-knowledge-and-kmaudit-from-knowledge-toward-code` (human:jasper).
+- Verified `decisions/0047-unrecorded-decisions-are-listed-by-kmctl-and-judged-by-a-skill-that-only-reports` (human:jasper).
+- Verified `decisions/0048-kmctl-summary-ack-writes-one-file-per-ack-so-branches-merge-without-a-conflict` (human:jasper).
+- Verified `decisions/0049-the-log-records-lifecycle-events-only` (human:jasper).
+- Verified `decisions/0050-drafts-are-settled-before-review-and-only-a-person-accepts-one` (human:jasper).
+- Verified `decisions/0051-kmctl-init-sets-a-union-merge-for-the-log-and-the-indexes` (human:jasper).
+- Verified `decisions/0052-accepting-a-draft-does-not-make-a-verified-record-due` (human:jasper).
+- Verified `decisions/0053-the-starter-keeps-an-anchor-comment-below-each-kmctl-ref-so-updates-merge-a-project-s-additions` (human:jasper).
+- Verified `decisions/0054-a-verify-does-not-put-the-summary-behind` (human:jasper).
+- Verified `decisions/0055-one-verify-for-the-pages-a-branch-made-due` (human:jasper).
+- Verified `decisions/0056-the-ci-action-fails-a-pull-request-whose-summary-is-behind` (human:jasper).
+- Verified `decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated` (human:jasper).
+- Verified `decisions/0058-a-draft-decision-does-not-put-the-summary-behind` (human:jasper).
+- Added `decisions/0059-kmctl-verify-takes-a-folder-id` with `kmctl new decision`.
+- Accepted `decisions/0059-kmctl-verify-takes-a-folder-id` (human:jasper).
