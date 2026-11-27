@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.1",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "resolved",
+      "claim": "Matching user.type == \"Bot\" would break publish --pr's one-comment promise for a person's or machine user's token. The plan now matches only a comment whose body starts with the marker, which works with any token.",
+      "anchor": "action/agent.py:1034",
+      "category": "contract",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r1"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "487233a28fca3201d40d1b3d30eb45bcc57cdf03abc0f298c436f90603faa458"
+  },
+  "by": "process:loopctl/2.4.0",
+  "at": "2026-11-26T22:19:58+00:00",
+  "checklist": null
+}

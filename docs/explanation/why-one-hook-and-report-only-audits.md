@@ -38,7 +38,9 @@ auditor has only read and search tools. In CI, turned on as described in
 an agent runs three audits: `.okf/` against the code, `docs/` against the
 code, and `docs/` against `.okf/`. It can also run shell commands, so it can
 use the scripts skills ship. Each audit's findings go to the job summary and
-to that audit's own issue. Neither edits `docs/` or `.okf/`, and neither
+to that audit's own issue. A fourth audit, on a pull request, checks only
+the decisions whose sources the pull request changed, and posts one comment
+on the pull request. Neither edits `docs/` or `.okf/`, and neither
 marks a concept as verified.
 
 **The free checks.** What a script can check, `kmctl check` checks on every
@@ -106,9 +108,17 @@ pass; that would make a model's opinion look like a person's check.
 
 **Why the audit is opt-in in CI.** The checks mode costs nothing, so it runs
 on every pull request. Audit mode sends the repository to a model with your
-API key, so it runs only when you add it, and only by hand or on a schedule.
-It refuses to run on a pull request, so code from a pull request or a fork
-never reaches the key.
+API key, so it runs only when you add it: by hand, on a schedule, or on a
+pull request from the same repository
+([ADR 0057](../../.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md)).
+A fork's pull request gets no secrets, so it gets no audit. On a pull
+request the agent runs without a shell, so text in the pull request cannot
+make it read the key, and it takes its instructions from the base branch,
+so a pull request cannot quietly loosen the audit that checks it. A
+same-repository author could still change the workflow itself; review and
+branch protection guard against that. The audit runs on the pull request
+because a scheduled report arrives after the change has merged, when the
+author who could fix the decision has moved on.
 
 **The limits.** Nothing here forces knowledge to stay true. An agent can read
 the briefing and still forget to update a decision; a pull request can pass

@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.1",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "a tracked symlink on a parent folder of an instruction path still gets past the base checkout; git ls-files prints nothing for a path beyond a symlink, so the path counts as untracked and resolves into the pull request's tree",
+      "anchor": "action/agent.py:588",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "uv read config from the pull request's checkout in the agent and publish steps",
+      "anchor": "action.yml:250",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "match the marked comment only when the token's bot wrote it; moved to ticket okf-vs-change-audit-reviewer-f3",
+      "anchor": "action/agent.py",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "resolved",
+      "claim": "r7's test did not tell the base tree's skills from the head tree's",
+      "anchor": "tests/test_agent.py:1209",
+      "category": null,
+      "blocking": null,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "84821977caf20eaa1f9a6640f18fe40329d389008a20977333efe65d2d9df111",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.4.0",
+  "at": "2026-11-26T21:52:53+00:00",
+  "checklist": null
+}

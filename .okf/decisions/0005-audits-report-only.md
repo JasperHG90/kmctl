@@ -81,3 +81,15 @@ its time limit, never because a concept drifted. It still runs only on
 before the agent starts. Why is
 [ADR 0017](0017-the-ci-audit-is-a-standalone-pydanticai-agent-script.md).
 The report-only rule and the two tiers stand.
+
+## Correction, 2026-11-26
+
+The 2026-10-17 correction above says audit mode runs only on
+`workflow_dispatch` or `schedule`. It now also runs on a `pull_request`
+from the same repository, as [ADR 0057](0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md) decides. A pull request from a fork or
+from Dependabot gets a notice and no audit, and the check still passes.
+`action.yml` refuses every other event. On a pull request the agent runs
+without `run_shell` and can report in one pull request comment, replaced on
+each push, instead of an issue. The audit stays opt-in and report only: it
+writes no `verified` entry, and a finding never fails a check. The two tiers
+stand.

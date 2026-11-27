@@ -438,34 +438,170 @@ def test_action_publish_mode_posts_from_the_artifact() -> None:
 
 
 def _event_check(steps: list[dict]) -> dict:
-    """The step that refuses events other than workflow_dispatch and schedule."""
+    """The step that decides whether the audit runs for this event."""
     return next(s for s in steps if "GITHUB_EVENT_NAME" in str(s.get("run", "")))
 
 
-def _run_check(step: dict, event: str) -> subprocess.CompletedProcess[str]:
-    env = os.environ | {"GITHUB_EVENT_NAME": event}
-    return subprocess.run(
+def _run_check(
+    step: dict, event: str, tmp_path: Path, **env: str
+) -> tuple[subprocess.CompletedProcess[str], str]:
+    """Run the event check as GitHub would; return the process and what it wrote to GITHUB_OUTPUT."""
+    output = tmp_path / f"output-{event}-{len(env)}"
+    output.write_text("")
+    proc = subprocess.run(
         ["bash", "-c", step["run"]],
-        env=env,
+        env=os.environ
+        | {"GITHUB_EVENT_NAME": event, "GITHUB_OUTPUT": str(output)}
+        | env,
         capture_output=True,
         text=True,
         check=False,
     )
+    return proc, output.read_text()
 
 
-def test_action_audit_refuses_other_events() -> None:
-    steps = yaml.safe_load((ROOT / "action.yml").read_text())["runs"]["steps"]
+SAME_REPO = {"HEAD_REPO": "o/r", "BASE_REPO": "o/r", "ACTOR": "alice"}
+
+
+def _action_steps() -> list[dict]:
+    return yaml.safe_load((ROOT / "action.yml").read_text())["runs"]["steps"]
+
+
+def test_event_check_allows_same_repo_pull_request(tmp_path: Path) -> None:
+    steps = _action_steps()
     check = _event_check(steps)
     agent, _ = _agent_steps(steps)
 
     assert "inputs.mode == 'audit'" in check["if"]
     assert steps.index(check) < steps.index(agent)
-    for event in ("workflow_dispatch", "schedule"):
-        assert _run_check(check, event).returncode == 0, event
-    for event in ("pull_request", "pull_request_target", "push"):
-        proc = _run_check(check, event)
+    assert check["env"]["HEAD_REPO"] == (
+        "${{ github.event.pull_request.head.repo.full_name }}"
+    )
+    assert check["env"]["BASE_REPO"] == "${{ github.repository }}"
+    assert check["env"]["ACTOR"] == "${{ github.actor }}"
+    for event in ("workflow_dispatch", "schedule", "pull_request"):
+        proc, output = _run_check(check, event, tmp_path, **SAME_REPO)
+        assert proc.returncode == 0, (event, proc.stderr)
+        assert "run=true" in output, event
+
+
+def test_event_check_skips_fork_pull_request(tmp_path: Path) -> None:
+    steps = _action_steps()
+    check = _event_check(steps)
+    agent, _ = _agent_steps(steps)
+
+    for env in (
+        {**SAME_REPO, "HEAD_REPO": "someone/fork"},
+        {**SAME_REPO, "ACTOR": "dependabot[bot]"},
+    ):
+        proc, output = _run_check(check, "pull_request", tmp_path, **env)
+        assert proc.returncode == 0, proc.stderr
+        assert "::notice::" in proc.stdout
+        assert "run=false" in output
+    gate = f"steps.{check['id']}.outputs.run == 'true'"
+    assert gate in agent["if"]
+
+
+def test_event_check_refuses_other_events(tmp_path: Path) -> None:
+    check = _event_check(_action_steps())
+
+    for event in ("pull_request_target", "push", "issue_comment"):
+        proc, output = _run_check(check, event, tmp_path, **SAME_REPO)
         assert proc.returncode != 0, event
         assert f"refused for event '{event}'" in proc.stderr
+        assert "run=true" not in output
+
+
+def _stub_bin(tmp_path: Path) -> tuple[Path, Path]:
+    """A uv that records its arguments and a git that answers the agent step's calls."""
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir(parents=True)
+    calls = tmp_path / "uv-args.json"
+    (bin_dir / "uv").write_text(
+        f"#!{sys.executable}\nimport json, sys\n"
+        f"json.dump(sys.argv[1:], open({str(calls)!r}, 'w'))\n"
+    )
+    (bin_dir / "git").write_text(
+        "#!/bin/sh\n"
+        'case "$1" in\n'
+        '  rev-parse) [ "$2" = --show-prefix ] && echo "sub/"; exit 0 ;;\n'
+        '  worktree) [ -d "$5" ] && [ -z "$(ls -A "$5")" ] || exit 9; exit 0 ;;\n'
+        "esac\n"
+        "exit 0\n"
+    )
+    for name in ("uv", "git"):
+        (bin_dir / name).chmod(0o755)
+    return bin_dir, calls
+
+
+def _run_step(step: dict, tmp_path: Path, event: str, **env: str) -> list[str]:
+    """Run a step's script with stub uv and git; return the arguments uv got."""
+    bin_dir, calls = _stub_bin(tmp_path)
+    (tmp_path / "runner").mkdir()
+    script = step["run"].replace("${{ github.action_path }}", str(ROOT))
+    base_env = {k: "" for k in step.get("env", {})}
+    # GitHub runs a bash step as bash --noprofile --norc -eo pipefail.
+    proc = subprocess.run(
+        ["bash", "--noprofile", "--norc", "-eo", "pipefail", "-c", script],
+        cwd=tmp_path,
+        env=os.environ
+        | base_env
+        | {
+            "PATH": f"{bin_dir}:{os.environ['PATH']}",
+            "GITHUB_EVENT_NAME": event,
+            "GITHUB_BASE_REF": "main",
+            "RUNNER_TEMP": str(tmp_path / "runner"),
+            "MODEL": "test",
+            "TIMEOUT": "30m",
+        }
+        | env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert proc.returncode == 0, proc.stderr
+    return json.loads(calls.read_text())
+
+
+def test_agent_step_passes_base_only_on_pull_request(tmp_path: Path) -> None:
+    agent, _ = _agent_steps(_action_steps())
+
+    on_pr = _run_step(agent, tmp_path / "pr", "pull_request")
+    root = Path(on_pr[on_pr.index("--instructions-root") + 1])
+    assert root.parent.parent == tmp_path / "pr" / "runner"
+    assert root.parent.name.startswith("kmctl-base.") and root.name == "sub"
+    assert on_pr[on_pr.index("--base") + 1] == "origin/main"
+    for event in ("workflow_dispatch", "schedule"):
+        args = _run_step(agent, tmp_path / event, event)
+        assert "--instructions-root" not in args and "--base" not in args, event
+
+
+def test_agent_step_passes_no_shell_only_on_pull_request(tmp_path: Path) -> None:
+    agent, _ = _agent_steps(_action_steps())
+
+    assert "--no-shell" in _run_step(agent, tmp_path / "pr", "pull_request")
+    for event in ("workflow_dispatch", "schedule"):
+        assert "--no-shell" not in _run_step(agent, tmp_path / event, event), event
+
+
+def test_publish_step_passes_pr_on_pull_request(tmp_path: Path) -> None:
+    _, post = _publish_steps(_action_steps())
+
+    assert post["env"]["PR_NUMBER"] == "${{ github.event.pull_request.number }}"
+    on_pr = _run_step(
+        post, tmp_path / "pr", "pull_request", PR_NUMBER="12", MIN_SEVERITY="high"
+    )
+    assert on_pr[on_pr.index("--pr") + 1] == "12"
+    other = _run_step(
+        post, tmp_path / "dispatch", "workflow_dispatch", MIN_SEVERITY="high"
+    )
+    assert "--pr" not in other
+
+
+def test_publish_step_tolerates_missing_artifact() -> None:
+    fetch, _ = _publish_steps(_action_steps())
+
+    assert fetch["continue-on-error"] is True
 
 
 def _draft_repo(path: Path) -> Path:
@@ -580,3 +716,12 @@ def test_action_passes_the_drafts_input_to_the_script() -> None:
         s for s in action["runs"]["steps"] if "knowledge-ci.sh" in str(s.get("run", ""))
     ]
     assert step["env"]["KMCTL_DRAFTS"] == "${{ inputs.drafts }}"
+
+
+def test_action_runs_the_agent_script_without_uv_config() -> None:
+    agent, _ = _agent_steps(_action_steps())
+    _, post = _publish_steps(_action_steps())
+
+    for step in (agent, post):
+        assert "uv run --no-config --script" in step["run"], step["name"]
+        assert "uv run --script" not in step["run"], step["name"]

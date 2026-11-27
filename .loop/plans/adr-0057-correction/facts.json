@@ -1,0 +1,196 @@
+{
+  "schema_version": "1.0",
+  "slug": "adr-0057-correction",
+  "plan_hash": "c72cf5ac80ab4eb7cbd3c7850b3ee9dbfa8a949c1bd57ce7bbb4c39307126463",
+  "problems": [
+    {
+      "id": "P1",
+      "text": "The accepted Context never says why `kmctl review due --base` (ADR 0055) does not scope the audit, or what the audit adds over it."
+    },
+    {
+      "id": "P2",
+      "text": "The accepted fork rule says the action \"refuses\" a fork pull request, which in `action.yml` is `exit 1` and a red check, against \"never fails the check\" and \"a fork gets the free checks only\"."
+    },
+    {
+      "id": "P5",
+      "text": "The accepted text says nothing on publish when there is no report, so a fork's skipped audit, or a failed one, leaves publish failing on a missing artifact."
+    },
+    {
+      "id": "P3",
+      "text": "The accepted text presents the base-branch checkout as if it protected the run, though the pull request's own workflow file runs on a `pull_request` event; it does not say what happens to a `--context` folder an earlier step fetched, which the base checkout does not hold."
+    },
+    {
+      "id": "P4",
+      "text": "The accepted text calls the new audit \"new\" in one place and \"fourth\" in another without a name."
+    },
+    {
+      "id": "P6",
+      "text": "The accepted text does not say the merge base relies on the audit's `fetch-depth: 0`."
+    },
+    {
+      "id": "P7",
+      "text": "The accepted text does not place the feature under ADR 0046."
+    },
+    {
+      "id": "P8",
+      "text": "Copying the reviewed revision would bring back its pre-rule claim that a shell command can read the key, which reads as a Correction reversing the no-shell rule."
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "A reader of ADR 0057 on main finds a record that agrees with itself, with `action.yml`, and with the measured behaviour of `kmctl review due --base`, without the accepted text being rewritten."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "O1",
+      "change": "The Correction says why `--base` does not scope the audit, with the prototype behind its figure",
+      "kind": "support",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        ".okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md",
+        "new:.okf/prototypes/pr-audit-scope/README.md",
+        "new:.okf/prototypes/pr-audit-scope/scope.py",
+        "new:.okf/prototypes/pr-audit-scope/results.txt",
+        "new:.okf/prototypes/pr-audit-scope/ref.txt",
+        ".okf/prototypes/index.md"
+      ],
+      "checked_by": "eval rows that grep the Correction for a link to ADR 0055, `review due --base`, 86 and the prototype link, and a judgment row on what the audit adds over 0055",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O2",
+      "change": "The Correction replaces the fork refusal with a skip that exits 0 on both jobs",
+      "kind": "support",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P2",
+      "fixes_index": 1,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        ".okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md"
+      ],
+      "checked_by": "an eval row that greps the Correction for exit 0 and both jobs",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O3",
+      "change": "The Correction says what the base checkout does and does not protect, and keeps fetched context folders in the working tree",
+      "kind": "support",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P3",
+      "fixes_index": 3,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        ".okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md"
+      ],
+      "checked_by": "eval rows that grep the Correction for the pull request's own workflow file and for fetched context folders, and a judgment row that it does not claim the checkout guards the key",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O5",
+      "change": "The Correction says publish with no report posts nothing and exits 0, in every mode",
+      "kind": "support",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P5",
+      "fixes_index": 2,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        ".okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md"
+      ],
+      "checked_by": "an eval row that greps the Correction for the no-report case",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O6",
+      "change": "The Correction keeps the no-shell rule and gives the key reasoning in its terms",
+      "kind": "support",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P8",
+      "fixes_index": 7,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        ".okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md"
+      ],
+      "checked_by": "eval rows that the Correction names `run_shell` as still left out on a pull request and does not say a shell command can read the key, and a judgment row that nothing in it reads as reversing the rule",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O7",
+      "change": "The Correction states the history need",
+      "kind": "support",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P6",
+      "fixes_index": 5,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        ".okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md"
+      ],
+      "checked_by": "an eval row that greps the Correction for `fetch-depth: 0`",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O8",
+      "change": "The Correction places the feature under ADR 0046",
+      "kind": "support",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P7",
+      "fixes_index": 6,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        ".okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md"
+      ],
+      "checked_by": "an eval row that greps the Correction for the ADR 0046 link",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O4",
+      "change": "The Correction names `okf-vs-change` and leaves the accepted text above it unchanged",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P4",
+      "fixes_index": 4,
+      "needs": [
+        "O1",
+        "O2",
+        "O3",
+        "O5",
+        "O6",
+        "O7",
+        "O8"
+      ],
+      "needs_index": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "touches": [
+        ".okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md"
+      ],
+      "checked_by": "eval rows that grep for `okf-vs-change`, that the diff against main only adds lines after the last line of the accepted text, and `prek run --all-files`",
+      "seen_by": "operator"
+    }
+  ]
+}

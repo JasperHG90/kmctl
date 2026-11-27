@@ -1,0 +1,258 @@
+{
+  "schema_version": "1.0",
+  "slug": "adr-0057-correction",
+  "stage": "done",
+  "attempts": 1,
+  "plan_rounds": 2,
+  "review_rounds": 2,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "35fdc14f54d3f4c7e33c9b1301bfed54e122df9250e32e1ac459a9c7052fcc4f",
+    "tree": "58ec780f0451afdca8e9c34b24fc03b2ccf1f85e",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": null,
+        "paths": [
+          ".okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md"
+        ]
+      }
+    ],
+    "at": "2026-11-26T17:22:47+00:00"
+  },
+  "ask": null,
+  "split": "j-20261126T164843+0000-4c6cea8a",
+  "split_plan_hash": "c72cf5ac80ab4eb7cbd3c7850b3ee9dbfa8a949c1bd57ce7bbb4c39307126463",
+  "split_hold": false,
+  "commit_sha": "50363b969a4e5bd4cde7a687c8ffed9f9fbf6a69",
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": "/home/vscode/workspace.worktrees/adr-0057-correction",
+  "branch": "loop/adr-0057-correction",
+  "stamps": [
+    "7b4c6eca3f7e6cbe8126c4cad46e9b49d2e7e7b6ac53eadf13836b9b5d345150",
+    "40d9a026fc096357c81bee502dbfa4495b3de1b126a0bf8ce2dad8261b69727d",
+    "35fdc14f54d3f4c7e33c9b1301bfed54e122df9250e32e1ac459a9c7052fcc4f"
+  ],
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/implement-ticket",
+    "hash": "0145c8eb7ca4319cad98ee0fa2c10ec55ac621a001382b14a40ad33698907736",
+    "at": "2026-11-26T17:14:21+00:00"
+  },
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "the Correction links ADR 0055 and names kmctl review due --base",
+      "fails_when": "the Correction lacks the 0055 link or review due --base",
+      "command": "awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -q '0055-one-verify-for-the-pages-a-branch-made-due' && awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -q 'review due --base'",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "the Correction gives the measured 86 and links the prototype",
+      "fails_when": "the Correction lacks 86 or the pr-audit-scope link",
+      "command": "awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -q '86' && awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -q 'prototypes/pr-audit-scope/README.md'",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "the prototype holds its script, results and measured commit, and is in the prototypes index",
+      "fails_when": "scope.py, results.txt or ref.txt is missing, or the index does not list pr-audit-scope",
+      "command": "test -f .okf/prototypes/pr-audit-scope/scope.py && test -f .okf/prototypes/pr-audit-scope/results.txt && test -f .okf/prototypes/pr-audit-scope/ref.txt && grep -q 'pr-audit-scope' .okf/prototypes/index.md",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "the Correction says what the audit adds over ADR 0055: whether a decision still holds",
+      "fails_when": "a reviewer finds no sentence telling the audit's judgment apart from 0055's list",
+      "command": null,
+      "judgment": true
+    },
+    {
+      "id": "r5",
+      "behavior": "the Correction says a fork pull request is skipped with exit 0 on both jobs",
+      "fails_when": "the Correction does not say exit 0 or does not name both jobs",
+      "command": "awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -Eqi 'exits? 0' && awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -qi 'both'",
+      "judgment": false
+    },
+    {
+      "id": "r6",
+      "behavior": "the Correction says the pull request's own workflow file runs on a pull_request event and that fetched context folders stay in the working tree",
+      "fails_when": "either point is missing",
+      "command": "awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -qi 'workflow file' && awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -qi 'fetched'",
+      "judgment": false
+    },
+    {
+      "id": "r7",
+      "behavior": "the Correction does not claim the base checkout guards the API key",
+      "fails_when": "a reviewer finds the base checkout presented as guarding the key",
+      "command": null,
+      "judgment": true
+    },
+    {
+      "id": "r8",
+      "behavior": "the Correction names okf-vs-change, cites fetch-depth: 0 and links ADR 0046",
+      "fails_when": "any of the three is missing",
+      "command": "awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -q 'okf-vs-change' && awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -q 'fetch-depth: 0' && awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -q '0046-kmctl-works-from-code-toward-knowledge'",
+      "judgment": false
+    },
+    {
+      "id": "r9",
+      "behavior": "the accepted text above the Correction is unchanged and the record stays stable",
+      "fails_when": "the accepted text on main is not a byte-for-byte prefix of the file, or status is not stable",
+      "command": "git show main:'.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' > /tmp/adr57-main.$$ && head -c \"$(wc -c < /tmp/adr57-main.$$)\" '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | cmp -s - /tmp/adr57-main.$$ && grep -q '^status: stable' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'; rc=$?; rm -f /tmp/adr57-main.$$; exit $rc",
+      "judgment": false
+    },
+    {
+      "id": "r10",
+      "behavior": "the repo's pre-commit hooks pass on every file",
+      "fails_when": "prek run --all-files exits nonzero",
+      "command": "prek run --all-files",
+      "judgment": false
+    },
+    {
+      "id": "r11",
+      "behavior": "the Correction says publish with no report posts nothing and exits 0",
+      "fails_when": "the Correction does not cover the no-report case",
+      "command": "awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -qi 'no report'",
+      "judgment": false
+    },
+    {
+      "id": "r12",
+      "behavior": "the Correction says run_shell stays left out on a pull request and does not say a shell command can read the key",
+      "fails_when": "the Correction never names run_shell, or says a shell command can read the key",
+      "command": "awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -q 'run_shell' && ! awk '/^## Correction, 2026-11-26/{c=1} c' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' | grep -qi 'shell command can read'",
+      "judgment": false
+    },
+    {
+      "id": "r13",
+      "behavior": "nothing in the Correction reads as reversing the no-shell rule",
+      "fails_when": "a reviewer finds a sentence that weakens or contradicts the accepted no-shell rule",
+      "command": null,
+      "judgment": true
+    }
+  ],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/create-eval",
+      "reason": "plan round 1: r5 split off the no-report case into r11; r3 adds the prototypes index; r12 and r13 check the Correction keeps the no-shell rule",
+      "diff": {
+        "added": [
+          "r11",
+          "r12",
+          "r13"
+        ],
+        "removed": [],
+        "changed": {
+          "r3": [
+            "behavior",
+            "fails_when",
+            "command"
+          ],
+          "r5": [
+            "behavior"
+          ]
+        }
+      },
+      "at": "2026-11-26T16:48:54+00:00"
+    },
+    {
+      "signer": "delegated:jasperginn@gmail.com/implement-ticket",
+      "reason": "review round 1 note: r9's grep missed a deleted bullet line; it now checks main's accepted text is a byte-for-byte prefix of the file",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r9": [
+            "fails_when",
+            "command"
+          ]
+        }
+      },
+      "at": "2026-11-26T17:14:21+00:00"
+    }
+  ],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [],
+  "round": {
+    "kind": "review",
+    "n": 2,
+    "binds": "35fdc14f54d3f4c7e33c9b1301bfed54e122df9250e32e1ac459a9c7052fcc4f",
+    "started_at": "2026-11-26T17:22:55+00:00",
+    "passes": [
+      "reviewer"
+    ],
+    "tree": "58ec780f0451afdca8e9c34b24fc03b2ccf1f85e",
+    "plan_hash": "c72cf5ac80ab4eb7cbd3c7850b3ee9dbfa8a949c1bd57ce7bbb4c39307126463",
+    "eval_hash": "0145c8eb7ca4319cad98ee0fa2c10ec55ac621a001382b14a40ad33698907736",
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": true,
+    "outcome": "pass"
+  },
+  "plan_hash": "c72cf5ac80ab4eb7cbd3c7850b3ee9dbfa8a949c1bd57ce7bbb4c39307126463",
+  "intent": {
+    "epic": null,
+    "depends_on": [],
+    "priority": null
+  },
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-11-26T16:44:14+00:00",
+      "by": "register"
+    },
+    {
+      "from": "planning",
+      "to": "ready",
+      "at": "2026-11-26T16:50:16+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-26T16:50:19+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-26T17:04:21+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-26T17:14:19+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-26T17:22:47+00:00",
+      "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-26T20:12:52+00:00",
+      "by": "done"
+    }
+  ],
+  "by": "process:loopctl/2.4.0",
+  "at": "2026-11-26T20:12:52+00:00"
+}

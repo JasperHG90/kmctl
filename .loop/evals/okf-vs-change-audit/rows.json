@@ -104,12 +104,6 @@
       "command": "for f in .okf/decisions/0005-audits-report-only.md .okf/decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script.md; do awk '/^## Correction, 2026-/{c=1} c' \"$f\" | grep -q '0057-the-audit-runs-on-a-pull-request' || exit 1; done"
     },
     {
-      "id": "r18",
-      "behavior": "ADR 0057 stays a draft, says fetched context folders stay in the working tree, and no longer says nothing is built before acceptance",
-      "fails_when": "status is not draft, the fetched-context sentence is missing, or the old last Consequence remains",
-      "command": "grep -q '^status: draft' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' && grep -qi 'fetched' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' && ! grep -q 'Nothing is built until this record is accepted' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'"
-    },
-    {
       "id": "r19",
       "behavior": "the knowledge-audit workflow no longer says the audit never runs on a pull request",
       "fails_when": "the comment still says it never runs on a pull request",
@@ -123,8 +117,8 @@
     },
     {
       "id": "r21",
-      "behavior": "the okf-vs-change prompt keeps the audit report-only and asks for a reason for each decision the agent adds beyond the matched list",
-      "fails_when": "a reviewer finds the prompt lets the agent edit files or add decisions without a reason",
+      "behavior": "the okf-vs-change prompt keeps the audit report-only, needs only the read, search and list tools, and asks for a reason for each decision the agent adds beyond the matched list",
+      "fails_when": "a reviewer finds the prompt lets the agent edit files, relies on run_shell or a skill's scripts, or lets it add decisions without a reason",
       "judgment": true
     },
     {
@@ -132,12 +126,6 @@
       "behavior": "the repo's pre-commit hooks pass on every file",
       "fails_when": "prek run --all-files exits nonzero",
       "command": "prek run --all-files"
-    },
-    {
-      "id": "r23",
-      "behavior": "the ticket's branch carries PR 71's head, so the push is a fast-forward",
-      "fails_when": "origin/adr/audit-pull-requests is neither an ancestor of HEAD nor the merge in progress",
-      "command": "git merge-base --is-ancestor origin/adr/audit-pull-requests HEAD || [ \"$(git rev-parse -q --verify MERGE_HEAD)\" = \"$(git rev-parse origin/adr/audit-pull-requests)\" ]"
     },
     {
       "id": "r24",
@@ -156,6 +144,18 @@
       "behavior": "with --instructions-root DIR, an instruction path the pull request tracks but DIR does not have exits 2",
       "fails_when": "it falls back to the working tree or exits other than 2",
       "command": "uv run pytest -q tests/test_agent.py::test_instructions_root_refuses_path_missing_from_base"
+    },
+    {
+      "id": "r27",
+      "behavior": "with --no-shell the agent's tools leave out run_shell and the system prompt does not offer it; without the flag nothing changes",
+      "fails_when": "run_shell is among the tools or named in the system prompt under --no-shell, or missing without it",
+      "command": "uv run pytest -q tests/test_agent.py::test_no_shell_leaves_out_run_shell"
+    },
+    {
+      "id": "r28",
+      "behavior": "the action's agent step passes --no-shell only on a pull_request event",
+      "fails_when": "--no-shell is missing on a pull request or passed on another event",
+      "command": "uv run pytest -q packages/kmctl/tests/test_action.py::test_agent_step_passes_no_shell_only_on_pull_request"
     }
   ]
 }

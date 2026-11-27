@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.1",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "a pull request could swap a tracked instruction path, or a parent folder of it, for a symlink and change the audit's instructions",
+      "anchor": "action/agent.py:instruction_path",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "uv read config from the pull request's checkout",
+      "anchor": "action.yml",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f3",
+      "disposition": "open",
+      "claim": "the pull request comment marker is only the title; deferred to stub ticket okf-vs-change-audit-reviewer-f3",
+      "anchor": "action/agent.py:COMMENT_MARK",
+      "category": "hardening",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f4",
+      "disposition": "resolved",
+      "claim": "the instructed fixture could not tell base skills from head skills",
+      "anchor": "tests/test_agent.py",
+      "category": "test-strength",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "592dcaedece208d595241db32085a57d69cf52bbbca6187dbd899e44e4147fb2",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.4.0",
+  "at": "2026-11-26T22:12:03+00:00",
+  "checklist": null
+}

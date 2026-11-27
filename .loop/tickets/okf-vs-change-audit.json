@@ -1,29 +1,71 @@
 {
   "schema_version": "1.0",
   "slug": "okf-vs-change-audit",
-  "stage": "ready",
-  "attempts": 0,
-  "plan_rounds": 2,
-  "review_rounds": 0,
+  "stage": "done",
+  "attempts": 2,
+  "plan_rounds": 3,
+  "review_rounds": 3,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "84821977caf20eaa1f9a6640f18fe40329d389008a20977333efe65d2d9df111",
+    "tree": "2d94c670e8542078e14f02119e4c761684824146",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "blocking",
+        "judgement": null,
+        "paths": [
+          "action/agent.py",
+          "tests/test_agent.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f2",
+        "outcome": "sent-back",
+        "by": "blocking",
+        "judgement": null,
+        "paths": [
+          "action.yml",
+          "packages/kmctl/tests/test_action.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f4",
+        "outcome": "cleared-unreviewed",
+        "by": "fallback",
+        "judgement": "j-20261126T214713+0000-68f0ad9a",
+        "paths": [
+          "tests/test_agent.py"
+        ]
+      }
+    ],
+    "at": "2026-11-26T21:47:13+00:00"
+  },
   "ask": null,
-  "split": "j-20261126T133706+0000-ed849e13",
-  "split_plan_hash": "3fc9e7784f99670d63d40f87ee6efdd4a6ef4c55c196eeb40fec3a6bb29625fa",
+  "split": "j-20261126T164718+0000-4c66ac82",
+  "split_plan_hash": "de47cd0332c496d29af054ae467c31365a7e770e94f6a640ace45f984aacf313",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "dd6b5184aaaf87c64944dff39877fa0fc81c8f57",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
-  "worktree": null,
-  "branch": null,
-  "stamps": [],
+  "worktree": "/home/vscode/workspace.worktrees/okf-vs-change-audit",
+  "branch": "loop/okf-vs-change-audit",
+  "stamps": [
+    "2fd1277abdae03115dfda592bf2e9d700a47cdf4b6404b9de2bffa6ebe1aa63d",
+    "0a8fa71453ff5f018dd6e3c43d0d4b543993f988fd29795806c6320bd53e7634",
+    "90bd93be0a16792292e0b59119653245a2939972c5760d588fa71299cada7a11",
+    "84821977caf20eaa1f9a6640f18fe40329d389008a20977333efe65d2d9df111",
+    "592dcaedece208d595241db32085a57d69cf52bbbca6187dbd899e44e4147fb2"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/create-eval",
-    "hash": "b88972c6c8197c2bdd80b9e0247dbc09842a25bddfcc31e7807299aa8398d73f",
-    "at": "2026-11-26T13:37:20+00:00"
+    "hash": "05aeb9c4d8c31052a02fb0ba9389600909dd76d91a10ca34829b6cc3289e20cb",
+    "at": "2026-11-26T16:45:32+00:00"
   },
   "delegation": null,
   "budget_base": null,
@@ -148,13 +190,6 @@
       "judgment": false
     },
     {
-      "id": "r18",
-      "behavior": "ADR 0057 stays a draft, says fetched context folders stay in the working tree, and no longer says nothing is built before acceptance",
-      "fails_when": "status is not draft, the fetched-context sentence is missing, or the old last Consequence remains",
-      "command": "grep -q '^status: draft' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' && grep -qi 'fetched' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md' && ! grep -q 'Nothing is built until this record is accepted' '.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md'",
-      "judgment": false
-    },
-    {
       "id": "r19",
       "behavior": "the knowledge-audit workflow no longer says the audit never runs on a pull request",
       "fails_when": "the comment still says it never runs on a pull request",
@@ -170,8 +205,8 @@
     },
     {
       "id": "r21",
-      "behavior": "the okf-vs-change prompt keeps the audit report-only and asks for a reason for each decision the agent adds beyond the matched list",
-      "fails_when": "a reviewer finds the prompt lets the agent edit files or add decisions without a reason",
+      "behavior": "the okf-vs-change prompt keeps the audit report-only, needs only the read, search and list tools, and asks for a reason for each decision the agent adds beyond the matched list",
+      "fails_when": "a reviewer finds the prompt lets the agent edit files, relies on run_shell or a skill's scripts, or lets it add decisions without a reason",
       "command": null,
       "judgment": true
     },
@@ -180,13 +215,6 @@
       "behavior": "the repo's pre-commit hooks pass on every file",
       "fails_when": "prek run --all-files exits nonzero",
       "command": "prek run --all-files",
-      "judgment": false
-    },
-    {
-      "id": "r23",
-      "behavior": "the ticket's branch carries PR 71's head, so the push is a fast-forward",
-      "fails_when": "origin/adr/audit-pull-requests is neither an ancestor of HEAD nor the merge in progress",
-      "command": "git merge-base --is-ancestor origin/adr/audit-pull-requests HEAD || [ \"$(git rev-parse -q --verify MERGE_HEAD)\" = \"$(git rev-parse origin/adr/audit-pull-requests)\" ]",
       "judgment": false
     },
     {
@@ -208,6 +236,20 @@
       "behavior": "with --instructions-root DIR, an instruction path the pull request tracks but DIR does not have exits 2",
       "fails_when": "it falls back to the working tree or exits other than 2",
       "command": "uv run pytest -q tests/test_agent.py::test_instructions_root_refuses_path_missing_from_base",
+      "judgment": false
+    },
+    {
+      "id": "r27",
+      "behavior": "with --no-shell the agent's tools leave out run_shell and the system prompt does not offer it; without the flag nothing changes",
+      "fails_when": "run_shell is among the tools or named in the system prompt under --no-shell, or missing without it",
+      "command": "uv run pytest -q tests/test_agent.py::test_no_shell_leaves_out_run_shell",
+      "judgment": false
+    },
+    {
+      "id": "r28",
+      "behavior": "the action's agent step passes --no-shell only on a pull_request event",
+      "fails_when": "--no-shell is missing on a pull request or passed on another event",
+      "command": "uv run pytest -q packages/kmctl/tests/test_action.py::test_agent_step_passes_no_shell_only_on_pull_request",
       "judgment": false
     }
   ],
@@ -235,22 +277,50 @@
         }
       },
       "at": "2026-11-26T13:37:20+00:00"
+    },
+    {
+      "signer": "delegated:jasperginn@gmail.com/create-eval",
+      "reason": "PR 71 merged ADR 0057 accepted with a no-run_shell rule, so the ticket lands on main: r18 (ADR 0057 edits, now ticket adr-0057-correction) and r23 (PR 71 ancestry) go; r21 adds no shell; r27 and r28 check --no-shell",
+      "diff": {
+        "added": [
+          "r27",
+          "r28"
+        ],
+        "removed": [
+          "r18",
+          "r23"
+        ],
+        "changed": {
+          "r21": [
+            "behavior",
+            "fails_when"
+          ]
+        }
+      },
+      "at": "2026-11-26T16:45:32+00:00"
     }
   ],
   "accepted_risks": [],
   "waivers": [],
-  "overrides": [],
+  "overrides": [
+    {
+      "edge": "blocked->ready",
+      "reason": "plan revised before the block; passed plan round 3",
+      "by": "human:jasperginn@gmail.com",
+      "at": "2026-11-26T21:12:44+00:00"
+    }
+  ],
   "round": {
-    "kind": "plan",
-    "n": 2,
-    "binds": "3fc9e7784f99670d63d40f87ee6efdd4a6ef4c55c196eeb40fec3a6bb29625fa",
-    "started_at": "2026-11-26T13:37:22+00:00",
+    "kind": "review",
+    "n": 3,
+    "binds": "592dcaedece208d595241db32085a57d69cf52bbbca6187dbd899e44e4147fb2",
+    "started_at": "2026-11-26T22:02:51+00:00",
     "passes": [
-      "plan-reviewer"
+      "reviewer"
     ],
-    "tree": null,
-    "plan_hash": null,
-    "eval_hash": null,
+    "tree": "a35878e1eb94c31018ae836235fb47ffb19d47cd",
+    "plan_hash": "de47cd0332c496d29af054ae467c31365a7e770e94f6a640ace45f984aacf313",
+    "eval_hash": "05aeb9c4d8c31052a02fb0ba9389600909dd76d91a10ca34829b6cc3289e20cb",
     "scope": "full",
     "sent_back": [],
     "since": null,
@@ -260,7 +330,7 @@
     "closed": true,
     "outcome": "pass"
   },
-  "plan_hash": "3fc9e7784f99670d63d40f87ee6efdd4a6ef4c55c196eeb40fec3a6bb29625fa",
+  "plan_hash": "de47cd0332c496d29af054ae467c31365a7e770e94f6a640ace45f984aacf313",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -278,8 +348,74 @@
       "to": "ready",
       "at": "2026-11-26T13:38:34+00:00",
       "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "blocked",
+      "at": "2026-11-26T16:47:13+00:00",
+      "by": "block"
+    },
+    {
+      "from": "blocked",
+      "to": "ready",
+      "at": "2026-11-26T21:12:44+00:00",
+      "by": "unblock"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-26T21:13:02+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-26T21:29:56+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-26T21:37:12+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-26T21:47:13+00:00",
+      "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "blocked",
+      "at": "2026-11-26T21:53:31+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "blocked",
+      "to": "ready",
+      "at": "2026-11-26T21:58:12+00:00",
+      "by": "unblock"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-26T21:58:17+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-26T22:02:50+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-26T22:12:47+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-26T13:38:34+00:00"
+  "at": "2026-11-26T22:12:47+00:00"
 }

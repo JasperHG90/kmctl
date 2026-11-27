@@ -1,0 +1,6 @@
+# kmctl summary ack: .okf/summary.md was read against these concepts and still holds.
+at: 2026-11-26T21:20:37Z
+against:
+  - architecture/overview
+  - decisions/0005-audits-report-only
+  - decisions/0017-the-ci-audit-is-a-standalone-pydanticai-agent-script
