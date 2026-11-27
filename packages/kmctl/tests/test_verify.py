@@ -581,6 +581,28 @@ def test_verify_folder_id_verifies_every_page(tmp_path: Path, cid: str) -> None:
     assert "verified" not in front_matter(root / ".okf/manifesto.md")
 
 
+@pytest.mark.parametrize("cid", ["docs", "docs/"])
+def test_verify_the_whole_docs_folder(tmp_path: Path, cid: str) -> None:
+    """docs on its own verifies every docs page, and leaves the indexes and .okf/ alone."""
+    root = _repo(tmp_path)
+    page = "---\ndescription: A page.\n---\n\n# Page\n"
+    _write(root, "docs/how-to/run.md", page)
+    _write(root, "docs/reference/cli.md", page)
+    _write(root, "docs/how-to/README.md", "# How-to\n")
+    _concept(root, "manifesto.md", "")
+    _commit(root)
+    before = _files(root)
+
+    result = _verify(root, cid, "--json")
+
+    assert result.exit_code == 0, result.output
+    ids = [json.loads(line)["id"] for line in result.stdout.splitlines()]
+    assert ids == ["docs/how-to/run", "docs/reference/cli"]
+    after = _files(root)
+    assert after["docs/how-to/README.md"] == before["docs/how-to/README.md"]
+    assert "verified" not in front_matter(root / ".okf/manifesto.md")
+
+
 def test_verify_docs_folder_id(tmp_path: Path) -> None:
     root = _repo(tmp_path)
     page = "---\ndescription: A page.\n---\n\n# Page\n"

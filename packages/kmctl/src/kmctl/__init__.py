@@ -474,7 +474,7 @@ _PATH_OPTION = typer.Option(
         "  kmctl verify manifesto decisions/0001-x docs/how-to/install --by human:jasper\n\n"
         "  kmctl verify decisions --by human:jasper\n\n"
         "  kmctl verify .okf/decisions/005* --by human:jasper\n\n"
-        "A folder (decisions, docs/how-to) verifies every page under it that kmctl "
+        "A folder (decisions, docs/how-to, or docs for every docs page) verifies every page under it that kmctl "
         "review due lists, leaving out its index and any handoff: give it once the "
         "person has read the whole folder. A path from the repository root with .md "
         "works too, so a shell glob such as .okf/decisions/005* does; a glob that "
