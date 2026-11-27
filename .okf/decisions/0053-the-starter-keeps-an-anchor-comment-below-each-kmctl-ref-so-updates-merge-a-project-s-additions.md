@@ -14,6 +14,8 @@ sources:
 verified:
   - by: human:jasper
     at: 2026-11-27T09:48:51Z
+  - by: human:jasper
+    at: 2026-11-27T20:41:20Z
 ---
 
 # ADR 0053: The starter keeps an anchor comment below each kmctl ref so updates merge a project's additions

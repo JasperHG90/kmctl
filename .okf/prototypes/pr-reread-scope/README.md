@@ -6,6 +6,9 @@ tags: [prototype]
 generated:
   by: process:kmctl/0.18.0
   at: 2026-11-27T10:43:57Z
+verified:
+  - by: human:jasper
+    at: 2026-11-27T20:41:27Z
 ---
 
 # PR reread scope

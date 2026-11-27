@@ -6,6 +6,9 @@ tags: [prototype]
 generated:
   by: process:kmctl/0.14.0
   at: 2026-11-19T09:07:20Z
+verified:
+  - by: human:jasper
+    at: 2026-11-27T20:41:27Z
 ---
 
 # Bookkeeping merge conflicts

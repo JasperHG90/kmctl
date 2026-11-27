@@ -11,6 +11,9 @@ sources:
   - resource: "action.yml"
   - resource: "action/agent.py"
   - resource: ".github/workflows/knowledge-audit.yml"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T20:41:20Z
 ---
 
 # ADR 0061: The reread runs on demand on a ready pull request

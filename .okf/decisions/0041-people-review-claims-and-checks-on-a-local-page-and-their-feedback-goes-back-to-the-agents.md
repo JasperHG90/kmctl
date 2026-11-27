@@ -17,6 +17,8 @@ sources:
 verified:
   - by: human:jasper
     at: 2026-11-27T09:48:51Z
+  - by: human:jasper
+    at: 2026-11-27T20:41:20Z
 ---
 
 # ADR 0041: People review claims and checks on a local page, and their feedback goes back to the agents

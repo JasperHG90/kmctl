@@ -10,6 +10,9 @@ status: stable
 sources:
   - resource: "packages/kmctl/src/kmctl/verify.py"
   - resource: "packages/kmctl/src/kmctl/pages.py"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T20:41:20Z
 ---
 
 # ADR 0059: kmctl verify takes a folder id

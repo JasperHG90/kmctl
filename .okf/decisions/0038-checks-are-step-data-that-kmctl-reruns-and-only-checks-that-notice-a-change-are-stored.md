@@ -14,6 +14,8 @@ sources:
 verified:
   - by: human:jasper
     at: 2026-11-27T09:48:51Z
+  - by: human:jasper
+    at: 2026-11-27T20:41:20Z
 ---
 
 # ADR 0038: Checks are step data that kmctl reruns and only checks that notice a change are stored

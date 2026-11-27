@@ -12,6 +12,9 @@ sources:
   - resource: "action/prompt.md"
   - resource: "action.yml"
   - resource: ".github/workflows/knowledge-audit.yml"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T20:41:20Z
 ---
 
 # ADR 0060: The CI agent only rereads the pages a pull request changed

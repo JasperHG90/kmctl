@@ -7,6 +7,9 @@ generated:
   at: 2026-10-16
 tags: [architecture, diagram]
 status: stable
+verified:
+  - by: human:jasper
+    at: 2026-11-27T20:42:36Z
 ---
 
 # Architecture overview
