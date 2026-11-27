@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import importlib.util
 import re
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -1374,3 +1376,75 @@ def test_release_kmaudit_bump_stages_what_set_writes() -> None:
 
     for rel in (KMAUDIT_MANIFEST, KMAUDIT_CLAUDE, KMAUDIT_README, KMAUDIT_DOCS):
         assert rel.as_posix() in line.split()
+
+
+#: The same-repository condition both knowledge-audit jobs carry (ADR 0060).
+SAME_REPO = "github.event.pull_request.head.repo.full_name == github.repository"
+
+
+def test_knowledge_audit_runs_the_reread_on_pull_requests() -> None:
+    """Pull requests only; both jobs skip a fork; only publish may write; no tracing."""
+    data = _load(KNOWLEDGE_AUDIT)
+    audit, publish = data["jobs"]["audit"], data["jobs"]["publish"]
+
+    assert set(data["on"]) == {"pull_request"}
+    assert "ready_for_review" in data["on"]["pull_request"]["types"]
+    assert data["permissions"] == {"contents": "read"}
+    assert SAME_REPO in audit["if"] and SAME_REPO in publish["if"]
+    assert "!cancelled()" in publish["if"]
+    assert "permissions" not in audit
+    assert publish["permissions"] == {"contents": "read", "pull-requests": "write"}
+    assert "LANGFUSE" not in KNOWLEDGE_AUDIT.read_text()
+    assert "secrets." not in yaml.safe_dump(publish)
+    for step in audit["steps"]:
+        text = yaml.safe_dump(step)
+        assert "GH_TOKEN" not in text and "github.token" not in text, step
+
+
+def _agent_module() -> Any:
+    """Load action/agent.py as a module."""
+    spec = importlib.util.spec_from_file_location(
+        "wf_agent", ROOT / "action" / "agent.py"
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["wf_agent"] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def _agent_args(run: str) -> list[str]:
+    """The arguments after agent.py in a workflow step, with expressions filled in."""
+    filled = re.sub(
+        r"\$\{\{ *([^}]*?) *\}\}",
+        lambda m: {
+            "github.base_ref": "main",
+            "github.event.pull_request.number": "12",
+        }.get(m.group(1), "/tmp/x"),
+        run,
+    )
+    words = shlex.split(filled)
+    return words[words.index("action/agent.py") + 1 :]
+
+
+def test_knowledge_audit_commands_parse_with_the_agent() -> None:
+    """The agent and publish commands parse with the real script; the checkout keeps no token."""
+    parser = _agent_module().parser()
+    audit = _steps(KNOWLEDGE_AUDIT, "audit")
+    publish = _steps(KNOWLEDGE_AUDIT, "publish")
+    [checkout] = [
+        s for s in audit if str(s.get("uses", "")).startswith("actions/checkout")
+    ]
+    [agent] = [s for s in audit if "agent.py run" in str(s.get("run", ""))]
+    [post] = [s for s in publish if "agent.py publish" in str(s.get("run", ""))]
+
+    assert checkout["with"]["persist-credentials"] is False
+    assert checkout["with"]["fetch-depth"] == 0
+    for step in (agent, post):
+        assert "uv run --no-config --script action/agent.py" in step["run"]
+    parsed = parser.parse_args(_agent_args(agent["run"]))
+    assert parsed.command == "run" and parsed.base == "origin/main"
+    assert agent["env"] == {"AUDIT_API_KEY": "${{ secrets.AUDIT_API_KEY }}"}
+    parsed = parser.parse_args(_agent_args(post["run"]))
+    assert parsed.command == "publish" and parsed.pr == 12
+    assert post["env"]["GH_TOKEN"] == "${{ github.token }}"

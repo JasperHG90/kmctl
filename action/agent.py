@@ -3,32 +3,20 @@
 # dependencies = [
 #   "pydantic-ai-slim[openai]==2.57.0",
 #   "pyyaml>=6.0.3",
-#   "opentelemetry-sdk==1.45.1",
-#   "opentelemetry-exporter-otlp-proto-http==1.45.1",
 # ]
 # ///
-"""A small agent for CI: give it a task, a model, folders to read and skills to use.
+"""Reread, on a pull request, the pages whose sources it changed (ADR 0060).
 
 Run it with ``uv run action/agent.py run --help``. It needs nothing from kmctl.
-It ships four audits, one prompt file each in ``action/prompts``, that
-``--audit`` picks: ``docs/`` against the code, ``.okf/`` against the code (the
-default), ``docs/`` against ``.okf/``, and the decisions a change touched
-against that change (``okf-vs-change``, with ``--base``). ``--prompt`` gives it
-any other task, and kmctl's skills in ``packages/kmctl/apm/.apm/skills`` are
-there for it to use.
+``run`` lists every page under ``.okf/`` and ``docs/`` whose ``sources`` name a
+file changed since ``--base``, hands that list and the shipped prompt
+(``action/prompt.md``) to a model, and writes the typed report to ``--out`` as
+``report.json``, ``report.md`` and ``transcript.json``. With nothing in scope
+it writes an empty report without calling the model. The agent can only read,
+search and list files in the repository; it has no shell.
 
-The agent reads the repository, every ``--context`` folder and every
-``--skills`` folder, and can run shell commands so it can use the scripts
-skills ship. Commands get a clean environment without the API key or a GitHub
-token, but run as the same user, so a command could still read the key from
-``/proc`` (ADR 0017). ``--no-shell`` leaves the shell out, as a pull request
-run does (ADR 0057). ``--instructions-root`` reads the task, system prompt,
-context and skills from another checkout, such as the base branch's. It
-returns a typed report, which ``run`` writes to ``--out`` as ``report.json``,
-``report.md`` and ``transcript.json``.
-
-``publish`` posts that report to one GitHub issue, or with ``--pr`` to one
-pull request comment, with ``gh``. Run it in a job of its own, which gets the
+``publish`` posts that report as one comment on a pull request, and replaces
+it on the next run, with ``gh``. Run it in a job of its own, which gets the
 report as an artifact and nothing else from the agent's job, so nothing the
 agent changed runs with the token.
 """
@@ -37,12 +25,10 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import base64
 import functools
 import json
 import os
 import re
-import signal
 import subprocess
 import sys
 import tempfile
@@ -56,24 +42,15 @@ os.environ.setdefault("PYDANTIC_AI_NO_BANNER", "1")
 import yaml
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent, ModelRetry
-from pydantic_ai.capabilities import Instrumentation
 from pydantic_ai.exceptions import UnexpectedModelBehavior
 from pydantic_ai.models import Model
-from pydantic_ai.models.instrumented import InstrumentationSettings
 from pydantic_ai.usage import UsageLimits
 
 HERE = Path(__file__).resolve().parent
-#: kmctl's skills and agents, in the action's own checkout.
-PACKAGE = HERE.parent / "packages" / "kmctl" / "apm" / ".apm"
-DEFAULT_SKILLS = PACKAGE / "skills"
-#: The shipped audits, one prompt file each.
-PROMPTS = HERE / "prompts"
-AUDITS = ("docs-vs-code", "okf-vs-code", "okf-vs-docs", "okf-vs-change")
-#: The audit that checks only the decisions a change touched; it needs --base.
-CHANGE_AUDIT = "okf-vs-change"
+#: The task the agent gets, before the list of pages in scope.
+PROMPT = HERE / "prompt.md"
 #: Marks publish's pull request comment, so the next run finds and replaces it.
 COMMENT_MARK = "<!-- kmctl-audit: {title} -->"
-DEFAULT_AUDIT = "okf-vs-code"
 
 READ_BYTES = 100_000
 READ_LINES = 2000
@@ -81,13 +58,12 @@ SEARCH_FILE_BYTES = 2_000_000
 MAX_MATCHES = 200
 MAX_FILES = 500
 LINE_CHARS = 300
-SHELL_OUTPUT_CHARS = 20_000
 #: How many times a report goes back to the agent for unchecked citations.
 OUTPUT_RETRIES = 5
 SKIP_DIRS = {".git"}
-#: Variables a shell command keeps; everything else, the API key included, is dropped.
-SHELL_ENV_KEEP = ("PATH", "HOME", "LANG", "LC_ALL", "TERM", "TMPDIR", "USER")
 TOKEN_VARS = ("GH_TOKEN", "GITHUB_TOKEN")
+#: Statuses whose page claims nothing about the code any more.
+RETIRED = {"deprecated", "superseded"}
 
 SEVERITIES = ("info", "low", "medium", "high")
 
@@ -96,31 +72,18 @@ You are an agent running unattended in CI. Nobody can answer a question, so
 decide for yourself and finish the task.
 
 You work on the repository at {repo}. You can read, search and list files in
-these folders, and nowhere else:
-
-{roots}
-
-Paths you pass to the file tools are relative to the repository, or absolute
-inside one of the folders above. {shell}
+it, and nowhere else. Paths you pass to the file tools are relative to the
+repository. You have no shell.
 
 Report only: never change, commit or push a file. Someone reads your report
 and decides what to do.
-
-## Skills
-
-A skill is a folder of instructions for one kind of task. When a skill
-matches your task, or part of it, read its SKILL.md with read_file before
-you start and follow it. Paths a skill names are relative to its own folder.
-
-{skills}
 
 ## Your report
 
 Finish with a report: a short summary, a checked list and a findings list.
 
-- checked: one entry per page, concept or file you compared, naming what you
-  compared it against, with evidence. Something that holds goes here, never
-  in findings.
+- checked: one entry per page you compared, naming what you compared it
+  against, with evidence. Something that holds goes here, never in findings.
 - findings: mismatches only. Each names the claim that does not hold
   (path:line), the lines that contradict it (path:line), and a suggested
   fix. Give each a severity: high for something wrong that someone must
@@ -174,11 +137,10 @@ class UsageError(Exception):
 
 @dataclass
 class Workspace:
-    """The folders the agent may read, and where its shell runs."""
+    """The folders the agent may read, and what it has read in them."""
 
     repo: Path
     roots: list[Path] = field(default_factory=list)
-    shell_timeout: int = 120
     #: Line ranges read_file returned, by resolved file.
     read: dict[Path, list[tuple[int, int]]] = field(default_factory=dict)
     #: Lines search_files returned, by resolved file.
@@ -244,8 +206,17 @@ def _number(raw: object, default: int, low: int, high: int) -> int:
     return max(low, min(high, value))
 
 
-def make_tools(ws: Workspace, shell: bool = True) -> list:
-    """Return the agent's tools, bound to ``ws``; ``shell=False`` leaves out run_shell."""
+def _number(raw: object, default: int, low: int, high: int) -> int:
+    """Read an integer argument, falling back to ``default`` and clamping it."""
+    try:
+        value = int(raw) if raw is not None else default
+    except (TypeError, ValueError):
+        value = default
+    return max(low, min(high, value))
+
+
+def make_tools(ws: Workspace) -> list:
+    """Return the agent's tools, bound to ``ws``: read_file, search_files and list_files."""
 
     def guarded(fn):
         @functools.wraps(fn)
@@ -379,100 +350,7 @@ def make_tools(ws: Workspace, shell: bool = True) -> list:
                 found.append(shown)
         return "\n".join(found) if found else "no file matches."
 
-    def run_shell(command: str) -> str:
-        """Run a shell command in the repository folder and return its exit code and output.
-
-        The command gets a clean environment: no API key and no GitHub token.
-
-        Parameters
-        ----------
-        command
-            The command, run with sh -c.
-        """
-        env = {k: os.environ[k] for k in SHELL_ENV_KEEP if k in os.environ}
-        # Its own session, so the time limit stops everything the command started.
-        proc = subprocess.Popen(
-            command,
-            shell=True,
-            cwd=ws.repo,
-            env=env,
-            stdin=subprocess.DEVNULL,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            errors="replace",
-            start_new_session=True,
-        )
-        try:
-            stdout, stderr = proc.communicate(timeout=ws.shell_timeout)
-        except subprocess.TimeoutExpired:
-            os.killpg(proc.pid, signal.SIGKILL)
-            proc.communicate()
-            return f"stopped: the command ran past {ws.shell_timeout}s."
-        out = stdout + stderr
-        if len(out) > SHELL_OUTPUT_CHARS:
-            out = (
-                out[:SHELL_OUTPUT_CHARS] + f"\n[cut at {SHELL_OUTPUT_CHARS} characters]"
-            )
-        return f"exit {proc.returncode}\n{out}"
-
-    tools = [read_file, search_files, list_files]
-    return [*tools, run_shell] if shell else tools
-
-
-def find_skills(folders: list[Path]) -> list[tuple[str, str, Path]]:
-    """Return ``(name, description, SKILL.md)`` for each skill under ``folders``.
-
-    Raises
-    ------
-    UsageError
-        If a folder is missing, or a SKILL.md has no name or description.
-    """
-    found = []
-    for folder in folders:
-        if not folder.is_dir():
-            raise UsageError(f"--skills {folder}: no such folder.")
-        for skill in sorted(folder.glob("*/SKILL.md")):
-            text = skill.read_text()
-            meta = None
-            if match := re.match(r"---\n(.*?)\n---", text, re.DOTALL):
-                try:
-                    meta = yaml.safe_load(match.group(1))
-                except yaml.YAMLError:
-                    meta = None
-            if (
-                not isinstance(meta, dict)
-                or not meta.get("name")
-                or not meta.get("description")
-            ):
-                raise UsageError(
-                    f"{skill}: its front matter needs a name and a description."
-                )
-            found.append((str(meta["name"]), str(meta["description"]), skill.resolve()))
-    return found
-
-
-SHELL_LINE = (
-    "You can also run shell commands with\nrun_shell, in the repository folder; "
-    "use it to run the scripts a skill ships\nand commands a skill tells you to run."
-)
-NO_SHELL_LINE = (
-    "This run has no shell, so you\ncannot run the scripts a skill ships or a "
-    "command a skill names; use the\nread, search and list tools alone."
-)
-
-
-def system_prompt(
-    ws: Workspace, skills: list[tuple[str, str, Path]], shell: bool = True
-) -> str:
-    """Return the shipped system prompt, filled in for ``ws``, ``skills`` and ``shell``."""
-    listed = "\n".join(f"- {name}: {desc}\n  ({path})" for name, desc, path in skills)
-    return SYSTEM_PROMPT.format(
-        repo=ws.repo,
-        roots="\n".join(f"- {r}" for r in ws.roots),
-        skills=listed or "(none)",
-        shell=SHELL_LINE if shell else NO_SHELL_LINE,
-    )
+    return [read_file, search_files, list_files]
 
 
 def git_lines(cwd: Path, *args: str) -> list[str]:
@@ -499,12 +377,59 @@ def source_matches(source: str, changed: list[str]) -> list[str]:
     return [p for p in changed if p == s or p.startswith(s + "/")]
 
 
-def changed_decisions(repo: Path, base: str) -> list[tuple[str, list[str]]]:
-    """Return ``(decision path, changed files)`` for each stable decision a change touched.
+@dataclass(frozen=True)
+class Page:
+    """A page in scope: its path, its status and the changed files its sources cover.
+
+    Attributes
+    ----------
+    path : str
+        The page, relative to the repository.
+    status : str
+        The page's ``status`` (``stable``, ``draft`` and so on), or
+        ``docs page`` for a page under ``docs/``, which has none.
+    files : list[str]
+        The changed files its ``sources`` name, a folder source as a prefix.
+    """
+
+    path: str
+    status: str
+    files: list[str]
+
+
+def front_matter(path: Path) -> dict:
+    """Return the YAML front matter of the markdown file ``path``, or an empty dict."""
+    match = re.match(r"---\n(.*?)\n---", path.read_text(errors="replace"), re.DOTALL)
+    try:
+        meta = yaml.safe_load(match.group(1)) if match else None
+    except yaml.YAMLError:
+        meta = None
+    return meta if isinstance(meta, dict) else {}
+
+
+def candidate_pages(repo: Path) -> list[Path]:
+    """Return every page that can name sources: markdown under ``.okf/`` and ``docs/``.
+
+    Handoffs, the log and the generated ``index.md`` pages are left out.
+    """
+    found = []
+    for folder in (".okf", "docs"):
+        for path in sorted((repo / folder).rglob("*.md")):
+            rel = path.relative_to(repo).as_posix()
+            if rel.startswith(".okf/handoffs/") or rel == ".okf/log.md":
+                continue
+            if path.name == "index.md":
+                continue
+            found.append(path)
+    return found
+
+
+def changed_pages(repo: Path, base: str) -> list[Page]:
+    """Return each page whose ``sources`` name a file changed since ``base``.
 
     The change is ``git diff BASE...HEAD`` in ``repo``, with paths relative to
-    ``repo``, where the decisions' ``sources`` are written relative to. URL
-    sources are skipped.
+    ``repo``, where pages write their ``sources``. URL sources are skipped, and
+    so is a page whose status is deprecated or superseded.
 
     Raises
     ------
@@ -513,105 +438,36 @@ def changed_decisions(repo: Path, base: str) -> list[tuple[str, list[str]]]:
     """
     changed = git_lines(repo, "diff", "--name-only", "--relative", f"{base}...HEAD")
     found = []
-    for path in sorted((repo / ".okf" / "decisions").glob("*.md")):
-        text = path.read_text()
-        match = re.match(r"---\n(.*?)\n---", text, re.DOTALL)
-        try:
-            meta = yaml.safe_load(match.group(1)) if match else None
-        except yaml.YAMLError:
-            meta = None
-        if not isinstance(meta, dict) or meta.get("status") != "stable":
+    for path in candidate_pages(repo):
+        meta = front_matter(path)
+        status = str(meta.get("status") or "")
+        if status in RETIRED:
             continue
         files: list[str] = []
         for entry in meta.get("sources") or []:
-            resource = (
-                str((entry or {}).get("resource", ""))
-                if isinstance(entry, dict)
-                else ""
-            )
+            resource = str(entry.get("resource", "")) if isinstance(entry, dict) else ""
             if resource and "://" not in resource:
                 files += [
                     f for f in source_matches(resource, changed) if f not in files
                 ]
         if files:
-            found.append((path.relative_to(repo).as_posix(), files))
+            rel = path.relative_to(repo).as_posix()
+            found.append(
+                Page(
+                    rel,
+                    status or ("docs page" if rel.startswith("docs/") else ""),
+                    files,
+                )
+            )
     return found
 
 
-def change_scope(repo: Path, base: str) -> str:
-    """Return the task's list of the decisions the change since ``base`` touched."""
-    found = changed_decisions(repo, base)
-    lines = [f"\n## Decisions in scope\n\nThe change compared with {base}:\n"]
-    if not found:
-        lines.append("No stable decision names a changed file in its sources.")
-    for path, files in found:
-        lines.append(f"- {path}: " + ", ".join(files))
+def scope_text(pages: list[Page], base: str) -> str:
+    """Return the task's list of the pages in scope, compared with ``base``."""
+    lines = [f"\n## Pages in scope\n\nThe change compared with {base}:\n"]
+    for page in pages:
+        lines.append(f"- {page.path} ({page.status}): " + ", ".join(page.files))
     return "\n".join(lines) + "\n"
-
-
-def tracked(raw: Path) -> bool:
-    """Say whether git tracks ``raw`` (a file, or anything under a folder) in the current checkout.
-
-    It asks git about the path as written, without following a symlink, so
-    a tracked symlink counts as tracked wherever it points.
-    """
-    proc = subprocess.run(
-        ["git", "ls-files", "--", str(raw)],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    return proc.returncode == 0 and bool(proc.stdout.strip())
-
-
-def _inside(path: Path, folder: Path) -> bool:
-    return path == folder or path.is_relative_to(folder)
-
-
-def instruction_path(raw: str, root: Path | None, repo: Path, flag: str) -> Path:
-    """Resolve an instruction path, from the base checkout ``root`` when it has it.
-
-    Without ``root`` the path resolves against the current folder, as before.
-    With it, a relative path the base checkout has comes from there, whatever
-    the pull request made of it: changed, deleted, or swapped for a symlink.
-    A path the pull request tracks that the base lacks is refused. Any other
-    path is one an earlier step fetched: it stays in the working tree, if no
-    part of it is a symlink and it is inside ``repo``. An absolute path is kept.
-
-    Raises
-    ------
-    UsageError
-        If the pull request tracks the path but ``root`` does not have it, or
-        a fetched path goes through a symlink or leads outside ``repo``.
-    """
-    path = Path(raw)
-    if root is None or path.is_absolute():
-        return path.resolve()
-    based = (root / path).resolve()
-    if _inside(based, root) and based.exists():
-        return based
-    if tracked(path):
-        raise UsageError(
-            f"{flag} {raw}: the pull request tracks it, but the base checkout "
-            f"{root} does not have it, so it cannot be an instruction for this run."
-        )
-    local = path.resolve()
-    if local != Path(os.path.abspath(path)):
-        raise UsageError(
-            f"{flag} {raw}: the base checkout does not have it, and it goes "
-            "through a symlink, so it cannot be an instruction for this run."
-        )
-    if not _inside(local, repo):
-        raise UsageError(
-            f"{flag} {raw}: git does not track it and it leads outside the "
-            f"repository {repo}, to {local}."
-        )
-    return local
-
-
-def audit_prompt(name: str) -> str:
-    """Return the shipped audit ``name``'s prompt, from ``PROMPTS``."""
-    return (PROMPTS / f"{name}.md").read_text()
 
 
 def build_model(name: str, base_url: str, key_env: str) -> Model | str:
@@ -652,7 +508,10 @@ def build_model(name: str, base_url: str, key_env: str) -> Model | str:
 
 
 def refuse_tokens(repo: Path) -> None:
-    """Refuse to run where a command could read a GitHub token.
+    """Refuse to run where the agent could read a GitHub token.
+
+    The agent has no shell, so it cannot read the environment, but read_file
+    reaches ``.git/config``, where checkout leaves its token unless told not to.
 
     Raises
     ------
@@ -754,48 +613,6 @@ def bad_citations(ws: Workspace, report: Report) -> list[str]:
     return bad
 
 
-#: Langfuse's OTLP path, after its base URL.
-LANGFUSE_OTLP = "/api/public/otel/v1/traces"
-LANGFUSE_BASE_URL = "https://cloud.langfuse.com"
-OTLP_ENDPOINT_VARS = (
-    "OTEL_EXPORTER_OTLP_ENDPOINT",
-    "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT",
-)
-
-
-def tracer_provider():
-    """Return an OpenTelemetry tracer provider that sends traces over OTLP, or None.
-
-    Tracing is off unless the environment asks for it. With
-    ``LANGFUSE_PUBLIC_KEY`` and ``LANGFUSE_SECRET_KEY`` set, traces go to
-    Langfuse at ``LANGFUSE_BASE_URL`` (default Langfuse's EU cloud). Otherwise,
-    with ``OTEL_EXPORTER_OTLP_ENDPOINT`` or ``OTEL_EXPORTER_OTLP_TRACES_ENDPOINT``
-    set, they go wherever the standard OpenTelemetry variables say. OpenTelemetry's
-    SDK and exporter are imported only when tracing is on.
-    """
-    public = os.environ.get("LANGFUSE_PUBLIC_KEY")
-    secret = os.environ.get("LANGFUSE_SECRET_KEY")
-    endpoint = headers = None
-    if public and secret:
-        base = os.environ.get("LANGFUSE_BASE_URL") or LANGFUSE_BASE_URL
-        endpoint = base.rstrip("/") + LANGFUSE_OTLP
-        auth = base64.b64encode(f"{public}:{secret}".encode()).decode()
-        headers = {"Authorization": f"Basic {auth}"}
-    elif not any(os.environ.get(name) for name in OTLP_ENDPOINT_VARS):
-        return None
-
-    from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
-    from opentelemetry.sdk.resources import Resource
-    from opentelemetry.sdk.trace import TracerProvider
-    from opentelemetry.sdk.trace.export import BatchSpanProcessor
-
-    provider = TracerProvider(resource=Resource.create({"service.name": "kmctl-agent"}))
-    provider.add_span_processor(
-        BatchSpanProcessor(OTLPSpanExporter(endpoint=endpoint, headers=headers))
-    )
-    return provider
-
-
 async def run_agent(
     model: Model | str,
     instructions: str,
@@ -803,26 +620,18 @@ async def run_agent(
     ws: Workspace,
     timeout: float,
     max_requests: int,
-    tracer=None,
-    shell: bool = True,
 ):
     """Run the agent once and return PydanticAI's result.
 
     The report goes back to the agent, up to ``OUTPUT_RETRIES`` times, while
-    it cites a line the agent did not see. With ``tracer``, a tracer provider,
-    the run, its model requests and its tool calls are traced.
+    it cites a line the agent did not see.
     """
     agent = Agent(
         model,
         output_type=Report,
         instructions=instructions,
-        tools=make_tools(ws, shell),
+        tools=make_tools(ws),
         retries={"output": OUTPUT_RETRIES},
-        capabilities=(
-            [Instrumentation(settings=InstrumentationSettings(tracer_provider=tracer))]
-            if tracer
-            else []
-        ),
     )
 
     @agent.output_validator
@@ -853,72 +662,56 @@ def parse_duration(text: str) -> int:
     return int(match.group(1)) * unit
 
 
+def write_report(out: Path, report: Report, transcript: bytes) -> None:
+    """Write ``report`` to ``out`` as JSON and Markdown, and the transcript; echo the Markdown.
+
+    The Markdown also goes to ``$GITHUB_STEP_SUMMARY`` when that is set.
+    """
+    out.mkdir(parents=True, exist_ok=True)
+    markdown = render(report)
+    (out / "report.json").write_text(report.model_dump_json(indent=2) + "\n")
+    (out / "report.md").write_text(markdown)
+    (out / "transcript.json").write_bytes(transcript)
+    if summary := os.environ.get("GITHUB_STEP_SUMMARY"):
+        with open(summary, "a") as handle:
+            handle.write(markdown)
+    print(markdown, end="")
+    print(
+        f"agent: wrote report.json, report.md and transcript.json to {out}",
+        file=sys.stderr,
+    )
+
+
 def run(args: argparse.Namespace, model: Model | str | None = None) -> int:
     """Run the ``run`` command; ``model`` overrides ``--model`` (for tests)."""
     repo = Path(args.repo).resolve()
-    root = Path(args.instructions_root).resolve() if args.instructions_root else None
-    contexts = [instruction_path(c, root, repo, "--context") for c in args.context]
-    skill_dirs = (
-        [instruction_path(s, root, repo, "--skills") for s in args.skills]
-        if args.skills
-        else [DEFAULT_SKILLS]
-    )
-    for folder in contexts:
-        if not folder.is_dir():
-            raise UsageError(f"--context {folder}: no such folder.")
-    given = [
-        flag
-        for flag, value in (
-            ("--audit", args.audit),
-            ("--prompt", args.prompt),
-            ("--prompt-file", args.prompt_file),
-        )
-        if value is not None
-    ]
-    if len(given) > 1:
-        raise UsageError(f"give one of {', '.join(given)}, not more.")
-    if args.audit == CHANGE_AUDIT and not args.base:
-        raise UsageError(
-            f"--audit {CHANGE_AUDIT} needs --base, the branch the change is "
-            "compared with, such as origin/main."
-        )
     refuse_tokens(repo)
     timeout = parse_duration(args.timeout)
-    ws = Workspace(repo, [repo, *contexts, *skill_dirs], args.shell_timeout)
-    skills = find_skills(skill_dirs)
-    shell = not args.no_shell
-    instructions = (
-        instruction_path(
-            args.system_prompt_file, root, repo, "--system-prompt-file"
-        ).read_text()
-        if args.system_prompt_file
-        else system_prompt(ws, skills, shell)
-    )
-    if args.prompt is not None:
-        prompt = args.prompt
-    elif args.prompt_file is not None:
-        prompt = instruction_path(
-            args.prompt_file, root, repo, "--prompt-file"
-        ).read_text()
-    else:
-        prompt = audit_prompt(args.audit or DEFAULT_AUDIT)
-        if args.audit == CHANGE_AUDIT:
-            prompt += change_scope(repo, args.base)
+    pages = changed_pages(repo, args.base)
+    if not pages:
+        empty = Report(
+            summary=(
+                f"No page under .okf/ or docs/ names a file this change touched "
+                f"(compared with {args.base}) in its sources, so nothing was reread."
+            ),
+            checked=[],
+            findings=[],
+        )
+        write_report(Path(args.out), empty, b"[]")
+        return 0
     if model is None:
         model = build_model(args.model, args.base_url, args.api_key_env)
-
-    tracer = tracer_provider()
+    ws = Workspace(repo, [repo])
+    prompt = PROMPT.read_text() + scope_text(pages, args.base)
     try:
         result = asyncio.run(
             run_agent(
                 model,
-                instructions,
+                SYSTEM_PROMPT.format(repo=repo),
                 prompt,
                 ws,
                 timeout,
                 args.max_requests,
-                tracer,
-                shell,
             )
         )
     except TimeoutError:
@@ -935,31 +728,8 @@ def run(args: argparse.Namespace, model: Model | str | None = None) -> int:
         else:
             print(f"agent: stopped; the model failed: {err}", file=sys.stderr)
         return 1
-    finally:
-        # Send what is left, also when the run failed or ran out of time.
-        if tracer:
-            tracer.shutdown()
-
-    out = Path(args.out)
-    out.mkdir(parents=True, exist_ok=True)
-    report = result.output
-    markdown = render(report)
-    (out / "report.json").write_text(report.model_dump_json(indent=2) + "\n")
-    (out / "report.md").write_text(markdown)
-    (out / "transcript.json").write_bytes(result.all_messages_json())
-    if summary := os.environ.get("GITHUB_STEP_SUMMARY"):
-        with open(summary, "a") as handle:
-            handle.write(markdown)
-    print(markdown, end="")
-    print(
-        f"agent: wrote report.json, report.md and transcript.json to {out}",
-        file=sys.stderr,
-    )
+    write_report(Path(args.out), result.output, result.all_messages_json())
     return 0
-
-
-#: Where GitHub looks for CODEOWNERS, in its order: the first one found is used.
-CODEOWNERS = (".github/CODEOWNERS", "CODEOWNERS", "docs/CODEOWNERS")
 
 
 class GhFailed(Exception):
@@ -985,20 +755,6 @@ def gh(*args: str) -> str:
             f"gh {' '.join(args[:2])} exited {proc.returncode}: {proc.stderr.strip()}"
         )
     return proc.stdout
-
-
-def find_owners(repo: Path) -> list[str]:
-    """Return the owners of the last ``*`` rule in the repository's CODEOWNERS, or none."""
-    for rel in CODEOWNERS:
-        path = repo / rel
-        if path.is_file():
-            owners: list[str] = []
-            for line in path.read_text().splitlines():
-                rule = line.split("#", 1)[0].split()
-                if rule and rule[0] == "*":
-                    owners = rule[1:]
-            return [o for o in owners if o.startswith("@")]
-    return []
 
 
 def run_link() -> str:
@@ -1076,7 +832,7 @@ def publish_comment(args: argparse.Namespace, report: Report, over: list) -> int
 
 
 def publish(args: argparse.Namespace) -> int:
-    """Run the ``publish`` command: post the report to one issue or pull request comment.
+    """Run the ``publish`` command: post the report as one pull request comment.
 
     A missing report, from an audit that was skipped or failed, posts nothing
     and exits 0.
@@ -1092,96 +848,9 @@ def publish(args: argparse.Namespace) -> int:
         report = Report.model_validate_json(Path(args.report).read_text())
     except (OSError, ValueError) as err:
         raise UsageError(f"cannot read the report {args.report}: {err}") from err
-    repo = Path(args.repo)
     floor = SEVERITIES.index(args.min_severity)
     over = [f for f in report.findings if SEVERITIES.index(f.severity) >= floor]
-    if args.pr is not None:
-        return publish_comment(args, report, over)
-    owners = (
-        [m if m.startswith("@") else f"@{m}" for m in args.mention]
-        if args.mention
-        else find_owners(repo)
-    )
-    cc = " ".join(owners)
-    link = run_link()
-    try:
-        listed = json.loads(
-            gh(
-                "issue",
-                "list",
-                "--state",
-                "open",
-                "--search",
-                f'"{args.title}" in:title',
-                "--json",
-                "number,title",
-            )
-        )
-        number = next(
-            (str(i["number"]) for i in listed if i["title"] == args.title), ""
-        )
-        if not over:
-            if number:
-                gh(
-                    "issue",
-                    "comment",
-                    number,
-                    "--body",
-                    f"The latest run found nothing at or above {args.min_severity}; closing."
-                    + (f" Run: {link}" if link else ""),
-                )
-                gh("issue", "close", number)
-                print(
-                    f"agent: nothing at or above {args.min_severity}; closed issue #{number}.",
-                    file=sys.stderr,
-                )
-            else:
-                print(
-                    f"agent: nothing at or above {args.min_severity}; no issue was written.",
-                    file=sys.stderr,
-                )
-            return 0
-        body = render(report)
-        if link:
-            body += f"\nRun and its `agent-report` artifact: {link}\n"
-        if cc:
-            body = f"cc {cc}\n\n" + body
-        counts = ", ".join(
-            f"{sum(f.severity == s for f in over)} {s}"
-            for s in reversed(SEVERITIES[floor:])
-        )
-        with tempfile.NamedTemporaryFile("w", suffix=".md", delete=False) as handle:
-            handle.write(body)
-        try:
-            if number:
-                gh("issue", "edit", number, "--body-file", handle.name)
-                gh(
-                    "issue",
-                    "comment",
-                    number,
-                    "--body",
-                    (f"{cc} " if cc else "")
-                    + f"The latest run found {counts} at or above {args.min_severity}; the issue body has the report."
-                    + (f" Run: {link}" if link else ""),
-                )
-                print(f"agent: updated issue #{number}.", file=sys.stderr)
-            else:
-                print(
-                    gh(
-                        "issue",
-                        "create",
-                        "--title",
-                        args.title,
-                        "--body-file",
-                        handle.name,
-                    ).strip()
-                )
-        finally:
-            os.unlink(handle.name)
-    except GhFailed as err:
-        print(f"agent: {err}", file=sys.stderr)
-        return 1
-    return 0
+    return publish_comment(args, report, over)
 
 
 def parser() -> argparse.ArgumentParser:
@@ -1189,20 +858,24 @@ def parser() -> argparse.ArgumentParser:
     top = argparse.ArgumentParser(
         prog="agent.py",
         description=(
-            "A small agent for CI. `run` gives it a task and writes its report; "
-            "`publish` posts that report to a GitHub issue or pull request comment. "
-            "Exit codes: 0 the report was written, 1 the run failed, 2 a bad option."
+            "Reread, on a pull request, the .okf/ and docs/ pages whose sources it "
+            "changed. `run` writes the report; `publish` posts it as one pull "
+            "request comment. Exit codes: 0 the report was written, 1 the run "
+            "failed, 2 a bad option."
         ),
     )
     sub = top.add_subparsers(dest="command", required=True)
     r = sub.add_parser(
         "run",
-        help="Run the agent and write its report.",
+        help="Reread the pages a change touched and write the report.",
         description=(
-            "Run the agent on a repository and write report.json, report.md and "
-            "transcript.json to --out; report.md also goes to stdout and to "
-            "$GITHUB_STEP_SUMMARY when that is set. Refuses to start when "
-            "GH_TOKEN or GITHUB_TOKEN is set or git config holds checkout's token."
+            "List every page under .okf/ and docs/ whose sources name a file "
+            "changed since --base, have the model reread each against the change, "
+            "and write report.json, report.md and transcript.json to --out; "
+            "report.md also goes to stdout and to $GITHUB_STEP_SUMMARY when that "
+            "is set. With nothing in scope, write an empty report without calling "
+            "the model. Refuses to start when GH_TOKEN or GITHUB_TOKEN is set or "
+            "git config holds checkout's token."
         ),
     )
     r.add_argument(
@@ -1233,83 +906,12 @@ def parser() -> argparse.ArgumentParser:
         ),
     )
     r.add_argument(
-        "--audit",
-        default=None,
-        choices=AUDITS,
-        help=(
-            "A shipped audit to run: docs-vs-code (docs/ against the code), "
-            "okf-vs-code (.okf/ against the code), okf-vs-docs (docs/ against "
-            ".okf/) or okf-vs-change (the stable decisions whose sources a change "
-            "touched, against that change; needs --base). Its prompt is in "
-            f"{PROMPTS}. Default: {DEFAULT_AUDIT}, when neither --prompt nor "
-            "--prompt-file is given."
-        ),
-    )
-    r.add_argument(
         "--base",
-        default=None,
+        required=True,
         metavar="REF",
         help=(
-            "With --audit okf-vs-change, the branch the change is compared with, "
-            "from the commit where the two split, such as origin/main. Other "
-            "tasks ignore it. Default: none."
-        ),
-    )
-    r.add_argument(
-        "--instructions-root",
-        default=None,
-        metavar="DIR",
-        help=(
-            "Another checkout, such as the base branch's on a pull request, to "
-            "read --prompt-file, --system-prompt-file, --context and --skills "
-            "from. A relative path git tracks resolves under DIR, and exits 2 "
-            "when DIR lacks it; a path git does not track, such as a folder an "
-            "earlier step fetched, stays in the working tree. Default: none, so "
-            "every path resolves against the current folder."
-        ),
-    )
-    r.add_argument(
-        "--no-shell",
-        action="store_true",
-        help=(
-            "Leave run_shell out: the agent gets only its read, search and list "
-            "tools, and cannot run a skill's scripts. A pull request run uses it "
-            "(ADR 0057). Default: off, so the shell is there."
-        ),
-    )
-    r.add_argument(
-        "--prompt",
-        default=None,
-        help="The task, as text, instead of --audit. Default: none.",
-    )
-    r.add_argument(
-        "--prompt-file",
-        default=None,
-        help="A file holding the task, instead of --audit. Default: none.",
-    )
-    r.add_argument(
-        "--system-prompt-file",
-        default=None,
-        help=(
-            "A file that replaces the shipped system prompt, which lists the "
-            "folders the agent can read and its skills. Default: the shipped one."
-        ),
-    )
-    r.add_argument(
-        "--context",
-        action="append",
-        default=[],
-        metavar="DIR",
-        help="A folder the agent can read as well as the repository, such as docs a workflow fetched. Repeatable. Default: none.",
-    )
-    r.add_argument(
-        "--skills",
-        action="append",
-        default=[],
-        metavar="DIR",
-        help=(
-            "A folder of skills (each a subfolder with a SKILL.md). Repeatable. "
-            f"Default: kmctl's skills next to this script, {DEFAULT_SKILLS}."
+            "The branch the change is compared with, from the commit where the "
+            "two split, such as origin/main. Needs the branch's history."
         ),
     )
     r.add_argument(
@@ -1328,12 +930,6 @@ def parser() -> argparse.ArgumentParser:
         help="How long the whole run may take: seconds, or with s, m, h or d. Default: 30m.",
     )
     r.add_argument(
-        "--shell-timeout",
-        type=int,
-        default=120,
-        help="How many seconds one shell command may take. Default: 120.",
-    )
-    r.add_argument(
         "--max-requests",
         type=int,
         default=200,
@@ -1341,55 +937,35 @@ def parser() -> argparse.ArgumentParser:
     )
     p = sub.add_parser(
         "publish",
-        help="Post a report to one GitHub issue or pull request comment.",
+        help="Post a report as one pull request comment.",
         description=(
-            "Post report.json to the open issue titled --title with gh, when a "
-            "finding is at or above --min-severity: create it, or replace its "
-            "body and add a comment that mentions the owners. Below the "
-            "threshold, close that issue with a comment. With --pr, post one "
-            "comment on that pull request instead and replace it on the next "
-            "run. With no report.json, post nothing and exit 0. Needs gh and "
-            "GH_TOKEN; run it in a job of its own, not the agent's. Exit codes: "
-            "0 done, 1 gh failed, 2 a bad option or an unreadable report."
+            "Post report.json as one comment on pull request --pr with gh, marked "
+            "with --title, and replace that comment on the next run. With no "
+            "finding at or above --min-severity and no earlier comment, post "
+            "nothing. With no report.json, post nothing and exit 0. Needs gh, "
+            "GH_TOKEN and pull-requests: write; run it in a job of its own, not "
+            "the agent's. Exit codes: 0 done, 1 gh failed, 2 a bad option or an "
+            "unreadable report."
         ),
     )
     p.add_argument("report", help="The report.json that run wrote.")
     p.add_argument(
+        "--pr",
+        type=int,
+        required=True,
+        metavar="N",
+        help="The pull request to comment on.",
+    )
+    p.add_argument(
         "--min-severity",
         choices=SEVERITIES,
         default="high",
-        help="The lowest severity that opens or updates the issue. Default: high.",
+        help="The lowest severity that posts or updates the comment. Default: high.",
     )
     p.add_argument(
         "--title",
         default="Knowledge audit",
-        help="The issue's title. Default: Knowledge audit.",
-    )
-    p.add_argument(
-        "--mention",
-        action="append",
-        default=[],
-        metavar="USER",
-        help=(
-            "A user or team to mention, such as @alice or @org/team. Repeatable; "
-            "replaces the owners of the last * rule in CODEOWNERS. Default: those owners."
-        ),
-    )
-    p.add_argument(
-        "--repo",
-        default=".",
-        help="The repository whose CODEOWNERS names the owners. Default: the current folder.",
-    )
-    p.add_argument(
-        "--pr",
-        type=int,
-        default=None,
-        metavar="N",
-        help=(
-            "Post to pull request N as one comment, marked with --title, and "
-            "replace that comment on the next run, instead of an issue. Needs "
-            "pull-requests: write. Default: none, so an issue."
-        ),
+        help="The comment's heading, which also marks it for replacing. Default: Knowledge audit.",
     )
     return top
 

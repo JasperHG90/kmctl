@@ -1,13 +1,12 @@
-"""The standalone CI agent, action/agent.py, run offline with PydanticAI's function model (ADR 0017)."""
+"""The CI agent, action/agent.py, run offline with PydanticAI's function model (ADR 0060)."""
 
+import argparse
 import importlib.util
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
-import time
 from pathlib import Path
 
 import pytest
@@ -28,15 +27,6 @@ assert _spec is not None and _spec.loader is not None
 agent = importlib.util.module_from_spec(_spec)
 sys.modules["ci_agent"] = agent
 _spec.loader.exec_module(agent)
-
-TRACE_VARS = (
-    "LANGFUSE_PUBLIC_KEY",
-    "LANGFUSE_SECRET_KEY",
-    "LANGFUSE_BASE_URL",
-    "OTEL_EXPORTER_OTLP_ENDPOINT",
-    "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT",
-    "OTEL_EXPORTER_OTLP_HEADERS",
-)
 
 #: Cites only README.md, which Recorder reads before it hands the report in.
 REPORT = {
@@ -87,16 +77,19 @@ class Recorder:
         self.reports = list(reports or [])
         self.instructions: str | None = None
         self.prompt: str | None = None
+        self.tools: list[str] = []
         self.returns: list[str] = []
         self.retries: list[str] = []
 
     def __call__(self, messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
+        """Answer one model request: the next tool call, or the next report."""
         first = messages[0]
         assert isinstance(first, ModelRequest)
         self.instructions = first.instructions
         self.prompt = next(
             str(p.content) for p in first.parts if isinstance(p, UserPromptPart)
         )
+        self.tools = [t.name for t in info.function_tools]
         last = messages[-1]
         if isinstance(last, ModelRequest):
             self.returns += [
@@ -112,35 +105,71 @@ class Recorder:
         return ModelResponse(parts=[ToolCallPart(info.output_tools[0].name, report)])
 
 
-def _skill(folder: Path, name: str, front: str | None = None) -> Path:
-    path = folder / name / "SKILL.md"
-    path.parent.mkdir(parents=True)
-    path.write_text(
-        front
-        if front is not None
-        else f"---\nname: {name}\ndescription: Do the {name} thing.\n---\n\n# {name}\n"
-    )
-    return path
+def _never(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
+    """A FunctionModel body that fails the test if the model is called at all."""
+    raise AssertionError("the model was called")
+
+
+def _git(cwd: Path, *args: str) -> str:
+    """Run git in ``cwd`` with a fixed author and return its output."""
+    return subprocess.run(
+        ["git", "-c", "user.name=t", "-c", "user.email=t@t", *args],
+        cwd=cwd,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+
+
+def _page(
+    repo: Path, rel: str, sources: list[str], status: str | None = "stable"
+) -> None:
+    """Write a page at ``rel`` whose front matter names ``sources`` and ``status``."""
+    path = repo / rel
+    path.parent.mkdir(parents=True, exist_ok=True)
+    listed = "\n".join(f'  - resource: "{s}"' for s in sources)
+    state = f"status: {status}\n" if status else ""
+    path.write_text(f"---\n{state}sources:\n{listed}\n---\n\n# {path.stem}\n")
+
+
+def _commit_change(repo: Path, *changed: str) -> None:
+    """Commit the tree as branch ``base``, then change each of ``changed`` and commit."""
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "--allow-empty", "-m", "base")
+    _git(repo, "branch", "base")
+    for rel in changed:
+        (repo / rel).parent.mkdir(parents=True, exist_ok=True)
+        (repo / rel).write_text("changed\n")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "change")
 
 
 @pytest.fixture
 def repo(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
+    """A repository whose last commit changed src/app.py, which one docs page names."""
     path = tmp_path / "repo"
     path.mkdir()
     subprocess.run(["git", "init", "-q"], cwd=path, check=True)
     (path / "README.md").write_text("hello\nworld\n")
-    for name in (*agent.TOKEN_VARS, *TRACE_VARS):
+    (path / "src").mkdir()
+    (path / "src" / "app.py").write_text("x = 1\n")
+    _page(path, "docs/how-to/run-it.md", ["src/app.py"], status=None)
+    _commit_change(path, "src/app.py")
+    for name in agent.TOKEN_VARS:
         monkeypatch.delenv(name, raising=False)
     monkeypatch.delenv("GITHUB_STEP_SUMMARY", raising=False)
     return path
 
 
 def _main(repo: Path, tmp_path: Path, model, *extra: str) -> int:
+    """Run ``agent.py run`` on ``repo`` against branch ``base`` with ``model``."""
     return agent.main(
         [
             "run",
             "--model",
             "unused",
+            "--base",
+            "base",
             "--repo",
             str(repo),
             "--out",
@@ -149,6 +178,9 @@ def _main(repo: Path, tmp_path: Path, model, *extra: str) -> int:
         ],
         model=model,
     )
+
+
+# run ----------------------------------------------------------------------
 
 
 def test_run_writes_report_files_and_summary(
@@ -183,12 +215,12 @@ def test_evidence_gives_up_with_cli_test_model(repo: Path, tmp_path: Path) -> No
             "run",
             "--model",
             "test",
+            "--base",
+            "base",
             "--repo",
             str(repo),
             "--out",
             str(tmp_path / "out"),
-            "--prompt",
-            "Say hi.",
         ],
         env=env,
         capture_output=True,
@@ -268,225 +300,165 @@ def test_evidence_search_hits_count_as_seen(repo: Path, tmp_path: Path) -> None:
     assert "notes.md:2" not in retry
 
 
-def test_prompt_option_is_the_user_message(repo: Path, tmp_path: Path) -> None:
-    rec = Recorder()
-
-    assert (
-        _main(repo, tmp_path, FunctionModel(rec), "--prompt", "Compare to the EA docs.")
-        == 0
-    )
-    assert rec.prompt == "Compare to the EA docs."
-
-
-def test_prompt_file_is_the_user_message(repo: Path, tmp_path: Path) -> None:
-    rec = Recorder()
-    task = tmp_path / "task.md"
-    task.write_text("From a file.")
-
-    assert _main(repo, tmp_path, FunctionModel(rec), "--prompt-file", str(task)) == 0
-    assert rec.prompt == "From a file."
-
-
-def test_default_prompt_is_okf_vs_code(repo: Path, tmp_path: Path) -> None:
+def test_prompt_is_the_shipped_prompt_then_the_pages_in_scope(
+    repo: Path, tmp_path: Path
+) -> None:
     rec = Recorder()
 
     assert _main(repo, tmp_path, FunctionModel(rec)) == 0
-    assert rec.prompt == (agent.PROMPTS / "okf-vs-code.md").read_text()
+
+    assert rec.prompt is not None
+    assert rec.prompt.startswith(agent.PROMPT.read_text())
+    assert "## Pages in scope" in rec.prompt
+    assert "- docs/how-to/run-it.md (docs page): src/app.py" in rec.prompt
 
 
-@pytest.mark.parametrize("name", ["docs-vs-code", "okf-vs-code", "okf-vs-docs"])
-def test_audit_option_sends_its_prompt(repo: Path, tmp_path: Path, name: str) -> None:
-    text = (agent.PROMPTS / f"{name}.md").read_text()
-    assert text.strip()
+def test_system_prompt_names_the_repo_and_no_shell(repo: Path, tmp_path: Path) -> None:
     rec = Recorder()
 
-    assert _main(repo, tmp_path, FunctionModel(rec), "--audit", name) == 0
-    assert rec.prompt == text
+    assert _main(repo, tmp_path, FunctionModel(rec)) == 0
+
+    assert rec.instructions is not None
+    assert str(repo.resolve()) in rec.instructions
+    assert "You have no shell." in rec.instructions
+    assert "Report only" in rec.instructions
 
 
-@pytest.mark.parametrize("other", ["--prompt", "--prompt-file"])
-def test_audit_choices_refuse_a_second_prompt(
-    repo: Path, tmp_path: Path, capsys: pytest.CaptureFixture[str], other: str
+def test_prompt_names_draft_verify_and_summary_ack() -> None:
+    text = agent.PROMPT.read_text()
+
+    assert "kmctl new decision --draft" in text
+    assert re.search(r"kmctl verify ID .*--by human:", text, re.DOTALL)
+    assert "kmctl summary ack" in text
+
+
+def test_script_has_no_tracing() -> None:
+    text = SCRIPT.read_text()
+    header = text.split("# ///", 2)[1]
+
+    assert "opentelemetry" not in header
+    assert "LANGFUSE" not in text
+    assert "Instrumentation" not in text
+
+
+# scope --------------------------------------------------------------------
+
+
+def test_scope_takes_every_page_kind(repo: Path) -> None:
+    _page(repo, ".okf/decisions/0001-stable.md", ["lib/core.py"])
+    _page(repo, ".okf/decisions/0002-draft.md", ["lib/core.py"], status="draft")
+    _page(repo, ".okf/architecture/overview.md", ["lib/core.py"])
+    _page(repo, "docs/reference/core.md", ["lib/core.py"], status=None)
+    _page(repo, ".okf/decisions/0003-untouched.md", ["lib/other.py"])
+    (repo / "lib").mkdir()
+    (repo / "lib" / "other.py").write_text("y = 1\n")
+    _git(repo, "branch", "-D", "base")
+    _commit_change(repo, "lib/core.py")
+
+    pages = agent.changed_pages(repo, "base")
+
+    assert {(p.path, p.status, tuple(p.files)) for p in pages} == {
+        (".okf/decisions/0001-stable.md", "stable", ("lib/core.py",)),
+        (".okf/decisions/0002-draft.md", "draft", ("lib/core.py",)),
+        (".okf/architecture/overview.md", "stable", ("lib/core.py",)),
+        ("docs/reference/core.md", "docs page", ("lib/core.py",)),
+    }
+
+
+def test_scope_leaves_out_superseded_handoffs_log_and_urls(repo: Path) -> None:
+    _page(repo, ".okf/decisions/0001-old.md", ["lib/core.py"], status="superseded")
+    _page(repo, ".okf/decisions/0002-gone.md", ["lib/core.py"], status="deprecated")
+    _page(repo, ".okf/handoffs/note.md", ["lib/core.py"])
+    _page(repo, ".okf/log.md", ["lib/core.py"])
+    _page(repo, ".okf/decisions/index.md", ["lib/core.py"])
+    _page(repo, ".okf/decisions/0003-url.md", ["https://example.com/lib/core.py"])
+    _git(repo, "branch", "-D", "base")
+    _commit_change(repo, "lib/core.py")
+
+    assert agent.changed_pages(repo, "base") == []
+
+
+def test_scope_matches_folder_source_as_prefix(repo: Path) -> None:
+    _page(repo, ".okf/decisions/0001-folder.md", ["pkg/lib/"])
+    _page(repo, ".okf/decisions/0002-bare-folder.md", ["pkg/lib"])
+    _page(repo, ".okf/decisions/0003-near-miss.md", ["pkg/li"])
+    _git(repo, "branch", "-D", "base")
+    _commit_change(repo, "pkg/lib/util.py")
+
+    pages = {p.path: p.files for p in agent.changed_pages(repo, "base")}
+
+    assert pages == {
+        ".okf/decisions/0001-folder.md": ["pkg/lib/util.py"],
+        ".okf/decisions/0002-bare-folder.md": ["pkg/lib/util.py"],
+    }
+
+
+def test_nothing_in_scope_calls_no_model(
+    repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    code = _main(
-        repo,
-        tmp_path,
-        FunctionModel(Recorder()),
-        "--audit",
-        "docs-vs-code",
-        other,
-        "x",
+    summary = tmp_path / "summary.md"
+    summary.write_text("")
+    monkeypatch.setenv("GITHUB_STEP_SUMMARY", str(summary))
+    _git(repo, "branch", "-D", "base")
+    _commit_change(repo, "unrelated.txt")
+
+    assert _main(repo, tmp_path, FunctionModel(_never)) == 0
+
+    report = json.loads((tmp_path / "out" / "report.json").read_text())
+    assert report["findings"] == [] and report["checked"] == []
+    assert "No page under .okf/ or docs/ names a file" in report["summary"]
+    assert "nothing was reread" in summary.read_text()
+
+
+def test_scope_with_an_unknown_base_exits_2(
+    repo: Path, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    code = agent.main(
+        ["run", "--model", "unused", "--base", "nope", "--repo", str(repo)],
+        model=FunctionModel(_never),
     )
 
     assert code == 2
-    err = capsys.readouterr().err
-    assert "--audit" in err and other in err
+    assert "git diff" in capsys.readouterr().err
 
 
-def test_audit_choices_refuse_an_unknown_name(
-    repo: Path, tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
-    with pytest.raises(SystemExit) as exit:
-        _main(repo, tmp_path, FunctionModel(Recorder()), "--audit", "nope")
-
-    assert exit.value.code == 2
-    assert "invalid choice: 'nope'" in capsys.readouterr().err
+# tools --------------------------------------------------------------------
 
 
-def test_audit_choices_are_in_help(
-    capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
-) -> None:
-    # argparse wraps at hyphens, so a narrow terminal splits okf-vs-code.
-    monkeypatch.setenv("COLUMNS", "500")
-    with pytest.raises(SystemExit):
-        agent.main(["run", "--help"])
-
-    help_text = " ".join(capsys.readouterr().out.split())
-    for name in agent.AUDITS:
-        assert name in help_text
-    assert "Default: okf-vs-code" in help_text
-
-
-def test_prompt_defaults_keep_holds_out_of_findings(repo: Path, tmp_path: Path) -> None:
+def test_tools_are_read_only(repo: Path, tmp_path: Path) -> None:
     rec = Recorder()
 
     assert _main(repo, tmp_path, FunctionModel(rec)) == 0
-    assert rec.instructions and rec.prompt
-    system = " ".join(rec.instructions.split())
-    assert "Something that holds goes here, never in findings" in system
-    assert "The report is checked" in system
-    assert "holds is info" not in rec.prompt
+
+    assert rec.tools == ["read_file", "search_files", "list_files"]
+    ws = agent.Workspace(repo.resolve(), [repo.resolve()])
+    assert [t.__name__ for t in agent.make_tools(ws)] == rec.tools
 
 
-def test_system_prompt_file_replaces_the_default(repo: Path, tmp_path: Path) -> None:
-    rec = Recorder()
-    system = tmp_path / "system.md"
-    system.write_text("You are terse.")
-
-    assert (
-        _main(repo, tmp_path, FunctionModel(rec), "--system-prompt-file", str(system))
-        == 0
-    )
-    assert rec.instructions == "You are terse."
-
-
-def test_both_prompt_options_exit_2(
-    repo: Path, tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
-    task = tmp_path / "task.md"
-    task.write_text("x")
-
-    code = _main(
-        repo,
-        tmp_path,
-        FunctionModel(Recorder()),
-        "--prompt",
-        "a",
-        "--prompt-file",
-        str(task),
-    )
-
-    assert code == 2
-    err = capsys.readouterr().err
-    assert "--prompt" in err and "--prompt-file" in err
-
-
-def test_skills_from_every_folder_are_listed(repo: Path, tmp_path: Path) -> None:
-    one, two = tmp_path / "one", tmp_path / "two"
-    a = _skill(one, "alpha")
-    b = _skill(two, "beta")
-    rec = Recorder()
-
-    assert (
-        _main(
-            repo,
-            tmp_path,
-            FunctionModel(rec),
-            "--skills",
-            str(one),
-            "--skills",
-            str(two),
-        )
-        == 0
-    )
-    assert rec.instructions
-    for name, path in (("alpha", a), ("beta", b)):
-        assert f"- {name}: Do the {name} thing." in rec.instructions
-        assert str(path.resolve()) in rec.instructions
-
-
-def test_skills_default_to_kmctls(repo: Path, tmp_path: Path) -> None:
-    rec = Recorder()
-
-    assert _main(repo, tmp_path, FunctionModel(rec)) == 0
-    assert (
-        agent.DEFAULT_SKILLS == ROOT / "packages" / "kmctl" / "apm" / ".apm" / "skills"
-    )
-    assert rec.instructions and "- audit: " in rec.instructions
-    assert str(agent.DEFAULT_SKILLS / "audit" / "SKILL.md") in rec.instructions
-
-
-def test_skills_bad_front_matter_stops_the_run(
-    repo: Path, tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
-    bad = _skill(tmp_path / "skills", "broken", "---\nname: broken\n---\n")
-
-    assert (
-        _main(
-            repo,
-            tmp_path,
-            FunctionModel(Recorder()),
-            "--skills",
-            str(tmp_path / "skills"),
-        )
-        == 2
-    )
-    assert str(bad) in capsys.readouterr().err
-
-
-def test_tools_reach_repo_context_and_skills(repo: Path, tmp_path: Path) -> None:
-    context = tmp_path / "context"
-    context.mkdir()
-    (context / "ea.md").write_text("enterprise rule\n")
-    skills = tmp_path / "skills"
-    skill = _skill(skills, "alpha")
+def test_tools_read_search_and_list_the_repo(repo: Path, tmp_path: Path) -> None:
     rec = Recorder(
         [
             ("read_file", {"path": "README.md"}),
-            ("read_file", {"path": str(context / "ea.md")}),
-            ("read_file", {"path": str(skill)}),
-            ("search_files", {"pattern": "rule", "path": str(context)}),
-            ("list_files", {"path": str(skills)}),
+            ("search_files", {"pattern": "hello"}),
+            ("list_files", {"path": "src"}),
         ]
     )
 
-    assert (
-        _main(
-            repo,
-            tmp_path,
-            FunctionModel(rec),
-            "--context",
-            str(context),
-            "--skills",
-            str(skills),
-        )
-        == 0
-    )
-    readme, ea, skill_md, search, listing, _ = rec.returns
+    assert _main(repo, tmp_path, FunctionModel(rec)) == 0
+
+    readme, search, listing, _ = rec.returns
     assert "1|hello" in readme
-    assert "1|enterprise rule" in ea
-    assert "name: alpha" in skill_md
-    assert "ea.md:1: enterprise rule" in search
-    assert "SKILL.md" in listing
+    assert "README.md:1: hello" in search
+    assert "src/app.py" in listing
 
 
-def test_tools_refuse_paths_outside_every_root(repo: Path, tmp_path: Path) -> None:
+def test_tools_refuse_paths_outside_the_repo(repo: Path, tmp_path: Path) -> None:
     secret = tmp_path / "secret.txt"
     secret.write_text("key\n")
     (repo / "link.txt").symlink_to(secret)
     (repo / "linkdir").symlink_to(tmp_path)
     ws = agent.Workspace(repo.resolve(), [repo.resolve()])
-    read_file, search_files, list_files, _ = agent.make_tools(ws)
+    read_file, search_files, list_files = agent.make_tools(ws)
 
     for result in (
         read_file(str(secret)),
@@ -503,51 +475,14 @@ def test_tools_refuse_paths_outside_every_root(repo: Path, tmp_path: Path) -> No
 def test_tools_search_is_plain_text(repo: Path) -> None:
     (repo / "a.txt").write_text("a.b\naxb\n")
     ws = agent.Workspace(repo.resolve(), [repo.resolve()])
-    _, search_files, _, _ = agent.make_tools(ws)
+    _, search_files, _ = agent.make_tools(ws)
 
     result = search_files("a.b")
 
     assert "a.txt:1: a.b" in result and "axb" not in result
 
 
-def test_shell_drops_key_and_tokens(
-    repo: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    monkeypatch.setenv("AUDIT_API_KEY", "sk-secret")
-    monkeypatch.setenv("GH_TOKEN", "gh-secret")
-    monkeypatch.setenv("GITHUB_TOKEN", "gh-secret2")
-    ws = agent.Workspace(repo.resolve(), [repo.resolve()])
-    *_, run_shell = agent.make_tools(ws)
-
-    result = run_shell("env; echo out; echo err >&2; exit 3")
-
-    assert result.startswith("exit 3\n")
-    assert "out" in result and "err" in result
-    assert "secret" not in result
-    assert "PATH=" in result
-
-
-def test_shell_runs_in_repo(repo: Path) -> None:
-    ws = agent.Workspace(repo.resolve(), [repo.resolve()])
-    *_, run_shell = agent.make_tools(ws)
-
-    assert "hello" in run_shell("cat README.md")
-
-
-def test_shell_stops_at_time_limit(repo: Path) -> None:
-    ws = agent.Workspace(repo.resolve(), [repo.resolve()], shell_timeout=1)
-    *_, run_shell = agent.make_tools(ws)
-
-    assert "ran past 1s" in run_shell("sleep 5")
-
-
-def test_shell_output_is_cut(repo: Path) -> None:
-    ws = agent.Workspace(repo.resolve(), [repo.resolve()])
-    *_, run_shell = agent.make_tools(ws)
-
-    result = run_shell(f"head -c {agent.SHELL_OUTPUT_CHARS * 2} /dev/zero | tr '\\0' x")
-
-    assert "[cut at" in result and len(result) < agent.SHELL_OUTPUT_CHARS + 100
+# model and refusals -------------------------------------------------------
 
 
 def test_model_base_url_and_key(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -578,6 +513,8 @@ def test_model_empty_key_stops_before_any_call(
             "run",
             "--model",
             "m",
+            "--base",
+            "base",
             "--base-url",
             "http://localhost:9/v1",
             "--api-key-env",
@@ -603,44 +540,73 @@ def test_run_refuses_with_token(
     name: str,
 ) -> None:
     monkeypatch.setenv(name, "t")
-    rec = Recorder()
 
-    assert _main(repo, tmp_path, FunctionModel(rec)) == 2
+    assert _main(repo, tmp_path, FunctionModel(_never)) == 2
     assert f"refused: {name} is set" in capsys.readouterr().err
-    assert rec.prompt is None
 
 
-def test_run_refuses_with_extraheader(
+def test_run_refuses_a_checkout_with_a_token_header(
     repo: Path, tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    subprocess.run(
-        [
-            "git",
-            "config",
-            "http.https://github.com/.extraheader",
-            "AUTHORIZATION: basic x",
-        ],
-        cwd=repo,
-        check=True,
+    """read_file reaches .git/config, so a checkout that kept its token is refused."""
+    _git(
+        repo, "config", "http.https://github.com/.extraheader", "AUTHORIZATION: basic x"
     )
+    ws = agent.Workspace(repo.resolve(), [repo.resolve()])
+    read_file, _, _ = agent.make_tools(ws)
+    assert "AUTHORIZATION" in read_file(".git/config")
 
-    assert _main(repo, tmp_path, FunctionModel(Recorder())) == 2
+    assert _main(repo, tmp_path, FunctionModel(_never)) == 2
     assert "persist-credentials: false" in capsys.readouterr().err
+    assert not (tmp_path / "out").exists()
 
 
-def test_shell_time_limit_stops_child_processes(repo: Path) -> None:
-    ws = agent.Workspace(repo.resolve(), [repo.resolve()], shell_timeout=1)
-    *_, run_shell = agent.make_tools(ws)
+# command line -------------------------------------------------------------
 
-    result = run_shell("bash -c 'sleep 2; touch late'; true")
-    time.sleep(2.5)
 
-    assert "ran past 1s" in result
-    assert not (repo / "late").exists()
+def _subparser(name: str) -> argparse.ArgumentParser:
+    """Return the ``run`` or ``publish`` subparser."""
+    return agent.parser()._subparsers._group_actions[0].choices[name]
+
+
+def _options(name: str) -> set[str]:
+    """Return the long options the ``name`` subcommand takes, --help aside."""
+    return {
+        opt
+        for action in _subparser(name)._actions
+        for opt in action.option_strings
+        if opt.startswith("--") and opt != "--help"
+    }
+
+
+def test_run_takes_only_the_pr_options() -> None:
+    assert _options("run") == {
+        "--model",
+        "--base-url",
+        "--api-key-env",
+        "--base",
+        "--repo",
+        "--out",
+        "--timeout",
+        "--max-requests",
+    }
+    with pytest.raises(SystemExit):
+        agent.parser().parse_args(["run", "--model", "m"])
+    for removed in ("--audit", "--prompt", "--skills", "--context", "--no-shell"):
+        with pytest.raises(SystemExit):
+            agent.parser().parse_args(
+                ["run", "--model", "m", "--base", "b", removed, "x"]
+            )
+
+
+def test_publish_takes_only_the_pr_options() -> None:
+    assert _options("publish") == {"--pr", "--min-severity", "--title"}
+    with pytest.raises(SystemExit):
+        agent.parser().parse_args(["publish", "report.json"])
 
 
 def test_help_shows_no_empty_defaults() -> None:
-    text = agent.parser()._subparsers._group_actions[0].choices["run"].format_help()
+    text = _subparser("run").format_help()
 
     assert "(default: None)" not in text and "(default: [])" not in text
     options = text.split("options:", 1)[1]
@@ -650,10 +616,7 @@ def test_help_shows_no_empty_defaults() -> None:
         "--repo",
         "--out",
         "--timeout",
-        "--shell-timeout",
         "--max-requests",
-        "--skills",
-        "--prompt",
     ):
         # The option's own line, not a mention wrapped into another's help.
         start = re.search(rf"^  {re.escape(option)}(?=[ \n])", options, re.MULTILINE)
@@ -665,41 +628,31 @@ def test_help_shows_no_empty_defaults() -> None:
 # publish ------------------------------------------------------------------
 
 
-def _gh(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-    issues: str = "[]",
-    fail: bool = False,
-) -> Path:
-    """Put a gh on PATH that records each call (and any body file) to calls.jsonl."""
+def _gh(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, fail: bool = False) -> Path:
+    """Put a gh on PATH that records each call to calls.jsonl, and fails if asked."""
     bin_dir = tmp_path / "gh-bin"
     bin_dir.mkdir()
     calls = tmp_path / "calls.jsonl"
-    (tmp_path / "issues.json").write_text(issues)
     (bin_dir / "gh").write_text(
         f"#!{sys.executable}\n"
         "import json, sys\n"
-        "args = sys.argv[1:]\n"
-        "body = None\n"
-        "if '--body-file' in args:\n"
-        "    body = open(args[args.index('--body-file') + 1]).read()\n"
-        f"open({str(calls)!r}, 'a').write(json.dumps({{'args': args, 'body': body}}) + '\\n')\n"
-        + ("sys.exit(4)\n" if fail else "")
-        + "if args[:2] == ['issue', 'list']:\n"
-        f"    print(open({str(tmp_path / 'issues.json')!r}).read())\n"
+        f"open({str(calls)!r}, 'a').write(json.dumps(sys.argv[1:]) + '\\n')\n"
+        + ("sys.exit(4)\n" if fail else "print('[]')\n")
     )
     (bin_dir / "gh").chmod(0o755)
     monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
     return calls
 
 
-def _calls(calls: Path) -> list[dict]:
+def _calls(calls: Path) -> list[list[str]]:
+    """Return the gh calls recorded in ``calls``."""
     if not calls.exists():
         return []
     return [json.loads(line) for line in calls.read_text().splitlines()]
 
 
 def _report_file(tmp_path: Path, severities: list[str]) -> Path:
+    """Write a report with one finding per severity and return its path."""
     report = {
         "summary": "Audit done.",
         "findings": [
@@ -721,659 +674,15 @@ def _report_file(tmp_path: Path, severities: list[str]) -> Path:
     return path
 
 
-def _publish(repo: Path, report: Path, *extra: str) -> int:
-    return agent.main(["publish", str(report), "--repo", str(repo), *extra])
-
-
-OPEN = '[{"number": 7, "title": "Knowledge audit"}, {"number": 8, "title": "Knowledge audit 2"}]'
-
-
-def test_publish_below_threshold_posts_nothing(
-    repo: Path,
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-    capsys: pytest.CaptureFixture[str],
-) -> None:
-    calls = _gh(tmp_path, monkeypatch)
-
-    assert _publish(repo, _report_file(tmp_path, ["medium", "info"])) == 0
-    made = [c["args"][:2] for c in _calls(calls)]
-    assert ["issue", "create"] not in made and ["issue", "edit"] not in made
-    assert ["issue", "comment"] not in made and ["issue", "close"] not in made
-    assert "no issue" in capsys.readouterr().err
-
-
-def test_publish_below_threshold_closes_open_issue(
-    repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    calls = _gh(tmp_path, monkeypatch, OPEN)
-
-    assert (
-        _publish(repo, _report_file(tmp_path, ["low"]), "--min-severity", "medium") == 0
-    )
-    made = _calls(calls)
-    comment = next(c for c in made if c["args"][:3] == ["issue", "comment", "7"])
-    close = next(c for c in made if c["args"][:3] == ["issue", "close", "7"])
-    assert made.index(comment) < made.index(close)
-    assert "medium" in " ".join(comment["args"])
-    assert not any(
-        c["args"][:2] in (["issue", "create"], ["issue", "edit"]) for c in made
-    )
-
-
-def test_publish_posts_new_issue_with_run_link(
-    repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    calls = _gh(tmp_path, monkeypatch)
-    monkeypatch.setenv("GITHUB_SERVER_URL", "https://github.com")
-    monkeypatch.setenv("GITHUB_REPOSITORY", "o/r")
-    monkeypatch.setenv("GITHUB_RUN_ID", "42")
-
-    assert _publish(repo, _report_file(tmp_path, ["high", "info"])) == 0
-    create = next(c for c in _calls(calls) if c["args"][:2] == ["issue", "create"])
-    assert create["args"][create["args"].index("--title") + 1] == "Knowledge audit"
-    assert "concept/0" in create["body"] and "concept/1" in create["body"]
-    assert "https://github.com/o/r/actions/runs/42" in create["body"]
-
-
-def test_publish_posts_edit_and_comment_on_open_issue(
-    repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    calls = _gh(tmp_path, monkeypatch, OPEN)
-
-    assert (
-        _publish(
-            repo, _report_file(tmp_path, ["high", "high", "low"]), "--mention", "@alice"
-        )
-        == 0
-    )
-    made = _calls(calls)
-    edit = next(c for c in made if c["args"][:3] == ["issue", "edit", "7"])
-    comment = next(c for c in made if c["args"][:3] == ["issue", "comment", "7"])
-    assert "concept/0" in edit["body"]
-    text = " ".join(comment["args"])
-    assert "@alice" in text and "2 high" in text
-    assert not any(c["args"][:2] == ["issue", "create"] for c in made)
-
-
-def test_publish_posts_custom_title(
-    repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    calls = _gh(tmp_path, monkeypatch, OPEN)
-
-    assert (
-        _publish(
-            repo,
-            _report_file(tmp_path, ["info"]),
-            "--min-severity",
-            "info",
-            "--title",
-            "EA review",
-        )
-        == 0
-    )
-    create = next(c for c in _calls(calls) if c["args"][:2] == ["issue", "create"])
-    assert create["args"][create["args"].index("--title") + 1] == "EA review"
-
-
-def _codeowners(repo: Path, rel: str, text: str) -> None:
-    path = repo / rel
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text)
-
-
-def _created_body(calls: Path) -> str:
-    return next(c for c in _calls(calls) if c["args"][:2] == ["issue", "create"])[
-        "body"
-    ]
-
-
-def test_mention_codeowners_last_star_rule(
-    repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    _codeowners(
-        repo,
-        ".github/CODEOWNERS",
-        "# owners\n* @old\n/docs/ @docs-team\n*   @alice @org/core  # leads\n",
-    )
-    _codeowners(repo, "CODEOWNERS", "* @root-file\n")
-    calls = _gh(tmp_path, monkeypatch)
-
-    assert _publish(repo, _report_file(tmp_path, ["high"])) == 0
-    body = _created_body(calls)
-    assert "@alice" in body and "@org/core" in body
-    for other in ("@old", "@docs-team", "@root-file"):
-        assert other not in body
-
-
-def test_mention_codeowners_order(
-    repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    _codeowners(repo, "CODEOWNERS", "* @root-file\n")
-    _codeowners(repo, "docs/CODEOWNERS", "* @docs-file\n")
-    calls = _gh(tmp_path, monkeypatch)
-
-    assert _publish(repo, _report_file(tmp_path, ["high"])) == 0
-    body = _created_body(calls)
-    assert "@root-file" in body and "@docs-file" not in body
-
-
-def test_mention_option_replaces_codeowners(
-    repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    _codeowners(repo, ".github/CODEOWNERS", "* @alice\n")
-    calls = _gh(tmp_path, monkeypatch)
-
-    assert (
-        _publish(
-            repo,
-            _report_file(tmp_path, ["high"]),
-            "--mention",
-            "bob",
-            "--mention",
-            "@org/team",
-        )
-        == 0
-    )
-    body = _created_body(calls)
-    assert "@bob" in body and "@org/team" in body and "@alice" not in body
-
-
-def test_mention_none_without_owners(
-    repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    calls = _gh(tmp_path, monkeypatch)
-
-    assert _publish(repo, _report_file(tmp_path, ["high"])) == 0
-    body = _created_body(calls)
-    assert "cc" not in body.lower().split("## agent report")[0]
-    assert "@" not in body.split("## Agent report")[0]
-
-
-def test_publish_fails_when_gh_fails(
-    repo: Path,
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-    capsys: pytest.CaptureFixture[str],
-) -> None:
-    calls = _gh(tmp_path, monkeypatch, fail=True)
-
-    assert _publish(repo, _report_file(tmp_path, ["high"])) == 1
-    assert not any(c["args"][:2] == ["issue", "create"] for c in _calls(calls))
-    assert "gh" in capsys.readouterr().err
-
-
-@pytest.mark.parametrize("content", ["not json", '{"summary": "x"}'])
-def test_publish_fails_on_bad_report(
-    repo: Path,
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-    capsys: pytest.CaptureFixture[str],
-    content: str | None,
-) -> None:
-    calls = _gh(tmp_path, monkeypatch)
-    report = tmp_path / "report.json"
-    report.write_text(content)
-
-    assert _publish(repo, report) == 2
-    assert "report" in capsys.readouterr().err
-    assert _calls(calls) == []
-
-
-class Collector:
-    """A local OTLP/HTTP receiver that keeps each request's path, headers and span names."""
-
-    def __init__(self) -> None:
-        from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-        from threading import Thread
-
-        from opentelemetry.proto.collector.trace.v1.trace_service_pb2 import (
-            ExportTraceServiceRequest,
-        )
-
-        self.requests: list[tuple[str, dict, list[str]]] = []
-        collector = self
-
-        class Handler(BaseHTTPRequestHandler):
-            def do_POST(self) -> None:
-                body = self.rfile.read(int(self.headers["Content-Length"]))
-                message = ExportTraceServiceRequest.FromString(body)
-                names = [
-                    span.name
-                    for resource in message.resource_spans
-                    for scope in resource.scope_spans
-                    for span in scope.spans
-                ]
-                collector.requests.append(
-                    (self.path, {k.lower(): v for k, v in self.headers.items()}, names)
-                )
-                self.send_response(200)
-                self.end_headers()
-
-            def log_message(self, *args: object) -> None:
-                pass
-
-        self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
-        self.url = f"http://127.0.0.1:{self.server.server_port}"
-        Thread(target=self.server.serve_forever, daemon=True).start()
-
-    @property
-    def spans(self) -> list[str]:
-        return [name for _, _, names in self.requests for name in names]
-
-
-@pytest.fixture
-def collector():
-    found = Collector()
-    yield found
-    found.server.shutdown()
-
-
-def test_traces_langfuse_sends_run_model_and_tool_spans(
-    repo: Path, tmp_path: Path, collector: Collector, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "pk-lf-1")
-    monkeypatch.setenv("LANGFUSE_SECRET_KEY", "sk-lf-2")
-    monkeypatch.setenv("LANGFUSE_BASE_URL", collector.url + "/")
-
-    assert _main(repo, tmp_path, FunctionModel(Recorder())) == 0
-
-    path, headers, _ = collector.requests[0]
-    assert path == "/api/public/otel/v1/traces"
-    assert headers["authorization"] == "Basic cGstbGYtMTpzay1sZi0y"
-    spans = collector.spans
-    assert any(name.startswith("invoke_agent") for name in spans), spans
-    assert any(name.startswith("chat") for name in spans), spans
-    assert "execute_tool read_file" in spans
-
-
-def test_traces_langfuse_default_base_url(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "pk")
-    monkeypatch.setenv("LANGFUSE_SECRET_KEY", "sk")
-    monkeypatch.delenv("LANGFUSE_BASE_URL", raising=False)
-
-    provider = agent.tracer_provider()
-
-    assert provider is not None
-    exporter = provider._active_span_processor._span_processors[
-        0
-    ]._batch_processor._exporter
-    assert exporter._endpoint == "https://cloud.langfuse.com/api/public/otel/v1/traces"
-    provider.shutdown()
-
-
-def test_traces_optional_off_without_variables(repo: Path) -> None:
-    """No variables: no provider, and OpenTelemetry's SDK and exporter are never
-    imported (PydanticAI itself loads the small API package)."""
-    env = {k: v for k, v in os.environ.items() if k not in TRACE_VARS}
-    code = (
-        "import importlib.util, sys\n"
-        f"spec = importlib.util.spec_from_file_location('a', {str(SCRIPT)!r})\n"
-        "a = importlib.util.module_from_spec(spec); sys.modules['a'] = a\n"
-        "spec.loader.exec_module(a)\n"
-        "print(a.tracer_provider(), any(m.startswith(('opentelemetry.sdk', "
-        "'opentelemetry.exporter')) for m in sys.modules))"
-    )
-    proc = subprocess.run(
-        [sys.executable, "-c", code],
-        env=env,
-        capture_output=True,
-        text=True,
-        check=True,
-    )
-
-    assert proc.stdout.split() == ["None", "False"]
-
-
-def test_traces_optional_any_otlp_endpoint(
-    repo: Path, tmp_path: Path, collector: Collector, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    monkeypatch.setenv(
-        "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT", collector.url + "/v1/traces"
-    )
-
-    assert _main(repo, tmp_path, FunctionModel(Recorder())) == 0
-
-    assert collector.requests[0][0] == "/v1/traces"
-    assert "authorization" not in collector.requests[0][1]
-    assert any(name.startswith("invoke_agent") for name in collector.spans)
-
-
-def test_traces_safe_keys_stay_out_of_the_shell(
-    repo: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "pk-lf-secret")
-    monkeypatch.setenv("LANGFUSE_SECRET_KEY", "sk-lf-secret")
-    monkeypatch.setenv("OTEL_EXPORTER_OTLP_HEADERS", "Authorization=Basic secret")
-    ws = agent.Workspace(repo.resolve(), [repo.resolve()])
-    *_, run_shell = agent.make_tools(ws)
-
-    result = run_shell("env")
-
-    assert "secret" not in result and "LANGFUSE" not in result and "OTEL" not in result
-
-
-def test_traces_safe_flushed_on_timeout(
-    repo: Path, tmp_path: Path, collector: Collector, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    monkeypatch.setenv("LANGFUSE_PUBLIC_KEY", "pk")
-    monkeypatch.setenv("LANGFUSE_SECRET_KEY", "sk")
-    monkeypatch.setenv("LANGFUSE_BASE_URL", collector.url)
-
-    async def stall(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
-        import asyncio
-
-        await asyncio.sleep(30)
-        raise AssertionError("not reached")
-
-    assert _main(repo, tmp_path, FunctionModel(stall), "--timeout", "1") == 1
-
-    assert any(name.startswith("invoke_agent") for name in collector.spans)
-
-
-# okf-vs-change ------------------------------------------------------------
-
-
-def _git(cwd: Path, *args: str) -> str:
-    return subprocess.run(
-        ["git", "-c", "user.name=t", "-c", "user.email=t@t", *args],
-        cwd=cwd,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout
-
-
-def _decision(
-    repo: Path, slug: str, sources: list[str], status: str = "stable"
-) -> None:
-    folder = repo / ".okf" / "decisions"
-    folder.mkdir(parents=True, exist_ok=True)
-    listed = "\n".join(f'  - resource: "{s}"' for s in sources)
-    (folder / f"{slug}.md").write_text(
-        f"---\ntype: decision\ntitle: {slug}\nstatus: {status}\n"
-        f"sources:\n{listed}\n---\n\n# {slug}\n"
-    )
-
-
-@pytest.fixture
-def changed(repo: Path) -> Path:
-    """A repository whose HEAD changed src/app.py and pkg/lib/util.py since the base commit."""
-    for rel in ("src/app.py", "src/other.py", "pkg/lib/util.py"):
-        (repo / rel).parent.mkdir(parents=True, exist_ok=True)
-        (repo / rel).write_text("x = 1\n")
-    _decision(repo, "0001-file-source", ["src/app.py"])
-    _decision(repo, "0002-folder-source", ["pkg/lib/"])
-    _decision(repo, "0003-untouched", ["src/other.py"])
-    _decision(repo, "0004-draft", ["src/app.py"], status="draft")
-    _decision(repo, "0005-url-source", ["https://example.com/src/app.py"])
-    _git(repo, "add", "-A")
-    _git(repo, "commit", "-q", "-m", "base")
-    _git(repo, "branch", "base")
-    (repo / "src/app.py").write_text("x = 2\n")
-    (repo / "pkg/lib/util.py").write_text("x = 2\n")
-    _git(repo, "commit", "-q", "-am", "change")
-    return repo
-
-
-def _change_prompt(repo: Path, tmp_path: Path) -> str:
-    rec = Recorder()
-    code = _main(
-        repo,
-        tmp_path,
-        FunctionModel(rec),
-        "--audit",
-        "okf-vs-change",
-        "--base",
-        "base",
-    )
-    assert code == 0
-    assert rec.prompt is not None
-    return rec.prompt
-
-
-def test_okf_vs_change_matches_file_source(changed: Path, tmp_path: Path) -> None:
-    prompt = _change_prompt(changed, tmp_path)
-
-    assert "decisions/0001-file-source" in prompt
-    assert "src/app.py" in prompt
-    assert "decisions/0003-untouched" not in prompt
-
-
-def test_okf_vs_change_matches_folder_source_as_prefix(
-    changed: Path, tmp_path: Path
-) -> None:
-    prompt = _change_prompt(changed, tmp_path)
-
-    assert "decisions/0002-folder-source" in prompt
-    assert "pkg/lib/util.py" in prompt
-
-
-def test_okf_vs_change_skips_drafts_and_url_sources(
-    changed: Path, tmp_path: Path
-) -> None:
-    prompt = _change_prompt(changed, tmp_path)
-
-    assert "0004-draft" not in prompt
-    assert "0005-url-source" not in prompt
-
-
-def test_okf_vs_change_puts_matched_decisions_in_task(
-    changed: Path, tmp_path: Path
-) -> None:
-    prompt = _change_prompt(changed, tmp_path)
-    shipped = (agent.PROMPTS / "okf-vs-change.md").read_text()
-
-    assert prompt.startswith(shipped)
-    scope = prompt[len(shipped) :]
-    assert ".okf/decisions/0001-file-source.md" in scope
-    assert ".okf/decisions/0002-folder-source.md" in scope
-
-
-def test_okf_vs_change_without_base_exits_2(
-    changed: Path, tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
-    code = _main(
-        changed, tmp_path, FunctionModel(Recorder()), "--audit", "okf-vs-change"
-    )
-
-    assert code == 2
-    assert "--base" in capsys.readouterr().err
-
-
-def test_okf_vs_change_is_a_shipped_audit(
-    capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
-) -> None:
-    monkeypatch.setenv("COLUMNS", "500")
-    with pytest.raises(SystemExit):
-        agent.main(["run", "--help"])
-
-    assert "okf-vs-change" in agent.AUDITS
-    assert (agent.PROMPTS / "okf-vs-change.md").read_text().strip()
-    help_text = " ".join(capsys.readouterr().out.split())
-    assert "okf-vs-change" in help_text and "--base" in help_text
-
-
-# --instructions-root ------------------------------------------------------
-
-
-@pytest.fixture
-def instructed(repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
-    """A repository with tracked instructions, and a base checkout holding other text."""
-    for root, word in ((repo, "head"), (tmp_path / "base", "base")):
-        (root / "ci").mkdir(parents=True)
-        (root / "ci" / "task.md").write_text(f"{word} task")
-        (root / "ci" / "system.md").write_text(f"{word} system")
-        (root / "ci" / "ctx").mkdir()
-        (root / "ci" / "ctx" / "note.md").write_text(word)
-        _skill(root / "ci" / "skills", f"{word}-skill")
-    _git(repo, "add", "-A")
-    _git(repo, "commit", "-q", "-m", "instructions")
-    monkeypatch.chdir(repo)
-    return repo, tmp_path / "base"
-
-
-def test_instructions_root_resolves_tracked_paths(
-    instructed: tuple[Path, Path], tmp_path: Path
-) -> None:
-    repo, base = instructed
-    rec = Recorder(calls=[("read_file", {"path": str(base / "ci/ctx/note.md")})])
-
-    code = _main(
-        repo,
-        tmp_path,
-        FunctionModel(rec),
-        "--instructions-root",
-        str(base),
-        "--prompt-file",
-        "ci/task.md",
-        "--context",
-        "ci/ctx",
-        "--skills",
-        "ci/skills",
-    )
-
-    assert code == 0
-    assert rec.prompt == "base task"
-    assert "base" in rec.returns[0] and "head" not in rec.returns[0]
-    assert rec.instructions is not None
-    assert "base-skill" in rec.instructions and "head-skill" not in rec.instructions
-    rec2 = Recorder()
-    assert (
-        _main(
-            repo,
-            tmp_path,
-            FunctionModel(rec2),
-            "--instructions-root",
-            str(base),
-            "--system-prompt-file",
-            "ci/system.md",
-            "--skills",
-            "ci/skills",
-        )
-        == 0
-    )
-    assert rec2.instructions == "base system"
-
-
-def test_instructions_root_keeps_untracked_context_in_worktree(
-    instructed: tuple[Path, Path], tmp_path: Path
-) -> None:
-    repo, base = instructed
-    fetched = repo / "fetched"
-    fetched.mkdir()
-    (fetched / "doc.md").write_text("fetched doc")
-    rec = Recorder(calls=[("read_file", {"path": str(fetched / "doc.md")})])
-
-    code = _main(
-        repo,
-        tmp_path,
-        FunctionModel(rec),
-        "--instructions-root",
-        str(base),
-        "--context",
-        "fetched",
-        "--skills",
-        "ci/skills",
-    )
-
-    assert code == 0
-    assert "fetched doc" in rec.returns[0]
-
-
-def test_instructions_root_refuses_path_missing_from_base(
-    instructed: tuple[Path, Path], tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
-    repo, base = instructed
-    (repo / "ci" / "new.md").write_text("slipped in")
-    _git(repo, "add", "-A")
-    _git(repo, "commit", "-q", "-m", "new prompt")
-
-    code = _main(
-        repo,
-        tmp_path,
-        FunctionModel(Recorder()),
-        "--instructions-root",
-        str(base),
-        "--prompt-file",
-        "ci/new.md",
-        "--skills",
-        "ci/skills",
-    )
-
-    assert code == 2
-    err = capsys.readouterr().err
-    assert "ci/new.md" in err and "base" in err
-
-
-def test_without_instructions_root_paths_resolve_as_before(
-    instructed: tuple[Path, Path], tmp_path: Path
-) -> None:
-    repo, _ = instructed
-    rec = Recorder()
-
-    code = _main(
-        repo,
-        tmp_path,
-        FunctionModel(rec),
-        "--prompt-file",
-        "ci/task.md",
-        "--system-prompt-file",
-        "ci/system.md",
-        "--context",
-        "ci/ctx",
-        "--skills",
-        "ci/skills",
-    )
-
-    assert code == 0
-    assert rec.prompt == "head task"
-    assert rec.instructions == "head system"
-    rec2 = Recorder()
-    assert _main(repo, tmp_path, FunctionModel(rec2), "--skills", "ci/skills") == 0
-    assert rec2.instructions is not None and "head-skill" in rec2.instructions
-
-
-# --no-shell ---------------------------------------------------------------
-
-
-def test_no_shell_leaves_out_run_shell(repo: Path, tmp_path: Path) -> None:
-    seen: dict[str, list[str]] = {}
-
-    def body(messages: list[ModelMessage], info: AgentInfo) -> ModelResponse:
-        key = "with" if "with" not in seen else "without"
-        seen[key] = [t.name for t in info.function_tools]
-        seen[key + "-prompt"] = [str(messages[0].instructions)]  # type: ignore[union-attr]
-        return ModelResponse(
-            parts=[
-                ToolCallPart(
-                    info.output_tools[0].name,
-                    {"summary": "ok", "checked": [], "findings": []},
-                )
-            ]
-        )
-
-    assert _main(repo, tmp_path, FunctionModel(body)) == 0
-    assert _main(repo, tmp_path, FunctionModel(body), "--no-shell") == 0
-
-    assert "run_shell" in seen["with"]
-    assert "run_shell" not in seen["without"]
-    assert {"read_file", "search_files", "list_files"} <= set(seen["without"])
-    assert "run_shell" in seen["with-prompt"][0]
-    assert "run_shell" not in seen["without-prompt"][0]
-    assert "cannot run the scripts a skill ships" in " ".join(
-        seen["without-prompt"][0].split()
-    )
-
-
-# publish to a pull request ------------------------------------------------
+def _publish(report: Path, *extra: str) -> int:
+    """Run ``agent.py publish`` on ``report`` for pull request 12."""
+    return agent.main(["publish", str(report), "--pr", "12", *extra])
 
 
 def _pr_gh(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """Put a gh on PATH that keeps a pull request's comments in comments.json."""
     bin_dir = tmp_path / "pr-gh-bin"
     bin_dir.mkdir()
-    calls = tmp_path / "pr-calls.jsonl"
     store = tmp_path / "comments.json"
     store.write_text("[]")
     (bin_dir / "gh").write_text(
@@ -1382,7 +691,6 @@ def _pr_gh(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
         "args = sys.argv[1:]\n"
         f"store = {str(store)!r}\n"
         "comments = json.load(open(store))\n"
-        f"open({str(calls)!r}, 'a').write(json.dumps(args) + '\\n')\n"
         "def body_of(flag, prefix=''):\n"
         "    value = args[args.index(flag) + 1]\n"
         "    return open(value[len(prefix):]).read()\n"
@@ -1403,12 +711,12 @@ def _pr_gh(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
 
 
 def test_publish_pr_creates_then_replaces_comment(
-    repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     store = _pr_gh(tmp_path, monkeypatch)
     first = _report_file(tmp_path, ["high"])
 
-    assert _publish(repo, first, "--pr", "12") == 0
+    assert _publish(first) == 0
     comments = json.loads(store.read_text())
     assert len(comments) == 1 and "concept/0" in comments[0]["body"]
 
@@ -1416,188 +724,52 @@ def test_publish_pr_creates_then_replaces_comment(
     report = json.loads(first.read_text())
     report["findings"][0]["title"] = "concept/changed"
     second.write_text(json.dumps(report))
-    assert _publish(repo, second, "--pr", "12") == 0
+    assert _publish(second) == 0
     comments = json.loads(store.read_text())
     assert len(comments) == 1
     assert "concept/changed" in comments[0]["body"]
     assert "concept/0" not in comments[0]["body"]
 
 
-@pytest.mark.parametrize("pr", [[], ["--pr", "12"]])
-def test_publish_without_report_posts_nothing(
-    repo: Path,
+def test_publish_below_threshold_posts_nothing_new(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
-    pr: list[str],
 ) -> None:
-    calls = _gh(tmp_path, monkeypatch)
+    store = _pr_gh(tmp_path, monkeypatch)
 
-    assert _publish(repo, tmp_path / "missing" / "report.json", *pr) == 0
-    assert _calls(calls) == []
-    assert "no report" in capsys.readouterr().err
+    assert _publish(_report_file(tmp_path, ["medium"])) == 0
+    assert json.loads(store.read_text()) == []
+    assert "no comment was written" in capsys.readouterr().err
 
 
-@pytest.mark.parametrize("flag", ["--prompt-file", "--context"])
-def test_instructions_root_follows_a_tracked_symlink_into_the_base(
-    instructed: tuple[Path, Path], tmp_path: Path, flag: str
+def test_publish_below_threshold_replaces_an_earlier_comment(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """A pull request that turns an instruction path into a symlink out of the repository gets the base's file."""
-    repo, base = instructed
-    secret = tmp_path / "secret"
-    secret.mkdir()
-    (secret / "key.txt").write_text("SECRET-KEY")
-    if flag == "--prompt-file":
-        target = "ci/task.md"
-        (repo / target).unlink()
-        (repo / target).symlink_to(secret / "key.txt")
-    else:
-        target = "ci/ctx"
-        shutil.rmtree(repo / target)
-        (repo / target).symlink_to(secret)
-    _git(repo, "add", "-A")
-    _git(repo, "commit", "-q", "-m", "symlink out")
-    rec = Recorder()
+    store = _pr_gh(tmp_path, monkeypatch)
+    assert _publish(_report_file(tmp_path, ["high"])) == 0
 
-    code = _main(
-        repo,
-        tmp_path,
-        FunctionModel(rec),
-        "--instructions-root",
-        str(base),
-        flag,
-        target,
-        "--skills",
-        "ci/skills",
-        *(["--prompt", "x"] if flag == "--context" else []),
+    assert _publish(_report_file(tmp_path, ["low"])) == 0
+
+    (comment,) = json.loads(store.read_text())
+    assert "found nothing at or above high" in comment["body"]
+
+
+def test_publish_custom_title_marks_the_comment(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    store = _pr_gh(tmp_path, monkeypatch)
+
+    assert _publish(_report_file(tmp_path, ["high"]), "--title", "Docs reread") == 0
+
+    (comment,) = json.loads(store.read_text())
+    assert comment["body"].startswith(
+        agent.COMMENT_MARK.format(title="Docs reread") + "\n## Docs reread"
     )
-
-    assert code == 0
-    assert "SECRET-KEY" not in str(rec.prompt)
-    if flag == "--prompt-file":
-        assert rec.prompt == "base task"
-    else:
-        assert rec.instructions is not None
-        assert str(secret) not in rec.instructions
-        assert str(base / "ci" / "ctx") in rec.instructions
-
-
-def test_instructions_root_refuses_untracked_path_outside_the_repo(
-    instructed: tuple[Path, Path], tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
-    repo, base = instructed
-    (tmp_path / "outside").mkdir()
-
-    code = _main(
-        repo,
-        tmp_path,
-        FunctionModel(Recorder()),
-        "--instructions-root",
-        str(base),
-        "--context",
-        "../outside",
-        "--skills",
-        "ci/skills",
-    )
-
-    assert code == 2
-    assert "outside" in capsys.readouterr().err
-
-
-@pytest.mark.parametrize("flag", ["--prompt-file", "--context"])
-def test_instructions_root_ignores_a_symlinked_parent_folder(
-    instructed: tuple[Path, Path], tmp_path: Path, flag: str
-) -> None:
-    """A pull request that swaps a parent folder for a symlink inside the repository still gets the base's copy."""
-    repo, base = instructed
-    evil = repo / "evil"
-    (evil / "ctx").mkdir(parents=True)
-    (evil / "task.md").write_text("EVIL PROMPT")
-    (evil / "ctx" / "note.md").write_text("EVIL NOTE")
-    _skill(evil / "skills", "head-skill")
-    shutil.rmtree(repo / "ci")
-    (repo / "ci").symlink_to("evil")
-    _git(repo, "add", "-A")
-    _git(repo, "commit", "-q", "-m", "swap the folder")
-    target = "ci/task.md" if flag == "--prompt-file" else "ci/ctx"
-    rec = Recorder()
-
-    code = _main(
-        repo,
-        tmp_path,
-        FunctionModel(rec),
-        "--instructions-root",
-        str(base),
-        flag,
-        target,
-        "--skills",
-        "ci/skills",
-        *(["--prompt", "x"] if flag == "--context" else []),
-    )
-
-    assert code == 0
-    assert "EVIL" not in str(rec.prompt)
-    assert rec.instructions is not None
-    assert str(evil) not in rec.instructions
-    assert "base-skill" in rec.instructions
-    if flag == "--prompt-file":
-        assert rec.prompt == "base task"
-
-
-def test_instructions_root_refuses_a_new_path_through_a_symlink(
-    instructed: tuple[Path, Path], tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
-    """A path the base lacks, reached through a symlinked folder in the repository, is refused."""
-    repo, base = instructed
-    (repo / "evil").mkdir()
-    (repo / "evil" / "new.md").write_text("EVIL PROMPT")
-    (repo / "linked").symlink_to("evil")
-    _git(repo, "add", "-A")
-    _git(repo, "commit", "-q", "-m", "new path through a link")
-
-    code = _main(
-        repo,
-        tmp_path,
-        FunctionModel(Recorder()),
-        "--instructions-root",
-        str(base),
-        "--prompt-file",
-        "linked/new.md",
-        "--skills",
-        "ci/skills",
-    )
-
-    assert code == 2
-    assert "linked/new.md" in capsys.readouterr().err
-
-
-def test_instructions_root_uses_the_base_for_a_deleted_file(
-    instructed: tuple[Path, Path], tmp_path: Path
-) -> None:
-    repo, base = instructed
-    (repo / "ci" / "task.md").unlink()
-    _git(repo, "add", "-A")
-    _git(repo, "commit", "-q", "-m", "delete the prompt")
-    rec = Recorder()
-
-    code = _main(
-        repo,
-        tmp_path,
-        FunctionModel(rec),
-        "--instructions-root",
-        str(base),
-        "--prompt-file",
-        "ci/task.md",
-        "--skills",
-        "ci/skills",
-    )
-
-    assert code == 0
-    assert rec.prompt == "base task"
 
 
 def test_publish_pr_ignores_a_person_quoting_the_marker(
-    repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     store = _pr_gh(tmp_path, monkeypatch)
     mark = agent.COMMENT_MARK.format(title="Knowledge audit")
@@ -1605,10 +777,50 @@ def test_publish_pr_ignores_a_person_quoting_the_marker(
     store.write_text(json.dumps([{"id": 1, "body": quoted}]))
     report = _report_file(tmp_path, ["high"])
 
-    assert _publish(repo, report, "--pr", "12") == 0
-    assert _publish(repo, report, "--pr", "12") == 0
+    assert _publish(report) == 0
+    assert _publish(report) == 0
 
     comments = json.loads(store.read_text())
     assert comments[0] == {"id": 1, "body": quoted}
     assert len(comments) == 2
     assert comments[1]["body"].startswith(mark)
+
+
+def test_publish_fails_when_gh_fails(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    calls = _gh(tmp_path, monkeypatch, fail=True)
+
+    assert _publish(_report_file(tmp_path, ["high"])) == 1
+    assert not any(c[:2] == ["pr", "comment"] for c in _calls(calls))
+    assert "gh" in capsys.readouterr().err
+
+
+def test_publish_without_report_posts_nothing(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    calls = _gh(tmp_path, monkeypatch)
+
+    assert _publish(tmp_path / "missing" / "report.json") == 0
+    assert _calls(calls) == []
+    assert "no report" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("content", ["not json", '{"summary": "x"}'])
+def test_publish_fails_on_bad_report(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    content: str,
+) -> None:
+    calls = _gh(tmp_path, monkeypatch)
+    report = tmp_path / "report.json"
+    report.write_text(content)
+
+    assert _publish(report) == 2
+    assert "report" in capsys.readouterr().err
+    assert _calls(calls) == []

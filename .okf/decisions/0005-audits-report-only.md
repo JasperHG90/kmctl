@@ -96,3 +96,13 @@ without `run_shell` and can report in one pull request comment, replaced on
 each push, instead of an issue. The audit stays opt-in and report only: it
 writes no `verified` entry, and a finding never fails a check. The two tiers
 stand.
+
+## Correction, 2026-11-27
+
+[ADR 0060](0060-the-ci-agent-only-rereads-the-pages-a-pull-request-changed.md) narrows the CI audit to one job: on a pull request from the same
+repository, reread the pages under `.okf/` and `docs/` whose `sources` the
+pull request changed, and post one comment. The CI audit no longer runs by
+hand or on a schedule, and no longer posts an issue. What this record decides
+still holds: audits report only, write no `verified` entry, and a finding
+never fails a check. The `/audit` skill still checks the bundle in a coding
+session.

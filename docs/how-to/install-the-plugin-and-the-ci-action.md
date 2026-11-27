@@ -8,7 +8,7 @@ This page adds kmctl to one repository: kmctl's skills, audit agent and
 knowledge rules for Claude Code, Antigravity or both, with a session hook that
 gives every session a briefing on where knowledge lives and what is due for
 review, and the GitHub Action, which checks docs/ and .okf/ on every pull
-request. A last, optional step turns on the LLM audit.
+request. A last, optional step turns on the LLM audit of each pull request.
 
 How the commands below were run:
 
@@ -300,43 +300,45 @@ kmctl's package, which is why the starter's workflow leaves the job out.
 
 ### 5. Optional: turn on the audit
 
-Audit mode sends your repository to a model, so it is off unless you add it.
-Per `action.yml`, it runs `action/agent.py`, a small agent built on
-[PydanticAI](https://ai.pydantic.dev). It ships four audits, which the
-`audit` input picks:
+Audit mode sends pages and code from your repository to a model, so it is
+off unless you add it. Per `action.yml`, it runs `action/agent.py`, a small
+agent built on [PydanticAI](https://ai.pydantic.dev), on a pull request from
+the same repository, and does one thing
+([ADR 0060](../../.okf/decisions/0060-the-ci-agent-only-rereads-the-pages-a-pull-request-changed.md)).
+It lists every page under `.okf/` and `docs/` with a `resource:` entry in
+its `sources` that names a file the pull request changed, compared with the
+base branch from the commit where the two split. That takes in decisions
+(drafts the pull request adds too), architecture pages, practices and docs
+pages, and leaves out deprecated and superseded decisions, handoffs, the
+log and `index.md` pages. A model then rereads each page against the change.
+When no page names a changed file, the agent writes an empty report and
+calls no model, so that push costs nothing.
 
-- `okf-vs-code`, the default: every concept in `.okf/` (decisions,
-  architecture pages, practices, the manifesto) against the code, each
-  option, default and number on its own.
-- `docs-vs-code`: every page in `docs/` against the code it describes.
-- `okf-vs-docs`: `docs/` against `.okf/`, for places where the two say
-  different things.
-- `okf-vs-change`: on a pull request, the stable decisions whose `sources`
-  name a file the pull request changed, against that change. See **On a
-  pull request** below.
-
-The report lists what the agent checked and what it compared each thing
+The report lists each page the agent checked and what it compared it
 against, and has a finding only for a mismatch: the claim (`path:line`), the
-lines that contradict it and a suggested fix. The script checks every
-citation: one that names a line the agent did not read or find by search
-goes back to the agent, and after five retries the run fails with no report.
-It writes its report to the job summary and keeps it as an `agent-report`
-artifact (`report.json`, `report.md` and the full `transcript.json`). A
-second job, with `mode: publish`, posts it to one issue titled "Knowledge
-audit" when a finding is high (or the severity you choose): it opens the
-issue, or updates it and adds a comment, @-mentioning the owners of the
-last `*` rule in your CODEOWNERS. When a later run finds nothing at that
-severity, it closes the issue.
+lines that contradict it and a suggested fix. For a stable decision the fix
+is a dated Correction section, a new draft decision that supersedes it, or a
+change to the code; for any other page, an edit. The summary ends with the
+pages that still hold, and the `kmctl verify ID ... --by human:<id>` command
+to record that once you have read them; the agent never runs it. The script
+checks every citation: one that names a line the agent did not read or find
+by search goes back to the agent, and after five retries the run fails with
+no report. It writes its report to the job summary and keeps it as an
+`agent-report` artifact (`report.json`, `report.md` and the full
+`transcript.json`). A second job, with `mode: publish`, posts it as one
+comment on the pull request when a finding is high (or the severity you
+choose), and replaces that comment on each push. A finding never fails the
+check.
 
 To try the agent on your machine first and learn to read its report, follow
 [Audit your repository with the agent](../tutorials/audit-your-repository-with-the-agent.md).
 
-The agent can read, search and list files in your repository and in any
-folders you add, and run shell commands, so it can use the scripts skills
-ship. On a pull request it gets no shell. It is told never to change, commit or push a file, and nothing it
-changes is committed: the checkout keeps no credentials, and only the
-publish job gets a GitHub token that can write. That job runs on a fresh
-runner and gets nothing from the agent's job but the artifact.
+The agent can only read, search and list files in your repository. It has no
+shell, so text in the pull request cannot make it run a command. It is told
+never to change, commit or push a file, and nothing it changes is committed:
+the checkout keeps no credentials, and only the publish job gets a GitHub
+token that can write. That job runs on a fresh runner and gets nothing from
+the agent's job but the artifact.
 
 It works with any provider. Name a PydanticAI provider in `model`, or give
 `base_url` for any OpenAI-compatible endpoint: Ollama, Bifrost, OpenRouter, a
@@ -347,21 +349,15 @@ vendor's own API, or your own server.
 | `model` | Required. Without `base_url`, PydanticAI's `provider:model`, such as `openai:gpt-5` (set the provider's own key variable, such as `OPENAI_API_KEY`). With `base_url`, the model name the endpoint serves |
 | `base_url` | an OpenAI-compatible endpoint's base URL, usually ending in `/v1` |
 | `api_key_env` | with `base_url`, the name of the variable that holds the key; leave it out for an endpoint that takes no key |
-| `audit` | the shipped audit to run: `okf-vs-code` (the default), `docs-vs-code`, `okf-vs-docs` or, on a pull request, `okf-vs-change` |
-| `prompt` or `prompt_file` | a task of your own, instead of `audit` |
-| `system_prompt_file` | a file that replaces the shipped system prompt |
-| `context` | folders the agent can read besides the repository, one per line |
-| `skills` | skill folders (subfolders with a `SKILL.md`), one per line; default kmctl's own |
 | `timeout` | how long the agent may run; default `30m` |
 | `report_name` | the artifact's name, in audit and publish mode alike; default `agent-report` |
 
-Publish mode takes three more:
+Publish mode takes two more:
 
 | Input | What it is |
 |---|---|
-| `min_severity` | the lowest severity (`info`, `low`, `medium` or `high`) that opens or updates the issue; default `high` |
-| `mention` | users or teams to @-mention, one per line; default the owners of the last `*` rule in CODEOWNERS |
-| `issue_title` | the issue's title; default `Knowledge audit` |
+| `min_severity` | the lowest severity (`info`, `low`, `medium` or `high`) that posts or updates the comment; default `high` |
+| `title` | the comment's heading, which also marks it so the next run replaces it; default `Knowledge audit` |
 
 1. Add a repository secret named `AUDIT_API_KEY` with your provider's API
    key. Skip this for an endpoint that takes no key.
@@ -373,22 +369,24 @@ Publish mode takes three more:
    ```yaml
    name: knowledge audit
 
-   # Audit mode sends the repository to a model with the API key. This one runs
-   # by hand or on a schedule; "On a pull request" below adds pull requests.
+   # On a pull request from this repository, a model rereads each .okf/ and
+   # docs/ page whose sources the pull request changed. It never fails the check.
    on:
-     workflow_dispatch:
-     schedule:
-       - cron: "0 6 * * 1"
+     pull_request:
+       types: [opened, synchronize, reopened, ready_for_review]
 
    # A composite action cannot set token permissions; the calling workflow does.
    permissions:
      contents: read
 
    jobs:
+     # A fork's pull request gets no secrets, so both jobs skip it.
      audit:
+       if: github.event.pull_request.head.repo.full_name == github.repository
        runs-on: ubuntu-latest
        steps:
-         # No token left in git config for the agent to read; full history for review due.
+         # No token left in git config for the agent to read; full history to
+         # find where the branch split from the base branch.
          - uses: actions/checkout@v4
            with:
              fetch-depth: 0
@@ -404,15 +402,16 @@ Publish mode takes three more:
              api_key_env: AUDIT_API_KEY
 
      # A fresh runner that gets only the report, so nothing the agent
-     # changed runs with the token.
+     # changed runs with the token. It runs when the audit failed too, and
+     # then posts nothing.
      publish:
        needs: audit
+       if: ${{ !cancelled() && github.event.pull_request.head.repo.full_name == github.repository }}
        runs-on: ubuntu-latest
        permissions:
          contents: read
-         issues: write
+         pull-requests: write
        steps:
-         # Only to read CODEOWNERS.
          - uses: actions/checkout@v4
            with:
              persist-credentials: false
@@ -424,149 +423,32 @@ Publish mode takes three more:
 `timeout-minutes` on the step is a second limit after `timeout`, so a stuck
 run cannot hold the runner for GitHub's six-hour default.
 
-**All three audits.** To run every audit, give both jobs a matrix with
-`fail-fast: false`, and give each audit its own `report_name` and
-`issue_title` so their reports and issues stay apart. Add
-`if: ${{ !cancelled() }}` to the publish job, so one failed audit does not
-hold back the others' issues. Under the audit step's `with:`:
-
-```yaml
-             audit: ${{ matrix.audit }}
-             report_name: agent-report-${{ matrix.audit }}
-```
-
-and under the publish step's `with:`, with `title` in the matrix:
-
-```yaml
-             report_name: agent-report-${{ matrix.audit }}
-             issue_title: ${{ matrix.title }}
-```
-
-This repository's own workflow, described below, runs all three this way.
-The audits were tested with DeepSeek V4.1 Flash on Ollama Cloud and with
-Gemini 3.8 Flash, on copies of this repository with false claims planted
-in them, and both caught each one; a weaker model may miss some.
-
-**On a pull request.** The action can also run the audit on a pull request from the same
-repository, and post what it finds as one comment on the pull request,
-replaced on each push (ADR 0057). Use the `okf-vs-change` audit there: it
-checks only the stable decisions whose `sources` name a file the pull
-request changed, from the commit where the branch split from the base
-branch, so the author sees which decisions their change may have outdated
-before it merges. A finding never fails the check. Copy the workflow above
-to a file of its own, such as `.github/workflows/knowledge-audit-pr.yml`,
-and change four things. Run it on pull requests:
-
-```yaml
-on:
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
-```
-
-Give both jobs the same-repository condition, since a fork's or
-Dependabot's pull request gets no secrets. Add `!cancelled()` to the
-publish job's condition too, so it runs when the audit fails:
-
-```yaml
-  audit:
-    if: github.event.pull_request.head.repo.full_name == github.repository
-  publish:
-    needs: audit
-    if: ${{ !cancelled() && github.event.pull_request.head.repo.full_name == github.repository }}
-```
-
-Under the audit step's `with:`, pick the audit:
-
-```yaml
-             audit: okf-vs-change
-```
-
-And give the publish job `pull-requests: write` instead of `issues: write`,
-with a title for the comment under its step's `with:`:
-
-```yaml
-    permissions:
-      contents: read
-      pull-requests: write
-```
-
-```yaml
-             min_severity: medium
-             issue_title: Decisions this change may have outdated
-```
-
 The same-repository condition on both jobs makes GitHub show them as
 skipped on a fork's pull request, not failed. Without it the action skips
 the audit itself, with a notice, and publish finds no report, posts nothing
 and passes. A Dependabot pull request gets no secrets either, and the action
-skips it the same way.
-
-On a pull request the action changes three things:
-
-- The agent runs without `run_shell`, so text in the pull request cannot
-  make it read the API key from its own process. It cannot run the scripts a
-  skill ships on that run.
-- It reads `prompt_file`, `system_prompt_file`, `context` and `skills` that
-  git tracks from a checkout of the base branch, so the pull request cannot
-  quietly loosen the audit that checks it. A folder git does not track,
-  such as one an earlier step fetched, stays in the workspace. A pull
-  request that adds a new `prompt_file` fails its own audit with exit 2
-  until it merges, because the base branch does not have that file yet.
-- It passes the base branch as `--base`, which `okf-vs-change` needs. The
-  checkout's `fetch-depth: 0` gives it that branch's history.
+skips it the same way. `!cancelled()` lets publish run after a failed audit,
+where it finds no report and posts nothing.
 
 The comment shows the findings at or above `min_severity`. A later push
 replaces it; when a run finds nothing at that severity, the comment says
 so. A run that fails or is skipped makes no report, so it leaves the last
-comment as it was, which may then be out of date.
+comment as it was, which may then be out of date. To title the comment
+differently, set `title` under the publish step's `with:`.
 
-Each push costs one model run. Leave `ready_for_review` out of `types` and
-add `if: ${{ !github.event.pull_request.draft }}` to both jobs to skip
-draft pull requests.
+Each push that changes a file a page names costs one model run; a push that
+changes none calls no model. Leave `ready_for_review` out of `types` and add
+`if: ${{ !github.event.pull_request.draft }}` to both jobs to skip draft
+pull requests.
 
-**Your own task.** To check the repository against something else, such as
-your enterprise architecture docs, fetch them in a step before the action's,
-such as `- run: ./scripts/fetch-ea-docs.sh context/`, and add a task, the
-folder and any skills of your own under the action step's `with:`:
-
-```yaml
-             prompt_file: .github/ea-review.md
-             context: context
-             skills: |
-               .github/skills
-```
-
-`uv run --script action/agent.py run --help` lists every option the agent
-takes, with its default.
+`uv run --no-config --script action/agent.py run --help` lists every option
+the agent takes, with its default, and `publish --help` the publish options.
 
 This repository's own `.github/workflows/knowledge-audit.yml` runs the same
-commands as separate steps instead of `uses:`, once per audit: in the audit
-job, install kmctl, run `action/agent.py run --audit NAME` and upload the
-report; in the publish job, download it and run `action/agent.py publish`
-with that audit's issue title. Read it to see exactly what
-the audit runs. `uv run --script action/agent.py publish --help` lists the
-publish options.
-
-**Traces in Langfuse.** Tracing is optional and off by default. To see
-each run in [Langfuse](https://langfuse.com), with every model call's input,
-output and token use and every tool call, add your Langfuse project's keys
-as secrets and set them in the env of the audit step:
-
-```yaml
-           env:
-             AUDIT_API_KEY: ${{ secrets.AUDIT_API_KEY }}
-             LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
-             LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
-```
-
-The agent sends OpenTelemetry traces over OTLP to Langfuse's EU cloud; set
-`LANGFUSE_BASE_URL` too for another region or your own server, such as
-`https://us.cloud.langfuse.com`. For any other OpenTelemetry backend, set
-`OTEL_EXPORTER_OTLP_ENDPOINT` (and `OTEL_EXPORTER_OTLP_HEADERS`) instead.
-A trace holds everything the agent read and wrote, file contents included,
-so send it only to a project that the people who can read the repository
-may see. The keys never reach the agent's shell commands, and a trace that
-fails to send does not fail the run.
+commands as separate steps instead of `uses:`: in the audit job,
+`action/agent.py run --base origin/BASE` and the upload of the report; in the
+publish job, the download and `action/agent.py publish REPORT --pr N`. Read
+it to see exactly what the audit runs.
 
 **Ollama.** Ollama Cloud, as in the example, needs only the API key: its
 OpenAI-compatible endpoint is `https://ollama.com/v1`, and the model name has
@@ -577,41 +459,40 @@ than the model reports unless you set it, so a long conversation is cut
 without warning. A GitHub-hosted runner cannot reach Ollama on your own
 machine; use a self-hosted runner or a URL the runner can reach.
 
-Audit mode runs on `workflow_dispatch`, `schedule` or a `pull_request` from
-the same repository. Never use `pull_request_target`: it runs with your
-secrets for a fork's pull request too. On any other event the action stops
-with:
+Audit mode runs only on a `pull_request` from the same repository. Never use
+`pull_request_target`: it runs with your secrets for a fork's pull request
+too. On any other event, `schedule` and `workflow_dispatch` included, the
+action stops with:
 
 ```
-kmctl audit: refused for event 'pull_request_target'; audit mode runs on workflow_dispatch, schedule or a pull_request from the same repository.
+kmctl audit: refused for event 'pull_request_target'; audit mode runs on a pull_request from the same repository.
 ```
 
 Keep `persist-credentials: false` on the checkout, and do not set `GH_TOKEN`
-or `GITHUB_TOKEN` for the job. The agent runs shell commands, so it refuses
-to start when it finds either. Run locally with `GH_TOKEN` set, it prints
+or `GITHUB_TOKEN` for the job. The agent has no shell, but `read_file`
+reaches `.git/config`, so it refuses to start when either variable is set or
+git config holds checkout's token. Run locally with `GH_TOKEN` set, it prints
 this and exits 2:
 
 ```
 agent: refused: GH_TOKEN is set, and the agent could read the token. Give it only to the publish job, which runs no agent.
 ```
 
-Only the publish job gets `issues: write` (or `pull-requests: write`) and
-the token, and it runs no agent. Keep the two jobs apart: on a self-hosted runner that reuses its
+Only the publish job gets `pull-requests: write` and the token, and it runs
+no agent. Keep the two jobs apart: on a self-hosted runner that reuses its
 machine between jobs, the agent could leave behind code that the publish
 job then runs with the token.
 
-The agent's shell commands run without the API key in their environment, but
-as the same user, so a determined command could still read the key from the
-agent's own process. Use a key made for the audit, with a spending limit.
+The API key reaches the model provider, never the agent's tools. Still use
+a key made for the audit, with a spending limit.
 
 The agent reads your repository's files, so anything checked into it,
 secrets included, is in its view, and its findings quote what it read into
-the "Knowledge audit" issue in the same repository.
+the pull request comment.
 
-`issues: write` lets the publish job open, update and close the
-"Knowledge audit" issue. Without a CODEOWNERS file and `mention`, it
-mentions no one. When the audit job fails, the publish job is skipped and
-the issue stays as it was.
+`pull-requests: write` lets the publish job post and replace its comment.
+When the audit fails or is skipped, publish finds no report, posts nothing
+and passes, and the last comment stays as it was.
 
 ### 6. Later: upgrade to a newer release
 
@@ -747,8 +628,10 @@ After you upgrade kmctl, `claude.lock` fails until you move the `apm.yml`
 ref to the new tag, as in step 6.
 
 For the action, open a pull request: the `knowledge` job runs and its summary
-shows the `kmctl check` and `kmctl review due` reports. For the audit, run the
-"knowledge audit" workflow by hand from the repository's Actions tab.
+shows the `kmctl check` and `kmctl review due` reports. For the audit, open a
+pull request that changes a file a page names in its `sources`: the
+"knowledge audit" workflow runs and, when a finding is high, comments on the
+pull request.
 
 All options of these commands are in [Commands](../reference/commands.md).
 Why kmctl has one hook and the audit only reports is in

@@ -15,8 +15,8 @@ project and an `.okf/` knowledge bundle for people and agents working on it.
 At the start of every Claude Code session its plugin gives the agent a
 briefing on where knowledge lives, what is due for review and which skills
 to use; the rules for writing knowledge come with its package. Its GitHub Action checks indexes and links on every pull request
-at no model cost, and an opt-in audit agent reports knowledge that has drifted from the code
-without changing anything.
+at no model cost, and an opt-in audit agent rereads the pages each pull request may
+have outdated and comments on them, without changing anything.
 
 kmctl lives in the kmctl repository beside
 [kmaudit](../kmaudit/README.md), which checks what a folder of markdown docs
@@ -289,7 +289,8 @@ still true; that takes judgment. So kmctl does two things instead:
   that prints the briefing. `kmctl plugin patch` adds the few pieces APM
   cannot install yet.
 - **A GitHub Action** that runs `kmctl check` on every pull request for free,
-  and an opt-in audit you run by hand or on a schedule.
+  and an opt-in audit that, on a pull request, rereads each `.okf/` and
+  `docs/` page whose sources the pull request changed and posts one comment.
 
 ## Quick start
 

@@ -397,3 +397,5 @@
 - Verified `decisions/0056-the-ci-action-fails-a-pull-request-whose-summary-is-behind` (human:jasper).
 - Verified `decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated` (human:jasper).
 - Verified `decisions/0058-a-draft-decision-does-not-put-the-summary-behind` (human:jasper).
+- Added `decisions/0060-the-ci-agent-only-rereads-the-pages-a-pull-request-changed` with `kmctl new decision`.
+- Added `prototypes/pr-reread-scope` with `kmctl new prototype`.
