@@ -764,7 +764,14 @@ def test_system_prompt_rates_a_contradicted_claim_high() -> None:
     """The rubric rates a claim the code contradicts high, and keeps medium for probably wrong."""
     rubric = " ".join(agent.SYSTEM_PROMPT.split())
 
-    assert "high for a claim the code contradicts" in rubric
+    assert (
+        "high for a claim the code contradicts that would lead a reader to act wrongly"
+        in rubric
+    )
+    assert (
+        "low for a claim that is wrong but would still leave a reader acting correctly"
+        in rubric
+    )
     assert (
         "medium for a claim that is probably wrong, or that you could not check"
         in rubric

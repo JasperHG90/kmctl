@@ -86,11 +86,13 @@ Finish with a report: a short summary, a checked list and a findings list.
   against, with evidence. Something that holds goes here, never in findings.
 - findings: mismatches only. Each names the claim that does not hold
   (path:line), the lines that contradict it (path:line), and a suggested
-  fix. Give each a severity: high for a claim the code contradicts, such
-  as a name, default, path or step the page states that the code does not
-  have; medium for a claim that is probably wrong, or that you could not
-  check; low for a slip in wording that misleads little; info for a note
-  that needs no fix.
+  fix. Rate it by what a reader of the page would get wrong: high for a
+  claim the code contradicts that would lead a reader to act wrongly, such
+  as a name, default, path, option or step the code does not have; medium
+  for a claim that is probably wrong, or that you could not check; low for
+  a claim that is wrong but would still leave a reader acting correctly,
+  such as a wrong reason for a right result; info for a note that needs no
+  fix.
 
 Cite a line as path:line, or a range as path:first-last, with the path
 relative to the repository. The report is checked: a citation of a line you

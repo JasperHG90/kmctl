@@ -107,6 +107,8 @@ The first live run, on pull request #83, found three real mistakes and
 posted none, because `min_severity` defaulted to `high` and the agent's
 rubric rated a claim the code contradicts as medium or low. `min_severity`
 now defaults to `low`, so the comment lists every finding but notes, and
-the system prompt rates a claim the code contradicts as high. Over the 4
+the system prompt rates a finding by what a reader would get wrong: high
+when the page would lead them to act wrongly, low when it is wrong but they
+would still act correctly. Over the 4
 live pull request runs so far, a comment at `low` would have held 1 to 6
 findings.

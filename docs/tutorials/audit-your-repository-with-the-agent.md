@@ -202,10 +202,11 @@ git branch -D try-the-audit
 | `checked` | One entry per page compared: `subject`, `against` (what it was compared with) and `evidence` (`path:line` strings). |
 | `findings` | One entry per mismatch: `title`, `severity`, `path` (the file it is about), `summary`, `claim` (`path:line`), `contradicted_by` (`path:line` strings) and `fix`. |
 
-A finding's `severity` is `high` for a claim the code contradicts,
-`medium` for a claim probably wrong or that the agent could not check,
-`low` for a slip in wording that misleads little, and `info` for a note
-that needs no fix. The comment on a pull request lists every finding at
+A finding's `severity` is `high` for a claim the code contradicts that
+would lead a reader to act wrongly, `medium` for a claim probably wrong or
+that the agent could not check, `low` for a claim that is wrong but would
+still leave a reader acting correctly, and `info` for a note that needs no
+fix. The comment on a pull request lists every finding at
 `low` or above.
 
 To run the agent on your pull requests and post its report as a comment,
