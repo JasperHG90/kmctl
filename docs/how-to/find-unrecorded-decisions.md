@@ -4,6 +4,9 @@ stale_after: 2027-02-16
 sources:
   - resource: "packages/kmctl/apm/.apm/skills/decision-gaps/SKILL.md"
   - resource: "packages/kmctl/src/kmctl/candidates.py"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T20:44:03Z
 ---
 
 # Find unrecorded decisions

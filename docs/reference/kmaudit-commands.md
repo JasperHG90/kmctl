@@ -3,6 +3,9 @@ description: "Every kmaudit command and MCP tool, with their options."
 sources:
   - packages/kmaudit/src/kmaudit/cli.py
   - packages/kmaudit/src/kmaudit/mcp_server.py
+verified:
+  - by: human:jasper
+    at: 2026-11-27T20:44:03Z
 ---
 
 # kmaudit commands

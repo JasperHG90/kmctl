@@ -5,6 +5,9 @@ sources:
   - resource: "packages/kmctl/src/kmctl/accept.py"
   - resource: "packages/kmctl/src/kmctl/checks.py"
   - resource: "action/knowledge-ci.sh"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T20:44:03Z
 ---
 
 # Accept or drop draft decisions before review

@@ -1,5 +1,8 @@
 ---
 description: "Start a new repository from kmctl's copier template, keep it current with just upgrade, and move a project made from the old kmctl-starter repository."
+verified:
+  - by: human:jasper
+    at: 2026-11-27T20:44:03Z
 ---
 
 # Start a repository with kmctl-starter

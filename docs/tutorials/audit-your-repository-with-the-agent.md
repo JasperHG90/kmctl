@@ -3,6 +3,9 @@ description: "Run the CI agent on your machine against a branch, read its report
 sources:
   - resource: "action/agent.py"
   - resource: "action/prompt.md"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T20:44:03Z
 ---
 
 # Audit your repository with the agent

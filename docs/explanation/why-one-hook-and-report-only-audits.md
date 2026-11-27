@@ -1,5 +1,8 @@
 ---
 description: "Why the session briefing is the only hook and why audits only report."
+verified:
+  - by: human:jasper
+    at: 2026-11-27T20:44:03Z
 ---
 
 # Why one hook and report-only audits
