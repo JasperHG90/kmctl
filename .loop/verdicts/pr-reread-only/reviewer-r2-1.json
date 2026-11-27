@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.1",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "changed_pages misses a page whose source file the pull request renamed or moved",
+      "anchor": "action/agent.py:433",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "resolved",
+      "claim": "_number is defined twice",
+      "anchor": "action/agent.py:200",
+      "category": "nit",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "dcc6b1270e8564da934dd258787f1317283312e400103a9520e197a775fccd9d",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.4.0",
+  "at": "2026-11-27T11:11:50+00:00",
+  "checklist": null
+}
