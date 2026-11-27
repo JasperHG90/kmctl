@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "verify-folder-and-path-ids",
-  "stage": "building",
+  "stage": "verifying",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 0,
@@ -129,8 +129,14 @@
       "to": "building",
       "at": "2026-11-27T09:53:13+00:00",
       "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-27T10:07:02+00:00",
+      "by": "advance"
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-27T10:06:53+00:00"
+  "at": "2026-11-27T10:07:02+00:00"
 }
