@@ -420,6 +420,10 @@ Publish mode takes two more:
              mode: publish
    ```
 
+A project made from the copier template gets this workflow by answering
+yes to `pr_audit`
+([Start a repository with kmctl-starter](start-a-repository-with-kmctl-starter.md)).
+
 `timeout-minutes` on the step is a second limit after `timeout`, so a stuck
 run cannot hold the runner for GitHub's six-hour default.
 

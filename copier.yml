@@ -46,6 +46,33 @@ adversarial_review:
     there the rule uses a general sub-agent.
   default: true
 
+pr_audit:
+  type: bool
+  help: >-
+    Add .github/workflows/knowledge-audit.yml: on each pull request from the
+    repository, a model rereads the .okf/ and docs/ pages whose sources the
+    pull request changed and posts one comment on which still hold (kmctl's
+    ADR 0060). It never fails a check. It needs the model's API key in the
+    AUDIT_API_KEY secret; until you add it, the audit skips with a notice.
+  default: false
+
+audit_model:
+  type: str
+  when: "{{ pr_audit }}"
+  help: The model name the endpoint below serves.
+  default: deepseek-v4.1-flash
+  validator: "{% if pr_audit and not audit_model %}Name a model.{% endif %}"
+
+audit_base_url:
+  type: str
+  when: "{{ pr_audit }}"
+  help: >-
+    The model endpoint's OpenAI-compatible base URL, such as
+    https://api.openai.com/v1, https://openrouter.ai/api/v1 or Ollama Cloud's
+    https://ollama.com/v1. The AUDIT_API_KEY secret holds its key.
+  default: https://ollama.com/v1
+  validator: "{% if pr_audit and not audit_base_url.startswith('http') %}Give a URL that starts with http:// or https://.{% endif %}"
+
 kmctl_ref:
   type: str
   help: >-
