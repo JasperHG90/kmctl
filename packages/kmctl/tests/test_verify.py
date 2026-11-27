@@ -547,3 +547,137 @@ def test_verify_an_id_given_twice_is_verified_once(tmp_path: Path) -> None:
     assert result.exit_code == 0, result.output
     assert len(front_matter(path)["verified"]) == 1
     assert result.stdout.count("verified decisions/0001-x") == 1
+
+
+def _section(root: Path) -> None:
+    """Three decision records with a section index, committed in ``root``."""
+    for n in ("0001-a", "0002-b", "0003-c"):
+        _concept(root, f"decisions/{n}.md", "")
+    _write(
+        root, ".okf/decisions/index.md", "---\ntitle: Decisions\n---\n\n# Decisions\n"
+    )
+    _commit(root)
+
+
+@pytest.mark.parametrize("cid", ["decisions", "decisions/", ".okf/decisions"])
+def test_verify_folder_id_verifies_every_page(tmp_path: Path, cid: str) -> None:
+    root = _repo(tmp_path)
+    _concept(root, "manifesto.md", "")
+    _section(root)
+    index = (root / ".okf/decisions/index.md").read_bytes()
+
+    result = _verify(root, cid, "--json")
+
+    assert result.exit_code == 0, result.output
+    ids = [json.loads(line)["id"] for line in result.stdout.splitlines()]
+    assert ids == ["decisions/0001-a", "decisions/0002-b", "decisions/0003-c"]
+    for n in ("0001-a", "0002-b", "0003-c"):
+        path = root / f".okf/decisions/{n}.md"
+        assert front_matter(path)["verified"][-1]["by"] == "human:jasper"
+    log = (root / ".okf/log.md").read_text().splitlines()
+    assert sum("Verified `decisions/" in line for line in log) == 3
+    assert (root / ".okf/decisions/index.md").read_bytes() == index
+    assert "verified" not in front_matter(root / ".okf/manifesto.md")
+
+
+def test_verify_docs_folder_id(tmp_path: Path) -> None:
+    root = _repo(tmp_path)
+    page = "---\ndescription: A page.\n---\n\n# Page\n"
+    _write(root, "docs/how-to/run.md", page)
+    _write(root, "docs/how-to/stop.md", page)
+    _write(root, "docs/how-to/README.md", "# How-to\n")
+    _write(root, "docs/reference/cli.md", page)
+    _commit(root)
+    before = _files(root)
+
+    result = _verify(root, "docs/how-to", "--json")
+
+    assert result.exit_code == 0, result.output
+    ids = [json.loads(line)["id"] for line in result.stdout.splitlines()]
+    assert ids == ["docs/how-to/run", "docs/how-to/stop"]
+    for rel in ("docs/how-to/run.md", "docs/how-to/stop.md"):
+        assert front_matter(root / rel)["verified"][-1]["by"] == "human:jasper"
+    after = _files(root)
+    for rel in ("docs/how-to/README.md", "docs/reference/cli.md"):
+        assert after[rel] == before[rel]
+
+
+@pytest.mark.parametrize(
+    ("given", "cid"),
+    [
+        (".okf/decisions/0001-a.md", "decisions/0001-a"),
+        (".okf/manifesto.md", "manifesto"),
+        ("decisions/0001-a.md", "decisions/0001-a"),
+        ("docs/how-to/run.md", "docs/how-to/run"),
+    ],
+)
+def test_verify_repository_root_path(tmp_path: Path, given: str, cid: str) -> None:
+    root = _repo(tmp_path)
+    _concept(root, "manifesto.md", "")
+    _write(root, "docs/how-to/run.md", "---\ndescription: A page.\n---\n\n# Run\n")
+    _section(root)
+
+    result = _verify(root, given, "--json")
+
+    assert result.exit_code == 0, result.output
+    assert json.loads(result.stdout)["id"] == cid
+
+
+@pytest.mark.parametrize(
+    "cid",
+    [
+        "decisions/index",
+        ".okf/decisions/index.md",
+        "log",
+        "index",
+        "handoffs",
+        ".okf/handoffs/",
+        "docs/how-to/README",
+        "prototypes/p/run",
+        "empty",
+        ".okf/docs/how-to/run.md",
+    ],
+)
+def test_verify_refuses_a_file_review_due_never_lists(tmp_path: Path, cid: str) -> None:
+    root = _repo(tmp_path)
+    _section(root)
+    _concept(root, "handoffs/2026-10-01-x.md", "stale_after: 2999-01-01T00:00:00Z\n")
+    _write(root, "docs/how-to/README.md", "# How-to\n")
+    _write(root, "docs/how-to/run.md", "---\ndescription: A page.\n---\n\n# Run\n")
+    _concept(root, "prototypes/p/README.md", "")
+    _concept(root, "prototypes/p/run.md", "")
+    (root / ".okf/empty").mkdir()
+    _write(root, ".okf/empty/.keep", "")
+    _commit(root)
+    before = _files(root)
+
+    result = _verify(root, cid)
+
+    assert result.exit_code == 1, result.output
+    assert result.stdout == ""
+    lines = result.stderr.strip().splitlines()
+    assert len(lines) == 1 and lines[0].startswith("kmctl verify: refused:"), lines
+    assert _files(root) == before
+
+
+@pytest.mark.parametrize(
+    "cid", ["decisions/*", ".okf/decisions/*", "decisions/index", "decisions/0099-none"]
+)
+def test_verify_refusal_names_the_folder_form(tmp_path: Path, cid: str) -> None:
+    root = _repo(tmp_path)
+    _section(root)
+
+    result = _verify(root, cid)
+
+    assert result.exit_code == 1, result.output
+    assert "kmctl verify decisions --by human:jasper" in result.stderr
+
+
+def test_verify_help_names_the_folder_and_path_forms() -> None:
+    result = _invoke("verify", "--help")
+
+    assert result.exit_code == 0
+    text = " ".join(result.stdout.split())
+    assert "a folder" in text
+    assert ".okf/decisions/0001-x.md" in text
+    assert "kmctl verify decisions --by human:jasper" in text

@@ -65,7 +65,8 @@ an audit finds it holds. To clear one, the person reads it and confirms it is
 still right. Before review, `kmctl review due --base origin/main` lists the
 pages the branch made due. When the person asks you to record their check,
 run one `kmctl verify <id> <id> ... --by human:<their id>` for every page they
-confirmed (ask for their id if you do not know it); add `--stale-after 6m`
+confirmed (ask for their id if you do not know it), or give a folder such as
+`decisions` only when they read every page in it; add `--stale-after 6m`
 when a page is listed as `stale_after passed`. Never run it on an audit
 verdict alone, or for a concept they did not confirm.
 
