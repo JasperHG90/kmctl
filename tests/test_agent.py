@@ -393,6 +393,23 @@ def test_scope_matches_folder_source_as_prefix(repo: Path) -> None:
     }
 
 
+def test_scope_takes_a_page_whose_source_was_renamed(repo: Path) -> None:
+    """A page that still names a moved file's old path is the one most likely outdated."""
+    (repo / "lib").mkdir()
+    (repo / "lib" / "old.py").write_text("".join(f"line {n}\n" for n in range(20)))
+    _page(repo, "docs/reference/old.md", ["lib/old.py"], status=None)
+    _git(repo, "branch", "-D", "base")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "base")
+    _git(repo, "branch", "base")
+    _git(repo, "mv", "lib/old.py", "lib/new.py")
+    _git(repo, "commit", "-q", "-m", "move")
+
+    pages = {p.path: p.files for p in agent.changed_pages(repo, "base")}
+
+    assert pages == {"docs/reference/old.md": ["lib/old.py"]}
+
+
 def test_nothing_in_scope_calls_no_model(
     repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

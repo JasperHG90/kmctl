@@ -206,15 +206,6 @@ def _number(raw: object, default: int, low: int, high: int) -> int:
     return max(low, min(high, value))
 
 
-def _number(raw: object, default: int, low: int, high: int) -> int:
-    """Read an integer argument, falling back to ``default`` and clamping it."""
-    try:
-        value = int(raw) if raw is not None else default
-    except (TypeError, ValueError):
-        value = default
-    return max(low, min(high, value))
-
-
 def make_tools(ws: Workspace) -> list:
     """Return the agent's tools, bound to ``ws``: read_file, search_files and list_files."""
 
@@ -428,7 +419,8 @@ def changed_pages(repo: Path, base: str) -> list[Page]:
     """Return each page whose ``sources`` name a file changed since ``base``.
 
     The change is ``git diff BASE...HEAD`` in ``repo``, with paths relative to
-    ``repo``, where pages write their ``sources``. URL sources are skipped, and
+    ``repo``, where pages write their ``sources``. A renamed or moved file
+    counts under its old path and its new one. URL sources are skipped, and
     so is a page whose status is deprecated or superseded.
 
     Raises
@@ -436,7 +428,11 @@ def changed_pages(repo: Path, base: str) -> list[Page]:
     UsageError
         If git cannot compare ``base`` with ``HEAD``.
     """
-    changed = git_lines(repo, "diff", "--name-only", "--relative", f"{base}...HEAD")
+    # --no-renames lists a renamed file's old path too, so a page that still
+    # names the old path comes into scope.
+    changed = git_lines(
+        repo, "diff", "--name-only", "--no-renames", "--relative", f"{base}...HEAD"
+    )
     found = []
     for path in candidate_pages(repo):
         meta = front_matter(path)
