@@ -41,8 +41,8 @@ jobs:
           AUDIT_API_KEY: {% raw %}${{ secrets.AUDIT_API_KEY }}{% endraw %}
         with:
           mode: audit
-          base_url: {{ audit_base_url }}
-          model: {{ audit_model }}
+          base_url: {{ audit_base_url | tojson }}
+          model: {{ audit_model | tojson }}
           api_key_env: AUDIT_API_KEY
         uses: JasperHG90/kmctl@{{ kmctl_ref }}
       # Add your own steps below this line. just upgrade rewrites the pin

@@ -646,6 +646,22 @@ def test_pr_audit_on_writes_the_audit_workflow(template: Path, tmp_path: Path) -
     assert "secrets" not in yaml.safe_dump(publish)
 
 
+@pytest.mark.parametrize("model", ["@cf/meta/llama-3.1-8b-instruct", "foo #bar", "1.5"])
+def test_pr_audit_quotes_the_model_answers(
+    template: Path, tmp_path: Path, model: str
+) -> None:
+    """A model name YAML would misread (a leading @, a #, a number) reaches the workflow as written."""
+    out = tmp_path / "demo"
+
+    res = _copier(template, out, "pr_audit=true", f"audit_model={model}")
+
+    assert res.returncode == 0, res.stderr
+    run = _kmctl_step(
+        _audit_steps(yaml.safe_load((out / AUDIT_WF).read_text()), "audit")
+    )
+    assert run["with"]["model"] == model
+
+
 @pytest.mark.parametrize("data", [(), ("pr_audit=false",)])
 def test_pr_audit_off_writes_no_workflow(
     template: Path, tmp_path: Path, data: tuple[str, ...]
