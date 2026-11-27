@@ -6,12 +6,12 @@ tags:
 - eval
 generated:
   by: process:loopctl/2.4.0
-  at: '2026-11-27T10:37:30+00:00'
+  at: '2026-11-27T10:49:18+00:00'
 slug: pr-reread-only
 signoff:
   signer: delegated:jasperginn@gmail.com/claude
-  hash: 8181471d239e2ef28a4d66769bb8a743e00c06132230e8c57b1a825772442373
-  at: '2026-11-27T10:37:30+00:00'
+  hash: 1cef5f73e6676e7a5017baf502422e9cf60e1fe5a2b3925c7defc051cfddaf72
+  at: '2026-11-27T10:49:18+00:00'
 verified: null
 ---
 
@@ -45,7 +45,7 @@ Rows: rows.json; the fields each row takes: loopctl schema eval-rows.
   Fails when: the publish command lacks --pr
 - r14: this repository's knowledge-audit workflow runs on pull_request only, both jobs carry the same-repository condition, only publish has pull-requests: write, and no Langfuse secret is passed
   Fails when: another trigger, a job without the condition, write access on the audit job, or a LANGFUSE variable
-- r15: no doc, record, test or shipped file names a removed audit or option outside Corrections, superseded text, release notes, prototypes and the hermes workflows
+- r15: no doc, record or shipped file names a removed audit or option outside Corrections, superseded text, release notes, prototypes and the hermes workflows; tests may name them to assert they are gone
   Fails when: grep finds a removed name in a live file
 - r16: the draft ADR 0060 exists as a draft and ADR 0005, 0017 and 0057 each end with a Correction that links it
   Fails when: 0060 is missing or not a draft, or one of the three lacks a Correction linking 0060

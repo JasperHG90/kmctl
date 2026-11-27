@@ -87,9 +87,9 @@
   },
   {
    "id": "r15",
-   "behavior": "no doc, record, test or shipped file names a removed audit or option outside Corrections, superseded text, release notes, prototypes and the hermes workflows",
+   "behavior": "no doc, record or shipped file names a removed audit or option outside Corrections, superseded text, release notes, prototypes and the hermes workflows; tests may name them to assert they are gone",
    "fails_when": "grep finds a removed name in a live file",
-   "command": "! git grep -nE 'docs-vs-code|okf-vs-code|okf-vs-docs|okf-vs-change|prompt_file|system_prompt_file|--skills|--context|run_shell|LANGFUSE|issue_title|instructions-root' -- action action.yml docs packages/kmctl/README.md packages/kmctl/tests/test_action.py tests/test_agent.py tests/test_audit.py .github/workflows/knowledge-audit.yml .okf/architecture"
+   "command": "! git grep -nE 'docs-vs-code|okf-vs-code|okf-vs-docs|okf-vs-change|prompt_file|system_prompt_file|--skills|--context|run_shell|LANGFUSE|issue_title|instructions-root' -- action action.yml docs packages/kmctl/README.md .github/workflows/knowledge-audit.yml .okf/architecture"
   },
   {
    "id": "r16",
