@@ -12,3 +12,4 @@
 {"at": "2026-11-27T10:37:36+00:00", "by": "advance", "from": "ready", "kind": "transition", "schema_version": "1.0", "to": "building"}
 {"at": "2026-11-27T10:49:18+00:00", "diff": {"added": [], "changed": {"r15": ["behavior", "command"]}, "removed": []}, "grant": "g10", "hash": "1cef5f73e6676e7a5017baf502422e9cf60e1fe5a2b3925c7defc051cfddaf72", "kind": "signoff", "reason": "r15: the tests name removed flags to assert they are gone, so the grep leaves test files out", "schema_version": "1.0", "signer": "delegated:jasperginn@gmail.com/claude", "step": "eval-sign"}
 {"at": "2026-11-27T10:53:37+00:00", "by": "stamp", "kind": "state-write", "schema_version": "1.0", "stage": "building"}
+{"at": "2026-11-27T10:53:48+00:00", "by": "advance", "from": "building", "kind": "transition", "schema_version": "1.0", "to": "verifying"}
