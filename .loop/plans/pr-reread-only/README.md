@@ -28,8 +28,9 @@ saying which pages still hold and which the change may have outdated.
 Everything from ADR 0005, ADR 0017 and ADR 0057 that does not serve that is
 removed.
 
-`kmctl review due --base` already lists the pages a branch made due; the
-agent's only addition is judging whether each still holds. Over the last 15
+`kmctl review due --base` lists the pages a branch made due, but only those
+with a `verified` entry (ADR 0057's Correction); the agent matches `sources`
+itself, and judges whether each page still holds. Over the last 15
 merged pull requests, the decisions-only scope `okf-vs-change` uses found 64
 pages and the wide scope 72: the 8 more are docs pages
 (`docs/how-to/...`, `docs/reference/...`) that `okf-vs-change` never checks
@@ -46,11 +47,21 @@ publishing or the removed inputs. kmctl is pre-1.0 and its install lines pin a
 release; the operator made that call ("drop the rest"), and the release notes,
 the how-to and the draft ADR say what was removed.
 
+All outcomes ship together in this one ticket: removing the agent's flags
+(O3) breaks `action.yml` (O4) and `knowledge-audit.yml` (O5) unless they
+change in the same commit.
+
+The agent keeps `refuse_tokens`: without a shell it cannot read `/proc`, but
+`read_file` reaches any file in the repository, `.git/config` included, so a
+checkout that kept its token header must still be refused. The environment
+check stays too; it costs nothing.
+
 ## Problems
 
 - P1: The pull request audit, `okf-vs-change`, checks stable decisions only, so a docs page, a non-decision concept or a draft decision the pull request adds is never reread, though `kmctl review due --base` lists pages of every kind (8 docs pages over 15 pull requests, spike:pr-reread-only/1).
 - P2: The agent carries a whole second product the pull request check does not use: three whole-repository audits with their prompts (`docs-vs-code`, `okf-vs-code`, `okf-vs-docs`), scheduled and manual runs, publishing to an issue with CODEOWNERS mentions, `run_shell` with its environment scrubbing and timeout, task and system prompts and context and skills from the repository (and the base-branch checkout that guards them), and Langfuse tracing; each is code, inputs, tests and docs to keep true.
 - P3: The agent's prompt predates three rules it cannot get from the kmctl briefing or the Claude rules, which it never loads: a new decision is a draft the author accepts (ADR 0050), a page that holds is confirmed with `kmctl verify ID ... --by human:<id>` (ADR 0055), and a Correction is followed by `kmctl summary ack` when the summary still holds (ADR 0056).
+- P5: Every push runs the model, even when no page names a changed file.
 - P4: This repository's `.github/workflows/knowledge-audit.yml` runs only by hand and weekly, so the pull request check never runs here.
 
 ## Goals
@@ -72,7 +83,7 @@ the how-to and the draft ADR say what was removed.
 ### O2: Nothing in scope means no model call
 - kind: behaviour
 - goal: G1
-- fixes: P1
+- fixes: P5
 - needs: O1
 - touches: `action/agent.py`, `tests/test_agent.py`
 - checked by: a test that runs `run` with a model that fails when called, on a change no page covers, and gets exit 0 and a report whose summary says no page names a changed file
@@ -84,7 +95,7 @@ the how-to and the draft ADR say what was removed.
 - fixes: P2
 - needs: O1
 - touches: `action/agent.py`, `new:action/prompt.md`, `action/prompts/`, `tests/test_agent.py`
-- checked by: `agent.py run --help` lists only `--model`, `--base-url`, `--api-key-env`, `--base` (required), `--repo`, `--out`, `--timeout`, `--max-requests`; `publish --help` lists `--pr` (required), `--min-severity`, `--title`; tests that the tools are read_file, search_files and list_files only, that the prompt names `kmctl new decision --draft`, `kmctl verify` and `kmctl summary ack`, and that no OpenTelemetry dependency is left in the script header
+- checked by: `agent.py run --help` lists only `--model`, `--base-url`, `--api-key-env`, `--base` (required), `--repo`, `--out`, `--timeout`, `--max-requests`; `publish --help` lists `--pr` (required), `--min-severity`, `--title`; tests that the tools are read_file, search_files and list_files only, that `run` still refuses a checkout whose git config holds a token header, and that no OpenTelemetry dependency is left in the script header
 - seen by: operator
 
 ### O7: The prompt carries the draft, verify and summary rules
@@ -102,7 +113,7 @@ the how-to and the draft ADR say what was removed.
 - fixes: P2
 - needs: O3
 - touches: `action.yml`, `packages/kmctl/tests/test_action.py`
-- checked by: tests that audit mode runs on a same-repository `pull_request`, skips a fork or Dependabot pull request with exit 0, and refuses `schedule` and `workflow_dispatch`; that the inputs `audit`, `prompt`, `prompt_file`, `system_prompt_file`, `context`, `skills` and `mention` are gone; that the agent step passes `--base origin/$GITHUB_BASE_REF` and no base-branch worktree; that publish passes `--pr`
+- checked by: tests that audit mode runs on a same-repository `pull_request`, skips a fork or Dependabot pull request with exit 0, and refuses `schedule` and `workflow_dispatch`; that the inputs `audit`, `prompt`, `prompt_file`, `system_prompt_file`, `context`, `skills` and `mention` are gone; that the agent step passes `--base origin/$GITHUB_BASE_REF` and no base-branch worktree; that publish passes `--pr`; and that the arguments the run and publish steps build, captured from a stub `uv`, parse with `agent.parser()` from the real script, so a flag the agent no longer takes fails the gate
 - seen by: operator
 
 ### O5: This repository runs the reread on its pull requests
@@ -111,7 +122,7 @@ the how-to and the draft ADR say what was removed.
 - fixes: P4
 - needs: O4
 - touches: `.github/workflows/knowledge-audit.yml`, `tests/scripts/test_workflows.py`, `tests/test_audit.py`
-- checked by: workflow tests that it triggers on `pull_request` only, both jobs carry the same-repository condition, only publish has `pull-requests: write`, and no Langfuse secret is passed
+- checked by: workflow tests that it triggers on `pull_request` only, both jobs carry the same-repository condition, only publish has `pull-requests: write`, the audit job checks out with `persist-credentials: false`, no Langfuse secret is passed, and the agent and publish commands it runs parse with `agent.parser()`
 - seen by: operator
 
 ### O6: The records and docs describe only the pull request check
