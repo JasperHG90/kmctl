@@ -15,6 +15,7 @@ on:
       pr:
         description: The number of the pull request to audit; run on its branch.
         required: true
+        type: number
 
 permissions:
   contents: read
@@ -51,9 +52,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
+          PR: ${{ inputs.pr }}
         run: >-
           uv run --no-config --script action/agent.py previous
-          --pr ${{ inputs.pr }}
+          --pr "$PR"
           --resolve ${{ github.sha }}
           --out ${{ runner.temp }}/previous-report
       - name: Hand the previous report on

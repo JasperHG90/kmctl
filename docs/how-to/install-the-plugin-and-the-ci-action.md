@@ -312,7 +312,7 @@ base branch from the commit where the two split. That takes in decisions
 pages, and leaves out deprecated and superseded decisions, handoffs, the
 log and `index.md` pages. A model then rereads each page against the change.
 When no page names a changed file, the agent writes an empty report and
-calls no model, so that push costs nothing.
+calls no model, so that run costs nothing.
 
 The report lists each page the agent checked and what it compared it
 against, and has a finding only for a mismatch: the claim (`path:line`), the
@@ -351,6 +351,13 @@ vendor's own API, or your own server.
 | `api_key_env` | with `base_url`, the name of the variable that holds the key; leave it out for an endpoint that takes no key |
 | `timeout` | how long the agent may run; default `30m` |
 | `report_name` | the artifact's name, in audit and publish mode alike; default `agent-report` |
+| `base`, `head` | on a dispatch, the pull request's base branch and head commit, from the previous job's outputs; on a `pull_request` they come from the event |
+
+Previous mode, in a job of its own before the audit, takes `pr` (on a
+dispatch, the pull request's number; on a `pull_request` it comes from the
+event) and `title`. On a dispatch it looks the pull request up, refuses one
+that is closed, a draft, from a fork, or not at the run's commit, and sets
+the outputs `pr`, `base` and `head`.
 
 Publish mode takes two more:
 
@@ -358,6 +365,7 @@ Publish mode takes two more:
 |---|---|
 | `min_severity` | the lowest severity (`info`, `low`, `medium` or `high`) that posts or updates the comment; default `low` |
 | `title` | the comment's heading, which also marks it so the next run replaces it; default `Knowledge audit` |
+| `pr` | on a dispatch, the pull request to post to, from the previous job's `pr` output |
 
 1. Add a repository secret named `AUDIT_API_KEY` with your provider's API
    key. Skip this for an endpoint that takes no key.
@@ -379,6 +387,7 @@ Publish mode takes two more:
          pr:
            description: The pull request to audit; run on its branch.
            required: true
+           type: number
 
    # A composite action cannot set token permissions; the calling workflow does.
    permissions:

@@ -52,7 +52,7 @@ inputs:
       its own steps. publish runs in a separate job (needs: the audit job,
       and pull-requests: write): it downloads report_name and posts it with
       action/agent.py publish as one comment on the pull request, replaced on
-      each push. With no report it posts nothing and passes. The agent's job
+      each run. With no report it posts nothing and passes. The agent's job
       and this one share nothing but the artifact, so nothing the agent
       changed runs with the token.
     required: false
@@ -172,10 +172,11 @@ runs:
         KMCTL_DRAFTS: ${{ inputs.drafts }}
         KMCTL_SUMMARY: ${{ inputs.summary }}
       run: bash "${{ github.action_path }}/action/knowledge-ci.sh"
-    # The API key reaches the model, so a fork's or Dependabot's pull request,
-    # which gets no secrets, is skipped and every other event is refused
-    # (ADR 0060). A skip passes: the later steps check the run output, since
-    # exit 0 alone does not skip them.
+    # The API key reaches the model. A workflow_dispatch runs when the base
+    # input arrives from the previous job, which resolved the pull request
+    # (ADR 0061). On a pull_request, a fork's or Dependabot's, which gets no
+    # secrets, is skipped. Every other event is refused. A skip passes: the
+    # later steps check the run output, since exit 0 alone does not skip them.
     - name: Check the event
       id: event
       if: inputs.mode == 'audit'
@@ -250,7 +251,8 @@ runs:
     # Previous mode: a job of its own, with pull-requests: read and actions:
     # read, finds the audit comment, follows its run link and downloads that
     # run's report, then hands it to the audit job as previous-report. No
-    # comment, link or artifact: it uploads nothing and passes.
+    # comment, link or artifact: it uploads nothing and passes. On a
+    # dispatch it first resolves the pull request, and a refusal fails it.
     - name: Fetch the previous report
       id: fetch
       if: inputs.mode == 'previous'
