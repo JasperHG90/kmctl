@@ -40,7 +40,7 @@ from typing import Literal
 os.environ.setdefault("PYDANTIC_AI_NO_BANNER", "1")
 
 import yaml
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from pydantic_ai import Agent, ModelRetry
 from pydantic_ai.exceptions import UnexpectedModelBehavior
 from pydantic_ai.models import Model
@@ -135,6 +135,12 @@ class Finding(BaseModel):
             "stands; leave it out for a new finding."
         ),
     )
+
+    @field_validator("earlier", mode="before")
+    @classmethod
+    def _blank_is_none(cls, value: object) -> object:
+        """Read an empty or blank ``earlier`` as no earlier finding, so it counts as new."""
+        return None if isinstance(value, str) and not value.strip() else value
 
 
 class Report(BaseModel):
@@ -499,7 +505,7 @@ def pages_touched(repo: Path, since: str, head: str) -> set[str]:
     files = git_lines(
         repo, "diff", "--name-only", "--no-renames", "--relative", f"{since}..{head}"
     )
-    touched = set()
+    touched = {f for f in files if is_page(f)}
     for path in candidate_pages(repo):
         rel = path.relative_to(repo).as_posix()
         if rel in files:
@@ -562,6 +568,19 @@ def state_problems(report: Report, previous: Report, touched: set[str]) -> list[
     problems += [
         f"{eid}: no earlier finding has that id"
         for eid in sorted((carried | set(report.fixed)) - set(ids))
+    ]
+    problems += [
+        f"{eid}: both kept as a finding's earlier and listed in fixed; it is one or the other"
+        for eid in sorted(carried & set(report.fixed))
+    ]
+    kept = [f.earlier for f in report.findings if f.earlier]
+    problems += [
+        f"{eid}: kept by more than one finding"
+        for eid in sorted({e for e in kept if kept.count(e) > 1})
+    ]
+    problems += [
+        f"{eid}: listed in fixed more than once"
+        for eid in sorted({e for e in report.fixed if report.fixed.count(e) > 1})
     ]
     for f in report.findings:
         page = page_path(f.claim).split(":", 1)[0]
@@ -932,15 +951,18 @@ def run(args: argparse.Namespace, model: Model | str | None = None) -> int:
     if note:
         print(f"agent: {note}", file=sys.stderr)
     if not pages:
-        empty = Report(
-            summary=(
-                f"No page under .okf/ or docs/ names a file this change touched "
-                f"(compared with {args.base}) in its sources, so nothing was reread."
-            ),
-            checked=[],
-            findings=[],
-            commit=head,
+        summary = (
+            f"No page under .okf/ or docs/ names a file this change touched "
+            f"(compared with {args.base}) in its sources, so nothing was reread."
         )
+        if previous is not None and previous.findings:
+            summary += (
+                f" The previous report's {len(previous.findings)} finding(s) were "
+                "not rechecked, since no page is in scope now."
+            )
+        if note:
+            summary += f" ({note})"
+        empty = Report(summary=summary, checked=[], findings=[], commit=head)
         write_report(Path(args.out), empty, b"[]")
         return 0
     if model is None:
@@ -1089,14 +1111,16 @@ def previous(args: argparse.Namespace) -> int:
                 file=sys.stderr,
             )
             return 0
-        match = RUN_LINK.search(str(comment.get("body", "")))
+        # Publish writes the run link last, after the text the model wrote.
+        links = RUN_LINK.findall(str(comment.get("body", "")))
+        match = links[-1] if links else None
         if match is None:
             print(
                 "agent: the audit comment links no run; nothing to fetch.",
                 file=sys.stderr,
             )
             return 0
-        run_id = match.group(1)
+        run_id = match
         try:
             gh("run", "download", run_id, "-n", args.artifact, "-D", args.out)
         except GhFailed as err:
@@ -1106,8 +1130,12 @@ def previous(args: argparse.Namespace) -> int:
             )
             return 0
     except GhFailed as err:
-        print(f"agent: {err}", file=sys.stderr)
-        return 1
+        # The audit must still run: without the previous report it starts fresh.
+        print(
+            f"agent: could not read the audit comment; starting without a previous report: {err}",
+            file=sys.stderr,
+        )
+        return 0
     print(
         f"agent: downloaded the report of run {run_id} to {args.out}", file=sys.stderr
     )
@@ -1299,9 +1327,10 @@ def parser() -> argparse.ArgumentParser:
             "Find the audit comment on pull request --pr (marked with --title), "
             "take the workflow run its link names, and download that run's "
             "--artifact into --out with gh. With no comment, no link, or no "
-            "artifact left, download nothing and exit 0. Needs gh, GH_TOKEN, "
-            "pull-requests: read and actions: read; run it in a job of its own, "
-            "not the agent's. Exit codes: 0 done or nothing to fetch, 1 gh failed."
+            "artifact left, or when gh fails, download nothing and exit 0, so the "
+            "audit starts without a previous report rather than not at all. Needs "
+            "gh, GH_TOKEN, pull-requests: read and actions: read; run it in a job "
+            "of its own, not the agent's. Exit code: 0."
         ),
     )
     v.add_argument(

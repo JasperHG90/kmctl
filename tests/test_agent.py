@@ -28,7 +28,6 @@ agent = importlib.util.module_from_spec(_spec)
 sys.modules["ci_agent"] = agent
 _spec.loader.exec_module(agent)
 
-#: Cites only README.md, which Recorder reads before it hands the report in.
 #: The fields of a report the run sets, not the model.
 RUN_FIELDS = ("fixed", "commit", "previous_commit", "fixed_titles")
 
@@ -42,6 +41,7 @@ def _model_part(report: dict) -> dict:
     return out
 
 
+#: Cites only README.md, which Recorder reads before it hands the report in.
 REPORT = {
     "summary": "One page drifted.",
     "checked": [
@@ -1381,3 +1381,104 @@ def test_previous_writes_nothing_without_a_comment_or_link(
         json.loads(line)[:2] == ["run", "download"]
         for line in calls.read_text().splitlines()
     )
+
+
+def test_blank_earlier_counts_as_new(
+    stateful: tuple[Path, str], tmp_path: Path
+) -> None:
+    """An empty earlier is no earlier finding, so the unchanged-page rule holds it."""
+    repo, prev = stateful
+    previous = _previous_file(tmp_path, prev, [])
+    blank = _finding("blank", "docs/how-to/other.md", earlier="")
+    rec = Recorder(READ_PAGES, reports=[_report([blank], []), _report([], [])])
+
+    assert _main(repo, tmp_path, FunctionModel(rec), "--previous", str(previous)) == 0
+
+    (retry,) = rec.retries
+    assert "blank: a new finding on docs/how-to/other.md" in retry
+    assert agent.Finding.model_validate(blank).earlier is None
+
+
+def test_validator_refuses_an_id_both_kept_and_fixed_or_repeated(
+    stateful: tuple[Path, str], tmp_path: Path
+) -> None:
+    repo, prev = stateful
+    previous = _previous_file(
+        tmp_path, prev, [_finding("old", "docs/how-to/run-it.md")]
+    )
+    kept = _finding("old", "docs/how-to/run-it.md", earlier="e1")
+    rec = Recorder(
+        READ_PAGES,
+        reports=[_report([kept, kept], ["e1", "e1"]), _report([kept], [])],
+    )
+
+    assert _main(repo, tmp_path, FunctionModel(rec), "--previous", str(previous)) == 0
+
+    (retry,) = rec.retries
+    assert "e1: both kept as a finding's earlier and listed in fixed" in retry
+    assert "e1: kept by more than one finding" in retry
+    assert "e1: listed in fixed more than once" in retry
+
+
+def test_new_finding_on_a_changed_index_page_is_kept(
+    repo: Path, tmp_path: Path
+) -> None:
+    """A changed index.md, the log or a handoff counts as changed, though no page lists them as sources."""
+    (repo / ".okf" / "decisions").mkdir(parents=True)
+    (repo / ".okf" / "decisions" / "index.md").write_text("# index\n")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-qm", "index")
+    prev = _git(repo, "rev-parse", "HEAD").strip()
+    (repo / ".okf" / "decisions" / "index.md").write_text("# index\nmore\n")
+    _git(repo, "commit", "-qam", "edit index")
+
+    assert ".okf/decisions/index.md" in agent.pages_touched(repo, prev, "HEAD")
+
+
+def test_previous_starts_fresh_when_gh_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """A failed comments call exits 0, so the audit job still runs, without a previous report."""
+    bin_dir = tmp_path / "fail-gh"
+    bin_dir.mkdir()
+    (bin_dir / "gh").write_text("#!/bin/sh\nexit 4\n")
+    (bin_dir / "gh").chmod(0o755)
+    monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
+    out = tmp_path / "prev"
+
+    assert agent.main(["previous", "--pr", "12", "--out", str(out)]) == 0
+
+    assert not out.exists()
+    assert "starting without a previous report" in capsys.readouterr().err
+
+
+def test_previous_takes_the_last_run_link(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A run link the model quoted earlier in the comment does not win over publish's own."""
+    mark = agent.COMMENT_MARK.format(title="Knowledge audit")
+    body = (
+        f"{mark}\nSee https://github.com/o/r/actions/runs/111 in the text.\n"
+        "Run and its report artifact: https://github.com/o/r/actions/runs/222\n"
+    )
+    _prev_gh(tmp_path, monkeypatch, [{"id": 1, "body": body}])
+    out = tmp_path / "prev"
+
+    assert agent.main(["previous", "--pr", "12", "--out", str(out)]) == 0
+
+    assert json.loads((out / "report.json").read_text()) == {"run": "222"}
+
+
+def test_empty_scope_notes_the_previous_findings(tmp_path: Path, repo: Path) -> None:
+    """With nothing in scope, the summary says the earlier findings were not rechecked."""
+    head = _git(repo, "rev-parse", "HEAD").strip()
+    _git(repo, "branch", "-D", "base")
+    _commit_change(repo, "unrelated.txt")
+    previous = _previous_file(tmp_path, head, [_finding("x", "docs/how-to/run-it.md")])
+
+    assert (
+        _main(repo, tmp_path, FunctionModel(_never), "--previous", str(previous)) == 0
+    )
+
+    report = json.loads((tmp_path / "out" / "report.json").read_text())
+    assert "1 finding(s) were not rechecked" in report["summary"]
