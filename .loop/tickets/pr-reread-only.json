@@ -10,8 +10,8 @@
   "blocker": null,
   "fix": null,
   "ask": null,
-  "split": null,
-  "split_plan_hash": null,
+  "split": "j-20261127T103235+0000-ab3056ac",
+  "split_plan_hash": "1047908c155b7d86db8eae14c917c7f7c7dd44dd33df3726672ed6cc1b348ece",
   "split_hold": false,
   "commit_sha": null,
   "closed_outside": false,
@@ -44,5 +44,5 @@
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-27T10:30:11+00:00"
+  "at": "2026-11-27T10:32:35+00:00"
 }
