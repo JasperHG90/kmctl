@@ -6,10 +6,10 @@ tags:
 - spike
 generated:
   by: process:loopctl/2.4.0
-  at: '2026-11-27T10:32:10+00:00'
+  at: '2026-11-27T10:32:21+00:00'
 slug: pr-reread-only
 n: 1
-outcome_written: false
+outcome_written: true
 ---
 
 # Spike pr-reread-only/1
@@ -24,7 +24,7 @@ python /tmp/claude-1000/-home-vscode-workspace/55c11e59-8512-407e-a916-04be24655
 
 ## Outcome
 
-Not written yet: `loopctl plan spike-note pr-reread-only 1`.
+Widening adds pages. Over the last 15 merged pull requests from origin/main (91b5ab5a back to 6de2f9f1), the stable-decisions scope found 64 pages and the wide scope 72; the 8 more are docs pages, 2 each in #72, #74, #77 and its loop merge. Architecture and practices pages name no sources today, so they add none. The risk does not hold; the script is the prototype pr-reread-scope.
 
 ## Files
 
