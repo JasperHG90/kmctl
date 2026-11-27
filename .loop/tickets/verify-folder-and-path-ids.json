@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "verify-folder-and-path-ids",
-  "stage": "verifying",
+  "stage": "fixing",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 1,
@@ -102,8 +102,8 @@
     "returned": {},
     "chosen": {},
     "skipped": [],
-    "closed": false,
-    "outcome": null
+    "closed": true,
+    "outcome": "fail"
   },
   "plan_hash": "951d4d8ab18ef6d72d31a982e77291d9f9a3618e4d2cb005838bd81f4f4bc44c",
   "intent": {
@@ -135,8 +135,14 @@
       "to": "verifying",
       "at": "2026-11-27T10:07:02+00:00",
       "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-27T10:13:24+00:00",
+      "by": "review close"
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-27T10:07:03+00:00"
+  "at": "2026-11-27T10:13:24+00:00"
 }
