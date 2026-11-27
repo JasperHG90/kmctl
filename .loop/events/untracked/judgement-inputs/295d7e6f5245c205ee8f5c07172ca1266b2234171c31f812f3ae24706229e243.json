@@ -1,0 +1,1 @@
+{"ask":"Yes. Make this better. (kmctl verify: accept a folder id so 'kmctl verify decisions' verifies every concept under .okf/decisions/ except index; accept .okf/-prefixed paths with .md so shell globs from the repo root work; when an id names a folder the refusal suggests the folder form)"}
