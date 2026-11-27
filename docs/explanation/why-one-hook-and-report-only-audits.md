@@ -35,13 +35,13 @@ checks what is due: architecture pages against the code, decisions against
 later decisions and the code, practices against the evidence they cite. That
 auditor has only read and search tools. In CI, turned on as described in
 [Install the plugin and the CI action](../how-to/install-the-plugin-and-the-ci-action.md),
-an agent runs three audits: `.okf/` against the code, `docs/` against the
-code, and `docs/` against `.okf/`. It can also run shell commands, so it can
-use the scripts skills ship. Each audit's findings go to the job summary and
-to that audit's own issue. A fourth audit, on a pull request, checks only
-the decisions whose sources the pull request changed, and posts one comment
-on the pull request. Neither edits `docs/` or `.okf/`, and neither
-marks a concept as verified.
+an agent rereads, on each pull request, every page under `.okf/` and
+`docs/` whose sources the pull request changed, and posts one comment on
+the pull request saying which pages still hold and which the change may
+have outdated
+([ADR 0060](../../.okf/decisions/0060-the-ci-agent-only-rereads-the-pages-a-pull-request-changed.md)).
+It too has only read and search tools. Neither edits `docs/` or `.okf/`,
+and neither marks a concept as verified.
 
 **The free checks.** What a script can check, `kmctl check` checks on every
 pull request: indexes agree with their folders, prototypes have a
@@ -108,17 +108,20 @@ pass; that would make a model's opinion look like a person's check.
 
 **Why the audit is opt-in in CI.** The checks mode costs nothing, so it runs
 on every pull request. Audit mode sends the repository to a model with your
-API key, so it runs only when you add it: by hand, on a schedule, or on a
-pull request from the same repository
-([ADR 0057](../../.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md)).
-A fork's pull request gets no secrets, so it gets no audit. On a pull
-request the agent runs without a shell, so text in the pull request cannot
-make it read the key, and it takes its instructions from the base branch,
-so a pull request cannot quietly loosen the audit that checks it. A
-same-repository author could still change the workflow itself; review and
-branch protection guard against that. The audit runs on the pull request
-because a scheduled report arrives after the change has merged, when the
-author who could fix the decision has moved on.
+API key, so it runs only when you add it, and only on a pull request from
+the same repository
+([ADR 0057](../../.okf/decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md),
+[ADR 0060](../../.okf/decisions/0060-the-ci-agent-only-rereads-the-pages-a-pull-request-changed.md)).
+A fork's pull request gets no secrets, so it gets no audit. When no page
+names a file the pull request changed, the agent calls no model. The agent
+has no shell, so text in the pull request cannot make it read the key, and
+its prompt ships inside the action, so a pull request cannot quietly loosen
+the audit that checks it. A same-repository author could still change the
+workflow itself; review and branch protection guard against that. The audit
+runs on the pull request, not on a schedule, because a scheduled report
+arrives after the change has merged, when the author who could fix the page
+has moved on. To check what is due at any other time, run `/audit` in a
+session.
 
 **The limits.** Nothing here forces knowledge to stay true. An agent can read
 the briefing and still forget to update a decision; a pull request can pass

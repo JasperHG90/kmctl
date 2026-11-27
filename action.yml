@@ -3,10 +3,9 @@ description: >-
   Run kmctl check and kmctl review due on a repository's docs/ and .okf/ bundle,
   write both to the job summary, and fail when kmctl check fails or kmctl review due crashes.
   Concepts that are due for review are reported, never failed. With
-  mode: audit, run the agent in action/agent.py instead, against any model
-  provider, and keep its report as an artifact; with mode: publish, in a
-  later job, post that report to one GitHub issue, or on a pull request to
-  one comment.
+  mode: audit on a pull request, have a model reread the pages whose sources
+  the pull request changed and keep its report as an artifact; with mode:
+  publish, in a later job, post that report as one pull request comment.
 inputs:
   path:
     description: The repository folder to check, relative to the workspace.
@@ -33,27 +32,23 @@ inputs:
   mode:
     description: >-
       checks (the default) runs kmctl check and kmctl review due. audit runs
-      the agent in action/agent.py (PydanticAI) on one of its shipped audits
-      (audit), or on the task prompt or prompt_file gives it. It can read the
-      repository, the context and skills folders, and run shell commands, and
-      it uploads its report as the report_name artifact. It
-      needs model, runs on workflow_dispatch, schedule or a pull_request from
-      the same repository (ADR 0057), and refuses to start when it could read
-      a GitHub token: check out with persist-credentials: false and
-      fetch-depth: 0, and set no GH_TOKEN or GITHUB_TOKEN for the job. A pull
-      request from a fork or from Dependabot gets a notice and no audit, and
-      the step still passes. On a pull request the agent runs without a
-      shell, reads prompt_file, system_prompt_file, context and skills that
-      git tracks from a checkout of the base branch, and gets --base for the
-      okf-vs-change audit. Also set timeout-minutes on the step, since a
-      composite action cannot set it on its own steps. publish runs in a
-      separate job (needs: the audit job, issues: write, or pull-requests:
-      write on a pull request, and a checkout for CODEOWNERS): it downloads
-      report_name and posts it with action/agent.py publish, to one issue,
-      or on a pull request to one comment it replaces on each push. With no
-      report it posts nothing and passes. The agent's job and this one share
-      nothing but the artifact, so nothing the agent changed runs with the
-      token.
+      the agent in action/agent.py (PydanticAI) on a pull request from the
+      same repository (ADR 0060): it lists every page under .okf/ and docs/
+      whose sources name a file the pull request changed, has the model
+      reread each against the change with read-only tools, and uploads its
+      report as the report_name artifact. With nothing in scope it calls no
+      model. It needs model, refuses any event but pull_request, and refuses
+      to start when it could read a GitHub token: check out with
+      persist-credentials: false and fetch-depth: 0, and set no GH_TOKEN or
+      GITHUB_TOKEN for the job. A pull request from a fork or from Dependabot
+      gets a notice and no audit, and the step still passes. Also set
+      timeout-minutes on the step, since a composite action cannot set it on
+      its own steps. publish runs in a separate job (needs: the audit job,
+      and pull-requests: write): it downloads report_name and posts it with
+      action/agent.py publish as one comment on the pull request, replaced on
+      each push. With no report it posts nothing and passes. The agent's job
+      and this one share nothing but the artifact, so nothing the agent
+      changed runs with the token.
     required: false
     default: checks
   model:
@@ -80,49 +75,6 @@ inputs:
       that takes no key.
     required: false
     default: ""
-  audit:
-    description: >-
-      Audit mode: a shipped audit to run. docs-vs-code checks docs/ against
-      the code, okf-vs-code checks .okf/ against the code, okf-vs-docs
-      checks docs/ against .okf/, and okf-vs-change checks the stable
-      decisions whose sources a pull request changed (it runs only on a pull
-      request, where the base branch is known). Empty: okf-vs-code, unless
-      prompt or prompt_file gives a task of your own.
-    required: false
-    default: ""
-  prompt:
-    description: >-
-      Audit mode: the agent's task, as text, instead of audit.
-    required: false
-    default: ""
-  prompt_file:
-    description: >-
-      Audit mode: a file holding the agent's task, relative to path, instead of
-      audit. On a pull request a file git tracks comes from the base branch,
-      so a pull request that adds one fails its own audit until it merges.
-    required: false
-    default: ""
-  system_prompt_file:
-    description: >-
-      Audit mode: a file that replaces the shipped system prompt, relative to
-      path. Empty: the shipped one, which lists the folders the agent can read
-      and its skills.
-    required: false
-    default: ""
-  context:
-    description: >-
-      Audit mode: folders the agent can read besides the repository, one per
-      line, relative to path; for example docs an earlier step fetched. On a
-      pull request a folder git tracks comes from the base branch, and one it
-      does not track, such as a fetched folder, stays in the workspace.
-    required: false
-    default: ""
-  skills:
-    description: >-
-      Audit mode: skill folders (each holding subfolders with a SKILL.md), one
-      per line, relative to path. Empty: kmctl's own skills.
-    required: false
-    default: ""
   timeout:
     description: >-
       Audit mode: how long the agent may run, in seconds or with s, m, h or d.
@@ -130,25 +82,21 @@ inputs:
     default: 30m
   min_severity:
     description: >-
-      Publish mode: the lowest severity (info, low, medium or high) that opens
-      or updates the issue; below it, an open issue is closed.
+      Publish mode: the lowest severity (info, low, medium or high) that posts
+      or updates the comment; below it, an earlier comment says the latest run
+      found nothing, and with none no comment is written.
     required: false
     default: high
-  mention:
+  title:
     description: >-
-      Publish mode: users or teams to mention, such as @alice or @org/team,
-      one per line. Empty: the owners of the last * rule in CODEOWNERS.
-    required: false
-    default: ""
-  issue_title:
-    description: Publish mode, the issue's title.
+      Publish mode: the comment's heading, which also marks it so the next run
+      replaces it.
     required: false
     default: Knowledge audit
   report_name:
     description: >-
       Audit and publish modes: the artifact's name, which audit mode uploads
-      and publish mode downloads. Give each audit in one workflow its own,
-      such as agent-report-docs-vs-code.
+      and publish mode downloads.
     required: false
     default: agent-report
 runs:
@@ -169,7 +117,7 @@ runs:
       with:
         enable-cache: false
     - name: Install kmctl from this action's checkout
-      if: inputs.mode != 'publish'
+      if: inputs.mode == 'checks'
       shell: bash
       run: uv tool install "${{ github.action_path }}/packages/kmctl"
     # KMCTL_PINNED: run the kmctl this action installed, whatever release the
@@ -184,9 +132,9 @@ runs:
         KMCTL_SUMMARY: ${{ inputs.summary }}
       run: bash "${{ github.action_path }}/action/knowledge-ci.sh"
     # The API key reaches the model, so a fork's or Dependabot's pull request,
-    # which gets no secrets, is skipped and every other event but a same-repo
-    # pull request is refused (ADR 0005, ADR 0057). A skip passes: the later
-    # steps check the run output, since exit 0 alone does not skip them.
+    # which gets no secrets, is skipped and every other event is refused
+    # (ADR 0060). A skip passes: the later steps check the run output, since
+    # exit 0 alone does not skip them.
     - name: Check the event
       id: event
       if: inputs.mode == 'audit'
@@ -197,7 +145,6 @@ runs:
         ACTOR: ${{ github.actor }}
       run: |
         case "$GITHUB_EVENT_NAME" in
-          workflow_dispatch | schedule) echo "run=true" >> "$GITHUB_OUTPUT" ;;
           pull_request)
             if [ "$HEAD_REPO" != "$BASE_REPO" ]; then
               echo "::notice::kmctl audit: skipped; a pull request from a fork gets no secrets, so no audit."
@@ -208,45 +155,25 @@ runs:
             else
               echo "run=true" >> "$GITHUB_OUTPUT"
             fi ;;
-          *) echo "kmctl audit: refused for event '$GITHUB_EVENT_NAME'; audit mode runs on workflow_dispatch, schedule or a pull_request from the same repository." >&2; exit 1 ;;
+          *) echo "kmctl audit: refused for event '$GITHUB_EVENT_NAME'; audit mode runs on a pull_request from the same repository." >&2; exit 1 ;;
         esac
     # --no-config: uv would otherwise read a uv.toml or pyproject.toml from the
     # checkout, which a pull request controls, and could install other code.
-    # No GitHub token in this step: the agent can run shell commands, except
-    # on a pull request, where it runs without a shell and reads its
-    # instructions from a checkout of the base branch outside the repository.
+    # The prompt ships with this action, and the agent has no shell and no
+    # GitHub token in this step.
     - name: Run the agent
       if: inputs.mode == 'audit' && steps.event.outputs.run == 'true'
       shell: bash
       working-directory: ${{ inputs.path }}
       env:
-        KMCTL_PINNED: "1"
         MODEL: ${{ inputs.model }}
         BASE_URL: ${{ inputs.base_url }}
         API_KEY_ENV: ${{ inputs.api_key_env }}
-        AUDIT: ${{ inputs.audit }}
-        PROMPT: ${{ inputs.prompt }}
-        PROMPT_FILE: ${{ inputs.prompt_file }}
-        SYSTEM_PROMPT_FILE: ${{ inputs.system_prompt_file }}
-        CONTEXT: ${{ inputs.context }}
-        SKILLS: ${{ inputs.skills }}
         TIMEOUT: ${{ inputs.timeout }}
       run: |
-        args=(run --model "$MODEL" --out "$RUNNER_TEMP/agent-report" --timeout "$TIMEOUT")
+        args=(run --model "$MODEL" --base "origin/$GITHUB_BASE_REF" --out "$RUNNER_TEMP/agent-report" --timeout "$TIMEOUT")
         [ -n "$BASE_URL" ] && args+=(--base-url "$BASE_URL")
         [ -n "$API_KEY_ENV" ] && args+=(--api-key-env "$API_KEY_ENV")
-        [ -n "$AUDIT" ] && args+=(--audit "$AUDIT")
-        [ -n "$PROMPT" ] && args+=(--prompt "$PROMPT")
-        [ -n "$PROMPT_FILE" ] && args+=(--prompt-file "$PROMPT_FILE")
-        [ -n "$SYSTEM_PROMPT_FILE" ] && args+=(--system-prompt-file "$SYSTEM_PROMPT_FILE")
-        while IFS= read -r dir; do [ -n "$dir" ] && args+=(--context "$dir"); done <<< "$CONTEXT"
-        while IFS= read -r dir; do [ -n "$dir" ] && args+=(--skills "$dir"); done <<< "$SKILLS"
-        if [ "$GITHUB_EVENT_NAME" = pull_request ]; then
-          base="origin/$GITHUB_BASE_REF"
-          checkout="$(mktemp -d "$RUNNER_TEMP/kmctl-base.XXXXXX")"
-          git worktree add --detach --quiet "$checkout" "$base"
-          args+=(--instructions-root "$checkout/$(git rev-parse --show-prefix)" --base "$base" --no-shell)
-        fi
         uv run --no-config --script "${{ github.action_path }}/action/agent.py" "${args[@]}"
     - name: Keep the report
       if: always() && inputs.mode == 'audit'
@@ -272,11 +199,12 @@ runs:
         GH_TOKEN: ${{ github.token }}
         GH_REPO: ${{ github.repository }}
         MIN_SEVERITY: ${{ inputs.min_severity }}
-        MENTION: ${{ inputs.mention }}
-        ISSUE_TITLE: ${{ inputs.issue_title }}
+        TITLE: ${{ inputs.title }}
         PR_NUMBER: ${{ github.event.pull_request.number }}
       run: |
-        args=(publish "$RUNNER_TEMP/agent-report/report.json" --min-severity "$MIN_SEVERITY" --title "$ISSUE_TITLE")
-        while IFS= read -r who; do [ -n "$who" ] && args+=(--mention "$who"); done <<< "$MENTION"
-        [ "$GITHUB_EVENT_NAME" = pull_request ] && args+=(--pr "$PR_NUMBER")
-        uv run --no-config --script "${{ github.action_path }}/action/agent.py" "${args[@]}"
+        if [ -z "$PR_NUMBER" ]; then
+          echo "kmctl publish: refused for event '$GITHUB_EVENT_NAME'; publish mode posts to a pull request." >&2
+          exit 1
+        fi
+        uv run --no-config --script "${{ github.action_path }}/action/agent.py" \
+          publish "$RUNNER_TEMP/agent-report/report.json" --pr "$PR_NUMBER" --min-severity "$MIN_SEVERITY" --title "$TITLE"

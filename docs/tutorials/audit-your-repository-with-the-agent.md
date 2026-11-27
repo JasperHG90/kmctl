@@ -1,23 +1,26 @@
 ---
-description: "Run the CI agent on your machine, read its report and check a finding, then give it a task of your own."
+description: "Run the CI agent on your machine against a branch, read its report on the pages your change touched, and check a finding."
 sources:
-  - action/agent.py
+  - resource: "action/agent.py"
+  - resource: "action/prompt.md"
 ---
 
 # Audit your repository with the agent
 
 ## What you will build
 
-An audit report made on your machine by the agent the CI action runs,
-`action/agent.py`. You will break one line of kmctl's command reference,
-ask the agent to check that page against the code, read the finding it
-returns and check it yourself, then give it a second task that uses a
-folder of your own rules. It takes about fifteen minutes, most of it
-waiting for the agent.
+A report made on your machine by the agent the CI action runs on a pull
+request, `action/agent.py`. You will run it once on a branch with no change
+and see it skip the model, then change one line of kmctl's code that two
+pages describe, run it again, read the finding it returns and check it
+yourself. It takes about fifteen minutes, most of it waiting for the agent.
 
-Every command below was run on a fresh clone of kmctl's `main` branch with
-Gemini 3.8 Flash, and the output shown is what it printed. A model's
-wording varies from run to run, so yours will not match word for word.
+The agent does one thing
+([ADR 0060](../../.okf/decisions/0060-the-ci-agent-only-rereads-the-pages-a-pull-request-changed.md)):
+it lists every page under `.okf/` and `docs/` whose `sources` name a file
+your branch changed since it split from the base branch, and has a model
+reread each page against the change. A model's wording varies from run to
+run, so this page shows the shape of its report, not a copy of one run.
 
 ## Before you start
 
@@ -37,8 +40,9 @@ cd kmctl
 ```
 
 The kmctl repository is private for now, so this needs a GitHub account with
-access to it. The agent is one file, `action/agent.py`. It lists its own
-dependencies, so `uv run` installs them the first time you run it.
+access to it. The agent is one file, `action/agent.py`, and its task is
+`action/prompt.md` beside it. The script lists its own dependencies, so
+`uv run` installs them the first time you run it.
 
 ### 2. Set your key
 
@@ -47,51 +51,80 @@ export GEMINI_API_KEY=your-key-here
 unset GH_TOKEN GITHUB_TOKEN
 ```
 
-The agent can run shell commands, so it refuses to start while a GitHub
-token is in reach.
+The agent can read any file in the repository, so it refuses to start while
+a GitHub token is set or git config holds one.
 
-### 3. Break one line of the docs
+### 3. Run it with nothing to reread
 
-The reference page says `kmctl review due` takes `--json`. Rename it on the
-page only:
-
-```
-sed -i.bak 's/| `--json` | Print one JSON object (`due`/| `--as-json` | Print one JSON object (`due`/' docs/reference/commands.md
-grep -n 'as-json' docs/reference/commands.md
-```
+Make a branch and run the agent against `main`:
 
 ```
-257:| `--as-json` | Print one JSON object (`due`, `notices`, `expired_handoffs`, `history_skipped`). | off |
-```
-
-The code still says `--json`, so the page is now wrong in one place. `sed`
-kept the original as `docs/reference/commands.md.bak`.
-
-### 4. Write a task
-
-The agent does whatever its prompt asks. Save this as `../task.md`, next to
-your clone:
-
-```
-Check the `kmctl review due` section of docs/reference/commands.md against
-the code in packages/kmctl/src/kmctl/ that defines that command: its options, their
-defaults and what it prints.
-```
-
-### 5. Run it
-
-```
-uv run --script action/agent.py run \
+git switch -c try-the-audit
+uv run --no-config --script action/agent.py run \
   --model gemini-3.8-flash \
   --base-url https://generativelanguage.googleapis.com/v1beta/openai/ \
   --api-key-env GEMINI_API_KEY \
-  --prompt-file ../task.md \
+  --base main \
+  --out ../report0
+```
+
+`--base main` is the branch to compare with, `--base-url` and `--model` pick
+the provider and model, and `--api-key-env` names the variable that holds
+the key. `--no-config` stops uv from reading a `uv.toml` or `pyproject.toml`
+from the checkout, as the action does.
+
+The branch has no commit of its own yet, so no page is in scope. The agent
+writes an empty report without calling the model, and prints:
+
+```
+## Agent report
+
+No page under .okf/ or docs/ names a file this change touched (compared with main) in its sources, so nothing was reread.
+
+0 high, 0 medium, 0 low, 0 info.
+
+| Severity | Finding | Summary | Claim | Contradicted by | Fix |
+|---|---|---|---|---|---|
+
+### Checked (0)
+
+agent: wrote report.json, report.md and transcript.json to ../report0
+```
+
+In CI, a push like this costs nothing.
+
+### 4. Change a line three pages name
+
+`kmctl decision candidates` lists the changes since the newest decision
+record. Make it start from the oldest one instead, and commit:
+
+```
+sed -i.bak 's/records\[-1\]/records[0]/' packages/kmctl/src/kmctl/candidates.py
+rm packages/kmctl/src/kmctl/candidates.py.bak
+git commit -am "Start decision candidates at the oldest record"
+```
+
+The agent compares commits, so it sees only what you commit. Three pages
+name `packages/kmctl/src/kmctl/candidates.py` in their `sources`: the how-to
+`docs/how-to/find-unrecorded-decisions.md`, ADR 0047
+(`.okf/decisions/0047-unrecorded-decisions-are-listed-by-kmctl-and-judged-by-a-skill-that-only-reports.md`)
+and ADR 0046, which says which package the file belongs in. The how-to and
+ADR 0047 say the list starts at the newest record, so both are now wrong.
+ADR 0046 still holds.
+
+### 5. Run it again
+
+```
+uv run --no-config --script action/agent.py run \
+  --model gemini-3.8-flash \
+  --base-url https://generativelanguage.googleapis.com/v1beta/openai/ \
+  --api-key-env GEMINI_API_KEY \
+  --base main \
   --out ../report
 ```
 
-`--base-url` and `--model` pick the provider and model, and `--api-key-env`
-names the variable that holds the key. The agent reads, searches and runs
-commands for a few minutes, then prints its report and ends with:
+The agent reads the three pages and the changed code for a few minutes, then
+prints its report and ends with:
 
 ```
 agent: wrote report.json, report.md and transcript.json to ../report
@@ -100,148 +133,78 @@ agent: wrote report.json, report.md and transcript.json to ../report
 ### 6. Read the report
 
 Open `../report/report.md`. Under its heading it starts with a summary and
-a count by severity:
-
-```
-Audited the `kmctl review due` section in `docs/reference/commands.md`
-against its implementation in `packages/kmctl/src/kmctl/__init__.py` and
-`packages/kmctl/src/kmctl/review_due.py`. The command name, purpose, due conditions for
-docs pages, `--path` option and default, exit code, and JSON payload fields
-all hold. However, the options table documents `--as-json` instead of
-`--json`.
-
-1 high, 0 medium, 0 low, 0 info.
-```
+a count by severity. The summary says how many pages and claims the agent
+checked, and ends with the pages that still hold and the
+`kmctl verify ID ... --by human:<your id>` command to record that once you
+have read them. The agent never runs that command itself.
 
 Then comes one row per finding. A finding is always a mismatch: the claim
-that does not hold, the lines that contradict it, and a fix. Without its
-summary column:
+that does not hold, the lines that contradict it, and a fix. Expect one for
+each page, citing its line about the newest record as the claim and
+`packages/kmctl/src/kmctl/candidates.py:180` as what contradicts it. The fix
+depends on the page:
 
-| Severity | Finding | Claim | Contradicted by | Fix |
-|---|---|---|---|---|
-| high | Incorrect JSON option flag name --as-json | `docs/reference/commands.md:257` | `packages/kmctl/src/kmctl/__init__.py:276`, `packages/kmctl/src/kmctl/__init__.py:292-298` | Change `--as-json` to `--json` in the options table of the `kmctl review due` section to match the CLI flag defined in Typer. |
+- For the how-to, an edit to the page.
+- For ADR 0047, a stable decision, never an edit to its body: a dated
+  Correction section, a new draft decision that supersedes it, or a change
+  to the code. Here the right fix is to undo the code change.
 
-That is the line you broke. Last comes the checked list: what the agent
-compared, what it compared it against and the lines it read. Something that
-holds goes here, not in the findings. This run checked seven things, for
+Last comes the checked list: each page the agent compared, what it compared
+it against and the lines it read. A page that holds goes here, not in the
+findings.
+
+### 7. Check a finding yourself
+
+Every citation is a `path:line`, so you can look at it. Print the claim and
+the lines that contradict it, using the numbers in your own report, for
 example:
 
 ```
-- `--path option name, description, and default value` against
-  packages/kmctl/src/kmctl/__init__.py:282-291: `docs/reference/commands.md:256`,
-  `packages/kmctl/src/kmctl/__init__.py:282-291`
-```
-
-### 7. Check the finding yourself
-
-Every citation is a `path:line`, so you can look at it. Print the claim and
-the lines that contradict it, using the numbers in your own report:
-
-```
-sed -n 257p docs/reference/commands.md
-sed -n 292,298p packages/kmctl/src/kmctl/__init__.py
+grep -n 'newest' docs/how-to/find-unrecorded-decisions.md
+sed -n 179,181p packages/kmctl/src/kmctl/candidates.py
 ```
 
 ```
-| `--as-json` | Print one JSON object (`due`, `notices`, `expired_handoffs`, `history_skipped`). | off |
-    as_json: Annotated[
-        bool,
-        typer.Option(
-            "--json",
-            help="Print one JSON object (due, notices, expired_handoffs, history_skipped), for scripts.",
-        ),
-    ] = False,
+29:   With no starting point, it looks at the changes since the newest
+    added = _git(
+        root, "log", "--follow", "--diff-filter=A", "--format=%H", "--", records[0]
+    ).split()
 ```
 
 The agent cannot make up a citation. The script notes each line that its
 `read_file` and `search_files` tools returned, and sends back any report
 that cites another line. After five retries the run fails with no report.
 
-### 8. Give it your own rules
-
-The agent can read folders besides the repository. Make one next to your
-clone:
+### 8. Clean up
 
 ```
-mkdir ../context
+git switch main
+git branch -D try-the-audit
 ```
-
-Save this as `../context/docs-rules.md`:
-
-```
-# Our docs rules
-
-1. A tutorial says how long it takes, near the top.
-2. A tutorial lists what the reader needs before they start.
-3. Every command a reader runs is in a fenced code block.
-```
-
-Save this as `../task2.md`:
-
-```
-Check every page in docs/tutorials/ against our docs rules, in the
-docs-rules.md file of the context folder you were given.
-```
-
-Run it with `--context`:
-
-```
-uv run --script action/agent.py run \
-  --model gemini-3.8-flash \
-  --base-url https://generativelanguage.googleapis.com/v1beta/openai/ \
-  --api-key-env GEMINI_API_KEY \
-  --prompt-file ../task2.md \
-  --context ../context \
-  --out ../report2
-```
-
-Open `../report2/report.md`. The agent read the rules from the context
-folder and cites them like any other file:
-
-```
-Checked every page in docs/tutorials/ against the documentation rules in
-../context/docs-rules.md. docs/tutorials/README.md is the auto-generated
-section index and contains no reader commands.
-docs/tutorials/audit-your-repository-with-the-agent.md satisfies all three
-rules (time estimate near top, prerequisites before start, and fenced code
-blocks for commands). docs/tutorials/get-started-with-kmctl.md satisfies
-rule 1 and rule 2, but has 1 low-severity mismatch against rule 3 where
-'kmctl --version' in the prerequisites verification is written inline
-rather than in a fenced code block.
-
-0 high, 0 medium, 1 low, 0 info.
-```
-
-| Severity | Finding | Claim | Contradicted by | Fix |
-|---|---|---|---|---|
-| low | Command not in fenced code block | `docs/tutorials/get-started-with-kmctl.md:29` | `../context/docs-rules.md:5` | Put the kmctl --version command in a fenced code block. |
 
 ## What you learned
 
-- The agent does the task its prompt gives it, and returns a report: a
-  checked list, and findings that are mismatches only.
+- The agent rereads only the pages whose `sources` name a file your branch
+  changed: decisions (drafts included), architecture pages, practices and
+  docs pages. A deprecated or superseded decision, handoffs, the log and
+  `index.md` pages stay out.
+- With nothing in scope it writes an empty report and calls no model.
 - Every finding names the claim, the lines that contradict it and a fix, and
   you can check each citation with the file and the line number.
-- `--context` gives it more folders to read, such as rules or architecture
-  documents your workflow fetches.
-- Instead of a task of your own, `--audit` runs one of the four shipped
-  audits: `okf-vs-code` (`.okf/` against the code, the default),
-  `docs-vs-code` (`docs/` against the code), `okf-vs-docs` (`docs/`
-  against `.okf/`) or `okf-vs-change` (the decisions whose sources a branch
-  changed, with `--base main`). Their prompts are in `action/prompts/`.
 
 `report.json` holds the same report as data, for a script to read:
 
 | Field | What it holds |
 |---|---|
 | `summary` | A short summary of the run. |
-| `checked` | One entry per thing compared: `subject`, `against` (what it was compared with) and `evidence` (`path:line` strings). |
+| `checked` | One entry per page compared: `subject`, `against` (what it was compared with) and `evidence` (`path:line` strings). |
 | `findings` | One entry per mismatch: `title`, `severity`, `path` (the file it is about), `summary`, `claim` (`path:line`), `contradicted_by` (`path:line` strings) and `fix`. |
 
 A finding's `severity` is `high` for something wrong that someone must fix,
 `medium` for something probably wrong or that the agent could not check,
 `low` for something minor, and `info` for a note that needs no fix.
 
-To run the agent in CI, and post its findings to an issue, follow step 5 of
+To run the agent on your pull requests and post its report as a comment,
+follow step 5 of
 [Install the plugin and the CI action](../how-to/install-the-plugin-and-the-ci-action.md).
-`uv run --script action/agent.py run --help` lists every option.
+`uv run --no-config --script action/agent.py run --help` lists every option.

@@ -198,3 +198,15 @@ changed code, so it works from knowledge toward code, kmaudit's direction.
 The shipped audits live in the action today (`action/agent.py` and
 `action/prompts/`), outside both packages, and `okf-vs-change` joins them
 there. If the shipped audits move into kmaudit, it moves with them.
+
+## Correction, 2026-11-27
+
+[ADR 0060](0060-the-ci-agent-only-rereads-the-pages-a-pull-request-changed.md) widens and simplifies the pull request audit. It rereads every page
+under `.okf/` and `docs/` whose `sources` the pull request changed, not only
+stable decisions: drafts the pull request adds, architecture pages, practices
+and docs pages too. Over the last 15 merged pull requests that added 8 docs
+pages to 64 decisions ([prototype](../prototypes/pr-reread-scope/README.md)).
+With nothing in scope it calls no model. The repository supplies no prompt,
+context or skills any more, since the one prompt ships with the action, so
+the base-branch checkout is gone. The same-repository rule, no shell, one
+comment replaced on each push, report only and the author's answer stand.
