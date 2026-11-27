@@ -19,7 +19,9 @@
   "archived": false,
   "worktree": "/home/vscode/workspace.worktrees/pr-reread-only",
   "branch": "loop/pr-reread-only",
-  "stamps": [],
+  "stamps": [
+    "2e508713aeafd56522d7ff246a06e29ba2a45b979258f47893d3e2fa22e01cc9"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude",
     "hash": "1cef5f73e6676e7a5017baf502422e9cf60e1fe5a2b3925c7defc051cfddaf72",
@@ -249,5 +251,5 @@
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-27T10:49:18+00:00"
+  "at": "2026-11-27T10:53:37+00:00"
 }
