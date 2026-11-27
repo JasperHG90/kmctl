@@ -6,7 +6,7 @@ tags: [decision]
 generated:
   by: process:kmctl/0.18.0
   at: 2026-11-27T10:43:30Z
-status: draft
+status: stable
 sources:
   - resource: "action/agent.py"
   - resource: "action/prompt.md"
