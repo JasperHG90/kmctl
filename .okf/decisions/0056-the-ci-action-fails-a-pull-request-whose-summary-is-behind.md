@@ -10,6 +10,9 @@ status: stable
 sources:
   - resource: "action.yml"
   - resource: "action/knowledge-ci.sh"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0056: The CI action fails a pull request whose summary is behind

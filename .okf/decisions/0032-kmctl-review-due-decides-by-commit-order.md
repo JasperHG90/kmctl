@@ -7,6 +7,9 @@ generated:
   by: process:kmctl/0.10.0
   at: 2026-10-19T15:16:46Z
 status: stable
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0032: kmctl review due decides by commit order

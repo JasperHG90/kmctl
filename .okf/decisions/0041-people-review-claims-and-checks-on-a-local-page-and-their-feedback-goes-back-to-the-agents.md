@@ -14,6 +14,9 @@ sources:
   - resource: "packages/kmaudit/src/kmaudit/store.py"
   - resource: "packages/kmaudit/src/kmaudit/check_verbs.py"
   - resource: "packages/kmaudit/src/kmaudit/verbs.py"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0041: People review claims and checks on a local page, and their feedback goes back to the agents

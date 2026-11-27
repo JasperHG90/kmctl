@@ -10,6 +10,9 @@ status: stable
 sources:
   - resource: "packages/kmctl/src/kmctl/summary.py"
   - resource: ".okf/prototypes/bookkeeping-merge-conflicts/"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0048: kmctl summary ack writes one file per ack, so branches merge without a conflict

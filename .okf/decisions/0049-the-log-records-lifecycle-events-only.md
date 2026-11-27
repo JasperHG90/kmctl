@@ -11,6 +11,9 @@ sources:
   - resource: "packages/kmctl/apm/claude/.apm/instructions/okf-bundle.instructions.md"
   - resource: "packages/kmctl/apm/antigravity/.apm/instructions/okf-bundle.instructions.md"
   - resource: "packages/kmctl/src/kmctl/concepts.py"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0049: The log records lifecycle events only

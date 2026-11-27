@@ -1,0 +1,140 @@
+{
+  "schema_version": "1.0",
+  "slug": "verify-folder-and-path-ids",
+  "plan_hash": "951d4d8ab18ef6d72d31a982e77291d9f9a3618e4d2cb005838bd81f4f4bc44c",
+  "problems": [
+    {
+      "id": "P1",
+      "text": "`kmctl verify` has no way to name every page in a folder, so verifying a section of the bundle takes one id per page or a shell pipeline."
+    },
+    {
+      "id": "P2",
+      "text": "`kmctl verify` refuses the `.okf/`-prefixed paths a shell glob from the repository root gives."
+    },
+    {
+      "id": "P3",
+      "text": "`kmctl verify` accepts ids `kmctl review due` never lists, such as `decisions/index`, and writes into that file."
+    },
+    {
+      "id": "P4",
+      "text": "A refused id gets a message that names neither the folder form nor the path form."
+    }
+  ],
+  "goals": [
+    {
+      "id": "G1",
+      "text": "A person who has read a section verifies it in one short command, typed or globbed."
+    },
+    {
+      "id": "G2",
+      "text": "`kmctl verify` and `kmctl review due` agree on which files are pages."
+    }
+  ],
+  "outcomes": [
+    {
+      "id": "O1",
+      "change": "A folder id verifies every page under it that review due tracks",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "packages/kmctl/src/kmctl/verify.py",
+        "packages/kmctl/src/kmctl/review_due.py",
+        "kmctl verify"
+      ],
+      "checked_by": "tests in `packages/kmctl/tests/test_verify.py` that verify `decisions` and a docs folder in a temporary repository and check each page's entry and the untouched index",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O2",
+      "change": "A repository-root path with .md reads as its id",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P2",
+      "fixes_index": 1,
+      "needs": [],
+      "needs_index": [],
+      "touches": [
+        "packages/kmctl/src/kmctl/verify.py",
+        "kmctl verify"
+      ],
+      "checked_by": "a parametrized test in `packages/kmctl/tests/test_verify.py` passing a concept path under .okf with .md and a docs path with .md",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O3",
+      "change": "An id for a file review due never lists is refused",
+      "kind": "behaviour",
+      "goal": "G2",
+      "goal_index": 1,
+      "fixes": "P3",
+      "fixes_index": 2,
+      "needs": [
+        "O1"
+      ],
+      "needs_index": [
+        0
+      ],
+      "touches": [
+        "packages/kmctl/src/kmctl/verify.py",
+        "kmctl verify"
+      ],
+      "checked_by": "a parametrized test in `packages/kmctl/tests/test_verify.py` refusing decisions/index, the same as a .okf path with .md, log and handoffs, each writing nothing",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O4",
+      "change": "Refusals name the folder form and the help shows it",
+      "kind": "behaviour",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P4",
+      "fixes_index": 3,
+      "needs": [
+        "O1",
+        "O2"
+      ],
+      "needs_index": [
+        0,
+        1
+      ],
+      "touches": [
+        "packages/kmctl/src/kmctl/verify.py",
+        "packages/kmctl/src/kmctl/__init__.py",
+        "docs/reference/commands.md",
+        "packages/kmctl/apm/claude/.apm/instructions/okf-bundle.instructions.md",
+        "packages/kmctl/apm/antigravity/.apm/instructions/okf-bundle.instructions.md",
+        ".claude/rules/okf-bundle.md"
+      ],
+      "checked_by": "tests asserting the refusal text for `decisions/*` and `decisions/index`, and `packages/kmctl/tests/test_help.py` for the verb's help",
+      "seen_by": "operator"
+    },
+    {
+      "id": "O5",
+      "change": "A draft decision record states the folder form and ADR 0055 points at it",
+      "kind": "support",
+      "goal": "G1",
+      "goal_index": 0,
+      "fixes": "P1",
+      "fixes_index": 0,
+      "needs": [
+        "O1"
+      ],
+      "needs_index": [
+        0
+      ],
+      "touches": [
+        "new:.okf/decisions/0059-kmctl-verify-takes-a-folder-id.md",
+        ".okf/decisions/0055-one-verify-for-the-pages-a-branch-made-due.md",
+        ".okf/decisions/index.md"
+      ],
+      "checked_by": "`kmctl check` and strict OKF validation of `.okf/`",
+      "seen_by": "operator"
+    }
+  ]
+}

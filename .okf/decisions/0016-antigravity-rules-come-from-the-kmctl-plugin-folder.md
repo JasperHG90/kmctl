@@ -11,6 +11,9 @@ sources:
   - resource: "packages/kmctl/src/kmctl/antigravity.py"
   - resource: "packages/kmctl/src/kmctl/plugin.py"
   - resource: "packages/kmctl/src/kmctl/doctor.py"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0016: Antigravity rules come from the kmctl plugin folder

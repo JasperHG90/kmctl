@@ -13,6 +13,9 @@ sources:
   - resource: "packages/kmctl/src/kmctl/checks.py"
   - resource: "packages/kmctl/src/kmctl/briefing.py"
   - resource: "packages/kmctl/src/kmctl/kinds.py"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0027: The bundle opens with a summary that kmctl keeps in step

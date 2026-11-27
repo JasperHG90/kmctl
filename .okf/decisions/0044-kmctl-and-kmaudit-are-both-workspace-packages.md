@@ -13,6 +13,9 @@ sources:
   - resource: "packages/kmctl/hatch_build.py"
   - resource: "packages/kmctl/src/kmctl/pin.py"
   - resource: ".pre-commit-hooks.yaml"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0044: kmctl and kmaudit are both workspace packages

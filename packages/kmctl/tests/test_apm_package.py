@@ -91,7 +91,8 @@ KMAUDIT_AGENTS = ("kmctl-claims-extractor.md", "kmctl-check-writer.md")
 #: the log records lifecycle events only; okf-bundle: ADR 0050, drafts are
 #: settled before review; okf-bundle: ADR 0055 and ADR 0056, one verify for
 #: the pages a branch made due, and CI fails on a summary behind; okf-bundle:
-#: ADR 0058, a draft decision does not put the summary behind).
+#: ADR 0058, a draft decision does not put the summary behind; okf-bundle:
+#: ADR 0059, kmctl verify takes a folder the person read in full).
 OLD_RULES = {
     "diagrams-stay-current": (
         [".okf/**", "src/**", "lib/**", "app/**", "pkg/**", "cmd/**"],
@@ -107,7 +108,7 @@ OLD_RULES = {
     ),
     "okf-bundle": (
         [".okf/**"],
-        "71296978234c277ae28f0f5b8c10a94d282de2a4a50d4c74d5d66cc0c9186eb5",
+        "be45b3b27e2bdb1c0aaa61d25ce5571d1f883ecd897b16f589290d8e14b64a2e",
     ),
 }
 

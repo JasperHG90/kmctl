@@ -10,6 +10,9 @@ status: stable
 sources:
   - resource: "packages/kmctl/src/kmctl/candidates.py"
   - resource: ".okf/prototypes/decision-gaps/"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0047: Unrecorded decisions are listed by kmctl and judged by a skill that only reports

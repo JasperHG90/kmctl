@@ -11,6 +11,9 @@ sources:
   - resource: "packages/kmaudit/src/kmaudit/steps.py"
   - resource: "packages/kmaudit/src/kmaudit/mutate.py"
   - resource: "packages/kmaudit/src/kmaudit/check_verbs.py"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0038: Checks are step data that kmctl reruns and only checks that notice a change are stored

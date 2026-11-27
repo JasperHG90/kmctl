@@ -15,6 +15,9 @@ sources:
   - resource: "packages/kmaudit/src/kmaudit/mutate.py"
   - resource: "packages/kmaudit/apm/claude/.apm/agents/kmaudit-claims-extractor.md"
   - resource: "packages/kmaudit/apm/claude/.apm/agents/kmaudit-check-writer.md"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0040: The audit pipeline holds its agents by a hook and keeps answers through rewording

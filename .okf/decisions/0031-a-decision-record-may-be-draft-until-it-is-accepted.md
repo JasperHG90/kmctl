@@ -7,6 +7,9 @@ generated:
   by: process:kmctl/0.10.0
   at: 2026-10-19T14:34:35Z
 status: stable
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0031: A decision record may be draft until it is accepted

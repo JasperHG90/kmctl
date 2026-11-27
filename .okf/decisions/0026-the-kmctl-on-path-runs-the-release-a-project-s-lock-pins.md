@@ -12,6 +12,9 @@ sources:
   - resource: "packages/kmctl/src/kmctl/__init__.py"
   - resource: "starter/justfile.jinja"
   - resource: "action.yml"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0026: The kmctl on PATH runs the release a project's lock pins

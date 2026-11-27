@@ -7,6 +7,9 @@ generated:
   by: process:kmctl/0.10.0
   at: 2026-10-19T08:04:36Z
 status: stable
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0030: Projects commit what APM deploys

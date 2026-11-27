@@ -7,6 +7,9 @@ generated:
   by: process:kmctl/0.9.1
   at: 2026-10-19T05:20:55Z
 status: stable
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0029: The session briefing is kmctl's only hook again

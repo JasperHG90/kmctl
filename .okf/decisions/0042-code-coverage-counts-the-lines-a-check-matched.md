@@ -12,6 +12,9 @@ sources:
   - resource: "packages/kmaudit/src/kmaudit/steps.py"
   - resource: "packages/kmaudit/src/kmaudit/ui.py"
   - resource: "packages/kmaudit/src/kmaudit/ui.html"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0042: Code coverage counts the lines a check matched

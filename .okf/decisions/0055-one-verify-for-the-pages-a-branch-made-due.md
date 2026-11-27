@@ -10,6 +10,9 @@ status: stable
 sources:
   - resource: "packages/kmctl/src/kmctl/review_due.py"
   - resource: "packages/kmctl/src/kmctl/verify.py"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0055: One verify for the pages a branch made due
@@ -57,3 +60,10 @@ We rejected two other ways:
 - The knowledge rules name both commands, so the okf-bundle hash in
   `OLD_RULES` in `packages/kmctl/tests/test_apm_package.py` moved, with its
   comment naming this record.
+
+## Correction, 2026-11-27
+
+`kmctl verify` also takes a folder, such as `decisions`, for every page
+under it that `kmctl review due` lists, and a repository-root path with
+`.md`. Why that does not undo the `--base` rejection above is in
+[ADR 0059](0059-kmctl-verify-takes-a-folder-id.md).
