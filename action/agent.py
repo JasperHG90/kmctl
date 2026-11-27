@@ -550,9 +550,20 @@ SENTENCE_END = re.compile(r"(?<=[.!?])\s+(?=[A-Z`(\[])")
 MARKS = {"high": "🔴", "medium": "🟠", "low": "🟡", "info": "⚪"}
 
 
+#: Words a sentence does not end after, though they end in a full stop.
+ABBREVIATIONS = ("e.g.", "i.e.", "etc.", "vs.", "cf.", "approx.")
+
+
 def first_sentence(text: str) -> str:
-    """Return the first sentence of ``text``, or all of it when it has one."""
-    return SENTENCE_END.split(text.strip(), maxsplit=1)[0]
+    """Return the first sentence of ``text``, or all of it when it has one.
+
+    A full stop after an abbreviation such as "e.g." does not end a sentence.
+    """
+    text = text.strip()
+    for match in SENTENCE_END.finditer(text):
+        if not text[: match.start()].lower().endswith(ABBREVIATIONS):
+            return text[: match.start()]
+    return text
 
 
 def page_path(subject: str) -> str:
@@ -564,6 +575,17 @@ def page_path(subject: str) -> str:
 def is_page(path: str) -> bool:
     """Say whether ``path`` is a page the reread checks: markdown under .okf/ or docs/."""
     return path.startswith((".okf/", "docs/")) and path.endswith(".md")
+
+
+def short_names(paths: list[str]) -> dict[str, str]:
+    """Map each page in ``paths`` to its short name, with its folder when two names collide."""
+    names = {p: short_name(p) for p in paths}
+    clash = {n for n in names.values() if list(names.values()).count(n) > 1}
+    for p, n in names.items():
+        if n in clash:
+            folder = p.rsplit("/", 2)[-2] if p.count("/") >= 1 else ""
+            names[p] = f"{folder}/{n}" if folder else n
+    return names
 
 
 def short_name(ref: str) -> str:
@@ -594,8 +616,13 @@ def render(report: Report, min_severity: str = "info") -> str:
     # A page with a finding at any severity never holds, shown or not.
     found = {page_path(f.path) for f in report.findings}
     flagged = {page_path(f.path) for f in shown}
-    pages = list(dict.fromkeys(page_path(c.subject) for c in report.checked))
-    holds = [p for p in pages if p not in found and is_page(p)]
+    pages = list(
+        dict.fromkeys(
+            [p for p in (page_path(c.subject) for c in report.checked) if is_page(p)]
+            + sorted(found)
+        )
+    )
+    holds = [p for p in pages if p not in found]
     counts = " · ".join(
         f"{n} {s}"
         for s in reversed(SEVERITIES)
@@ -626,7 +653,7 @@ def render(report: Report, min_severity: str = "info") -> str:
         lines += [
             "",
             "Still hold: "
-            + ", ".join(short_name(p) for p in holds)
+            + ", ".join(short_names(holds).values())
             + ". To confirm them, see `kmctl verify` below.",
         ]
     if not (shown or holds or report.checked):

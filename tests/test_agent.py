@@ -839,6 +839,49 @@ def test_render_names_pages_short() -> None:
     assert "added: why" not in visible and "app" not in visible
 
 
+def test_render_counts_pages_only() -> None:
+    """The page count leaves out a checked file that is not a page and adds a finding's page."""
+    finding = agent.Finding(
+        title="t",
+        severity="high",
+        path="docs/how-to/x.md",
+        summary="S.",
+        claim="docs/how-to/x.md:1",
+        contradicted_by=["src/x.py:1"],
+        fix="F.",
+    )
+    held = agent.render(
+        agent.Report(
+            summary="S.",
+            checked=[
+                agent.Checked(subject=s, against="x", evidence=[])
+                for s in ("README.md", "docs/how-to/a.md", "docs/how-to/b.md")
+            ],
+            findings=[],
+        )
+    )
+    assert held.startswith("**All 2 pages hold**")
+
+    unchecked = agent.render(agent.Report(summary="S.", checked=[], findings=[finding]))
+    assert unchecked.startswith("**1 of 1 pages need a look**")
+
+
+def test_render_short_names_keep_abbreviations_and_folders() -> None:
+    """A sentence does not end after "e.g.", and two pages with one file name keep their folders."""
+    assert agent.first_sentence("Say e.g. `x` here. Then more.") == "Say e.g. `x` here."
+    held = agent.render(
+        agent.Report(
+            summary="S.",
+            checked=[
+                agent.Checked(subject=s, against="x", evidence=[])
+                for s in ("docs/how-to/run.md", "docs/reference/run.md")
+            ],
+            findings=[],
+        )
+    )
+    assert "Still hold: how-to/run, reference/run." in held
+
+
 def test_render_empty_and_all_hold_reports() -> None:
     """An empty report has no holds line or verify command; an all-hold one names them all."""
     empty = agent.render(
