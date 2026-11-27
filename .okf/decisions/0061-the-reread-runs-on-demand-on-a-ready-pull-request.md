@@ -6,7 +6,7 @@ tags: [decision]
 generated:
   by: process:kmctl/0.18.0
   at: 2026-11-27T19:40:06Z
-status: draft
+status: stable
 sources:
   - resource: "action.yml"
   - resource: "action/agent.py"
