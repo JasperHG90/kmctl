@@ -20,10 +20,64 @@
   "worktree": null,
   "branch": null,
   "stamps": [],
-  "signoff": null,
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
+    "hash": "a7204dfe5aa90e6ea676000b812b74ca919d2914b0735bb1418f4499e87416c6",
+    "at": "2026-11-27T09:51:11+00:00"
+  },
   "delegation": null,
   "budget_base": null,
-  "signed_rows": [],
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "kmctl verify decisions, in a repository with three decision records, a decisions index and a log, writes one verified entry and one log line per record and exits 0",
+      "fails_when": "the exit code is nonzero, a record lacks the entry, a log line is missing, or the decisions index changes by one byte",
+      "command": "uv run pytest -q packages/kmctl/tests/test_verify.py -k 'folder_id_verifies_every_page'",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "a docs folder id (docs/how-to) verifies every docs page under it and leaves its README.md index alone",
+      "fails_when": "a page under the folder lacks the entry, a page outside it gains one, or the README.md changes",
+      "command": "uv run pytest -q packages/kmctl/tests/test_verify.py -k 'docs_folder_id'",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "a repository-root path with .md (.okf/decisions/0001-x.md, docs/how-to/x.md) verifies the same file its id would, and prints the id as kmctl review due does",
+      "fails_when": "either path is refused, or the printed id differs from the one review due lists",
+      "command": "uv run pytest -q packages/kmctl/tests/test_verify.py -k 'repository_root_path'",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "an id for a file kmctl review due never lists (decisions/index, .okf/decisions/index.md, log) or the handoffs folder is refused, exits 1 and writes nothing",
+      "fails_when": "any of them exits 0, or any file in the repository changes",
+      "command": "uv run pytest -q packages/kmctl/tests/test_verify.py -k 'refuses_a_file_review_due_never_lists'",
+      "judgment": false
+    },
+    {
+      "id": "r5",
+      "behavior": "a refusal for decisions/* and for decisions/index names the command kmctl verify decisions",
+      "fails_when": "the refusal on stderr does not contain 'kmctl verify decisions'",
+      "command": "uv run pytest -q packages/kmctl/tests/test_verify.py -k 'refusal_names_the_folder_form'",
+      "judgment": false
+    },
+    {
+      "id": "r6",
+      "behavior": "kmctl verify --help names the folder form and the path form in its argument help and gives a folder example in its epilog, and the help tests stay green",
+      "fails_when": "the help lacks a folder id or a path with .md, or a test in test_help.py fails",
+      "command": "uv run pytest -q packages/kmctl/tests/test_help.py packages/kmctl/tests/test_verify.py -k 'help'",
+      "judgment": false
+    },
+    {
+      "id": "r7",
+      "behavior": "a draft decision record states the folder form and why it does not undo ADR 0055's rejection, and ADR 0055 has a correction pointing at it",
+      "fails_when": "the record is missing, is not linked from the decisions index, or ADR 0055 has no correction naming it",
+      "command": null,
+      "judgment": true
+    }
+  ],
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
@@ -44,5 +98,5 @@
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-27T09:50:42+00:00"
+  "at": "2026-11-27T09:51:11+00:00"
 }
