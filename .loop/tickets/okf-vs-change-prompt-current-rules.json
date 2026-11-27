@@ -15,7 +15,7 @@
   "split_hold": false,
   "commit_sha": null,
   "closed_outside": false,
-  "dropped": false,
+  "dropped": true,
   "archived": false,
   "worktree": null,
   "branch": null,
@@ -37,5 +37,5 @@
   },
   "history": [],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-27T10:08:47+00:00"
+  "at": "2026-11-27T10:15:02+00:00"
 }
