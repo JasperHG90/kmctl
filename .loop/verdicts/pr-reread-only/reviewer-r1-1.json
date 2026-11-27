@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.1",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "open",
+      "claim": "changed_pages misses a page whose source file the pull request renamed or moved, because git diff --name-only lists only the new path of a rename, so the page that still names the old path is never reread",
+      "anchor": "action/agent.py:439",
+      "category": "bug",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "f2",
+      "disposition": "open",
+      "claim": "_number is defined twice, the same body back to back; the second copy is dead code the change added",
+      "anchor": "action/agent.py:209",
+      "category": "nit",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "2e508713aeafd56522d7ff246a06e29ba2a45b979258f47893d3e2fa22e01cc9",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.4.0",
+  "at": "2026-11-27T11:05:42+00:00",
+  "checklist": null
+}
