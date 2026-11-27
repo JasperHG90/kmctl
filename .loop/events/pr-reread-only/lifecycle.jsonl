@@ -6,3 +6,5 @@
 {"at": "2026-11-27T10:35:52+00:00", "binds": "075b8aed179a637c4e557229bc5e5abe2070866e11d83286d5257cdd3e406dd5", "kind": "round-start", "n": 2, "passes": ["plan-reviewer"], "round_kind": "plan", "schema_version": "1.0", "tree": null}
 {"at": "2026-11-27T10:37:03+00:00", "code": "finding-open-two-rounds", "from": "planning", "kind": "block", "message": "finding plan-reviewer:p1 stayed open across two rounds", "notified": false, "schema_version": "1.0"}
 {"at": "2026-11-27T10:37:03+00:00", "dispatched_at": "2026-11-27T10:35:52+00:00", "kind": "round-close", "n": 2, "outcome": "blocked", "round_kind": "plan", "schema_version": "1.0", "verdicts_at": {"plan-reviewer": "2026-11-27T10:36:47+00:00"}}
+{"at": "2026-11-27T10:37:21+00:00", "by": "delegated:jasperginn@gmail.com/claude", "edge": "blocked->ready", "grant": "g10", "kind": "override", "reason": "p1 fixed: O3 is now support, O5 needs O3 and O4, tests/test_audit.py moved to O3; round 3 reviews it", "schema_version": "1.0", "step": "ticket-override"}
+{"at": "2026-11-27T10:37:21+00:00", "kind": "unblock", "schema_version": "1.0"}

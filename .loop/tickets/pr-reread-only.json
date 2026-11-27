@@ -1,19 +1,13 @@
 {
   "schema_version": "1.0",
   "slug": "pr-reread-only",
-  "stage": "blocked",
+  "stage": "ready",
   "attempts": 0,
   "plan_rounds": 2,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
-  "blocker": {
-    "code": "finding-open-two-rounds",
-    "message": "finding plan-reviewer:p1 stayed open across two rounds",
-    "plan_hash": "075b8aed179a637c4e557229bc5e5abe2070866e11d83286d5257cdd3e406dd5",
-    "at": "2026-11-27T10:37:03+00:00",
-    "resign_eval": false
-  },
+  "blocker": null,
   "fix": null,
   "ask": null,
   "split": "j-20261127T103706+0000-bbac19dc",
@@ -33,7 +27,14 @@
   "resigns": [],
   "accepted_risks": [],
   "waivers": [],
-  "overrides": [],
+  "overrides": [
+    {
+      "edge": "blocked->ready",
+      "reason": "p1 fixed: O3 is now support, O5 needs O3 and O4, tests/test_audit.py moved to O3; round 3 reviews it",
+      "by": "delegated:jasperginn@gmail.com/claude",
+      "at": "2026-11-27T10:37:21+00:00"
+    }
+  ],
   "round": {
     "kind": "plan",
     "n": 2,
@@ -72,8 +73,14 @@
       "to": "blocked",
       "at": "2026-11-27T10:37:03+00:00",
       "by": "review close"
+    },
+    {
+      "from": "blocked",
+      "to": "ready",
+      "at": "2026-11-27T10:37:21+00:00",
+      "by": "unblock"
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-27T10:37:06+00:00"
+  "at": "2026-11-27T10:37:21+00:00"
 }
