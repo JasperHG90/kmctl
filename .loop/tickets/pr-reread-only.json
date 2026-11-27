@@ -20,7 +20,8 @@
   "worktree": "/home/vscode/workspace.worktrees/pr-reread-only",
   "branch": "loop/pr-reread-only",
   "stamps": [
-    "2e508713aeafd56522d7ff246a06e29ba2a45b979258f47893d3e2fa22e01cc9"
+    "2e508713aeafd56522d7ff246a06e29ba2a45b979258f47893d3e2fa22e01cc9",
+    "dcc6b1270e8564da934dd258787f1317283312e400103a9520e197a775fccd9d"
   ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude",
@@ -263,5 +264,5 @@
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-27T11:06:03+00:00"
+  "at": "2026-11-27T11:10:27+00:00"
 }
