@@ -9,6 +9,9 @@ generated:
 status: stable
 sources:
   - resource: "packages/kmctl/src/kmctl/summary.py"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0054: A verify does not put the summary behind

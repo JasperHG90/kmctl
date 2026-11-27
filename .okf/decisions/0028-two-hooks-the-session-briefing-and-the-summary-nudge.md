@@ -12,6 +12,9 @@ sources:
   - resource: "packages/kmctl/apm/claude/.apm/hooks/hooks.json"
   - resource: "packages/kmctl/src/kmctl/plugin.py"
   - resource: "packages/kmctl/src/kmctl/doctor.py"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0028: Two hooks: the session briefing and the summary nudge

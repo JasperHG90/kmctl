@@ -9,6 +9,9 @@ generated:
 status: stable
 sources:
   - resource: "packages/kmctl/src/kmctl/review_due.py"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0052: Accepting a draft does not make a verified record due

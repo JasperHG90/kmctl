@@ -11,6 +11,9 @@ sources:
   - resource: "packages/kmctl/src/kmctl/accept.py"
   - resource: "packages/kmctl/src/kmctl/checks.py"
   - resource: "action/knowledge-ci.sh"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0050: Drafts are settled before review, and only a person accepts one

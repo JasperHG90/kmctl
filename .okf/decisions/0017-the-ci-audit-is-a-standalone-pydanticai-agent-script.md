@@ -7,6 +7,9 @@ generated:
   by: claude-opus/5.5
   at: 2026-10-17T07:11:45Z
 status: stable
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0017: The CI audit is a standalone PydanticAI agent script

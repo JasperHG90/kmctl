@@ -7,6 +7,9 @@ generated:
   by: claude-opus/5.5
   at: 2026-10-15
 status: deprecated
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0010: The CI audit runs Hermes Agent against any OpenAI-compatible provider

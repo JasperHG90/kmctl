@@ -9,6 +9,9 @@ generated:
 status: stable
 sources:
   - resource: "packages/kmctl/src/kmctl/scaffold.py"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0051: kmctl init sets a union merge for the log and the indexes

@@ -10,6 +10,9 @@ status: stable
 sources:
   - resource: "action.yml"
   - resource: "action/agent.py"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0057: The audit runs on a pull request and comments on the decisions it may have outdated

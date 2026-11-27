@@ -10,6 +10,9 @@ status: stable
 sources:
   - resource: "packages/kmctl/"
   - resource: "packages/kmaudit/"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0046: kmctl works from code toward knowledge and kmaudit from knowledge toward code

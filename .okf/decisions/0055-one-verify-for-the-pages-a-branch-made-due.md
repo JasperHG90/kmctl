@@ -10,6 +10,9 @@ status: stable
 sources:
   - resource: "packages/kmctl/src/kmctl/review_due.py"
   - resource: "packages/kmctl/src/kmctl/verify.py"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T09:48:51Z
 ---
 
 # ADR 0055: One verify for the pages a branch made due
