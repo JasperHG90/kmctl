@@ -3,7 +3,7 @@
   "slug": "verify-folder-and-path-ids",
   "stage": "planning",
   "attempts": 0,
-  "plan_rounds": 0,
+  "plan_rounds": 1,
   "review_rounds": 0,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
@@ -82,8 +82,27 @@
   "accepted_risks": [],
   "waivers": [],
   "overrides": [],
-  "round": null,
-  "plan_hash": "93eecf76f7e180dfa953d0e0353246100c9e31b11945a7818aa2d0b07bea5065",
+  "round": {
+    "kind": "plan",
+    "n": 1,
+    "binds": "951d4d8ab18ef6d72d31a982e77291d9f9a3618e4d2cb005838bd81f4f4bc44c",
+    "started_at": "2026-11-27T09:51:19+00:00",
+    "passes": [
+      "plan-reviewer"
+    ],
+    "tree": null,
+    "plan_hash": null,
+    "eval_hash": null,
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": false,
+    "outcome": null
+  },
+  "plan_hash": "951d4d8ab18ef6d72d31a982e77291d9f9a3618e4d2cb005838bd81f4f4bc44c",
   "intent": {
     "epic": null,
     "depends_on": [],
@@ -98,5 +117,5 @@
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-27T09:51:11+00:00"
+  "at": "2026-11-27T09:51:19+00:00"
 }
