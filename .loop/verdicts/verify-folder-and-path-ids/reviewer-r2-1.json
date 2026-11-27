@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.1",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": "_targets stripped .okf/ before checking for docs/, so .okf/docs/how-to/run.md was accepted and wrote docs/how-to/run.md",
+      "anchor": "packages/kmctl/src/kmctl/verify.py:107",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "f6558b8d9250678e12e282d4b8d86564c2bbc0e29cb9d6000fb07246583fbd75",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.4.0",
+  "at": "2026-11-27T10:22:53+00:00",
+  "checklist": null
+}
