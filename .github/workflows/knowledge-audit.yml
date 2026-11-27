@@ -1,11 +1,20 @@
 name: knowledge audit
 
-# On a pull request from this repository, a model rereads each .okf/ and
-# docs/ page whose sources the pull request changed, and one comment says
-# which still hold (ADR 0060). It never fails the pull request's check.
+# A model rereads each .okf/ and docs/ page whose sources a pull request
+# changed, and one comment says which still hold (ADR 0060, ADR 0061). It
+# runs when someone starts it on a ready pull request, on that pull
+# request's branch, so its check lands on the pull request's head:
+#
+#   gh workflow run knowledge-audit.yml --ref BRANCH -f pr=NUMBER
+#
+# Mark the audit check required: a refusal fails it, and a push after a run
+# leaves the new commit waiting for another run. Findings never fail it.
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: The number of the pull request to audit; run on its branch.
+        required: true
 
 permissions:
   contents: read
@@ -15,12 +24,16 @@ permissions:
 # repository runs action/agent.py from its own checkout; another repository
 # uses the action at a pinned release.
 jobs:
-  # Reads the audit comment, follows its run link and hands that run's report
-  # to the audit job, which answers each earlier finding and raises new ones
-  # only on pages changed since. Only this job and publish hold a token.
+  # Looks the pull request up and refuses one that is closed, a draft, from a
+  # fork, or whose head is not this run's commit; then reads the audit
+  # comment and hands the report of the run it links to the audit job. Only
+  # this job and publish hold a token.
   previous:
-    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
+    outputs:
+      pr: ${{ steps.fetch.outputs.pr }}
+      base: ${{ steps.fetch.outputs.base }}
+      head: ${{ steps.fetch.outputs.head }}
     permissions:
       contents: read
       pull-requests: read
@@ -33,13 +46,15 @@ jobs:
       - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: false
-      - name: Fetch the previous report
+      - name: Resolve the pull request and fetch the previous report
+        id: fetch
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: >-
           uv run --no-config --script action/agent.py previous
-          --pr ${{ github.event.pull_request.number }}
+          --pr ${{ inputs.pr }}
+          --resolve ${{ github.sha }}
           --out ${{ runner.temp }}/previous-report
       - name: Hand the previous report on
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -48,14 +63,23 @@ jobs:
           path: ${{ runner.temp }}/previous-report
           if-no-files-found: ignore
 
-  # The agent sends the pages to a model with the API key. A fork's pull
-  # request gets no secrets, so both jobs skip it. The agent has no shell and
-  # this job no GitHub token, so the key and a token stay out of its reach.
+  # The agent sends the pages to a model with the API key. It has no shell
+  # and this job no GitHub token, so the key and a token stay out of its
+  # reach. Never skipped, so a refusal leaves a failed check rather than a skipped
+  # one, which a required check would count as passing.
   audit:
     needs: previous
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
     steps:
+      - name: Stop unless the pull request was resolved
+        env:
+          RESULT: ${{ needs.previous.result }}
+        run: |
+          if [ "$RESULT" != success ]; then
+            echo "knowledge audit: the previous job did not resolve the pull request ($RESULT); see its log." >&2
+            exit 1
+          fi
       # No token left in git config for the agent to read; full history for
       # the comparison with the base branch.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -90,8 +114,8 @@ jobs:
             --model deepseek-v4.1-flash
             --base-url https://ollama.com/v1
             --api-key-env AUDIT_API_KEY
-            --base "origin/${{ github.base_ref }}"
-            --head "${{ github.event.pull_request.head.sha }}"
+            --base "origin/${{ needs.previous.outputs.base }}"
+            --head "${{ needs.previous.outputs.head }}"
             --timeout 30m
             --out "${{ runner.temp }}/agent-report")
           [ -f "$PREVIOUS" ] && args+=(--previous "$PREVIOUS")
@@ -107,12 +131,12 @@ jobs:
 
   # A fresh runner that shares only the artifact with the agent's job, so
   # nothing the agent changed runs with the token. It posts one comment on
-  # the pull request when there is a finding, and replaces it on each push. It
-  # runs unless the run was cancelled; a missing report posts nothing, and
-  # the failed audit job shows why.
+  # the pull request when there is a finding, and replaces it on each run. It
+  # runs once the pull request was resolved, unless the run was cancelled; a
+  # missing report posts nothing, and the failed audit job shows why.
   publish:
-    needs: audit
-    if: ${{ !cancelled() && github.event.pull_request.head.repo.full_name == github.repository }}
+    needs: [previous, audit]
+    if: ${{ !cancelled() && needs.previous.result == 'success' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -138,5 +162,5 @@ jobs:
         run: >-
           uv run --no-config --script action/agent.py publish
           ${{ runner.temp }}/agent-report/report.json
-          --pr ${{ github.event.pull_request.number }}
+          --pr ${{ needs.previous.outputs.pr }}
           --title "Knowledge audit"

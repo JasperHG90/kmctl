@@ -455,11 +455,10 @@ def test_event_check_runs_only_on_a_same_repository_pull_request(
         proc, output = _run_check(check, "pull_request", tmp_path, **env)
         assert proc.returncode == 0, proc.stderr
         assert "run=false" in output
-    for event in ("schedule", "workflow_dispatch"):
-        proc, output = _run_check(check, event, tmp_path, **SAME_REPO)
-        assert proc.returncode != 0, event
-        assert f"refused for event '{event}'" in proc.stderr
-        assert "run=true" not in output
+    proc, output = _run_check(check, "schedule", tmp_path, **SAME_REPO)
+    assert proc.returncode != 0
+    assert "refused for event 'schedule'" in proc.stderr
+    assert "run=true" not in output
 
 
 def test_event_check_skips_fork_pull_request(tmp_path: Path) -> None:
@@ -527,6 +526,7 @@ def _run_step(step: dict, tmp_path: Path, event: str, **env: str) -> list[str]:
             "PATH": f"{bin_dir}:{os.environ['PATH']}",
             "GITHUB_EVENT_NAME": event,
             "GITHUB_BASE_REF": "main",
+            "BASE_BRANCH": "main",
             "RUNNER_TEMP": str(tmp_path / "runner"),
             "MODEL": "test",
             "TIMEOUT": "30m",
@@ -554,7 +554,9 @@ def test_agent_step_passes_base_without_a_worktree(tmp_path: Path) -> None:
 def test_publish_step_passes_pr(tmp_path: Path) -> None:
     _, post = _publish_steps(_action_steps())
 
-    assert post["env"]["PR_NUMBER"] == "${{ github.event.pull_request.number }}"
+    assert post["env"]["PR_NUMBER"] == (
+        "${{ inputs.pr || github.event.pull_request.number }}"
+    )
     args = _run_step(
         post, tmp_path, "pull_request", PR_NUMBER="12", MIN_SEVERITY="high"
     )
@@ -581,7 +583,7 @@ def test_publish_step_refuses_without_a_pull_request(tmp_path: Path) -> None:
     )
 
     assert proc.returncode == 1
-    assert "publish mode posts to a pull request" in proc.stderr
+    assert "give the pr input, or run on a pull_request" in proc.stderr
     assert not calls.exists()
 
 
@@ -644,7 +646,8 @@ def _previous_step(steps: list[dict]) -> dict:
     return next(
         s
         for s in steps
-        if "agent.py" in str(s.get("run", "")) and " previous " in str(s.get("run", ""))
+        if "agent.py" in str(s.get("run", ""))
+        and "previous --pr" in str(s.get("run", ""))
     )
 
 
@@ -690,7 +693,9 @@ def test_audit_step_passes_previous_only_when_present(tmp_path: Path) -> None:
     assert download["with"]["name"] == "previous-report"
     assert download["continue-on-error"] is True
     assert steps.index(download) < steps.index(agent)
-    assert agent["env"]["HEAD_SHA"] == "${{ github.event.pull_request.head.sha }}"
+    assert agent["env"]["HEAD_SHA"] == (
+        "${{ inputs.head || github.event.pull_request.head.sha }}"
+    )
 
     without = _run_step(agent, tmp_path / "none", "pull_request", HEAD_SHA="abc")
     assert "--previous" not in without
@@ -713,6 +718,7 @@ def test_audit_step_passes_previous_only_when_present(tmp_path: Path) -> None:
             "MODEL": "test",
             "TIMEOUT": "30m",
             "HEAD_SHA": "abc",
+            "BASE_BRANCH": "main",
         },
         check=True,
     )
@@ -850,3 +856,70 @@ def test_action_runs_the_agent_script_without_uv_config() -> None:
     for step in (agent, post):
         assert "uv run --no-config --script" in step["run"], step["name"]
         assert "uv run --script" not in step["run"], step["name"]
+
+
+def test_event_check_runs_on_a_dispatch_with_a_base(tmp_path: Path) -> None:
+    """A dispatch runs the audit when the previous job's base reaches it, and is refused without."""
+    check = _event_check(_action_steps())
+
+    assert check["env"]["BASE_INPUT"] == "${{ inputs.base }}"
+    proc, output = _run_check(check, "workflow_dispatch", tmp_path, BASE_INPUT="main")
+    assert proc.returncode == 0, proc.stderr
+    assert "run=true" in output
+    proc, output = _run_check(check, "workflow_dispatch", tmp_path, BASE_INPUT="")
+    assert proc.returncode != 0
+    assert "without the base input" in proc.stderr
+    assert "run=true" not in output
+
+
+def test_agent_step_reads_base_and_head_from_inputs_or_event(tmp_path: Path) -> None:
+    """The step's base and head come from the inputs on a dispatch, from the event on a pull request."""
+    agent, _ = _agent_steps(_action_steps())
+
+    assert agent["env"]["BASE_BRANCH"] == "${{ inputs.base || github.base_ref }}"
+    assert agent["env"]["HEAD_SHA"] == (
+        "${{ inputs.head || github.event.pull_request.head.sha }}"
+    )
+    args = _run_step(
+        agent, tmp_path, "workflow_dispatch", BASE_BRANCH="release", HEAD_SHA="feed"
+    )
+    assert args[args.index("--base") + 1] == "origin/release"
+    assert args[args.index("--head") + 1] == "feed"
+
+
+def test_dispatch_inputs_reach_publish_and_previous(tmp_path: Path) -> None:
+    """Publish and previous take pr from the input; previous resolves on a dispatch and exposes outputs."""
+    action = yaml.safe_load((ROOT / "action.yml").read_text())
+    steps = action["runs"]["steps"]
+    fetch = _previous_step(steps)
+    _, post = _publish_steps(steps)
+
+    for name in ("pr", "base", "head"):
+        assert action["inputs"][name]["description"], name
+        assert (
+            action["outputs"][name]["value"] == f"${{{{ steps.fetch.outputs.{name} }}}}"
+        )
+    assert fetch["id"] == "fetch"
+    pr_expr = "${{ inputs.pr || github.event.pull_request.number }}"
+    assert fetch["env"]["PR_NUMBER"] == pr_expr
+    assert post["env"]["PR_NUMBER"] == pr_expr
+    on_dispatch = _run_step(
+        fetch,
+        tmp_path / "dispatch",
+        "workflow_dispatch",
+        PR_NUMBER="12",
+        TITLE="Knowledge audit",
+        REPORT_NAME="agent-report",
+        GITHUB_SHA="cafe",
+    )
+    assert on_dispatch[on_dispatch.index("--resolve") + 1] == "cafe"
+    on_pr = _run_step(
+        fetch,
+        tmp_path / "pr",
+        "pull_request",
+        PR_NUMBER="12",
+        TITLE="Knowledge audit",
+        REPORT_NAME="agent-report",
+    )
+    assert "--resolve" not in on_pr
+    assert _agent_parser().parse_args(_script_args(on_dispatch)).resolve == "cafe"

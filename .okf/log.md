@@ -402,3 +402,4 @@
 - Added `decisions/0059-kmctl-verify-takes-a-folder-id` with `kmctl new decision`.
 - Accepted `decisions/0059-kmctl-verify-takes-a-folder-id` (human:jasper).
 - Accepted `decisions/0060-the-ci-agent-only-rereads-the-pages-a-pull-request-changed` (human:jasper).
+- Added `decisions/0061-the-reread-runs-on-demand-on-a-ready-pull-request` with `kmctl new decision`.

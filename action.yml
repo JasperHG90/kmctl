@@ -37,12 +37,13 @@ inputs:
       links and hands it to the audit job as the previous-report artifact; the
       audit answers each earlier finding and raises new ones only on pages
       changed since that report. audit runs
-      the agent in action/agent.py (PydanticAI) on a pull request from the
-      same repository (ADR 0060): it lists every page under .okf/ and docs/
+      the agent in action/agent.py (PydanticAI) on a pull request: on a
+      workflow_dispatch with the base and head inputs (ADR 0061), or on a
+      pull_request from the same repository (ADR 0060). It lists every page under .okf/ and docs/
       whose sources name a file the pull request changed, has the model
       reread each against the change with read-only tools, and uploads its
       report as the report_name artifact. With nothing in scope it calls no
-      model. It needs model, refuses any event but pull_request, and refuses
+      model. It needs model, refuses any other event, and refuses
       to start when it could read a GitHub token: check out with
       persist-credentials: false and fetch-depth: 0, and set no GH_TOKEN or
       GITHUB_TOKEN for the job. A pull request from a fork or from Dependabot
@@ -99,6 +100,29 @@ inputs:
       so the next run replaces it and previous mode finds it.
     required: false
     default: Knowledge audit
+  pr:
+    description: >-
+      On a workflow_dispatch: the pull request to audit. Previous mode looks
+      it up, refuses one that is closed, a draft, from a fork, or whose head
+      is not the run's commit, and exposes its number, base branch and head
+      as the outputs pr, base and head; publish posts to it. On a
+      pull_request event it comes from the event.
+    required: false
+    default: ""
+  base:
+    description: >-
+      On a workflow_dispatch: the base branch to compare with, from previous
+      mode's base output. Audit mode refuses a dispatch without it. On a
+      pull_request event it comes from the event.
+    required: false
+    default: ""
+  head:
+    description: >-
+      On a workflow_dispatch: the pull request's head commit, from previous
+      mode's head output, which the report records. On a pull_request event
+      it comes from the event.
+    required: false
+    default: ""
   report_name:
     description: >-
       Audit, publish and previous modes: the artifact's name, which audit mode
@@ -106,6 +130,16 @@ inputs:
       run the comment links.
     required: false
     default: agent-report
+outputs:
+  pr:
+    description: Previous mode, on a dispatch - the pull request's number.
+    value: ${{ steps.fetch.outputs.pr }}
+  base:
+    description: Previous mode, on a dispatch - the pull request's base branch.
+    value: ${{ steps.fetch.outputs.base }}
+  head:
+    description: Previous mode, on a dispatch - the pull request's head commit.
+    value: ${{ steps.fetch.outputs.head }}
 runs:
   using: composite
   steps:
@@ -150,8 +184,15 @@ runs:
         HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
         BASE_REPO: ${{ github.repository }}
         ACTOR: ${{ github.actor }}
+        BASE_INPUT: ${{ inputs.base }}
       run: |
         case "$GITHUB_EVENT_NAME" in
+          workflow_dispatch)
+            if [ -z "$BASE_INPUT" ]; then
+              echo "kmctl audit: refused for workflow_dispatch without the base input; pass the previous job's base output." >&2
+              exit 1
+            fi
+            echo "run=true" >> "$GITHUB_OUTPUT" ;;
           pull_request)
             if [ "$HEAD_REPO" != "$BASE_REPO" ]; then
               echo "::notice::kmctl audit: skipped; a pull request from a fork gets no secrets, so no audit."
@@ -162,7 +203,7 @@ runs:
             else
               echo "run=true" >> "$GITHUB_OUTPUT"
             fi ;;
-          *) echo "kmctl audit: refused for event '$GITHUB_EVENT_NAME'; audit mode runs on a pull_request from the same repository." >&2; exit 1 ;;
+          *) echo "kmctl audit: refused for event '$GITHUB_EVENT_NAME'; audit mode runs on a pull_request from the same repository or a workflow_dispatch." >&2; exit 1 ;;
         esac
     # --no-config: uv would otherwise read a uv.toml or pyproject.toml from the
     # checkout, which a pull request controls, and could install other code.
@@ -190,9 +231,10 @@ runs:
         BASE_URL: ${{ inputs.base_url }}
         API_KEY_ENV: ${{ inputs.api_key_env }}
         TIMEOUT: ${{ inputs.timeout }}
-        HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        HEAD_SHA: ${{ inputs.head || github.event.pull_request.head.sha }}
+        BASE_BRANCH: ${{ inputs.base || github.base_ref }}
       run: |
-        args=(run --model "$MODEL" --base "origin/$GITHUB_BASE_REF" --head "$HEAD_SHA" --out "$RUNNER_TEMP/agent-report" --timeout "$TIMEOUT")
+        args=(run --model "$MODEL" --base "origin/$BASE_BRANCH" --head "$HEAD_SHA" --out "$RUNNER_TEMP/agent-report" --timeout "$TIMEOUT")
         [ -n "$BASE_URL" ] && args+=(--base-url "$BASE_URL")
         [ -n "$API_KEY_ENV" ] && args+=(--api-key-env "$API_KEY_ENV")
         previous="$RUNNER_TEMP/previous-report/report.json"
@@ -210,6 +252,7 @@ runs:
     # run's report, then hands it to the audit job as previous-report. No
     # comment, link or artifact: it uploads nothing and passes.
     - name: Fetch the previous report
+      id: fetch
       if: inputs.mode == 'previous'
       shell: bash
       working-directory: ${{ inputs.path }}
@@ -218,14 +261,17 @@ runs:
         GH_REPO: ${{ github.repository }}
         TITLE: ${{ inputs.title }}
         REPORT_NAME: ${{ inputs.report_name }}
-        PR_NUMBER: ${{ github.event.pull_request.number }}
+        PR_NUMBER: ${{ inputs.pr || github.event.pull_request.number }}
       run: |
         if [ -z "$PR_NUMBER" ]; then
-          echo "kmctl previous: refused for event '$GITHUB_EVENT_NAME'; previous mode reads a pull request's audit comment." >&2
+          echo "kmctl previous: refused for event '$GITHUB_EVENT_NAME'; give the pr input, or run on a pull_request." >&2
           exit 1
         fi
-        uv run --no-config --script "${{ github.action_path }}/action/agent.py" \
-          previous --pr "$PR_NUMBER" --title "$TITLE" --artifact "$REPORT_NAME" --out "$RUNNER_TEMP/previous-report"
+        args=(previous --pr "$PR_NUMBER" --title "$TITLE" --artifact "$REPORT_NAME" --out "$RUNNER_TEMP/previous-report")
+        # On a dispatch, look the pull request up first and refuse one that
+        # must not be audited; its outputs feed the later jobs.
+        [ "$GITHUB_EVENT_NAME" = workflow_dispatch ] && args+=(--resolve "$GITHUB_SHA")
+        uv run --no-config --script "${{ github.action_path }}/action/agent.py" "${args[@]}"
     - name: Hand the previous report on
       if: inputs.mode == 'previous'
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -251,10 +297,10 @@ runs:
         GH_REPO: ${{ github.repository }}
         MIN_SEVERITY: ${{ inputs.min_severity }}
         TITLE: ${{ inputs.title }}
-        PR_NUMBER: ${{ github.event.pull_request.number }}
+        PR_NUMBER: ${{ inputs.pr || github.event.pull_request.number }}
       run: |
         if [ -z "$PR_NUMBER" ]; then
-          echo "kmctl publish: refused for event '$GITHUB_EVENT_NAME'; publish mode posts to a pull request." >&2
+          echo "kmctl publish: refused for event '$GITHUB_EVENT_NAME'; give the pr input, or run on a pull_request." >&2
           exit 1
         fi
         uv run --no-config --script "${{ github.action_path }}/action/agent.py" \

@@ -1379,27 +1379,56 @@ def test_release_kmaudit_bump_stages_what_set_writes() -> None:
         assert rel.as_posix() in line.split()
 
 
-#: The same-repository condition both knowledge-audit jobs carry (ADR 0060).
-SAME_REPO = "github.event.pull_request.head.repo.full_name == github.repository"
-
-
-def test_knowledge_audit_runs_the_reread_on_pull_requests() -> None:
-    """Pull requests only; both jobs skip a fork; only publish may write; no tracing."""
+def test_knowledge_audit_runs_on_dispatch() -> None:
+    """Dispatch only, with a required pr input; only previous and publish hold a token."""
     data = _load(KNOWLEDGE_AUDIT)
-    audit, publish = data["jobs"]["audit"], data["jobs"]["publish"]
+    jobs = data["jobs"]
 
-    assert set(data["on"]) == {"pull_request"}
-    assert "ready_for_review" in data["on"]["pull_request"]["types"]
+    assert set(data["on"]) == {"workflow_dispatch"}
+    assert data["on"]["workflow_dispatch"]["inputs"]["pr"]["required"] is True
     assert data["permissions"] == {"contents": "read"}
-    assert SAME_REPO in audit["if"] and SAME_REPO in publish["if"]
-    assert "!cancelled()" in publish["if"]
-    assert "permissions" not in audit
-    assert publish["permissions"] == {"contents": "read", "pull-requests": "write"}
     assert "LANGFUSE" not in KNOWLEDGE_AUDIT.read_text()
-    assert "secrets." not in yaml.safe_dump(publish)
-    for step in audit["steps"]:
+    assert "head.repo.full_name" not in KNOWLEDGE_AUDIT.read_text()
+    assert jobs["previous"]["outputs"] == {
+        name: f"${{{{ steps.fetch.outputs.{name} }}}}"
+        for name in ("pr", "base", "head")
+    }
+    assert jobs["publish"]["permissions"] == {
+        "contents": "read",
+        "pull-requests": "write",
+    }
+    assert "permissions" not in jobs["audit"]
+    assert "secrets." not in yaml.safe_dump(jobs["publish"])
+    for step in jobs["audit"]["steps"]:
         text = yaml.safe_dump(step)
         assert "GH_TOKEN" not in text and "github.token" not in text, step
+
+
+def test_knowledge_audit_refusal_fails_the_audit_check(tmp_path: Path) -> None:
+    """A refused dispatch fails the audit job, which never skips; publish waits for a resolved one."""
+    jobs = _load(KNOWLEDGE_AUDIT)["jobs"]
+    audit, publish = jobs["audit"], jobs["publish"]
+
+    assert audit["if"] == "${{ !cancelled() }}"
+    assert audit["needs"] == "previous"
+    assert publish["needs"] == ["previous", "audit"]
+    assert publish["if"] == "${{ !cancelled() && needs.previous.result == 'success' }}"
+    gate = audit["steps"][0]
+    assert gate["env"]["RESULT"] == "${{ needs.previous.result }}"
+    for result, code in (
+        ("success", 0),
+        ("failure", 1),
+        ("skipped", 1),
+        ("cancelled", 1),
+    ):
+        proc = subprocess.run(
+            ["bash", "--noprofile", "--norc", "-eo", "pipefail", "-c", gate["run"]],
+            env={**os.environ, "RESULT": result},
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert proc.returncode == code, (result, proc.stderr)
 
 
 def _agent_module() -> Any:
@@ -1416,9 +1445,11 @@ def _agent_module() -> Any:
 
 #: The values a pull request run would give the expressions the workflow uses.
 EXPRESSIONS = {
-    "github.base_ref": "main",
-    "github.event.pull_request.number": "12",
-    "github.event.pull_request.head.sha": "abc123",
+    "inputs.pr": "12",
+    "github.sha": "abc123",
+    "needs.previous.outputs.pr": "12",
+    "needs.previous.outputs.base": "main",
+    "needs.previous.outputs.head": "abc123",
 }
 
 
@@ -1494,6 +1525,7 @@ def test_knowledge_audit_commands_parse_with_the_agent(tmp_path: Path) -> None:
     assert post["env"]["GH_TOKEN"] == "${{ github.token }}"
     parsed = parser.parse_args(_agent_args(fetch, tmp_path / "previous"))
     assert parsed.command == "previous" and parsed.pr == 12
+    assert parsed.resolve == "abc123"
 
 
 def test_knowledge_audit_fetches_the_previous_report() -> None:
@@ -1506,7 +1538,6 @@ def test_knowledge_audit_fetches_the_previous_report() -> None:
         "pull-requests": "read",
         "actions": "read",
     }
-    assert SAME_REPO in previous["if"]
     [hand] = [
         s
         for s in previous["steps"]

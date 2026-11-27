@@ -1101,8 +1101,85 @@ def find_comment(pr: int, mark: str) -> dict | None:
     return next((c for c in flat if str(c.get("body", "")).startswith(mark)), None)
 
 
+class PullRequest(BaseModel):
+    """The fields of ``gh pr view --json`` that decide whether a dispatch may audit it.
+
+    The field names are gh's own.
+    """
+
+    number: int
+    state: str
+    isDraft: bool
+    isCrossRepository: bool
+    headRefOid: str
+    baseRefName: str
+
+
+def resolve(pr: int, sha: str) -> PullRequest:
+    """Look pull request ``pr`` up and refuse one a dispatch at ``sha`` must not audit.
+
+    Raises
+    ------
+    UsageError
+        If the pull request is closed or merged, a draft, from a fork, or its
+        head is not ``sha``, or gh cannot read it; the text says which.
+    """
+    try:
+        raw = gh(
+            "pr",
+            "view",
+            str(pr),
+            "--json",
+            "number,state,isDraft,isCrossRepository,headRefOid,baseRefName",
+        )
+    except GhFailed as err:
+        raise UsageError(f"refused: cannot read pull request #{pr}: {err}") from err
+    found = PullRequest.model_validate_json(raw)
+    if found.state != "OPEN":
+        raise UsageError(
+            f"refused: pull request #{pr} is {found.state.lower()}, not open."
+        )
+    if found.isDraft:
+        raise UsageError(
+            f"refused: pull request #{pr} is a draft; mark it ready for review, then run the audit."
+        )
+    if found.isCrossRepository:
+        raise UsageError(
+            f"refused: pull request #{pr} comes from a fork, which a dispatch cannot audit."
+        )
+    if found.headRefOid != sha:
+        raise UsageError(
+            f"refused: pull request #{pr}'s head is {found.headRefOid}, but this run is at "
+            f"{sha}; start it on the pull request's branch, after its latest push."
+        )
+    return found
+
+
+def write_outputs(values: dict[str, str]) -> None:
+    """Write ``values`` as step outputs to ``$GITHUB_OUTPUT``, or print them outside Actions."""
+    text = "".join(f"{k}={v}\n" for k, v in values.items())
+    if target := os.environ.get("GITHUB_OUTPUT"):
+        with open(target, "a") as handle:
+            handle.write(text)
+    else:
+        print(text, end="")
+
+
 def previous(args: argparse.Namespace) -> int:
-    """Run the ``previous`` command: download the report the audit comment's run link names."""
+    """Run the ``previous`` command: download the report the audit comment's run link names.
+
+    With ``--resolve``, first look the pull request up, refuse one a dispatch
+    must not audit, and write its number, base branch and head as outputs.
+    """
+    if args.resolve:
+        found = resolve(args.pr, args.resolve)
+        write_outputs(
+            {
+                "pr": str(found.number),
+                "base": found.baseRefName,
+                "head": found.headRefOid,
+            }
+        )
     try:
         comment = find_comment(args.pr, COMMENT_MARK.format(title=args.title))
         if comment is None:
@@ -1330,7 +1407,8 @@ def parser() -> argparse.ArgumentParser:
             "artifact left, or when gh fails, download nothing and exit 0, so the "
             "audit starts without a previous report rather than not at all. Needs "
             "gh, GH_TOKEN, pull-requests: read and actions: read; run it in a job "
-            "of its own, not the agent's. Exit code: 0."
+            "of its own, not the agent's. Exit codes: 0 done, 2 --resolve refused "
+            "the pull request."
         ),
     )
     v.add_argument(
@@ -1340,6 +1418,17 @@ def parser() -> argparse.ArgumentParser:
         "--title",
         default="Knowledge audit",
         help="The audit comment's heading, which marks it. Default: Knowledge audit.",
+    )
+    v.add_argument(
+        "--resolve",
+        default=None,
+        metavar="SHA",
+        help=(
+            "On a dispatch: first look the pull request up, and exit 2 naming the "
+            "reason when it is closed, a draft, from a fork, or its head is not SHA "
+            "(the run's commit); otherwise write pr, base and head to "
+            "$GITHUB_OUTPUT. Default: none, so no lookup."
+        ),
     )
     v.add_argument(
         "--artifact",

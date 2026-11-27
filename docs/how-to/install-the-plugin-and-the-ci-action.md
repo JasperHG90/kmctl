@@ -327,8 +327,8 @@ no report. It writes its report to the job summary and keeps it as an
 `agent-report` artifact (`report.json`, `report.md` and the full
 `transcript.json`). A second job, with `mode: publish`, posts it as one
 comment on the pull request when there is a finding at `low` or above (or
-the severity you choose), and replaces that comment on each push. A finding never fails the
-check.
+the severity you choose), and replaces that comment on each run. A finding
+never fails the check.
 
 To try the agent on your machine first and learn to read its report, follow
 [Audit your repository with the agent](../tutorials/audit-your-repository-with-the-agent.md).
@@ -369,37 +369,52 @@ Publish mode takes two more:
    ```yaml
    name: knowledge audit
 
-   # On a pull request from this repository, a model rereads each .okf/ and
-   # docs/ page whose sources the pull request changed. It never fails the check.
+   # A model rereads each .okf/ and docs/ page whose sources a pull request
+   # changed. Start it on a ready pull request's branch:
+   #   gh workflow run knowledge-audit.yml --ref BRANCH -f pr=NUMBER
+   # Findings never fail the check; a refusal does.
    on:
-     pull_request:
-       types: [opened, synchronize, reopened, ready_for_review]
+     workflow_dispatch:
+       inputs:
+         pr:
+           description: The pull request to audit; run on its branch.
+           required: true
 
    # A composite action cannot set token permissions; the calling workflow does.
    permissions:
      contents: read
 
    jobs:
-     # Reads the audit comment and hands the report of the run it links to
-     # the audit job. A fork's pull request gets no secrets, so every job
-     # skips it.
+     # Looks the pull request up, refuses one that is closed, a draft, from
+     # a fork or not at this run's commit, and hands the report of the run
+     # the audit comment links to the audit job.
      previous:
-       if: github.event.pull_request.head.repo.full_name == github.repository
        runs-on: ubuntu-latest
        permissions:
          contents: read
          pull-requests: read
          actions: read
+       outputs:
+         pr: ${{ steps.kmctl.outputs.pr }}
+         base: ${{ steps.kmctl.outputs.base }}
+         head: ${{ steps.kmctl.outputs.head }}
        steps:
          - uses: JasperHG90/kmctl@v0.18.0
+           id: kmctl
            with:
              mode: previous
+             pr: ${{ inputs.pr }}
 
+     # Never skipped: a skipped job passes a required check.
      audit:
        needs: previous
-       if: github.event.pull_request.head.repo.full_name == github.repository
+       if: ${{ !cancelled() }}
        runs-on: ubuntu-latest
        steps:
+         - name: Stop unless the pull request was resolved
+           env:
+             RESULT: ${{ needs.previous.result }}
+           run: '[ "$RESULT" = success ] || { echo "previous job: $RESULT" >&2; exit 1; }'
          # No token left in git config for the agent to read; full history to
          # find where the branch split from the base branch.
          - uses: actions/checkout@v4
@@ -415,13 +430,14 @@ Publish mode takes two more:
              base_url: https://ollama.com/v1
              model: deepseek-v4.1-flash
              api_key_env: AUDIT_API_KEY
+             base: ${{ needs.previous.outputs.base }}
+             head: ${{ needs.previous.outputs.head }}
 
      # A fresh runner that gets only the report, so nothing the agent
-     # changed runs with the token. It runs when the audit failed too, and
-     # then posts nothing.
+     # changed runs with the token.
      publish:
-       needs: audit
-       if: ${{ !cancelled() && github.event.pull_request.head.repo.full_name == github.repository }}
+       needs: [previous, audit]
+       if: ${{ !cancelled() && needs.previous.result == 'success' }}
        runs-on: ubuntu-latest
        permissions:
          contents: read
@@ -433,6 +449,7 @@ Publish mode takes two more:
          - uses: JasperHG90/kmctl@v0.18.0
            with:
              mode: publish
+             pr: ${{ needs.previous.outputs.pr }}
    ```
 
 A project made from the copier template gets this workflow by answering
@@ -442,12 +459,24 @@ yes to `pr_audit`
 `timeout-minutes` on the step is a second limit after `timeout`, so a stuck
 run cannot hold the runner for GitHub's six-hour default.
 
-The same-repository condition on both jobs makes GitHub show them as
-skipped on a fork's pull request, not failed. Without it the action skips
-the audit itself, with a notice, and publish finds no report, posts nothing
-and passes. A Dependabot pull request gets no secrets either, and the action
-skips it the same way. `!cancelled()` lets publish run after a failed audit,
-where it finds no report and posts nothing.
+**Run it once the pull request is ready.** The workflow runs on
+`workflow_dispatch` only. Start it on the pull request's branch, so its
+check lands on the pull request's head commit:
+
+```
+gh workflow run knowledge-audit.yml --ref BRANCH -f pr=NUMBER
+```
+
+or pick the branch and enter the number in the Actions tab. Then make it
+mandatory: in branch protection, mark `audit` a required check. A push after
+a run leaves the new commit without the check, so the pull request waits for
+another run. The previous job refuses a pull request that is closed, a
+draft, from a fork, or whose head is not the run's commit (a run on the
+wrong branch, or before the latest push), and the audit job then fails
+rather than skips, since GitHub counts a skipped job as passing a required
+check. A fork's pull request cannot be dispatched, so a required check
+blocks it. Publish runs only once the pull request was resolved, and posts
+nothing when the audit failed.
 
 **Each run starts from the last.** The `mode: previous` job, which needs
 `pull-requests: read` and `actions: read`, finds the audit comment, follows
@@ -463,23 +492,23 @@ The comment is short: a count, one bullet per finding at or above
 `min_severity` (title, where, and one sentence), the pages that still hold,
 and a folded block with each fix, its evidence and the `kmctl verify`
 command for the holding pages. It says how many findings below
-`min_severity` it left out. A later push replaces it; when a run finds
+`min_severity` it left out. A later run replaces it; when a run finds
 nothing at that severity, the comment says so. A run that fails or is skipped makes no report, so it leaves the last
 comment as it was, which may then be out of date. To title the comment
 differently, set `title` under the publish step's `with:`.
 
-Each push that changes a file a page names costs one model run; a push that
-changes none calls no model. Leave `ready_for_review` out of `types` and add
-`if: ${{ !github.event.pull_request.draft }}` to both jobs to skip draft
-pull requests.
+Each run on a pull request that changes a file a page names costs one model
+run; a run on one that changes none calls no model.
 
 `uv run --no-config --script action/agent.py run --help` lists every option
 the agent takes, with its default, and `publish --help` the publish options.
 
 This repository's own `.github/workflows/knowledge-audit.yml` runs the same
-commands as separate steps instead of `uses:`: in the audit job,
-`action/agent.py run --base origin/BASE` and the upload of the report; in the
-publish job, the download and `action/agent.py publish REPORT --pr N`. Read
+commands as separate steps instead of `uses:`: in the previous job,
+`action/agent.py previous --pr N --resolve SHA` and the upload of the
+previous report; in the audit job, `action/agent.py run --base origin/BASE
+--head HEAD` and the upload of the report; in the publish job, the download
+and `action/agent.py publish REPORT --pr N`. Read
 it to see exactly what the audit runs.
 
 **Ollama.** Ollama Cloud, as in the example, needs only the API key: its
@@ -491,13 +520,14 @@ than the model reports unless you set it, so a long conversation is cut
 without warning. A GitHub-hosted runner cannot reach Ollama on your own
 machine; use a self-hosted runner or a URL the runner can reach.
 
-Audit mode runs only on a `pull_request` from the same repository. Never use
-`pull_request_target`: it runs with your secrets for a fork's pull request
-too. On any other event, `schedule` and `workflow_dispatch` included, the
-action stops with:
+Audit mode runs on a `workflow_dispatch` that passes the `base` input, as
+the example does, or on a `pull_request` from the same repository, for a
+workflow that keeps that trigger. Never use `pull_request_target`: it runs
+with your secrets for a fork's pull request too. On any other event,
+`schedule` included, the action stops with:
 
 ```
-kmctl audit: refused for event 'pull_request_target'; audit mode runs on a pull_request from the same repository.
+kmctl audit: refused for event 'pull_request_target'; audit mode runs on a pull_request from the same repository or a workflow_dispatch.
 ```
 
 Keep `persist-credentials: false` on the checkout, and do not set `GH_TOKEN`

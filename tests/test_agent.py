@@ -1482,3 +1482,85 @@ def test_empty_scope_notes_the_previous_findings(tmp_path: Path, repo: Path) -> 
 
     report = json.loads((tmp_path / "out" / "report.json").read_text())
     assert "1 finding(s) were not rechecked" in report["summary"]
+
+
+# dispatch: resolving the pull request ----------------------------------------
+
+
+def _pr_view_gh(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, pr: dict) -> Path:
+    """Put a gh on PATH that answers ``pr view`` with ``pr`` and records every call."""
+    bin_dir = tmp_path / "view-gh-bin"
+    bin_dir.mkdir()
+    calls = tmp_path / "view-calls.jsonl"
+    (bin_dir / "gh").write_text(
+        f"#!{sys.executable}\n"
+        "import json, sys\n"
+        "args = sys.argv[1:]\n"
+        f"open({str(calls)!r}, 'a').write(json.dumps(args) + '\\n')\n"
+        "if args[:2] == ['pr', 'view']:\n"
+        f"    print(json.dumps({pr!r}))\n"
+        "elif args[0] == 'api':\n"
+        "    print('[[]]')\n"
+    )
+    (bin_dir / "gh").chmod(0o755)
+    monkeypatch.setenv("PATH", f"{bin_dir}:{os.environ['PATH']}")
+    return calls
+
+
+READY = {
+    "number": 12,
+    "state": "OPEN",
+    "isDraft": False,
+    "isCrossRepository": False,
+    "headRefOid": "abc123",
+    "baseRefName": "main",
+}
+
+
+def test_previous_resolves_a_ready_pull_request(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _pr_view_gh(tmp_path, monkeypatch, READY)
+    output = tmp_path / "github-output"
+    output.write_text("")
+    monkeypatch.setenv("GITHUB_OUTPUT", str(output))
+
+    code = agent.main(
+        ["previous", "--pr", "12", "--resolve", "abc123", "--out", str(tmp_path / "p")]
+    )
+
+    assert code == 0
+    assert output.read_text() == "pr=12\nbase=main\nhead=abc123\n"
+
+
+@pytest.mark.parametrize(
+    ("change", "reason"),
+    [
+        ({"state": "CLOSED"}, "is closed, not open"),
+        ({"state": "MERGED"}, "is merged, not open"),
+        ({"isDraft": True}, "is a draft"),
+        ({"isCrossRepository": True}, "comes from a fork"),
+        ({"headRefOid": "zzz999"}, "head is zzz999, but this run is at abc123"),
+    ],
+)
+def test_previous_refuses_what_it_must_not_audit(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    change: dict,
+    reason: str,
+) -> None:
+    calls = _pr_view_gh(tmp_path, monkeypatch, {**READY, **change})
+    output = tmp_path / "github-output"
+    output.write_text("")
+    monkeypatch.setenv("GITHUB_OUTPUT", str(output))
+
+    code = agent.main(
+        ["previous", "--pr", "12", "--resolve", "abc123", "--out", str(tmp_path / "p")]
+    )
+
+    assert code == 2
+    assert reason in capsys.readouterr().err
+    assert output.read_text() == ""
+    made = [json.loads(line) for line in calls.read_text().splitlines()]
+    assert all(c[:2] == ["pr", "view"] for c in made), "nothing fetched after a refusal"

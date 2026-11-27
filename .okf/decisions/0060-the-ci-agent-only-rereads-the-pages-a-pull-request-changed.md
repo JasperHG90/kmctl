@@ -150,3 +150,10 @@ the previous report's commit, with its sources. The report records the pull
 request's head commit, since the merge commit a `pull_request` checkout
 builds is not fetched again. The comment opens with what is fixed, still
 open and new.
+
+## Correction, 2026-11-27, on demand
+
+The reread no longer runs on every `pull_request` push.
+[ADR 0061](0061-the-reread-runs-on-demand-on-a-ready-pull-request.md) runs
+it on `workflow_dispatch`, started on a ready pull request's branch, with a
+check a repository can require.

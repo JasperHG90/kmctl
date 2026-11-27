@@ -584,7 +584,6 @@ def test_adversarial_review_off_writes_neither(
 # The pull request audit ---------------------------------------------------------
 
 AUDIT_WF = Path(".github") / "workflows" / "knowledge-audit.yml"
-SAME_REPO = "github.event.pull_request.head.repo.full_name == github.repository"
 # What a project adds below each kmctl pin in the audit workflow.
 OWN_AUDIT_STEP = "      - name: Our audit step\n        run: echo ours\n"
 
@@ -617,19 +616,16 @@ def test_pr_audit_on_writes_the_audit_workflow(template: Path, tmp_path: Path) -
     assert res.returncode == 0, res.stderr
     assert _files(out) == GENERATED | {AUDIT_WF.as_posix()}
     wf = yaml.safe_load((out / AUDIT_WF).read_text())
-    assert wf[True] == {
-        "pull_request": {
-            "types": ["opened", "synchronize", "reopened", "ready_for_review"]
-        }
-    }
+    assert set(wf[True]) == {"workflow_dispatch"}
     assert wf["permissions"] == {"contents": "read"}
     audit, publish = wf["jobs"]["audit"], wf["jobs"]["publish"]
-    assert audit["if"] == SAME_REPO
-    assert SAME_REPO in publish["if"] and "!cancelled()" in publish["if"]
     assert "permissions" not in audit
     assert publish["permissions"] == {"contents": "read", "pull-requests": "write"}
-    assert publish["needs"] == "audit"
-    checkout = _audit_steps(wf, "audit")[0]
+    [checkout] = [
+        s
+        for s in _audit_steps(wf, "audit")
+        if str(s.get("uses", "")).startswith("actions/checkout")
+    ]
     assert checkout["with"] == {"fetch-depth": 0, "persist-credentials": False}
     run = _kmctl_step(_audit_steps(wf, "audit"))
     assert run["uses"] == f"JasperHG90/kmctl@{TAG}"
@@ -638,11 +634,16 @@ def test_pr_audit_on_writes_the_audit_workflow(template: Path, tmp_path: Path) -
         "base_url": "https://api.openai.com/v1",
         "model": "gpt-5",
         "api_key_env": "AUDIT_API_KEY",
+        "base": "${{ needs.previous.outputs.base }}",
+        "head": "${{ needs.previous.outputs.head }}",
     }
     assert run["env"] == {"AUDIT_API_KEY": "${{ secrets.AUDIT_API_KEY }}"}
-    assert run["if"] == "steps.key.outputs.set == 'true'"
+    assert "if" not in run
     post = _kmctl_step(_audit_steps(wf, "publish"))
-    assert post == {"uses": f"JasperHG90/kmctl@{TAG}", "with": {"mode": "publish"}}
+    assert post == {
+        "uses": f"JasperHG90/kmctl@{TAG}",
+        "with": {"mode": "publish", "pr": "${{ needs.previous.outputs.pr }}"},
+    }
     assert "secrets" not in yaml.safe_dump(publish)
 
 
@@ -674,10 +675,11 @@ def test_pr_audit_fetches_the_previous_report(template: Path, tmp_path: Path) ->
         "pull-requests": "read",
         "actions": "read",
     }
-    assert previous["if"] == SAME_REPO
+    assert "if" not in previous
     assert _kmctl_step(previous["steps"]) == {
+        "id": "kmctl",
         "uses": f"JasperHG90/kmctl@{TAG}",
-        "with": {"mode": "previous"},
+        "with": {"mode": "previous", "pr": "${{ inputs.pr }}"},
     }
     assert audit["needs"] == "previous"
     assert "permissions" not in audit
@@ -699,31 +701,52 @@ def test_pr_audit_off_writes_no_workflow(
     assert "audit_model" not in answers and "audit_base_url" not in answers
 
 
-def test_pr_audit_skips_the_agent_without_the_key(
-    template: Path, tmp_path: Path
-) -> None:
-    """The key check prints a notice and sets no output when AUDIT_API_KEY is empty."""
+def test_pr_audit_runs_on_dispatch(template: Path, tmp_path: Path) -> None:
+    """The rendered workflow runs on dispatch only and wires the previous job's outputs on."""
     out = tmp_path / "demo"
     assert _copier(template, out, "pr_audit=true").returncode == 0
-    steps = _audit_steps(yaml.safe_load((out / AUDIT_WF).read_text()), "audit")
-    [check] = [s for s in steps if s.get("id") == "key"]
-    run = _kmctl_step(steps)
-    assert steps.index(check) < steps.index(run)
-    assert check["env"] == {"AUDIT_API_KEY": "${{ secrets.AUDIT_API_KEY }}"}
+    text = (out / AUDIT_WF).read_text()
+    wf = yaml.safe_load(text)
+    jobs = wf["jobs"]
 
-    for key, expected in (("", ""), ("sk-x", "set=true\n")):
-        output = tmp_path / f"output-{bool(key)}"
-        output.write_text("")
-        proc = subprocess.run(
-            ["bash", "--noprofile", "--norc", "-eo", "pipefail", "-c", check["run"]],
-            env=os.environ | {"AUDIT_API_KEY": key, "GITHUB_OUTPUT": str(output)},
+    assert set(wf[True]) == {"workflow_dispatch"}
+    assert wf[True]["workflow_dispatch"]["inputs"]["pr"]["required"] is True
+    assert "head.repo.full_name" not in text
+    assert "gh workflow run knowledge-audit.yml --ref BRANCH -f pr=NUMBER" in text
+    assert jobs["previous"]["outputs"] == {
+        name: f"${{{{ steps.kmctl.outputs.{name} }}}}"
+        for name in ("pr", "base", "head")
+    }
+    assert jobs["publish"]["needs"] == ["previous", "audit"]
+
+
+def test_pr_audit_refusal_fails_the_audit_check(template: Path, tmp_path: Path) -> None:
+    """The audit job never skips: its gate fails after a failed previous job, and so does a missing key."""
+    out = tmp_path / "demo"
+    assert _copier(template, out, "pr_audit=true").returncode == 0
+    jobs = yaml.safe_load((out / AUDIT_WF).read_text())["jobs"]
+    audit, publish = jobs["audit"], jobs["publish"]
+    steps = audit["steps"]
+    gate = steps[0]
+    [key] = [s for s in steps if s.get("id") == "key"]
+
+    assert audit["if"] == "${{ !cancelled() }}"
+    assert publish["if"] == "${{ !cancelled() && needs.previous.result == 'success' }}"
+    assert gate["env"]["RESULT"] == "${{ needs.previous.result }}"
+
+    def code(step: dict, **env: str) -> int:
+        return subprocess.run(
+            ["bash", "--noprofile", "--norc", "-eo", "pipefail", "-c", step["run"]],
+            env={**os.environ, **env},
             capture_output=True,
-            text=True,
             check=False,
-        )
-        assert proc.returncode == 0, proc.stderr
-        assert output.read_text() == expected
-        assert ("::notice::" in proc.stdout) is (not key)
+        ).returncode
+
+    assert code(gate, RESULT="success") == 0
+    for result in ("failure", "skipped", "cancelled"):
+        assert code(gate, RESULT=result) == 1, result
+    assert code(key, AUDIT_API_KEY="") == 1
+    assert code(key, AUDIT_API_KEY="sk-x") == 0
 
 
 def test_upgrade_moves_the_audit_pins_and_keeps_own_steps(
