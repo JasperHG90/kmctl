@@ -238,3 +238,12 @@ a release. This repository's workflow runs the pull request's own
 `action/agent.py` and `action/prompt.md`, so a same-repository pull request
 here can change what the audit does; review and branch protection see that
 change.
+
+## Correction, 2026-11-27, three jobs
+
+The Consequences say a repository that turns this on adds a workflow with
+two jobs, the audit and the publish. It now adds three: a `previous` job
+runs first, with `pull-requests: read` and `actions: read`, to resolve the
+pull request and hand the audit the report of its last run
+([ADR 0060](0060-the-ci-agent-only-rereads-the-pages-a-pull-request-changed.md)'s
+Correction, [ADR 0061](0061-the-reread-runs-on-demand-on-a-ready-pull-request.md)).

@@ -1,4 +1,0 @@
-# kmctl summary ack: .okf/summary.md was read against these concepts and still holds.
-at: 2026-11-27T20:04:11Z
-against:
-  - decisions/0060-the-ci-agent-only-rereads-the-pages-a-pull-request-changed

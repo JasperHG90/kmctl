@@ -195,7 +195,10 @@ git branch -D try-the-audit
 |---|---|
 | `summary` | A short summary of the run. |
 | `checked` | One entry per page compared: `subject`, `against` (what it was compared with) and `evidence` (`path:line` strings). |
-| `findings` | One entry per mismatch: `title`, `severity`, `path` (the file it is about), `summary`, `claim` (`path:line`), `contradicted_by` (`path:line` strings) and `fix`. |
+| `findings` | One entry per mismatch: `title`, `severity`, `path` (the file it is about), `summary`, `claim` (`path:line`), `contradicted_by` (`path:line` strings), `fix`, and `earlier`, the id of a previous run's finding it repeats, or none for a new one. |
+| `fixed` | The ids of a previous run's findings this run judged fixed. |
+| `commit` | The commit the run reread, which the next run starts from. |
+| `previous_commit`, `fixed_titles` | With a previous report: its commit, and the titles of the findings now fixed. |
 
 A finding's `severity` is `high` for a claim the code contradicts that
 would lead a reader to act wrongly, `medium` for a claim probably wrong or
