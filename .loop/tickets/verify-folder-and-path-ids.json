@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "verify-folder-and-path-ids",
-  "stage": "verifying",
+  "stage": "done",
   "attempts": 1,
   "plan_rounds": 1,
   "review_rounds": 3,
@@ -30,7 +30,7 @@
   "split": "j-20261127T095042+0000-bec279cc",
   "split_plan_hash": "951d4d8ab18ef6d72d31a982e77291d9f9a3618e4d2cb005838bd81f4f4bc44c",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "fe7fb6e0be6cbd2a6b50dc5f9213e79fa87c0944",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
@@ -166,8 +166,14 @@
       "to": "verifying",
       "at": "2026-11-27T10:18:20+00:00",
       "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-27T10:32:54+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-27T10:32:52+00:00"
+  "at": "2026-11-27T10:32:54+00:00"
 }
