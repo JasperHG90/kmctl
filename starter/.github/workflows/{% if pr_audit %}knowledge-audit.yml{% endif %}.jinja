@@ -1,0 +1,69 @@
+name: knowledge audit
+
+# On a pull request from this repository, a model rereads each .okf/ and
+# docs/ page whose sources the pull request changed, and one comment says
+# which still hold. It never fails the pull request's check. Add the model's
+# API key as the AUDIT_API_KEY secret; until then the audit skips with a
+# notice.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+# A composite action cannot set token permissions; the calling workflow does.
+permissions:
+  contents: read
+
+jobs:
+  # A fork's pull request gets no secrets, so both jobs skip it.
+  audit:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      # No token left in git config for the agent to read; full history to
+      # find where the branch split from the base branch.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check for the API key
+        id: key
+        env:
+          AUDIT_API_KEY: {% raw %}${{ secrets.AUDIT_API_KEY }}{% endraw %}
+        run: |
+          if [ -n "$AUDIT_API_KEY" ]; then
+            echo "set=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::knowledge audit: skipped; add the model's API key as the AUDIT_API_KEY secret."
+          fi
+      - if: steps.key.outputs.set == 'true'
+        timeout-minutes: 40
+        env:
+          AUDIT_API_KEY: {% raw %}${{ secrets.AUDIT_API_KEY }}{% endraw %}
+        with:
+          mode: audit
+          base_url: {{ audit_base_url | tojson }}
+          model: {{ audit_model | tojson }}
+          api_key_env: AUDIT_API_KEY
+        uses: JasperHG90/kmctl@{{ kmctl_ref }}
+      # Add your own steps below this line. just upgrade rewrites the pin
+      # above, and content added directly below it would conflict.
+
+  # A fresh runner that gets only the report, so nothing the agent changed
+  # runs with the token. It runs when the audit failed or skipped too, and
+  # then posts nothing.
+  publish:
+    needs: audit
+    if: {% raw %}${{ !cancelled() && github.event.pull_request.head.repo.full_name == github.repository }}{% endraw %}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - with:
+          mode: publish
+        uses: JasperHG90/kmctl@{{ kmctl_ref }}
+      # Add your own steps below this line. just upgrade rewrites the pin
+      # above, and content added directly below it would conflict.

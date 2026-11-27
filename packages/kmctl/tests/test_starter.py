@@ -581,6 +581,168 @@ def test_adversarial_review_off_writes_neither(
     assert deps == [{"git": KMCTL_GIT, "path": plugin.package_path(TAG), "ref": TAG}]
 
 
+# The pull request audit ---------------------------------------------------------
+
+AUDIT_WF = Path(".github") / "workflows" / "knowledge-audit.yml"
+SAME_REPO = "github.event.pull_request.head.repo.full_name == github.repository"
+# What a project adds below each kmctl pin in the audit workflow.
+OWN_AUDIT_STEP = "      - name: Our audit step\n        run: echo ours\n"
+
+
+def _audit_steps(workflow: dict, job: str) -> list[dict]:
+    """The steps of ``job`` in the rendered audit workflow."""
+    return workflow["jobs"][job]["steps"]
+
+
+def _kmctl_step(steps: list[dict]) -> dict:
+    """The one step that uses kmctl's action."""
+    [step] = [
+        s for s in steps if str(s.get("uses", "")).startswith("JasperHG90/kmctl@")
+    ]
+    return step
+
+
+def test_pr_audit_on_writes_the_audit_workflow(template: Path, tmp_path: Path) -> None:
+    """pr_audit=true writes the pull request audit, pinned to kmctl_ref, with the model answers."""
+    out = tmp_path / "demo"
+
+    res = _copier(
+        template,
+        out,
+        "pr_audit=true",
+        "audit_model=gpt-5",
+        "audit_base_url=https://api.openai.com/v1",
+    )
+
+    assert res.returncode == 0, res.stderr
+    assert _files(out) == GENERATED | {AUDIT_WF.as_posix()}
+    wf = yaml.safe_load((out / AUDIT_WF).read_text())
+    assert wf[True] == {
+        "pull_request": {
+            "types": ["opened", "synchronize", "reopened", "ready_for_review"]
+        }
+    }
+    assert wf["permissions"] == {"contents": "read"}
+    audit, publish = wf["jobs"]["audit"], wf["jobs"]["publish"]
+    assert audit["if"] == SAME_REPO
+    assert SAME_REPO in publish["if"] and "!cancelled()" in publish["if"]
+    assert "permissions" not in audit
+    assert publish["permissions"] == {"contents": "read", "pull-requests": "write"}
+    assert publish["needs"] == "audit"
+    checkout = _audit_steps(wf, "audit")[0]
+    assert checkout["with"] == {"fetch-depth": 0, "persist-credentials": False}
+    run = _kmctl_step(_audit_steps(wf, "audit"))
+    assert run["uses"] == f"JasperHG90/kmctl@{TAG}"
+    assert run["with"] == {
+        "mode": "audit",
+        "base_url": "https://api.openai.com/v1",
+        "model": "gpt-5",
+        "api_key_env": "AUDIT_API_KEY",
+    }
+    assert run["env"] == {"AUDIT_API_KEY": "${{ secrets.AUDIT_API_KEY }}"}
+    assert run["if"] == "steps.key.outputs.set == 'true'"
+    post = _kmctl_step(_audit_steps(wf, "publish"))
+    assert post == {"uses": f"JasperHG90/kmctl@{TAG}", "with": {"mode": "publish"}}
+    assert "secrets" not in yaml.safe_dump(publish)
+
+
+@pytest.mark.parametrize("model", ["@cf/meta/llama-3.1-8b-instruct", "foo #bar", "1.5"])
+def test_pr_audit_quotes_the_model_answers(
+    template: Path, tmp_path: Path, model: str
+) -> None:
+    """A model name YAML would misread (a leading @, a #, a number) reaches the workflow as written."""
+    out = tmp_path / "demo"
+
+    res = _copier(template, out, "pr_audit=true", f"audit_model={model}")
+
+    assert res.returncode == 0, res.stderr
+    run = _kmctl_step(
+        _audit_steps(yaml.safe_load((out / AUDIT_WF).read_text()), "audit")
+    )
+    assert run["with"]["model"] == model
+
+
+@pytest.mark.parametrize("data", [(), ("pr_audit=false",)])
+def test_pr_audit_off_writes_no_workflow(
+    template: Path, tmp_path: Path, data: tuple[str, ...]
+) -> None:
+    """The default and pr_audit=false write no audit workflow and record no model answers."""
+    out = tmp_path / "demo"
+
+    res = _copier(template, out, *data)
+
+    assert res.returncode == 0, res.stderr
+    assert _files(out) == GENERATED
+    answers = yaml.safe_load((out / ".copier-answers.yml").read_text())
+    assert answers["pr_audit"] is False
+    assert "audit_model" not in answers and "audit_base_url" not in answers
+
+
+def test_pr_audit_skips_the_agent_without_the_key(
+    template: Path, tmp_path: Path
+) -> None:
+    """The key check prints a notice and sets no output when AUDIT_API_KEY is empty."""
+    out = tmp_path / "demo"
+    assert _copier(template, out, "pr_audit=true").returncode == 0
+    steps = _audit_steps(yaml.safe_load((out / AUDIT_WF).read_text()), "audit")
+    [check] = [s for s in steps if s.get("id") == "key"]
+    run = _kmctl_step(steps)
+    assert steps.index(check) < steps.index(run)
+    assert check["env"] == {"AUDIT_API_KEY": "${{ secrets.AUDIT_API_KEY }}"}
+
+    for key, expected in (("", ""), ("sk-x", "set=true\n")):
+        output = tmp_path / f"output-{bool(key)}"
+        output.write_text("")
+        proc = subprocess.run(
+            ["bash", "--noprofile", "--norc", "-eo", "pipefail", "-c", check["run"]],
+            env=os.environ | {"AUDIT_API_KEY": key, "GITHUB_OUTPUT": str(output)},
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert proc.returncode == 0, proc.stderr
+        assert output.read_text() == expected
+        assert ("::notice::" in proc.stdout) is (not key)
+
+
+def test_upgrade_moves_the_audit_pins_and_keeps_own_steps(
+    template: Path, tmp_path: Path
+) -> None:
+    """copier update to another kmctl_ref moves both audit pins and keeps a step added below each."""
+    out = tmp_path / "demo"
+    res = _copier(template, out, f"kmctl_ref={OLD_REF}", "pr_audit=true")
+    assert res.returncode == 0, res.stderr
+    wf_path = out / AUDIT_WF
+    anchor = "      # Add your own steps below this line."
+    text = wf_path.read_text()
+    assert text.count(anchor) == 2
+    parts = text.split("\n\n")
+    marked = [i for i, part in enumerate(parts) if anchor in part]
+    for i in marked:
+        parts[i] = parts[i] + "\n" + OWN_AUDIT_STEP.rstrip("\n")
+    wf_path.write_text("\n\n".join(parts))
+    _git_commit_all(out)
+
+    res = subprocess.run(
+        [sys.executable, "-m", "copier", "update", "--defaults", "--vcs-ref", "HEAD"]
+        + ["--data", f"kmctl_ref={TAG}"],
+        cwd=out,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert res.returncode == 0, res.stdout + res.stderr
+    assert _unmerged(out) == []
+    text = wf_path.read_text()
+    assert "<<<<<<<" not in text and OLD_REF not in text
+    assert text.count(f"JasperHG90/kmctl@{TAG}") == 2
+    wf = yaml.safe_load(text)
+    for job in ("audit", "publish"):
+        names = [s.get("name") for s in _audit_steps(wf, job)]
+        assert names[-1] == "Our audit step", (job, names)
+
+
 # The drift gate -----------------------------------------------------------------
 
 
@@ -795,6 +957,20 @@ def test_docs_how_to_covers_the_starter() -> None:
         "exclude:",
     ):
         assert words in text, words
+
+
+def test_docs_how_to_names_the_audit_questions() -> None:
+    """The starter how-to names the audit questions and the secret; the install how-to points to pr_audit."""
+    text = _flat(HOW_TO.read_text())
+    install = _flat(
+        (
+            ROOT / "docs" / "how-to" / "install-the-plugin-and-the-ci-action.md"
+        ).read_text()
+    )
+
+    for words in ("`pr_audit`", "`audit_model`", "`audit_base_url`", "`AUDIT_API_KEY`"):
+        assert words in text, words
+    assert "`pr_audit`" in install
 
 
 def test_docs_readme_and_index_link_the_how_to() -> None:
