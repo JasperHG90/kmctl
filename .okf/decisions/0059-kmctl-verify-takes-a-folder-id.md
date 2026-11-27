@@ -6,7 +6,7 @@ tags: [decision]
 generated:
   by: claude-opus/5.5
   at: 2026-11-27T09:56:49Z
-status: draft
+status: stable
 sources:
   - resource: "packages/kmctl/src/kmctl/verify.py"
   - resource: "packages/kmctl/src/kmctl/pages.py"
