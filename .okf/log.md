@@ -335,3 +335,7 @@
 - Accepted `decisions/0056-the-ci-action-fails-a-pull-request-whose-summary-is-behind` (human:roel).
 - Added `decisions/0058-a-draft-decision-does-not-put-the-summary-behind` with `kmctl new decision`.
 - Accepted `decisions/0058-a-draft-decision-does-not-put-the-summary-behind` (human:roel).
+
+## 2026-11-27
+
+- Added `decisions/0060-the-summary-is-behind-only-when-a-concept-it-links-changed` with `kmctl new decision`.
