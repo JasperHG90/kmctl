@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "slug": "pr-reread-only",
-  "plan_hash": "075b8aed179a637c4e557229bc5e5abe2070866e11d83286d5257cdd3e406dd5",
+  "plan_hash": "d327befe2a6b52d0f5d314315634e10b8ce865101fe65faf6f3d2b21bb3da2a5",
   "problems": [
     {
       "id": "P1",
@@ -76,7 +76,7 @@
     {
       "id": "O3",
       "change": "The agent has one task and one prompt, read-only tools, and a pull request comment as its only output",
-      "kind": "behaviour",
+      "kind": "support",
       "goal": "G2",
       "goal_index": 1,
       "fixes": "P2",
@@ -91,7 +91,8 @@
         "action/agent.py",
         "new:action/prompt.md",
         "action/prompts/",
-        "tests/test_agent.py"
+        "tests/test_agent.py",
+        "tests/test_audit.py"
       ],
       "checked_by": "`agent.py run --help` lists only `--model`, `--base-url`, `--api-key-env`, `--base` (required), `--repo`, `--out`, `--timeout`, `--max-requests`; `publish --help` lists `--pr` (required), `--min-severity`, `--title`; tests that the tools are read_file, search_files and list_files only, that `run` still refuses a checkout whose git config holds a token header, and that no OpenTelemetry dependency is left in the script header",
       "seen_by": "operator"
@@ -147,15 +148,16 @@
       "fixes": "P4",
       "fixes_index": 4,
       "needs": [
+        "O3",
         "O4"
       ],
       "needs_index": [
+        2,
         4
       ],
       "touches": [
         ".github/workflows/knowledge-audit.yml",
-        "tests/scripts/test_workflows.py",
-        "tests/test_audit.py"
+        "tests/scripts/test_workflows.py"
       ],
       "checked_by": "workflow tests that it triggers on `pull_request` only, both jobs carry the same-repository condition, only publish has `pull-requests: write`, the audit job checks out with `persist-credentials: false`, no Langfuse secret is passed, and the agent and publish commands it runs parse with `agent.parser()`",
       "seen_by": "operator"
