@@ -1,0 +1,4 @@
+# kmctl summary ack: .okf/summary.md was read against these concepts and still holds.
+at: 2026-11-26T16:25:22Z
+against:
+  - decisions/0059-an-unverified-concept-is-compared-with-its-own-last-commit

@@ -356,10 +356,16 @@ decides, not dates, and a verification made on a branch survives a squash or
 rebase merge (ADR 0032). While that entry is not committed, nothing counts as
 changed after it, and a source edit counts only once it is committed.
 
+A concept with no `verified` entry has no verification commit, so its
+sources are compared with the concept's own last commit instead. A commit
+after that one that changes a source adds `source changed: SOURCE` to
+`unverified`, and `--base` lists the concept when the branch made that
+commit (ADR 0059).
+
 A `docs/` page is due when its `stale_after` has passed, or by the same
 `source changed` and `edited after verification` rules. A page with no
 `verified` entry is not due for that alone, and its sources are compared with
-the page's own last commit. A docs page's id is its path without `.md`, such as
+the page's own last commit, as a concept's are. A docs page's id is its path without `.md`, such as
 `docs/how-to/install`; a source resolves from the page's folder, then the
 repository root. The `README.md` indexes are left out.
 

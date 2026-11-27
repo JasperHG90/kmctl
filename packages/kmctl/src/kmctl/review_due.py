@@ -1,8 +1,9 @@
-"""Which concepts in .okf/ and pages in docs/ are due for review, and why (ADR 0006, ADR 0022, ADR 0032).
+"""Which concepts in .okf/ and pages in docs/ are due for review, and why (ADR 0006, ADR 0022, ADR 0032, ADR 0059).
 
 A concept is due when its ``stale_after`` has passed, when it has no
 ``verified`` entry, when a tracked file in its ``sources`` changed in a
-commit after its verification commit (``source changed``), or when the
+commit after its verification commit or, with no ``verified`` entry, after
+its own last commit (``source changed``, ADR 0059), or when the
 concept itself did, outside ``verified`` and ``stale_after``, the fields
 ``kmctl verify`` writes (``edited after verification``). In a decision
 record, a ``status`` that went from draft to stable is not an edit:
@@ -18,7 +19,7 @@ reason ``concepts changed: ID, ...``.
 
 A docs/ page is due when its ``stale_after`` has passed, or by the same two
 history rules as a concept. A page without ``verified`` is not due for that
-alone, and its sources are compared with the page's own last commit. Its id is its path without ``.md``, such as
+alone. Its id is its path without ``.md``, such as
 ``docs/how-to/install``, so it cannot clash with a concept id. README.md
 files in docs/ are indexes and are left out.
 
@@ -141,7 +142,7 @@ class _Check:
     """A concept or docs page whose git history decides some of its reasons.
 
     ``newest`` is its newest ``verified`` time in the working tree, or None for
-    a docs page without one, which is checked against its own last commit.
+    a file without one, which is checked against its own last commit.
     ``sources`` pairs each source as written with the tracked path it names.
     Reasons are added to ``reasons``, the list its ``Due`` entry holds.
     """
@@ -264,8 +265,8 @@ def _check_history(
 ) -> None:
     """Add ``source changed`` and ``edited after verification`` reasons, by commit order.
 
-    The baseline is the file's verification commit or, for a docs page
-    without ``verified``, its own last commit. A source is changed when it
+    The baseline is the file's verification commit or, for a file without
+    ``verified``, its own last commit. A source is changed when it
     differs between the baseline and HEAD. A verified file is edited when it
     differs between its verification commit and HEAD outside the fields
     kmctl verify writes and, in a decision record, a draft-to-stable
@@ -461,7 +462,7 @@ def review_due(
                 result.notices.append(Notice(cid, rel, resource, "source not resolved"))
                 continue
             sources.append((resource, source))
-        if verified_at is not None:
+        if verified_at is not None or sources:
             checks.append(_Check(rel, verified_at, sources, entry.reasons))
     _check_history(root, checks, branch)
     if branch is not None:

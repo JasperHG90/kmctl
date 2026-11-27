@@ -90,6 +90,39 @@ def test_due_unverified(tmp_path: Path) -> None:
     assert _reasons(tmp_path) == {"new": ["unverified"]}
 
 
+# ADR 0059: an unverified concept's sources are compared with its own last commit
+
+
+def test_unverified_source_changed_after_its_last_commit(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    _concept(
+        tmp_path,
+        "new.md",
+        "sources:\n  - {id: s, resource: 'src/app.py'}\n",
+        verified=False,
+    )
+    _commit(tmp_path, date=NEW)
+    (tmp_path / "src/app.py").write_text("x = 2\n")
+    _commit(tmp_path)  # dated before the concept's commit, but made after it
+
+    assert _reasons(tmp_path) == {"new": ["unverified", "source changed: src/app.py"]}
+
+
+def test_unverified_source_changed_before_its_last_commit(tmp_path: Path) -> None:
+    _repo(tmp_path)
+    _commit(tmp_path)
+    (tmp_path / "src/app.py").write_text("x = 2\n")
+    _concept(
+        tmp_path,
+        "new.md",
+        "sources:\n  - {id: s, resource: 'src/app.py'}\n",
+        verified=False,
+    )
+    _commit(tmp_path)
+
+    assert _reasons(tmp_path) == {"new": ["unverified"]}
+
+
 def test_due_source_changed_each_form(tmp_path: Path) -> None:
     _repo(tmp_path)
     _write(tmp_path, ".okf/decisions/notes.txt", "n\n")
@@ -704,6 +737,28 @@ def test_base_lists_only_what_the_branch_made_due(tmp_path: Path) -> None:
     assert {d["id"]: d["reasons"] for d in data["due"]} == {
         "new": ["unverified"],
         "watched": ["source changed: src/app.py"],
+    }
+
+
+def test_base_lists_an_unverified_concept_whose_source_the_branch_changed(
+    tmp_path: Path,
+) -> None:
+    _repo(tmp_path)
+    _concept(
+        tmp_path,
+        "old.md",
+        "sources:\n  - {id: s, resource: 'src/app.py'}\n",
+        verified=False,
+    )
+    _commit(tmp_path)
+    _git(tmp_path, "switch", "-q", "-c", "feature")
+    (tmp_path / "src/app.py").write_text("x = 2\n")
+    _commit(tmp_path, date=NEW)
+
+    data = json.loads(_due(tmp_path, "--base", "main", "--json").stdout)
+
+    assert {d["id"]: d["reasons"] for d in data["due"]} == {
+        "old": ["source changed: src/app.py"]
     }
 
 
