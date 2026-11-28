@@ -454,6 +454,7 @@ Publish mode takes two more:
        permissions:
          contents: read
          pull-requests: write
+         statuses: write
        steps:
          - uses: actions/checkout@v4
            with:
@@ -462,6 +463,8 @@ Publish mode takes two more:
            with:
              mode: publish
              pr: ${{ needs.previous.outputs.pr }}
+             head: ${{ needs.previous.outputs.head }}
+             audit_result: ${{ needs.audit.result }}
    ```
 
 A project made from the copier template gets this workflow by answering
@@ -472,8 +475,8 @@ yes to `pr_audit`
 run cannot hold the runner for GitHub's six-hour default.
 
 **Run it once the pull request is ready.** The workflow runs on
-`workflow_dispatch` only. Start it on the pull request's branch, so its
-check lands on the pull request's head commit:
+`workflow_dispatch` only. Start it on the pull request's branch, so it
+audits the pull request's head commit:
 
 ```
 gh workflow run knowledge-audit.yml --ref BRANCH -f pr=NUMBER
@@ -509,18 +512,20 @@ jobs:
           -f target_url="${{ github.server_url }}/${{ github.repository }}/actions/workflows/knowledge-audit.yml"
 ```
 
-Give the publish job `statuses: write` and, under its `with:`, `head: ${{
-needs.previous.outputs.head }}` and `audit_result: ${{ needs.audit.result }}`:
-publish then sets `audit` to success when the audit ran and failure when it
-did not. Then, in your branch rules, mark `audit` a required check. A push
-after a run sets it pending again, so the pull request waits for another
-run. (The action's `mode: pending` does the same as the workflow above.) The previous job refuses a pull request that is closed, a
-draft, from a fork, or whose head is not the run's commit (a run on the
-wrong branch, or before the latest push), and the audit job then fails
-rather than skips, since GitHub counts a skipped job as passing a required
-check. A fork's pull request cannot be dispatched, so a required check
-blocks it. Publish runs only once the pull request was resolved, and posts
-nothing when the audit failed.
+The publish job in the example above has `statuses: write` and passes
+`head` and `audit_result`, so publish sets `audit` to success when the
+audit ran and failure when it did not. Then, in your branch rules, mark
+`audit` a required check. A push after a run sets it pending again, so the
+pull request waits for another run. (The action's `mode: pending` does the
+same as the workflow above.)
+
+The previous job refuses a pull request that is closed, a draft, from a
+fork, or whose head is not the run's commit (a run on the wrong branch, or
+before the latest push). The audit job then fails, publish does not run,
+and the `audit` status stays pending, so the pull request stays blocked. A
+fork's pull request cannot be dispatched and gets no pending status, so a
+required `audit` blocks it. Publish runs only once the pull request was
+resolved, and posts nothing when the audit failed.
 
 **Each run starts from the last.** The `mode: previous` job, which needs
 `pull-requests: read` and `actions: read`, finds the audit comment, follows

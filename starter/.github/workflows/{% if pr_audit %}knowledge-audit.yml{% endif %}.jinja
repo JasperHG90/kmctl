@@ -2,13 +2,15 @@ name: knowledge audit
 
 # A model rereads each .okf/ and docs/ page whose sources a pull request
 # changed, and one comment says which still hold. It runs when someone
-# starts it on a ready pull request, on that pull request's branch, so its
-# check lands on the pull request's head:
+# starts it on a ready pull request, on that pull request's branch, so it
+# audits the pull request's head commit:
 #
 #   gh workflow run knowledge-audit.yml --ref BRANCH -f pr=NUMBER
 #
-# Mark the audit check required: a refusal fails it, and a push after a run
-# leaves the new commit waiting for another run. Findings never fail it.
+# Require the audit commit status in the branch rules: the pending workflow
+# marks it pending on each push, and publish settles it, success when the
+# audit ran and failure when it did not. A refusal leaves it pending.
+# Findings never fail it.
 # Add the model's API key as the AUDIT_API_KEY secret; until then the audit
 # fails and says so.
 on:
