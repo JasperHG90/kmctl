@@ -192,6 +192,10 @@ git branch -D try-the-audit
 - Every finding names the claim, the lines that contradict it and a fix, and
   you can check each citation with the file and the line number.
 
+The folder also holds `history/`, which is empty on a first run: in CI each
+run copies every earlier report on the pull request there, so the newest
+artifact holds the whole trail.
+
 `report.json` holds the same report as data, for a script to read:
 
 | Field | What it holds |

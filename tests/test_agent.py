@@ -29,7 +29,7 @@ sys.modules["ci_agent"] = agent
 _spec.loader.exec_module(agent)
 
 #: The fields of a report the run sets, not the model.
-RUN_FIELDS = ("fixed", "commit", "previous_commit", "fixed_titles")
+RUN_FIELDS = ("fixed", "commit", "previous_commit", "fixed_titles", "history_count")
 
 
 def _model_part(report: dict) -> dict:
@@ -1598,3 +1598,184 @@ def test_status_refuses_an_unknown_state(
         agent.main(["status", "abc123", "error", "--url", "https://x"])
 
     assert _calls(calls) == []
+
+
+# history: every earlier report ------------------------------------------------
+
+
+def _artifact(tmp_path: Path, commit: str, history: dict[str, str]) -> Path:
+    """A downloaded previous artifact: report.json made at ``commit`` and its history/."""
+    folder = tmp_path / "previous-report"
+    (folder / "history").mkdir(parents=True)
+    for name, text in history.items():
+        (folder / "history" / name).write_text(text)
+    report = folder / "report.json"
+    report.write_text(
+        json.dumps(
+            {
+                "summary": "Before.",
+                "checked": [],
+                "findings": [_finding("latest one", "docs/how-to/run-it.md")],
+                "commit": commit,
+            }
+        )
+    )
+    return report
+
+
+def _old_report(commit: str, titles: list[str], fixed: list[str] = ()) -> str:
+    """An earlier report's JSON with findings ``titles`` and ``fixed`` titles."""
+    return json.dumps(
+        {
+            "summary": "Old.",
+            "checked": [],
+            "findings": [_finding(t, ".okf/decisions/0001-a.md") for t in titles],
+            "commit": commit,
+            "fixed_titles": list(fixed),
+        }
+    )
+
+
+def test_run_carries_the_history_into_its_artifact(
+    stateful: tuple[Path, str], tmp_path: Path
+) -> None:
+    repo, prev = stateful
+    previous = _artifact(
+        tmp_path,
+        prev,
+        {
+            "001-aaaaaaaa.json": _old_report("a" * 40, ["first"]),
+            "003-bbbbbbbb.json": _old_report("b" * 40, ["second"]),
+        },
+    )
+    rec = Recorder(READ_PAGES, reports=[_report([], ["e1"])])
+
+    assert _main(repo, tmp_path, FunctionModel(rec), "--previous", str(previous)) == 0
+
+    names = sorted(p.name for p in (tmp_path / "out" / "history").glob("*.json"))
+    assert names == ["001-aaaaaaaa.json", "003-bbbbbbbb.json", f"004-{prev[:8]}.json"]
+    copied = json.loads(
+        (tmp_path / "out" / "history" / f"004-{prev[:8]}.json").read_text()
+    )
+    assert copied["findings"][0]["title"] == "latest one"
+    assert (
+        json.loads((tmp_path / "out" / "report.json").read_text())["history_count"] == 3
+    )
+
+
+def test_first_run_writes_an_empty_history(repo: Path, tmp_path: Path) -> None:
+    assert _main(repo, tmp_path, FunctionModel(Recorder())) == 0
+
+    history = tmp_path / "out" / "history"
+    assert history.is_dir() and list(history.iterdir()) == []
+    assert (
+        json.loads((tmp_path / "out" / "report.json").read_text())["history_count"] == 0
+    )
+
+
+@pytest.mark.parametrize("case", ["empty scope", "no commit", "commit gone"])
+def test_history_survives_an_empty_scope_and_an_ignored_report(
+    repo: Path, tmp_path: Path, case: str
+) -> None:
+    commit = {"no commit": "", "commit gone": "0" * 40}.get(
+        case, _git(repo, "rev-parse", "HEAD").strip()
+    )
+    if case == "empty scope":
+        _git(repo, "branch", "-D", "base")
+        _commit_change(repo, "unrelated.txt")
+    previous = _artifact(
+        tmp_path, commit, {"001-aaaaaaaa.json": _old_report("a" * 40, ["first"])}
+    )
+    model = (
+        FunctionModel(_never) if case == "empty scope" else FunctionModel(Recorder())
+    )
+
+    assert _main(repo, tmp_path, model, "--previous", str(previous)) == 0
+
+    names = sorted(p.name for p in (tmp_path / "out" / "history").glob("*.json"))
+    assert names[0] == "001-aaaaaaaa.json" and len(names) == 2
+    assert names[1].startswith("002-") and names[1].endswith(
+        f"{commit[:8] or 'nocommit'}.json"
+    )
+
+
+def test_unreadable_history_report_is_kept_but_not_digested(
+    stateful: tuple[Path, str], tmp_path: Path
+) -> None:
+    repo, prev = stateful
+    previous = _artifact(
+        tmp_path,
+        prev,
+        {
+            "001-broken00.json": "{not json",
+            "002-bbbbbbbb.json": _old_report("b" * 40, ["fine one"]),
+        },
+    )
+    rec = Recorder(READ_PAGES, reports=[_report([], ["e1"])])
+
+    assert _main(repo, tmp_path, FunctionModel(rec), "--previous", str(previous)) == 0
+
+    assert (
+        tmp_path / "out" / "history" / "001-broken00.json"
+    ).read_text() == "{not json"
+    assert rec.prompt is not None
+    assert "fine one" in rec.prompt and "001-broken00" not in rec.prompt
+
+
+def test_prompt_digests_every_earlier_report(
+    stateful: tuple[Path, str], tmp_path: Path
+) -> None:
+    repo, prev = stateful
+    previous = _artifact(
+        tmp_path,
+        prev,
+        {
+            "001-aaaaaaaa.json": _old_report("a" * 40, ["first"]),
+            "002-bbbbbbbb.json": _old_report("b" * 40, ["second"], fixed=["first"]),
+        },
+    )
+    rec = Recorder(READ_PAGES, reports=[_report([], ["e1"])])
+
+    assert _main(repo, tmp_path, FunctionModel(rec), "--previous", str(previous)) == 0
+
+    prompt = rec.prompt or ""
+    digest = prompt.split("## Earlier runs, in short", 1)[1]
+    assert f"- 001-aaaaaaaa: commit {'a' * 40}, 1 finding(s)" in digest
+    assert "  - [medium] first (.okf/decisions/0001-a.md)" in digest
+    assert "  - fixed: first" in digest
+    assert f"- 003-{prev[:8]}" in digest
+    for leaked in ("first is wrong.", "Fix it.", "README.md:1"):
+        assert leaked not in digest, leaked
+
+
+def test_digest_drops_the_oldest_runs_over_the_cap(tmp_path: Path) -> None:
+    files = []
+    for n in range(1, 26):
+        path = tmp_path / f"{n:03d}-{n:08d}.json"
+        path.write_text(_old_report(f"{n:040d}", [f"f{n}a", f"f{n}b"]))
+        files.append(path)
+
+    digest = agent.history_digest(files)
+    lines = digest.split("\n\n", 2)[2].strip().splitlines()
+
+    assert len(lines) <= agent.DIGEST_LINES
+    assert "025-00000025" in lines[-3] and "001-00000001" not in digest
+    big = tmp_path / "big" / "001-big00000.json"
+    big.parent.mkdir()
+    big.write_text(_old_report("c" * 40, [f"t{n}" for n in range(100)]))
+    assert (
+        len(agent.history_digest([big]).split("\n\n", 2)[2].strip().splitlines())
+        == agent.DIGEST_LINES
+    )
+
+
+def test_render_names_the_trail() -> None:
+    report = agent.Report(summary="S.", checked=[], findings=[], history_count=4)
+
+    assert (
+        "Trail: 4 earlier run(s), all in this run's artifact under history/."
+        in agent.render(report)
+    )
+    assert "Trail" not in agent.render(
+        agent.Report(summary="S.", checked=[], findings=[])
+    )

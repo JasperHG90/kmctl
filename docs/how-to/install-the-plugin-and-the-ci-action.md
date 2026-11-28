@@ -537,6 +537,14 @@ did, and the run sends back any other. The comment then opens with what is
 fixed, still open and new. The first run on a pull request, or one after a
 rebase or force push that removed the last report's commit, starts fresh.
 
+**Every report stays in the artifact.** Each run's `agent-report` artifact
+has a `history/` folder with every earlier report on the pull request since
+its first audit comment, numbered in run order with its commit, so the
+newest download holds the whole trail. The agent gets only a short digest
+of them, at most 60 lines: per earlier run, its commit and each finding's
+severity, title and page, and what it judged fixed. The full reports stay
+in the artifact.
+
 The comment is short: a count, one bullet per finding at or above
 `min_severity` (title, where, and one sentence), the pages that still hold,
 and a folded block with each fix, its evidence and the `kmctl verify`

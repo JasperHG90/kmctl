@@ -29,6 +29,7 @@ import functools
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -164,6 +165,10 @@ class Report(BaseModel):
     fixed_titles: list[str] = Field(
         default_factory=list,
         description="Set by the run, not the model: the titles of the fixed findings.",
+    )
+    history_count: int = Field(
+        default=0,
+        description="Set by the run, not the model: the earlier reports in history/.",
     )
 
 
@@ -768,6 +773,9 @@ def render(report: Report, min_severity: str = "info") -> str:
         lines += [f"Since the last run: {delta}", ""]
         if report.fixed_titles:
             lines += ["Fixed: " + "; ".join(report.fixed_titles) + ".", ""]
+    if report.history_count:
+        trail = f"Trail: {report.history_count} earlier run(s), all in this run's artifact under history/."
+        lines += [trail, ""]
     lines += [first_sentence(report.summary), ""]
     for f in shown:
         again = " (still open)" if f.earlier else ""
@@ -950,6 +958,9 @@ def run(args: argparse.Namespace, model: Model | str | None = None) -> int:
     previous, note = load_previous(repo, args.previous)
     if note:
         print(f"agent: {note}", file=sys.stderr)
+    # Staged outside --out, so a run that fails before its report writes nothing.
+    staging = Path(tempfile.mkdtemp(prefix="agent-history-"))
+    history = carry_history(args.previous, staging)
     if not pages:
         summary = (
             f"No page under .okf/ or docs/ names a file this change touched "
@@ -962,8 +973,17 @@ def run(args: argparse.Namespace, model: Model | str | None = None) -> int:
             )
         if note:
             summary += f" ({note})"
-        empty = Report(summary=summary, checked=[], findings=[], commit=head)
+        empty = Report(
+            summary=summary,
+            checked=[],
+            findings=[],
+            commit=head,
+            history_count=len(history),
+        )
         write_report(Path(args.out), empty, b"[]")
+        shutil.copytree(
+            staging / "history", Path(args.out) / "history", dirs_exist_ok=True
+        )
         return 0
     if model is None:
         model = build_model(args.model, args.base_url, args.api_key_env)
@@ -973,6 +993,7 @@ def run(args: argparse.Namespace, model: Model | str | None = None) -> int:
     if previous is not None:
         touched = pages_touched(repo, previous.commit, head)
         prompt += earlier_text(previous, touched)
+    prompt += history_digest(history)
     try:
         result = asyncio.run(
             run_agent(
@@ -1009,6 +1030,7 @@ def run(args: argparse.Namespace, model: Model | str | None = None) -> int:
         return 1
     report = result.output
     report.commit = head
+    report.history_count = len(history)
     if previous is not None:
         ids = earlier_ids(previous)
         report.previous_commit = previous.commit
@@ -1016,7 +1038,86 @@ def run(args: argparse.Namespace, model: Model | str | None = None) -> int:
     if note:
         report.summary = f"{report.summary} ({note})"
     write_report(Path(args.out), report, result.all_messages_json())
+    shutil.copytree(staging / "history", Path(args.out) / "history", dirs_exist_ok=True)
     return 0
+
+
+#: The most lines the digest of earlier runs may give the agent.
+DIGEST_LINES = 60
+#: An earlier report's file name in history/: its number, then its commit.
+HISTORY_NAME = re.compile(r"(\d+)-[^/]+\.json")
+
+
+def carry_history(previous: str | None, out: Path) -> list[Path]:
+    """Copy the earlier reports into ``out/history/`` and return them in run order.
+
+    ``run`` passes a staging folder and copies its ``history/`` into ``--out``
+    only once it writes a report.
+
+    The history comes from the folder beside ``previous`` (the downloaded
+    artifact's ``history/``) plus ``previous`` itself, whether or not that
+    report loads, so a force push or an unreadable report does not end the
+    trail. A new file is numbered one past the highest number there, with
+    the report's commit, or ``nocommit`` when it records none.
+    """
+    target = out / "history"
+    target.mkdir(parents=True, exist_ok=True)
+    if not previous or not Path(previous).is_file():
+        return sorted(target.glob("*.json"))
+    source = Path(previous).parent / "history"
+    if source.is_dir():
+        for path in sorted(source.glob("*.json")):
+            shutil.copyfile(path, target / path.name)
+    numbers = [
+        int(m.group(1))
+        for p in target.glob("*.json")
+        if (m := HISTORY_NAME.fullmatch(p.name))
+    ]
+    try:
+        commit = str(json.loads(Path(previous).read_text()).get("commit") or "")
+    except (OSError, ValueError, AttributeError):
+        commit = ""
+    name = f"{max(numbers, default=0) + 1:03d}-{commit[:8] or 'nocommit'}.json"
+    shutil.copyfile(previous, target / name)
+    return sorted(target.glob("*.json"))
+
+
+def history_digest(files: list[Path]) -> str:
+    """Return a compact digest of the earlier reports in ``files``, at most ``DIGEST_LINES`` lines.
+
+    Each run gives its commit and each finding's severity, title and page,
+    and the titles it judged fixed; never a finding's summary, fix or
+    citations. Over the cap, the oldest runs go first, and a newest run that
+    alone runs over is cut.
+    """
+    blocks: list[list[str]] = []
+    for path in files:
+        try:
+            report = Report.model_validate_json(path.read_text())
+        except (OSError, ValueError):
+            continue
+        block = [
+            f"- {path.stem}: commit {report.commit or 'unknown'}, {len(report.findings)} finding(s)"
+        ]
+        block += [
+            f"  - [{f.severity}] {f.title} ({page_path(f.claim).split(':', 1)[0]})"
+            for f in report.findings
+        ]
+        if report.fixed_titles:
+            block.append("  - fixed: " + "; ".join(report.fixed_titles))
+        blocks.append(block)
+    while len(blocks) > 1 and sum(map(len, blocks)) > DIGEST_LINES:
+        blocks.pop(0)
+    lines = [line for block in blocks for line in block][:DIGEST_LINES]
+    if not lines:
+        return ""
+    return (
+        "\n## Earlier runs, in short\n\nEvery earlier report on this pull request, "
+        "oldest first; the full reports are in the artifact's history/. Use it to "
+        "see whether a finding was fixed before and has come back.\n\n"
+        + "\n".join(lines)
+        + "\n"
+    )
 
 
 def load_previous(repo: Path, raw: str | None) -> tuple[Report | None, str]:
