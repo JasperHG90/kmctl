@@ -82,3 +82,10 @@ token can post and a ruleset entry for the GitHub Actions app accepts. A
 each push, with a Details link to the workflow's Run workflow button, and
 the publish job sets it to success when the audit ran, failure when it did
 not. A refused dispatch leaves it pending.
+
+## Correction, 2026-11-28, after a push
+
+The Decision says a push after a run leaves the new commit without the
+check. With the `audit` commit status, the pending workflow marks the new
+head pending on each push, with its Details link to run the audit, so the
+pull request waits for another run with a pending check, not a missing one.

@@ -129,8 +129,10 @@ agent: wrote report.json, report.md and transcript.json to ../report
 
 ### 6. Read the report
 
-Open `../report/report.md`. It is what the comment on a pull request shows,
-and it is short on purpose. It starts with a count, such as
+Open `../report/report.md`. It has the same layout as the comment on a pull
+request, and it is short on purpose. It lists every finding; the comment
+lists only those at or above the action's `min_severity` (default `low`) and
+says how many it left out. It starts with a count, such as
 **2 of 3 pages need a look** · 1 medium · 1 low, and one sentence from the
 agent on what the change does to the pages.
 

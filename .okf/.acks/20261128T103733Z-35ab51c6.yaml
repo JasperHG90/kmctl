@@ -1,5 +1,6 @@
 # kmctl summary ack: .okf/summary.md was read against these concepts and still holds.
-at: 2026-11-28T10:07:14Z
+at: 2026-11-28T10:37:33Z
 against:
   - architecture/overview
+  - decisions/0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated
   - decisions/0061-the-reread-runs-on-demand-on-a-ready-pull-request

@@ -249,3 +249,17 @@ runs first, with `pull-requests: read` and `actions: read`, to resolve the
 pull request and hand the audit the report of its last run
 ([ADR 0060](0060-the-ci-agent-only-rereads-the-pages-a-pull-request-changed.md)'s
 Correction, [ADR 0061](0061-the-reread-runs-on-demand-on-a-ready-pull-request.md)).
+
+## Correction, 2026-11-28, the publish job and failures
+
+Two statements in the Decision are now narrower than the code
+([ADR 0061](0061-the-reread-runs-on-demand-on-a-ready-pull-request.md)):
+
+- The publish job gets more than the report artifact. It reads the previous
+  job's outputs (the pull request's number and head) and the audit job's
+  result, and with `statuses: write` it sets the required `audit` commit
+  status on that head: success when the audit ran, failure when it did not.
+- The audit job fails on more than an error or the time limit. On a
+  dispatch it fails when the previous job refused the pull request (closed,
+  a draft, from a fork, or not at the run's commit), and in the starter's
+  workflow when `AUDIT_API_KEY` is missing. A finding still never fails it.
