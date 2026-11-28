@@ -949,17 +949,7 @@ def write_report(out: Path, report: Report, transcript: bytes) -> None:
 
 
 def run(args: argparse.Namespace, model: Model | str | None = None) -> int:
-    """Run the ``run`` command; ``model`` overrides ``--model`` (for tests).
-
-    The earlier reports are staged in a temporary folder, removed when the
-    run ends, so a run that fails before its report writes nothing to --out.
-    """
-    with tempfile.TemporaryDirectory(prefix="agent-history-") as staging:
-        return _run(args, model, Path(staging))
-
-
-def _run(args: argparse.Namespace, model: Model | str | None, staging: Path) -> int:
-    """Do the ``run`` command's work, staging the earlier reports in ``staging``."""
+    """Run the ``run`` command; ``model`` overrides ``--model`` (for tests)."""
     repo = Path(args.repo).resolve()
     refuse_tokens(repo)
     timeout = parse_duration(args.timeout)
@@ -968,6 +958,8 @@ def _run(args: argparse.Namespace, model: Model | str | None, staging: Path) -> 
     previous, note = load_previous(repo, args.previous)
     if note:
         print(f"agent: {note}", file=sys.stderr)
+    # Staged outside --out, so a run that fails before its report writes nothing.
+    staging = Path(tempfile.mkdtemp(prefix="agent-history-"))
     history = carry_history(args.previous, staging)
     if not pages:
         summary = (
