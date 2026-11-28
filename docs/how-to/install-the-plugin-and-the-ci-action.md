@@ -327,8 +327,9 @@ to record that once you have read them; the agent never runs it. The script
 checks every citation: one that names a line the agent did not read or find
 by search goes back to the agent, and after five retries the run fails with
 no report. It writes its report to the job summary and keeps it as an
-`agent-report` artifact (`report.json`, `report.md` and the full
-`transcript.json`). A second job, with `mode: publish`, posts it as one
+`agent-report` artifact (`report.json`, `report.md`, the full
+`transcript.json`, and `history/` with every earlier report on the pull
+request). A second job, with `mode: publish`, posts it as one
 comment on the pull request when there is a finding at `low` or above (or
 the severity you choose), and replaces that comment on each run. A finding
 never fails the check.

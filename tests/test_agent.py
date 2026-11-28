@@ -1779,3 +1779,21 @@ def test_render_names_the_trail() -> None:
     assert "Trail" not in agent.render(
         agent.Report(summary="S.", checked=[], findings=[])
     )
+
+
+def test_run_leaves_no_staging_folder(
+    repo: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The temporary folder the history is staged in is gone after the run, ok or not."""
+    temp = tmp_path / "tmp"
+    temp.mkdir()
+    monkeypatch.setenv("TMPDIR", str(temp))
+    monkeypatch.setattr(agent.tempfile, "tempdir", None)
+
+    assert _main(repo, tmp_path, FunctionModel(Recorder())) == 0
+    assert (
+        agent.main(["run", "--model", "unused", "--base", "nope", "--repo", str(repo)])
+        == 2
+    )
+
+    assert list(temp.iterdir()) == []

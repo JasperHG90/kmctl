@@ -85,7 +85,7 @@ flowchart LR
         ci["action/knowledge-ci.sh<br/>mode: checks"]
         agentPy["action/agent.py run (PydanticAI)<br/>mode: audit, after previous;<br/>read_file, search_files, list_files"]
         prompts["action/prompt.md<br/>the one task"]
-        artifact["report_name artifact<br/>report.json, report.md,<br/>transcript.json"]
+        artifact["report_name artifact<br/>report.json, report.md,<br/>transcript.json, history/"]
         publishPy["action/agent.py publish<br/>mode: publish, its own job,<br/>GH_TOKEN, pull-requests: write"]
     end
 
@@ -384,9 +384,10 @@ jobs: previous, audit, publish (ADR 0060, ADR 0061), and a separate
   commit for the next run. `model` names any PydanticAI provider, or with `base_url`
   any OpenAI-compatible endpoint. Its tools are `read_file`, `search_files`
   and `list_files`, which refuse any path outside the repository; it has no
-  shell. It returns a typed report, writes `report.json`, `report.md` and
-  `transcript.json` to the `agent-report` artifact and `report.md` to the
-  job summary. It never commits or pushes (I2), and it refuses to start
+  shell. It returns a typed report, writes `report.json`, `report.md`,
+  `transcript.json` and `history/` (every earlier report on the pull
+  request) to the `agent-report` artifact and `report.md` to the job
+  summary. It never commits or pushes (I2), and it refuses to start
   when a GitHub token is reachable (`GH_TOKEN` or `GITHUB_TOKEN` set, or
   checkout's credentials in git config, which `read_file` could reach).
   setup-uv's cache is off, so nothing the agent wrote outlives its job but
