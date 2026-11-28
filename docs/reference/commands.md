@@ -1,5 +1,8 @@
 ---
 description: "Every kmctl command, subcommand and option."
+verified:
+  - by: human:jasper
+    at: 2026-11-27T20:44:03Z
 ---
 
 # Commands

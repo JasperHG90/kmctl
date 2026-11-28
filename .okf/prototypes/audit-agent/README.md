@@ -6,6 +6,9 @@ tags: [prototype]
 generated:
   by: process:kmctl/0.12.1
   at: 2026-11-05T18:36:01Z
+verified:
+  - by: human:jasper
+    at: 2026-11-27T20:41:27Z
 ---
 
 # Audit agent

@@ -10,6 +10,8 @@ status: stable
 verified:
   - by: human:jasper
     at: 2026-11-27T09:48:51Z
+  - by: human:jasper
+    at: 2026-11-27T20:41:20Z
 ---
 
 # ADR 0017: The CI audit is a standalone PydanticAI agent script
@@ -220,3 +222,14 @@ shares only the validated `Report` artifact.
   `action.yml` and in `.github/workflows/knowledge-audit.yml` no longer
   fails on a missing artifact. The 2026-11-11 correction's "updated or
   closed from the report that run has" holds when that run has a report.
+
+## Correction, 2026-11-27
+
+[ADR 0060](0060-the-ci-agent-only-rereads-the-pages-a-pull-request-changed.md) makes `action/agent.py` do one task. It keeps the standalone PydanticAI
+script, the typed `Report`, the citation check, any model provider, no
+GitHub token in the agent's job and a separate publish job. It drops the
+general agent this record describes: the shipped audits other than the pull
+request reread, a task or system prompt from a file, `--context` and
+`--skills` folders, `run_shell`, tracing, and publishing to an issue. Its
+one prompt ships in `action/prompt.md`, and its tools only read, search and
+list files.

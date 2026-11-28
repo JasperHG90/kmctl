@@ -13,6 +13,8 @@ sources:
 verified:
   - by: human:jasper
     at: 2026-11-27T09:48:51Z
+  - by: human:jasper
+    at: 2026-11-27T20:41:20Z
 ---
 
 # ADR 0057: The audit runs on a pull request and comments on the decisions it may have outdated
@@ -198,3 +200,66 @@ changed code, so it works from knowledge toward code, kmaudit's direction.
 The shipped audits live in the action today (`action/agent.py` and
 `action/prompts/`), outside both packages, and `okf-vs-change` joins them
 there. If the shipped audits move into kmaudit, it moves with them.
+
+## Correction, 2026-11-27
+
+[ADR 0060](0060-the-ci-agent-only-rereads-the-pages-a-pull-request-changed.md) widens and simplifies the pull request audit. It rereads every page
+under `.okf/` and `docs/` whose `sources` the pull request changed, not only
+stable decisions: drafts the pull request adds, architecture pages, practices
+and docs pages too. Over the last 15 merged pull requests that added 8 docs
+pages to 64 decisions ([prototype](../prototypes/pr-reread-scope/README.md)).
+With nothing in scope it calls no model. The repository supplies no prompt,
+context or skills any more, since the one prompt ships with the action, so
+the base-branch checkout is gone. The same-repository rule, no shell, one
+comment replaced on each push, report only and the author's answer stand.
+
+## Correction, 2026-11-27, the shipped audits
+
+The 2026-11-26 Correction's "The audit's name and history" and "Where it
+belongs" describe a shipped audit that no longer exists.
+[ADR 0060](0060-the-ci-agent-only-rereads-the-pages-a-pull-request-changed.md)
+removed `okf-vs-change`, the `AUDITS` list in `action/agent.py`, the other
+three shipped audits and `action/prompts/`. The action's one audit is the
+pull request reread, whose task ships in `action/prompt.md`. The reasoning
+under "Where it belongs" still holds for it: it starts from each page's
+`sources` and checks the page against the changed code, kmaudit's direction,
+and it lives in the action, outside both packages.
+
+## Correction, 2026-11-27, verified decisions and the pinned script
+
+The 2026-11-26 Correction says no decision in this repository has a
+`verified` entry. That is no longer true: every stable decision now has a
+`verified` entry, so `kmctl review due --base` compares their `sources` with
+the diff. The audit keeps its own matcher for the reason that Correction
+also gives: `review due --base` says only that a source changed, not whether
+the page still holds.
+
+The Decision says the agent script comes from the action, which the
+workflow pins by commit. That holds for a repository that uses the action at
+a release. This repository's workflow runs the pull request's own
+`action/agent.py` and `action/prompt.md`, so a same-repository pull request
+here can change what the audit does; review and branch protection see that
+change.
+
+## Correction, 2026-11-27, three jobs
+
+The Consequences say a repository that turns this on adds a workflow with
+two jobs, the audit and the publish. It now adds three: a `previous` job
+runs first, with `pull-requests: read` and `actions: read`, to resolve the
+pull request and hand the audit the report of its last run
+([ADR 0060](0060-the-ci-agent-only-rereads-the-pages-a-pull-request-changed.md)'s
+Correction, [ADR 0061](0061-the-reread-runs-on-demand-on-a-ready-pull-request.md)).
+
+## Correction, 2026-11-28, the publish job and failures
+
+Two statements in the Decision are now narrower than the code
+([ADR 0061](0061-the-reread-runs-on-demand-on-a-ready-pull-request.md)):
+
+- The publish job gets more than the report artifact. It reads the previous
+  job's outputs (the pull request's number and head) and the audit job's
+  result, and with `statuses: write` it sets the required `audit` commit
+  status on that head: success when the audit ran, failure when it did not.
+- The audit job fails on more than an error or the time limit. On a
+  dispatch it fails when the previous job refused the pull request (closed,
+  a draft, from a fork, or not at the run's commit), and in the starter's
+  workflow when `AUDIT_API_KEY` is missing. A finding still never fails it.

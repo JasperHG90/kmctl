@@ -13,6 +13,8 @@ sources:
 verified:
   - by: human:jasper
     at: 2026-11-27T09:48:51Z
+  - by: human:jasper
+    at: 2026-11-27T20:41:20Z
 ---
 
 # ADR 0046: kmctl works from code toward knowledge and kmaudit from knowledge toward code
@@ -60,3 +62,16 @@ docs without kmctl depends on keeping it to one direction.
 - A feature that only works in kmaudit's direction but needs kmctl's
   bundle layout goes in kmaudit and reads that layout as plain files, so
   kmaudit still runs without kmctl.
+
+## Correction, 2026-11-27
+
+One feature sits outside the rule above. The CI agent that rereads, on a
+pull request, the pages whose `sources` it changed
+([ADR 0060](0060-the-ci-agent-only-rereads-the-pages-a-pull-request-changed.md))
+works from `docs/` and `.okf/` toward the code, kmaudit's direction, but it
+ships in kmctl's GitHub Action (`action/agent.py` and `action/prompt.md`),
+outside both packages. The action is how a repository runs kmctl in CI, and
+kmaudit has no action of its own.
+[ADR 0057](0057-the-audit-runs-on-a-pull-request-and-comments-on-the-decisions-it-may-have-outdated.md)'s
+2026-11-26 Correction records this placement. If the shipped audit moves
+into kmaudit, it moves with it.

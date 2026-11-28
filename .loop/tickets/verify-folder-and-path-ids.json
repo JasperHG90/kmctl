@@ -1,25 +1,47 @@
 {
   "schema_version": "1.0",
   "slug": "verify-folder-and-path-ids",
-  "stage": "ready",
-  "attempts": 0,
+  "stage": "done",
+  "attempts": 1,
   "plan_rounds": 1,
-  "review_rounds": 0,
+  "review_rounds": 3,
   "extra_plan_rounds": 0,
   "extra_review_rounds": 0,
   "blocker": null,
-  "fix": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "f6558b8d9250678e12e282d4b8d86564c2bbc0e29cb9d6000fb07246583fbd75",
+    "tree": "424eb506dd471498ea36d5d748483f47e6f08952",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": "j-20261127T101820+0000-2848b5af",
+        "paths": [
+          "packages/kmctl/src/kmctl/verify.py",
+          "packages/kmctl/tests/test_verify.py"
+        ]
+      }
+    ],
+    "at": "2026-11-27T10:18:20+00:00"
+  },
   "ask": "j-20261127T094856+0000-1fe6b9aa",
   "split": "j-20261127T095042+0000-bec279cc",
   "split_plan_hash": "951d4d8ab18ef6d72d31a982e77291d9f9a3618e4d2cb005838bd81f4f4bc44c",
   "split_hold": false,
-  "commit_sha": null,
+  "commit_sha": "fe7fb6e0be6cbd2a6b50dc5f9213e79fa87c0944",
   "closed_outside": false,
   "dropped": false,
   "archived": false,
-  "worktree": null,
-  "branch": null,
-  "stamps": [],
+  "worktree": "/home/vscode/workspace.worktrees/verify-folder-and-path-ids",
+  "branch": "loop/verify-folder-and-path-ids",
+  "stamps": [
+    "a17718636f1f9f1f007c1ed717c5e5dca324378fa7180dfc9572371cbba53d0c",
+    "94165b734effec3063cf1e90555234d687aedc49d2e6bc153fa7636cb2c493d6",
+    "f6558b8d9250678e12e282d4b8d86564c2bbc0e29cb9d6000fb07246583fbd75",
+    "b43e5b4cd37e61acdbfc55419062852a5a05b85f73790365092818e73f88847b"
+  ],
   "signoff": {
     "signer": "delegated:jasperginn@gmail.com/claude-opus-5-5",
     "hash": "a7204dfe5aa90e6ea676000b812b74ca919d2914b0735bb1418f4499e87416c6",
@@ -83,16 +105,16 @@
   "waivers": [],
   "overrides": [],
   "round": {
-    "kind": "plan",
-    "n": 1,
-    "binds": "951d4d8ab18ef6d72d31a982e77291d9f9a3618e4d2cb005838bd81f4f4bc44c",
-    "started_at": "2026-11-27T09:51:19+00:00",
+    "kind": "review",
+    "n": 3,
+    "binds": "b43e5b4cd37e61acdbfc55419062852a5a05b85f73790365092818e73f88847b",
+    "started_at": "2026-11-27T10:27:28+00:00",
     "passes": [
-      "plan-reviewer"
+      "reviewer"
     ],
-    "tree": null,
-    "plan_hash": null,
-    "eval_hash": null,
+    "tree": "424eb506dd471498ea36d5d748483f47e6f08952",
+    "plan_hash": "951d4d8ab18ef6d72d31a982e77291d9f9a3618e4d2cb005838bd81f4f4bc44c",
+    "eval_hash": "a7204dfe5aa90e6ea676000b812b74ca919d2914b0735bb1418f4499e87416c6",
     "scope": "full",
     "sent_back": [],
     "since": null,
@@ -120,8 +142,38 @@
       "to": "ready",
       "at": "2026-11-27T09:53:05+00:00",
       "by": "advance"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-27T09:53:13+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-27T10:07:02+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-27T10:13:24+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-27T10:18:20+00:00",
+      "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-27T10:32:54+00:00",
+      "by": "done"
     }
   ],
   "by": "process:loopctl/2.4.0",
-  "at": "2026-11-27T09:53:05+00:00"
+  "at": "2026-11-27T10:32:54+00:00"
 }

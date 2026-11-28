@@ -1,5 +1,8 @@
 ---
 description: "The problems kmctl solves, the kinds of agent memory, and what it leaves to a shared layer above the repository."
+verified:
+  - by: human:jasper
+    at: 2026-11-27T20:44:03Z
 ---
 
 # Where kmctl fits in knowledge management

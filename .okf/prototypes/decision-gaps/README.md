@@ -6,6 +6,9 @@ tags: [prototype, decisions, history]
 generated:
   by: process:kmctl/0.13.0
   at: 2026-11-16T13:47:54Z
+verified:
+  - by: human:jasper
+    at: 2026-11-27T20:41:27Z
 ---
 
 # Decision gaps

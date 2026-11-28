@@ -12,6 +12,8 @@ sources:
 verified:
   - by: human:jasper
     at: 2026-11-27T09:48:51Z
+  - by: human:jasper
+    at: 2026-11-27T20:41:20Z
 ---
 
 # ADR 0036: Claims are extracted by the agent through kmctl audit claims

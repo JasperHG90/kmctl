@@ -10,6 +10,8 @@ status: stable
 verified:
   - by: human:jasper
     at: 2026-11-27T09:48:51Z
+  - by: human:jasper
+    at: 2026-11-27T20:41:20Z
 ---
 
 # ADR 0012: Releases come from CI
@@ -226,3 +228,10 @@ the `version:` line of `packages/kmaudit/apm/apm.yml`, and the VERSION file
 is gone. `release-tag.yml` runs on a change to
 `packages/kmctl/apm/apm.yml` or `packages/kmaudit/apm/apm.yml`, once per
 package. The tag families are unchanged.
+
+## Correction, 2026-11-27
+
+The docs now hold seven install lines for `scripts/release.py set` to point
+at the release tag: the CI how-to's audit workflow gained a third job, which
+uses the action in `mode: previous` to hand the audit the report of its last
+run ([ADR 0060](0060-the-ci-agent-only-rereads-the-pages-a-pull-request-changed.md)).

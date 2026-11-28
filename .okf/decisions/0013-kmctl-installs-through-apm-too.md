@@ -10,6 +10,8 @@ status: deprecated
 verified:
   - by: human:jasper
     at: 2026-11-27T09:48:51Z
+  - by: human:jasper
+    at: 2026-11-27T20:41:20Z
 ---
 
 # ADR 0013: kmctl installs through APM too

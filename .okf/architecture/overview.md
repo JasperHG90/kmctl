@@ -7,6 +7,9 @@ generated:
   at: 2026-10-16
 tags: [architecture, diagram]
 status: stable
+verified:
+  - by: human:jasper
+    at: 2026-11-27T20:42:36Z
 ---
 
 # Architecture overview
@@ -80,10 +83,10 @@ flowchart LR
 
     subgraph action["action.yml (GitHub Action)"]
         ci["action/knowledge-ci.sh<br/>mode: checks"]
-        agentPy["action/agent.py (PydanticAI)<br/>mode: audit; read_file, search_files,<br/>list_files, run_shell"]
-        prompts["action/prompts/<br/>okf-vs-code (default), docs-vs-code,<br/>okf-vs-docs"]
-        artifact["report_name artifact, one per audit<br/>report.json, report.md,<br/>transcript.json"]
-        publishPy["action/agent.py publish<br/>mode: publish, its own job,<br/>GH_TOKEN, issues: write"]
+        agentPy["action/agent.py run (PydanticAI)<br/>mode: audit, after previous;<br/>read_file, search_files, list_files"]
+        prompts["action/prompt.md<br/>the one task"]
+        artifact["report_name artifact<br/>report.json, report.md,<br/>transcript.json, history/"]
+        publishPy["action/agent.py publish<br/>mode: publish, its own job,<br/>GH_TOKEN, pull-requests: write"]
     end
 
     subgraph release["releases (ADR 0012)"]
@@ -106,11 +109,9 @@ flowchart LR
     ocConsumer[("the consumer's .opencode/ and opencode.json<br/>agents, bundle (from APM, agents rewritten),<br/>rules/, instructions entry,<br/>plugins/kmctl.js (from kmctl)")]
     claude["claude CLI<br/>old plugin removal,<br/>user-scope MCP server"]
     provider["any model provider<br/>or OpenAI-compatible endpoint"]
-    traces["Langfuse or another<br/>OTLP endpoint (optional)"]
     decider["decision endpoint<br/>(Jev or Clef), per-user audit.toml"]
     langsmith["LangSmith (optional)"]
-    context[("--context and --skills folders")]
-    summary["job summary and<br/>Knowledge audit issue"]
+    summary["job summary and<br/>pull request comment"]
 
     consumer -- "SessionStart hook:<br/>kmctl briefing" --> briefing
     agConsumer -- "SessionStart hook:<br/>kmctl briefing --format antigravity" --> briefing
@@ -179,17 +180,14 @@ flowchart LR
     rules -. "applyTo becomes paths:" .-> consumer
 
     ci -- "kmctl check,<br/>kmctl review due" --> app
-    agentPy -- "--audit NAME: the user message" --> prompts
-    agentPy -. "run_shell: kmctl as a task needs" .-> app
-    agentPy -. "lists the skills; reads the review<br/>skills as it needs" .-> audit & reviews & auditor
-    agentPy -- "one run, typed Report (checked, findings),<br/>citations sent back unless read or a search hit,<br/>under --timeout" --> provider
-    agentPy -. "reads, never commits or pushes" .-> repo & context
-    agentPy -. "OTLP traces, only with Langfuse keys<br/>or an OTLP endpoint set" .-> traces
+    agentPy -- "the task, then the pages in scope" --> prompts
+    agentPy -. "git diff BASE...HEAD; pages whose<br/>sources name a changed file" .-> repo
+    agentPy -- "only with a page in scope: one run,<br/>typed Report (checked, findings),<br/>citations sent back unless read or a search hit,<br/>under --timeout" --> provider
+    agentPy -. "reads, never commits or pushes" .-> repo
     agentPy -- "write: --out" --> artifact
     agentPy -- "report.md" --> summary
-    artifact -- "report.json, the only thing<br/>the two jobs share" --> publishPy
-    publishPy -- "gh issue create, or edit and comment;<br/>close below the threshold" --> summary
-    publishPy -. "reads CODEOWNERS" .-> repo
+    artifact -- "report.json, all publish<br/>gets from the audit job" --> publishPy
+    publishPy -- "gh pr comment, or replace<br/>the comment its title marks" --> summary
     ci --> summary
 
     releaseYml -- "next version from the package's tags" --> nextVersion
@@ -335,8 +333,9 @@ and `claude/.apm/instructions/`, for the OpenCode rules.
 - **The audit reads only.** The `audit` skill takes the due list from
   `kmctl review due --json`, batches it, and dispatches the `kmctl-auditor`
   agent with one of the three review skills. The auditor's tools are Read,
-  Grep and Glob (I2, ADR 0005). In CI, `action/agent.py` does the auditor's
-  work itself and also has a shell, but nothing it changes is committed.
+  Grep and Glob (I2, ADR 0005). In CI, `action/agent.py` rereads the pages
+  a pull request may have outdated with its own read-only tools, and nothing
+  it changes is committed (ADR 0060).
 - **Claims come from a subagent.** kmaudit's own APM package,
   `packages/kmaudit/apm/`, holds the `extract-claims` and `write-checks`
   skills and declares the kmaudit MCP server (`uvx` running `kmaudit mcp`
@@ -355,48 +354,68 @@ and `claude/.apm/instructions/`, for the OpenCode rules.
 
 ## The action
 
-`action.yml` is a composite action with three modes. checks and audit
-install kmctl from the action's own checkout.
+`action.yml` is a composite action with five modes. Only checks installs
+kmctl, from the action's own checkout. A pull request audit runs three
+jobs: previous, audit, publish (ADR 0060, ADR 0061), and a separate
+`pull_request` workflow runs pending.
 
 - **checks** (the default) runs `action/knowledge-ci.sh`: `kmctl check` and
   `kmctl review due` into the job summary, failing when `kmctl check` fails
   or `kmctl review due` crashes, never because a concept is due.
-- **audit** (opt-in) runs `action/agent.py` with `uv run --script`: one
-  standalone PydanticAI script that does not import kmctl (ADR 0017). Its
-  task is one of four shipped audits, picked by the `audit` input
-  (`--audit`: `okf-vs-code`, the default, `docs-vs-code`, `okf-vs-docs` or
-  `okf-vs-change`, prompts in `action/prompts/`), or the `prompt` or
-  `prompt_file` input. `okf-vs-change` checks the stable decisions whose
-  `sources` cover a file changed since `--base` (ADR 0057). Its
-  system prompt,
-  replaceable with `system_prompt_file`, lists the folders it can read and
-  each skill's name and description; it reads a SKILL.md when the skill fits.
-  `model` names any PydanticAI provider, or with `base_url` any
-  OpenAI-compatible endpoint. Its tools are `read_file`, `search_files` and
-  `list_files`, which refuse any path outside the repository and the
-  `context` and `skills` folders, and `run_shell`, which runs a command in
-  the repository with no API key or GitHub token in its environment. It
-  returns a typed report, writes `report.json`, `report.md` and
-  `transcript.json` to the `agent-report` artifact and `report.md` to the
-  job summary. It never commits or pushes (I2), and it refuses to start
+- **audit** (opt-in) runs `action/agent.py run` with
+  `uv run --no-config --script`: one standalone PydanticAI script that does
+  not import kmctl (ADR 0017), with one job (ADR 0060). It runs on a
+  `workflow_dispatch` with the `base` and `head` inputs from the previous
+  job (ADR 0061), or on a `pull_request` from the same repository, where a
+  fork's or Dependabot's pull request is skipped with a notice; any other
+  event is refused. With `--base origin/BASE`, it lists every page
+  under `.okf/` and `docs/` whose `sources` name a file changed since the
+  merge base (`git diff BASE...HEAD`; a folder source matches as a prefix,
+  URL sources are skipped): every concept kind and docs page, drafts
+  included, but not deprecated or superseded decisions, handoffs, the log
+  or `index.md` pages. With none, it writes an empty report and never calls
+  the model. Otherwise it hands the model `action/prompt.md`, which ships
+  with the action and carries the draft, verify and summary rules (ADR 0050,
+  ADR 0055, ADR 0056), followed by the pages in scope with their status and
+  changed files. With `--previous`, it adds the previous report's findings
+  by id and the pages changed since its commit; the output validator sends
+  back a report that leaves an earlier finding unanswered or raises a new
+  one on an unchanged page, and `--head` records the pull request's head
+  commit for the next run. `model` names any PydanticAI provider, or with `base_url`
+  any OpenAI-compatible endpoint. Its tools are `read_file`, `search_files`
+  and `list_files`, which refuse any path outside the repository; it has no
+  shell. It returns a typed report, writes `report.json`, `report.md`,
+  `transcript.json` and `history/` (every earlier report on the pull
+  request) to the `agent-report` artifact and `report.md` to the job
+  summary. It never commits or pushes (I2), and it refuses to start
   when a GitHub token is reachable (`GH_TOKEN` or `GITHUB_TOKEN` set, or
-  checkout's credentials in git config). setup-uv's cache is off, so
-  nothing the agent wrote outlives its job but the artifact. It runs on
-  `workflow_dispatch`, `schedule` or a `pull_request` from the same
-  repository; a fork's or Dependabot's pull request is skipped with a
-  notice. On a pull request it runs with `--no-shell`, so without
-  `run_shell`, and with `--instructions-root` set to a checkout of the base
-  branch under `$RUNNER_TEMP`, so the prompt file, system prompt file,
-  context and skills that git tracks come from the base branch (ADR 0057).
-- **publish** runs in a separate job on a fresh runner, the only one with
-  `GH_TOKEN` and `issues: write` (or `pull-requests: write`). It downloads
-  the artifact and runs `action/agent.py publish`: when a finding is at or
-  above `min_severity` (default high), it creates the one issue titled
-  `issue_title`, or replaces its body and adds a comment, @-mentioning the
-  owners of the last `*` rule in CODEOWNERS or the `mention` input; below
-  the threshold it closes an open issue with a comment. On a pull request
-  it passes `--pr`, and posts one comment marked with the title, replaced
-  on each push. With no artifact it posts nothing and passes.
+  checkout's credentials in git config, which `read_file` could reach).
+  setup-uv's cache is off, so nothing the agent wrote outlives its job but
+  the artifact.
+- **pending** runs on each push to a pull request, in a workflow with only
+  `statuses: write`: `action/agent.py status SHA pending` marks the commit
+  status `audit` pending on the pull request's head, with a Details link to
+  the knowledge-audit workflow's Run workflow button. A repository requires
+  `audit` in its branch rules; a dispatched run's own check run does not
+  count for a pull request, a commit status does.
+- **previous** runs in a job of its own before the audit, with `GH_TOKEN`,
+  `pull-requests: read` and `actions: read`. On a dispatch it resolves the
+  pull request with `action/agent.py previous --resolve SHA`, refusing one
+  that is closed, a draft, from a fork or not at the run's commit, and sets
+  the `pr`, `base` and `head` outputs. Then it follows the audit comment's
+  run link, downloads that run's report and hands it to the audit job as
+  the `previous-report` artifact; on a gh failure it hands nothing and
+  passes, so the audit starts fresh.
+- **publish** runs in a separate job on a fresh runner, with `GH_TOKEN`,
+  `pull-requests: write` and `statuses: write`. Given `head` and
+  `audit_result`, it settles the `audit` status: success when the audit ran,
+  failure when it did not. It downloads the artifact and runs
+  `action/agent.py publish REPORT --pr N`: when a finding is at or above
+  `min_severity` (default low), it posts one comment on the pull request
+  marked with `title`, or replaces the earlier one; below the threshold it
+  replaces an earlier comment with one that says the latest run found
+  nothing, and with none it posts nothing. With no artifact it posts
+  nothing and passes.
 
 ## Releases
 
@@ -428,7 +447,7 @@ script takes `--package kmctl|kmaudit` (ADR 0012).
   with `scripts/check_wheel.py` and `scripts/smoke_wheel.py`. A real run
   commits `scripts/release.py set` (the version in `packages/kmctl/apm/apm.yml` and its
   copies in the root `apm.yml`, `packages/kmctl/apm/claude/apm.yml` and
-  `packages/kmctl/apm/antigravity/apm.yml`, the six install lines in kmctl's README and the docs, the APM how-to's
+  `packages/kmctl/apm/antigravity/apm.yml`, the seven install lines in kmctl's README and the docs, the APM how-to's
   pin, and `kmctl_ref`'s default in `copier.yml`; for kmaudit, its `apm.yml` and
   the install lines in its README and `docs/reference/kmaudit-commands.md`) on `release/TAG` and opens the version pull
   request. A notes job, in dry runs too, drafts the package's notes with
@@ -484,8 +503,8 @@ script takes `--package kmctl|kmaudit` (ADR 0012).
   and `packages/kmaudit/apm/claude/.apm/agents/kmaudit-check-writer.md`, `packages/kmaudit/src/kmaudit/mcp_server.py`,
   `packages/kmctl/apm/claude/.apm/instructions/`,
   `packages/kmctl/apm/antigravity/.apm/instructions/`; `action.yml`,
-  `action/knowledge-ci.sh`, `action/agent.py` (run and publish), `action/prompts/` (the three
-  audits); `.github/workflows/knowledge-audit.yml`.
+  `action/knowledge-ci.sh`, `action/agent.py` (run and publish), `action/prompt.md` (the one
+  task); `.github/workflows/knowledge-audit.yml`.
 - Releases: `.github/workflows/release.yml`, `.github/workflows/release-tag.yml`,
   `scripts/release.py`, `scripts/next_release_version.py`,
   `scripts/release_notes.py`, `.github/release-notes/`,

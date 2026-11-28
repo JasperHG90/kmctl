@@ -1,0 +1,125 @@
+{
+ "schema_version": "1.0",
+ "rows": [
+  {
+   "id": "r1",
+   "behavior": "the scope takes a docs page, an architecture page, a stable decision and a draft decision whose sources the change touched, each with its status and changed files",
+   "fails_when": "any of the four is missing from the scope, or its status or files are wrong",
+   "command": "uv run pytest -q tests/test_agent.py::test_scope_takes_every_page_kind"
+  },
+  {
+   "id": "r2",
+   "behavior": "the scope leaves out a superseded or deprecated decision, a handoff, the log, index pages and URL sources",
+   "fails_when": "any of them appears in the scope",
+   "command": "uv run pytest -q tests/test_agent.py::test_scope_leaves_out_superseded_handoffs_log_and_urls"
+  },
+  {
+   "id": "r3",
+   "behavior": "a folder source matches a changed file under it as a prefix",
+   "fails_when": "a page whose folder source holds a changed file is missing",
+   "command": "uv run pytest -q tests/test_agent.py::test_scope_matches_folder_source_as_prefix"
+  },
+  {
+   "id": "r4",
+   "behavior": "a run with nothing in scope writes a report saying no page names a changed file, exits 0, and never calls the model",
+   "fails_when": "the model is called, the exit is not 0, or no report is written",
+   "command": "uv run pytest -q tests/test_agent.py::test_nothing_in_scope_calls_no_model"
+  },
+  {
+   "id": "r5",
+   "behavior": "run takes only --model, --base-url, --api-key-env, --base (required), --repo, --out, --timeout and --max-requests",
+   "fails_when": "run accepts another option, such as --audit, --prompt, --skills, --context or --no-shell, or runs without --base",
+   "command": "uv run pytest -q tests/test_agent.py::test_run_takes_only_the_pr_options"
+  },
+  {
+   "id": "r6",
+   "behavior": "publish posts only a pull request comment: --pr is required and the issue options are gone",
+   "fails_when": "publish runs without --pr, or accepts --mention or --repo",
+   "command": "uv run pytest -q tests/test_agent.py::test_publish_takes_only_the_pr_options"
+  },
+  {
+   "id": "r7",
+   "behavior": "the agent's tools are read_file, search_files and list_files only",
+   "fails_when": "any other tool, such as run_shell, is given to the agent",
+   "command": "uv run pytest -q tests/test_agent.py::test_tools_are_read_only"
+  },
+  {
+   "id": "r8",
+   "behavior": "the shipped prompt names kmctl new decision --draft, kmctl verify with --by human:, and kmctl summary ack",
+   "fails_when": "the prompt lacks any of the three",
+   "command": "uv run pytest -q tests/test_agent.py::test_prompt_names_draft_verify_and_summary_ack"
+  },
+  {
+   "id": "r9",
+   "behavior": "the agent script carries no OpenTelemetry dependency or Langfuse code",
+   "fails_when": "the script header lists an opentelemetry package or the script names LANGFUSE",
+   "command": "uv run pytest -q tests/test_agent.py::test_script_has_no_tracing"
+  },
+  {
+   "id": "r10",
+   "behavior": "audit mode runs on a same-repository pull_request, skips a fork or Dependabot pull request with exit 0, and refuses schedule and workflow_dispatch",
+   "fails_when": "another outcome for any of those events",
+   "command": "uv run pytest -q packages/kmctl/tests/test_action.py::test_event_check_runs_only_on_a_same_repository_pull_request"
+  },
+  {
+   "id": "r11",
+   "behavior": "the action's inputs audit, prompt, prompt_file, system_prompt_file, context, skills and mention are gone",
+   "fails_when": "action.yml still declares any of them",
+   "command": "uv run pytest -q packages/kmctl/tests/test_action.py::test_removed_inputs_are_gone"
+  },
+  {
+   "id": "r12",
+   "behavior": "the agent step passes --base origin/$GITHUB_BASE_REF and adds no base-branch worktree",
+   "fails_when": "the step lacks --base, or runs git worktree add, or passes --instructions-root",
+   "command": "uv run pytest -q packages/kmctl/tests/test_action.py::test_agent_step_passes_base_without_a_worktree"
+  },
+  {
+   "id": "r13",
+   "behavior": "the publish step passes --pr with the pull request's number",
+   "fails_when": "the publish command lacks --pr",
+   "command": "uv run pytest -q packages/kmctl/tests/test_action.py::test_publish_step_passes_pr"
+  },
+  {
+   "id": "r14",
+   "behavior": "this repository's knowledge-audit workflow runs on pull_request only, both jobs carry the same-repository condition, only publish has pull-requests: write, and no Langfuse secret is passed",
+   "fails_when": "another trigger, a job without the condition, write access on the audit job, or a LANGFUSE variable",
+   "command": "uv run pytest -q tests/scripts/test_workflows.py::test_knowledge_audit_runs_the_reread_on_pull_requests"
+  },
+  {
+   "id": "r15",
+   "behavior": "no doc, record or shipped file names a removed audit or option outside Corrections, superseded text, release notes, prototypes and the hermes workflows; tests may name them to assert they are gone",
+   "fails_when": "grep finds a removed name in a live file",
+   "command": "! git grep -nE 'docs-vs-code|okf-vs-code|okf-vs-docs|okf-vs-change|prompt_file|system_prompt_file|--skills|--context|run_shell|LANGFUSE|issue_title|instructions-root' -- action action.yml docs packages/kmctl/README.md .github/workflows/knowledge-audit.yml .okf/architecture"
+  },
+  {
+   "id": "r16",
+   "behavior": "the draft ADR 0060 exists as a draft and ADR 0005, 0017 and 0057 each end with a Correction that links it",
+   "fails_when": "0060 is missing or not a draft, or one of the three lacks a Correction linking 0060",
+   "command": "grep -q '^status: draft' .okf/decisions/0060-*.md && for f in .okf/decisions/0005-*.md .okf/decisions/0017-*.md .okf/decisions/0057-*.md; do awk '/^## Correction, 2026-11-27/{c=1} c' \"$f\" | grep -q '0060-' || exit 1; done"
+  },
+  {
+   "id": "r17",
+   "behavior": "the repository's hooks pass on every file",
+   "fails_when": "prek run --all-files exits nonzero",
+   "command": "prek run --all-files"
+  },
+  {
+   "id": "r18",
+   "behavior": "run refuses a checkout whose git config holds a token header, since read_file can reach .git/config",
+   "fails_when": "run starts the agent with an http extraheader in git config",
+   "command": "uv run pytest -q tests/test_agent.py::test_run_refuses_a_checkout_with_a_token_header"
+  },
+  {
+   "id": "r19",
+   "behavior": "the arguments action.yml's run and publish steps build, captured from a stub uv, parse with the real agent.py parser",
+   "fails_when": "either step passes a flag or value agent.parser() rejects",
+   "command": "uv run pytest -q packages/kmctl/tests/test_action.py::test_step_arguments_parse_with_the_agent"
+  },
+  {
+   "id": "r20",
+   "behavior": "the agent and publish commands this repository's knowledge-audit workflow runs parse with the real agent.py parser, and its audit job checks out with persist-credentials: false",
+   "fails_when": "a command fails to parse, or the checkout keeps credentials",
+   "command": "uv run pytest -q tests/scripts/test_workflows.py::test_knowledge_audit_commands_parse_with_the_agent"
+  }
+ ]
+}

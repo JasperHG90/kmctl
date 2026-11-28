@@ -91,8 +91,9 @@ def _targets(root: Path, given: str, by: str) -> list[tuple[Path, str]]:
 
     An id names one page: ``decisions/0001-x``, ``docs/how-to/run``, or the
     same path from the repository root with ``.md`` (``.okf/decisions/0001-x.md``).
-    A folder (``decisions``, ``docs/how-to``) names every page under it that
-    kmctl review due tracks, without handoffs. Anything else spelled oddly
+    A folder (``decisions``, ``docs/how-to``, or ``docs`` for every docs
+    page) names every page under it that kmctl review due tracks, without
+    handoffs. Anything else spelled oddly
     (``./``, ``//``, ``..``, an absolute path, a symlink out of the folder) is
     refused rather than resolved to some other file, as is a file kmctl review
     due never lists, such as a section's ``index.md``.
@@ -106,9 +107,9 @@ def _targets(root: Path, given: str, by: str) -> list[tuple[Path, str]]:
     cid = given.rstrip("/").removesuffix(".md")
     in_okf = cid.startswith(".okf/")
     cid = cid.removeprefix(".okf/")
-    docs = cid.startswith("docs/") and not in_okf
+    docs = (cid == "docs" or cid.startswith("docs/")) and not in_okf
     base = (root / "docs" if docs else root / ".okf").resolve()
-    name = cid.removeprefix("docs/") if docs else cid
+    name = cid.removeprefix("docs").removeprefix("/") if docs else cid
     shown = f"{'docs' if docs else '.okf'}/{name}"
     hint = _folder_hint(base, name, docs, by) if name else ""
     file = (base / f"{name}.md").resolve()
@@ -119,12 +120,16 @@ def _targets(root: Path, given: str, by: str) -> list[tuple[Path, str]]:
     elif name and folder.is_relative_to(base) and folder != base and folder.is_dir():
         found = folder.relative_to(base).as_posix()
         kind = "folder"
+    elif docs and not name and base.is_dir():
+        # docs on its own: every page under docs/.
+        found = ""
+        kind = "folder"
     else:
         raise ConceptError(
             f"no concept, docs page or folder {given!r} at {shown}(.md); give an id "
             f"or folder as kmctl review due prints it{hint}"
         )
-    canonical = ("docs/" if docs else "") + found
+    canonical = ("docs/" + found).rstrip("/") if docs else found
     if canonical != cid:
         raise ConceptError(
             f"{given!r} is not spelled as kmctl review due prints it; give {canonical!r}"

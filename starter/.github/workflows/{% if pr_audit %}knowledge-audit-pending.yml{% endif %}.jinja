@@ -1,0 +1,29 @@
+name: knowledge audit pending
+
+# Marks the required audit commit status pending on each push to a pull
+# request, until someone runs the knowledge audit on it. Its Details link
+# opens the knowledge-audit workflow's page, whose Run workflow button starts
+# the audit on the pull request's branch. Mark audit a required check in
+# your branch rules. The job is not named audit: a pull_request job's check
+# run counts for the pull request, and a green one named audit would pass
+# the rule without a reread.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+# A composite action cannot set token permissions; the calling workflow does.
+permissions:
+  statuses: write
+
+jobs:
+  mark:
+    name: mark the knowledge audit pending
+    # A fork's pull request gets a read-only token, which cannot post it.
+    if: {% raw %}github.event.pull_request.head.repo.full_name == github.repository{% endraw %}
+    runs-on: ubuntu-latest
+    steps:
+      - with:
+          mode: pending
+        uses: JasperHG90/kmctl@{{ kmctl_ref }}
+      # Add your own steps below this line. just upgrade rewrites the pin
+      # above, and content added directly below it would conflict.

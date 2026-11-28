@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.1",
+  "placeholder": false,
+  "verdict": "pass",
+  "findings": [
+    {
+      "id": "f1",
+      "disposition": "resolved",
+      "claim": ".okf/docs/... was read as a docs page",
+      "anchor": "packages/kmctl/src/kmctl/verify.py:107",
+      "category": "bug",
+      "blocking": false,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    }
+  ],
+  "binds": {
+    "fingerprint": "b43e5b4cd37e61acdbfc55419062852a5a05b85f73790365092818e73f88847b",
+    "plan_hash": null
+  },
+  "by": "process:loopctl/2.4.0",
+  "at": "2026-11-27T10:32:38+00:00",
+  "checklist": null
+}

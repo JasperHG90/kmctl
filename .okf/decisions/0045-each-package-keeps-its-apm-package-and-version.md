@@ -17,6 +17,8 @@ sources:
 verified:
   - by: human:jasper
     at: 2026-11-27T09:48:51Z
+  - by: human:jasper
+    at: 2026-11-27T20:41:20Z
 ---
 
 # ADR 0045: Each package keeps its APM package and version
@@ -85,3 +87,12 @@ Rejected:
   for both moves; the tag test fails until it does.
 - This amends ADR 0044, whose version source and build hook read
   `../../apm`.
+
+## Correction, 2026-11-27
+
+kmaudit's APM package no longer holds only its name, version and
+description. Since [ADR 0043](0043-the-audit-is-its-own-library-kmaudit-served-over-mcp.md)
+shipped its skills and agents, `packages/kmaudit/apm/apm.yml` also declares
+its `./claude` sub-package and the kmaudit MCP server, whose ref
+`scripts/release.py set --package kmaudit` pins to the release tag. The
+version still lives there alone, as decided.

@@ -12,6 +12,8 @@ sources:
 verified:
   - by: human:jasper
     at: 2026-11-27T09:48:51Z
+  - by: human:jasper
+    at: 2026-11-27T20:41:20Z
 ---
 
 # ADR 0051: kmctl init sets a union merge for the log and the indexes

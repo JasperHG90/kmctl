@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = ROOT / "packages" / "kmctl" / "apm" / ".apm"
 AGENT = PACKAGE / "agents" / "kmctl-auditor.md"
 SKILLS = PACKAGE / "skills"
-#: The files that set or read the folder the CI audit takes the skills and agent from.
+#: The files that run the CI agent (ADR 0060).
 AUDIT_FILES = (
     "action.yml",
     ".github/workflows/knowledge-audit.yml",
@@ -70,14 +70,14 @@ def test_review_skills_exist() -> None:
         assert name in prompt, name
 
 
-def test_audit_paths_read_the_apm_package() -> None:
-    """The CI audit takes the skills and agent from packages/kmctl/apm/.apm, and nothing names plugin/ or the old apm/."""
+def test_ci_agent_ships_its_one_prompt_and_no_skills() -> None:
+    """The CI agent reads only its own prompt, next to it, and no skills or old paths (ADR 0060)."""
     texts = {rel: (ROOT / rel).read_text() for rel in AUDIT_FILES}
 
     assert [rel for rel, text in texts.items() if "plugin/" in text] == []
     script = texts["action/agent.py"]
-    assert 'PACKAGE = HERE.parent / "packages" / "kmctl" / "apm" / ".apm"' in script
-    assert 'HERE.parent / "apm"' not in script
-    assert 'DEFAULT_SKILLS = PACKAGE / "skills"' in script
-    assert 'PROMPTS = HERE / "prompts"' in script
-    assert (PACKAGE / "skills").is_dir() and AGENT.is_file()
+    assert 'PROMPT = HERE / "prompt.md"' in script
+    assert (ROOT / "action" / "prompt.md").is_file()
+    assert not (ROOT / "action" / "prompts").exists()
+    for gone in ("DEFAULT_SKILLS", "PROMPTS", "SKILL.md"):
+        assert gone not in script, gone

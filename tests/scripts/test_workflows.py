@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import importlib.util
+import json
+import os
 import re
 import subprocess
 import sys
@@ -30,6 +33,7 @@ WORKFLOWS = ROOT / ".github" / "workflows"
 RELEASE = WORKFLOWS / "release.yml"
 RELEASE_TAG = WORKFLOWS / "release-tag.yml"
 KNOWLEDGE_AUDIT = WORKFLOWS / "knowledge-audit.yml"
+AUDIT_PENDING = WORKFLOWS / "knowledge-audit-pending.yml"
 ACTION = ROOT / "action.yml"
 CI = WORKFLOWS / "ci.yml"
 HERMES_INTERACTIVE = WORKFLOWS / "hermes-interactive.yaml"
@@ -350,7 +354,12 @@ def test_no_workflow_publishes_to_pypi(path: Path) -> None:
 )
 def test_every_action_is_pinned_by_commit_sha(path: Path) -> None:
     """Each ``uses:`` names a 40-character commit SHA with its version as a comment."""
-    lines = [line for line in path.read_text().splitlines() if "uses:" in line]
+    # A uses: key, not a word that ends in it, such as statuses:.
+    lines = [
+        line
+        for line in path.read_text().splitlines()
+        if re.match(r"\s*-?\s*uses:", line)
+    ]
 
     assert lines
     for line in lines:
@@ -1374,3 +1383,250 @@ def test_release_kmaudit_bump_stages_what_set_writes() -> None:
 
     for rel in (KMAUDIT_MANIFEST, KMAUDIT_CLAUDE, KMAUDIT_README, KMAUDIT_DOCS):
         assert rel.as_posix() in line.split()
+
+
+def test_knowledge_audit_runs_on_dispatch() -> None:
+    """Dispatch only, with a required pr input; only previous and publish hold a token."""
+    data = _load(KNOWLEDGE_AUDIT)
+    jobs = data["jobs"]
+
+    assert set(data["on"]) == {"workflow_dispatch"}
+    assert data["on"]["workflow_dispatch"]["inputs"]["pr"]["required"] is True
+    assert data["permissions"] == {"contents": "read"}
+    assert "LANGFUSE" not in KNOWLEDGE_AUDIT.read_text()
+    assert "head.repo.full_name" not in KNOWLEDGE_AUDIT.read_text()
+    assert jobs["previous"]["outputs"] == {
+        name: f"${{{{ steps.fetch.outputs.{name} }}}}"
+        for name in ("pr", "base", "head")
+    }
+    assert jobs["publish"]["permissions"] == {
+        "contents": "read",
+        "pull-requests": "write",
+        "statuses": "write",
+    }
+    assert "permissions" not in jobs["audit"]
+    assert "secrets." not in yaml.safe_dump(jobs["publish"])
+    for step in jobs["audit"]["steps"]:
+        text = yaml.safe_dump(step)
+        assert "GH_TOKEN" not in text and "github.token" not in text, step
+
+
+def test_knowledge_audit_refusal_fails_the_audit_check(tmp_path: Path) -> None:
+    """A refused dispatch fails the audit job, which never skips; publish waits for a resolved one."""
+    jobs = _load(KNOWLEDGE_AUDIT)["jobs"]
+    audit, publish = jobs["audit"], jobs["publish"]
+
+    assert audit["if"] == "${{ !cancelled() }}"
+    assert audit["needs"] == "previous"
+    assert publish["needs"] == ["previous", "audit"]
+    assert publish["if"] == "${{ !cancelled() && needs.previous.result == 'success' }}"
+    gate = audit["steps"][0]
+    assert gate["env"]["RESULT"] == "${{ needs.previous.result }}"
+    for result, code in (
+        ("success", 0),
+        ("failure", 1),
+        ("skipped", 1),
+        ("cancelled", 1),
+    ):
+        proc = subprocess.run(
+            ["bash", "--noprofile", "--norc", "-eo", "pipefail", "-c", gate["run"]],
+            env={**os.environ, "RESULT": result},
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert proc.returncode == code, (result, proc.stderr)
+
+
+def _agent_module() -> Any:
+    """Load action/agent.py as a module."""
+    spec = importlib.util.spec_from_file_location(
+        "wf_agent", ROOT / "action" / "agent.py"
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["wf_agent"] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+#: The values a pull request run would give the expressions the workflow uses.
+EXPRESSIONS = {
+    "inputs.pr": "12",
+    "github.sha": "abc123",
+    "needs.previous.outputs.pr": "12",
+    "needs.previous.outputs.base": "main",
+    "needs.previous.outputs.head": "abc123",
+}
+
+
+def _agent_args(step: dict, tmp_path: Path, **env: str) -> list[str]:
+    """Run a workflow step in bash with a stub uv; return the arguments after agent.py."""
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir(parents=True)
+    calls = tmp_path / "uv-args.json"
+    (bin_dir / "uv").write_text(
+        f"#!{sys.executable}\nimport json, sys\n"
+        f"json.dump(sys.argv[1:], open({str(calls)!r}, 'w'))\n"
+    )
+    (bin_dir / "uv").chmod(0o755)
+    runner = tmp_path / "runner"
+    script = re.sub(
+        r"\$\{\{ *([^}]*?) *\}\}",
+        lambda m: (
+            EXPRESSIONS.get(m.group(1), str(runner))
+            if m.group(1) != "runner.temp"
+            else str(runner)
+        ),
+        step["run"],
+    )
+    step_env = {
+        k: re.sub(r"\$\{\{ *runner.temp *\}\}", str(runner), str(v))
+        for k, v in (step.get("env") or {}).items()
+        if "secrets." not in str(v) and "github.token" not in str(v)
+    }
+    subprocess.run(
+        ["bash", "--noprofile", "--norc", "-eo", "pipefail", "-c", script],
+        cwd=tmp_path,
+        env={
+            **os.environ,
+            **step_env,
+            "PATH": f"{bin_dir}:{os.environ['PATH']}",
+            **env,
+        },
+        check=True,
+    )
+    words = json.loads(calls.read_text())
+    return words[words.index("action/agent.py") + 1 :]
+
+
+def test_knowledge_audit_commands_parse_with_the_agent(tmp_path: Path) -> None:
+    """The previous, agent and publish commands parse with the real script; the checkout keeps no token."""
+    parser = _agent_module().parser()
+    audit = _steps(KNOWLEDGE_AUDIT, "audit")
+    publish = _steps(KNOWLEDGE_AUDIT, "publish")
+    previous = _steps(KNOWLEDGE_AUDIT, "previous")
+    [checkout] = [
+        s for s in audit if str(s.get("uses", "")).startswith("actions/checkout")
+    ]
+    [agent] = [s for s in audit if "agent.py" in str(s.get("run", ""))]
+    [post] = [s for s in publish if "agent.py publish" in str(s.get("run", ""))]
+    [fetch] = [s for s in previous if "agent.py previous" in str(s.get("run", ""))]
+
+    assert checkout["with"]["persist-credentials"] is False
+    assert checkout["with"]["fetch-depth"] == 0
+    for step in (agent, post, fetch):
+        assert "uv run --no-config --script action/agent.py" in step["run"]
+    parsed = parser.parse_args(_agent_args(agent, tmp_path / "run"))
+    assert parsed.command == "run" and parsed.base == "origin/main"
+    assert parsed.head == "abc123" and parsed.previous is None
+    assert agent["env"]["AUDIT_API_KEY"] == "${{ secrets.AUDIT_API_KEY }}"
+    report = tmp_path / "with" / "runner" / "previous-report" / "report.json"
+    report.parent.mkdir(parents=True)
+    report.write_text("{}")
+    parsed = parser.parse_args(_agent_args(agent, tmp_path / "with"))
+    assert parsed.previous == str(report)
+    parsed = parser.parse_args(_agent_args(post, tmp_path / "publish"))
+    assert parsed.command == "publish" and parsed.pr == 12
+    assert parsed.min_severity == "low", "the comment lists every finding but notes"
+    assert post["env"]["GH_TOKEN"] == "${{ github.token }}"
+    parsed = parser.parse_args(_agent_args(fetch, tmp_path / "previous"))
+    assert parsed.command == "previous" and parsed.pr == 12
+    assert parsed.resolve == "abc123"
+
+
+def test_knowledge_audit_fetches_the_previous_report() -> None:
+    """A previous job with read access hands the report on; the audit job needs it and holds no token."""
+    data = _load(KNOWLEDGE_AUDIT)
+    previous, audit = data["jobs"]["previous"], data["jobs"]["audit"]
+
+    assert previous["permissions"] == {
+        "contents": "read",
+        "pull-requests": "read",
+        "actions": "read",
+    }
+    [hand] = [
+        s
+        for s in previous["steps"]
+        if str(s.get("uses", "")).startswith("actions/upload-artifact")
+    ]
+    assert hand["with"]["name"] == "previous-report"
+    assert audit["needs"] == "previous"
+    assert "permissions" not in audit
+    [download] = [
+        s
+        for s in audit["steps"]
+        if str(s.get("uses", "")).startswith("actions/download-artifact")
+    ]
+    assert download["with"]["name"] == "previous-report"
+    assert download["continue-on-error"] is True
+    for step in audit["steps"]:
+        text = yaml.safe_dump(step)
+        assert "GH_TOKEN" not in text and "github.token" not in text, step
+
+
+def test_pending_workflow_posts_audit_pending(tmp_path: Path) -> None:
+    """Each push marks audit pending on the head, linking to the run button; nothing else."""
+    data = _load(AUDIT_PENDING)
+    jobs = data["jobs"]
+    [(key, job)] = list(jobs.items())
+    text = AUDIT_PENDING.read_text()
+
+    assert set(data["on"]) == {"pull_request"}
+    assert data["permissions"] == {"statuses": "write"}
+    assert key != "audit" and job.get("name", key) != "audit", (
+        "a job named audit would pass the check"
+    )
+    assert (
+        job["if"]
+        == "github.event.pull_request.head.repo.full_name == github.repository"
+    )
+    assert "actions/checkout" not in text and "secrets." not in text
+    [step] = job["steps"]
+    assert step["env"]["SHA"] == "${{ github.event.pull_request.head.sha }}"
+    assert step["env"]["URL"].endswith("/actions/workflows/knowledge-audit.yml")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    calls = tmp_path / "gh.json"
+    (bin_dir / "gh").write_text(
+        f"#!{sys.executable}\nimport json, sys\njson.dump(sys.argv[1:], open({str(calls)!r}, 'w'))\n"
+    )
+    (bin_dir / "gh").chmod(0o755)
+    script = step["run"].replace("${{ github.repository }}", "o/r")
+    subprocess.run(
+        ["bash", "--noprofile", "--norc", "-eo", "pipefail", "-c", script],
+        env={
+            **os.environ,
+            "PATH": f"{bin_dir}:{os.environ['PATH']}",
+            "SHA": "abc123",
+            "URL": "https://x/wf",
+        },
+        check=True,
+    )
+    call = json.loads(calls.read_text())
+    assert call[:4] == ["api", "-X", "POST", "repos/o/r/statuses/abc123"]
+    fields = dict(call[i + 1].split("=", 1) for i, a in enumerate(call) if a == "-f")
+    assert fields["state"] == "pending" and fields["context"] == "audit"
+    assert fields["target_url"] == "https://x/wf"
+
+
+def test_knowledge_audit_settles_the_audit_status(tmp_path: Path) -> None:
+    """Publish sets audit to success when the audit job ran, failure otherwise, on the resolved head."""
+    publish = _load(KNOWLEDGE_AUDIT)["jobs"]["publish"]
+    [settle] = [
+        s for s in publish["steps"] if "agent.py status" in str(s.get("run", ""))
+    ]
+    parser = _agent_module().parser()
+
+    assert publish["permissions"]["statuses"] == "write"
+    assert settle["if"] == "always()"
+    assert settle["env"]["RESULT"] == "${{ needs.audit.result }}"
+    for result, state in (
+        ("success", "success"),
+        ("failure", "failure"),
+        ("cancelled", "failure"),
+    ):
+        args = _agent_args(settle, tmp_path / result, RESULT=result)
+        parsed = parser.parse_args(args)
+        assert parsed.command == "status" and parsed.sha == "abc123"
+        assert parsed.state == state, result

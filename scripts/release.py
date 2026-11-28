@@ -29,7 +29,7 @@ each apm.yml, so ``set`` writes it into every file in ``APM_FILES``;
 ``current`` refuses when one differs. ``manifest`` prints that apm.yml's
 version alone, for ``release-tag.yml``'s read of the commit before a push,
 where an older commit's copies may disagree; on a commit from before the
-move it reads ``apm/apm.yml`` instead (``OLD_MANIFEST``). ``set`` also points the six install lines in the docs, and the
+move it reads ``apm/apm.yml`` instead (``OLD_MANIFEST``). ``set`` also points the seven install lines in the docs, and the
 APM how-to's CLI install line, at the tag ``vVERSION``, each kmctl install
 line building from ``packages/kmctl`` (ADR 0044), and moves the starter
 template's ``kmctl_ref`` default in ``copier.yml`` to that tag, so the template
@@ -60,7 +60,7 @@ DOC_FILES = (
     Path("docs/how-to/install-the-plugin-and-the-ci-action.md"),
 )
 #: How many install lines ``DOC_FILES`` hold between them.
-DOC_LINES = 6
+DOC_LINES = 7
 #: The apm.yml files ``set`` writes the version into: the root copy, the
 #: package and its two per-harness sub-packages (ADR 0020).
 APM_FILES = (
@@ -314,7 +314,7 @@ def pin_docs(text: str, version: str) -> tuple[str, int]:
 def set_version(repo: Path, version_text: str) -> list[Path]:
     """Write the version into the four apm.yml files, pin the docs, the hook's hints and copier.yml's default.
 
-    Nothing is written unless the version is valid, all six install lines are
+    Nothing is written unless the version is valid, all seven install lines are
     found, each apm.yml has a ``version:`` line, ``copier.yml`` has a
     ``kmctl_ref`` default and ``HOOKS`` has its two install hints. ``APM_DOC``'s install line
     is pinned too; its "Older installs" example keeps the version it shows.
@@ -327,7 +327,7 @@ def set_version(repo: Path, version_text: str) -> list[Path]:
     Raises
     ------
     ReleaseRefused
-        When the version is malformed, the docs hold fewer than six install
+        When the version is malformed, the docs hold fewer than seven install
         lines, an apm.yml has no ``version:``, copier.yml has no
         ``kmctl_ref`` default, or ``HOOKS`` lacks an install hint.
     """

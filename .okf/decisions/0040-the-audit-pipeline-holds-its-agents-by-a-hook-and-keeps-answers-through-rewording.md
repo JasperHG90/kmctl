@@ -18,6 +18,8 @@ sources:
 verified:
   - by: human:jasper
     at: 2026-11-27T09:48:51Z
+  - by: human:jasper
+    at: 2026-11-27T20:41:20Z
 ---
 
 # ADR 0040: The audit pipeline holds its agents by a hook and keeps answers through rewording

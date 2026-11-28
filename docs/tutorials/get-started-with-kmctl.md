@@ -1,5 +1,8 @@
 ---
 description: "Set a repository up, record a first decision and check it, in one sitting."
+verified:
+  - by: human:jasper
+    at: 2026-11-27T20:44:03Z
 ---
 
 # Get started with kmctl

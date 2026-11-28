@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.1",
+  "placeholder": false,
+  "verdict": "fail",
+  "findings": [
+    {
+      "id": "p1",
+      "disposition": "open",
+      "claim": "Partly fixed. O2 now fixes P5 and O7 alone holds the prompt check. But 'all outcomes ship together' is only in the Intent prose, and plan.split reads the facts, not the prose. In the facts, O3 is still `kind: behaviour`, which tells plan.split it can ship alone, and nothing ties O3 to O4 and O5 (O4 needs O3, O5 needs O4, O3 needs only O1). The Intent itself says O3 breaks action.yml and knowledge-audit.yml unless they change in the same commit, and tests/test_audit.py (under O5) pins `PROMPTS = HERE / \"prompts\"`, which O3 deletes. So the facts still let O3 land in its own pull request with a red gate. Encode it in the facts: merge O3, O4 and O5 into one behaviour outcome, or make O3 `support` with O4 and O5 depending on it. Moving tests/test_audit.py into O3's touches would close the gate break.",
+      "anchor": ".loop/plans/pr-reread-only/README.md",
+      "category": "premise",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": null
+    },
+    {
+      "id": "p2",
+      "disposition": "resolved",
+      "claim": "O4 and O5 now check that the captured run and publish arguments parse with the real agent.parser() (rows r19 and r20).",
+      "anchor": "packages/kmctl/tests/test_action.py:537",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r19"
+    },
+    {
+      "id": "p3",
+      "disposition": "resolved",
+      "claim": "The Intent keeps refuse_tokens with both checks, O3 tests the git-config refusal (r18), and O5 asserts persist-credentials: false (r20).",
+      "anchor": "action/agent.py:654",
+      "category": "missing",
+      "blocking": true,
+      "invalidates_plan": false,
+      "repeats": null,
+      "eval_row": "r18"
+    }
+  ],
+  "binds": {
+    "fingerprint": null,
+    "plan_hash": "075b8aed179a637c4e557229bc5e5abe2070866e11d83286d5257cdd3e406dd5"
+  },
+  "by": "process:loopctl/2.4.0",
+  "at": "2026-11-27T10:36:47+00:00",
+  "checklist": null
+}

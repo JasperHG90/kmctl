@@ -26,7 +26,8 @@ alone writes knowledge. An APM package in `packages/kmctl/apm/` carries skills, 
 agent, four knowledge rules and its hooks; APM installs it,
 `kmctl plugin patch` fills the gaps, and projects commit all but
 `apm_modules/` ([ADR 0030](decisions/0030-projects-commit-what-apm-deploys.md)).
-A GitHub Action runs free checks per pull request and an opt-in LLM audit.
+A GitHub Action runs free checks per pull request and an opt-in LLM
+[reread](decisions/0060-the-ci-agent-only-rereads-the-pages-a-pull-request-changed.md).
 A copier template starts projects pinned to a release.
 
 An agent reads in layers: the SessionStart hook injects `kmctl briefing`,

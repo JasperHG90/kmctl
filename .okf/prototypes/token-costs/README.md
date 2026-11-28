@@ -6,6 +6,9 @@ tags: [prototype, audit, cost]
 generated:
   by: claude-opus/5.5
   at: 2026-11-12T14:00:00Z
+verified:
+  - by: human:jasper
+    at: 2026-11-27T20:41:27Z
 ---
 
 # Token costs

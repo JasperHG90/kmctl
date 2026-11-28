@@ -14,6 +14,8 @@ sources:
 verified:
   - by: human:jasper
     at: 2026-11-27T09:48:51Z
+  - by: human:jasper
+    at: 2026-11-27T20:41:20Z
 ---
 
 # ADR 0024: OpenCode gets the package from APM and its agents, rules and briefing from kmctl plugin patch

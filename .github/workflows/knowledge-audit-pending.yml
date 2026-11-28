@@ -1,0 +1,33 @@
+name: knowledge audit pending
+
+# Marks the required audit commit status pending on each push to a pull
+# request, until someone runs the knowledge audit on it (ADR 0061). Its
+# Details link opens the knowledge-audit workflow's page, whose Run workflow
+# button starts the audit on the pull request's branch. No checkout, no
+# secret, no model. The job is not named audit: a pull_request job's check
+# run counts for the pull request, and a green one named audit would satisfy
+# the required check without a reread.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  statuses: write
+
+jobs:
+  mark:
+    name: mark the knowledge audit pending
+    # A fork's pull request gets a read-only token, which cannot post it.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mark the audit pending
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+          URL: ${{ github.server_url }}/${{ github.repository }}/actions/workflows/knowledge-audit.yml
+        run: >-
+          gh api -X POST "repos/${{ github.repository }}/statuses/$SHA"
+          -f state=pending -f context=audit
+          -f description="Run the knowledge audit on this branch"
+          -f target_url="$URL"

@@ -1,5 +1,8 @@
 ---
 description: "Add kmctl's APM package to apm.yml, what APM leaves to kmctl plugin patch, and moving off an older entry."
+verified:
+  - by: human:jasper
+    at: 2026-11-27T20:44:03Z
 ---
 
 # Install kmctl with APM

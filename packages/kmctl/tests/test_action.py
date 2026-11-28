@@ -1,5 +1,6 @@
 """The GitHub Action's script, run locally against fixture repositories (ADR 0005)."""
 
+import importlib.util
 import json
 import os
 import subprocess
@@ -12,6 +13,7 @@ from kmctl.docs_index import folder_index
 
 ROOT = Path(__file__).resolve().parents[3]
 SCRIPT = ROOT / "action" / "knowledge-ci.sh"
+AGENT = ROOT / "action" / "agent.py"
 
 
 def _git(cwd: Path, *args: str) -> None:
@@ -254,7 +256,6 @@ def test_action_install_subdirectory_is_packages_kmctl() -> None:
 
 
 WORKFLOW = ROOT / ".github" / "workflows" / "knowledge-audit.yml"
-AUDITS = ["docs-vs-code", "okf-vs-code", "okf-vs-docs"]
 TOKENS = ("GH_TOKEN", "GITHUB_TOKEN")
 OLD_AUDIT = (
     "action/knowledge-audit.sh",
@@ -309,7 +310,11 @@ def _agent_steps(steps: list[dict]) -> tuple[dict, dict]:
 
 def _publish_steps(steps: list[dict]) -> tuple[dict, dict]:
     """The artifact download and the publish step after it."""
-    fetch = _uses(steps, "actions/download-artifact")[0]
+    fetch = next(
+        s
+        for s in _uses(steps, "actions/download-artifact")
+        if "publish" in str(s.get("if", ""))
+    )
     post = next(
         s
         for s in steps
@@ -319,88 +324,19 @@ def _publish_steps(steps: list[dict]) -> tuple[dict, dict]:
     return fetch, post
 
 
-def test_workflow_audit_job_runs_agent_without_token_or_cache() -> None:
-    workflow = yaml.safe_load(WORKFLOW.read_text())
-    triggers = workflow[True]  # YAML 1.1 reads the key "on" as True
-    job = workflow["jobs"]["audit"]
-    steps = job["steps"]
-    checkout = _uses(steps, "actions/checkout")[0]
-    agent, keep = _agent_steps(steps)
-
-    assert set(triggers) == {"workflow_dispatch", "schedule"}
-    assert workflow["permissions"] == {"contents": "read"}
-    assert "permissions" not in job
-    assert not any(str(s.get("uses", "")).startswith("./") for s in steps)
-    assert checkout["with"]["persist-credentials"] is False
-    assert checkout["with"]["fetch-depth"] == 0
-    assert "uv run --script action/agent.py run" in agent["run"]
-    assert "--out ${{ runner.temp }}/agent-report" in agent["run"]
-    assert "--audit ${{ matrix.audit }}" in agent["run"]
-    assert job["strategy"] == {"fail-fast": False, "matrix": {"audit": AUDITS}}
-    assert agent["env"]["AUDIT_API_KEY"] == "${{ secrets.AUDIT_API_KEY }}"
-    for name in ("LANGFUSE_PUBLIC_KEY", "LANGFUSE_SECRET_KEY", "LANGFUSE_BASE_URL"):
-        assert agent["env"][name] == f"${{{{ secrets.{name} }}}}", name
-    _no_token(job)
-    _no_cache(steps)
-    assert keep["with"]["name"] == "agent-report-${{ matrix.audit }}"
-    assert keep["with"]["path"] == "${{ runner.temp }}/agent-report"
-    assert keep["if"] == "always()"
-
-
-def test_workflow_publish_job_posts_from_the_artifact() -> None:
-    workflow = yaml.safe_load(WORKFLOW.read_text())
-    job = workflow["jobs"]["publish"]
-    steps = job["steps"]
-    fetch, post = _publish_steps(steps)
-
-    assert job["needs"] == "audit"
-    assert job["if"] == "${{ !cancelled() }}"
-    assert job["permissions"] == {"contents": "read", "issues": "write"}
-    assert job["strategy"]["fail-fast"] is False
-    include = job["strategy"]["matrix"]["include"]
-    assert [row["audit"] for row in include] == AUDITS
-    titles = [row["title"] for row in include]
-    assert len(set(titles)) == len(titles) and all(titles)
-    assert _uses(steps, "actions/checkout")[0]["with"]["persist-credentials"] is False
-    _no_cache(steps)
-    assert fetch["with"] == {
-        "name": "agent-report-${{ matrix.audit }}",
-        "path": "${{ runner.temp }}/agent-report",
-    }
-    assert "uv run --script action/agent.py publish" in post["run"]
-    assert '--title "${{ matrix.title }}"' in post["run"]
-    assert "${{ runner.temp }}/agent-report/report.json" in post["run"]
-    assert post["env"]["GH_TOKEN"] == "${{ github.token }}"
-    others = [s for s in steps if s is not post]
-    for step in others:
-        _no_token(step)
-
-
 def test_action_audit_mode_runs_agent_without_token() -> None:
     action = yaml.safe_load((ROOT / "action.yml").read_text())
     steps = action["runs"]["steps"]
     agent, keep = _agent_steps(steps)
 
     assert action["inputs"]["mode"]["default"] == "checks"
-    for name in (
-        "model",
-        "base_url",
-        "api_key_env",
-        "audit",
-        "prompt",
-        "prompt_file",
-        "system_prompt_file",
-        "context",
-        "skills",
-        "timeout",
-    ):
+    for name in ("model", "base_url", "api_key_env", "timeout"):
         assert action["inputs"][name]["description"], name
         assert f"${{{{ inputs.{name} }}}}" in agent["env"].values(), name
     assert "provider" not in action["inputs"]
     for step in (agent, keep):
         assert "inputs.mode == 'audit'" in step["if"], step
     assert "${{ github.action_path }}/action/agent.py" in agent["run"]
-    assert 'args+=(--audit "$AUDIT")' in agent["run"]
     _no_cache(steps)
     for step in steps:
         if "inputs.mode == 'audit'" in str(step.get("if", "")):
@@ -413,15 +349,42 @@ def test_action_audit_mode_runs_agent_without_token() -> None:
     assert action["inputs"]["report_name"]["default"] == "agent-report"
 
 
+def test_removed_inputs_are_gone() -> None:
+    """Only what the pull request reread needs is left (ADR 0060)."""
+    action = yaml.safe_load((ROOT / "action.yml").read_text())
+
+    for name in (
+        "audit",
+        "prompt",
+        "prompt_file",
+        "system_prompt_file",
+        "context",
+        "skills",
+        "mention",
+        "issue_title",
+    ):
+        assert name not in action["inputs"], name
+    assert action["inputs"]["title"]["default"] == "Knowledge audit"
+
+
+def test_action_installs_kmctl_only_for_checks() -> None:
+    action = yaml.safe_load((ROOT / "action.yml").read_text())
+    [install] = [
+        s for s in action["runs"]["steps"] if "uv tool install" in s.get("run", "")
+    ]
+
+    assert install["if"] == "inputs.mode == 'checks'"
+
+
 def test_action_publish_mode_posts_from_the_artifact() -> None:
     action = yaml.safe_load((ROOT / "action.yml").read_text())
     steps = action["runs"]["steps"]
     fetch, post = _publish_steps(steps)
 
-    for name in ("min_severity", "mention", "issue_title"):
+    for name in ("min_severity", "title"):
         assert action["inputs"][name]["description"], name
         assert f"${{{{ inputs.{name} }}}}" in post["env"].values(), name
-    assert action["inputs"]["min_severity"]["default"] == "high"
+    assert action["inputs"]["min_severity"]["default"] == "low"
     for step in (fetch, post):
         assert "inputs.mode == 'publish'" in step["if"], step
     assert fetch["with"] == {
@@ -431,8 +394,10 @@ def test_action_publish_mode_posts_from_the_artifact() -> None:
     assert "${{ github.action_path }}/action/agent.py" in post["run"]
     assert '"$RUNNER_TEMP/agent-report/report.json"' in post["run"]
     assert post["env"]["GH_TOKEN"] == "${{ github.token }}"
+    fetch_previous = _previous_step(steps)
+    statuses = _status_steps(steps)
     for step in steps:
-        if step is not post:
+        if step is not post and step is not fetch_previous and step not in statuses:
             _no_token(step)
     assert "publish" in action["inputs"]["mode"]["description"]
 
@@ -467,7 +432,9 @@ def _action_steps() -> list[dict]:
     return yaml.safe_load((ROOT / "action.yml").read_text())["runs"]["steps"]
 
 
-def test_event_check_allows_same_repo_pull_request(tmp_path: Path) -> None:
+def test_event_check_runs_only_on_a_same_repository_pull_request(
+    tmp_path: Path,
+) -> None:
     steps = _action_steps()
     check = _event_check(steps)
     agent, _ = _agent_steps(steps)
@@ -479,10 +446,20 @@ def test_event_check_allows_same_repo_pull_request(tmp_path: Path) -> None:
     )
     assert check["env"]["BASE_REPO"] == "${{ github.repository }}"
     assert check["env"]["ACTOR"] == "${{ github.actor }}"
-    for event in ("workflow_dispatch", "schedule", "pull_request"):
-        proc, output = _run_check(check, event, tmp_path, **SAME_REPO)
-        assert proc.returncode == 0, (event, proc.stderr)
-        assert "run=true" in output, event
+    proc, output = _run_check(check, "pull_request", tmp_path, **SAME_REPO)
+    assert proc.returncode == 0, proc.stderr
+    assert "run=true" in output
+    for env in (
+        {**SAME_REPO, "HEAD_REPO": "someone/fork"},
+        {**SAME_REPO, "ACTOR": "dependabot[bot]"},
+    ):
+        proc, output = _run_check(check, "pull_request", tmp_path, **env)
+        assert proc.returncode == 0, proc.stderr
+        assert "run=false" in output
+    proc, output = _run_check(check, "schedule", tmp_path, **SAME_REPO)
+    assert proc.returncode != 0
+    assert "refused for event 'schedule'" in proc.stderr
+    assert "run=true" not in output
 
 
 def test_event_check_skips_fork_pull_request(tmp_path: Path) -> None:
@@ -505,7 +482,7 @@ def test_event_check_skips_fork_pull_request(tmp_path: Path) -> None:
 def test_event_check_refuses_other_events(tmp_path: Path) -> None:
     check = _event_check(_action_steps())
 
-    for event in ("pull_request_target", "push", "issue_comment"):
+    for event in ("pull_request_target", "push", "issue_comment", "schedule"):
         proc, output = _run_check(check, event, tmp_path, **SAME_REPO)
         assert proc.returncode != 0, event
         assert f"refused for event '{event}'" in proc.stderr
@@ -550,6 +527,7 @@ def _run_step(step: dict, tmp_path: Path, event: str, **env: str) -> list[str]:
             "PATH": f"{bin_dir}:{os.environ['PATH']}",
             "GITHUB_EVENT_NAME": event,
             "GITHUB_BASE_REF": "main",
+            "BASE_BRANCH": "main",
             "RUNNER_TEMP": str(tmp_path / "runner"),
             "MODEL": "test",
             "TIMEOUT": "30m",
@@ -563,39 +541,193 @@ def _run_step(step: dict, tmp_path: Path, event: str, **env: str) -> list[str]:
     return json.loads(calls.read_text())
 
 
-def test_agent_step_passes_base_only_on_pull_request(tmp_path: Path) -> None:
+def test_agent_step_passes_base_without_a_worktree(tmp_path: Path) -> None:
     agent, _ = _agent_steps(_action_steps())
 
-    on_pr = _run_step(agent, tmp_path / "pr", "pull_request")
-    root = Path(on_pr[on_pr.index("--instructions-root") + 1])
-    assert root.parent.parent == tmp_path / "pr" / "runner"
-    assert root.parent.name.startswith("kmctl-base.") and root.name == "sub"
-    assert on_pr[on_pr.index("--base") + 1] == "origin/main"
-    for event in ("workflow_dispatch", "schedule"):
-        args = _run_step(agent, tmp_path / event, event)
-        assert "--instructions-root" not in args and "--base" not in args, event
+    args = _run_step(agent, tmp_path, "pull_request")
+
+    assert args[args.index("--base") + 1] == "origin/main"
+    assert "--instructions-root" not in args and "--no-shell" not in args
+    assert "git worktree" not in agent["run"]
+    assert not list((tmp_path / "runner").iterdir())
 
 
-def test_agent_step_passes_no_shell_only_on_pull_request(tmp_path: Path) -> None:
-    agent, _ = _agent_steps(_action_steps())
-
-    assert "--no-shell" in _run_step(agent, tmp_path / "pr", "pull_request")
-    for event in ("workflow_dispatch", "schedule"):
-        assert "--no-shell" not in _run_step(agent, tmp_path / event, event), event
-
-
-def test_publish_step_passes_pr_on_pull_request(tmp_path: Path) -> None:
+def test_publish_step_passes_pr(tmp_path: Path) -> None:
     _, post = _publish_steps(_action_steps())
 
-    assert post["env"]["PR_NUMBER"] == "${{ github.event.pull_request.number }}"
-    on_pr = _run_step(
-        post, tmp_path / "pr", "pull_request", PR_NUMBER="12", MIN_SEVERITY="high"
+    assert post["env"]["PR_NUMBER"] == (
+        "${{ inputs.pr || github.event.pull_request.number }}"
     )
-    assert on_pr[on_pr.index("--pr") + 1] == "12"
-    other = _run_step(
-        post, tmp_path / "dispatch", "workflow_dispatch", MIN_SEVERITY="high"
+    args = _run_step(
+        post, tmp_path, "pull_request", PR_NUMBER="12", MIN_SEVERITY="high"
     )
-    assert "--pr" not in other
+    assert args[args.index("--pr") + 1] == "12"
+
+
+def test_publish_step_refuses_without_a_pull_request(tmp_path: Path) -> None:
+    _, post = _publish_steps(_action_steps())
+    bin_dir, calls = _stub_bin(tmp_path)
+    script = post["run"].replace("${{ github.action_path }}", str(ROOT))
+
+    proc = subprocess.run(
+        ["bash", "--noprofile", "--norc", "-eo", "pipefail", "-c", script],
+        env=os.environ
+        | {
+            "PATH": f"{bin_dir}:{os.environ['PATH']}",
+            "GITHUB_EVENT_NAME": "workflow_dispatch",
+            "PR_NUMBER": "",
+            "RUNNER_TEMP": str(tmp_path),
+        },
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert proc.returncode == 1
+    assert "give the pr input, or run on a pull_request" in proc.stderr
+    assert not calls.exists()
+
+
+def _agent_parser():
+    """Load action/agent.py and return its argument parser."""
+    spec = importlib.util.spec_from_file_location("action_agent", AGENT)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["action_agent"] = module
+    spec.loader.exec_module(module)
+    return module.parser()
+
+
+def _script_args(uv_args: list[str]) -> list[str]:
+    """The arguments after agent.py in a captured ``uv run ... agent.py ...``."""
+    at = next(i for i, a in enumerate(uv_args) if a.endswith("action/agent.py"))
+    return uv_args[at + 1 :]
+
+
+def test_step_arguments_parse_with_the_agent(tmp_path: Path) -> None:
+    """A flag the agent no longer takes fails here, not in a consumer's first run."""
+    steps = _action_steps()
+    agent, _ = _agent_steps(steps)
+    _, post = _publish_steps(steps)
+    parser = _agent_parser()
+
+    for extra in ({}, {"BASE_URL": "http://x/v1", "API_KEY_ENV": "K"}):
+        run_args = _script_args(
+            _run_step(agent, tmp_path / f"run{len(extra)}", "pull_request", **extra)
+        )
+        parsed = parser.parse_args(run_args)
+        assert parsed.command == "run" and parsed.base == "origin/main"
+    publish_args = _script_args(
+        _run_step(
+            post,
+            tmp_path / "publish",
+            "pull_request",
+            PR_NUMBER="12",
+            MIN_SEVERITY="high",
+            TITLE="Knowledge audit",
+        )
+    )
+    parsed = parser.parse_args(publish_args)
+    assert parsed.command == "publish" and parsed.pr == 12
+    previous_args = _script_args(
+        _run_step(
+            _previous_step(steps),
+            tmp_path / "previous",
+            "pull_request",
+            PR_NUMBER="12",
+            TITLE="Knowledge audit",
+            REPORT_NAME="agent-report",
+        )
+    )
+    assert parser.parse_args(previous_args).command == "previous"
+
+
+def _previous_step(steps: list[dict]) -> dict:
+    """The step that runs agent.py previous."""
+    return next(
+        s
+        for s in steps
+        if "agent.py" in str(s.get("run", ""))
+        and "previous --pr" in str(s.get("run", ""))
+    )
+
+
+def test_previous_mode_uploads_the_report(tmp_path: Path) -> None:
+    """Previous mode fetches with a token in its own step and hands the report on as an artifact."""
+    steps = _action_steps()
+    fetch = _previous_step(steps)
+    [hand] = [
+        s
+        for s in _uses(steps, "actions/upload-artifact")
+        if "previous" in str(s.get("if", ""))
+    ]
+
+    assert fetch["if"] == "inputs.mode == 'previous'"
+    assert fetch["env"]["GH_TOKEN"] == "${{ github.token }}"
+    assert hand["if"] == "inputs.mode == 'previous'"
+    assert hand["with"]["name"] == "previous-report"
+    assert hand["with"]["path"] == "${{ runner.temp }}/previous-report"
+    args = _script_args(
+        _run_step(
+            fetch,
+            tmp_path,
+            "pull_request",
+            PR_NUMBER="12",
+            TITLE="Knowledge audit",
+            REPORT_NAME="agent-report",
+        )
+    )
+    parsed = _agent_parser().parse_args(args)
+    assert parsed.command == "previous" and parsed.pr == 12
+    assert parsed.out == str(tmp_path / "runner" / "previous-report")
+
+
+def test_audit_step_passes_previous_only_when_present(tmp_path: Path) -> None:
+    """The agent step passes --previous when the artifact arrived, and --head always."""
+    steps = _action_steps()
+    agent, _ = _agent_steps(steps)
+    [download] = [
+        s
+        for s in _uses(steps, "actions/download-artifact")
+        if "audit" in str(s.get("if", ""))
+    ]
+    assert download["with"]["name"] == "previous-report"
+    assert download["continue-on-error"] is True
+    assert steps.index(download) < steps.index(agent)
+    assert agent["env"]["HEAD_SHA"] == (
+        "${{ inputs.head || github.event.pull_request.head.sha }}"
+    )
+
+    without = _run_step(agent, tmp_path / "none", "pull_request", HEAD_SHA="abc")
+    assert "--previous" not in without
+    assert without[without.index("--head") + 1] == "abc"
+
+    with_dir = tmp_path / "some"
+    (with_dir / "runner" / "previous-report").mkdir(parents=True)
+    (with_dir / "runner" / "previous-report" / "report.json").write_text("{}")
+    bin_dir, calls = _stub_bin(with_dir)
+    script = agent["run"].replace("${{ github.action_path }}", str(ROOT))
+    subprocess.run(
+        ["bash", "--noprofile", "--norc", "-eo", "pipefail", "-c", script],
+        cwd=with_dir,
+        env=os.environ
+        | {k: "" for k in agent["env"]}
+        | {
+            "PATH": f"{bin_dir}:{os.environ['PATH']}",
+            "GITHUB_BASE_REF": "main",
+            "RUNNER_TEMP": str(with_dir / "runner"),
+            "MODEL": "test",
+            "TIMEOUT": "30m",
+            "HEAD_SHA": "abc",
+            "BASE_BRANCH": "main",
+        },
+        check=True,
+    )
+    given = json.loads(calls.read_text())
+    assert given[given.index("--previous") + 1] == str(
+        with_dir / "runner" / "previous-report" / "report.json"
+    )
+    assert _agent_parser().parse_args(_script_args(given)).previous
 
 
 def test_publish_step_tolerates_missing_artifact() -> None:
@@ -725,3 +857,125 @@ def test_action_runs_the_agent_script_without_uv_config() -> None:
     for step in (agent, post):
         assert "uv run --no-config --script" in step["run"], step["name"]
         assert "uv run --script" not in step["run"], step["name"]
+
+
+def test_event_check_runs_on_a_dispatch_with_a_base(tmp_path: Path) -> None:
+    """A dispatch runs the audit when the previous job's base reaches it, and is refused without."""
+    check = _event_check(_action_steps())
+
+    assert check["env"]["BASE_INPUT"] == "${{ inputs.base }}"
+    proc, output = _run_check(check, "workflow_dispatch", tmp_path, BASE_INPUT="main")
+    assert proc.returncode == 0, proc.stderr
+    assert "run=true" in output
+    proc, output = _run_check(check, "workflow_dispatch", tmp_path, BASE_INPUT="")
+    assert proc.returncode != 0
+    assert "without the base input" in proc.stderr
+    assert "run=true" not in output
+
+
+def test_agent_step_reads_base_and_head_from_inputs_or_event(tmp_path: Path) -> None:
+    """The step's base and head come from the inputs on a dispatch, from the event on a pull request."""
+    agent, _ = _agent_steps(_action_steps())
+
+    assert agent["env"]["BASE_BRANCH"] == "${{ inputs.base || github.base_ref }}"
+    assert agent["env"]["HEAD_SHA"] == (
+        "${{ inputs.head || github.event.pull_request.head.sha }}"
+    )
+    args = _run_step(
+        agent, tmp_path, "workflow_dispatch", BASE_BRANCH="release", HEAD_SHA="feed"
+    )
+    assert args[args.index("--base") + 1] == "origin/release"
+    assert args[args.index("--head") + 1] == "feed"
+
+
+def test_dispatch_inputs_reach_publish_and_previous(tmp_path: Path) -> None:
+    """Publish and previous take pr from the input; previous resolves on a dispatch and exposes outputs."""
+    action = yaml.safe_load((ROOT / "action.yml").read_text())
+    steps = action["runs"]["steps"]
+    fetch = _previous_step(steps)
+    _, post = _publish_steps(steps)
+
+    for name in ("pr", "base", "head"):
+        assert action["inputs"][name]["description"], name
+        assert (
+            action["outputs"][name]["value"] == f"${{{{ steps.fetch.outputs.{name} }}}}"
+        )
+    assert fetch["id"] == "fetch"
+    pr_expr = "${{ inputs.pr || github.event.pull_request.number }}"
+    assert fetch["env"]["PR_NUMBER"] == pr_expr
+    assert post["env"]["PR_NUMBER"] == pr_expr
+    on_dispatch = _run_step(
+        fetch,
+        tmp_path / "dispatch",
+        "workflow_dispatch",
+        PR_NUMBER="12",
+        TITLE="Knowledge audit",
+        REPORT_NAME="agent-report",
+        GITHUB_SHA="cafe",
+    )
+    assert on_dispatch[on_dispatch.index("--resolve") + 1] == "cafe"
+    on_pr = _run_step(
+        fetch,
+        tmp_path / "pr",
+        "pull_request",
+        PR_NUMBER="12",
+        TITLE="Knowledge audit",
+        REPORT_NAME="agent-report",
+    )
+    assert "--resolve" not in on_pr
+    assert _agent_parser().parse_args(_script_args(on_dispatch)).resolve == "cafe"
+
+
+def _status_steps(steps: list[dict]) -> list[dict]:
+    """The steps that set the audit commit status."""
+    return [s for s in steps if 'agent.py" status' in str(s.get("run", ""))]
+
+
+def test_pending_and_publish_modes_set_the_audit_status(tmp_path: Path) -> None:
+    """Pending mode marks audit pending; publish with head and audit_result settles it."""
+    action = yaml.safe_load((ROOT / "action.yml").read_text())
+    steps = action["runs"]["steps"]
+    [pending] = [s for s in _status_steps(steps) if "pending" in s["if"]]
+    [settle] = [s for s in _status_steps(steps) if "publish" in s["if"]]
+    parser = _agent_parser()
+
+    assert pending["if"] == "inputs.mode == 'pending'"
+    assert (
+        pending["env"]["SHA"]
+        == "${{ inputs.head || github.event.pull_request.head.sha }}"
+    )
+    assert pending["env"]["URL"].endswith("/actions/workflows/knowledge-audit.yml")
+    args = _script_args(
+        _run_step(
+            pending, tmp_path / "pending", "pull_request", SHA="abc", URL="https://x/wf"
+        )
+    )
+    parsed = parser.parse_args(args)
+    assert (parsed.command, parsed.sha, parsed.state, parsed.url) == (
+        "status",
+        "abc",
+        "pending",
+        "https://x/wf",
+    )
+    assert action["inputs"]["audit_result"]["description"]
+    assert (
+        "inputs.audit_result != ''" in settle["if"]
+        and "inputs.head != ''" in settle["if"]
+    )
+    assert settle["env"]["RESULT"] == "${{ inputs.audit_result }}"
+    for result, state in (
+        ("success", "success"),
+        ("failure", "failure"),
+        ("skipped", "failure"),
+    ):
+        args = _script_args(
+            _run_step(
+                settle,
+                tmp_path / result,
+                "workflow_dispatch",
+                RESULT=result,
+                SHA="abc",
+                RUN="https://x/run",
+            )
+        )
+        assert parser.parse_args(args).state == state, result

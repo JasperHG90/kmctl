@@ -1,0 +1,116 @@
+name: knowledge audit
+
+# A model rereads each .okf/ and docs/ page whose sources a pull request
+# changed, and one comment says which still hold. It runs when someone
+# starts it on a ready pull request, on that pull request's branch, so it
+# audits the pull request's head commit:
+#
+#   gh workflow run knowledge-audit.yml --ref BRANCH -f pr=NUMBER
+#
+# Require the audit commit status in the branch rules: the pending workflow
+# marks it pending on each push, and publish settles it, success when the
+# audit ran and failure when it did not. A refusal leaves it pending.
+# Findings never fail it.
+# Add the model's API key as the AUDIT_API_KEY secret; until then the audit
+# fails and says so.
+on:
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: The number of the pull request to audit; run on its branch.
+        required: true
+
+# A composite action cannot set token permissions; the calling workflow does.
+permissions:
+  contents: read
+
+jobs:
+  # Looks the pull request up and refuses one that is closed, a draft, from a
+  # fork, or whose head is not this run's commit; then hands the report of
+  # the run the audit comment links to the audit job.
+  previous:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      actions: read
+    outputs:
+      pr: {% raw %}${{ steps.kmctl.outputs.pr }}{% endraw %}
+      base: {% raw %}${{ steps.kmctl.outputs.base }}{% endraw %}
+      head: {% raw %}${{ steps.kmctl.outputs.head }}{% endraw %}
+    steps:
+      - id: kmctl
+        with:
+          mode: previous
+          pr: {% raw %}${{ inputs.pr }}{% endraw %}
+        uses: JasperHG90/kmctl@{{ kmctl_ref }}
+      # Add your own steps below this line. just upgrade rewrites the pin
+      # above, and content added directly below it would conflict.
+
+  # Never skipped, so a refusal leaves a failed check rather than a skipped
+  # one, which a required check would count as passing.
+  audit:
+    needs: previous
+    if: {% raw %}${{ !cancelled() }}{% endraw %}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Stop unless the pull request was resolved
+        env:
+          RESULT: {% raw %}${{ needs.previous.result }}{% endraw %}
+        run: |
+          if [ "$RESULT" != success ]; then
+            echo "knowledge audit: the previous job did not resolve the pull request ($RESULT); see its log." >&2
+            exit 1
+          fi
+      # No token left in git config for the agent to read; full history to
+      # find where the branch split from the base branch.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Check for the API key
+        id: key
+        env:
+          AUDIT_API_KEY: {% raw %}${{ secrets.AUDIT_API_KEY }}{% endraw %}
+        run: |
+          if [ -z "$AUDIT_API_KEY" ]; then
+            echo "knowledge audit: add the model's API key as the AUDIT_API_KEY secret." >&2
+            exit 1
+          fi
+      - timeout-minutes: 40
+        env:
+          AUDIT_API_KEY: {% raw %}${{ secrets.AUDIT_API_KEY }}{% endraw %}
+        with:
+          mode: audit
+          base_url: {{ audit_base_url | tojson }}
+          model: {{ audit_model | tojson }}
+          api_key_env: AUDIT_API_KEY
+          base: {% raw %}${{ needs.previous.outputs.base }}{% endraw %}
+          head: {% raw %}${{ needs.previous.outputs.head }}{% endraw %}
+        uses: JasperHG90/kmctl@{{ kmctl_ref }}
+      # Add your own steps below this line. just upgrade rewrites the pin
+      # above, and content added directly below it would conflict.
+
+  # A fresh runner that gets only the report, so nothing the agent changed
+  # runs with the token. It runs once the pull request was resolved, and
+  # posts nothing when the audit failed.
+  publish:
+    needs: [previous, audit]
+    if: {% raw %}${{ !cancelled() && needs.previous.result == 'success' }}{% endraw %}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      statuses: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - with:
+          mode: publish
+          pr: {% raw %}${{ needs.previous.outputs.pr }}{% endraw %}
+          head: {% raw %}${{ needs.previous.outputs.head }}{% endraw %}
+          audit_result: {% raw %}${{ needs.audit.result }}{% endraw %}
+        uses: JasperHG90/kmctl@{{ kmctl_ref }}
+      # Add your own steps below this line. just upgrade rewrites the pin
+      # above, and content added directly below it would conflict.

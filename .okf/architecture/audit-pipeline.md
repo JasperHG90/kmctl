@@ -13,6 +13,9 @@ sources:
   - resource: "packages/kmaudit/apm/.apm/skills/write-checks/SKILL.md"
   - resource: "packages/kmaudit/apm/claude/.apm/agents/kmaudit-claims-extractor.md"
   - resource: "packages/kmaudit/apm/claude/.apm/agents/kmaudit-check-writer.md"
+verified:
+  - by: human:jasper
+    at: 2026-11-27T20:42:36Z
 ---
 
 # The audit pipeline

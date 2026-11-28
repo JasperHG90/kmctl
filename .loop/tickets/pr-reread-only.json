@@ -1,0 +1,306 @@
+{
+  "schema_version": "1.0",
+  "slug": "pr-reread-only",
+  "stage": "done",
+  "attempts": 1,
+  "plan_rounds": 2,
+  "review_rounds": 2,
+  "extra_plan_rounds": 0,
+  "extra_review_rounds": 0,
+  "blocker": null,
+  "fix": {
+    "round": 1,
+    "fingerprint": "dcc6b1270e8564da934dd258787f1317283312e400103a9520e197a775fccd9d",
+    "tree": "17523b33a17589548876fd9974595984123da1ec",
+    "decisions": [
+      {
+        "finding": "reviewer:f1",
+        "outcome": "sent-back",
+        "by": "blocking",
+        "judgement": null,
+        "paths": [
+          "action/agent.py",
+          "tests/test_agent.py"
+        ]
+      },
+      {
+        "finding": "reviewer:f2",
+        "outcome": "sent-back",
+        "by": "fallback",
+        "judgement": "j-20261127T111029+0000-253490cf",
+        "paths": [
+          "action/agent.py"
+        ]
+      }
+    ],
+    "at": "2026-11-27T11:10:29+00:00"
+  },
+  "ask": null,
+  "split": "j-20261127T103706+0000-bbac19dc",
+  "split_plan_hash": "d327befe2a6b52d0f5d314315634e10b8ce865101fe65faf6f3d2b21bb3da2a5",
+  "split_hold": false,
+  "commit_sha": "b0a126073578ba9b6a15da35084043289bb1e9d5",
+  "closed_outside": false,
+  "dropped": false,
+  "archived": false,
+  "worktree": "/home/vscode/workspace.worktrees/pr-reread-only",
+  "branch": "loop/pr-reread-only",
+  "stamps": [
+    "2e508713aeafd56522d7ff246a06e29ba2a45b979258f47893d3e2fa22e01cc9",
+    "dcc6b1270e8564da934dd258787f1317283312e400103a9520e197a775fccd9d"
+  ],
+  "signoff": {
+    "signer": "delegated:jasperginn@gmail.com/claude",
+    "hash": "1cef5f73e6676e7a5017baf502422e9cf60e1fe5a2b3925c7defc051cfddaf72",
+    "at": "2026-11-27T10:49:18+00:00"
+  },
+  "delegation": null,
+  "budget_base": null,
+  "signed_rows": [
+    {
+      "id": "r1",
+      "behavior": "the scope takes a docs page, an architecture page, a stable decision and a draft decision whose sources the change touched, each with its status and changed files",
+      "fails_when": "any of the four is missing from the scope, or its status or files are wrong",
+      "command": "uv run pytest -q tests/test_agent.py::test_scope_takes_every_page_kind",
+      "judgment": false
+    },
+    {
+      "id": "r2",
+      "behavior": "the scope leaves out a superseded or deprecated decision, a handoff, the log, index pages and URL sources",
+      "fails_when": "any of them appears in the scope",
+      "command": "uv run pytest -q tests/test_agent.py::test_scope_leaves_out_superseded_handoffs_log_and_urls",
+      "judgment": false
+    },
+    {
+      "id": "r3",
+      "behavior": "a folder source matches a changed file under it as a prefix",
+      "fails_when": "a page whose folder source holds a changed file is missing",
+      "command": "uv run pytest -q tests/test_agent.py::test_scope_matches_folder_source_as_prefix",
+      "judgment": false
+    },
+    {
+      "id": "r4",
+      "behavior": "a run with nothing in scope writes a report saying no page names a changed file, exits 0, and never calls the model",
+      "fails_when": "the model is called, the exit is not 0, or no report is written",
+      "command": "uv run pytest -q tests/test_agent.py::test_nothing_in_scope_calls_no_model",
+      "judgment": false
+    },
+    {
+      "id": "r5",
+      "behavior": "run takes only --model, --base-url, --api-key-env, --base (required), --repo, --out, --timeout and --max-requests",
+      "fails_when": "run accepts another option, such as --audit, --prompt, --skills, --context or --no-shell, or runs without --base",
+      "command": "uv run pytest -q tests/test_agent.py::test_run_takes_only_the_pr_options",
+      "judgment": false
+    },
+    {
+      "id": "r6",
+      "behavior": "publish posts only a pull request comment: --pr is required and the issue options are gone",
+      "fails_when": "publish runs without --pr, or accepts --mention or --repo",
+      "command": "uv run pytest -q tests/test_agent.py::test_publish_takes_only_the_pr_options",
+      "judgment": false
+    },
+    {
+      "id": "r7",
+      "behavior": "the agent's tools are read_file, search_files and list_files only",
+      "fails_when": "any other tool, such as run_shell, is given to the agent",
+      "command": "uv run pytest -q tests/test_agent.py::test_tools_are_read_only",
+      "judgment": false
+    },
+    {
+      "id": "r8",
+      "behavior": "the shipped prompt names kmctl new decision --draft, kmctl verify with --by human:, and kmctl summary ack",
+      "fails_when": "the prompt lacks any of the three",
+      "command": "uv run pytest -q tests/test_agent.py::test_prompt_names_draft_verify_and_summary_ack",
+      "judgment": false
+    },
+    {
+      "id": "r9",
+      "behavior": "the agent script carries no OpenTelemetry dependency or Langfuse code",
+      "fails_when": "the script header lists an opentelemetry package or the script names LANGFUSE",
+      "command": "uv run pytest -q tests/test_agent.py::test_script_has_no_tracing",
+      "judgment": false
+    },
+    {
+      "id": "r10",
+      "behavior": "audit mode runs on a same-repository pull_request, skips a fork or Dependabot pull request with exit 0, and refuses schedule and workflow_dispatch",
+      "fails_when": "another outcome for any of those events",
+      "command": "uv run pytest -q packages/kmctl/tests/test_action.py::test_event_check_runs_only_on_a_same_repository_pull_request",
+      "judgment": false
+    },
+    {
+      "id": "r11",
+      "behavior": "the action's inputs audit, prompt, prompt_file, system_prompt_file, context, skills and mention are gone",
+      "fails_when": "action.yml still declares any of them",
+      "command": "uv run pytest -q packages/kmctl/tests/test_action.py::test_removed_inputs_are_gone",
+      "judgment": false
+    },
+    {
+      "id": "r12",
+      "behavior": "the agent step passes --base origin/$GITHUB_BASE_REF and adds no base-branch worktree",
+      "fails_when": "the step lacks --base, or runs git worktree add, or passes --instructions-root",
+      "command": "uv run pytest -q packages/kmctl/tests/test_action.py::test_agent_step_passes_base_without_a_worktree",
+      "judgment": false
+    },
+    {
+      "id": "r13",
+      "behavior": "the publish step passes --pr with the pull request's number",
+      "fails_when": "the publish command lacks --pr",
+      "command": "uv run pytest -q packages/kmctl/tests/test_action.py::test_publish_step_passes_pr",
+      "judgment": false
+    },
+    {
+      "id": "r14",
+      "behavior": "this repository's knowledge-audit workflow runs on pull_request only, both jobs carry the same-repository condition, only publish has pull-requests: write, and no Langfuse secret is passed",
+      "fails_when": "another trigger, a job without the condition, write access on the audit job, or a LANGFUSE variable",
+      "command": "uv run pytest -q tests/scripts/test_workflows.py::test_knowledge_audit_runs_the_reread_on_pull_requests",
+      "judgment": false
+    },
+    {
+      "id": "r15",
+      "behavior": "no doc, record or shipped file names a removed audit or option outside Corrections, superseded text, release notes, prototypes and the hermes workflows; tests may name them to assert they are gone",
+      "fails_when": "grep finds a removed name in a live file",
+      "command": "! git grep -nE 'docs-vs-code|okf-vs-code|okf-vs-docs|okf-vs-change|prompt_file|system_prompt_file|--skills|--context|run_shell|LANGFUSE|issue_title|instructions-root' -- action action.yml docs packages/kmctl/README.md .github/workflows/knowledge-audit.yml .okf/architecture",
+      "judgment": false
+    },
+    {
+      "id": "r16",
+      "behavior": "the draft ADR 0060 exists as a draft and ADR 0005, 0017 and 0057 each end with a Correction that links it",
+      "fails_when": "0060 is missing or not a draft, or one of the three lacks a Correction linking 0060",
+      "command": "grep -q '^status: draft' .okf/decisions/0060-*.md && for f in .okf/decisions/0005-*.md .okf/decisions/0017-*.md .okf/decisions/0057-*.md; do awk '/^## Correction, 2026-11-27/{c=1} c' \"$f\" | grep -q '0060-' || exit 1; done",
+      "judgment": false
+    },
+    {
+      "id": "r17",
+      "behavior": "the repository's hooks pass on every file",
+      "fails_when": "prek run --all-files exits nonzero",
+      "command": "prek run --all-files",
+      "judgment": false
+    },
+    {
+      "id": "r18",
+      "behavior": "run refuses a checkout whose git config holds a token header, since read_file can reach .git/config",
+      "fails_when": "run starts the agent with an http extraheader in git config",
+      "command": "uv run pytest -q tests/test_agent.py::test_run_refuses_a_checkout_with_a_token_header",
+      "judgment": false
+    },
+    {
+      "id": "r19",
+      "behavior": "the arguments action.yml's run and publish steps build, captured from a stub uv, parse with the real agent.py parser",
+      "fails_when": "either step passes a flag or value agent.parser() rejects",
+      "command": "uv run pytest -q packages/kmctl/tests/test_action.py::test_step_arguments_parse_with_the_agent",
+      "judgment": false
+    },
+    {
+      "id": "r20",
+      "behavior": "the agent and publish commands this repository's knowledge-audit workflow runs parse with the real agent.py parser, and its audit job checks out with persist-credentials: false",
+      "fails_when": "a command fails to parse, or the checkout keeps credentials",
+      "command": "uv run pytest -q tests/scripts/test_workflows.py::test_knowledge_audit_commands_parse_with_the_agent",
+      "judgment": false
+    }
+  ],
+  "resigns": [
+    {
+      "signer": "delegated:jasperginn@gmail.com/claude",
+      "reason": "r15: the tests name removed flags to assert they are gone, so the grep leaves test files out",
+      "diff": {
+        "added": [],
+        "removed": [],
+        "changed": {
+          "r15": [
+            "behavior",
+            "command"
+          ]
+        }
+      },
+      "at": "2026-11-27T10:49:18+00:00"
+    }
+  ],
+  "accepted_risks": [],
+  "waivers": [],
+  "overrides": [
+    {
+      "edge": "blocked->ready",
+      "reason": "p1 fixed: O3 is now support, O5 needs O3 and O4, tests/test_audit.py moved to O3; round 3 reviews it",
+      "by": "delegated:jasperginn@gmail.com/claude",
+      "at": "2026-11-27T10:37:21+00:00"
+    }
+  ],
+  "round": {
+    "kind": "review",
+    "n": 2,
+    "binds": "dcc6b1270e8564da934dd258787f1317283312e400103a9520e197a775fccd9d",
+    "started_at": "2026-11-27T11:10:36+00:00",
+    "passes": [
+      "reviewer"
+    ],
+    "tree": "17523b33a17589548876fd9974595984123da1ec",
+    "plan_hash": "d327befe2a6b52d0f5d314315634e10b8ce865101fe65faf6f3d2b21bb3da2a5",
+    "eval_hash": "1cef5f73e6676e7a5017baf502422e9cf60e1fe5a2b3925c7defc051cfddaf72",
+    "scope": "full",
+    "sent_back": [],
+    "since": null,
+    "returned": {},
+    "chosen": {},
+    "skipped": [],
+    "closed": true,
+    "outcome": "pass"
+  },
+  "plan_hash": "075b8aed179a637c4e557229bc5e5abe2070866e11d83286d5257cdd3e406dd5",
+  "intent": {
+    "epic": null,
+    "depends_on": [],
+    "priority": null
+  },
+  "history": [
+    {
+      "from": "stub",
+      "to": "planning",
+      "at": "2026-11-27T10:30:11+00:00",
+      "by": "promote"
+    },
+    {
+      "from": "planning",
+      "to": "blocked",
+      "at": "2026-11-27T10:37:03+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "blocked",
+      "to": "ready",
+      "at": "2026-11-27T10:37:21+00:00",
+      "by": "unblock"
+    },
+    {
+      "from": "ready",
+      "to": "building",
+      "at": "2026-11-27T10:37:36+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "building",
+      "to": "verifying",
+      "at": "2026-11-27T10:53:48+00:00",
+      "by": "advance"
+    },
+    {
+      "from": "verifying",
+      "to": "fixing",
+      "at": "2026-11-27T11:06:03+00:00",
+      "by": "review close"
+    },
+    {
+      "from": "fixing",
+      "to": "verifying",
+      "at": "2026-11-27T11:10:29+00:00",
+      "by": "review fixed"
+    },
+    {
+      "from": "verifying",
+      "to": "done",
+      "at": "2026-11-27T11:12:09+00:00",
+      "by": "done"
+    }
+  ],
+  "by": "process:loopctl/2.4.0",
+  "at": "2026-11-27T11:12:09+00:00"
+}

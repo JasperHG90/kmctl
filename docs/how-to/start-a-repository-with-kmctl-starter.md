@@ -1,5 +1,8 @@
 ---
 description: "Start a new repository from kmctl's copier template, keep it current with just upgrade, and move a project made from the old kmctl-starter repository."
+verified:
+  - by: human:jasper
+    at: 2026-11-27T20:44:03Z
 ---
 
 # Start a repository with kmctl-starter
@@ -39,6 +42,9 @@ copier asks:
 | `codeowners` | `.github/CODEOWNERS`, the reviewers of every change. |
 | `harnesses` | Claude Code, Antigravity, OpenCode (2.x only), or any of them together: the targets in `apm.yml`. |
 | `adversarial_review` | Yes by default. Adds the adversarial-reviews rule to `AGENTS.md`: when the agent finishes a task, it hands the work to a separate reviewer and fixes what it confirms. For Claude Code it also adds the `adversarial-reviewer` agent from [jasperhg90/skills](https://github.com/JasperHG90/skills) to `apm.yml`. Antigravity and OpenCode have no agent APM can install, so there the rule uses a general sub-agent. |
+| `pr_audit` | No by default. Yes adds `.github/workflows/knowledge-audit.yml`: when you start it on a ready pull request's branch (`workflow_dispatch`, with `gh workflow run knowledge-audit.yml --ref BRANCH -f pr=NUMBER`), a model rereads the `.okf/` and `docs/` pages whose `sources` the pull request changed and posts one comment on which still hold. Findings never fail its check; a closed, draft, fork or out-of-date pull request does, so you can mark `audit` a required check. A pull request that changes no such file calls no model. Add the model's key as the `AUDIT_API_KEY` secret; until then the audit fails and says so. |
+| `audit_model` | Asked only with `pr_audit`. The model name the endpoint serves; by default `deepseek-v4.1-flash`. |
+| `audit_base_url` | Asked only with `pr_audit`. The endpoint's OpenAI-compatible base URL, such as `https://api.openai.com/v1` or `https://openrouter.ai/api/v1`; by default Ollama Cloud's `https://ollama.com/v1`. `AUDIT_API_KEY` holds its key. |
 | `kmctl_ref` | The kmctl release tag, by default the release the template comes from, used for the package in `apm.yml`, the kmctl the justfile runs and the CI checks, so all three match. v0.4.0 or later (the first release with `kmctl plugin patch`), v0.5.1 or later for OpenCode. A branch is refused. |
 | `apm_version` | The APM version the justfile runs through `uvx`. |
 
@@ -50,6 +56,8 @@ copier asks:
 | `justfile` | `bootstrap` (the three below), `kmctl` (install the CLI on your PATH unless one as new as the pin is there, then fetch the pin: the kmctl on PATH runs each project's pinned release, so one install serves every project), `install` (`apm install` for `apm.yml`'s targets, then `kmctl plugin patch` for what APM cannot install yet), `init` (`kmctl init`: `docs/`, `.okf/` and kmctl's block in `AGENTS.md`), `upgrade` (move to another kmctl release), plus `install-frozen` (exactly what the lock records), `check-install` (`install-frozen`, then fail if `git status --porcelain` shows a change, such as a committed hand edit to an installed skill; run it on a clean checkout, since the install overwrites an uncommitted edit without a word), `lock`, `outdated`, `check` (`kmctl check` and `kmctl doctor`) and `lint` (the pre-commit hooks). The recipes run APM and kmctl at the pinned versions through `uvx`. |
 | `AGENTS.md` | The project's name and description, and the adversarial-reviews rule if you chose it. `just init` adds kmctl's section on where knowledge lives, and writes `CLAUDE.md`, which imports `AGENTS.md` for Claude Code; Antigravity and OpenCode read `AGENTS.md` directly. |
 | `.github/workflows/ci.yml` | Two jobs: the pre-commit hooks, and kmctl's checks (`kmctl check` fails the job on a broken bundle; `kmctl review due` goes to the job summary). |
+| `.github/workflows/knowledge-audit.yml` | Only with `pr_audit`. The job that resolves the pull request and fetches the last report, the audit, and the job that posts its comment and settles the `audit` commit status, all at `kmctl_ref`. |
+| `.github/workflows/knowledge-audit-pending.yml` | Only with `pr_audit`. Marks the `audit` commit status pending on each push to a pull request, with a Details link to run the audit; mark `audit` a required check in your branch rules. |
 | `.github/CODEOWNERS` | The owners you named. |
 | `.pre-commit-config.yaml` | Generic hooks only: whitespace, line endings, YAML, TOML and JSON syntax, merge markers, large files, private keys. They skip the agent files APM and `kmctl plugin patch` install (`.agents/`, `.claude/agents/`, `rules/` and `skills/`, `.opencode/`, `opencode.json`), which `apm install` writes again. Run with `just lint` ([prek](https://github.com/j178/prek)). |
 | `.gitignore` | APM's package cache, `apm_modules/`, and common clutter: `.DS_Store` and `Thumbs.db`, editor folders, Python and Node caches and environments, and `.env`. |
@@ -64,8 +72,8 @@ kmctl_ref=vX.Y.Z`, which brings in the newest template and rewrites
 `just kmctl install`. Commit the changes, `apm.lock.yaml` among them.
 
 Add your own CI steps and jobs, APM dependencies and `mcp:` servers below
-the comment that follows each pin in `ci.yml` and `apm.yml`. copier merges
-the new pin into your file, and git calls content added directly below the
+the comment that follows each pin in `ci.yml`, `apm.yml` and, with
+`pr_audit`, `knowledge-audit.yml`. copier merges the new pin into your file, and git calls content added directly below the
 pin's line a conflict. When copier does leave a conflict, `just upgrade`
 names the files and stops before the install: keep your changes and the new
 ref, with your content below the comment, `git add` the files, then run

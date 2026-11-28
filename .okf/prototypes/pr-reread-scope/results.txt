@@ -1,0 +1,17 @@
+91b5ab5a 'Merge pull request #80 from JasperHG90/okf-vs-change-audit': decisions-only 4, wide 4 {'decisions': 4}
+20bf2692 'Merge loop/okf-vs-change-audit-reviewer-f3: Deferred hardeni': decisions-only 1, wide 1 {'decisions': 1}
+6c744b62 'Merge loop/okf-vs-change-audit: Build the accepted ADR 0057,': decisions-only 4, wide 4 {'decisions': 4}
+8071ccb5 'Merge loop/adr-0057-correction: Append a dated Correction to': decisions-only 0, wide 0 {}
+559040f9 'Merge pull request #78 from JasperHG90/release/v0.18.0': decisions-only 5, wide 5 {'decisions': 5}
+366d06fb 'Merge pull request #76 from JasperHG90/summary-ignores-draft': decisions-only 7, wide 7 {'decisions': 7}
+1382b33c 'Merge pull request #71 from JasperHG90/adr/audit-pull-reques': decisions-only 0, wide 0 {}
+e666ea58 'Merge pull request #77 from JasperHG90/action-failure-points': decisions-only 3, wide 5 {'decisions': 3, 'docs': 2}
+b129ee00 'Merge loop/action-failure-points-to-summary: A failed check ': decisions-only 3, wide 5 {'decisions': 3, 'docs': 2}
+10f8c09c 'Merge pull request #75 from JasperHG90/release/v0.17.1': decisions-only 5, wide 5 {'decisions': 5}
+6316a82b 'Merge pull request #74 from JasperHG90/fix/pr-list-without-f': decisions-only 3, wide 5 {'decisions': 3, 'docs': 2}
+29abb9fe 'Merge pull request #73 from JasperHG90/release/v0.17.0': decisions-only 5, wide 5 {'decisions': 5}
+5cb53780 'Merge pull request #72 from JasperHG90/feat/pr-knowledge-ste': decisions-only 14, wide 16 {'decisions': 14, 'docs': 2}
+e52f131c 'Merge pull request #68 from JasperHG90/fix/starter-upgrade-c': decisions-only 5, wide 5 {'decisions': 5}
+6de2f9f1 'Merge pull request #70 from JasperHG90/release/v0.16.1': decisions-only 5, wide 5 {'decisions': 5}
+
+total over 15 merges: decisions-only 64, wide 72 {'decisions': 64, 'docs': 8}
