@@ -70,3 +70,15 @@ Rejected:
   blocks it; a repository that takes fork contributions should not require
   it.
 - This repository's workflow, the starter's and the how-to run on dispatch.
+
+## Correction, 2026-11-28
+
+A required check cannot read the dispatched run's `audit` check run: GitHub
+counts only check runs from runs tied to the pull request, so requiring
+`audit` blocked pull request #83 though its check had passed. The required
+check reads a commit status named `audit` instead, which a dispatch run's
+token can post and a ruleset entry for the GitHub Actions app accepts. A
+`pull_request` workflow, `knowledge-audit-pending.yml`, marks it pending on
+each push, with a Details link to the workflow's Run workflow button, and
+the publish job sets it to success when the audit ran, failure when it did
+not. A refused dispatch leaves it pending.

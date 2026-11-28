@@ -99,6 +99,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+      statuses: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -106,6 +107,8 @@ jobs:
       - with:
           mode: publish
           pr: {% raw %}${{ needs.previous.outputs.pr }}{% endraw %}
+          head: {% raw %}${{ needs.previous.outputs.head }}{% endraw %}
+          audit_result: {% raw %}${{ needs.audit.result }}{% endraw %}
         uses: JasperHG90/kmctl@{{ kmctl_ref }}
       # Add your own steps below this line. just upgrade rewrites the pin
       # above, and content added directly below it would conflict.

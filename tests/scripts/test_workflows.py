@@ -33,6 +33,7 @@ WORKFLOWS = ROOT / ".github" / "workflows"
 RELEASE = WORKFLOWS / "release.yml"
 RELEASE_TAG = WORKFLOWS / "release-tag.yml"
 KNOWLEDGE_AUDIT = WORKFLOWS / "knowledge-audit.yml"
+AUDIT_PENDING = WORKFLOWS / "knowledge-audit-pending.yml"
 ACTION = ROOT / "action.yml"
 CI = WORKFLOWS / "ci.yml"
 HERMES_INTERACTIVE = WORKFLOWS / "hermes-interactive.yaml"
@@ -353,7 +354,12 @@ def test_no_workflow_publishes_to_pypi(path: Path) -> None:
 )
 def test_every_action_is_pinned_by_commit_sha(path: Path) -> None:
     """Each ``uses:`` names a 40-character commit SHA with its version as a comment."""
-    lines = [line for line in path.read_text().splitlines() if "uses:" in line]
+    # A uses: key, not a word that ends in it, such as statuses:.
+    lines = [
+        line
+        for line in path.read_text().splitlines()
+        if re.match(r"\s*-?\s*uses:", line)
+    ]
 
     assert lines
     for line in lines:
@@ -1396,6 +1402,7 @@ def test_knowledge_audit_runs_on_dispatch() -> None:
     assert jobs["publish"]["permissions"] == {
         "contents": "read",
         "pull-requests": "write",
+        "statuses": "write",
     }
     assert "permissions" not in jobs["audit"]
     assert "secrets." not in yaml.safe_dump(jobs["publish"])
@@ -1556,3 +1563,70 @@ def test_knowledge_audit_fetches_the_previous_report() -> None:
     for step in audit["steps"]:
         text = yaml.safe_dump(step)
         assert "GH_TOKEN" not in text and "github.token" not in text, step
+
+
+def test_pending_workflow_posts_audit_pending(tmp_path: Path) -> None:
+    """Each push marks audit pending on the head, linking to the run button; nothing else."""
+    data = _load(AUDIT_PENDING)
+    jobs = data["jobs"]
+    [(key, job)] = list(jobs.items())
+    text = AUDIT_PENDING.read_text()
+
+    assert set(data["on"]) == {"pull_request"}
+    assert data["permissions"] == {"statuses": "write"}
+    assert key != "audit" and job.get("name", key) != "audit", (
+        "a job named audit would pass the check"
+    )
+    assert (
+        job["if"]
+        == "github.event.pull_request.head.repo.full_name == github.repository"
+    )
+    assert "actions/checkout" not in text and "secrets." not in text
+    [step] = job["steps"]
+    assert step["env"]["SHA"] == "${{ github.event.pull_request.head.sha }}"
+    assert step["env"]["URL"].endswith("/actions/workflows/knowledge-audit.yml")
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    calls = tmp_path / "gh.json"
+    (bin_dir / "gh").write_text(
+        f"#!{sys.executable}\nimport json, sys\njson.dump(sys.argv[1:], open({str(calls)!r}, 'w'))\n"
+    )
+    (bin_dir / "gh").chmod(0o755)
+    script = step["run"].replace("${{ github.repository }}", "o/r")
+    subprocess.run(
+        ["bash", "--noprofile", "--norc", "-eo", "pipefail", "-c", script],
+        env={
+            **os.environ,
+            "PATH": f"{bin_dir}:{os.environ['PATH']}",
+            "SHA": "abc123",
+            "URL": "https://x/wf",
+        },
+        check=True,
+    )
+    call = json.loads(calls.read_text())
+    assert call[:4] == ["api", "-X", "POST", "repos/o/r/statuses/abc123"]
+    fields = dict(call[i + 1].split("=", 1) for i, a in enumerate(call) if a == "-f")
+    assert fields["state"] == "pending" and fields["context"] == "audit"
+    assert fields["target_url"] == "https://x/wf"
+
+
+def test_knowledge_audit_settles_the_audit_status(tmp_path: Path) -> None:
+    """Publish sets audit to success when the audit job ran, failure otherwise, on the resolved head."""
+    publish = _load(KNOWLEDGE_AUDIT)["jobs"]["publish"]
+    [settle] = [
+        s for s in publish["steps"] if "agent.py status" in str(s.get("run", ""))
+    ]
+    parser = _agent_module().parser()
+
+    assert publish["permissions"]["statuses"] == "write"
+    assert settle["if"] == "always()"
+    assert settle["env"]["RESULT"] == "${{ needs.audit.result }}"
+    for result, state in (
+        ("success", "success"),
+        ("failure", "failure"),
+        ("cancelled", "failure"),
+    ):
+        args = _agent_args(settle, tmp_path / result, RESULT=result)
+        parsed = parser.parse_args(args)
+        assert parsed.command == "status" and parsed.sha == "abc123"
+        assert parsed.state == state, result

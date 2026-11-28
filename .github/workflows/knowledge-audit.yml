@@ -141,6 +141,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+      statuses: write
     steps:
       # Only to read the script.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -164,3 +165,17 @@ jobs:
           ${{ runner.temp }}/agent-report/report.json
           --pr ${{ needs.previous.outputs.pr }}
           --title "Knowledge audit"
+      # Settles the required audit status the pending workflow set: success
+      # when the audit job ran (findings never fail it), failure when it did
+      # not. A refused dispatch never reaches this job, so pending stays.
+      - name: Settle the audit status
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RESULT: ${{ needs.audit.result }}
+          RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          state=failure
+          [ "$RESULT" = success ] && state=success
+          uv run --no-config --script action/agent.py status "${{ needs.previous.outputs.head }}" "$state" --url "$RUN"

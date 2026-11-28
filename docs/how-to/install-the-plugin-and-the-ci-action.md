@@ -369,6 +369,7 @@ Publish mode takes two more:
 | `min_severity` | the lowest severity (`info`, `low`, `medium` or `high`) that posts or updates the comment; default `low` |
 | `title` | the comment's heading, which also marks it so the next run replaces it; default `Knowledge audit` |
 | `pr` | on a dispatch, the pull request to post to, from the previous job's `pr` output |
+| `head`, `audit_result` | with both, set the required `audit` commit status on `head`: success when `audit_result` is `success`, failure otherwise; needs `statuses: write` |
 
 1. Add a repository secret named `AUDIT_API_KEY` with your provider's API
    key. Skip this for an endpoint that takes no key.
@@ -478,10 +479,42 @@ check lands on the pull request's head commit:
 gh workflow run knowledge-audit.yml --ref BRANCH -f pr=NUMBER
 ```
 
-or pick the branch and enter the number in the Actions tab. Then make it
-mandatory: in branch protection, mark `audit` a required check. A push after
-a run leaves the new commit without the check, so the pull request waits for
-another run. The previous job refuses a pull request that is closed, a
+or pick the branch and enter the number in the Actions tab.
+
+**Make it required.** GitHub does not count a dispatched run's own check for
+a pull request, so the audit reports a **commit status** named `audit`
+instead, which it does count. Add a second workflow,
+`.github/workflows/knowledge-audit-pending.yml`, that marks it pending on
+each push; its **Details** link opens the workflow's Run workflow button:
+
+```yaml
+name: knowledge audit pending
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+permissions:
+  statuses: write
+jobs:
+  # Not named audit: a green pull_request job named audit would pass the rule.
+  mark:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh api -X POST "repos/${{ github.repository }}/statuses/${{ github.event.pull_request.head.sha }}"
+          -f state=pending -f context=audit
+          -f description="Run the knowledge audit on this branch"
+          -f target_url="${{ github.server_url }}/${{ github.repository }}/actions/workflows/knowledge-audit.yml"
+```
+
+Give the publish job `statuses: write` and, under its `with:`, `head: ${{
+needs.previous.outputs.head }}` and `audit_result: ${{ needs.audit.result }}`:
+publish then sets `audit` to success when the audit ran and failure when it
+did not. Then, in your branch rules, mark `audit` a required check. A push
+after a run sets it pending again, so the pull request waits for another
+run. (The action's `mode: pending` does the same as the workflow above.) The previous job refuses a pull request that is closed, a
 draft, from a fork, or whose head is not the run's commit (a run on the
 wrong branch, or before the latest push), and the audit job then fails
 rather than skips, since GitHub counts a skipped job as passing a required

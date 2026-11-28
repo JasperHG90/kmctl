@@ -1564,3 +1564,37 @@ def test_previous_refuses_what_it_must_not_audit(
     assert output.read_text() == ""
     made = [json.loads(line) for line in calls.read_text().splitlines()]
     assert all(c[:2] == ["pr", "view"] for c in made), "nothing fetched after a refusal"
+
+
+# the audit commit status ---------------------------------------------------
+
+
+@pytest.mark.parametrize("state", ["pending", "success", "failure"])
+def test_status_posts_the_audit_status(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, state: str
+) -> None:
+    calls = _gh(tmp_path, monkeypatch)
+
+    code = agent.main(["status", "abc123", state, "--url", "https://x/run"])
+
+    assert code == 0
+    (call,) = _calls(calls)
+    assert call[:4] == ["api", "-X", "POST", "repos/{owner}/{repo}/statuses/abc123"]
+    fields = dict(call[i + 1].split("=", 1) for i, a in enumerate(call) if a == "-f")
+    assert fields == {
+        "state": state,
+        "context": "audit",
+        "description": agent.STATUS_TEXT[state],
+        "target_url": "https://x/run",
+    }
+
+
+def test_status_refuses_an_unknown_state(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls = _gh(tmp_path, monkeypatch)
+
+    with pytest.raises(SystemExit):
+        agent.main(["status", "abc123", "error", "--url", "https://x"])
+
+    assert _calls(calls) == []

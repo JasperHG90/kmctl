@@ -1219,6 +1219,43 @@ def previous(args: argparse.Namespace) -> int:
     return 0
 
 
+#: The commit status a repository can require, and what each state says.
+STATUS_CONTEXT = "audit"
+STATUS_TEXT = {
+    "pending": "Run the knowledge audit on this branch",
+    "success": "The knowledge audit ran; its comment has the findings",
+    "failure": "The knowledge audit failed or was refused; see the run",
+}
+
+
+def status(args: argparse.Namespace) -> int:
+    """Run the ``status`` command: set the ``audit`` commit status on a commit.
+
+    A required ``audit`` status is what lets a repository require the reread:
+    a dispatched run's own check run does not count for a pull request.
+    """
+    try:
+        gh(
+            "api",
+            "-X",
+            "POST",
+            f"repos/{{owner}}/{{repo}}/statuses/{args.sha}",
+            "-f",
+            f"state={args.state}",
+            "-f",
+            f"context={STATUS_CONTEXT}",
+            "-f",
+            f"description={STATUS_TEXT[args.state]}",
+            "-f",
+            f"target_url={args.url}",
+        )
+    except GhFailed as err:
+        print(f"agent: {err}", file=sys.stderr)
+        return 1
+    print(f"agent: set {STATUS_CONTEXT} to {args.state} on {args.sha}", file=sys.stderr)
+    return 0
+
+
 def publish_comment(args: argparse.Namespace, report: Report, over: list) -> int:
     """Post the report as one comment on pull request ``args.pr``, replacing the last one.
 
@@ -1440,6 +1477,30 @@ def parser() -> argparse.ArgumentParser:
         default="previous-report",
         help="The folder to download into. Default: previous-report.",
     )
+    s = sub.add_parser(
+        "status",
+        help="Set the audit commit status on a commit.",
+        description=(
+            "Set the commit status audit on SHA with gh: pending until someone "
+            "runs the audit, then success or failure. A repository requires it "
+            "in its branch rules; a dispatched run's own check run does not count "
+            "for a pull request, a commit status does. Needs gh, GH_TOKEN and "
+            "statuses: write. Exit codes: 0 set, 1 gh failed, 2 a bad option."
+        ),
+    )
+    s.add_argument("sha", help="The commit to set it on: the pull request's head.")
+    s.add_argument(
+        "state", choices=("pending", "success", "failure"), help="The state."
+    )
+    s.add_argument(
+        "--url",
+        required=True,
+        help=(
+            "Where the status's Details link goes: the knowledge-audit workflow's "
+            "page while pending, so its Run workflow button is one click away; "
+            "the run once it has run."
+        ),
+    )
     p = sub.add_parser(
         "publish",
         help="Post a report as one pull request comment.",
@@ -1483,6 +1544,8 @@ def main(argv: list[str] | None = None, model: Model | str | None = None) -> int
             return publish(args)
         if args.command == "previous":
             return previous(args)
+        if args.command == "status":
+            return status(args)
         return run(args, model)
     except UsageError as err:
         print(f"agent: {err}", file=sys.stderr)

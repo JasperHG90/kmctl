@@ -49,11 +49,14 @@ adversarial_review:
 pr_audit:
   type: bool
   help: >-
-    Add .github/workflows/knowledge-audit.yml: on each pull request from the
-    repository, a model rereads the .okf/ and docs/ pages whose sources the
-    pull request changed and posts one comment on which still hold (kmctl's
-    ADR 0060). It never fails a check. It needs the model's API key in the
-    AUDIT_API_KEY secret; until you add it, the audit skips with a notice.
+    Add .github/workflows/knowledge-audit.yml and knowledge-audit-pending.yml:
+    started on a ready pull request's branch, a model rereads the .okf/ and
+    docs/ pages whose sources the pull request changed and posts one comment
+    on which still hold (kmctl's ADR 0060, ADR 0061); the pending workflow
+    marks the audit commit status pending on each push, with a link to run
+    it, so you can require it. Findings never fail it. It needs the model's
+    API key in the AUDIT_API_KEY secret; until you add it, the audit fails
+    and says so.
   default: false
 
 audit_model:

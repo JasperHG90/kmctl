@@ -31,7 +31,11 @@ inputs:
     default: fail
   mode:
     description: >-
-      checks (the default) runs kmctl check and kmctl review due. previous,
+      checks (the default) runs kmctl check and kmctl review due. pending,
+      in a workflow on pull_request with statuses: write, marks the required
+      audit commit status pending on each push, its Details link opening the
+      knowledge-audit workflow's Run workflow button; publish, given head and
+      audit_result, settles it. previous,
       in a job of its own before the audit (pull-requests: read and actions:
       read), downloads the report of the run the pull request's audit comment
       links and hands it to the audit job as the previous-report artifact; the
@@ -119,8 +123,16 @@ inputs:
   head:
     description: >-
       On a workflow_dispatch: the pull request's head commit, from previous
-      mode's head output, which the report records. On a pull_request event
-      it comes from the event.
+      mode's head output, which the report records and publish sets the
+      audit status on. On a pull_request event it comes from the event.
+    required: false
+    default: ""
+  audit_result:
+    description: >-
+      Publish mode, with head: the audit job's result
+      (needs.audit.result). Publish then sets the required audit commit
+      status on head, success when it is success and failure otherwise.
+      Empty: no status.
     required: false
     default: ""
   report_name:
@@ -149,8 +161,8 @@ runs:
         MODE: ${{ inputs.mode }}
       run: |
         case "$MODE" in
-          checks | previous | audit | publish) ;;
-          *) echo "kmctl action: mode must be checks, previous, audit or publish, not '$MODE'." >&2; exit 1 ;;
+          checks | pending | previous | audit | publish) ;;
+          *) echo "kmctl action: mode must be checks, pending, previous, audit or publish, not '$MODE'." >&2; exit 1 ;;
         esac
     # No cache: a cache saved after the agent ran would carry what it wrote
     # into the publish job.
@@ -281,6 +293,24 @@ runs:
         name: previous-report
         path: ${{ runner.temp }}/previous-report
         if-no-files-found: ignore
+    # Pending mode: on each push to a pull request, mark the required audit
+    # commit status pending, linking to the knowledge-audit workflow's page,
+    # whose Run workflow button starts the audit. Needs statuses: write; the
+    # job must not be named audit, or its own check would pass the rule.
+    - name: Mark the audit pending
+      if: inputs.mode == 'pending'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        GH_REPO: ${{ github.repository }}
+        SHA: ${{ inputs.head || github.event.pull_request.head.sha }}
+        URL: ${{ github.server_url }}/${{ github.repository }}/actions/workflows/knowledge-audit.yml
+      run: |
+        if [ -z "$SHA" ]; then
+          echo "kmctl pending: refused for event '$GITHUB_EVENT_NAME'; give the head input, or run on a pull_request." >&2
+          exit 1
+        fi
+        uv run --no-config --script "${{ github.action_path }}/action/agent.py" status "$SHA" pending --url "$URL"
     # A separate job: a fresh runner that gets only the artifact. A skipped or
     # failed audit leaves no artifact; publish then posts nothing and passes.
     - name: Download the report
@@ -307,3 +337,17 @@ runs:
         fi
         uv run --no-config --script "${{ github.action_path }}/action/agent.py" \
           publish "$RUNNER_TEMP/agent-report/report.json" --pr "$PR_NUMBER" --min-severity "$MIN_SEVERITY" --title "$TITLE"
+    # With audit_result and head: settle the required audit commit status.
+    - name: Settle the audit status
+      if: always() && inputs.mode == 'publish' && inputs.audit_result != '' && inputs.head != ''
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        GH_REPO: ${{ github.repository }}
+        RESULT: ${{ inputs.audit_result }}
+        SHA: ${{ inputs.head }}
+        RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      run: |
+        state=failure
+        [ "$RESULT" = success ] && state=success
+        uv run --no-config --script "${{ github.action_path }}/action/agent.py" status "$SHA" "$state" --url "$RUN"

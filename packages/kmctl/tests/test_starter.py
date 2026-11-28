@@ -584,6 +584,7 @@ def test_adversarial_review_off_writes_neither(
 # The pull request audit ---------------------------------------------------------
 
 AUDIT_WF = Path(".github") / "workflows" / "knowledge-audit.yml"
+PENDING_WF = Path(".github") / "workflows" / "knowledge-audit-pending.yml"
 # What a project adds below each kmctl pin in the audit workflow.
 OWN_AUDIT_STEP = "      - name: Our audit step\n        run: echo ours\n"
 
@@ -614,13 +615,17 @@ def test_pr_audit_on_writes_the_audit_workflow(template: Path, tmp_path: Path) -
     )
 
     assert res.returncode == 0, res.stderr
-    assert _files(out) == GENERATED | {AUDIT_WF.as_posix()}
+    assert _files(out) == GENERATED | {AUDIT_WF.as_posix(), PENDING_WF.as_posix()}
     wf = yaml.safe_load((out / AUDIT_WF).read_text())
     assert set(wf[True]) == {"workflow_dispatch"}
     assert wf["permissions"] == {"contents": "read"}
     audit, publish = wf["jobs"]["audit"], wf["jobs"]["publish"]
     assert "permissions" not in audit
-    assert publish["permissions"] == {"contents": "read", "pull-requests": "write"}
+    assert publish["permissions"] == {
+        "contents": "read",
+        "pull-requests": "write",
+        "statuses": "write",
+    }
     [checkout] = [
         s
         for s in _audit_steps(wf, "audit")
@@ -642,7 +647,12 @@ def test_pr_audit_on_writes_the_audit_workflow(template: Path, tmp_path: Path) -
     post = _kmctl_step(_audit_steps(wf, "publish"))
     assert post == {
         "uses": f"JasperHG90/kmctl@{TAG}",
-        "with": {"mode": "publish", "pr": "${{ needs.previous.outputs.pr }}"},
+        "with": {
+            "mode": "publish",
+            "pr": "${{ needs.previous.outputs.pr }}",
+            "head": "${{ needs.previous.outputs.head }}",
+            "audit_result": "${{ needs.audit.result }}",
+        },
     }
     assert "secrets" not in yaml.safe_dump(publish)
 
@@ -699,6 +709,36 @@ def test_pr_audit_off_writes_no_workflow(
     answers = yaml.safe_load((out / ".copier-answers.yml").read_text())
     assert answers["pr_audit"] is False
     assert "audit_model" not in answers and "audit_base_url" not in answers
+
+
+@pytest.mark.parametrize("on", [True, False])
+def test_pr_audit_writes_the_pending_workflow(
+    template: Path, tmp_path: Path, on: bool
+) -> None:
+    """With pr_audit, a pending workflow marks the audit status pending on each push; without, none."""
+    out = tmp_path / "demo"
+    assert _copier(template, out, f"pr_audit={str(on).lower()}").returncode == 0
+
+    if not on:
+        assert not (out / PENDING_WF).exists()
+        return
+    text = (out / PENDING_WF).read_text()
+    wf = yaml.safe_load(text)
+    [(key, job)] = list(wf["jobs"].items())
+    assert set(wf[True]) == {"pull_request"}
+    assert wf["permissions"] == {"statuses": "write"}
+    assert key != "audit" and job.get("name", key) != "audit"
+    assert (
+        job["if"]
+        == "github.event.pull_request.head.repo.full_name == github.repository"
+    )
+    assert _kmctl_step(job["steps"]) == {
+        "uses": f"JasperHG90/kmctl@{TAG}",
+        "with": {"mode": "pending"},
+    }
+    assert "# Add your own steps below this line." in text
+    publish = yaml.safe_load((out / AUDIT_WF).read_text())["jobs"]["publish"]
+    assert publish["permissions"]["statuses"] == "write"
 
 
 def test_pr_audit_runs_on_dispatch(template: Path, tmp_path: Path) -> None:

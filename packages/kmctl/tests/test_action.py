@@ -395,8 +395,9 @@ def test_action_publish_mode_posts_from_the_artifact() -> None:
     assert '"$RUNNER_TEMP/agent-report/report.json"' in post["run"]
     assert post["env"]["GH_TOKEN"] == "${{ github.token }}"
     fetch_previous = _previous_step(steps)
+    statuses = _status_steps(steps)
     for step in steps:
-        if step is not post and step is not fetch_previous:
+        if step is not post and step is not fetch_previous and step not in statuses:
             _no_token(step)
     assert "publish" in action["inputs"]["mode"]["description"]
 
@@ -923,3 +924,58 @@ def test_dispatch_inputs_reach_publish_and_previous(tmp_path: Path) -> None:
     )
     assert "--resolve" not in on_pr
     assert _agent_parser().parse_args(_script_args(on_dispatch)).resolve == "cafe"
+
+
+def _status_steps(steps: list[dict]) -> list[dict]:
+    """The steps that set the audit commit status."""
+    return [s for s in steps if 'agent.py" status' in str(s.get("run", ""))]
+
+
+def test_pending_and_publish_modes_set_the_audit_status(tmp_path: Path) -> None:
+    """Pending mode marks audit pending; publish with head and audit_result settles it."""
+    action = yaml.safe_load((ROOT / "action.yml").read_text())
+    steps = action["runs"]["steps"]
+    [pending] = [s for s in _status_steps(steps) if "pending" in s["if"]]
+    [settle] = [s for s in _status_steps(steps) if "publish" in s["if"]]
+    parser = _agent_parser()
+
+    assert pending["if"] == "inputs.mode == 'pending'"
+    assert (
+        pending["env"]["SHA"]
+        == "${{ inputs.head || github.event.pull_request.head.sha }}"
+    )
+    assert pending["env"]["URL"].endswith("/actions/workflows/knowledge-audit.yml")
+    args = _script_args(
+        _run_step(
+            pending, tmp_path / "pending", "pull_request", SHA="abc", URL="https://x/wf"
+        )
+    )
+    parsed = parser.parse_args(args)
+    assert (parsed.command, parsed.sha, parsed.state, parsed.url) == (
+        "status",
+        "abc",
+        "pending",
+        "https://x/wf",
+    )
+    assert action["inputs"]["audit_result"]["description"]
+    assert (
+        "inputs.audit_result != ''" in settle["if"]
+        and "inputs.head != ''" in settle["if"]
+    )
+    assert settle["env"]["RESULT"] == "${{ inputs.audit_result }}"
+    for result, state in (
+        ("success", "success"),
+        ("failure", "failure"),
+        ("skipped", "failure"),
+    ):
+        args = _script_args(
+            _run_step(
+                settle,
+                tmp_path / result,
+                "workflow_dispatch",
+                RESULT=result,
+                SHA="abc",
+                RUN="https://x/run",
+            )
+        )
+        assert parser.parse_args(args).state == state, result
