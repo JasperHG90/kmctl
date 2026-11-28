@@ -354,9 +354,10 @@ and `claude/.apm/instructions/`, for the OpenCode rules.
 
 ## The action
 
-`action.yml` is a composite action with four modes. Only checks installs
+`action.yml` is a composite action with five modes. Only checks installs
 kmctl, from the action's own checkout. A pull request audit runs three
-jobs: previous, audit, publish (ADR 0060, ADR 0061).
+jobs: previous, audit, publish (ADR 0060, ADR 0061), and a separate
+`pull_request` workflow runs pending.
 
 - **checks** (the default) runs `action/knowledge-ci.sh`: `kmctl check` and
   `kmctl review due` into the job summary, failing when `kmctl check` fails
@@ -390,6 +391,12 @@ jobs: previous, audit, publish (ADR 0060, ADR 0061).
   checkout's credentials in git config, which `read_file` could reach).
   setup-uv's cache is off, so nothing the agent wrote outlives its job but
   the artifact.
+- **pending** runs on each push to a pull request, in a workflow with only
+  `statuses: write`: `action/agent.py status SHA pending` marks the commit
+  status `audit` pending on the pull request's head, with a Details link to
+  the knowledge-audit workflow's Run workflow button. A repository requires
+  `audit` in its branch rules; a dispatched run's own check run does not
+  count for a pull request, a commit status does.
 - **previous** runs in a job of its own before the audit, with `GH_TOKEN`,
   `pull-requests: read` and `actions: read`. On a dispatch it resolves the
   pull request with `action/agent.py previous --resolve SHA`, refusing one
@@ -398,8 +405,10 @@ jobs: previous, audit, publish (ADR 0060, ADR 0061).
   run link, downloads that run's report and hands it to the audit job as
   the `previous-report` artifact; on a gh failure it hands nothing and
   passes, so the audit starts fresh.
-- **publish** runs in a separate job on a fresh runner, with `GH_TOKEN` and
-  `pull-requests: write`. It downloads the artifact and runs
+- **publish** runs in a separate job on a fresh runner, with `GH_TOKEN`,
+  `pull-requests: write` and `statuses: write`. Given `head` and
+  `audit_result`, it settles the `audit` status: success when the audit ran,
+  failure when it did not. It downloads the artifact and runs
   `action/agent.py publish REPORT --pr N`: when a finding is at or above
   `min_severity` (default low), it posts one comment on the pull request
   marked with `title`, or replaces the earlier one; below the threshold it
