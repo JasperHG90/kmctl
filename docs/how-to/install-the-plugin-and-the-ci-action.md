@@ -598,10 +598,12 @@ this and exits 2:
 agent: refused: GH_TOKEN is set, and the agent could read the token. Give it only to the publish job, which runs no agent.
 ```
 
-Only the publish job gets `pull-requests: write` and the token, and it runs
-no agent. Keep the two jobs apart: on a self-hosted runner that reuses its
-machine between jobs, the agent could leave behind code that the publish
-job then runs with the token.
+The audit job, which runs the agent, holds no token. The previous job gets
+a token with `pull-requests: read` and `actions: read`, and the publish job
+one with `pull-requests: write` and `statuses: write`; neither runs the
+agent. Keep the three jobs apart: on a self-hosted runner that reuses its
+machine between jobs, the agent could leave behind code that a later job
+then runs with its token.
 
 The API key reaches the model provider, never the agent's tools. Still use
 a key made for the audit, with a spending limit.
@@ -749,9 +751,11 @@ ref to the new tag, as in step 6.
 
 For the action, open a pull request: the `knowledge` job runs and its summary
 shows the `kmctl check` and `kmctl review due` reports. For the audit, open a
-pull request that changes a file a page names in its `sources`: the
-"knowledge audit" workflow runs and, when it has a finding, comments on the
-pull request.
+pull request that changes a file a page names in its `sources`: the pending
+workflow marks its `audit` status pending. Start the audit with
+`gh workflow run knowledge-audit.yml --ref BRANCH -f pr=NUMBER`, or the
+status's Details link; when it finishes, `audit` turns green and, when it has
+a finding, a comment appears on the pull request.
 
 All options of these commands are in [Commands](../reference/commands.md).
 Why kmctl has one hook and the audit only reports is in
